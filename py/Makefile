@@ -15,7 +15,7 @@ SRC = \
 	emitcpy.c \
 	emitbc.c \
 	asmx64.c \
-	emitx64v2.c \
+	emitx64.c \
 	emitthumb.c \
 	asmthumb.c \
 	runtime.c \
@@ -23,7 +23,6 @@ SRC = \
 	main.c \
 
 SRC_ASM = \
-	runtime1.s \
 
 OBJ = $(SRC:.c=.o) $(SRC_ASM:.s=.o)
 LIB =
@@ -43,7 +42,6 @@ compile.o: grammar.h
 emitcpy.o: emit.h
 emitbc.o: emit.h
 emitx64.o: emit.h
-emitx64v2.o: emit.h
 emitthumb.o: emit.h
 
 clean:
