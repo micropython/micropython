@@ -25,6 +25,7 @@ typedef enum {
 } pn_kind_t;
 
 #define EMIT(fun, arg...) (emit_##fun(comp->emit, ##arg))
+#define EMIT_COMMON(fun, arg...) (emit_common_##fun(comp->pass, comp->scope_cur, ##arg))
 
 typedef struct _compiler_t {
     qstr qstr___class__;
@@ -494,10 +495,10 @@ void c_assign(compiler_t *comp, py_parse_node_t pn, assign_kind_t assign_kind) {
             switch (assign_kind) {
                 case ASSIGN_STORE:
                 case ASSIGN_AUG_STORE:
-                    emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, arg);
+                    EMIT_COMMON(store_id, comp->emit, arg);
                     break;
                 case ASSIGN_AUG_LOAD:
-                    emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, arg);
+                    EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, arg);
                     break;
             }
         } else {
@@ -769,18 +770,18 @@ void compile_decorated(compiler_t *comp, py_parse_node_struct_t *pns) {
     }
 
     // store func/class object into name
-    emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, body_name);
+    EMIT_COMMON(store_id, comp->emit, body_name);
 }
 
 void compile_funcdef(compiler_t *comp, py_parse_node_struct_t *pns) {
     qstr fname = compile_funcdef_helper(comp, pns);
     // store function object into function name
-    emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, fname);
+    EMIT_COMMON(store_id, comp->emit, fname);
 }
 
 void c_del_stmt(compiler_t *comp, py_parse_node_t pn) {
     if (PY_PARSE_NODE_IS_ID(pn)) {
-        emit_common_delete_id(comp->pass, comp->scope_cur, comp->emit, PY_PARSE_NODE_LEAF_ARG(pn));
+        EMIT_COMMON(delete_id, comp->emit, PY_PARSE_NODE_LEAF_ARG(pn));
     } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_power)) {
         py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
 
@@ -985,7 +986,7 @@ void compile_dotted_as_name(compiler_t *comp, py_parse_node_t pn) {
     EMIT(load_const_tok, PY_TOKEN_KW_NONE);
     qstr q1, q2;
     do_import_name(comp, pn, &q1, &q2);
-    emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, q1);
+    EMIT_COMMON(store_id, comp->emit, q1);
 }
 
 void compile_import_name(compiler_t *comp, py_parse_node_struct_t *pns) {
@@ -1032,9 +1033,9 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
             qstr id2 = PY_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
             EMIT(import_from, id2);
             if (PY_PARSE_NODE_IS_NULL(pns3->nodes[1])) {
-                emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, id2);
+                EMIT_COMMON(store_id, comp->emit, id2);
             } else {
-                emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, PY_PARSE_NODE_LEAF_ARG(pns3->nodes[1]));
+                EMIT_COMMON(store_id, comp->emit, PY_PARSE_NODE_LEAF_ARG(pns3->nodes[1]));
             }
         }
         EMIT(pop_top);
@@ -1043,24 +1044,24 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
 
 void compile_global_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     if (PY_PARSE_NODE_IS_LEAF(pns->nodes[0])) {
-        emit_common_declare_global(comp->pass, comp->scope_cur, PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
+        EMIT_COMMON(declare_global, PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
     } else {
         pns = (py_parse_node_struct_t*)pns->nodes[0];
         int num_nodes = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
         for (int i = 0; i < num_nodes; i++) {
-            emit_common_declare_global(comp->pass, comp->scope_cur, PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+            EMIT_COMMON(declare_global, PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
         }
     }
 }
 
 void compile_nonlocal_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     if (PY_PARSE_NODE_IS_LEAF(pns->nodes[0])) {
-        emit_common_declare_nonlocal(comp->pass, comp->scope_cur, PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
+        EMIT_COMMON(declare_nonlocal, PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
     } else {
         pns = (py_parse_node_struct_t*)pns->nodes[0];
         int num_nodes = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
         for (int i = 0; i < num_nodes; i++) {
-            emit_common_declare_nonlocal(comp->pass, comp->scope_cur, PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+            EMIT_COMMON(declare_nonlocal, PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
         }
     }
 }
@@ -1068,7 +1069,7 @@ void compile_nonlocal_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
 void compile_assert_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     int l_end = EMIT(label_new);
     c_if_cond(comp, pns->nodes[0], true, l_end);
-    emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, comp->qstr_assertion_error);
+    EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, comp->qstr_assertion_error);
     if (!PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
         // assertion message
         compile_node(comp, pns->nodes[1]);
@@ -1262,7 +1263,7 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
         if (qstr_exception_local == 0) {
             EMIT(pop_top);
         } else {
-            emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, qstr_exception_local);
+            EMIT_COMMON(store_id, comp->emit, qstr_exception_local);
         }
 
         EMIT(pop_top);
@@ -1281,8 +1282,8 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
             EMIT(load_const_tok, PY_TOKEN_KW_NONE);
             EMIT(label_assign, l3);
             EMIT(load_const_tok, PY_TOKEN_KW_NONE);
-            emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, qstr_exception_local);
-            emit_common_delete_id(comp->pass, comp->scope_cur, comp->emit, qstr_exception_local);
+            EMIT_COMMON(store_id, comp->emit, qstr_exception_local);
+            EMIT_COMMON(delete_id, comp->emit, qstr_exception_local);
             EMIT(end_finally);
         }
         EMIT(jump, l2);
@@ -2037,7 +2038,7 @@ void compile_dictorsetmaker_item(compiler_t *comp, py_parse_node_struct_t *pns) 
 void compile_classdef(compiler_t *comp, py_parse_node_struct_t *pns) {
     qstr cname = compile_classdef_helper(comp, pns);
     // store class object into class name
-    emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, cname);
+    EMIT_COMMON(store_id, comp->emit, cname);
 }
 
 void compile_arglist_star(compiler_t *comp, py_parse_node_struct_t *pns) {
@@ -2115,7 +2116,7 @@ void compile_node(compiler_t *comp, py_parse_node_t pn) {
     } else if (PY_PARSE_NODE_IS_LEAF(pn)) {
         int arg = PY_PARSE_NODE_LEAF_ARG(pn);
         switch (PY_PARSE_NODE_LEAF_KIND(pn)) {
-            case PY_PARSE_NODE_ID: emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, arg); break;
+            case PY_PARSE_NODE_ID: EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, arg); break;
             case PY_PARSE_NODE_SMALL_INT: EMIT(load_const_small_int, arg); break;
             case PY_PARSE_NODE_INTEGER: EMIT(load_const_int, arg); break;
             case PY_PARSE_NODE_DECIMAL: EMIT(load_const_dec, arg); break;
@@ -2286,7 +2287,7 @@ void check_for_doc_string(compiler_t *comp, py_parse_node_t pn) {
             if (kind == PY_PARSE_NODE_STRING) {
                 compile_node(comp, pns->nodes[0]); // a doc string
                 // store doc string
-                emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, comp->qstr___doc__);
+                EMIT_COMMON(store_id, comp->emit, comp->qstr___doc__);
             }
         }
     }
@@ -2372,7 +2373,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
         int l_end = EMIT(label_new);
         int l_top = EMIT(label_new);
-        emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, qstr_arg);
+        EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, qstr_arg);
         EMIT(label_assign, l_top);
         EMIT(for_iter, l_end);
         c_assign(comp, pns_comp_for->nodes[0], ASSIGN_STORE);
@@ -2403,12 +2404,12 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             scope->num_params = 1; // __locals__ is the parameter
         }
 
-        emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, comp->qstr___locals__);
+        EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, comp->qstr___locals__);
         EMIT(store_locals);
-        emit_common_load_id(comp->pass, comp->scope_cur, comp->qstr___class__, comp->emit, comp->qstr___name__);
-        emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, comp->qstr___module__);
+        EMIT_COMMON(load_id, comp->qstr___class__, comp->emit, comp->qstr___name__);
+        EMIT_COMMON(store_id, comp->emit, comp->qstr___module__);
         EMIT(load_const_id, PY_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
-        emit_common_store_id(comp->pass, comp->scope_cur, comp->emit, comp->qstr___qualname__);
+        EMIT_COMMON(store_id, comp->emit, comp->qstr___qualname__);
 
         check_for_doc_string(comp, pns->nodes[2]);
         compile_node(comp, pns->nodes[2]); // 2 is class body
