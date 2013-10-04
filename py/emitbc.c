@@ -1,0 +1,692 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#include "misc.h"
+#include "lexer.h"
+#include "machine.h"
+#include "parse.h"
+#include "compile.h"
+#include "scope.h"
+#include "runtime.h"
+#include "emit.h"
+#include "bc.h"
+
+#ifdef EMIT_DO_BC
+
+struct _emitter_t {
+    int pass;
+    int next_label;
+    int stack_size;
+    bool last_emit_was_return_value;
+
+    scope_t *scope;
+
+    int max_num_labels;
+    uint *label_offsets;
+
+    uint code_offset;
+    uint code_size;
+    byte *code_base;
+    byte dummy_data[8];
+};
+
+emitter_t *emit_new() {
+    emitter_t *emit = m_new(emitter_t, 1);
+    emit->max_num_labels = 0;
+    emit->label_offsets = NULL;
+    emit->code_offset = 0;
+    emit->code_size = 0;
+    emit->code_base = NULL;
+    return emit;
+}
+
+uint emit_get_code_size(emitter_t* emit) {
+    return emit->code_size;
+}
+
+void* emit_get_code(emitter_t* emit) {
+    return emit->code_base;
+}
+
+void emit_start_pass(emitter_t *emit, pass_kind_t pass, scope_t *scope) {
+    emit->pass = pass;
+    emit->next_label = 1;
+    emit->stack_size = 0;
+    emit->last_emit_was_return_value = false;
+    emit->scope = scope;
+    if (pass == PASS_1) {
+        scope->unique_code_id = rt_get_new_unique_code_id();
+    } else if (pass > PASS_1) {
+        if (emit->label_offsets == NULL) {
+            emit->label_offsets = m_new(uint, emit->max_num_labels);
+        }
+        if (pass == PASS_2) {
+            memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
+        }
+    }
+    emit->code_offset = 0;
+}
+
+void emit_end_pass(emitter_t *emit) {
+    // check stack is back to zero size
+    if (emit->stack_size != 0) {
+        printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
+    }
+
+    if (emit->pass == PASS_1) {
+        // calculate number of labels need
+        if (emit->next_label > emit->max_num_labels) {
+            emit->max_num_labels = emit->next_label;
+        }
+
+    } else if (emit->pass == PASS_2) {
+        // calculate size of code in bytes
+        emit->code_size = emit->code_offset;
+        emit->code_base = m_new(byte, emit->code_size);
+        printf("code_size: %u\n", emit->code_size);
+
+    } else if (emit->pass == PASS_3) {
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params);
+    }
+}
+
+// all functions must go through this one to emit bytes
+static byte* emit_get_cur_to_write_bytes(emitter_t* emit, int num_bytes_to_write) {
+    //printf("emit %d\n", num_bytes_to_write);
+    if (emit->pass < PASS_3) {
+        emit->code_offset += num_bytes_to_write;
+        return emit->dummy_data;
+    } else {
+        assert(emit->code_offset + num_bytes_to_write <= emit->code_size);
+        byte *c = emit->code_base + emit->code_offset;
+        emit->code_offset += num_bytes_to_write;
+        return c;
+    }
+}
+
+static void emit_write_byte_1(emitter_t* emit, byte b1) {
+    byte* c = emit_get_cur_to_write_bytes(emit, 1);
+    c[0] = b1;
+}
+
+static void emit_write_byte_1_byte(emitter_t* emit, byte b1, uint b2) {
+    assert((b2 & (~0xff)) == 0);
+    byte* c = emit_get_cur_to_write_bytes(emit, 2);
+    c[0] = b1;
+    c[1] = b2;
+}
+
+static void emit_write_byte_1_int(emitter_t* emit, byte b1, int num) {
+    assert((num & (~0x7fff)) == 0 || (num & (~0x7fff)) == (~0x7fff));
+    byte* c = emit_get_cur_to_write_bytes(emit, 3);
+    c[0] = b1;
+    c[1] = num;
+    c[2] = num >> 8;
+}
+
+static void emit_write_byte_1_uint(emitter_t* emit, byte b1, uint num) {
+    if (num <= 127) { // fits in 0x7f
+        // fit argument in single byte
+        byte* c = emit_get_cur_to_write_bytes(emit, 2);
+        c[0] = b1;
+        c[1] = num;
+    } else if (num <= 16383) { // fits in 0x3fff
+        // fit argument in two bytes
+        byte* c = emit_get_cur_to_write_bytes(emit, 3);
+        c[0] = b1;
+        c[1] = (num >> 8) | 0x80;
+        c[2] = num;
+    } else {
+        // larger numbers not implemented/supported
+        assert(0);
+    }
+}
+
+static void emit_write_byte_1_qstr(emitter_t* emit, byte b1, qstr qstr) {
+    emit_write_byte_1_uint(emit, b1, qstr);
+}
+
+static void emit_write_byte_1_label(emitter_t* emit, byte b1, int label) {
+    uint code_offset;
+    if (emit->pass < PASS_3) {
+        code_offset = 0;
+    } else {
+        code_offset = emit->label_offsets[label];
+    }
+    emit_write_byte_1_uint(emit, b1, code_offset);
+}
+
+bool emit_last_emit_was_return_value(emitter_t *emit) {
+    return emit->last_emit_was_return_value;
+}
+
+int emit_get_stack_size(emitter_t *emit) {
+    return emit->stack_size;
+}
+
+void emit_set_stack_size(emitter_t *emit, int size) {
+    if (emit->pass > PASS_1) {
+        emit->stack_size = size;
+    }
+}
+
+static void emit_pre(emitter_t *emit, int stack_size_delta) {
+    if (emit->pass > PASS_1) {
+        emit->stack_size += stack_size_delta;
+        if (emit->stack_size > emit->scope->stack_size) {
+            emit->scope->stack_size = emit->stack_size;
+        }
+    }
+    emit->last_emit_was_return_value = false;
+}
+
+int emit_label_new(emitter_t *emit) {
+    return emit->next_label++;
+}
+
+void emit_label_assign(emitter_t *emit, int l) {
+    emit_pre(emit, 0);
+    if (emit->pass > PASS_1) {
+        assert(l < emit->max_num_labels);
+        if (emit->pass == PASS_2) {
+            // assign label offset
+            assert(emit->label_offsets[l] == -1);
+            emit->label_offsets[l] = emit->code_offset;
+        } else if (emit->pass == PASS_3) {
+            // ensure label offset has not changed from PASS_2 to PASS_3
+            assert(emit->label_offsets[l] == emit->code_offset);
+            //printf("l%d: (at %d)\n", l, emit->code_offset);
+        }
+    }
+}
+
+void emit_import_name(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_qstr(emit, PYBC_IMPORT_NAME, qstr);
+}
+
+void emit_import_from(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_IMPORT_FROM, qstr);
+}
+
+void emit_import_star(emitter_t *emit) {
+    emit_pre(emit, -1);
+    emit_write_byte_1(emit, PYBC_IMPORT_STAR);
+}
+
+void emit_load_const_tok(emitter_t *emit, py_token_kind_t tok) {
+    emit_pre(emit, 1);
+    switch (tok) {
+        case PY_TOKEN_KW_FALSE: emit_write_byte_1(emit, PYBC_LOAD_CONST_FALSE); break;
+        case PY_TOKEN_KW_NONE: emit_write_byte_1(emit, PYBC_LOAD_CONST_NONE); break;
+        case PY_TOKEN_KW_TRUE: emit_write_byte_1(emit, PYBC_LOAD_CONST_TRUE); break;
+        default: assert(0);
+    }
+}
+
+void emit_load_const_small_int(emitter_t *emit, int arg) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_int(emit, PYBC_LOAD_CONST_SMALL_INT, arg);
+}
+
+void emit_load_const_int(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_INT, qstr);
+}
+
+void emit_load_const_dec(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_DEC, qstr);
+}
+
+void emit_load_const_id(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_ID, qstr);
+}
+
+void emit_load_const_str(emitter_t *emit, qstr qstr, bool bytes) {
+    emit_pre(emit, 1);
+    if (bytes) {
+        emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_BYTES, qstr);
+    } else {
+        emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_STRING, qstr);
+    }
+}
+
+void emit_load_const_verbatim_start(emitter_t *emit) {
+    emit_pre(emit, 1);
+    assert(0);
+}
+
+void emit_load_const_verbatim_int(emitter_t *emit, int val) {
+    assert(0);
+}
+
+void emit_load_const_verbatim_str(emitter_t *emit, const char *str) {
+    assert(0);
+}
+
+void emit_load_const_verbatim_strn(emitter_t *emit, const char *str, int len) {
+    assert(0);
+}
+
+void emit_load_const_verbatim_quoted_str(emitter_t *emit, qstr qstr, bool bytes) {
+    assert(0);
+}
+
+void emit_load_const_verbatim_end(emitter_t *emit) {
+    assert(0);
+}
+
+void emit_load_fast(emitter_t *emit, qstr qstr, int local_num) {
+    assert(local_num >= 0);
+    emit_pre(emit, 1);
+    switch (local_num) {
+        case 0: emit_write_byte_1(emit, PYBC_LOAD_FAST_0); break;
+        case 1: emit_write_byte_1(emit, PYBC_LOAD_FAST_1); break;
+        case 2: emit_write_byte_1(emit, PYBC_LOAD_FAST_2); break;
+        default: emit_write_byte_1_uint(emit, PYBC_LOAD_FAST_N, local_num); break;
+    }
+}
+
+void emit_load_name(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_NAME, qstr);
+}
+
+void emit_load_global(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_GLOBAL, qstr);
+}
+
+void emit_load_deref(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    assert(0);
+}
+
+void emit_load_closure(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 1);
+    assert(0);
+}
+
+void emit_load_attr(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_ATTR, qstr);
+}
+
+void emit_load_method(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_LOAD_METHOD, qstr);
+}
+
+void emit_load_build_class(emitter_t *emit) {
+    emit_pre(emit, 1);
+    emit_write_byte_1(emit, PYBC_LOAD_BUILD_CLASS);
+}
+
+void emit_store_fast(emitter_t *emit, qstr qstr, int local_num) {
+    assert(local_num >= 0);
+    emit_pre(emit, -1);
+    switch (local_num) {
+        case 0: emit_write_byte_1(emit, PYBC_STORE_FAST_0); break;
+        case 1: emit_write_byte_1(emit, PYBC_STORE_FAST_1); break;
+        case 2: emit_write_byte_1(emit, PYBC_STORE_FAST_2); break;
+        default: emit_write_byte_1_uint(emit, PYBC_STORE_FAST_N, local_num); break;
+    }
+}
+
+void emit_store_name(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_qstr(emit, PYBC_STORE_NAME, qstr);
+}
+
+void emit_store_global(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_qstr(emit, PYBC_STORE_GLOBAL, qstr);
+}
+
+void emit_store_deref(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -1);
+    assert(0);
+}
+
+void emit_store_attr(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -2);
+    emit_write_byte_1_qstr(emit, PYBC_STORE_ATTR, qstr);
+}
+
+void emit_store_locals(emitter_t *emit) {
+    emit_pre(emit, -1);
+    emit_write_byte_1(emit, PYBC_STORE_LOCALS);
+}
+
+void emit_store_subscr(emitter_t *emit) {
+    emit_pre(emit, -3);
+    emit_write_byte_1(emit, PYBC_STORE_SUBSCR);
+}
+
+void emit_delete_fast(emitter_t *emit, qstr qstr, int local_num) {
+    assert(local_num >= 0);
+    emit_pre(emit, 0);
+    emit_write_byte_1_uint(emit, PYBC_DELETE_FAST_N, local_num);
+}
+
+void emit_delete_name(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_DELETE_NAME, qstr);
+}
+
+void emit_delete_global(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_DELETE_GLOBAL, qstr);
+}
+
+void emit_delete_deref(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, qstr);
+}
+
+void emit_delete_attr(emitter_t *emit, qstr qstr) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_qstr(emit, PYBC_DELETE_ATTR, qstr);
+}
+
+void emit_delete_subscr(emitter_t *emit) {
+    emit_pre(emit, -2);
+    emit_write_byte_1(emit, PYBC_DELETE_SUBSCR);
+}
+
+void emit_dup_top(emitter_t *emit) {
+    emit_pre(emit, 1);
+    emit_write_byte_1(emit, PYBC_DUP_TOP);
+}
+
+void emit_dup_top_two(emitter_t *emit) {
+    emit_pre(emit, 2);
+    emit_write_byte_1(emit, PYBC_DUP_TOP_TWO);
+}
+
+void emit_pop_top(emitter_t *emit) {
+    emit_pre(emit, -1);
+    emit_write_byte_1(emit, PYBC_POP_TOP);
+}
+
+void emit_rot_two(emitter_t *emit) {
+    emit_pre(emit, 0);
+    emit_write_byte_1(emit, PYBC_ROT_TWO);
+}
+
+void emit_rot_three(emitter_t *emit) {
+    emit_pre(emit, 0);
+    emit_write_byte_1(emit, PYBC_ROT_THREE);
+}
+
+void emit_jump(emitter_t *emit, int label) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_label(emit, PYBC_JUMP, label);
+}
+
+void emit_pop_jump_if_true(emitter_t *emit, int label) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_TRUE, label);
+}
+
+void emit_pop_jump_if_false(emitter_t *emit, int label) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_FALSE, label);
+}
+
+void emit_jump_if_true_or_pop(emitter_t *emit, int label) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_label(emit, PYBC_JUMP_IF_TRUE_OR_POP, label);
+}
+
+void emit_jump_if_false_or_pop(emitter_t *emit, int label) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_label(emit, PYBC_JUMP_IF_FALSE_OR_POP, label);
+}
+
+void emit_setup_loop(emitter_t *emit, int label) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_label(emit, PYBC_SETUP_LOOP, label);
+}
+
+void emit_break_loop(emitter_t *emit, int label) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_label(emit, PYBC_BREAK_LOOP, label);
+}
+
+void emit_continue_loop(emitter_t *emit, int label) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_label(emit, PYBC_CONTINUE_LOOP, label);
+}
+
+void emit_setup_with(emitter_t *emit, int label) {
+    emit_pre(emit, 7);
+    emit_write_byte_1_label(emit, PYBC_SETUP_WITH, label);
+}
+
+void emit_with_cleanup(emitter_t *emit) {
+    emit_pre(emit, -7);
+    emit_write_byte_1(emit, PYBC_WITH_CLEANUP);
+}
+
+void emit_setup_except(emitter_t *emit, int label) {
+    emit_pre(emit, 6);
+    emit_write_byte_1_label(emit, PYBC_SETUP_EXCEPT, label);
+}
+
+void emit_setup_finally(emitter_t *emit, int label) {
+    emit_pre(emit, 6);
+    emit_write_byte_1_label(emit, PYBC_SETUP_FINALLY, label);
+}
+
+void emit_end_finally(emitter_t *emit) {
+    emit_pre(emit, -1);
+    emit_write_byte_1(emit, PYBC_END_FINALLY);
+}
+
+void emit_get_iter(emitter_t *emit) {
+    emit_pre(emit, 0);
+    emit_write_byte_1(emit, PYBC_GET_ITER);
+}
+
+void emit_for_iter(emitter_t *emit, int label) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_label(emit, PYBC_FOR_ITER, label);
+}
+
+void emit_for_iter_end(emitter_t *emit) {
+    emit_pre(emit, -1);
+}
+
+void emit_pop_block(emitter_t *emit) {
+    emit_pre(emit, 0);
+    emit_write_byte_1(emit, PYBC_POP_BLOCK);
+}
+
+void emit_pop_except(emitter_t *emit) {
+    emit_pre(emit, 0);
+    emit_write_byte_1(emit, PYBC_POP_EXCEPT);
+}
+
+void emit_unary_op(emitter_t *emit, rt_unary_op_t op) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_byte(emit, PYBC_UNARY_OP, op);
+}
+
+void emit_binary_op(emitter_t *emit, rt_binary_op_t op) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_byte(emit, PYBC_BINARY_OP, op);
+}
+
+void emit_compare_op(emitter_t *emit, rt_compare_op_t op) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_byte(emit, PYBC_COMPARE_OP, op);
+}
+
+void emit_build_tuple(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, 1 - n_args);
+    emit_write_byte_1_uint(emit, PYBC_BUILD_TUPLE, n_args);
+}
+
+void emit_build_list(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, 1 - n_args);
+    emit_write_byte_1_uint(emit, PYBC_BUILD_LIST, n_args);
+}
+
+void emit_list_append(emitter_t *emit, int list_stack_index) {
+    assert(list_stack_index >= 0);
+    emit_pre(emit, -1);
+    emit_write_byte_1_uint(emit, PYBC_LIST_APPEND, list_stack_index);
+}
+
+void emit_build_map(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, 1);
+    emit_write_byte_1_uint(emit, PYBC_BUILD_MAP, n_args);
+}
+
+void emit_store_map(emitter_t *emit) {
+    emit_pre(emit, -2);
+    emit_write_byte_1(emit, PYBC_STORE_MAP);
+}
+
+void emit_map_add(emitter_t *emit, int map_stack_index) {
+    assert(map_stack_index >= 0);
+    emit_pre(emit, -2);
+    emit_write_byte_1_uint(emit, PYBC_MAP_ADD, map_stack_index);
+}
+
+void emit_build_set(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, 1 - n_args);
+    emit_write_byte_1_uint(emit, PYBC_BUILD_SET, n_args);
+}
+
+void emit_set_add(emitter_t *emit, int set_stack_index) {
+    assert(set_stack_index >= 0);
+    emit_pre(emit, -1);
+    emit_write_byte_1_uint(emit, PYBC_SET_ADD, set_stack_index);
+}
+
+void emit_build_slice(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, 1 - n_args);
+    emit_write_byte_1_uint(emit, PYBC_BUILD_SLICE, n_args);
+}
+
+void emit_unpack_sequence(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, -1 + n_args);
+    emit_write_byte_1_uint(emit, PYBC_UNPACK_SEQUENCE, n_args);
+}
+
+void emit_unpack_ex(emitter_t *emit, int n_left, int n_right) {
+    assert(n_left >=0 && n_right >= 0);
+    emit_pre(emit, -1 + n_left + n_right + 1);
+    emit_write_byte_1_uint(emit, PYBC_UNPACK_EX, n_left | (n_right << 8));
+}
+
+void emit_make_function(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+    assert(n_default_params == 0 && n_dict_params == 0);
+    emit_pre(emit, 1);
+    emit_write_byte_1_uint(emit, PYBC_MAKE_FUNCTION, scope->unique_code_id);
+}
+
+void emit_make_closure(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+    assert(0);
+    emit_pre(emit, -2 - n_default_params - 2 * n_dict_params);
+    if (emit->pass == PASS_3) {
+        printf("MAKE_CLOSURE %d\n", (n_dict_params << 8) | n_default_params);
+    }
+}
+
+void emit_call_function(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+    int s = 0;
+    if (have_star_arg) {
+        s += 1;
+    }
+    if (have_dbl_star_arg) {
+        s += 1;
+    }
+    emit_pre(emit, -n_positional - 2 * n_keyword - s);
+    int op;
+    if (have_star_arg) {
+        if (have_dbl_star_arg) {
+            op = PYBC_CALL_FUNCTION_VAR_KW;
+        } else {
+            op = PYBC_CALL_FUNCTION_VAR;
+        }
+    } else {
+        if (have_dbl_star_arg) {
+            op = PYBC_CALL_FUNCTION_KW;
+        } else {
+            op = PYBC_CALL_FUNCTION;
+        }
+    }
+    emit_write_byte_1_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
+}
+
+void emit_call_method(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+    int s = 0;
+    if (have_star_arg) {
+        s += 1;
+    }
+    if (have_dbl_star_arg) {
+        s += 1;
+    }
+    emit_pre(emit, -n_positional - 2 * n_keyword - s);
+    int op;
+    if (have_star_arg) {
+        if (have_dbl_star_arg) {
+            op = PYBC_CALL_METHOD_VAR_KW;
+        } else {
+            op = PYBC_CALL_METHOD_VAR;
+        }
+    } else {
+        if (have_dbl_star_arg) {
+            op = PYBC_CALL_METHOD_KW;
+        } else {
+            op = PYBC_CALL_METHOD;
+        }
+    }
+    emit_write_byte_1_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
+}
+
+void emit_return_value(emitter_t *emit) {
+    emit_pre(emit, -1);
+    emit->last_emit_was_return_value = true;
+    emit_write_byte_1(emit, PYBC_RETURN_VALUE);
+}
+
+void emit_raise_varargs(emitter_t *emit, int n_args) {
+    assert(n_args >= 0);
+    emit_pre(emit, -n_args);
+    emit_write_byte_1_uint(emit, PYBC_RAISE_VARARGS, n_args);
+}
+
+void emit_yield_value(emitter_t *emit) {
+    emit_pre(emit, 0);
+    if (emit->pass == PASS_2) {
+        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+    }
+    emit_write_byte_1(emit, PYBC_YIELD_VALUE);
+}
+
+void emit_yield_from(emitter_t *emit) {
+    emit_pre(emit, -1);
+    if (emit->pass == PASS_2) {
+        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+    }
+    emit_write_byte_1(emit, PYBC_YIELD_FROM);
+}
+
+#endif // EMIT_DO_BC
