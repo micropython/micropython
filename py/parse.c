@@ -228,7 +228,7 @@ static void push_result_token(parser_t *parser, const py_lexer_t *lex) {
         }
         if (dec) {
             pn = py_parse_node_new_leaf(PY_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
-        } else if (small_int && -0x10000000 <= int_val && int_val <= 0xfffffff) { // XXX check this range formula!
+        } else if (small_int && -0x800000 <= int_val && int_val <= 0x7fffff) { // XXX check this range formula!
             pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, int_val);
         } else {
             pn = py_parse_node_new_leaf(PY_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));
