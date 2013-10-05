@@ -30,6 +30,7 @@ typedef enum {
 #define EMIT_OPT_NONE           (0)
 #define EMIT_OPT_BYTE_CODE      (1)
 #define EMIT_OPT_NATIVE_PYTHON  (2)
+#define EMIT_OPT_ASM_THUMB      (3)
 
 typedef struct _compiler_t {
     qstr qstr___class__;
@@ -41,6 +42,7 @@ typedef struct _compiler_t {
     qstr qstr_assertion_error;
     qstr qstr_micropython;
     qstr qstr_native;
+    qstr qstr_asm_thumb;
 
     pass_kind_t pass;
 
@@ -759,6 +761,8 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
     qstr attr = PY_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == comp->qstr_native) {
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
+    } else if (attr == comp->qstr_asm_thumb) {
+        *emit_options = EMIT_OPT_ASM_THUMB;
     } else {
         printf("SyntaxError: invalid micropython decorator\n");
     }
@@ -2551,6 +2555,7 @@ void py_compile(py_parse_node_t pn) {
     comp->qstr_assertion_error = qstr_from_str_static("AssertionError");
     comp->qstr_micropython = qstr_from_str_static("micropython");
     comp->qstr_native = qstr_from_str_static("native");
+    comp->qstr_asm_thumb = qstr_from_str_static("asm_thumb");
 
     comp->max_num_labels = 0;
     comp->break_label = 0;
@@ -2587,6 +2592,9 @@ void py_compile(py_parse_node_t pn) {
                 comp->emit = emit_x64;
                 comp->emit_method_table = &emit_x64_method_table;
                 break;
+
+            //case EMIT_OPT_ASM_THUMB:
+                //if (em
 
             default:
                 if (emit_bc == NULL) {

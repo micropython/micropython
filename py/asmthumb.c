@@ -28,7 +28,7 @@ struct _asm_thumb_t {
     uint stack_adjust;
 };
 
-asm_thumb_t *asm_thumb_new() {
+asm_thumb_t *asm_thumb_new(uint max_num_labels) {
     asm_thumb_t *as;
 
     as = m_new(asm_thumb_t, 1);
@@ -36,7 +36,8 @@ asm_thumb_t *asm_thumb_new() {
     as->code_offset = 0;
     as->code_size = 0;
     as->code_base = NULL;
-    as->label_offsets = NULL;
+    as->max_num_labels = max_num_labels;
+    as->label_offsets = m_new(int, max_num_labels);
     as->num_locals = 0;
 
     return as;
@@ -65,23 +66,13 @@ void asm_thumb_start_pass(asm_thumb_t *as, int pass) {
     as->pass = pass;
     as->code_offset = 0;
     as->next_label = 1;
-    if (pass == ASM_THUMB_PASS_1) {
-        as->max_num_labels = 0;
-    } else {
-        if (pass == ASM_THUMB_PASS_2) {
-            memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
-        }
+    if (pass == ASM_THUMB_PASS_2) {
+        memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
     }
 }
 
 void asm_thumb_end_pass(asm_thumb_t *as) {
-    if (as->pass == ASM_THUMB_PASS_1) {
-        // calculate number of labels need
-        if (as->next_label > as->max_num_labels) {
-            as->max_num_labels = as->next_label;
-        }
-        as->label_offsets = m_new(int, as->max_num_labels);
-    } else if (as->pass == ASM_THUMB_PASS_2) {
+    if (as->pass == ASM_THUMB_PASS_2) {
         // calculate size of code in bytes
         as->code_size = as->code_offset;
         as->code_base = m_new(byte, as->code_size);
@@ -226,18 +217,21 @@ int asm_thumb_label_new(asm_thumb_t *as) {
 }
 
 void asm_thumb_label_assign(asm_thumb_t *as, int label) {
-    if (as->pass > ASM_THUMB_PASS_1) {
-        assert(label < as->max_num_labels);
-        if (as->pass == ASM_THUMB_PASS_2) {
-            // assign label offset
-            assert(as->label_offsets[label] == -1);
-            as->label_offsets[label] = as->code_offset;
-        } else if (as->pass == ASM_THUMB_PASS_3) {
-            // ensure label offset has not changed from PASS_2 to PASS_3
-            //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
-            assert(as->label_offsets[label] == as->code_offset);
-        }
+    assert(label < as->max_num_labels);
+    if (as->pass == ASM_THUMB_PASS_2) {
+        // assign label offset
+        assert(as->label_offsets[label] == -1);
+        as->label_offsets[label] = as->code_offset;
+    } else if (as->pass == ASM_THUMB_PASS_3) {
+        // ensure label offset has not changed from PASS_2 to PASS_3
+        //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
+        assert(as->label_offsets[label] == as->code_offset);
     }
+}
+
+static int get_label_dest(asm_thumb_t *as, int label) {
+    assert(label < as->max_num_labels);
+    return as->label_offsets[label];
 }
 
 // the i8 value will be zero extended into the r32 register!
@@ -339,23 +333,21 @@ void asm_thumb_ite_ge(asm_thumb_t *as) {
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
 
 void asm_thumb_b_label(asm_thumb_t *as, int label) {
-    if (as->pass > ASM_THUMB_PASS_1) {
-        int dest = as->label_offsets[label];
-        int rel = dest - as->code_offset;
-        rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-        if (dest >= 0 && rel <= -4) {
-            // is a backwards jump, so we know the size of the jump on the first pass
-            // calculate rel assuming 12 bit relative jump
-            if (SIGNED_FIT12(rel)) {
-                asm_thumb_write_op16(as, OP_B(rel));
-            } else {
-                goto large_jump;
-            }
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (dest >= 0 && rel <= -4) {
+        // is a backwards jump, so we know the size of the jump on the first pass
+        // calculate rel assuming 12 bit relative jump
+        if (SIGNED_FIT12(rel)) {
+            asm_thumb_write_op16(as, OP_B(rel));
         } else {
-            // is a forwards jump, so need to assume it's large
-            large_jump:
-            asm_thumb_write_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
+            goto large_jump;
         }
+    } else {
+        // is a forwards jump, so need to assume it's large
+        large_jump:
+        asm_thumb_write_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     }
 }
 
@@ -372,23 +364,21 @@ void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label) {
     asm_thumb_write_op16(as, OP_CMP_REG_IMM(rlo, 0));
 
     // branch if equal
-    if (as->pass > ASM_THUMB_PASS_1) {
-        int dest = as->label_offsets[label];
-        int rel = dest - as->code_offset;
-        rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-        if (dest >= 0 && rel <= -4) {
-            // is a backwards jump, so we know the size of the jump on the first pass
-            // calculate rel assuming 12 bit relative jump
-            if (SIGNED_FIT9(rel)) {
-                asm_thumb_write_op16(as, OP_BEQ(rel));
-            } else {
-                goto large_jump;
-            }
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (dest >= 0 && rel <= -4) {
+        // is a backwards jump, so we know the size of the jump on the first pass
+        // calculate rel assuming 12 bit relative jump
+        if (SIGNED_FIT9(rel)) {
+            asm_thumb_write_op16(as, OP_BEQ(rel));
         } else {
-            // is a forwards jump, so need to assume it's large
-            large_jump:
-            asm_thumb_write_op32(as, OP_BEQW_HI(rel), OP_BEQW_LO(rel));
+            goto large_jump;
         }
+    } else {
+        // is a forwards jump, so need to assume it's large
+        large_jump:
+        asm_thumb_write_op32(as, OP_BEQW_HI(rel), OP_BEQW_LO(rel));
     }
 }
 
