@@ -52,7 +52,7 @@ static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
 
 static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, py_parse_node_t *pn_params) {
     if (n_params > 4) {
-        printf("SyntaxError: can only have up to 3 parameters to inline assembler\n");
+        printf("SyntaxError: can only have up to 4 parameters to inline thumb assembly\n");
         return 0;
     }
     for (int i = 0; i < n_params; i++) {
@@ -62,7 +62,7 @@ static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params,
         }
         const char *p = qstr_str(PY_PARSE_NODE_LEAF_ARG(pn_params[i]));
         if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
-            printf("SyntaxError: parameter %d to inline assembler must be r%d\n", i, i);
+            printf("SyntaxError: parameter %d to inline assembler must be r%d\n", i + 1, i);
             return 0;
         }
     }
@@ -128,6 +128,9 @@ static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_a
 
 static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
+    // one_args =
+    // "b", LAB, asm_thumb_b_n,
+    // "bgt", LAB, asm_thumb_bgt_n,
     // two_args =
     // "movs", RLO, I8, asm_thumb_movs_reg_i8
     // "movw", REG, REG, asm_thumb_movw_reg_i16
@@ -135,7 +138,14 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
     // "subs", RLO, RLO, I3, asm_thumb_subs_reg_reg_i3
 
     // 1 arg
-    if (strcmp(qstr_str(op), "bgt") == 0) {
+    if (strcmp(qstr_str(op), "b") == 0) {
+        if (!check_n_arg(op, n_args, 1)) {
+            return;
+        }
+        int label_num = get_arg_label(emit, op, pn_args, 0);
+        // TODO check that this succeeded, ie branch was within range
+        asm_thumb_b_n(emit->as, label_num);
+    } else if (strcmp(qstr_str(op), "bgt") == 0) {
         if (!check_n_arg(op, n_args, 1)) {
             return;
         }

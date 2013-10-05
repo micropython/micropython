@@ -288,6 +288,19 @@ void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
     asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, i8));
 }
 
+#define OP_B_N(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
+
+void asm_thumb_b_n(asm_thumb_t *as, int label) {
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (SIGNED_FIT12(rel)) {
+        asm_thumb_write_op16(as, OP_B_N(rel));
+    } else {
+        printf("asm_thumb_b_n: branch does not fit in 12 bits\n");
+    }
+}
+
 #define OP_BEQ_N(byte_offset) (0xd000 | (((byte_offset) >> 1) & 0x00ff))
 #define OP_BNE_N(byte_offset) (0xd100 | (((byte_offset) >> 1) & 0x00ff))
 #define OP_BCS_N(byte_offset) (0xd200 | (((byte_offset) >> 1) & 0x00ff))
@@ -371,7 +384,6 @@ void asm_thumb_ite_ge(asm_thumb_t *as) {
     asm_thumb_write_op16(as, 0xbfac);
 }
 
-#define OP_B(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
 // this could be wrong, because it should have a range of +/- 16MiB...
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
@@ -384,7 +396,7 @@ void asm_thumb_b_label(asm_thumb_t *as, int label) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 12 bit relative jump
         if (SIGNED_FIT12(rel)) {
-            asm_thumb_write_op16(as, OP_B(rel));
+            asm_thumb_write_op16(as, OP_B_N(rel));
         } else {
             goto large_jump;
         }

@@ -49,6 +49,7 @@ void asm_thumb_movt_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src);
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
 void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src);
 void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8);
+void asm_thumb_b_n(asm_thumb_t *as, int label);
 void asm_thumb_bgt_n(asm_thumb_t *as, int label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32_src); // convenience
