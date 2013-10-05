@@ -50,6 +50,25 @@ static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     }
 }
 
+static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, py_parse_node_t *pn_params) {
+    if (n_params > 4) {
+        printf("SyntaxError: can only have up to 3 parameters to inline assembler\n");
+        return 0;
+    }
+    for (int i = 0; i < n_params; i++) {
+        if (!PY_PARSE_NODE_IS_ID(pn_params[i])) {
+            printf("SyntaxError: parameter to inline assembler must be an identifier %d\n", PY_PARSE_NODE_STRUCT_KIND((py_parse_node_struct_t*)pn_params[i]));
+            return 0;
+        }
+        const char *p = qstr_str(PY_PARSE_NODE_LEAF_ARG(pn_params[i]));
+        if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
+            printf("SyntaxError: parameter %d to inline assembler must be r%d\n", i, i);
+            return 0;
+        }
+    }
+    return n_params;
+}
+
 static void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     emit->label_lookup[label_num] = label_id;
@@ -65,12 +84,12 @@ static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
     }
 }
 
-static uint get_arg_rlo(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num) {
-    if (!PY_PARSE_NODE_IS_ID(pn_arg[wanted_arg_num])) {
+static uint get_arg_rlo(qstr op, py_parse_node_t *pn_args, int wanted_arg_num) {
+    if (!PY_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    qstr reg_qstr = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    qstr reg_qstr = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     const char *reg_str = qstr_str(reg_qstr);
     if (!(strlen(reg_str) == 2 && reg_str[0] == 'r' && ('0' <= reg_str[1] && reg_str[1] <= '7'))) {
         printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
@@ -79,12 +98,12 @@ static uint get_arg_rlo(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num) {
     return reg_str[1] - '0';
 }
 
-static int get_arg_i(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num, int fit_mask) {
-    if (!PY_PARSE_NODE_IS_SMALL_INT(pn_arg[wanted_arg_num])) {
+static int get_arg_i(qstr op, py_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
+    if (!PY_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    int i = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    int i = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     if ((i & (~fit_mask)) != 0) {
         printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", qstr_str(op), i, fit_mask);
         return 0;
@@ -92,12 +111,12 @@ static int get_arg_i(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num, int f
     return i;
 }
 
-static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_arg, int wanted_arg_num) {
-    if (!PY_PARSE_NODE_IS_ID(pn_arg[wanted_arg_num])) {
+static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_args, int wanted_arg_num) {
+    if (!PY_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a label in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    qstr label_qstr = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    qstr label_qstr = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     for (int i = 0; i < emit->max_num_labels; i++) {
         if (emit->label_lookup[i] == label_qstr) {
             return i;
@@ -107,7 +126,7 @@ static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_a
     return 0;
 }
 
-static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_arg) {
+static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // two_args =
     // "movs", RLO, I8, asm_thumb_movs_reg_i8
@@ -120,7 +139,8 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
         if (!check_n_arg(op, n_args, 1)) {
             return;
         }
-        int label_num = get_arg_label(emit, op, pn_arg, 0);
+        int label_num = get_arg_label(emit, op, pn_args, 0);
+        // TODO check that this succeeded, ie branch was within range
         asm_thumb_bgt_n(emit->as, label_num);
 
     // 2 args
@@ -128,22 +148,22 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
         if (!check_n_arg(op, n_args, 2)) {
             return;
         }
-        uint rlo_dest = get_arg_rlo(op, pn_arg, 0);
-        int i_src = get_arg_i(op, pn_arg, 1, 0xff);
+        uint rlo_dest = get_arg_rlo(op, pn_args, 0);
+        int i_src = get_arg_i(op, pn_args, 1, 0xff);
         asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
     } else if (strcmp(qstr_str(op), "movw") == 0) {
         if (!check_n_arg(op, n_args, 2)) {
             return;
         }
-        uint rlo_dest = get_arg_rlo(op, pn_arg, 0); // TODO can be reg lo or hi
-        int i_src = get_arg_i(op, pn_arg, 1, 0xffff);
+        uint rlo_dest = get_arg_rlo(op, pn_args, 0); // TODO can be reg lo or hi
+        int i_src = get_arg_i(op, pn_args, 1, 0xffff);
         asm_thumb_movw_reg_i16(emit->as, rlo_dest, i_src);
     } else if (strcmp(qstr_str(op), "cmp") == 0) {
         if (!check_n_arg(op, n_args, 2)) {
             return;
         }
-        uint rlo = get_arg_rlo(op, pn_arg, 0);
-        int i8 = get_arg_i(op, pn_arg, 1, 0xff);
+        uint rlo = get_arg_rlo(op, pn_args, 0);
+        int i8 = get_arg_i(op, pn_args, 1, 0xff);
         asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
 
     // 3 args
@@ -151,9 +171,9 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
         if (!check_n_arg(op, n_args, 3)) {
             return;
         }
-        uint rlo_dest = get_arg_rlo(op, pn_arg, 0);
-        uint rlo_src = get_arg_rlo(op, pn_arg, 1);
-        int i3_src = get_arg_i(op, pn_arg, 2, 0x7);
+        uint rlo_dest = get_arg_rlo(op, pn_args, 0);
+        uint rlo_src = get_arg_rlo(op, pn_args, 1);
+        int i3_src = get_arg_i(op, pn_args, 2, 0x7);
         asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
 
     // unknown op
@@ -166,6 +186,7 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
     emit_inline_thumb_start_pass,
     emit_inline_thumb_end_pass,
+    emit_inline_thumb_count_params,
     emit_inline_thumb_label,
     emit_inline_thumb_op,
 };

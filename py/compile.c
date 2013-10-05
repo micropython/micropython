@@ -2507,24 +2507,29 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
         return;
     }
 
+    if (comp->pass > PASS_1) {
+        EMIT_INLINE_ASM(start_pass, comp->pass, comp->scope_cur);
+    }
+
     // get the function definition parse node
     assert(PY_PARSE_NODE_IS_STRUCT(scope->pn));
     py_parse_node_struct_t *pns = (py_parse_node_struct_t*)scope->pn;
     assert(PY_PARSE_NODE_STRUCT_KIND(pns) == PN_funcdef);
 
-    //qstr f_id = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // name
+    //qstr f_id = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // function name
 
-    scope->num_params = 0;
-    assert(PY_PARSE_NODE_IS_NULL(pns->nodes[1])); // arguments
+    // parameters are in pns->nodes[1]
+    if (comp->pass == PASS_2) {
+        py_parse_node_t *pn_params;
+        int n_params = list_get(&pns->nodes[1], PN_typedargslist, &pn_params);
+        scope->num_params = EMIT_INLINE_ASM(count_params, n_params, pn_params);
+    }
+
     assert(PY_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
 
     py_parse_node_t pn_body = pns->nodes[3]; // body
     py_parse_node_t *nodes;
     int num = list_get(&pn_body, PN_suite_block_stmts, &nodes);
-
-    if (comp->pass > PASS_1) {
-        EMIT_INLINE_ASM(start_pass, comp->pass, comp->scope_cur);
-    }
 
     if (comp->pass == PASS_3) {
         //printf("----\n");
