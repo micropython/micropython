@@ -29,9 +29,15 @@ struct _emit_t {
     int *label_offsets;
 };
 
-// forward declarations
-static const emit_method_table_t emit_cpy_method_table;
+// forward declaration
 static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes);
+
+emit_t *emit_cpython_new(uint max_num_labels) {
+    emit_t *emit = m_new(emit_t, 1);
+    emit->max_num_labels = max_num_labels;
+    emit->label_offsets = m_new(int, max_num_labels);
+    return emit;
+}
 
 static void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
 }
@@ -68,15 +74,15 @@ static void emit_cpy_set_stack_size(emit_t *emit, int size) {
 }
 
 static void emit_cpy_load_id(emit_t *emit, qstr qstr) {
-    emit_common_load_id(emit, &emit_cpy_method_table, emit->scope, qstr);
+    emit_common_load_id(emit, &emit_cpython_method_table, emit->scope, qstr);
 }
 
 static void emit_cpy_store_id(emit_t *emit, qstr qstr) {
-    emit_common_store_id(emit, &emit_cpy_method_table, emit->scope, qstr);
+    emit_common_store_id(emit, &emit_cpython_method_table, emit->scope, qstr);
 }
 
 static void emit_cpy_delete_id(emit_t *emit, qstr qstr) {
-    emit_common_delete_id(emit, &emit_cpy_method_table, emit->scope, qstr);
+    emit_common_delete_id(emit, &emit_cpython_method_table, emit->scope, qstr);
 }
 
 static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
@@ -260,6 +266,13 @@ static void emit_cpy_load_const_verbatim_end(emit_t *emit) {
     }
 }
 
+static void emit_cpy_load_fast(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == PASS_3) {
+        printf("LOAD_FAST %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
 static void emit_cpy_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
@@ -271,13 +284,6 @@ static void emit_cpy_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_load_fast(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_FAST %s\n", qstr_str(qstr));
     }
 }
 
@@ -313,6 +319,13 @@ static void emit_cpy_load_build_class(emit_t *emit) {
     }
 }
 
+static void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, -1, 3);
+    if (emit->pass == PASS_3) {
+        printf("STORE_FAST %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
 static void emit_cpy_store_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
@@ -324,13 +337,6 @@ static void emit_cpy_store_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("STORE_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, -1, 3);
-    if (emit->pass == PASS_3) {
-        printf("STORE_FAST %s\n", qstr_str(qstr));
     }
 }
 
@@ -362,6 +368,13 @@ static void emit_cpy_store_subscr(emit_t *emit) {
     }
 }
 
+static void emit_cpy_delete_fast(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 0, 3);
+    if (emit->pass == PASS_3) {
+        printf("DELETE_FAST %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
 static void emit_cpy_delete_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
@@ -373,13 +386,6 @@ static void emit_cpy_delete_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("DELETE_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_delete_fast(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 0, 3);
-    if (emit->pass == PASS_3) {
-        printf("DELETE_FAST %s\n", qstr_str(qstr));
     }
 }
 
@@ -825,7 +831,7 @@ static void emit_cpy_yield_from(emit_t *emit) {
     }
 }
 
-static const emit_method_table_t emit_cpy_method_table = {
+const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_set_native_types,
     emit_cpy_start_pass,
     emit_cpy_end_pass,
@@ -920,14 +926,5 @@ static const emit_method_table_t emit_cpy_method_table = {
     emit_cpy_yield_value,
     emit_cpy_yield_from,
 };
-
-void emit_cpython_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
-    emit_t *emit = m_new(emit_t, 1);
-    emit->max_num_labels = max_num_labels;
-    emit->label_offsets = m_new(int, max_num_labels);
-
-    *emit_out = emit;
-    *emit_method_table_out = &emit_cpy_method_table;
-}
 
 #endif // EMIT_ENABLE_CPY

@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 
     py_lexer_free(lex);
 
-    if (0) {
+    if (1) {
         // execute it
         py_obj_t module_fun = rt_make_function_from_id(1);
         if (module_fun != py_const_none) {

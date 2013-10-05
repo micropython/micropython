@@ -32,8 +32,15 @@ struct _emit_t {
     byte dummy_data[8];
 };
 
-// forward declaration
-static const emit_method_table_t emit_bc_method_table;
+emit_t *emit_bc_new(uint max_num_labels) {
+    emit_t *emit = m_new(emit_t, 1);
+    emit->max_num_labels = max_num_labels;
+    emit->label_offsets = m_new(uint, emit->max_num_labels);
+    emit->code_offset = 0;
+    emit->code_size = 0;
+    emit->code_base = NULL;
+    return emit;
+}
 
 uint emit_bc_get_code_size(emit_t* emit) {
     return emit->code_size;
@@ -672,7 +679,7 @@ static void emit_bc_yield_from(emit_t *emit) {
     emit_write_byte_1(emit, PYBC_YIELD_FROM);
 }
 
-static const emit_method_table_t emit_bc_method_table = {
+const emit_method_table_t emit_bc_method_table = {
     emit_bc_set_native_types,
     emit_bc_start_pass,
     emit_bc_end_pass,
@@ -767,15 +774,3 @@ static const emit_method_table_t emit_bc_method_table = {
     emit_bc_yield_value,
     emit_bc_yield_from,
 };
-
-void emit_bc_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
-    emit_t *emit = m_new(emit_t, 1);
-    emit->max_num_labels = max_num_labels;
-    emit->label_offsets = m_new(uint, emit->max_num_labels);
-    emit->code_offset = 0;
-    emit->code_size = 0;
-    emit->code_base = NULL;
-
-    *emit_out = emit;
-    *emit_method_table_out = &emit_bc_method_table;
-}

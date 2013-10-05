@@ -9,8 +9,8 @@
 #include "runtime.h"
 #include "vm.h"
 
-#define DEBUG_printf(args...) (void)0
-//#define DEBUG_printf(args...) printf(args)
+//#define DEBUG_printf(args...) (void)0
+#define DEBUG_printf(args...) printf(args)
 
 #define DEBUG_OP_printf(args...) (void)0
 //#define DEBUG_OP_printf(args...) printf(args)
@@ -423,6 +423,12 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
             case O_FLOAT:
                 return "float";
 #endif
+            case O_FUN_0:
+            case O_FUN_1:
+            case O_FUN_2:
+            case O_FUN_N:
+            case O_FUN_BC:
+                return "function";
             case O_LIST:
                 return "list";
             case O_SET:
@@ -714,12 +720,12 @@ py_obj_t rt_call_function_0(py_obj_t fun) {
 py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
     if (IS_O(fun, O_FUN_1)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p...\n", o->u_fun.fun);
+        DEBUG_OP_printf("calling native %p with 1 arg\n", o->u_fun.fun);
         return ((py_fun_1_t)o->u_fun.fun)(arg);
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_bc.n_args == 1);
-        DEBUG_OP_printf("calling byte code %p...\n", o->u_fun_bc.code);
+        DEBUG_OP_printf("calling byte code %p with 1 arg\n", o->u_fun_bc.code);
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &arg, 1);
     } else if (IS_O(fun, O_BOUND_METH)) {
         py_obj_base_t *o = fun;

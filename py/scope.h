@@ -47,9 +47,10 @@ typedef struct _scope_t {
     int num_locals;
     int stack_size;
     uint unique_code_id;
+    uint emit_options;
 } scope_t;
 
-scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id);
+scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id, uint emit_options);
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added);
 id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);

@@ -27,6 +27,10 @@ typedef enum {
 
 #define EMIT(fun, arg...) (comp->emit_method_table->fun(comp->emit, ##arg))
 
+#define EMIT_OPT_NONE           (0)
+#define EMIT_OPT_BYTE_CODE      (1)
+#define EMIT_OPT_NATIVE_PYTHON  (2)
+
 typedef struct _compiler_t {
     qstr qstr___class__;
     qstr qstr___locals__;
@@ -35,6 +39,8 @@ typedef struct _compiler_t {
     qstr qstr___qualname__;
     qstr qstr___doc__;
     qstr qstr_assertion_error;
+    qstr qstr_micropython;
+    qstr qstr_native;
 
     pass_kind_t pass;
 
@@ -56,8 +62,8 @@ typedef struct _compiler_t {
     scope_t *scope_head;
     scope_t *scope_cur;
 
-    emit_t *emit;
-    const emit_method_table_t *emit_method_table;
+    emit_t *emit;                                   // current emitter
+    const emit_method_table_t *emit_method_table;   // current emit method table
 } compiler_t;
 
 py_parse_node_t fold_constants(py_parse_node_t pn) {
@@ -165,8 +171,8 @@ static int comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
-static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t pn) {
-    scope_t *scope = scope_new(kind, pn, rt_get_new_unique_code_id());
+static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t pn, uint emit_options) {
+    scope_t *scope = scope_new(kind, pn, rt_get_new_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -661,10 +667,10 @@ void compile_funcdef_param(compiler_t *comp, py_parse_node_t pn) {
 
 // leaves function object on stack
 // returns function name
-qstr compile_funcdef_helper(compiler_t *comp, py_parse_node_struct_t *pns) {
+qstr compile_funcdef_helper(compiler_t *comp, py_parse_node_struct_t *pns, uint emit_options) {
     if (comp->pass == PASS_1) {
         // create a new scope for this function
-        scope_t *s = scope_new_and_link(comp, SCOPE_FUNCTION, (py_parse_node_t)pns);
+        scope_t *s = scope_new_and_link(comp, SCOPE_FUNCTION, (py_parse_node_t)pns, emit_options);
         // store the function scope so the compiling function can use it at each pass
         pns->nodes[4] = (py_parse_node_t)s;
     }
@@ -705,10 +711,10 @@ qstr compile_funcdef_helper(compiler_t *comp, py_parse_node_struct_t *pns) {
 
 // leaves class object on stack
 // returns class name
-qstr compile_classdef_helper(compiler_t *comp, py_parse_node_struct_t *pns) {
+qstr compile_classdef_helper(compiler_t *comp, py_parse_node_struct_t *pns, uint emit_options) {
     if (comp->pass == PASS_1) {
         // create a new scope for this class
-        scope_t *s = scope_new_and_link(comp, SCOPE_CLASS, (py_parse_node_t)pns);
+        scope_t *s = scope_new_and_link(comp, SCOPE_CLASS, (py_parse_node_t)pns, emit_options);
         // store the class scope so the compiling function can use it at each pass
         pns->nodes[3] = (py_parse_node_t)s;
     }
@@ -739,24 +745,65 @@ qstr compile_classdef_helper(compiler_t *comp, py_parse_node_struct_t *pns) {
     return cscope->simple_name;
 }
 
+// returns true if it was a built-in decorator (even if the built-in had an error)
+static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_node_t *name_nodes, uint *emit_options) {
+    if (PY_PARSE_NODE_LEAF_ARG(name_nodes[0]) != comp->qstr_micropython) {
+        return false;
+    }
+
+    if (name_len != 2) {
+        printf("SyntaxError: invalid micropython decorator\n");
+        return true;
+    }
+
+    qstr attr = PY_PARSE_NODE_LEAF_ARG(name_nodes[1]);
+    if (attr == comp->qstr_native) {
+        *emit_options = EMIT_OPT_NATIVE_PYTHON;
+    } else {
+        printf("SyntaxError: invalid micropython decorator\n");
+    }
+
+    return true;
+}
+
 void compile_decorated(compiler_t *comp, py_parse_node_struct_t *pns) {
     // get the list of decorators
     py_parse_node_t *nodes;
     int n = list_get(&pns->nodes[0], PN_decorators, &nodes);
 
-    // load each decorator
+    // inherit emit options for this function/class definition
+    uint emit_options = comp->scope_cur->emit_options;
+
+    // compile each decorator
+    int num_built_in_decorators = 0;
     for (int i = 0; i < n; i++) {
         assert(PY_PARSE_NODE_IS_STRUCT_KIND(nodes[i], PN_decorator)); // should be
         py_parse_node_struct_t *pns_decorator = (py_parse_node_struct_t*)nodes[i];
-        py_parse_node_t *nodes2;
-        int n2 = list_get(&pns_decorator->nodes[0], PN_dotted_name, &nodes2);
-        compile_node(comp, nodes2[0]);
-        for (int i = 1; i < n2; i++) {
-            EMIT(load_attr, PY_PARSE_NODE_LEAF_ARG(nodes2[i]));
-        }
-        if (!PY_PARSE_NODE_IS_NULL(pns_decorator->nodes[1])) {
-            // first call the function with these arguments
-            compile_node(comp, pns_decorator->nodes[1]);
+
+        // nodes[0] contains the decorator function, which is a dotted name
+        py_parse_node_t *name_nodes;
+        int name_len = list_get(&pns_decorator->nodes[0], PN_dotted_name, &name_nodes);
+
+        // check for built-in decorators
+        if (compile_built_in_decorator(comp, name_len, name_nodes, &emit_options)) {
+            // this was a built-in
+            num_built_in_decorators += 1;
+
+        } else {
+            // not a built-in, compile normally
+
+            // compile the decorator function
+            compile_node(comp, name_nodes[0]);
+            for (int i = 1; i < name_len; i++) {
+                assert(PY_PARSE_NODE_IS_ID(name_nodes[i])); // should be
+                EMIT(load_attr, PY_PARSE_NODE_LEAF_ARG(name_nodes[i]));
+            }
+
+            // nodes[1] contains arguments to the decorator function, if any
+            if (!PY_PARSE_NODE_IS_NULL(pns_decorator->nodes[1])) {
+                // call the decorator function with the arguments in nodes[1]
+                compile_node(comp, pns_decorator->nodes[1]);
+            }
         }
     }
 
@@ -764,16 +811,16 @@ void compile_decorated(compiler_t *comp, py_parse_node_struct_t *pns) {
     py_parse_node_struct_t *pns_body = (py_parse_node_struct_t*)pns->nodes[1];
     qstr body_name = 0;
     if (PY_PARSE_NODE_STRUCT_KIND(pns_body) == PN_funcdef) {
-        body_name = compile_funcdef_helper(comp, pns_body);
+        body_name = compile_funcdef_helper(comp, pns_body, emit_options);
     } else if (PY_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef) {
-        body_name = compile_classdef_helper(comp, pns_body);
+        body_name = compile_classdef_helper(comp, pns_body, emit_options);
     } else {
         // shouldn't happen
         assert(0);
     }
 
     // call each decorator
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n - num_built_in_decorators; i++) {
         EMIT(call_function, 1, 0, false, false);
     }
 
@@ -782,7 +829,7 @@ void compile_decorated(compiler_t *comp, py_parse_node_struct_t *pns) {
 }
 
 void compile_funcdef(compiler_t *comp, py_parse_node_struct_t *pns) {
-    qstr fname = compile_funcdef_helper(comp, pns);
+    qstr fname = compile_funcdef_helper(comp, pns, comp->scope_cur->emit_options);
     // store function object into function name
     EMIT(store_id, fname);
 }
@@ -1514,7 +1561,7 @@ void compile_lambdef(compiler_t *comp, py_parse_node_struct_t *pns) {
 
     if (comp->pass == PASS_1) {
         // create a new scope for this lambda
-        scope_t *s = scope_new_and_link(comp, SCOPE_LAMBDA, (py_parse_node_t)pns);
+        scope_t *s = scope_new_and_link(comp, SCOPE_LAMBDA, (py_parse_node_t)pns, comp->scope_cur->emit_options);
         // store the lambda scope so the compiling function (this one) can use it at each pass
         pns->nodes[2] = (py_parse_node_t)s;
     }
@@ -1780,7 +1827,7 @@ void compile_comprehension(compiler_t *comp, py_parse_node_struct_t *pns, scope_
 
     if (comp->pass == PASS_1) {
         // create a new scope for this comprehension
-        scope_t *s = scope_new_and_link(comp, kind, (py_parse_node_t)pns);
+        scope_t *s = scope_new_and_link(comp, kind, (py_parse_node_t)pns, comp->scope_cur->emit_options);
         // store the comprehension scope so the compiling function (this one) can use it at each pass
         pns_comp_for->nodes[3] = (py_parse_node_t)s;
     }
@@ -2048,7 +2095,7 @@ void compile_dictorsetmaker_item(compiler_t *comp, py_parse_node_struct_t *pns) 
 }
 
 void compile_classdef(compiler_t *comp, py_parse_node_struct_t *pns) {
-    qstr cname = compile_classdef_helper(comp, pns);
+    qstr cname = compile_classdef_helper(comp, pns, comp->scope_cur->emit_options);
     // store class object into class name
     EMIT(store_id, cname);
 }
@@ -2332,6 +2379,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(PY_PARSE_NODE_STRUCT_KIND(pns) == PN_funcdef);
 
         // work out number of parameters, keywords and default parameters, and add them to the id_info array
+        // must be done before compiling the body so that arguments are numbered first (for LOAD_FAST etc)
         if (comp->pass == PASS_1) {
             comp->have_bare_star = false;
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
@@ -2351,6 +2399,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(PY_PARSE_NODE_STRUCT_NUM_NODES(pns) == 3);
 
         // work out number of parameters, keywords and default parameters, and add them to the id_info array
+        // must be done before compiling the body so that arguments are numbered first (for LOAD_FAST etc)
         if (comp->pass == PASS_1) {
             comp->have_bare_star = false;
             apply_to_single_or_list(comp, pns->nodes[0], PN_varargslist, compile_scope_lambda_param);
@@ -2367,7 +2416,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_comp_for));
         py_parse_node_struct_t *pns_comp_for = (py_parse_node_struct_t*)pns->nodes[1];
 
-        qstr qstr_arg = qstr_from_strn_copy(".0", 2);
+        qstr qstr_arg = qstr_from_str_static(".0");
         if (comp->pass == PASS_1) {
             bool added;
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);
@@ -2493,13 +2542,15 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 void py_compile(py_parse_node_t pn) {
     compiler_t *comp = m_new(compiler_t, 1);
 
-    comp->qstr___class__ = qstr_from_strn_copy("__class__", 9);
-    comp->qstr___locals__ = qstr_from_strn_copy("__locals__", 10);
-    comp->qstr___name__ = qstr_from_strn_copy("__name__", 8);
-    comp->qstr___module__ = qstr_from_strn_copy("__module__", 10);
-    comp->qstr___qualname__ = qstr_from_strn_copy("__qualname__", 12);
-    comp->qstr___doc__ = qstr_from_strn_copy("__doc__", 7);
-    comp->qstr_assertion_error = qstr_from_strn_copy("AssertionError", 14);
+    comp->qstr___class__ = qstr_from_str_static("__class__");
+    comp->qstr___locals__ = qstr_from_str_static("__locals__");
+    comp->qstr___name__ = qstr_from_str_static("__name__");
+    comp->qstr___module__ = qstr_from_str_static("__module__");
+    comp->qstr___qualname__ = qstr_from_str_static("__qualname__");
+    comp->qstr___doc__ = qstr_from_str_static("__doc__");
+    comp->qstr_assertion_error = qstr_from_str_static("AssertionError");
+    comp->qstr_micropython = qstr_from_str_static("micropython");
+    comp->qstr_native = qstr_from_str_static("native");
 
     comp->max_num_labels = 0;
     comp->break_label = 0;
@@ -2508,10 +2559,11 @@ void py_compile(py_parse_node_t pn) {
     comp->scope_head = NULL;
     comp->scope_cur = NULL;
 
-    emit_pass1_new(&comp->emit, &comp->emit_method_table, comp->qstr___class__);
+    comp->emit = emit_pass1_new(comp->qstr___class__);
+    comp->emit_method_table = &emit_pass1_method_table;
 
     pn = fold_constants(pn);
-    scope_new_and_link(comp, SCOPE_MODULE, pn);
+    scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
 
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         compile_scope(comp, s, PASS_1);
@@ -2521,11 +2573,29 @@ void py_compile(py_parse_node_t pn) {
         compile_scope_compute_things(comp, s);
     }
 
-    emit_cpython_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
-    //emit_bc_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
-    //emit_x64_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
+    emit_pass1_free(comp->emit);
+
+    emit_t *emit_bc = NULL;
+    emit_t *emit_x64 = NULL;
 
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
+        switch (s->emit_options) {
+            case EMIT_OPT_NATIVE_PYTHON:
+                if (emit_x64 == NULL) {
+                    emit_x64 = emit_x64_new(comp->max_num_labels);
+                }
+                comp->emit = emit_x64;
+                comp->emit_method_table = &emit_x64_method_table;
+                break;
+
+            default:
+                if (emit_bc == NULL) {
+                    emit_bc = emit_bc_new(comp->max_num_labels);
+                }
+                comp->emit = emit_bc;
+                comp->emit_method_table = &emit_bc_method_table;
+                break;
+        }
         compile_scope(comp, s, PASS_2);
         compile_scope(comp, s, PASS_3);
     }

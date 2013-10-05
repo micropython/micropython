@@ -53,8 +53,12 @@ struct _emit_t {
     bool do_native_types;
 };
 
-// forward declaration
-static const emit_method_table_t emit_x64_method_table;
+emit_t *emit_x64_new(uint max_num_labels) {
+    emit_t *emit = m_new(emit_t, 1);
+    emit->as = asm_x64_new(max_num_labels);
+    emit->do_native_types = false;
+    return emit;
+}
 
 static void emit_x64_set_native_types(emit_t *emit, bool do_native_types) {
     emit->do_native_types = do_native_types;
@@ -678,7 +682,7 @@ static void emit_x64_yield_from(emit_t *emit) {
     assert(0);
 }
 
-static const emit_method_table_t emit_x64_method_table = {
+const emit_method_table_t emit_x64_method_table = {
     emit_x64_set_native_types,
     emit_x64_start_pass,
     emit_x64_end_pass,
@@ -773,14 +777,5 @@ static const emit_method_table_t emit_x64_method_table = {
     emit_x64_yield_value,
     emit_x64_yield_from,
 };
-
-void emit_x64_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
-    emit_t *emit = m_new(emit_t, 1);
-    emit->as = asm_x64_new(max_num_labels);
-    emit->do_native_types = false;
-
-    *emit_out = emit;
-    *emit_method_table_out = &emit_x64_method_table;
-}
 
 #endif // EMIT_ENABLE_X64
