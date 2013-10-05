@@ -113,10 +113,13 @@ void emit_common_load_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const e
 void emit_common_store_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr);
 void emit_common_delete_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr);
 
-void emit_new_cpython(emit_t **emit, const emit_method_table_t **emit_method_table);
-void emit_new_bc(emit_t **emit, const emit_method_table_t **emit_method_table);
-void emit_new_x64(emit_t **emit, const emit_method_table_t **emit_method_table);
-void emit_new_thumb(emit_t **emit, const emit_method_table_t **emit_method_table);
+void emit_pass1_new(emit_t **emit, const emit_method_table_t **emit_method_table);
+uint emit_pass1_get_max_num_labels(emit_t *emit);
+
+void emit_cpython_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels);
+void emit_bc_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
+void emit_x64_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
+void emit_thumb_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
 
 /*
 void emit_set_native_types(emitter_t *emit, bool do_native_types);

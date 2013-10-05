@@ -7,7 +7,7 @@
 #include "misc.h"
 #include "machine.h"
 #include "runtime.h"
-#include "bc.h"
+#include "vm.h"
 
 #define DEBUG_printf(args...) (void)0
 //#define DEBUG_printf(args...) printf(args)
@@ -372,7 +372,7 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     if (unique_codes == NULL) {
         unique_codes = m_new(py_code_t, next_unique_code_id);
     }
-    assert(unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].u_native.fun = fun;
@@ -635,7 +635,8 @@ py_obj_t rt_compare_op(int op, py_obj_t lhs, py_obj_t rhs) {
 }
 
 py_obj_t rt_make_function_from_id(int unique_code_id) {
-    if (unique_code_id >= next_unique_code_id) {
+    DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
+    if (unique_code_id < 1 || unique_code_id >= next_unique_code_id) {
         // illegal code id
         return py_const_none;
     }

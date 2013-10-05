@@ -8,7 +8,7 @@
 #include "parse.h"
 #include "scope.h"
 
-scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn) {
+scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id) {
     scope_t *scope = m_new(scope_t, 1);
     scope->kind = kind;
     scope->parent = NULL;
@@ -52,7 +52,7 @@ scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn) {
     scope->num_dict_params = 0;
     */
     scope->num_locals = 0;
-    scope->unique_code_id = 0;
+    scope->unique_code_id = unique_code_id;
 
     return scope;
 }

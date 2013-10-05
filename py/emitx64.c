@@ -64,9 +64,6 @@ static void emit_x64_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
     emit->last_emit_was_return_value = false;
     emit->need_to_push = NEED_TO_PUSH_NOTHING;
     emit->scope = scope;
-    if (pass == PASS_1) {
-        scope->unique_code_id = rt_get_new_unique_code_id();
-    }
 
     asm_x64_start_pass(emit->as, pass);
 
@@ -763,9 +760,9 @@ static const emit_method_table_t emit_x64_method_table = {
     emit_x64_yield_from,
 };
 
-void emit_new_x64(emit_t **emit_out, const emit_method_table_t **emit_method_table_out) {
+void emit_x64_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
-    emit->as = asm_x64_new();
+    emit->as = asm_x64_new(max_num_labels);
     emit->do_native_types = false;
 
     *emit_out = emit;

@@ -12,6 +12,7 @@ SRC = \
 	scope.c \
 	compile.c \
 	emitcommon.c \
+	emitpass1.c \
 	emitcpy.c \
 	emitbc.c \
 	asmx64.c \
@@ -19,7 +20,7 @@ SRC = \
 	emitthumb.c \
 	asmthumb.c \
 	runtime.c \
-	bc.c \
+	vm.c \
 	main.c \
 
 SRC_ASM = \

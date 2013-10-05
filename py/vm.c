@@ -7,7 +7,7 @@
 #include "misc.h"
 #include "machine.h"
 #include "runtime.h"
-#include "bc.h"
+#include "vm.h"
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)

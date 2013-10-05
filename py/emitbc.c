@@ -13,7 +13,7 @@
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
-#include "bc.h"
+#include "vm.h"
 
 struct _emit_t {
     pass_kind_t pass;
@@ -23,7 +23,7 @@ struct _emit_t {
 
     scope_t *scope;
 
-    int max_num_labels;
+    uint max_num_labels;
     uint *label_offsets;
 
     uint code_offset;
@@ -49,15 +49,8 @@ static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
-    if (pass == PASS_1) {
-        scope->unique_code_id = rt_get_new_unique_code_id();
-    } else if (pass > PASS_1) {
-        if (emit->label_offsets == NULL) {
-            emit->label_offsets = m_new(uint, emit->max_num_labels);
-        }
-        if (pass == PASS_2) {
-            memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
-        }
+    if (pass == PASS_2) {
+        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
     }
     emit->code_offset = 0;
 }
@@ -68,13 +61,7 @@ static void emit_bc_end_pass(emit_t *emit) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    if (emit->pass == PASS_1) {
-        // calculate number of labels need
-        if (emit->next_label > emit->max_num_labels) {
-            emit->max_num_labels = emit->next_label;
-        }
-
-    } else if (emit->pass == PASS_2) {
+    if (emit->pass == PASS_2) {
         // calculate size of code in bytes
         emit->code_size = emit->code_offset;
         emit->code_base = m_new(byte, emit->code_size);
@@ -160,17 +147,13 @@ int emit_bc_get_stack_size(emit_t *emit) {
 }
 
 static void emit_bc_set_stack_size(emit_t *emit, int size) {
-    if (emit->pass > PASS_1) {
-        emit->stack_size = size;
-    }
+    emit->stack_size = size;
 }
 
 static void emit_pre(emit_t *emit, int stack_size_delta) {
-    if (emit->pass > PASS_1) {
-        emit->stack_size += stack_size_delta;
-        if (emit->stack_size > emit->scope->stack_size) {
-            emit->scope->stack_size = emit->stack_size;
-        }
+    emit->stack_size += stack_size_delta;
+    if (emit->stack_size > emit->scope->stack_size) {
+        emit->scope->stack_size = emit->stack_size;
     }
     emit->last_emit_was_return_value = false;
 }
@@ -181,17 +164,15 @@ static int emit_bc_label_new(emit_t *emit) {
 
 static void emit_bc_label_assign(emit_t *emit, int l) {
     emit_pre(emit, 0);
-    if (emit->pass > PASS_1) {
-        assert(l < emit->max_num_labels);
-        if (emit->pass == PASS_2) {
-            // assign label offset
-            assert(emit->label_offsets[l] == -1);
-            emit->label_offsets[l] = emit->code_offset;
-        } else if (emit->pass == PASS_3) {
-            // ensure label offset has not changed from PASS_2 to PASS_3
-            assert(emit->label_offsets[l] == emit->code_offset);
-            //printf("l%d: (at %d)\n", l, emit->code_offset);
-        }
+    assert(l < emit->max_num_labels);
+    if (emit->pass == PASS_2) {
+        // assign label offset
+        assert(emit->label_offsets[l] == -1);
+        emit->label_offsets[l] = emit->code_offset;
+    } else if (emit->pass == PASS_3) {
+        // ensure label offset has not changed from PASS_2 to PASS_3
+        assert(emit->label_offsets[l] == emit->code_offset);
+        //printf("l%d: (at %d)\n", l, emit->code_offset);
     }
 }
 
@@ -773,10 +754,10 @@ static const emit_method_table_t emit_bc_method_table = {
     emit_bc_yield_from,
 };
 
-void emit_new_bc(emit_t **emit_out, const emit_method_table_t **emit_method_table_out) {
+void emit_bc_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
-    emit->max_num_labels = 0;
-    emit->label_offsets = NULL;
+    emit->max_num_labels = max_num_labels;
+    emit->label_offsets = m_new(uint, emit->max_num_labels);
     emit->code_offset = 0;
     emit->code_size = 0;
     emit->code_base = NULL;

@@ -39,6 +39,9 @@ typedef struct _compiler_t {
 
     pass_kind_t pass;
 
+    int next_label;
+    int max_num_labels;
+
     int break_label;
     int continue_label;
     int except_nest_level;
@@ -159,8 +162,12 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
 
 void compile_node(compiler_t *comp, py_parse_node_t pn);
 
-scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t pn) {
-    scope_t *scope = scope_new(kind, pn);
+static int comp_next_label(compiler_t *comp) {
+    return comp->next_label++;
+}
+
+static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t pn) {
+    scope_t *scope = scope_new(kind, pn, rt_get_new_unique_code_id());
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -175,7 +182,7 @@ scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t
     return scope;
 }
 
-int list_len(py_parse_node_t pn, int pn_kind) {
+static int list_len(py_parse_node_t pn, int pn_kind) {
     if (PY_PARSE_NODE_IS_NULL(pn)) {
         return 0;
     } else if (PY_PARSE_NODE_IS_LEAF(pn)) {
@@ -190,7 +197,7 @@ int list_len(py_parse_node_t pn, int pn_kind) {
     }
 }
 
-void apply_to_single_or_list(compiler_t *comp, py_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, py_parse_node_t)) {
+static void apply_to_single_or_list(compiler_t *comp, py_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, py_parse_node_t)) {
     if (PY_PARSE_NODE_IS_STRUCT(pn) && PY_PARSE_NODE_STRUCT_KIND((py_parse_node_struct_t*)pn) == pn_list_kind) {
         py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
         int num_nodes = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -202,7 +209,7 @@ void apply_to_single_or_list(compiler_t *comp, py_parse_node_t pn, int pn_list_k
     }
 }
 
-int list_get(py_parse_node_t *pn, int pn_kind, py_parse_node_t **nodes) {
+static int list_get(py_parse_node_t *pn, int pn_kind, py_parse_node_t **nodes) {
     if (PY_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -353,7 +360,7 @@ void c_if_cond_2(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, 
         int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
         if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
             if (jump_if == false) {
-                int label2 = EMIT(label_new);
+                int label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     c_if_cond_2(comp, pns->nodes[i], true, label2, true);
                 }
@@ -371,7 +378,7 @@ void c_if_cond_2(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, 
                     c_if_cond_2(comp, pns->nodes[i], false, label, true);
                 }
             } else {
-                int label2 = EMIT(label_new);
+                int label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     c_if_cond_2(comp, pns->nodes[i], false, label2, true);
                 }
@@ -893,7 +900,7 @@ void compile_return_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
         py_parse_node_struct_t *pns_test_if_expr = (py_parse_node_struct_t*)pns->nodes[0];
         py_parse_node_struct_t *pns_test_if_else = (py_parse_node_struct_t*)pns_test_if_expr->nodes[1];
 
-        int l_fail = EMIT(label_new);
+        int l_fail = comp_next_label(comp);
         c_if_cond(comp, pns_test_if_else->nodes[0], false, l_fail); // condition
         compile_node(comp, pns_test_if_expr->nodes[0]); // success value
         EMIT(return_value);
@@ -1073,7 +1080,7 @@ void compile_nonlocal_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
 }
 
 void compile_assert_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
-    int l_end = EMIT(label_new);
+    int l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);
     EMIT_COMMON(load_id, comp->qstr___class__, comp->qstr_assertion_error);
     if (!PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
@@ -1088,9 +1095,9 @@ void compile_assert_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
 void compile_if_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     // TODO proper and/or short circuiting
 
-    int l_end = EMIT(label_new);
+    int l_end = comp_next_label(comp);
 
-    int l_fail = EMIT(label_new);
+    int l_fail = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
     compile_node(comp, pns->nodes[1]); // if block
@@ -1113,7 +1120,7 @@ void compile_if_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
             int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns_elif);
             for (int i = 0; i < n; i++) {
                 py_parse_node_struct_t *pns_elif2 = (py_parse_node_struct_t*)pns_elif->nodes[i];
-                l_fail = EMIT(label_new);
+                l_fail = comp_next_label(comp);
                 c_if_cond(comp, pns_elif2->nodes[0], false, l_fail); // elif condition
 
                 compile_node(comp, pns_elif2->nodes[1]); // elif block
@@ -1126,7 +1133,7 @@ void compile_if_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
         } else {
             // a single elif block
 
-            l_fail = EMIT(label_new);
+            l_fail = comp_next_label(comp);
             c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
 
             compile_node(comp, pns_elif->nodes[1]); // elif block
@@ -1147,10 +1154,10 @@ void compile_while_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     int old_break_label = comp->break_label;
     int old_continue_label = comp->continue_label;
 
-    int done_label = EMIT(label_new);
-    int end_label = EMIT(label_new);
-    int break_label = EMIT(label_new);
-    int continue_label = EMIT(label_new);
+    int done_label = comp_next_label(comp);
+    int end_label = comp_next_label(comp);
+    int break_label = comp_next_label(comp);
+    int continue_label = comp_next_label(comp);
 
     comp->break_label = break_label;
     comp->continue_label = continue_label;
@@ -1184,11 +1191,11 @@ void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     int old_break_label = comp->break_label;
     int old_continue_label = comp->continue_label;
 
-    int for_label = EMIT(label_new);
-    int pop_label = EMIT(label_new);
-    int end_label = EMIT(label_new);
+    int for_label = comp_next_label(comp);
+    int pop_label = comp_next_label(comp);
+    int end_label = comp_next_label(comp);
 
-    int break_label = EMIT(label_new);
+    int break_label = comp_next_label(comp);
 
     comp->continue_label = for_label;
     comp->break_label = break_label;
@@ -1224,22 +1231,22 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
 
     // setup code
     int stack_size = EMIT(get_stack_size);
-    int l1 = EMIT(label_new);
-    int success_label = EMIT(label_new);
+    int l1 = comp_next_label(comp);
+    int success_label = comp_next_label(comp);
     comp->except_nest_level += 1; // for correct handling of continue
     EMIT(setup_except, l1);
     compile_node(comp, pn_body); // body
     EMIT(pop_block);
     EMIT(jump, success_label);
     EMIT(label_assign, l1);
-    int l2 = EMIT(label_new);
+    int l2 = comp_next_label(comp);
 
     for (int i = 0; i < n_except; i++) {
         assert(PY_PARSE_NODE_IS_STRUCT_KIND(pn_excepts[i], PN_try_stmt_except)); // should be
         py_parse_node_struct_t *pns_except = (py_parse_node_struct_t*)pn_excepts[i];
 
         qstr qstr_exception_local = 0;
-        int end_finally_label = EMIT(label_new);
+        int end_finally_label = comp_next_label(comp);
 
         if (PY_PARSE_NODE_IS_NULL(pns_except->nodes[0])) {
             // this is a catch all exception handler
@@ -1276,7 +1283,7 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
 
         int l3;
         if (qstr_exception_local != 0) {
-            l3 = EMIT(label_new);
+            l3 = comp_next_label(comp);
             EMIT(setup_finally, l3);
         }
         compile_node(comp, pns_except->nodes[1]);
@@ -1307,7 +1314,7 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
 void compile_try_finally(compiler_t *comp, py_parse_node_t pn_body, int n_except, py_parse_node_t *pn_except, py_parse_node_t pn_else, py_parse_node_t pn_finally) {
     // don't understand how the stack works with exceptions, so we force it to return to the correct value
     int stack_size = EMIT(get_stack_size);
-    int l_finally_block = EMIT(label_new);
+    int l_finally_block = comp_next_label(comp);
     EMIT(setup_finally, l_finally_block);
     if (n_except == 0) {
         assert(PY_PARSE_NODE_IS_NULL(pn_else));
@@ -1357,7 +1364,7 @@ void compile_with_stmt_helper(compiler_t *comp, int n, py_parse_node_t *nodes, p
         // no more pre-bits, compile the body of the with
         compile_node(comp, body);
     } else {
-        int l_end = EMIT(label_new);
+        int l_end = comp_next_label(comp);
         if (PY_PARSE_NODE_IS_STRUCT_KIND(nodes[0], PN_with_item)) {
             // this pre-bit is of the form "a as b"
             py_parse_node_struct_t *pns = (py_parse_node_struct_t*)nodes[0];
@@ -1490,8 +1497,8 @@ void compile_test_if_expr(compiler_t *comp, py_parse_node_struct_t *pns) {
     py_parse_node_struct_t *pns_test_if_else = (py_parse_node_struct_t*)pns->nodes[1];
 
     int stack_size = EMIT(get_stack_size);
-    int l_fail = EMIT(label_new);
-    int l_end = EMIT(label_new);
+    int l_fail = comp_next_label(comp);
+    int l_end = comp_next_label(comp);
     c_if_cond(comp, pns_test_if_else->nodes[0], false, l_fail); // condition
     compile_node(comp, pns->nodes[0]); // success value
     EMIT(jump, l_end);
@@ -1521,7 +1528,7 @@ void compile_lambdef(compiler_t *comp, py_parse_node_struct_t *pns) {
 }
 
 void compile_or_test(compiler_t *comp, py_parse_node_struct_t *pns) {
-    int l_end = EMIT(label_new);
+    int l_end = comp_next_label(comp);
     int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
@@ -1533,7 +1540,7 @@ void compile_or_test(compiler_t *comp, py_parse_node_struct_t *pns) {
 }
 
 void compile_and_test(compiler_t *comp, py_parse_node_struct_t *pns) {
-    int l_end = EMIT(label_new);
+    int l_end = comp_next_label(comp);
     int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
@@ -1556,7 +1563,7 @@ void compile_comparison(compiler_t *comp, py_parse_node_struct_t *pns) {
     bool multi = (num_nodes > 3);
     int l_fail = 0;
     if (multi) {
-        l_fail = EMIT(label_new);
+        l_fail = comp_next_label(comp);
     }
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
@@ -1602,7 +1609,7 @@ void compile_comparison(compiler_t *comp, py_parse_node_struct_t *pns) {
         }
     }
     if (multi) {
-        int l_end = EMIT(label_new);
+        int l_end = comp_next_label(comp);
         EMIT(jump, l_end);
         EMIT(label_assign, l_fail);
         EMIT(rot_two);
@@ -2255,8 +2262,8 @@ void compile_scope_comp_iter(compiler_t *comp, py_parse_node_t pn_iter, py_parse
         // for loop
         py_parse_node_struct_t *pns_comp_for2 = (py_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
-        int l_end2 = EMIT(label_new);
-        int l_top2 = EMIT(label_new);
+        int l_end2 = comp_next_label(comp);
+        int l_top2 = comp_next_label(comp);
         EMIT(get_iter);
         EMIT(label_assign, l_top2);
         EMIT(for_iter, l_end2);
@@ -2302,6 +2309,7 @@ void check_for_doc_string(compiler_t *comp, py_parse_node_t pn) {
 void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
+    comp->next_label = 1;
     EMIT(start_pass, pass, scope);
 
     if (comp->pass == PASS_1) {
@@ -2377,8 +2385,8 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT(build_set, 0);
         }
 
-        int l_end = EMIT(label_new);
-        int l_top = EMIT(label_new);
+        int l_end = comp_next_label(comp);
+        int l_top = comp_next_label(comp);
         EMIT_COMMON(load_id, comp->qstr___class__, qstr_arg);
         EMIT(label_assign, l_top);
         EMIT(for_iter, l_end);
@@ -2431,6 +2439,11 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     }
 
     EMIT(end_pass);
+
+    // update maximim number of labels needed
+    if (comp->next_label > comp->max_num_labels) {
+        comp->max_num_labels = comp->next_label;
+    }
 }
 
 void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
@@ -2489,15 +2502,14 @@ void py_compile(py_parse_node_t pn) {
     comp->qstr___doc__ = qstr_from_strn_copy("__doc__", 7);
     comp->qstr_assertion_error = qstr_from_strn_copy("AssertionError", 14);
 
+    comp->max_num_labels = 0;
     comp->break_label = 0;
     comp->continue_label = 0;
     comp->except_nest_level = 0;
     comp->scope_head = NULL;
     comp->scope_cur = NULL;
 
-    emit_new_cpython(&comp->emit, &comp->emit_method_table);
-    //emit_new_bc(&comp->emit, &comp->emit_method_table);
-    //emit_new_x64(&comp->emit, &comp->emit_method_table);
+    emit_pass1_new(&comp->emit, &comp->emit_method_table);
 
     pn = fold_constants(pn);
     scope_new_and_link(comp, SCOPE_MODULE, pn);
@@ -2509,6 +2521,10 @@ void py_compile(py_parse_node_t pn) {
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         compile_scope_compute_things(comp, s);
     }
+
+    //emit_cpython_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
+    emit_bc_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
+    //emit_new_x64(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
 
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         compile_scope(comp, s, PASS_2);

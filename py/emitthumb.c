@@ -57,9 +57,6 @@ void emit_start_pass(emitter_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->last_emit_was_return_value = false;
     emit->need_to_push = NEED_TO_PUSH_NOTHING;
     emit->scope = scope;
-    if (pass == PASS_1) {
-        scope->unique_code_id = rt_get_new_unique_code_id();
-    }
 
     asm_thumb_start_pass(emit->as, pass);
 

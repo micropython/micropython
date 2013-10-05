@@ -25,7 +25,7 @@ struct _emit_t {
 
     scope_t *scope;
 
-    int max_num_labels;
+    uint max_num_labels;
     int *label_offsets;
 };
 
@@ -39,13 +39,8 @@ static void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
-    if (pass > PASS_1) {
-        if (emit->label_offsets == NULL) {
-            emit->label_offsets = m_new(int, emit->max_num_labels);
-        }
-        if (pass == PASS_2) {
-            memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(int));
-        }
+    if (pass == PASS_2) {
+        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(int));
     }
 }
 
@@ -53,13 +48,6 @@ static void emit_cpy_end_pass(emit_t *emit) {
     // check stack is back to zero size
     if (emit->stack_size != 0) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
-    }
-
-    // calculate number of labels need
-    if (emit->pass == PASS_1) {
-        if (emit->next_label > emit->max_num_labels) {
-            emit->max_num_labels = emit->next_label;
-        }
     }
 }
 
@@ -77,7 +65,7 @@ static void emit_cpy_set_stack_size(emit_t *emit, int size) {
 
 static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
     emit->stack_size += stack_size_delta;
-    if (emit->pass > PASS_1 && emit->stack_size > emit->scope->stack_size) {
+    if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
     emit->last_emit_was_return_value = false;
@@ -97,17 +85,15 @@ static int emit_cpy_label_new(emit_t *emit) {
 
 static void emit_cpy_label_assign(emit_t *emit, int l) {
     emit_pre(emit, 0, 0);
-    if (emit->pass > PASS_1) {
-        assert(l < emit->max_num_labels);
-        if (emit->pass == PASS_2) {
-            // assign label offset
-            assert(emit->label_offsets[l] == -1);
-            emit->label_offsets[l] = emit->byte_code_offset;
-        } else if (emit->pass == PASS_3) {
-            // ensure label offset has not changed from PASS_2 to PASS_3
-            assert(emit->label_offsets[l] == emit->byte_code_offset);
-            //printf("l%d: (at %d)\n", l, emit->byte_code_offset);
-        }
+    assert(l < emit->max_num_labels);
+    if (emit->pass == PASS_2) {
+        // assign label offset
+        assert(emit->label_offsets[l] == -1);
+        emit->label_offsets[l] = emit->byte_code_offset;
+    } else if (emit->pass == PASS_3) {
+        // ensure label offset has not changed from PASS_2 to PASS_3
+        assert(emit->label_offsets[l] == emit->byte_code_offset);
+        //printf("l%d: (at %d)\n", l, emit->byte_code_offset);
     }
 }
 
@@ -921,10 +907,10 @@ static const emit_method_table_t emit_cpy_method_table = {
     emit_cpy_yield_from,
 };
 
-void emit_new_cpython(emit_t **emit_out, const emit_method_table_t **emit_method_table_out) {
+void emit_cpython_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
-    emit->max_num_labels = 0;
-    emit->label_offsets = NULL;
+    emit->max_num_labels = max_num_labels;
+    emit->label_offsets = m_new(int, max_num_labels);
 
     *emit_out = emit;
     *emit_method_table_out = &emit_cpy_method_table;
