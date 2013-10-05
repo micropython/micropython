@@ -652,8 +652,8 @@ static void emit_thumb_compare_op(emit_t *emit, rt_compare_op_t op) {
         emit_pre_pop_reg_reg(emit, REG_ARG_2, REG_ARG_1);
         asm_thumb_cmp_reg_reg(emit->as, REG_ARG_1, REG_ARG_2);
         asm_thumb_ite_ge(emit->as);
-        asm_thumb_mov_reg_i8(emit->as, REG_RET, 0); // if r0 >= r1
-        asm_thumb_mov_reg_i8(emit->as, REG_RET, 1); // if r0 < r1
+        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
+        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
         emit_post_push_reg(emit, REG_RET);
     } else {
         emit_pre_pop_reg_reg(emit, REG_ARG_3, REG_ARG_2);

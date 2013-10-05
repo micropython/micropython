@@ -18,7 +18,6 @@
 
 struct _emit_t {
     int pass;
-    int next_label;
     int byte_code_offset;
     int stack_size;
     bool last_emit_was_return_value;
@@ -44,7 +43,6 @@ static void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
 
 static void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
-    emit->next_label = 1;
     emit->byte_code_offset = 0;
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;

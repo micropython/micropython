@@ -19,6 +19,7 @@ SRC = \
 	emitx64.c \
 	emitthumb.c \
 	asmthumb.c \
+	emitinlinethumb.c \
 	runtime.c \
 	vm.c \
 	main.c \

@@ -1,0 +1,173 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#include "misc.h"
+#include "lexer.h"
+#include "machine.h"
+#include "parse.h"
+#include "scope.h"
+#include "runtime.h"
+#include "emit.h"
+#include "asmthumb.h"
+
+#ifdef EMIT_ENABLE_THUMB
+
+struct _emit_inline_asm_t {
+    int pass;
+    scope_t *scope;
+    int max_num_labels;
+    qstr *label_lookup;
+    asm_thumb_t *as;
+};
+
+emit_inline_asm_t *emit_inline_thumb_new(uint max_num_labels) {
+    emit_inline_asm_t *emit = m_new(emit_inline_asm_t, 1);
+    emit->max_num_labels = max_num_labels;
+    emit->label_lookup = m_new(qstr, max_num_labels);
+    memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
+    emit->as = asm_thumb_new(max_num_labels);
+    return emit;
+}
+
+static void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {
+    emit->pass = pass;
+    emit->scope = scope;
+    asm_thumb_start_pass(emit->as, pass);
+    asm_thumb_entry(emit->as, 0);
+}
+
+static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
+    asm_thumb_exit(emit->as);
+    asm_thumb_end_pass(emit->as);
+
+    if (emit->pass == PASS_3) {
+        py_fun_t f = asm_thumb_get_code(emit->as);
+        rt_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+    }
+}
+
+static void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr label_id) {
+    assert(label_num < emit->max_num_labels);
+    emit->label_lookup[label_num] = label_id;
+    asm_thumb_label_assign(emit->as, label_num);
+}
+
+static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
+    if (wanted_n_args == n_args) {
+        return true;
+    } else {
+        printf("SyntaxError: '%s' expects %d arguments'\n", qstr_str(op), wanted_n_args);
+        return false;
+    }
+}
+
+static uint get_arg_rlo(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num) {
+    if (!PY_PARSE_NODE_IS_ID(pn_arg[wanted_arg_num])) {
+        printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
+        return 0;
+    }
+    qstr reg_qstr = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    const char *reg_str = qstr_str(reg_qstr);
+    if (!(strlen(reg_str) == 2 && reg_str[0] == 'r' && ('0' <= reg_str[1] && reg_str[1] <= '7'))) {
+        printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
+        return 0;
+    }
+    return reg_str[1] - '0';
+}
+
+static int get_arg_i(qstr op, py_parse_node_t *pn_arg, int wanted_arg_num, int fit_mask) {
+    if (!PY_PARSE_NODE_IS_SMALL_INT(pn_arg[wanted_arg_num])) {
+        printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
+        return 0;
+    }
+    int i = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    if ((i & (~fit_mask)) != 0) {
+        printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", qstr_str(op), i, fit_mask);
+        return 0;
+    }
+    return i;
+}
+
+static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_arg, int wanted_arg_num) {
+    if (!PY_PARSE_NODE_IS_ID(pn_arg[wanted_arg_num])) {
+        printf("SyntaxError: '%s' expects a label in position %d\n", qstr_str(op), wanted_arg_num);
+        return 0;
+    }
+    qstr label_qstr = PY_PARSE_NODE_LEAF_ARG(pn_arg[wanted_arg_num]);
+    for (int i = 0; i < emit->max_num_labels; i++) {
+        if (emit->label_lookup[i] == label_qstr) {
+            return i;
+        }
+    }
+    printf("SyntaxError: label '%s' not defined\n", qstr_str(label_qstr));
+    return 0;
+}
+
+static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_arg) {
+    // TODO perhaps make two tables:
+    // two_args =
+    // "movs", RLO, I8, asm_thumb_movs_reg_i8
+    // "movw", REG, REG, asm_thumb_movw_reg_i16
+    // three_args =
+    // "subs", RLO, RLO, I3, asm_thumb_subs_reg_reg_i3
+
+    // 1 arg
+    if (strcmp(qstr_str(op), "bgt") == 0) {
+        if (!check_n_arg(op, n_args, 1)) {
+            return;
+        }
+        int label_num = get_arg_label(emit, op, pn_arg, 0);
+        asm_thumb_bgt_n(emit->as, label_num);
+
+    // 2 args
+    } else if (strcmp(qstr_str(op), "movs") == 0) {
+        if (!check_n_arg(op, n_args, 2)) {
+            return;
+        }
+        uint rlo_dest = get_arg_rlo(op, pn_arg, 0);
+        int i_src = get_arg_i(op, pn_arg, 1, 0xff);
+        asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
+    } else if (strcmp(qstr_str(op), "movw") == 0) {
+        if (!check_n_arg(op, n_args, 2)) {
+            return;
+        }
+        uint rlo_dest = get_arg_rlo(op, pn_arg, 0); // TODO can be reg lo or hi
+        int i_src = get_arg_i(op, pn_arg, 1, 0xffff);
+        asm_thumb_movw_reg_i16(emit->as, rlo_dest, i_src);
+    } else if (strcmp(qstr_str(op), "cmp") == 0) {
+        if (!check_n_arg(op, n_args, 2)) {
+            return;
+        }
+        uint rlo = get_arg_rlo(op, pn_arg, 0);
+        int i8 = get_arg_i(op, pn_arg, 1, 0xff);
+        asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
+
+    // 3 args
+    } else if (strcmp(qstr_str(op), "subs") == 0) {
+        if (!check_n_arg(op, n_args, 3)) {
+            return;
+        }
+        uint rlo_dest = get_arg_rlo(op, pn_arg, 0);
+        uint rlo_src = get_arg_rlo(op, pn_arg, 1);
+        int i3_src = get_arg_i(op, pn_arg, 2, 0x7);
+        asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
+
+    // unknown op
+    } else {
+        printf("SyntaxError: unsupported ARM Thumb instruction '%s'\n", qstr_str(op));
+        return;
+    }
+}
+
+const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
+    emit_inline_thumb_start_pass,
+    emit_inline_thumb_end_pass,
+    emit_inline_thumb_label,
+    emit_inline_thumb_op,
+};
+
+#endif // EMIT_ENABLE_THUMB

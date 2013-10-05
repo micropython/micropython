@@ -20,7 +20,6 @@ struct _asm_thumb_t {
     byte *code_base;
     byte dummy_data[8];
 
-    int next_label;
     int max_num_labels;
     int *label_offsets;
     int num_locals;
@@ -65,7 +64,6 @@ void asm_thumb_free(asm_thumb_t *as, bool free_code) {
 void asm_thumb_start_pass(asm_thumb_t *as, int pass) {
     as->pass = pass;
     as->code_offset = 0;
-    as->next_label = 1;
     if (pass == ASM_THUMB_PASS_2) {
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
     }
@@ -212,10 +210,6 @@ void asm_thumb_exit(asm_thumb_t *as) {
     asm_thumb_write_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }
 
-int asm_thumb_label_new(asm_thumb_t *as) {
-    return as->next_label++;
-}
-
 void asm_thumb_label_assign(asm_thumb_t *as, int label) {
     assert(label < as->max_num_labels);
     if (as->pass == ASM_THUMB_PASS_2) {
@@ -234,43 +228,33 @@ static int get_label_dest(asm_thumb_t *as, int label) {
     return as->label_offsets[label];
 }
 
-// the i8 value will be zero extended into the r32 register!
-void asm_thumb_mov_reg_i8(asm_thumb_t *as, uint rlo_dest, int i8) {
+#define OP_MOVS_RLO_I8(rlo_dest, i8_src) (0x2000 | ((rlo_dest) << 8) | (i8_src))
+
+// the i8_src value will be zero extended into the r32 register!
+void asm_thumb_movs_rlo_i8(asm_thumb_t *as, uint rlo_dest, int i8_src) {
     assert(rlo_dest < REG_R8);
-    // movs rlo_dest, #i8
-    asm_thumb_write_op16(as, 0x2000 | (rlo_dest << 8) | i8);
+    // movs rlo_dest, #i8_src
+    asm_thumb_write_op16(as, OP_MOVS_RLO_I8(rlo_dest, i8_src));
 }
 
-// if loading lo half, the i16 value will be zero extended into the r32 register!
-void asm_thumb_mov_i16_to_reg(asm_thumb_t *as, int i16, uint reg_dest, bool load_hi_half) {
+#define OP_MOVW (0xf240)
+#define OP_MOVT (0xf2c0)
+
+// if loading lo half with movw, the i16 value will be zero extended into the r32 register!
+static void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src) {
     assert(reg_dest < REG_R15);
-    uint op;
-    if (load_hi_half) {
-        // movt reg_dest, #i16
-        op = 0xf2c0;
-    } else {
-        // movw reg_dest, #i16
-        op = 0xf240;
-    }
-    asm_thumb_write_op32(as, op | ((i16 >> 1) & 0x0400) | ((i16 >> 12) & 0xf), ((i16 << 4) & 0x7000) | (reg_dest << 8) | (i16 & 0xff));
+    // mov[wt] reg_dest, #i16_src
+    asm_thumb_write_op32(as, mov_op | ((i16_src >> 1) & 0x0400) | ((i16_src >> 12) & 0xf), ((i16_src << 4) & 0x7000) | (reg_dest << 8) | (i16_src & 0xff));
 }
 
-void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32) {
-    // movw, movt does it in 8 bytes
-    // ldr [pc, #], dw does it in 6 bytes, but we might not reach to end of code for dw
-
-    asm_thumb_mov_i16_to_reg(as, i32, reg_dest, false);
-    asm_thumb_mov_i16_to_reg(as, i32 >> 16, reg_dest, true);
+// the i16_src value will be zero extended into the r32 register!
+void asm_thumb_movw_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src) {
+    asm_thumb_mov_reg_i16(as, OP_MOVW, reg_dest, i16_src);
 }
 
-void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
-    if (reg_dest < 8 && UNSIGNED_FIT8(i32)) {
-        asm_thumb_mov_reg_i8(as, reg_dest, i32);
-    } else if (UNSIGNED_FIT16(i32)) {
-        asm_thumb_mov_i16_to_reg(as, i32, reg_dest, false);
-    } else {
-        asm_thumb_mov_reg_i32(as, reg_dest, i32);
-    }
+// the i16_src value will be zero extended into the r32 register!
+void asm_thumb_movt_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src) {
+    asm_thumb_mov_reg_i16(as, OP_MOVT, reg_dest, i16_src);
 }
 
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
@@ -285,7 +269,67 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
     } else {
         op_lo |= 0x80 | (reg_dest - 8);
     }
+    // mov reg_dest, reg_src
     asm_thumb_write_op16(as, 0x4600 | op_lo);
+}
+
+#define OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src) (0x1e00 | ((i3_src) << 6) | ((rlo_src) << 3) | (rlo_dest))
+
+void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src) {
+    assert(rlo_dest < REG_R8);
+    assert(rlo_src < REG_R8);
+    asm_thumb_write_op16(as, OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src));
+}
+
+#define OP_CMP_RLO_I8(rlo, i8) (0x2800 | ((rlo) << 8) | (i8))
+
+void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
+    assert(rlo < REG_R8);
+    asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, i8));
+}
+
+#define OP_BEQ_N(byte_offset) (0xd000 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BNE_N(byte_offset) (0xd100 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BCS_N(byte_offset) (0xd200 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BCC_N(byte_offset) (0xd300 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BMI_N(byte_offset) (0xd400 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BPL_N(byte_offset) (0xd500 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BVS_N(byte_offset) (0xd600 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BVC_N(byte_offset) (0xd700 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BHI_N(byte_offset) (0xd800 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BLS_N(byte_offset) (0xd900 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BGE_N(byte_offset) (0xda00 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BLT_N(byte_offset) (0xdb00 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BGT_N(byte_offset) (0xdc00 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BLE_N(byte_offset) (0xdd00 | (((byte_offset) >> 1) & 0x00ff))
+
+void asm_thumb_bgt_n(asm_thumb_t *as, int label) {
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (SIGNED_FIT9(rel)) {
+        asm_thumb_write_op16(as, OP_BGT_N(rel));
+    } else {
+        printf("asm_thumb_bgt: branch does not fit in 9 bits\n");
+    }
+}
+
+void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32) {
+    // movw, movt does it in 8 bytes
+    // ldr [pc, #], dw does it in 6 bytes, but we might not reach to end of code for dw
+
+    asm_thumb_mov_reg_i16(as, OP_MOVW, reg_dest, i32);
+    asm_thumb_mov_reg_i16(as, OP_MOVT, reg_dest, i32 >> 16);
+}
+
+void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
+    if (reg_dest < 8 && UNSIGNED_FIT8(i32)) {
+        asm_thumb_movs_rlo_i8(as, reg_dest, i32);
+    } else if (UNSIGNED_FIT16(i32)) {
+        asm_thumb_mov_reg_i16(as, OP_MOVW, reg_dest, i32);
+    } else {
+        asm_thumb_mov_reg_i32(as, reg_dest, i32);
+    }
 }
 
 #define OP_STR_TO_SP_OFFSET(rlo_dest, word_offset) (0x9000 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
@@ -351,7 +395,6 @@ void asm_thumb_b_label(asm_thumb_t *as, int label) {
     }
 }
 
-#define OP_CMP_REG_IMM(rlo, i8) (0x2800 | ((rlo) << 8) | (i8))
 // all these bit arithmetics need coverage testing!
 #define OP_BEQ(byte_offset) (0xd000 | (((byte_offset) >> 1) & 0x00ff))
 #define OP_BEQW_HI(byte_offset) (0xf000 | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
@@ -361,7 +404,7 @@ void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label) {
     assert(rlo < REG_R8);
 
     // compare reg with 0
-    asm_thumb_write_op16(as, OP_CMP_REG_IMM(rlo, 0));
+    asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, 0));
 
     // branch if equal
     int dest = get_label_dest(as, label);
@@ -369,7 +412,7 @@ void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label) {
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (dest >= 0 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
-        // calculate rel assuming 12 bit relative jump
+        // calculate rel assuming 9 bit relative jump
         if (SIGNED_FIT9(rel)) {
             asm_thumb_write_op16(as, OP_BEQ(rel));
         } else {

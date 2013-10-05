@@ -26,6 +26,7 @@ typedef enum {
 } pn_kind_t;
 
 #define EMIT(fun, arg...) (comp->emit_method_table->fun(comp->emit, ##arg))
+#define EMIT_INLINE_ASM(fun, arg...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, ##arg))
 
 #define EMIT_OPT_NONE           (0)
 #define EMIT_OPT_BYTE_CODE      (1)
@@ -47,7 +48,6 @@ typedef struct _compiler_t {
     pass_kind_t pass;
 
     int next_label;
-    int max_num_labels;
 
     int break_label;
     int continue_label;
@@ -66,6 +66,9 @@ typedef struct _compiler_t {
 
     emit_t *emit;                                   // current emitter
     const emit_method_table_t *emit_method_table;   // current emit method table
+
+    emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
+    const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
 } compiler_t;
 
 py_parse_node_t fold_constants(py_parse_node_t pn) {
@@ -2389,7 +2392,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
         }
 
-        assert(pns->nodes[2] == 0); // 2 is something...
+        assert(PY_PARSE_NODE_IS_NULL(pns->nodes[2])); // 2 is something...
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
         // emit return if it wasn't the last opcode
@@ -2492,9 +2495,77 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
     EMIT(end_pass);
 
-    // update maximim number of labels needed
-    if (comp->next_label > comp->max_num_labels) {
-        comp->max_num_labels = comp->next_label;
+}
+
+void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
+    comp->pass = pass;
+    comp->scope_cur = scope;
+    comp->next_label = 1;
+
+    if (scope->kind != SCOPE_FUNCTION) {
+        printf("Error: inline assembler must be a function\n");
+        return;
+    }
+
+    // get the function definition parse node
+    assert(PY_PARSE_NODE_IS_STRUCT(scope->pn));
+    py_parse_node_struct_t *pns = (py_parse_node_struct_t*)scope->pn;
+    assert(PY_PARSE_NODE_STRUCT_KIND(pns) == PN_funcdef);
+
+    //qstr f_id = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // name
+
+    scope->num_params = 0;
+    assert(PY_PARSE_NODE_IS_NULL(pns->nodes[1])); // arguments
+    assert(PY_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
+
+    py_parse_node_t pn_body = pns->nodes[3]; // body
+    py_parse_node_t *nodes;
+    int num = list_get(&pn_body, PN_suite_block_stmts, &nodes);
+
+    if (comp->pass > PASS_1) {
+        EMIT_INLINE_ASM(start_pass, comp->pass, comp->scope_cur);
+    }
+
+    if (comp->pass == PASS_3) {
+        //printf("----\n");
+        scope_print_info(scope);
+    }
+
+    for (int i = 0; i < num; i++) {
+        assert(PY_PARSE_NODE_IS_STRUCT(nodes[i]));
+        py_parse_node_struct_t *pns2 = (py_parse_node_struct_t*)nodes[i];
+        assert(PY_PARSE_NODE_STRUCT_KIND(pns2) == PN_expr_stmt);
+        assert(PY_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
+        assert(PY_PARSE_NODE_IS_NULL(pns2->nodes[1]));
+        pns2 = (py_parse_node_struct_t*)pns2->nodes[0];
+        assert(PY_PARSE_NODE_STRUCT_KIND(pns2) == PN_power);
+        assert(PY_PARSE_NODE_IS_ID(pns2->nodes[0]));
+        assert(PY_PARSE_NODE_IS_STRUCT_KIND(pns2->nodes[1], PN_trailer_paren));
+        assert(PY_PARSE_NODE_IS_NULL(pns2->nodes[2]));
+        qstr op = PY_PARSE_NODE_LEAF_ARG(pns2->nodes[0]);
+        pns2 = (py_parse_node_struct_t*)pns2->nodes[1]; // PN_trailer_paren
+        py_parse_node_t *pn_arg;
+        int n_args = list_get(&pns2->nodes[0], PN_arglist, &pn_arg);
+
+        // emit instructions
+        if (strcmp(qstr_str(op), "label") == 0) {
+            if (!(n_args == 1 && PY_PARSE_NODE_IS_ID(pn_arg[0]))) {
+                printf("SyntaxError: inline assembler 'label' requires 1 argument\n");
+                return;
+            }
+            int lab = comp_next_label(comp);
+            if (pass > PASS_1) {
+                EMIT_INLINE_ASM(label, lab, PY_PARSE_NODE_LEAF_ARG(pn_arg[0]));
+            }
+        } else {
+            if (pass > PASS_1) {
+                EMIT_INLINE_ASM(op, op, n_args, pn_arg);
+            }
+        }
+    }
+
+    if (comp->pass > PASS_1) {
+        EMIT_INLINE_ASM(end_pass);
     }
 }
 
@@ -2557,55 +2628,81 @@ void py_compile(py_parse_node_t pn) {
     comp->qstr_native = qstr_from_str_static("native");
     comp->qstr_asm_thumb = qstr_from_str_static("asm_thumb");
 
-    comp->max_num_labels = 0;
     comp->break_label = 0;
     comp->continue_label = 0;
     comp->except_nest_level = 0;
     comp->scope_head = NULL;
     comp->scope_cur = NULL;
 
-    comp->emit = emit_pass1_new(comp->qstr___class__);
-    comp->emit_method_table = &emit_pass1_method_table;
-
+    // optimise constants
     pn = fold_constants(pn);
+
+    // set the outer scope
     scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
 
+    // compile pass 1
+    comp->emit = emit_pass1_new(comp->qstr___class__);
+    comp->emit_method_table = &emit_pass1_method_table;
+    comp->emit_inline_asm = NULL;
+    comp->emit_inline_asm_method_table = NULL;
+    uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
-        compile_scope(comp, s, PASS_1);
+        if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+            compile_scope_inline_asm(comp, s, PASS_1);
+        } else {
+            compile_scope(comp, s, PASS_1);
+        }
+
+        // update maximim number of labels needed
+        if (comp->next_label > max_num_labels) {
+            max_num_labels = comp->next_label;
+        }
     }
 
+    // compute some things related to scope and identifiers
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         compile_scope_compute_things(comp, s);
     }
 
+    // finish with pass 1
     emit_pass1_free(comp->emit);
 
+    // compile pass 2 and 3
     emit_t *emit_bc = NULL;
     emit_t *emit_x64 = NULL;
-
+    emit_inline_asm_t *emit_inline_thumb = NULL;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
-        switch (s->emit_options) {
-            case EMIT_OPT_NATIVE_PYTHON:
-                if (emit_x64 == NULL) {
-                    emit_x64 = emit_x64_new(comp->max_num_labels);
-                }
-                comp->emit = emit_x64;
-                comp->emit_method_table = &emit_x64_method_table;
-                break;
+        if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+            if (emit_inline_thumb == NULL) {
+                emit_inline_thumb = emit_inline_thumb_new(max_num_labels);
+            }
+            comp->emit = NULL;
+            comp->emit_method_table = NULL;
+            comp->emit_inline_asm = emit_inline_thumb;
+            comp->emit_inline_asm_method_table = &emit_inline_thumb_method_table;
+            compile_scope_inline_asm(comp, s, PASS_2);
+            compile_scope_inline_asm(comp, s, PASS_3);
+        } else {
+            switch (s->emit_options) {
+                case EMIT_OPT_NATIVE_PYTHON:
+                    if (emit_x64 == NULL) {
+                        emit_x64 = emit_x64_new(max_num_labels);
+                    }
+                    comp->emit = emit_x64;
+                    comp->emit_method_table = &emit_x64_method_table;
+                    break;
 
-            //case EMIT_OPT_ASM_THUMB:
-                //if (em
-
-            default:
-                if (emit_bc == NULL) {
-                    emit_bc = emit_bc_new(comp->max_num_labels);
-                }
-                comp->emit = emit_bc;
-                comp->emit_method_table = &emit_bc_method_table;
-                break;
+                default:
+                    if (emit_bc == NULL) {
+                        emit_bc = emit_bc_new(max_num_labels);
+                    }
+                    comp->emit = emit_bc;
+                    comp->emit_method_table = &emit_bc_method_table;
+                    break;
+            }
+            compile_scope(comp, s, PASS_2);
+            compile_scope(comp, s, PASS_3);
         }
-        compile_scope(comp, s, PASS_2);
-        compile_scope(comp, s, PASS_3);
     }
 
     m_free(comp);

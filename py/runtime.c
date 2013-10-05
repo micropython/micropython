@@ -40,6 +40,7 @@ typedef enum {
     O_FUN_2,
     O_FUN_N,
     O_FUN_BC,
+    O_FUN_ASM,
     O_BOUND_METH,
     O_LIST,
     O_SET,
@@ -73,14 +74,18 @@ typedef struct _py_obj_base_t {
         float_t flt;
 #endif
         struct { // for O_FUN_[012N]
-            void *fun;
             int n_args;
+            void *fun;
         } u_fun;
         struct { // for O_FUN_BC
+            int n_args;
             byte *code;
             uint len;
-            int n_args;
         } u_fun_bc;
+        struct { // for O_FUN_ASM
+            int n_args;
+            void *fun;
+        } u_fun_asm;
         struct { // for O_BOUND_METH
             py_obj_t meth;
             py_obj_t self;
@@ -275,8 +280,10 @@ static qstr q_len;
 static qstr q___build_class__;
 
 typedef enum {
-    PY_CODE_NATIVE,
+    PY_CODE_NONE,
     PY_CODE_BYTE,
+    PY_CODE_NATIVE,
+    PY_CODE_INLINE_ASM,
 } py_code_kind_t;
 
 typedef struct _py_code_t {
@@ -284,12 +291,15 @@ typedef struct _py_code_t {
     int n_args;
     union {
         struct {
-            py_fun_t fun;
-        } u_native;
-        struct {
             byte *code;
             uint len;
         } u_byte;
+        struct {
+            py_fun_t fun;
+        } u_native;
+        struct {
+            py_fun_t fun;
+        } u_inline_asm;
     };
 } py_code_t;
 
@@ -368,10 +378,30 @@ int rt_get_new_unique_code_id() {
     return next_unique_code_id++;
 }
 
-void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_args) {
+static void alloc_unique_codes() {
     if (unique_codes == NULL) {
         unique_codes = m_new(py_code_t, next_unique_code_id);
+        for (int i = 0; i < next_unique_code_id; i++) {
+            unique_codes[i].kind = PY_CODE_NONE;
+        }
     }
+}
+
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args) {
+    alloc_unique_codes();
+
+    assert(unique_code_id < next_unique_code_id);
+    unique_codes[unique_code_id].kind = PY_CODE_BYTE;
+    unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].u_byte.code = code;
+    unique_codes[unique_code_id].u_byte.len = len;
+
+    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d\n", unique_code_id, code, len, n_args);
+}
+
+void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_args) {
+    alloc_unique_codes();
+
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
@@ -392,17 +422,27 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     }
 }
 
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args) {
-    if (unique_codes == NULL) {
-        unique_codes = m_new(py_code_t, next_unique_code_id);
-    }
-    assert(unique_code_id < next_unique_code_id);
-    unique_codes[unique_code_id].kind = PY_CODE_BYTE;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_byte.code = code;
-    unique_codes[unique_code_id].u_byte.len = len;
+void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n_args) {
+    alloc_unique_codes();
 
-    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d\n", unique_code_id, code, len, n_args);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    unique_codes[unique_code_id].kind = PY_CODE_INLINE_ASM;
+    unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].u_inline_asm.fun = fun;
+
+    DEBUG_printf("assign inline asm code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
+    byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
+    for (int i = 0; i < 128 && i < len; i++) {
+        if (i > 0 && i % 16 == 0) {
+            DEBUG_printf("\n");
+        }
+        DEBUG_printf(" %02x", fun_data[i]);
+    }
+    DEBUG_printf("\n");
+
+    if (fp_native != NULL) {
+        fwrite(fun_data, len, 1, fp_native);
+    }
 }
 
 const char *py_obj_get_type_str(py_obj_t o_in) {
@@ -649,6 +689,12 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
     py_code_t *c = &unique_codes[unique_code_id];
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     switch (c->kind) {
+        case PY_CODE_BYTE:
+            o->kind = O_FUN_BC;
+            o->u_fun_bc.n_args = c->n_args;
+            o->u_fun_bc.code = c->u_byte.code;
+            o->u_fun_bc.len = c->u_byte.len;
+            break;
         case PY_CODE_NATIVE:
             switch (c->n_args) {
                 case 0: o->kind = O_FUN_0; break;
@@ -658,11 +704,10 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
             }
             o->u_fun.fun = c->u_native.fun;
             break;
-        case PY_CODE_BYTE:
-            o->kind = O_FUN_BC;
-            o->u_fun_bc.code = c->u_byte.code;
-            o->u_fun_bc.len = c->u_byte.len;
-            o->u_fun_bc.n_args = c->n_args;
+        case PY_CODE_INLINE_ASM:
+            o->kind = O_FUN_ASM;
+            o->u_fun_asm.n_args = c->n_args;
+            o->u_fun_asm.fun = c->u_inline_asm.fun;
             break;
         default:
             assert(0);
@@ -695,8 +740,8 @@ py_obj_t rt_make_function(int n_args, py_fun_t code) {
     // assumes code is a pointer to a py_fun_t (i think this is safe...)
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_FUN_N;
-    o->u_fun.fun = code;
     o->u_fun.n_args = n_args;
+    o->u_fun.fun = code;
     return o;
 }
 
