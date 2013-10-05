@@ -2523,8 +2523,8 @@ void py_compile(py_parse_node_t pn) {
     }
 
     //emit_cpython_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
-    emit_bc_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
-    //emit_new_x64(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
+    //emit_bc_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
+    emit_x64_new(&comp->emit, &comp->emit_method_table, comp->max_num_labels);
 
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         compile_scope(comp, s, PASS_2);

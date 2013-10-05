@@ -24,7 +24,6 @@ typedef struct _emit_method_table_t {
     int (*get_stack_size)(emit_t *emit);
     void (*set_stack_size)(emit_t *emit, int size);
 
-    int (*label_new)(emit_t *emit);
     void (*label_assign)(emit_t *emit, int l);
     void (*import_name)(emit_t *emit, qstr qstr);
     void (*import_from)(emit_t *emit, qstr qstr);

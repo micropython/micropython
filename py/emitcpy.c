@@ -79,10 +79,6 @@ static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
     emit->byte_code_offset += byte_code_size;
 }
 
-static int emit_cpy_label_new(emit_t *emit) {
-    return emit->next_label++;
-}
-
 static void emit_cpy_label_assign(emit_t *emit, int l) {
     emit_pre(emit, 0, 0);
     assert(l < emit->max_num_labels);
@@ -822,7 +818,6 @@ static const emit_method_table_t emit_cpy_method_table = {
     emit_cpy_get_stack_size,
     emit_cpy_set_stack_size,
 
-    emit_cpy_label_new,
     emit_cpy_label_assign,
     emit_cpy_import_name,
     emit_cpy_import_from,

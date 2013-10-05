@@ -59,7 +59,6 @@ void asm_x64_cmp_disp_with_r32(asm_x64_t* as, int src_r32_a, int src_disp_a, int
 void asm_x64_cmp_i32_with_r32(asm_x64_t* as, int src_i32, int src_r32);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
-int asm_x64_label_new(asm_x64_t* as);
 void asm_x64_label_assign(asm_x64_t* as, int label);
 void asm_x64_jmp_label(asm_x64_t* as, int label);
 void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, int label);

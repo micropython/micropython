@@ -81,8 +81,7 @@ struct _asm_x64_t {
     byte *code_base;
     byte dummy_data[8];
 
-    int next_label;
-    int max_num_labels;
+    uint max_num_labels;
     int *label_offsets;
 };
 
@@ -98,7 +97,7 @@ void *alloc_mem(uint req_size, uint *alloc_size, bool is_exec) {
     return ptr;
 }
 
-asm_x64_t* asm_x64_new() {
+asm_x64_t* asm_x64_new(uint max_num_labels) {
     asm_x64_t* as;
 
     as = m_new(asm_x64_t, 1);
@@ -106,7 +105,8 @@ asm_x64_t* asm_x64_new() {
     as->code_offset = 0;
     as->code_size = 0;
     as->code_base = NULL;
-    as->label_offsets = NULL;
+    as->max_num_labels = max_num_labels;
+    as->label_offsets = m_new(int, max_num_labels);
 
     return as;
 }
@@ -134,29 +134,19 @@ void asm_x64_free(asm_x64_t* as, bool free_code) {
 void asm_x64_start_pass(asm_x64_t *as, int pass) {
     as->pass = pass;
     as->code_offset = 0;
-    as->next_label = 1;
-    if (pass == ASM_X64_PASS_1) {
-        as->max_num_labels = 0;
-    } else {
-        if (pass == ASM_X64_PASS_2) {
-            memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
-        }
+    if (pass == ASM_X64_PASS_2) {
+        // reset all labels
+        memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
     }
 }
 
 void asm_x64_end_pass(asm_x64_t *as) {
-    if (as->pass == ASM_X64_PASS_1) {
-        // calculate number of labels need
-        if (as->next_label > as->max_num_labels) {
-            as->max_num_labels = as->next_label;
-        }
-        as->label_offsets = m_new(int, as->max_num_labels);
-    } else if (as->pass == ASM_X64_PASS_2) {
+    if (as->pass == ASM_X64_PASS_2) {
         // calculate size of code in bytes
         as->code_size = as->code_offset;
-        as->code_base = m_new(byte, as->code_size);
-        //uint actual_alloc;
-        //as->code_base = alloc_mem(as->code_size, &actual_alloc, true);
+        //as->code_base = m_new(byte, as->code_size); need to allocale executable memory
+        uint actual_alloc;
+        as->code_base = alloc_mem(as->code_size, &actual_alloc, true);
         printf("code_size: %u\n", as->code_size);
     }
 
@@ -458,70 +448,65 @@ void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8) {
     asm_x64_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r8));
 }
 
-int asm_x64_label_new(asm_x64_t* as) {
-    return as->next_label++;
-}
-
 void asm_x64_label_assign(asm_x64_t* as, int label) {
-    if (as->pass > ASM_X64_PASS_1) {
-        assert(label < as->max_num_labels);
-        if (as->pass == ASM_X64_PASS_2) {
-            // assign label offset
-            assert(as->label_offsets[label] == -1);
-            as->label_offsets[label] = as->code_offset;
-        } else if (as->pass == ASM_X64_PASS_3) {
-            // ensure label offset has not changed from PASS_2 to PASS_3
-            //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
-            assert(as->label_offsets[label] == as->code_offset);
-        }
+    assert(label < as->max_num_labels);
+    if (as->pass == ASM_X64_PASS_2) {
+        // assign label offset
+        assert(as->label_offsets[label] == -1);
+        as->label_offsets[label] = as->code_offset;
+    } else if (as->pass == ASM_X64_PASS_3) {
+        // ensure label offset has not changed from PASS_2 to PASS_3
+        //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
+        assert(as->label_offsets[label] == as->code_offset);
     }
 }
 
-void asm_x64_jmp_label(asm_x64_t* as, int label) {
-    if (as->pass > ASM_X64_PASS_1) {
-        int dest = as->label_offsets[label];
-        int rel = dest - as->code_offset;
-        if (dest >= 0 && rel < 0) {
-            // is a backwards jump, so we know the size of the jump on the first pass
-            // calculate rel assuming 8 bit relative jump
-            rel -= 2;
-            if (SIGNED_FIT8(rel)) {
-                asm_x64_write_byte_2(as, OPCODE_JMP_REL8, rel & 0xff);
-            } else {
-                rel += 2;
-                goto large_jump;
-            }
+static int get_label_dest(asm_x64_t *as, int label) {
+    assert(label < as->max_num_labels);
+    return as->label_offsets[label];
+}
+
+void asm_x64_jmp_label(asm_x64_t *as, int label) {
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    if (dest >= 0 && rel < 0) {
+        // is a backwards jump, so we know the size of the jump on the first pass
+        // calculate rel assuming 8 bit relative jump
+        rel -= 2;
+        if (SIGNED_FIT8(rel)) {
+            asm_x64_write_byte_2(as, OPCODE_JMP_REL8, rel & 0xff);
         } else {
-            // is a forwards jump, so need to assume it's large
-            large_jump:
-            rel -= 5;
-            asm_x64_write_byte_1(as, OPCODE_JMP_REL32);
-            asm_x64_write_word32(as, rel);
+            rel += 2;
+            goto large_jump;
         }
+    } else {
+        // is a forwards jump, so need to assume it's large
+        large_jump:
+        rel -= 5;
+        asm_x64_write_byte_1(as, OPCODE_JMP_REL32);
+        asm_x64_write_word32(as, rel);
     }
 }
 
-void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, int label) {
-    if (as->pass > ASM_X64_PASS_1) {
-        int dest = as->label_offsets[label];
-        int rel = dest - as->code_offset;
-        if (dest >= 0 && rel < 0) {
-            // is a backwards jump, so we know the size of the jump on the first pass
-            // calculate rel assuming 8 bit relative jump
-            rel -= 2;
-            if (SIGNED_FIT8(rel)) {
-                asm_x64_write_byte_2(as, OPCODE_JCC_REL8 | jcc_type, rel & 0xff);
-            } else {
-                rel += 2;
-                goto large_jump;
-            }
+void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, int label) {
+    int dest = get_label_dest(as, label);
+    int rel = dest - as->code_offset;
+    if (dest >= 0 && rel < 0) {
+        // is a backwards jump, so we know the size of the jump on the first pass
+        // calculate rel assuming 8 bit relative jump
+        rel -= 2;
+        if (SIGNED_FIT8(rel)) {
+            asm_x64_write_byte_2(as, OPCODE_JCC_REL8 | jcc_type, rel & 0xff);
         } else {
-            // is a forwards jump, so need to assume it's large
-            large_jump:
-            rel -= 6;
-            asm_x64_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
-            asm_x64_write_word32(as, rel);
+            rel += 2;
+            goto large_jump;
         }
+    } else {
+        // is a forwards jump, so need to assume it's large
+        large_jump:
+        rel -= 6;
+        asm_x64_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
+        asm_x64_write_word32(as, rel);
     }
 }
 

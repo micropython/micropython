@@ -249,10 +249,6 @@ static void emit_call_with_i64_arg(emit_t *emit, void *fun, int64_t arg_val, int
     asm_x64_call_ind(emit->as, fun, REG_RAX);
 }
 
-static int emit_x64_label_new(emit_t *emit) {
-    return asm_x64_label_new(emit->as);
-}
-
 static void emit_x64_label_assign(emit_t *emit, int l) {
     asm_x64_label_assign(emit->as, l);
 }
@@ -675,7 +671,6 @@ static const emit_method_table_t emit_x64_method_table = {
     emit_x64_get_stack_size,
     emit_x64_set_stack_size,
 
-    emit_x64_label_new,
     emit_x64_label_assign,
     emit_x64_import_name,
     emit_x64_import_from,

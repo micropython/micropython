@@ -158,10 +158,6 @@ static void emit_pre(emit_t *emit, int stack_size_delta) {
     emit->last_emit_was_return_value = false;
 }
 
-static int emit_bc_label_new(emit_t *emit) {
-    return emit->next_label++;
-}
-
 static void emit_bc_label_assign(emit_t *emit, int l) {
     emit_pre(emit, 0);
     assert(l < emit->max_num_labels);
@@ -669,7 +665,6 @@ static const emit_method_table_t emit_bc_method_table = {
     emit_bc_get_stack_size,
     emit_bc_set_stack_size,
 
-    emit_bc_label_new,
     emit_bc_label_assign,
     emit_bc_import_name,
     emit_bc_import_from,
