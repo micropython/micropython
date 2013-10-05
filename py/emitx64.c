@@ -53,6 +53,9 @@ struct _emit_t {
     bool do_native_types;
 };
 
+// forward declaration
+static const emit_method_table_t emit_x64_method_table;
+
 static void emit_x64_set_native_types(emit_t *emit, bool do_native_types) {
     emit->do_native_types = do_native_types;
 }
@@ -121,6 +124,18 @@ static int emit_x64_get_stack_size(emit_t *emit) {
 
 static void emit_x64_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
+}
+
+static void emit_x64_load_id(emit_t *emit, qstr qstr) {
+    emit_common_load_id(emit, &emit_x64_method_table, emit->scope, qstr);
+}
+
+static void emit_x64_store_id(emit_t *emit, qstr qstr) {
+    emit_common_store_id(emit, &emit_x64_method_table, emit->scope, qstr);
+}
+
+static void emit_x64_delete_id(emit_t *emit, qstr qstr) {
+    emit_common_delete_id(emit, &emit_x64_method_table, emit->scope, qstr);
 }
 
 static void adjust_stack(emit_t *emit, int stack_size_delta) {
@@ -670,6 +685,10 @@ static const emit_method_table_t emit_x64_method_table = {
     emit_x64_last_emit_was_return_value,
     emit_x64_get_stack_size,
     emit_x64_set_stack_size,
+
+    emit_x64_load_id,
+    emit_x64_store_id,
+    emit_x64_delete_id,
 
     emit_x64_label_assign,
     emit_x64_import_name,

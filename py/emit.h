@@ -24,6 +24,10 @@ typedef struct _emit_method_table_t {
     int (*get_stack_size)(emit_t *emit);
     void (*set_stack_size)(emit_t *emit, int size);
 
+    void (*load_id)(emit_t *emit, qstr qstr);
+    void (*store_id)(emit_t *emit, qstr qstr);
+    void (*delete_id)(emit_t *emit, qstr qstr);
+
     void (*label_assign)(emit_t *emit, int l);
     void (*import_name)(emit_t *emit, qstr qstr);
     void (*import_from)(emit_t *emit, qstr qstr);
@@ -108,107 +112,12 @@ typedef struct _emit_method_table_t {
     void (*yield_from)(emit_t *emit);
 } emit_method_table_t;
 
-void emit_common_load_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr___class__, qstr qstr);
-void emit_common_store_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr);
-void emit_common_delete_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr);
+void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qstr);
+void emit_common_store_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qstr);
+void emit_common_delete_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qstr);
 
-void emit_pass1_new(emit_t **emit, const emit_method_table_t **emit_method_table);
-uint emit_pass1_get_max_num_labels(emit_t *emit);
-
+void emit_pass1_new(emit_t **emit, const emit_method_table_t **emit_method_table, qstr qstr___class__);
 void emit_cpython_new(emit_t **emit_out, const emit_method_table_t **emit_method_table_out, uint max_num_labels);
 void emit_bc_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
 void emit_x64_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
 void emit_thumb_new(emit_t **emit, const emit_method_table_t **emit_method_table, uint max_num_labels);
-
-/*
-void emit_set_native_types(emitter_t *emit, bool do_native_types);
-void emit_start_pass(emitter_t *emit, pass_kind_t pass, scope_t *scope);
-void emit_end_pass(emitter_t *emit);
-bool emit_last_emit_was_return_value(emitter_t *emit);
-int emit_get_stack_size(emitter_t *emit);
-void emit_set_stack_size(emitter_t *emit, int size);
-
-int emit_label_new(emitter_t *emit);
-void emit_label_assign(emitter_t *emit, int l);
-void emit_import_name(emitter_t *emit, qstr qstr);
-void emit_import_from(emitter_t *emit, qstr qstr);
-void emit_import_star(emitter_t *emit);
-void emit_load_const_tok(emitter_t *emit, py_token_kind_t tok);
-void emit_load_const_small_int(emitter_t *emit, int arg);
-void emit_load_const_int(emitter_t *emit, qstr qstr);
-void emit_load_const_dec(emitter_t *emit, qstr qstr);
-void emit_load_const_id(emitter_t *emit, qstr qstr);
-void emit_load_const_str(emitter_t *emit, qstr qstr, bool bytes);
-void emit_load_const_verbatim_start(emitter_t *emit);
-void emit_load_const_verbatim_int(emitter_t *emit, int val);
-void emit_load_const_verbatim_str(emitter_t *emit, const char *str);
-void emit_load_const_verbatim_strn(emitter_t *emit, const char *str, int len);
-void emit_load_const_verbatim_quoted_str(emitter_t *emit, qstr qstr, bool bytes);
-void emit_load_const_verbatim_end(emitter_t *emit);
-void emit_load_fast(emitter_t *emit, qstr qstr, int local_num);
-void emit_load_name(emitter_t *emit, qstr qstr);
-void emit_load_global(emitter_t *emit, qstr qstr);
-void emit_load_deref(emitter_t *emit, qstr qstr);
-void emit_load_closure(emitter_t *emit, qstr qstr);
-void emit_load_attr(emitter_t *emit, qstr qstr);
-void emit_load_method(emitter_t *emit, qstr qstr);
-void emit_load_build_class(emitter_t *emit);
-void emit_store_fast(emitter_t *emit, qstr qstr, int local_num);
-void emit_store_name(emitter_t *emit, qstr qstr);
-void emit_store_global(emitter_t *emit, qstr qstr);
-void emit_store_deref(emitter_t *emit, qstr qstr);
-void emit_store_attr(emitter_t *emit, qstr qstr);
-void emit_store_locals(emitter_t *emit);
-void emit_store_subscr(emitter_t *emit);
-void emit_delete_fast(emitter_t *emit, qstr qstr, int local_num);
-void emit_delete_name(emitter_t *emit, qstr qstr);
-void emit_delete_global(emitter_t *emit, qstr qstr);
-void emit_delete_deref(emitter_t *emit, qstr qstr);
-void emit_delete_attr(emitter_t *emit, qstr qstr);
-void emit_delete_subscr(emitter_t *emit);
-void emit_dup_top(emitter_t *emit);
-void emit_dup_top_two(emitter_t *emit);
-void emit_pop_top(emitter_t *emit);
-void emit_rot_two(emitter_t *emit);
-void emit_rot_three(emitter_t *emit);
-void emit_jump(emitter_t *emit, int label);
-void emit_pop_jump_if_true(emitter_t *emit, int label);
-void emit_pop_jump_if_false(emitter_t *emit, int label);
-void emit_jump_if_true_or_pop(emitter_t *emit, int label);
-void emit_jump_if_false_or_pop(emitter_t *emit, int label);
-void emit_setup_loop(emitter_t *emit, int label);
-void emit_break_loop(emitter_t *emit, int label);
-void emit_continue_loop(emitter_t *emit, int label);
-void emit_setup_with(emitter_t *emit, int label);
-void emit_with_cleanup(emitter_t *emit);
-void emit_setup_except(emitter_t *emit, int label);
-void emit_setup_finally(emitter_t *emit, int label);
-void emit_end_finally(emitter_t *emit);
-void emit_get_iter(emitter_t *emit); // tos = getiter(tos)
-void emit_for_iter(emitter_t *emit, int label);
-void emit_for_iter_end(emitter_t *emit);
-void emit_pop_block(emitter_t *emit);
-void emit_pop_except(emitter_t *emit);
-void emit_unary_op(emitter_t *emit, rt_unary_op_t op);
-void emit_binary_op(emitter_t *emit, rt_binary_op_t op);
-void emit_compare_op(emitter_t *emit, rt_compare_op_t op);
-void emit_build_tuple(emitter_t *emit, int n_args);
-void emit_build_list(emitter_t *emit, int n_args);
-void emit_list_append(emitter_t *emit, int list_stack_index);
-void emit_build_map(emitter_t *emit, int n_args);
-void emit_store_map(emitter_t *emit);
-void emit_map_add(emitter_t *emit, int map_stack_index);
-void emit_build_set(emitter_t *emit, int n_args);
-void emit_set_add(emitter_t *emit, int set_stack_index);
-void emit_build_slice(emitter_t *emit, int n_args);
-void emit_unpack_sequence(emitter_t *emit, int n_args);
-void emit_unpack_ex(emitter_t *emit, int n_left, int n_right);
-void emit_make_function(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-void emit_make_closure(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-void emit_call_function(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
-void emit_call_method(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
-void emit_return_value(emitter_t *emit);
-void emit_raise_varargs(emitter_t *emit, int n_args);
-void emit_yield_value(emitter_t *emit);
-void emit_yield_from(emitter_t *emit);
-*/

@@ -29,6 +29,10 @@ struct _emit_t {
     int *label_offsets;
 };
 
+// forward declarations
+static const emit_method_table_t emit_cpy_method_table;
+static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes);
+
 static void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
 }
 
@@ -61,6 +65,18 @@ static int emit_cpy_get_stack_size(emit_t *emit) {
 
 static void emit_cpy_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
+}
+
+static void emit_cpy_load_id(emit_t *emit, qstr qstr) {
+    emit_common_load_id(emit, &emit_cpy_method_table, emit->scope, qstr);
+}
+
+static void emit_cpy_store_id(emit_t *emit, qstr qstr) {
+    emit_common_store_id(emit, &emit_cpy_method_table, emit->scope, qstr);
+}
+
+static void emit_cpy_delete_id(emit_t *emit, qstr qstr) {
+    emit_common_delete_id(emit, &emit_cpy_method_table, emit->scope, qstr);
 }
 
 static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
@@ -156,7 +172,6 @@ static void emit_cpy_load_const_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes);
 static void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
@@ -817,6 +832,10 @@ static const emit_method_table_t emit_cpy_method_table = {
     emit_cpy_last_emit_was_return_value,
     emit_cpy_get_stack_size,
     emit_cpy_set_stack_size,
+
+    emit_cpy_load_id,
+    emit_cpy_store_id,
+    emit_cpy_delete_id,
 
     emit_cpy_label_assign,
     emit_cpy_import_name,

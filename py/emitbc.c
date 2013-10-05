@@ -32,6 +32,9 @@ struct _emit_t {
     byte dummy_data[8];
 };
 
+// forward declaration
+static const emit_method_table_t emit_bc_method_table;
+
 uint emit_bc_get_code_size(emit_t* emit) {
     return emit->code_size;
 }
@@ -148,6 +151,18 @@ int emit_bc_get_stack_size(emit_t *emit) {
 
 static void emit_bc_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
+}
+
+static void emit_bc_load_id(emit_t *emit, qstr qstr) {
+    emit_common_load_id(emit, &emit_bc_method_table, emit->scope, qstr);
+}
+
+static void emit_bc_store_id(emit_t *emit, qstr qstr) {
+    emit_common_store_id(emit, &emit_bc_method_table, emit->scope, qstr);
+}
+
+static void emit_bc_delete_id(emit_t *emit, qstr qstr) {
+    emit_common_delete_id(emit, &emit_bc_method_table, emit->scope, qstr);
 }
 
 static void emit_pre(emit_t *emit, int stack_size_delta) {
@@ -664,6 +679,10 @@ static const emit_method_table_t emit_bc_method_table = {
     emit_bc_last_emit_was_return_value,
     emit_bc_get_stack_size,
     emit_bc_set_stack_size,
+
+    emit_bc_load_id,
+    emit_bc_store_id,
+    emit_bc_delete_id,
 
     emit_bc_label_assign,
     emit_bc_import_name,
