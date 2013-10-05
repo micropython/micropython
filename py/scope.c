@@ -165,6 +165,46 @@ void scope_close_over_in_parents(scope_t *scope, qstr qstr) {
     assert(0); // we should have found the variable in one of the parents
 }
 
+void scope_declare_global(scope_t *scope, qstr qstr) {
+    if (scope->kind == SCOPE_MODULE) {
+        printf("SyntaxError?: can't declare global in outer code\n");
+        return;
+    }
+    bool added;
+    id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
+    if (!added) {
+        printf("SyntaxError?: identifier already declared something\n");
+        return;
+    }
+    id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+
+    // if the id exists in the global scope, set its kind to EXPLICIT_GLOBAL
+    id_info = scope_find_global(scope, qstr);
+    if (id_info != NULL) {
+        id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+    }
+}
+
+void scope_declare_nonlocal(scope_t *scope, qstr qstr) {
+    if (scope->kind == SCOPE_MODULE) {
+        printf("SyntaxError?: can't declare nonlocal in outer code\n");
+        return;
+    }
+    bool added;
+    id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
+    if (!added) {
+        printf("SyntaxError?: identifier already declared something\n");
+        return;
+    }
+    id_info_t *id_info2 = scope_find_local_in_parent(scope, qstr);
+    if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
+        printf("SyntaxError: no binding for nonlocal '%s' found\n", qstr_str(qstr));
+        return;
+    }
+    id_info->kind = ID_INFO_KIND_FREE;
+    scope_close_over_in_parents(scope, qstr);
+}
+
 void scope_print_info(scope_t *s) {
     if (s->kind == SCOPE_MODULE) {
         printf("code <module>\n");

@@ -12,53 +12,9 @@
 #include "runtime.h"
 #include "emit.h"
 
-#define EMIT(fun, arg...) (emit_##fun(emit, ##arg))
+#define EMIT(fun, arg...) (emit_method_table->fun(emit, ##arg))
 
-void emit_common_declare_global(pass_kind_t pass, scope_t *scope, qstr qstr) {
-    if (pass == PASS_1) {
-        if (scope->kind == SCOPE_MODULE) {
-            printf("SyntaxError?: can't declare global in outer code\n");
-            return;
-        }
-        bool added;
-        id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
-        if (!added) {
-            printf("SyntaxError?: identifier already declared something\n");
-            return;
-        }
-        id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
-
-        // if the id exists in the global scope, set its kind to EXPLICIT_GLOBAL
-        id_info = scope_find_global(scope, qstr);
-        if (id_info != NULL) {
-            id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
-        }
-    }
-}
-
-void emit_common_declare_nonlocal(pass_kind_t pass, scope_t *scope, qstr qstr) {
-    if (pass == PASS_1) {
-        if (scope->kind == SCOPE_MODULE) {
-            printf("SyntaxError?: can't declare nonlocal in outer code\n");
-            return;
-        }
-        bool added;
-        id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
-        if (!added) {
-            printf("SyntaxError?: identifier already declared something\n");
-            return;
-        }
-        id_info_t *id_info2 = scope_find_local_in_parent(scope, qstr);
-        if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
-            printf("SyntaxError: no binding for nonlocal '%s' found\n", qstr_str(qstr));
-            return;
-        }
-        id_info->kind = ID_INFO_KIND_FREE;
-        scope_close_over_in_parents(scope, qstr);
-    }
-}
-
-void emit_common_load_id(pass_kind_t pass, scope_t *scope, qstr qstr___class__, emitter_t *emit, qstr qstr) {
+void emit_common_load_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr___class__, qstr qstr) {
     id_info_t *id_info = NULL;
     if (pass == PASS_1) {
         // name adding/lookup
@@ -109,7 +65,7 @@ void emit_common_load_id(pass_kind_t pass, scope_t *scope, qstr qstr___class__, 
     }
 }
 
-static id_info_t *get_id_for_modification(pass_kind_t pass, scope_t *scope, emitter_t *emit, qstr qstr) {
+static id_info_t *get_id_for_modification(pass_kind_t pass, scope_t *scope, qstr qstr) {
     id_info_t *id_info = NULL;
     if (pass == PASS_1) {
         // name adding/lookup
@@ -134,9 +90,9 @@ static id_info_t *get_id_for_modification(pass_kind_t pass, scope_t *scope, emit
     return id_info;
 }
 
-void emit_common_store_id(pass_kind_t pass, scope_t *scope, emitter_t *emit, qstr qstr) {
+void emit_common_store_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr) {
     // create/get the id info
-    id_info_t *id = get_id_for_modification(pass, scope, emit, qstr);
+    id_info_t *id = get_id_for_modification(pass, scope, qstr);
 
     // call the emit backend with the correct code
     if (id == NULL || id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
@@ -152,9 +108,9 @@ void emit_common_store_id(pass_kind_t pass, scope_t *scope, emitter_t *emit, qst
     }
 }
 
-void emit_common_delete_id(pass_kind_t pass, scope_t *scope, emitter_t *emit, qstr qstr) {
+void emit_common_delete_id(pass_kind_t pass, scope_t *scope, emit_t *emit, const emit_method_table_t *emit_method_table, qstr qstr) {
     // create/get the id info
-    id_info_t *id = get_id_for_modification(pass, scope, emit, qstr);
+    id_info_t *id = get_id_for_modification(pass, scope, qstr);
 
     // call the emit backend with the correct code
     if (id == NULL || id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {

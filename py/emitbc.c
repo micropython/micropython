@@ -15,10 +15,8 @@
 #include "emit.h"
 #include "bc.h"
 
-#ifdef EMIT_DO_BC
-
-struct _emitter_t {
-    int pass;
+struct _emit_t {
+    pass_kind_t pass;
     int next_label;
     int stack_size;
     bool last_emit_was_return_value;
@@ -34,25 +32,18 @@ struct _emitter_t {
     byte dummy_data[8];
 };
 
-emitter_t *emit_new() {
-    emitter_t *emit = m_new(emitter_t, 1);
-    emit->max_num_labels = 0;
-    emit->label_offsets = NULL;
-    emit->code_offset = 0;
-    emit->code_size = 0;
-    emit->code_base = NULL;
-    return emit;
-}
-
-uint emit_get_code_size(emitter_t* emit) {
+uint emit_bc_get_code_size(emit_t* emit) {
     return emit->code_size;
 }
 
-void* emit_get_code(emitter_t* emit) {
+void* emit_bc_get_code(emit_t* emit) {
     return emit->code_base;
 }
 
-void emit_start_pass(emitter_t *emit, pass_kind_t pass, scope_t *scope) {
+static void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
+}
+
+static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->next_label = 1;
     emit->stack_size = 0;
@@ -71,7 +62,7 @@ void emit_start_pass(emitter_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->code_offset = 0;
 }
 
-void emit_end_pass(emitter_t *emit) {
+static void emit_bc_end_pass(emit_t *emit) {
     // check stack is back to zero size
     if (emit->stack_size != 0) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
@@ -95,7 +86,7 @@ void emit_end_pass(emitter_t *emit) {
 }
 
 // all functions must go through this one to emit bytes
-static byte* emit_get_cur_to_write_bytes(emitter_t* emit, int num_bytes_to_write) {
+static byte* emit_get_cur_to_write_bytes(emit_t* emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (emit->pass < PASS_3) {
         emit->code_offset += num_bytes_to_write;
@@ -108,19 +99,19 @@ static byte* emit_get_cur_to_write_bytes(emitter_t* emit, int num_bytes_to_write
     }
 }
 
-static void emit_write_byte_1(emitter_t* emit, byte b1) {
+static void emit_write_byte_1(emit_t* emit, byte b1) {
     byte* c = emit_get_cur_to_write_bytes(emit, 1);
     c[0] = b1;
 }
 
-static void emit_write_byte_1_byte(emitter_t* emit, byte b1, uint b2) {
+static void emit_write_byte_1_byte(emit_t* emit, byte b1, uint b2) {
     assert((b2 & (~0xff)) == 0);
     byte* c = emit_get_cur_to_write_bytes(emit, 2);
     c[0] = b1;
     c[1] = b2;
 }
 
-static void emit_write_byte_1_int(emitter_t* emit, byte b1, int num) {
+static void emit_write_byte_1_int(emit_t* emit, byte b1, int num) {
     assert((num & (~0x7fff)) == 0 || (num & (~0x7fff)) == (~0x7fff));
     byte* c = emit_get_cur_to_write_bytes(emit, 3);
     c[0] = b1;
@@ -128,7 +119,7 @@ static void emit_write_byte_1_int(emitter_t* emit, byte b1, int num) {
     c[2] = num >> 8;
 }
 
-static void emit_write_byte_1_uint(emitter_t* emit, byte b1, uint num) {
+static void emit_write_byte_1_uint(emit_t* emit, byte b1, uint num) {
     if (num <= 127) { // fits in 0x7f
         // fit argument in single byte
         byte* c = emit_get_cur_to_write_bytes(emit, 2);
@@ -146,11 +137,11 @@ static void emit_write_byte_1_uint(emitter_t* emit, byte b1, uint num) {
     }
 }
 
-static void emit_write_byte_1_qstr(emitter_t* emit, byte b1, qstr qstr) {
+static void emit_write_byte_1_qstr(emit_t* emit, byte b1, qstr qstr) {
     emit_write_byte_1_uint(emit, b1, qstr);
 }
 
-static void emit_write_byte_1_label(emitter_t* emit, byte b1, int label) {
+static void emit_write_byte_1_label(emit_t* emit, byte b1, int label) {
     uint code_offset;
     if (emit->pass < PASS_3) {
         code_offset = 0;
@@ -160,21 +151,21 @@ static void emit_write_byte_1_label(emitter_t* emit, byte b1, int label) {
     emit_write_byte_1_uint(emit, b1, code_offset);
 }
 
-bool emit_last_emit_was_return_value(emitter_t *emit) {
+bool emit_bc_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-int emit_get_stack_size(emitter_t *emit) {
+int emit_bc_get_stack_size(emit_t *emit) {
     return emit->stack_size;
 }
 
-void emit_set_stack_size(emitter_t *emit, int size) {
+static void emit_bc_set_stack_size(emit_t *emit, int size) {
     if (emit->pass > PASS_1) {
         emit->stack_size = size;
     }
 }
 
-static void emit_pre(emitter_t *emit, int stack_size_delta) {
+static void emit_pre(emit_t *emit, int stack_size_delta) {
     if (emit->pass > PASS_1) {
         emit->stack_size += stack_size_delta;
         if (emit->stack_size > emit->scope->stack_size) {
@@ -184,11 +175,11 @@ static void emit_pre(emitter_t *emit, int stack_size_delta) {
     emit->last_emit_was_return_value = false;
 }
 
-int emit_label_new(emitter_t *emit) {
+static int emit_bc_label_new(emit_t *emit) {
     return emit->next_label++;
 }
 
-void emit_label_assign(emitter_t *emit, int l) {
+static void emit_bc_label_assign(emit_t *emit, int l) {
     emit_pre(emit, 0);
     if (emit->pass > PASS_1) {
         assert(l < emit->max_num_labels);
@@ -204,22 +195,22 @@ void emit_label_assign(emitter_t *emit, int l) {
     }
 }
 
-void emit_import_name(emitter_t *emit, qstr qstr) {
+static void emit_bc_import_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_IMPORT_NAME, qstr);
 }
 
-void emit_import_from(emitter_t *emit, qstr qstr) {
+static void emit_bc_import_from(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_IMPORT_FROM, qstr);
 }
 
-void emit_import_star(emitter_t *emit) {
+static void emit_bc_import_star(emit_t *emit) {
     emit_pre(emit, -1);
     emit_write_byte_1(emit, PYBC_IMPORT_STAR);
 }
 
-void emit_load_const_tok(emitter_t *emit, py_token_kind_t tok) {
+static void emit_bc_load_const_tok(emit_t *emit, py_token_kind_t tok) {
     emit_pre(emit, 1);
     switch (tok) {
         case PY_TOKEN_KW_FALSE: emit_write_byte_1(emit, PYBC_LOAD_CONST_FALSE); break;
@@ -229,27 +220,27 @@ void emit_load_const_tok(emitter_t *emit, py_token_kind_t tok) {
     }
 }
 
-void emit_load_const_small_int(emitter_t *emit, int arg) {
+static void emit_bc_load_const_small_int(emit_t *emit, int arg) {
     emit_pre(emit, 1);
     emit_write_byte_1_int(emit, PYBC_LOAD_CONST_SMALL_INT, arg);
 }
 
-void emit_load_const_int(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_const_int(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_INT, qstr);
 }
 
-void emit_load_const_dec(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_const_dec(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_DEC, qstr);
 }
 
-void emit_load_const_id(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_const_id(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_ID, qstr);
 }
 
-void emit_load_const_str(emitter_t *emit, qstr qstr, bool bytes) {
+static void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit, 1);
     if (bytes) {
         emit_write_byte_1_qstr(emit, PYBC_LOAD_CONST_BYTES, qstr);
@@ -258,32 +249,32 @@ void emit_load_const_str(emitter_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-void emit_load_const_verbatim_start(emitter_t *emit) {
+static void emit_bc_load_const_verbatim_start(emit_t *emit) {
     emit_pre(emit, 1);
     assert(0);
 }
 
-void emit_load_const_verbatim_int(emitter_t *emit, int val) {
+static void emit_bc_load_const_verbatim_int(emit_t *emit, int val) {
     assert(0);
 }
 
-void emit_load_const_verbatim_str(emitter_t *emit, const char *str) {
+static void emit_bc_load_const_verbatim_str(emit_t *emit, const char *str) {
     assert(0);
 }
 
-void emit_load_const_verbatim_strn(emitter_t *emit, const char *str, int len) {
+static void emit_bc_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
     assert(0);
 }
 
-void emit_load_const_verbatim_quoted_str(emitter_t *emit, qstr qstr, bool bytes) {
+static void emit_bc_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
     assert(0);
 }
 
-void emit_load_const_verbatim_end(emitter_t *emit) {
+static void emit_bc_load_const_verbatim_end(emit_t *emit) {
     assert(0);
 }
 
-void emit_load_fast(emitter_t *emit, qstr qstr, int local_num) {
+static void emit_bc_load_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_pre(emit, 1);
     switch (local_num) {
@@ -294,42 +285,42 @@ void emit_load_fast(emitter_t *emit, qstr qstr, int local_num) {
     }
 }
 
-void emit_load_name(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_NAME, qstr);
 }
 
-void emit_load_global(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_GLOBAL, qstr);
 }
 
-void emit_load_deref(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_deref(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     assert(0);
 }
 
-void emit_load_closure(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_closure(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     assert(0);
 }
 
-void emit_load_attr(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_attr(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_ATTR, qstr);
 }
 
-void emit_load_method(emitter_t *emit, qstr qstr) {
+static void emit_bc_load_method(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_METHOD, qstr);
 }
 
-void emit_load_build_class(emitter_t *emit) {
+static void emit_bc_load_build_class(emit_t *emit) {
     emit_pre(emit, 1);
     emit_write_byte_1(emit, PYBC_LOAD_BUILD_CLASS);
 }
 
-void emit_store_fast(emitter_t *emit, qstr qstr, int local_num) {
+static void emit_bc_store_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_pre(emit, -1);
     switch (local_num) {
@@ -340,268 +331,268 @@ void emit_store_fast(emitter_t *emit, qstr qstr, int local_num) {
     }
 }
 
-void emit_store_name(emitter_t *emit, qstr qstr) {
+static void emit_bc_store_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_STORE_NAME, qstr);
 }
 
-void emit_store_global(emitter_t *emit, qstr qstr) {
+static void emit_bc_store_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_STORE_GLOBAL, qstr);
 }
 
-void emit_store_deref(emitter_t *emit, qstr qstr) {
+static void emit_bc_store_deref(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     assert(0);
 }
 
-void emit_store_attr(emitter_t *emit, qstr qstr) {
+static void emit_bc_store_attr(emit_t *emit, qstr qstr) {
     emit_pre(emit, -2);
     emit_write_byte_1_qstr(emit, PYBC_STORE_ATTR, qstr);
 }
 
-void emit_store_locals(emitter_t *emit) {
+static void emit_bc_store_locals(emit_t *emit) {
     emit_pre(emit, -1);
     emit_write_byte_1(emit, PYBC_STORE_LOCALS);
 }
 
-void emit_store_subscr(emitter_t *emit) {
+static void emit_bc_store_subscr(emit_t *emit) {
     emit_pre(emit, -3);
     emit_write_byte_1(emit, PYBC_STORE_SUBSCR);
 }
 
-void emit_delete_fast(emitter_t *emit, qstr qstr, int local_num) {
+static void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_pre(emit, 0);
     emit_write_byte_1_uint(emit, PYBC_DELETE_FAST_N, local_num);
 }
 
-void emit_delete_name(emitter_t *emit, qstr qstr) {
+static void emit_bc_delete_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_NAME, qstr);
 }
 
-void emit_delete_global(emitter_t *emit, qstr qstr) {
+static void emit_bc_delete_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_GLOBAL, qstr);
 }
 
-void emit_delete_deref(emitter_t *emit, qstr qstr) {
+static void emit_bc_delete_deref(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, qstr);
 }
 
-void emit_delete_attr(emitter_t *emit, qstr qstr) {
+static void emit_bc_delete_attr(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_ATTR, qstr);
 }
 
-void emit_delete_subscr(emitter_t *emit) {
+static void emit_bc_delete_subscr(emit_t *emit) {
     emit_pre(emit, -2);
     emit_write_byte_1(emit, PYBC_DELETE_SUBSCR);
 }
 
-void emit_dup_top(emitter_t *emit) {
+static void emit_bc_dup_top(emit_t *emit) {
     emit_pre(emit, 1);
     emit_write_byte_1(emit, PYBC_DUP_TOP);
 }
 
-void emit_dup_top_two(emitter_t *emit) {
+static void emit_bc_dup_top_two(emit_t *emit) {
     emit_pre(emit, 2);
     emit_write_byte_1(emit, PYBC_DUP_TOP_TWO);
 }
 
-void emit_pop_top(emitter_t *emit) {
+static void emit_bc_pop_top(emit_t *emit) {
     emit_pre(emit, -1);
     emit_write_byte_1(emit, PYBC_POP_TOP);
 }
 
-void emit_rot_two(emitter_t *emit) {
+static void emit_bc_rot_two(emit_t *emit) {
     emit_pre(emit, 0);
     emit_write_byte_1(emit, PYBC_ROT_TWO);
 }
 
-void emit_rot_three(emitter_t *emit) {
+static void emit_bc_rot_three(emit_t *emit) {
     emit_pre(emit, 0);
     emit_write_byte_1(emit, PYBC_ROT_THREE);
 }
 
-void emit_jump(emitter_t *emit, int label) {
+static void emit_bc_jump(emit_t *emit, int label) {
     emit_pre(emit, 0);
     emit_write_byte_1_label(emit, PYBC_JUMP, label);
 }
 
-void emit_pop_jump_if_true(emitter_t *emit, int label) {
+static void emit_bc_pop_jump_if_true(emit_t *emit, int label) {
     emit_pre(emit, -1);
     emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_TRUE, label);
 }
 
-void emit_pop_jump_if_false(emitter_t *emit, int label) {
+static void emit_bc_pop_jump_if_false(emit_t *emit, int label) {
     emit_pre(emit, -1);
     emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_FALSE, label);
 }
 
-void emit_jump_if_true_or_pop(emitter_t *emit, int label) {
+static void emit_bc_jump_if_true_or_pop(emit_t *emit, int label) {
     emit_pre(emit, -1);
     emit_write_byte_1_label(emit, PYBC_JUMP_IF_TRUE_OR_POP, label);
 }
 
-void emit_jump_if_false_or_pop(emitter_t *emit, int label) {
+static void emit_bc_jump_if_false_or_pop(emit_t *emit, int label) {
     emit_pre(emit, -1);
     emit_write_byte_1_label(emit, PYBC_JUMP_IF_FALSE_OR_POP, label);
 }
 
-void emit_setup_loop(emitter_t *emit, int label) {
+static void emit_bc_setup_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
     emit_write_byte_1_label(emit, PYBC_SETUP_LOOP, label);
 }
 
-void emit_break_loop(emitter_t *emit, int label) {
+static void emit_bc_break_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
     emit_write_byte_1_label(emit, PYBC_BREAK_LOOP, label);
 }
 
-void emit_continue_loop(emitter_t *emit, int label) {
+static void emit_bc_continue_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
     emit_write_byte_1_label(emit, PYBC_CONTINUE_LOOP, label);
 }
 
-void emit_setup_with(emitter_t *emit, int label) {
+static void emit_bc_setup_with(emit_t *emit, int label) {
     emit_pre(emit, 7);
     emit_write_byte_1_label(emit, PYBC_SETUP_WITH, label);
 }
 
-void emit_with_cleanup(emitter_t *emit) {
+static void emit_bc_with_cleanup(emit_t *emit) {
     emit_pre(emit, -7);
     emit_write_byte_1(emit, PYBC_WITH_CLEANUP);
 }
 
-void emit_setup_except(emitter_t *emit, int label) {
+static void emit_bc_setup_except(emit_t *emit, int label) {
     emit_pre(emit, 6);
     emit_write_byte_1_label(emit, PYBC_SETUP_EXCEPT, label);
 }
 
-void emit_setup_finally(emitter_t *emit, int label) {
+static void emit_bc_setup_finally(emit_t *emit, int label) {
     emit_pre(emit, 6);
     emit_write_byte_1_label(emit, PYBC_SETUP_FINALLY, label);
 }
 
-void emit_end_finally(emitter_t *emit) {
+static void emit_bc_end_finally(emit_t *emit) {
     emit_pre(emit, -1);
     emit_write_byte_1(emit, PYBC_END_FINALLY);
 }
 
-void emit_get_iter(emitter_t *emit) {
+static void emit_bc_get_iter(emit_t *emit) {
     emit_pre(emit, 0);
     emit_write_byte_1(emit, PYBC_GET_ITER);
 }
 
-void emit_for_iter(emitter_t *emit, int label) {
+static void emit_bc_for_iter(emit_t *emit, int label) {
     emit_pre(emit, 1);
     emit_write_byte_1_label(emit, PYBC_FOR_ITER, label);
 }
 
-void emit_for_iter_end(emitter_t *emit) {
+static void emit_bc_for_iter_end(emit_t *emit) {
     emit_pre(emit, -1);
 }
 
-void emit_pop_block(emitter_t *emit) {
+static void emit_bc_pop_block(emit_t *emit) {
     emit_pre(emit, 0);
     emit_write_byte_1(emit, PYBC_POP_BLOCK);
 }
 
-void emit_pop_except(emitter_t *emit) {
+static void emit_bc_pop_except(emit_t *emit) {
     emit_pre(emit, 0);
     emit_write_byte_1(emit, PYBC_POP_EXCEPT);
 }
 
-void emit_unary_op(emitter_t *emit, rt_unary_op_t op) {
+static void emit_bc_unary_op(emit_t *emit, rt_unary_op_t op) {
     emit_pre(emit, 0);
     emit_write_byte_1_byte(emit, PYBC_UNARY_OP, op);
 }
 
-void emit_binary_op(emitter_t *emit, rt_binary_op_t op) {
+static void emit_bc_binary_op(emit_t *emit, rt_binary_op_t op) {
     emit_pre(emit, -1);
     emit_write_byte_1_byte(emit, PYBC_BINARY_OP, op);
 }
 
-void emit_compare_op(emitter_t *emit, rt_compare_op_t op) {
+static void emit_bc_compare_op(emit_t *emit, rt_compare_op_t op) {
     emit_pre(emit, -1);
     emit_write_byte_1_byte(emit, PYBC_COMPARE_OP, op);
 }
 
-void emit_build_tuple(emitter_t *emit, int n_args) {
+static void emit_bc_build_tuple(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1 - n_args);
     emit_write_byte_1_uint(emit, PYBC_BUILD_TUPLE, n_args);
 }
 
-void emit_build_list(emitter_t *emit, int n_args) {
+static void emit_bc_build_list(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1 - n_args);
     emit_write_byte_1_uint(emit, PYBC_BUILD_LIST, n_args);
 }
 
-void emit_list_append(emitter_t *emit, int list_stack_index) {
+static void emit_bc_list_append(emit_t *emit, int list_stack_index) {
     assert(list_stack_index >= 0);
     emit_pre(emit, -1);
     emit_write_byte_1_uint(emit, PYBC_LIST_APPEND, list_stack_index);
 }
 
-void emit_build_map(emitter_t *emit, int n_args) {
+static void emit_bc_build_map(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1);
     emit_write_byte_1_uint(emit, PYBC_BUILD_MAP, n_args);
 }
 
-void emit_store_map(emitter_t *emit) {
+static void emit_bc_store_map(emit_t *emit) {
     emit_pre(emit, -2);
     emit_write_byte_1(emit, PYBC_STORE_MAP);
 }
 
-void emit_map_add(emitter_t *emit, int map_stack_index) {
+static void emit_bc_map_add(emit_t *emit, int map_stack_index) {
     assert(map_stack_index >= 0);
     emit_pre(emit, -2);
     emit_write_byte_1_uint(emit, PYBC_MAP_ADD, map_stack_index);
 }
 
-void emit_build_set(emitter_t *emit, int n_args) {
+static void emit_bc_build_set(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1 - n_args);
     emit_write_byte_1_uint(emit, PYBC_BUILD_SET, n_args);
 }
 
-void emit_set_add(emitter_t *emit, int set_stack_index) {
+static void emit_bc_set_add(emit_t *emit, int set_stack_index) {
     assert(set_stack_index >= 0);
     emit_pre(emit, -1);
     emit_write_byte_1_uint(emit, PYBC_SET_ADD, set_stack_index);
 }
 
-void emit_build_slice(emitter_t *emit, int n_args) {
+static void emit_bc_build_slice(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1 - n_args);
     emit_write_byte_1_uint(emit, PYBC_BUILD_SLICE, n_args);
 }
 
-void emit_unpack_sequence(emitter_t *emit, int n_args) {
+static void emit_bc_unpack_sequence(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, -1 + n_args);
     emit_write_byte_1_uint(emit, PYBC_UNPACK_SEQUENCE, n_args);
 }
 
-void emit_unpack_ex(emitter_t *emit, int n_left, int n_right) {
+static void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
     assert(n_left >=0 && n_right >= 0);
     emit_pre(emit, -1 + n_left + n_right + 1);
     emit_write_byte_1_uint(emit, PYBC_UNPACK_EX, n_left | (n_right << 8));
 }
 
-void emit_make_function(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+static void emit_bc_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     assert(n_default_params == 0 && n_dict_params == 0);
     emit_pre(emit, 1);
     emit_write_byte_1_uint(emit, PYBC_MAKE_FUNCTION, scope->unique_code_id);
 }
 
-void emit_make_closure(emitter_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+static void emit_bc_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     assert(0);
     emit_pre(emit, -2 - n_default_params - 2 * n_dict_params);
     if (emit->pass == PASS_3) {
@@ -609,7 +600,7 @@ void emit_make_closure(emitter_t *emit, scope_t *scope, int n_dict_params, int n
     }
 }
 
-void emit_call_function(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     int s = 0;
     if (have_star_arg) {
         s += 1;
@@ -635,7 +626,7 @@ void emit_call_function(emitter_t *emit, int n_positional, int n_keyword, bool h
     emit_write_byte_1_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
 }
 
-void emit_call_method(emitter_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     int s = 0;
     if (have_star_arg) {
         s += 1;
@@ -661,19 +652,19 @@ void emit_call_method(emitter_t *emit, int n_positional, int n_keyword, bool hav
     emit_write_byte_1_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
 }
 
-void emit_return_value(emitter_t *emit) {
+static void emit_bc_return_value(emit_t *emit) {
     emit_pre(emit, -1);
     emit->last_emit_was_return_value = true;
     emit_write_byte_1(emit, PYBC_RETURN_VALUE);
 }
 
-void emit_raise_varargs(emitter_t *emit, int n_args) {
+static void emit_bc_raise_varargs(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, -n_args);
     emit_write_byte_1_uint(emit, PYBC_RAISE_VARARGS, n_args);
 }
 
-void emit_yield_value(emitter_t *emit) {
+static void emit_bc_yield_value(emit_t *emit) {
     emit_pre(emit, 0);
     if (emit->pass == PASS_2) {
         emit->scope->flags |= SCOPE_FLAG_GENERATOR;
@@ -681,7 +672,7 @@ void emit_yield_value(emitter_t *emit) {
     emit_write_byte_1(emit, PYBC_YIELD_VALUE);
 }
 
-void emit_yield_from(emitter_t *emit) {
+static void emit_bc_yield_from(emit_t *emit) {
     emit_pre(emit, -1);
     if (emit->pass == PASS_2) {
         emit->scope->flags |= SCOPE_FLAG_GENERATOR;
@@ -689,4 +680,107 @@ void emit_yield_from(emitter_t *emit) {
     emit_write_byte_1(emit, PYBC_YIELD_FROM);
 }
 
-#endif // EMIT_DO_BC
+static const emit_method_table_t emit_bc_method_table = {
+    emit_bc_set_native_types,
+    emit_bc_start_pass,
+    emit_bc_end_pass,
+    emit_bc_last_emit_was_return_value,
+    emit_bc_get_stack_size,
+    emit_bc_set_stack_size,
+
+    emit_bc_label_new,
+    emit_bc_label_assign,
+    emit_bc_import_name,
+    emit_bc_import_from,
+    emit_bc_import_star,
+    emit_bc_load_const_tok,
+    emit_bc_load_const_small_int,
+    emit_bc_load_const_int,
+    emit_bc_load_const_dec,
+    emit_bc_load_const_id,
+    emit_bc_load_const_str,
+    emit_bc_load_const_verbatim_start,
+    emit_bc_load_const_verbatim_int,
+    emit_bc_load_const_verbatim_str,
+    emit_bc_load_const_verbatim_strn,
+    emit_bc_load_const_verbatim_quoted_str,
+    emit_bc_load_const_verbatim_end,
+    emit_bc_load_fast,
+    emit_bc_load_name,
+    emit_bc_load_global,
+    emit_bc_load_deref,
+    emit_bc_load_closure,
+    emit_bc_load_attr,
+    emit_bc_load_method,
+    emit_bc_load_build_class,
+    emit_bc_store_fast,
+    emit_bc_store_name,
+    emit_bc_store_global,
+    emit_bc_store_deref,
+    emit_bc_store_attr,
+    emit_bc_store_locals,
+    emit_bc_store_subscr,
+    emit_bc_delete_fast,
+    emit_bc_delete_name,
+    emit_bc_delete_global,
+    emit_bc_delete_deref,
+    emit_bc_delete_attr,
+    emit_bc_delete_subscr,
+    emit_bc_dup_top,
+    emit_bc_dup_top_two,
+    emit_bc_pop_top,
+    emit_bc_rot_two,
+    emit_bc_rot_three,
+    emit_bc_jump,
+    emit_bc_pop_jump_if_true,
+    emit_bc_pop_jump_if_false,
+    emit_bc_jump_if_true_or_pop,
+    emit_bc_jump_if_false_or_pop,
+    emit_bc_setup_loop,
+    emit_bc_break_loop,
+    emit_bc_continue_loop,
+    emit_bc_setup_with,
+    emit_bc_with_cleanup,
+    emit_bc_setup_except,
+    emit_bc_setup_finally,
+    emit_bc_end_finally,
+    emit_bc_get_iter,
+    emit_bc_for_iter,
+    emit_bc_for_iter_end,
+    emit_bc_pop_block,
+    emit_bc_pop_except,
+    emit_bc_unary_op,
+    emit_bc_binary_op,
+    emit_bc_compare_op,
+    emit_bc_build_tuple,
+    emit_bc_build_list,
+    emit_bc_list_append,
+    emit_bc_build_map,
+    emit_bc_store_map,
+    emit_bc_map_add,
+    emit_bc_build_set,
+    emit_bc_set_add,
+    emit_bc_build_slice,
+    emit_bc_unpack_sequence,
+    emit_bc_unpack_ex,
+    emit_bc_make_function,
+    emit_bc_make_closure,
+    emit_bc_call_function,
+    emit_bc_call_method,
+    emit_bc_return_value,
+    emit_bc_raise_varargs,
+    emit_bc_yield_value,
+    emit_bc_yield_from,
+};
+
+void emit_new_bc(emit_t **emit_out, const emit_method_table_t **emit_method_table_out) {
+    emit_t *emit = m_new(emit_t, 1);
+    emit->max_num_labels = 0;
+    emit->label_offsets = NULL;
+    emit->code_offset = 0;
+    emit->code_size = 0;
+    emit->code_base = NULL;
+
+    *emit_out = emit;
+    *emit_method_table_out = &emit_bc_method_table;
+}

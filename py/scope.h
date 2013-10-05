@@ -55,4 +55,6 @@ id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);
 id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr);
 void scope_close_over_in_parents(scope_t *scope, qstr qstr);
+void scope_declare_global(scope_t *scope, qstr qstr);
+void scope_declare_nonlocal(scope_t *scope, qstr qstr);
 void scope_print_info(scope_t *s);

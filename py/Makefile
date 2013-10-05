@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -ansi -std=gnu99 -Os #-DNDEBUG
+CFLAGS = -Wall -ansi -std=gnu99 -Os -DEMIT_ENABLE_CPY -DEMIT_ENABLE_X64 #-DNDEBUG
 LDFLAGS =
 
 SRC = \
