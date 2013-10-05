@@ -414,7 +414,8 @@ py_parse_node_t py_parse(py_lexer_t *lex, int wanted_rule) {
 
                 // never emit these rules if they have only 1 argument
                 // NOTE: can't put atom_paren here because we need it to distinguisg, for example, [a,b] from [(a,b)]
-                if (rule->rule_id == RULE_else_stmt || rule->rule_id == RULE_testlist_comp_3b || rule->rule_id == RULE_import_as_names_paren || rule->rule_id == RULE_typedargslist_colon || rule->rule_id == RULE_typedargslist_equal || rule->rule_id == RULE_dictorsetmaker_colon || rule->rule_id == RULE_classdef_2 || rule->rule_id == RULE_with_item_as || rule->rule_id == RULE_assert_stmt_extra || rule->rule_id == RULE_as_name || rule->rule_id == RULE_raise_stmt_from || rule->rule_id == RULE_vfpdef) {
+                // TODO possibly put varargslist_name, varargslist_equal here as well
+                if (rule->rule_id == RULE_else_stmt || rule->rule_id == RULE_testlist_comp_3b || rule->rule_id == RULE_import_as_names_paren || rule->rule_id == RULE_typedargslist_name || rule->rule_id == RULE_typedargslist_colon || rule->rule_id == RULE_typedargslist_equal || rule->rule_id == RULE_dictorsetmaker_colon || rule->rule_id == RULE_classdef_2 || rule->rule_id == RULE_with_item_as || rule->rule_id == RULE_assert_stmt_extra || rule->rule_id == RULE_as_name || rule->rule_id == RULE_raise_stmt_from || rule->rule_id == RULE_vfpdef) {
                     emit_rule = false;
                 }
 

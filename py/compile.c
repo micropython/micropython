@@ -643,9 +643,8 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
 }
 
 void compile_funcdef_param(compiler_t *comp, py_parse_node_t pn) {
-    assert(PY_PARSE_NODE_IS_STRUCT(pn));
-    py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
-    if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_name) {
+    if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
+        py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
         if (!PY_PARSE_NODE_IS_NULL(pns->nodes[2])) {
             // this parameter has a default value
             // in CPython, None (and True, False?) as default parameters are loaded with LOAD_NAME; don't understandy why
@@ -662,7 +661,8 @@ void compile_funcdef_param(compiler_t *comp, py_parse_node_t pn) {
                 }
             }
         }
-    } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_star) {
+    } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)) {
+        py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
         if (PY_PARSE_NODE_IS_NULL(pns->nodes[0])) {
             // bare star
             comp->have_bare_star = true;
@@ -2206,65 +2206,74 @@ void compile_node(compiler_t *comp, py_parse_node_t pn) {
 
 void compile_scope_func_lambda_param(compiler_t *comp, py_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star, bool allow_annotations) {
     // TODO verify that *k and **k are last etc
-    assert(PY_PARSE_NODE_IS_STRUCT(pn));
-    py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
     qstr param_name = 0;
     py_parse_node_t pn_annotation = PY_PARSE_NODE_NULL;
-    if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_name) {
-        param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-        //int node_index = 1; unused
-        if (allow_annotations) {
-            if (!PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
-                // this parameter has an annotation
-                pn_annotation = pns->nodes[1];
-            }
-            //node_index = 2; unused
-        }
-        /* this is obsolete now that num dict/default params are calculated in compile_funcdef_param
-        if (!PY_PARSE_NODE_IS_NULL(pns->nodes[node_index])) {
-            // this parameter has a default value
-            if (comp->have_bare_star) {
-                comp->scope_cur->num_dict_params += 1;
-            } else {
-                comp->scope_cur->num_default_params += 1;
-            }
-        }
-        */
+    if (PY_PARSE_NODE_IS_ID(pn)) {
+        param_name = PY_PARSE_NODE_LEAF_ARG(pn);
         if (comp->have_bare_star) {
             // comes after a bare star, so doesn't count as a parameter
         } else {
             comp->scope_cur->num_params += 1;
         }
-    } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
-        if (PY_PARSE_NODE_IS_NULL(pns->nodes[0])) {
-            // bare star
-            // TODO see http://www.python.org/dev/peps/pep-3102/
-            comp->have_bare_star = true;
-            //assert(comp->scope_cur->num_dict_params == 0);
-        } else if (PY_PARSE_NODE_IS_ID(pns->nodes[0])) {
-            // named star
-            comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
+    } else {
+        assert(PY_PARSE_NODE_IS_STRUCT(pn));
+        py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
+        if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_name) {
             param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-        } else if (allow_annotations && PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)) {
-            // named star with annotation
-            comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
-            pns = (py_parse_node_struct_t*)pns->nodes[0];
+            //int node_index = 1; unused
+            if (allow_annotations) {
+                if (!PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+                    // this parameter has an annotation
+                    pn_annotation = pns->nodes[1];
+                }
+                //node_index = 2; unused
+            }
+            /* this is obsolete now that num dict/default params are calculated in compile_funcdef_param
+            if (!PY_PARSE_NODE_IS_NULL(pns->nodes[node_index])) {
+                // this parameter has a default value
+                if (comp->have_bare_star) {
+                    comp->scope_cur->num_dict_params += 1;
+                } else {
+                    comp->scope_cur->num_default_params += 1;
+                }
+            }
+            */
+            if (comp->have_bare_star) {
+                // comes after a bare star, so doesn't count as a parameter
+            } else {
+                comp->scope_cur->num_params += 1;
+            }
+        } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
+            if (PY_PARSE_NODE_IS_NULL(pns->nodes[0])) {
+                // bare star
+                // TODO see http://www.python.org/dev/peps/pep-3102/
+                comp->have_bare_star = true;
+                //assert(comp->scope_cur->num_dict_params == 0);
+            } else if (PY_PARSE_NODE_IS_ID(pns->nodes[0])) {
+                // named star
+                comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
+                param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+            } else if (allow_annotations && PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)) {
+                // named star with annotation
+                comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
+                pns = (py_parse_node_struct_t*)pns->nodes[0];
+                param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                pn_annotation = pns->nodes[1];
+            } else {
+                // shouldn't happen
+                assert(0);
+            }
+        } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_dbl_star) {
             param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-            pn_annotation = pns->nodes[1];
+            if (allow_annotations && !PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+                // this parameter has an annotation
+                pn_annotation = pns->nodes[1];
+            }
+            comp->scope_cur->flags |= SCOPE_FLAG_VARKEYWORDS;
         } else {
-            // shouldn't happen
+            // TODO anything to implement?
             assert(0);
         }
-    } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == pn_dbl_star) {
-        param_name = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-        if (allow_annotations && !PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
-            // this parameter has an annotation
-            pn_annotation = pns->nodes[1];
-        }
-        comp->scope_cur->flags |= SCOPE_FLAG_VARKEYWORDS;
-    } else {
-        // TODO anything to implement?
-        assert(0);
     }
 
     if (param_name != 0) {
