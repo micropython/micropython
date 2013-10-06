@@ -71,7 +71,7 @@ typedef struct _py_obj_base_t {
         const char *id;
         qstr u_str;
 #ifdef PY_FLOAT
-        float_t flt;
+        float_t u_flt;
 #endif
         struct { // for O_FUN_[012N]
             int n_args;
@@ -258,7 +258,7 @@ py_obj_t py_obj_new_str(qstr qstr) {
 py_obj_t py_obj_new_float(float_t val) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_FLOAT;
-    o->flt = val;
+    o->u_flt = val;
     return (py_obj_t)o;
 }
 #endif
@@ -298,7 +298,7 @@ typedef struct _py_code_t {
             py_fun_t fun;
         } u_native;
         struct {
-            py_fun_t fun;
+            void *fun;
         } u_inline_asm;
     };
 } py_code_t;
@@ -497,7 +497,7 @@ void py_obj_print(py_obj_t o_in) {
                 break;
 #ifdef PY_FLOAT
             case O_FLOAT:
-                printf("%f", o->flt);
+                printf("%f", o->u_flt);
                 break;
 #endif
             case O_LIST:
@@ -745,16 +745,63 @@ py_obj_t rt_make_function(int n_args, py_fun_t code) {
     return o;
 }
 
+// convert a Python object to a sensible value for inline asm
+machine_uint_t rt_convert_obj_for_inline_asm(py_obj_t obj) {
+    // TODO for byte_array, pass pointer to the array
+    if (IS_SMALL_INT(obj)) {
+        return FROM_SMALL_INT(obj);
+    } else if (obj == py_const_none) {
+        return 0;
+    } else if (obj == py_const_false) {
+        return 0;
+    } else if (obj == py_const_true) {
+        return 1;
+    } else {
+        py_obj_base_t *o = obj;
+        switch (o->kind) {
+            case O_STR:
+                // pointer to the string (it's probably constant though!)
+                return (machine_uint_t)qstr_str(o->u_str);
+
+            case O_FLOAT:
+                // convert float to int (could also pass in float registers)
+                return (machine_int_t)o->u_flt;
+
+            case O_LIST:
+                // pointer to start of list (could pass length, but then could use len(x) for that)
+                return (machine_uint_t)o->u_list.items;
+
+            default:
+                // just pass along a pointer to the object
+                return (machine_uint_t)obj;
+        }
+    }
+}
+
+// convert a return value from inline asm to a sensible Python object
+py_obj_t rt_convert_val_from_inline_asm(machine_uint_t val) {
+    return TO_SMALL_INT(val);
+}
+
+typedef machine_uint_t (*inline_asm_fun_0_t)();
+typedef machine_uint_t (*inline_asm_fun_1_t)(machine_uint_t);
+typedef machine_uint_t (*inline_asm_fun_2_t)(machine_uint_t, machine_uint_t);
+
 py_obj_t rt_call_function_0(py_obj_t fun) {
     if (IS_O(fun, O_FUN_0)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p...\n", o->u_fun.fun);
+        DEBUG_OP_printf("calling native %p with no args\n", o->u_fun.fun);
         return ((py_fun_0_t)o->u_fun.fun)();
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_bc.n_args == 0);
-        DEBUG_OP_printf("calling byte code %p...\n", o->u_fun_bc.code);
+        DEBUG_OP_printf("calling byte code %p with no args\n", o->u_fun_bc.code);
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, NULL, 0);
+    } else if (IS_O(fun, O_FUN_ASM)) {
+        py_obj_base_t *o = fun;
+        assert(o->u_fun_asm.n_args == 0);
+        DEBUG_OP_printf("calling inline asm %p with no args\n", o->u_fun_asm.fun);
+        return rt_convert_val_from_inline_asm(((inline_asm_fun_0_t)o->u_fun_asm.fun)());
     } else {
         printf("fun0:%p\n", fun);
         assert(0);
@@ -776,13 +823,7 @@ py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_asm.n_args == 1);
         DEBUG_OP_printf("calling inline asm %p with 1 arg\n", o->u_fun_asm.fun);
-        machine_int_t arg_val;
-        if (IS_SMALL_INT(arg)) {
-            arg_val = FROM_SMALL_INT(arg);
-        } else {
-            arg_val = arg;
-        }
-        return ((py_fun_1_t)o->u_fun_asm.fun)(arg_val);
+        return rt_convert_val_from_inline_asm(((inline_asm_fun_1_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(arg)));
     } else if (IS_O(fun, O_BOUND_METH)) {
         py_obj_base_t *o = fun;
         return rt_call_function_2(o->u_bound_meth.meth, o->u_bound_meth.self, arg);
@@ -796,16 +837,21 @@ py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
     if (IS_O(fun, O_FUN_2)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p...\n", o->u_fun.fun);
+        DEBUG_OP_printf("calling native %p with 2 args\n", o->u_fun.fun);
         return ((py_fun_2_t)o->u_fun.fun)(arg1, arg2);
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_bc.n_args == 2);
-        DEBUG_OP_printf("calling byte code %p...\n", o->u_fun_bc.code);
+        DEBUG_OP_printf("calling byte code %p with 2 args\n", o->u_fun_bc.code);
         py_obj_t args[2];
         args[0] = arg1;
         args[1] = arg2;
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &args[0], 2);
+    } else if (IS_O(fun, O_FUN_ASM)) {
+        py_obj_base_t *o = fun;
+        assert(o->u_fun_asm.n_args == 2);
+        DEBUG_OP_printf("calling inline asm %p with 2 args\n", o->u_fun_asm.fun);
+        return rt_convert_val_from_inline_asm(((inline_asm_fun_2_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(arg1), rt_convert_obj_for_inline_asm(arg2)));
     } else {
         assert(0);
         return py_const_none;
