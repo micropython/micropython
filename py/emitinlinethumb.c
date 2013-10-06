@@ -57,7 +57,7 @@ static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params,
     }
     for (int i = 0; i < n_params; i++) {
         if (!PY_PARSE_NODE_IS_ID(pn_params[i])) {
-            printf("SyntaxError: parameter to inline assembler must be an identifier %d\n", PY_PARSE_NODE_STRUCT_KIND((py_parse_node_struct_t*)pn_params[i]));
+            printf("SyntaxError: parameter to inline assembler must be an identifier\n");
             return 0;
         }
         const char *p = qstr_str(PY_PARSE_NODE_LEAF_ARG(pn_params[i]));
@@ -122,7 +122,10 @@ static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_a
             return i;
         }
     }
-    printf("SyntaxError: label '%s' not defined\n", qstr_str(label_qstr));
+    // only need to have the labels on the last pass
+    if (emit->pass == PASS_3) {
+        printf("SyntaxError: label '%s' not defined\n", qstr_str(label_qstr));
+    }
     return 0;
 }
 

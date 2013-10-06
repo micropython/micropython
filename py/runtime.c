@@ -772,6 +772,17 @@ py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
         assert(o->u_fun_bc.n_args == 1);
         DEBUG_OP_printf("calling byte code %p with 1 arg\n", o->u_fun_bc.code);
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &arg, 1);
+    } else if (IS_O(fun, O_FUN_ASM)) {
+        py_obj_base_t *o = fun;
+        assert(o->u_fun_asm.n_args == 1);
+        DEBUG_OP_printf("calling inline asm %p with 1 arg\n", o->u_fun_asm.fun);
+        machine_int_t arg_val;
+        if (IS_SMALL_INT(arg)) {
+            arg_val = FROM_SMALL_INT(arg);
+        } else {
+            arg_val = arg;
+        }
+        return ((py_fun_1_t)o->u_fun_asm.fun)(arg_val);
     } else if (IS_O(fun, O_BOUND_METH)) {
         py_obj_base_t *o = fun;
         return rt_call_function_2(o->u_bound_meth.meth, o->u_bound_meth.self, arg);
