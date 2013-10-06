@@ -31,7 +31,8 @@ typedef enum {
 #define EMIT_OPT_NONE           (0)
 #define EMIT_OPT_BYTE_CODE      (1)
 #define EMIT_OPT_NATIVE_PYTHON  (2)
-#define EMIT_OPT_ASM_THUMB      (3)
+#define EMIT_OPT_VIPER          (3)
+#define EMIT_OPT_ASM_THUMB      (4)
 
 typedef struct _compiler_t {
     qstr qstr___class__;
@@ -43,6 +44,7 @@ typedef struct _compiler_t {
     qstr qstr_assertion_error;
     qstr qstr_micropython;
     qstr qstr_native;
+    qstr qstr_viper;
     qstr qstr_asm_thumb;
 
     pass_kind_t pass;
@@ -764,6 +766,8 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
     qstr attr = PY_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == comp->qstr_native) {
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
+    } else if (attr == comp->qstr_viper) {
+        *emit_options = EMIT_OPT_VIPER;
     } else if (attr == comp->qstr_asm_thumb) {
         *emit_options = EMIT_OPT_ASM_THUMB;
     } else {
@@ -2640,6 +2644,7 @@ void py_compile(py_parse_node_t pn) {
     comp->qstr_assertion_error = qstr_from_str_static("AssertionError");
     comp->qstr_micropython = qstr_from_str_static("micropython");
     comp->qstr_native = qstr_from_str_static("native");
+    comp->qstr_viper = qstr_from_str_static("viper");
     comp->qstr_asm_thumb = qstr_from_str_static("asm_thumb");
 
     comp->break_label = 0;
@@ -2684,6 +2689,7 @@ void py_compile(py_parse_node_t pn) {
     // compile pass 2 and 3
     emit_t *emit_bc = NULL;
     emit_t *emit_native = NULL;
+    emit_t *emit_viper = NULL;
     emit_inline_asm_t *emit_inline_thumb = NULL;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         if (s->emit_options == EMIT_OPT_ASM_THUMB) {
@@ -2706,6 +2712,14 @@ void py_compile(py_parse_node_t pn) {
                     comp->emit_method_table = &emit_x64_method_table;
                     break;
 
+                case EMIT_OPT_VIPER:
+                    if (emit_viper == NULL) {
+                        emit_viper = emit_viper_x64_new(max_num_labels);
+                    }
+                    comp->emit = emit_viper;
+                    comp->emit_method_table = &emit_viper_x64_method_table;
+                    break;
+
                 default:
                     if (emit_bc == NULL) {
                         emit_bc = emit_bc_new(max_num_labels);
@@ -2714,6 +2728,8 @@ void py_compile(py_parse_node_t pn) {
                     comp->emit_method_table = &emit_bc_method_table;
                     break;
             }
+            //comp->emit = emit_cpython_new(max_num_labels);
+            //comp->emit_method_table = &emit_cpython_method_table;
             compile_scope(comp, s, PASS_2);
             compile_scope(comp, s, PASS_3);
         }

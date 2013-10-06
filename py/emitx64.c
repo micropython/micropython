@@ -130,18 +130,6 @@ static void emit_x64_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
 }
 
-static void emit_x64_load_id(emit_t *emit, qstr qstr) {
-    emit_common_load_id(emit, &emit_x64_method_table, emit->scope, qstr);
-}
-
-static void emit_x64_store_id(emit_t *emit, qstr qstr) {
-    emit_common_store_id(emit, &emit_x64_method_table, emit->scope, qstr);
-}
-
-static void emit_x64_delete_id(emit_t *emit, qstr qstr) {
-    emit_common_delete_id(emit, &emit_x64_method_table, emit->scope, qstr);
-}
-
 static void adjust_stack(emit_t *emit, int stack_size_delta) {
     emit->stack_size += stack_size_delta;
     assert(emit->stack_size >= 0);
@@ -266,6 +254,18 @@ static void emit_call(emit_t *emit, void *fun) {
 static void emit_call_with_i64_arg(emit_t *emit, void *fun, int64_t arg_val, int arg_r64) {
     asm_x64_mov_i64_to_r64_optimised(emit->as, arg_val, arg_r64);
     asm_x64_call_ind(emit->as, fun, REG_RAX);
+}
+
+static void emit_x64_load_id(emit_t *emit, qstr qstr) {
+    emit_common_load_id(emit, &emit_x64_method_table, emit->scope, qstr);
+}
+
+static void emit_x64_store_id(emit_t *emit, qstr qstr) {
+    emit_common_store_id(emit, &emit_x64_method_table, emit->scope, qstr);
+}
+
+static void emit_x64_delete_id(emit_t *emit, qstr qstr) {
+    emit_common_delete_id(emit, &emit_x64_method_table, emit->scope, qstr);
 }
 
 static void emit_x64_label_assign(emit_t *emit, int l) {
