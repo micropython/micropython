@@ -66,8 +66,8 @@ struct _emit_t {
 
     need_to_push_t need_to_push;
     vtype_kind_t last_vtype;
-    int last_r64;
-    int64_t last_i64;
+    int last_reg;
+    int64_t last_imm;
 
     scope_t *scope;
 
@@ -173,13 +173,13 @@ static void stack_settle(emit_t *emit) {
 
         case NEED_TO_PUSH_R64:
             emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            asm_x64_mov_r64_to_local(emit->as, emit->last_r64, emit->stack_start + emit->stack_size);
+            asm_x64_mov_r64_to_local(emit->as, emit->last_reg, emit->stack_start + emit->stack_size);
             adjust_stack(emit, 1);
             break;
 
         case NEED_TO_PUSH_I64:
             emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_i64, REG_RAX);
+            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_imm, REG_RAX);
             asm_x64_mov_r64_to_local(emit->as, REG_RAX, emit->stack_start + emit->stack_size);
             adjust_stack(emit, 1);
             break;
@@ -212,40 +212,40 @@ static vtype_kind_t peek_vtype(emit_t *emit) {
     }
 }
 
-static void emit_pre_pop_r64(emit_t *emit, vtype_kind_t *vtype, int r64) {
+static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg) {
     switch (emit->need_to_push) {
         case NEED_TO_PUSH_NOTHING:
             *vtype = emit->stack_vtype[emit->stack_size - 1];
-            asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, r64);
+            asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, reg);
             emit_pre_raw(emit, -1);
             break;
 
         case NEED_TO_PUSH_R64:
             emit_pre_raw(emit, 0);
             *vtype = emit->last_vtype;
-            if (emit->last_r64 != r64) {
-                asm_x64_mov_r64_to_r64(emit->as, emit->last_r64, r64);
+            if (emit->last_reg != reg) {
+                asm_x64_mov_r64_to_r64(emit->as, emit->last_reg, reg);
             }
             break;
 
         case NEED_TO_PUSH_I64:
             emit_pre_raw(emit, 0);
             *vtype = emit->last_vtype;
-            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_i64, r64);
+            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_imm, reg);
             break;
     }
     emit->need_to_push = NEED_TO_PUSH_NOTHING;
 }
 
-static void emit_pre_pop_r64_r64(emit_t *emit, vtype_kind_t *vtypea, int r64a, vtype_kind_t *vtypeb, int r64b) {
-    emit_pre_pop_r64(emit, vtypea, r64a);
+static void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int r64a, vtype_kind_t *vtypeb, int r64b) {
+    emit_pre_pop_reg(emit, vtypea, r64a);
     *vtypeb = emit->stack_vtype[emit->stack_size - 1];
     asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, r64b);
     adjust_stack(emit, -1);
 }
 
-static void emit_pre_pop_r64_r64_r64(emit_t *emit, vtype_kind_t *vtypea, int r64a, vtype_kind_t *vtypeb, int r64b, vtype_kind_t *vtypec, int r64c) {
-    emit_pre_pop_r64(emit, vtypea, r64a);
+static void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int r64a, vtype_kind_t *vtypeb, int r64b, vtype_kind_t *vtypec, int r64c) {
+    emit_pre_pop_reg(emit, vtypea, r64a);
     *vtypeb = emit->stack_vtype[emit->stack_size - 1];
     asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, r64b);
     *vtypec = emit->stack_vtype[emit->stack_size - 2];
@@ -256,28 +256,28 @@ static void emit_pre_pop_r64_r64_r64(emit_t *emit, vtype_kind_t *vtypea, int r64
 static void emit_post(emit_t *emit) {
 }
 
-static void emit_post_push_r64(emit_t *emit, vtype_kind_t vtype, int r64) {
+static void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
     emit->need_to_push = NEED_TO_PUSH_R64;
     emit->last_vtype = vtype;
-    emit->last_r64 = r64;
+    emit->last_reg = reg;
 }
 
-static void emit_post_push_i64(emit_t *emit, vtype_kind_t vtype, int64_t i64) {
+static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, int64_t imm) {
     emit->need_to_push = NEED_TO_PUSH_I64;
     emit->last_vtype = vtype;
-    emit->last_i64 = i64;
+    emit->last_imm = imm;
 }
 
-static void emit_post_push_r64_r64(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b) {
+static void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b) {
     emit->stack_vtype[emit->stack_size] = vtypea;
     asm_x64_mov_r64_to_local(emit->as, r64a, emit->stack_start + emit->stack_size);
     emit->need_to_push = NEED_TO_PUSH_R64;
     emit->last_vtype = vtypeb;
-    emit->last_r64 = r64b;
+    emit->last_reg = r64b;
     adjust_stack(emit, 1);
 }
 
-static void emit_post_push_r64_r64_r64(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b, vtype_kind_t vtypec, int r64c) {
+static void emit_post_push_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b, vtype_kind_t vtypec, int r64c) {
     emit->stack_vtype[emit->stack_size] = vtypea;
     asm_x64_mov_r64_to_local(emit->as, r64a, emit->stack_start + emit->stack_size);
     emit->stack_vtype[emit->stack_size + 1] = vtypeb;
@@ -287,7 +287,7 @@ static void emit_post_push_r64_r64_r64(emit_t *emit, vtype_kind_t vtypea, int r6
     adjust_stack(emit, 3);
 }
 
-static void emit_post_push_r64_r64_r64_r64(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b, vtype_kind_t vtypec, int r64c, vtype_kind_t vtyped, int r64d) {
+static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int r64a, vtype_kind_t vtypeb, int r64b, vtype_kind_t vtypec, int r64c, vtype_kind_t vtyped, int r64d) {
     emit->stack_vtype[emit->stack_size] = vtypea;
     asm_x64_mov_r64_to_local(emit->as, r64a, emit->stack_start + emit->stack_size);
     emit->stack_vtype[emit->stack_size + 1] = vtypeb;
@@ -300,17 +300,17 @@ static void emit_post_push_r64_r64_r64_r64(emit_t *emit, vtype_kind_t vtypea, in
 }
 
 // vtype of all n_pop objects is VTYPE_PYOBJ
-static void emit_get_stack_pointer_to_r64_for_pop(emit_t *emit, int r64, int n_pop) {
-    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, r64);
+static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg, int n_pop) {
+    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, reg);
     adjust_stack(emit, -n_pop);
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
-static void emit_get_stack_pointer_to_r64_for_push(emit_t *emit, int r64, int n_push) {
+static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg, int n_push) {
     for (int i = 0; i < n_push; i++) {
         emit->stack_vtype[emit->stack_size + i] = VTYPE_PYOBJ;
     }
-    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size + n_push - 1, r64);
+    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size + n_push - 1, reg);
     adjust_stack(emit, n_push);
 }
 
@@ -318,8 +318,8 @@ static void emit_call(emit_t *emit, void *fun) {
     asm_x64_call_ind(emit->as, fun, REG_RAX);
 }
 
-static void emit_call_with_i64_arg(emit_t *emit, void *fun, int64_t arg_val, int arg_r64) {
-    asm_x64_mov_i64_to_r64_optimised(emit->as, arg_val, arg_r64);
+static void emit_call_with_imm_arg(emit_t *emit, void *fun, int64_t arg_val, int arg_reg) {
+    asm_x64_mov_i64_to_r64_optimised(emit->as, arg_val, arg_reg);
     asm_x64_call_ind(emit->as, fun, REG_RAX);
 }
 
@@ -374,12 +374,12 @@ static void emit_viper_x64_load_const_tok(emit_t *emit, py_token_kind_t tok) {
         case PY_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
         default: assert(0); vtype = 0; val = 0; // shouldn't happen
     }
-    emit_post_push_i64(emit, vtype, val);
+    emit_post_push_imm(emit, vtype, val);
 }
 
 static void emit_viper_x64_load_const_small_int(emit_t *emit, int arg) {
     emit_pre(emit);
-    emit_post_push_i64(emit, VTYPE_INT, arg);
+    emit_post_push_imm(emit, VTYPE_INT, arg);
 }
 
 static void emit_viper_x64_load_const_int(emit_t *emit, qstr qstr) {
@@ -403,7 +403,7 @@ static void emit_viper_x64_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     // load a pointer to the asciiz string?
     assert(0);
     emit_pre(emit);
-    emit_post_push_i64(emit, VTYPE_PTR, (machine_uint_t)qstr_str(qstr));
+    emit_post_push_imm(emit, VTYPE_PTR, (machine_uint_t)qstr_str(qstr));
 }
 
 static void emit_viper_x64_load_const_verbatim_start(emit_t *emit) {
@@ -442,24 +442,24 @@ static void emit_viper_x64_load_fast(emit_t *emit, qstr qstr, int local_num) {
     }
     if (local_num == 0) {
         emit_pre(emit);
-        emit_post_push_r64(emit, emit->local_vtype[local_num], REG_LOCAL_1);
+        emit_post_push_reg(emit, emit->local_vtype[local_num], REG_LOCAL_1);
     } else {
         emit_pre(emit);
         asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
-        emit_post_push_r64(emit, emit->local_vtype[local_num], REG_RAX);
+        emit_post_push_reg(emit, emit->local_vtype[local_num], REG_RAX);
     }
 }
 
 static void emit_viper_x64_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit);
-    emit_call_with_i64_arg(emit, rt_load_name, qstr, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_call_with_imm_arg(emit, rt_load_name, qstr, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit);
-    emit_call_with_i64_arg(emit, rt_load_global, qstr, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_call_with_imm_arg(emit, rt_load_global, qstr, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_load_deref(emit_t *emit, qstr qstr) {
@@ -479,18 +479,18 @@ static void emit_viper_x64_load_attr(emit_t *emit, qstr qstr) {
     //  - pointer to structure: get member, quite easy
     //  - Python object: call rt_load_attr, and needs to be typed to convert result
     vtype_kind_t vtype_base;
-    emit_pre_pop_r64(emit, &vtype_base, REG_ARG_1); // arg1 = base
+    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_i64_arg(emit, rt_load_attr, qstr, REG_ARG_2); // arg2 = attribute name
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_call_with_imm_arg(emit, rt_load_attr, qstr, REG_ARG_2); // arg2 = attribute name
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_load_method(emit_t *emit, qstr qstr) {
     vtype_kind_t vtype_base;
-    emit_pre_pop_r64(emit, &vtype_base, REG_ARG_1); // arg1 = base
+    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_get_stack_pointer_to_r64_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_i64_arg(emit, rt_load_method, qstr, REG_ARG_2); // arg2 = method name
+    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
+    emit_call_with_imm_arg(emit, rt_load_method, qstr, REG_ARG_2); // arg2 = method name
 }
 
 static void emit_viper_x64_load_build_class(emit_t *emit) {
@@ -501,10 +501,10 @@ static void emit_viper_x64_load_build_class(emit_t *emit) {
 static void emit_viper_x64_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
     if (local_num == 0) {
-        emit_pre_pop_r64(emit, &vtype, REG_LOCAL_1);
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
         emit_post(emit);
     } else {
-        emit_pre_pop_r64(emit, &vtype, REG_RAX);
+        emit_pre_pop_reg(emit, &vtype, REG_RAX);
         asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - 1);
         emit_post(emit);
     }
@@ -522,9 +522,9 @@ static void emit_viper_x64_store_fast(emit_t *emit, qstr qstr, int local_num) {
 static void emit_viper_x64_store_name(emit_t *emit, qstr qstr) {
     // rt_store_name, but needs conversion of object (maybe have rt_viper_store_name(obj, type))
     vtype_kind_t vtype;
-    emit_pre_pop_r64(emit, &vtype, REG_ARG_2);
+    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_i64_arg(emit, rt_store_name, qstr, REG_ARG_1); // arg1 = name
+    emit_call_with_imm_arg(emit, rt_store_name, qstr, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
@@ -554,7 +554,7 @@ static void emit_viper_x64_store_subscr(emit_t *emit) {
     //  - pointer to integers: store as per array
     //  - Python object: call runtime with converted object or type info
     vtype_kind_t vtype_index, vtype_base, vtype_value;
-    emit_pre_pop_r64_r64_r64(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1, &vtype_value, REG_ARG_3); // index, base, value to store
+    emit_pre_pop_reg_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1, &vtype_value, REG_ARG_3); // index, base, value to store
     assert(vtype_index == VTYPE_PYOBJ);
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
@@ -596,19 +596,19 @@ static void emit_viper_x64_delete_subscr(emit_t *emit) {
 
 static void emit_viper_x64_dup_top(emit_t *emit) {
     vtype_kind_t vtype;
-    emit_pre_pop_r64(emit, &vtype, REG_RAX);
-    emit_post_push_r64_r64(emit, vtype, REG_RAX, vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_RAX);
+    emit_post_push_reg_reg(emit, vtype, REG_RAX, vtype, REG_RAX);
 }
 
 static void emit_viper_x64_dup_top_two(emit_t *emit) {
     vtype_kind_t vtype1, vtype2;
-    emit_pre_pop_r64_r64(emit, &vtype1, REG_RAX, &vtype2, REG_RDI);
-    emit_post_push_r64_r64_r64_r64(emit, vtype2, REG_RDI, vtype1, REG_RAX, vtype2, REG_RDI, vtype1, REG_RAX);
+    emit_pre_pop_reg_reg(emit, &vtype1, REG_RAX, &vtype2, REG_RDI);
+    emit_post_push_reg_reg_reg_reg(emit, vtype2, REG_RDI, vtype1, REG_RAX, vtype2, REG_RDI, vtype1, REG_RAX);
 }
 
 static void emit_viper_x64_pop_top(emit_t *emit) {
     vtype_kind_t vtype;
-    emit_pre_pop_r64(emit, &vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_RAX);
     emit_post(emit);
 }
 
@@ -618,8 +618,8 @@ static void emit_viper_x64_rot_two(emit_t *emit) {
 
 static void emit_viper_x64_rot_three(emit_t *emit) {
     vtype_kind_t vtype_rax, vtype_rdi, vtype_rsi;
-    emit_pre_pop_r64_r64_r64(emit, &vtype_rax, REG_RAX, &vtype_rdi, REG_RDI, &vtype_rsi, REG_RSI);
-    emit_post_push_r64_r64_r64(emit, vtype_rax, REG_RAX, vtype_rsi, REG_RSI, vtype_rdi, REG_RDI);
+    emit_pre_pop_reg_reg_reg(emit, &vtype_rax, REG_RAX, &vtype_rdi, REG_RDI, &vtype_rsi, REG_RSI);
+    emit_post_push_reg_reg_reg(emit, vtype_rax, REG_RAX, vtype_rsi, REG_RSI, vtype_rdi, REG_RDI);
 }
 
 static void emit_viper_x64_jump(emit_t *emit, int label) {
@@ -631,12 +631,12 @@ static void emit_viper_x64_jump(emit_t *emit, int label) {
 static void emit_viper_x64_pop_jump_if_false(emit_t *emit, int label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
-        emit_pre_pop_r64(emit, &vtype, REG_RAX);
+        emit_pre_pop_reg(emit, &vtype, REG_RAX);
         asm_x64_test_r8_with_r8(emit->as, REG_RAX, REG_RAX);
         asm_x64_jcc_label(emit->as, JCC_JZ, label);
         emit_post(emit);
     } else if (vtype == VTYPE_PYOBJ) {
-        emit_pre_pop_r64(emit, &vtype, REG_ARG_1);
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
         emit_call(emit, rt_is_true);
         asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
         asm_x64_jcc_label(emit->as, JCC_JZ, label);
@@ -707,22 +707,22 @@ static void emit_viper_x64_pop_except(emit_t *emit) {
 
 static void emit_viper_x64_unary_op(emit_t *emit, rt_unary_op_t op) {
     vtype_kind_t vtype;
-    emit_pre_pop_r64(emit, &vtype, REG_ARG_2);
+    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_i64_arg(emit, rt_unary_op, op, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_call_with_imm_arg(emit, rt_unary_op, op, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
+    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_BINARY_OP_ADD);
         asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
-        emit_post_push_r64(emit, VTYPE_INT, REG_ARG_2);
+        emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_i64_arg(emit, rt_binary_op, op, REG_ARG_1);
-        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+        emit_call_with_imm_arg(emit, rt_binary_op, op, REG_ARG_1);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
         assert(0);
@@ -731,16 +731,16 @@ static void emit_viper_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
 
 static void emit_viper_x64_compare_op(emit_t *emit, rt_compare_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
+    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_COMPARE_OP_LESS);
         asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
         asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
         asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
-        emit_post_push_r64(emit, VTYPE_BOOL, REG_RET);
+        emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_i64_arg(emit, rt_compare_op, op, REG_ARG_1);
-        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+        emit_call_with_imm_arg(emit, rt_compare_op, op, REG_ARG_1);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do comparison between types %d and %d\n", vtype_lhs, vtype_rhs);
         assert(0);
@@ -755,9 +755,9 @@ static void emit_viper_x64_build_tuple(emit_t *emit, int n_args) {
 
 static void emit_viper_x64_build_list(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_get_stack_pointer_to_r64_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
-    emit_call_with_i64_arg(emit, rt_build_list, n_args, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET); // new list
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_call_with_imm_arg(emit, rt_build_list, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
 }
 
 static void emit_viper_x64_list_append(emit_t *emit, int list_index) {
@@ -767,18 +767,18 @@ static void emit_viper_x64_list_append(emit_t *emit, int list_index) {
 
 static void emit_viper_x64_build_map(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_call_with_i64_arg(emit, rt_build_map, n_args, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET); // new map
+    emit_call_with_imm_arg(emit, rt_build_map, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
 }
 
 static void emit_viper_x64_store_map(emit_t *emit) {
     vtype_kind_t vtype_key, vtype_value, vtype_map;
-    emit_pre_pop_r64_r64_r64(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3, &vtype_map, REG_ARG_1); // key, value, map
+    emit_pre_pop_reg_reg_reg(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3, &vtype_map, REG_ARG_1); // key, value, map
     assert(vtype_key == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
     assert(vtype_map == VTYPE_PYOBJ);
     emit_call(emit, rt_store_map);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET); // map
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
 
 static void emit_viper_x64_map_add(emit_t *emit, int map_index) {
@@ -787,9 +787,9 @@ static void emit_viper_x64_map_add(emit_t *emit, int map_index) {
 
 static void emit_viper_x64_build_set(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_get_stack_pointer_to_r64_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
-    emit_call_with_i64_arg(emit, rt_build_set, n_args, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET); // new set
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_call_with_imm_arg(emit, rt_build_set, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
 }
 
 static void emit_viper_x64_set_add(emit_t *emit, int set_index) {
@@ -810,8 +810,8 @@ static void emit_viper_x64_make_function(emit_t *emit, scope_t *scope, int n_dic
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_default_params == 0 && n_dict_params == 0);
     emit_pre(emit);
-    emit_call_with_i64_arg(emit, rt_make_function_from_id, scope->unique_code_id, REG_ARG_1);
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_call_with_imm_arg(emit, rt_make_function_from_id, scope->unique_code_id, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
@@ -823,18 +823,18 @@ static void emit_viper_x64_call_function(emit_t *emit, int n_positional, int n_k
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     if (n_positional == 0) {
         vtype_kind_t vtype_fun;
-        emit_pre_pop_r64(emit, &vtype_fun, REG_ARG_1); // the function
+        emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
         assert(vtype_fun == VTYPE_PYOBJ);
         emit_call(emit, rt_call_function_0);
     } else if (n_positional == 1) {
         vtype_kind_t vtype_fun, vtype_arg1;
-        emit_pre_pop_r64_r64(emit, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the single argument, the function
+        emit_pre_pop_reg_reg(emit, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the single argument, the function
         assert(vtype_fun == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
         emit_call(emit, rt_call_function_1);
     } else if (n_positional == 2) {
         vtype_kind_t vtype_fun, vtype_arg1, vtype_arg2;
-        emit_pre_pop_r64_r64_r64(emit, &vtype_arg2, REG_ARG_3, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the second argument, the first argument, the function
+        emit_pre_pop_reg_reg_reg(emit, &vtype_arg2, REG_ARG_3, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the second argument, the first argument, the function
         assert(vtype_fun == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
         assert(vtype_arg2 == VTYPE_PYOBJ);
@@ -842,20 +842,20 @@ static void emit_viper_x64_call_function(emit_t *emit, int n_positional, int n_k
     } else {
         assert(0);
     }
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     if (n_positional == 0) {
         vtype_kind_t vtype_meth, vtype_self;
-        emit_pre_pop_r64_r64(emit, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the self object (or NULL), the method
+        emit_pre_pop_reg_reg(emit, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the self object (or NULL), the method
         assert(vtype_meth == VTYPE_PYOBJ);
         assert(vtype_self == VTYPE_PYOBJ);
         emit_call(emit, rt_call_method_1);
     } else if (n_positional == 1) {
         vtype_kind_t vtype_meth, vtype_self, vtype_arg1;
-        emit_pre_pop_r64_r64_r64(emit, &vtype_arg1, REG_ARG_3, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the first argument, the self object (or NULL), the method
+        emit_pre_pop_reg_reg_reg(emit, &vtype_arg1, REG_ARG_3, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the first argument, the self object (or NULL), the method
         assert(vtype_meth == VTYPE_PYOBJ);
         assert(vtype_self == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
@@ -863,14 +863,14 @@ static void emit_viper_x64_call_method(emit_t *emit, int n_positional, int n_key
     } else {
         assert(0);
     }
-    emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_viper_x64_return_value(emit_t *emit) {
     // easy.  since we don't know who we return to, just return the raw value.
     // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;
-    emit_pre_pop_r64(emit, &vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_RAX);
     assert(vtype == VTYPE_PTR_NONE);
     emit->last_emit_was_return_value = true;
     //asm_x64_call_ind(emit->as, 0, REG_RAX); to seg fault for debugging with gdb
