@@ -2689,7 +2689,6 @@ void py_compile(py_parse_node_t pn) {
     // compile pass 2 and 3
     emit_t *emit_bc = NULL;
     emit_t *emit_native = NULL;
-    emit_t *emit_viper = NULL;
     emit_inline_asm_t *emit_inline_thumb = NULL;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         if (s->emit_options == EMIT_OPT_ASM_THUMB) {
@@ -2705,19 +2704,13 @@ void py_compile(py_parse_node_t pn) {
         } else {
             switch (s->emit_options) {
                 case EMIT_OPT_NATIVE_PYTHON:
+                case EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
                         emit_native = emit_x64_new(max_num_labels);
                     }
                     comp->emit = emit_native;
                     comp->emit_method_table = &emit_x64_method_table;
-                    break;
-
-                case EMIT_OPT_VIPER:
-                    if (emit_viper == NULL) {
-                        emit_viper = emit_viper_x64_new(max_num_labels);
-                    }
-                    comp->emit = emit_viper;
-                    comp->emit_method_table = &emit_viper_x64_method_table;
+                    comp->emit_method_table->set_native_types(comp->emit, s->emit_options == EMIT_OPT_VIPER);
                     break;
 
                 default:
