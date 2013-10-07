@@ -1,3 +1,21 @@
+// Essentially normal Python has 1 type: Python objects
+// Viper has more than 1 type, and is just a more complicated (a superset of) Python.
+// If you declare everything in Viper as a Python object (ie omit type decls) then
+// it should in principle be exactly the same as Python native.
+// Having types means having more opcodes, like binary_op_nat_nat, binary_op_nat_obj etc.
+// In practice we won't have a VM but rather do this in asm which is actually very minimal.
+
+// Because it breaks strict Python equivalence it should be a completely separate
+// decorator.  It breaks equivalence because overflow on integers wraps around.
+// It shouldn't break equivalence if you don't use the new types, but since the
+// type decls might be used in normal Python for other reasons, it's probably safest,
+// cleanest and clearest to make it a separate decorator.
+
+// Actually, it does break equivalence because integers default to native integers,
+// not Python objects.
+
+// for x in l[0:8]: can be compiled into a native loop if l has pointer type
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -366,11 +384,12 @@ static void emit_viper_x64_load_const_small_int(emit_t *emit, int arg) {
 
 static void emit_viper_x64_load_const_int(emit_t *emit, qstr qstr) {
     // not implemented
+    // load integer, check fits in 32 bits
     assert(0);
 }
 
 static void emit_viper_x64_load_const_dec(emit_t *emit, qstr qstr) {
-    // not supported
+    // not supported (although, could support floats in future)
     assert(0);
 }
 
@@ -381,6 +400,7 @@ static void emit_viper_x64_load_const_id(emit_t *emit, qstr qstr) {
 
 static void emit_viper_x64_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     // not implemented properly
+    // load a pointer to the asciiz string?
     assert(0);
     emit_pre(emit);
     emit_post_push_i64(emit, VTYPE_PTR, (machine_uint_t)qstr_str(qstr));
@@ -444,6 +464,7 @@ static void emit_viper_x64_load_global(emit_t *emit, qstr qstr) {
 
 static void emit_viper_x64_load_deref(emit_t *emit, qstr qstr) {
     // not implemented
+    // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
     assert(0);
 }
 
@@ -453,6 +474,10 @@ static void emit_viper_x64_load_closure(emit_t *emit, qstr qstr) {
 }
 
 static void emit_viper_x64_load_attr(emit_t *emit, qstr qstr) {
+    // depends on type of subject:
+    //  - integer, function, pointer to integers: error
+    //  - pointer to structure: get member, quite easy
+    //  - Python object: call rt_load_attr, and needs to be typed to convert result
     vtype_kind_t vtype_base;
     emit_pre_pop_r64(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
@@ -495,6 +520,7 @@ static void emit_viper_x64_store_fast(emit_t *emit, qstr qstr, int local_num) {
 }
 
 static void emit_viper_x64_store_name(emit_t *emit, qstr qstr) {
+    // rt_store_name, but needs conversion of object (maybe have rt_viper_store_name(obj, type))
     vtype_kind_t vtype;
     emit_pre_pop_r64(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
@@ -523,6 +549,10 @@ static void emit_viper_x64_store_locals(emit_t *emit) {
 }
 
 static void emit_viper_x64_store_subscr(emit_t *emit) {
+    // depends on type of subject:
+    //  - integer, function, pointer to structure: error
+    //  - pointer to integers: store as per array
+    //  - Python object: call runtime with converted object or type info
     vtype_kind_t vtype_index, vtype_base, vtype_value;
     emit_pre_pop_r64_r64_r64(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1, &vtype_value, REG_ARG_3); // index, base, value to store
     assert(vtype_index == VTYPE_PYOBJ);
@@ -533,16 +563,19 @@ static void emit_viper_x64_store_subscr(emit_t *emit) {
 
 static void emit_viper_x64_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
+    // could support for Python types, just set to None (so GC can reclaim it)
     assert(0);
 }
 
 static void emit_viper_x64_delete_name(emit_t *emit, qstr qstr) {
     // not implemented
+    // use rt_delete_name
     assert(0);
 }
 
 static void emit_viper_x64_delete_global(emit_t *emit, qstr qstr) {
     // not implemented
+    // use rt_delete_global
     assert(0);
 }
 
@@ -636,6 +669,7 @@ static void emit_viper_x64_continue_loop(emit_t *emit, int label) {
     assert(0);
 }
 static void emit_viper_x64_setup_with(emit_t *emit, int label) {
+    // not supported, or could be with runtime call
     assert(0);
 }
 static void emit_viper_x64_with_cleanup(emit_t *emit) {
@@ -651,6 +685,8 @@ static void emit_viper_x64_end_finally(emit_t *emit) {
     assert(0);
 }
 static void emit_viper_x64_get_iter(emit_t *emit) {
+    // perhaps the difficult one, as we want to rewrite for loops using native code
+    // in cases where we iterate over a Python object, can we use normal runtime calls?
     assert(0);
 } // tos = getiter(tos)
 static void emit_viper_x64_for_iter(emit_t *emit, int label) {
@@ -659,6 +695,12 @@ static void emit_viper_x64_for_iter(emit_t *emit, int label) {
 static void emit_viper_x64_for_iter_end(emit_t *emit) {
     assert(0);
 }
+
+static void emit_viper_x64_pop_block(emit_t *emit) {
+    emit_pre(emit);
+    emit_post(emit);
+}
+
 static void emit_viper_x64_pop_except(emit_t *emit) {
     assert(0);
 }
@@ -671,7 +713,43 @@ static void emit_viper_x64_unary_op(emit_t *emit, rt_unary_op_t op) {
     emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
 }
 
+static void emit_viper_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
+    vtype_kind_t vtype_lhs, vtype_rhs;
+    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
+    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
+        assert(op == RT_BINARY_OP_ADD);
+        asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
+        emit_post_push_r64(emit, VTYPE_INT, REG_ARG_2);
+    } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        emit_call_with_i64_arg(emit, rt_binary_op, op, REG_ARG_1);
+        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    } else {
+        printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
+        assert(0);
+    }
+}
+
+static void emit_viper_x64_compare_op(emit_t *emit, rt_compare_op_t op) {
+    vtype_kind_t vtype_lhs, vtype_rhs;
+    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
+    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
+        assert(op == RT_COMPARE_OP_LESS);
+        asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
+        asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
+        asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
+        emit_post_push_r64(emit, VTYPE_BOOL, REG_RET);
+    } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        emit_call_with_i64_arg(emit, rt_compare_op, op, REG_ARG_1);
+        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
+    } else {
+        printf("ViperTypeError: can't do comparison between types %d and %d\n", vtype_lhs, vtype_rhs);
+        assert(0);
+    }
+}
+
 static void emit_viper_x64_build_tuple(emit_t *emit, int n_args) {
+    // call runtime, with types of args
+    // if wrapped in byte_array, or something, allocates memory and fills it
     assert(0);
 }
 
@@ -683,6 +761,7 @@ static void emit_viper_x64_build_list(emit_t *emit, int n_args) {
 }
 
 static void emit_viper_x64_list_append(emit_t *emit, int list_index) {
+    // only used in list comprehension, so call runtime
     assert(0);
 }
 
@@ -720,6 +799,7 @@ static void emit_viper_x64_build_slice(emit_t *emit, int n_args) {
     assert(0);
 }
 static void emit_viper_x64_unpack_sequence(emit_t *emit, int n_args) {
+    // call runtime, needs type decl
     assert(0);
 }
 static void emit_viper_x64_unpack_ex(emit_t *emit, int n_left, int n_right) {
@@ -727,6 +807,7 @@ static void emit_viper_x64_unpack_ex(emit_t *emit, int n_left, int n_right) {
 }
 
 static void emit_viper_x64_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+    // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_default_params == 0 && n_dict_params == 0);
     emit_pre(emit);
     emit_call_with_i64_arg(emit, rt_make_function_from_id, scope->unique_code_id, REG_ARG_1);
@@ -738,6 +819,7 @@ static void emit_viper_x64_make_closure(emit_t *emit, scope_t *scope, int n_dict
 }
 
 static void emit_viper_x64_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+    // call special viper runtime routine with type info for args, and wanted type info for return
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     if (n_positional == 0) {
         vtype_kind_t vtype_fun;
@@ -784,46 +866,9 @@ static void emit_viper_x64_call_method(emit_t *emit, int n_positional, int n_key
     emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_viper_x64_pop_block(emit_t *emit) {
-    emit_pre(emit);
-    emit_post(emit);
-}
-
-static void emit_viper_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
-    vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
-    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        assert(op == RT_BINARY_OP_ADD);
-        asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
-        emit_post_push_r64(emit, VTYPE_INT, REG_ARG_2);
-    } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_i64_arg(emit, rt_binary_op, op, REG_ARG_1);
-        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
-    } else {
-        printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
-        assert(0);
-    }
-}
-
-static void emit_viper_x64_compare_op(emit_t *emit, rt_compare_op_t op) {
-    vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_r64_r64(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
-    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        assert(op == RT_COMPARE_OP_LESS);
-        asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
-        asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
-        asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
-        emit_post_push_r64(emit, VTYPE_BOOL, REG_RET);
-    } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_i64_arg(emit, rt_compare_op, op, REG_ARG_1);
-        emit_post_push_r64(emit, VTYPE_PYOBJ, REG_RET);
-    } else {
-        printf("ViperTypeError: can't do comparison between types %d and %d\n", vtype_lhs, vtype_rhs);
-        assert(0);
-    }
-}
-
 static void emit_viper_x64_return_value(emit_t *emit) {
+    // easy.  since we don't know who we return to, just return the raw value.
+    // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;
     emit_pre_pop_r64(emit, &vtype, REG_RAX);
     assert(vtype == VTYPE_PTR_NONE);
@@ -833,12 +878,15 @@ static void emit_viper_x64_return_value(emit_t *emit) {
 }
 
 static void emit_viper_x64_raise_varargs(emit_t *emit, int n_args) {
+    // call runtime
     assert(0);
 }
 static void emit_viper_x64_yield_value(emit_t *emit) {
+    // not supported (for now)
     assert(0);
 }
 static void emit_viper_x64_yield_from(emit_t *emit) {
+    // not supported (for now)
     assert(0);
 }
 
