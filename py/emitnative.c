@@ -90,10 +90,10 @@
 #endif
 
 typedef enum {
-    NEED_TO_PUSH_NOTHING,
-    NEED_TO_PUSH_REG,
-    NEED_TO_PUSH_IMM,
-} need_to_push_t;
+    STACK_VALUE,
+    STACK_REG,
+    STACK_IMM,
+} stack_info_kind_t;
 
 typedef enum {
     VTYPE_UNBOUND,
@@ -105,23 +105,30 @@ typedef enum {
     VTYPE_BUILTIN_V_INT,
 } vtype_kind_t;
 
+typedef struct _stack_info_t {
+    vtype_kind_t vtype;
+    stack_info_kind_t kind;
+    union {
+        int u_reg;
+        machine_int_t u_imm;
+    };
+} stack_info_t;
+
 struct _emit_t {
     int pass;
 
     bool do_viper_types;
-    int all_vtype_alloc;
-    vtype_kind_t *all_vtype;
+
+    int local_vtype_alloc;
     vtype_kind_t *local_vtype;
-    vtype_kind_t *stack_vtype;
+
+    int stack_info_alloc;
+    stack_info_t *stack_info;
+
     int stack_start;
     int stack_size;
 
     bool last_emit_was_return_value;
-
-    need_to_push_t need_to_push;
-    vtype_kind_t last_vtype;
-    int last_reg;
-    int64_t last_imm;
 
     scope_t *scope;
 
@@ -135,7 +142,8 @@ struct _emit_t {
 emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
     emit->do_viper_types = false;
-    emit->all_vtype = NULL;
+    emit->local_vtype = NULL;
+    emit->stack_info = NULL;
 #if defined(N_X64)
     emit->as = asm_x64_new(max_num_labels);
 #elif defined(N_THUMB)
@@ -153,24 +161,33 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->stack_start = 0;
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;
-    emit->need_to_push = NEED_TO_PUSH_NOTHING;
     emit->scope = scope;
 
-    if (emit->all_vtype == NULL) {
-        emit->all_vtype_alloc = scope->num_locals + scope->stack_size + 100; // XXX don't know stack size on entry, should be maximum over all scopes
-        emit->all_vtype = m_new(vtype_kind_t, emit->all_vtype_alloc);
-        emit->local_vtype = emit->all_vtype;
-        emit->stack_vtype = emit->all_vtype + scope->num_locals;
+    if (emit->local_vtype == NULL) {
+        emit->local_vtype_alloc = scope->num_locals + 20; // XXX should be maximum over all scopes
+        emit->local_vtype = m_new(vtype_kind_t, emit->local_vtype_alloc);
+    }
+    if (emit->stack_info == NULL) {
+        emit->stack_info_alloc = scope->stack_size + 50; // XXX don't know stack size on entry, should be maximum over all scopes
+        emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
     if (emit->do_viper_types) {
-        for (int i = 0; i < emit->all_vtype_alloc; i++) {
-            emit->all_vtype[i] = VTYPE_UNBOUND;
-        }
         // TODO set types of arguments based on type signature
+        for (int i = 0; i < emit->local_vtype_alloc; i++) {
+            emit->local_vtype[i] = VTYPE_UNBOUND;
+        }
+        for (int i = 0; i < emit->stack_info_alloc; i++) {
+            emit->stack_info[i].kind = STACK_VALUE;
+            emit->stack_info[i].vtype = VTYPE_UNBOUND;
+        }
     } else {
-        for (int i = 0; i < emit->all_vtype_alloc; i++) {
-            emit->all_vtype[i] = VTYPE_PYOBJ;
+        for (int i = 0; i < emit->local_vtype_alloc; i++) {
+            emit->local_vtype[i] = VTYPE_PYOBJ;
+        }
+        for (int i = 0; i < emit->stack_info_alloc; i++) {
+            emit->stack_info[i].kind = STACK_VALUE;
+            emit->stack_info[i].vtype = VTYPE_PYOBJ;
         }
     }
 
@@ -279,148 +296,150 @@ static void adjust_stack(emit_t *emit, int stack_size_delta) {
     }
 }
 
-static void stack_settle(emit_t *emit) {
-    switch (emit->need_to_push) {
-        case NEED_TO_PUSH_NOTHING:
-            break;
-
-        case NEED_TO_PUSH_REG:
-            emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            ASM_MOV_REG_TO_LOCAL(emit->last_reg, emit->stack_start + emit->stack_size);
-            adjust_stack(emit, 1);
-            break;
-
-        case NEED_TO_PUSH_IMM:
-            emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            ASM_MOV_IMM_TO_LOCAL(emit->last_imm, emit->stack_start + emit->stack_size);
-            adjust_stack(emit, 1);
-            break;
-    }
-    emit->need_to_push = NEED_TO_PUSH_NOTHING;
-}
-
+/*
 static void emit_pre_raw(emit_t *emit, int stack_size_delta) {
     adjust_stack(emit, stack_size_delta);
     emit->last_emit_was_return_value = false;
 }
+*/
 
+// this must be called at start of emit functions
 static void emit_pre(emit_t *emit) {
-    stack_settle(emit);
-    emit_pre_raw(emit, 0);
+    emit->last_emit_was_return_value = false;
+    // settle the stack
+    /*
+    if (regs_needed != 0) {
+        for (int i = 0; i < emit->stack_size; i++) {
+            switch (emit->stack_info[i].kind) {
+                case STACK_VALUE:
+                    break;
+
+                case STACK_REG:
+                    // TODO only push reg if in regs_needed
+                    emit->stack_info[i].kind = STACK_VALUE;
+                    ASM_MOV_REG_TO_LOCAL(emit->stack_info[i].u_reg, emit->stack_start + i);
+                    break;
+
+                case STACK_IMM:
+                    // don't think we ever need to push imms for settling
+                    //ASM_MOV_IMM_TO_LOCAL(emit->last_imm, emit->stack_start + i);
+                    break;
+            }
+        }
+    }
+    */
 }
 
 static vtype_kind_t peek_vtype(emit_t *emit) {
-    switch (emit->need_to_push) {
-        case NEED_TO_PUSH_NOTHING:
-            return emit->stack_vtype[emit->stack_size - 1];
+    return emit->stack_info[emit->stack_size - 1].vtype;
+}
 
-        case NEED_TO_PUSH_REG:
-        case NEED_TO_PUSH_IMM:
-            return emit->last_vtype;
+static void need_reg_single(emit_t *emit, int reg_needed) {
+    for (int i = 0; i < emit->stack_size; i++) {
+        stack_info_t *si = &emit->stack_info[i];
+        if (si->kind == STACK_REG && si->u_reg == reg_needed) {
+            si->kind = STACK_VALUE;
+            ASM_MOV_REG_TO_LOCAL(si->u_reg, emit->stack_start + i);
+        }
+    }
+}
 
-        default:
-            assert(0);
-            return VTYPE_UNBOUND;
+static void need_reg_all(emit_t *emit) {
+    for (int i = 0; i < emit->stack_size; i++) {
+        stack_info_t *si = &emit->stack_info[i];
+        if (si->kind == STACK_REG) {
+            si->kind = STACK_VALUE;
+            ASM_MOV_REG_TO_LOCAL(si->u_reg, emit->stack_start + i);
+        }
     }
 }
 
 static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
-    switch (emit->need_to_push) {
-        case NEED_TO_PUSH_NOTHING:
-            *vtype = emit->stack_vtype[emit->stack_size - 1];
-            ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, reg_dest);
-            emit_pre_raw(emit, -1);
+    emit->last_emit_was_return_value = false;
+    adjust_stack(emit, -1);
+    need_reg_single(emit, reg_dest);
+    stack_info_t *si = &emit->stack_info[emit->stack_size];
+    *vtype = si->vtype;
+    switch (si->kind) {
+        case STACK_VALUE:
+            ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
             break;
 
-        case NEED_TO_PUSH_REG:
-            emit_pre_raw(emit, 0);
-            *vtype = emit->last_vtype;
-            if (emit->last_reg != reg_dest) {
-                ASM_MOV_REG_TO_REG(emit->last_reg, reg_dest);
+        case STACK_REG:
+            if (si->u_reg != reg_dest) {
+                ASM_MOV_REG_TO_REG(si->u_reg, reg_dest);
             }
             break;
 
-        case NEED_TO_PUSH_IMM:
-            emit_pre_raw(emit, 0);
-            *vtype = emit->last_vtype;
-            ASM_MOV_IMM_TO_REG(emit->last_imm, reg_dest);
+        case STACK_IMM:
+            ASM_MOV_IMM_TO_REG(si->u_imm, reg_dest);
             break;
     }
-    emit->need_to_push = NEED_TO_PUSH_NOTHING;
 }
 
 static void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb) {
     emit_pre_pop_reg(emit, vtypea, rega);
-    *vtypeb = emit->stack_vtype[emit->stack_size - 1];
-    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, regb);
-    adjust_stack(emit, -1);
+    emit_pre_pop_reg(emit, vtypeb, regb);
 }
 
 static void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb, vtype_kind_t *vtypec, int regc) {
     emit_pre_pop_reg(emit, vtypea, rega);
-    *vtypeb = emit->stack_vtype[emit->stack_size - 1];
-    *vtypec = emit->stack_vtype[emit->stack_size - 2];
-    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, regb);
-    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 2, regc);
-    adjust_stack(emit, -2);
+    emit_pre_pop_reg(emit, vtypeb, regb);
+    emit_pre_pop_reg(emit, vtypec, regc);
 }
 
 static void emit_post(emit_t *emit) {
 }
 
 static void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
-    emit->need_to_push = NEED_TO_PUSH_REG;
-    emit->last_vtype = vtype;
-    emit->last_reg = reg;
-}
-
-static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t imm) {
-    emit->need_to_push = NEED_TO_PUSH_IMM;
-    emit->last_vtype = vtype;
-    emit->last_imm = imm;
-}
-
-static void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb) {
-    emit->stack_vtype[emit->stack_size] = vtypea;
-    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
-    emit->need_to_push = NEED_TO_PUSH_REG;
-    emit->last_vtype = vtypeb;
-    emit->last_reg = regb;
+    stack_info_t *si = &emit->stack_info[emit->stack_size];
+    si->vtype = vtype;
+    si->kind = STACK_REG;
+    si->u_reg = reg;
     adjust_stack(emit, 1);
 }
 
+static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t imm) {
+    stack_info_t *si = &emit->stack_info[emit->stack_size];
+    si->vtype = vtype;
+    si->kind = STACK_IMM;
+    si->u_imm = imm;
+    adjust_stack(emit, 1);
+}
+
+static void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb) {
+    emit_post_push_reg(emit, vtypea, rega);
+    emit_post_push_reg(emit, vtypeb, regb);
+}
+
 static void emit_post_push_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc) {
-    emit->stack_vtype[emit->stack_size] = vtypea;
-    emit->stack_vtype[emit->stack_size + 1] = vtypeb;
-    emit->stack_vtype[emit->stack_size + 2] = vtypec;
-    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
-    ASM_MOV_REG_TO_LOCAL(regb, emit->stack_start + emit->stack_size + 1);
-    ASM_MOV_REG_TO_LOCAL(regc, emit->stack_start + emit->stack_size + 2);
-    adjust_stack(emit, 3);
+    emit_post_push_reg(emit, vtypea, rega);
+    emit_post_push_reg(emit, vtypeb, regb);
+    emit_post_push_reg(emit, vtypec, regc);
 }
 
 static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc, vtype_kind_t vtyped, int regd) {
-    emit->stack_vtype[emit->stack_size] = vtypea;
-    emit->stack_vtype[emit->stack_size + 1] = vtypeb;
-    emit->stack_vtype[emit->stack_size + 2] = vtypec;
-    emit->stack_vtype[emit->stack_size + 3] = vtyped;
-    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
-    ASM_MOV_REG_TO_LOCAL(regb, emit->stack_start + emit->stack_size + 1);
-    ASM_MOV_REG_TO_LOCAL(regc, emit->stack_start + emit->stack_size + 2);
-    ASM_MOV_REG_TO_LOCAL(regd, emit->stack_start + emit->stack_size + 3);
-    adjust_stack(emit, 4);
+    emit_post_push_reg(emit, vtypea, rega);
+    emit_post_push_reg(emit, vtypeb, regb);
+    emit_post_push_reg(emit, vtypec, regc);
+    emit_post_push_reg(emit, vtyped, regd);
 }
 
 // vtype of all n_pop objects is VTYPE_PYOBJ
 static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
+    need_reg_all(emit);
+    for (int i = 0; i < n_pop; i++) {
+        assert(emit->stack_info[emit->stack_size + i].vtype == VTYPE_PYOBJ);
+    }
     ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size - 1, reg_dest);
     adjust_stack(emit, -n_pop);
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
 static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, int n_push) {
+    need_reg_all(emit);
     for (int i = 0; i < n_push; i++) {
-        emit->stack_vtype[emit->stack_size + i] = VTYPE_PYOBJ;
+        emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;
     }
     ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size + n_push - 1, reg_dest);
     adjust_stack(emit, n_push);
@@ -435,6 +454,7 @@ static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
 }
 
 static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
+    need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val, arg_reg);
     emit_call(emit, fun_kind, fun);
 }
@@ -442,6 +462,7 @@ static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *f
 static void emit_native_load_id(emit_t *emit, qstr qstr) {
     // check for built-ins
     if (strcmp(qstr_str(qstr), "v_int") == 0) {
+        assert(0);
         emit_pre(emit);
         //emit_post_push_blank(emit, VTYPE_BUILTIN_V_INT);
 
@@ -585,6 +606,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else {
+        need_reg_single(emit, REG_RAX);
         asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
         emit_post_push_reg(emit, vtype, REG_RAX);
     }
@@ -596,6 +618,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
+        need_reg_single(emit, REG_R0);
         asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - 1);
         emit_post_push_reg(emit, vtype, REG_R0);
     }
@@ -778,7 +801,9 @@ static void emit_native_pop_top(emit_t *emit) {
 }
 
 static void emit_native_rot_two(emit_t *emit) {
-    assert(0);
+    vtype_kind_t vtype0, vtype1;
+    emit_pre_pop_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1);
+    emit_post_push_reg_reg(emit, vtype0, REG_TEMP0, vtype1, REG_TEMP1);
 }
 
 static void emit_native_rot_three(emit_t *emit) {
