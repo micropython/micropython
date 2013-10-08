@@ -119,17 +119,15 @@ void emit_common_delete_id(emit_t *emit, const emit_method_table_t *emit_method_
 extern const emit_method_table_t emit_pass1_method_table;
 extern const emit_method_table_t emit_cpython_method_table;
 extern const emit_method_table_t emit_bc_method_table;
-extern const emit_method_table_t emit_x64_method_table;
-extern const emit_method_table_t emit_viper_x64_method_table;
-extern const emit_method_table_t emit_thumb_method_table;
+extern const emit_method_table_t emit_native_x64_method_table;
+extern const emit_method_table_t emit_native_thumb_method_table;
 
 emit_t *emit_pass1_new(qstr qstr___class__);
 void emit_pass1_free(emit_t *emit);
 emit_t *emit_cpython_new(uint max_num_labels);
 emit_t *emit_bc_new(uint max_num_labels);
-emit_t *emit_x64_new(uint max_num_labels);
-emit_t *emit_viper_x64_new(uint max_num_labels);
-emit_t *emit_thumb_new(uint max_num_labels);
+emit_t *emit_native_x64_new(uint max_num_labels);
+emit_t *emit_native_thumb_new(uint max_num_labels);
 
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 

@@ -419,6 +419,7 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
 
     if (fp_native != NULL) {
         fwrite(fun_data, len, 1, fp_native);
+        fflush(fp_native);
     }
 }
 

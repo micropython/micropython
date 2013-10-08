@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -ansi -std=gnu99 -Os -DEMIT_ENABLE_CPY -DEMIT_ENABLE_X64 -DEMIT_ENABLE_THUMB #-DNDEBUG
+CFLAGS = -Wall -ansi -std=gnu99 -Os -DEMIT_ENABLE_CPY -DEMIT_ENABLE_THUMB #-DNDEBUG
 LDFLAGS =
 
 SRC = \
@@ -16,8 +16,6 @@ SRC = \
 	emitcpy.c \
 	emitbc.c \
 	asmx64.c \
-	emitx64.c \
-	emitthumb.c \
 	asmthumb.c \
 	emitinlinethumb.c \
 	runtime.c \
@@ -26,7 +24,7 @@ SRC = \
 
 SRC_ASM = \
 
-OBJ = $(SRC:.c=.o) $(SRC_ASM:.s=.o)
+OBJ = $(SRC:.c=.o) $(SRC_ASM:.s=.o) emitnx64.o emitnthumb.o
 LIB =
 PROG = py
 
@@ -36,15 +34,19 @@ $(PROG): $(OBJ)
 runtime.o: runtime.c
 	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
-bc.o: bc.c
+vm.o: vm.c
 	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
 parse.o: grammar.h
 compile.o: grammar.h
 emitcpy.o: emit.h
 emitbc.o: emit.h
-emitx64.o: emit.h
-emitthumb.o: emit.h
+
+emitnx64.o: emitnative.c emit.h
+	$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
+
+emitnthumb.o: emitnative.c emit.h
+	$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
 
 clean:
 	/bin/rm $(OBJ)

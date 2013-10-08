@@ -30,12 +30,64 @@
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
-#include "asmx64.h"
 
-#ifdef EMIT_ENABLE_X64
+// select a machine architecture
+#if 0
+#if defined(EMIT_ENABLE_NATIVE_X64)
+#define N_X64
+#elif defined(EMIT_ENABLE_NATIVE_THUMB)
+#define N_THUMB
+#endif
+#endif
+
+// wrapper around everything in this file
+#if defined(N_X64) || defined(N_THUMB)
+
+#if defined(N_X64)
+
+// x64 specific stuff
+
+#include "asmx64.h"
 
 #define REG_LOCAL_1 (REG_RBX)
 #define REG_LOCAL_NUM (1)
+
+#define EXPORT_FUN(name) emit_native_x64_##name
+
+#define REG_TEMP0 (REG_RAX)
+#define REG_TEMP1 (REG_RDI)
+#define REG_TEMP2 (REG_RSI)
+#define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_x64_mov_r64_to_local(emit->as, (reg), (local_num))
+#define ASM_MOV_IMM_TO_REG(imm, reg) asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg))
+#define ASM_MOV_IMM_TO_LOCAL(imm, local_num) do { asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), REG_RAX); asm_x64_mov_r64_to_local(emit->as, REG_RAX, (local_num)); } while (false)
+#define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_x64_mov_local_to_r64(emit->as, (local_num), (reg))
+#define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_x64_mov_r64_to_r64(emit->as, (reg_src), (reg_dest))
+#define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_x64_mov_local_addr_to_r64(emit->as, (local_num), (reg))
+
+#elif defined(N_THUMB)
+
+// thumb specific stuff
+
+#include "asmthumb.h"
+
+#define REG_LOCAL_1 (REG_R4)
+#define REG_LOCAL_2 (REG_R5)
+#define REG_LOCAL_3 (REG_R6)
+#define REG_LOCAL_NUM (3)
+
+#define EXPORT_FUN(name) emit_native_thumb_##name
+
+#define REG_TEMP0 (REG_R0)
+#define REG_TEMP1 (REG_R1)
+#define REG_TEMP2 (REG_R2)
+#define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_thumb_mov_local_reg(emit->as, (local_num), (reg))
+#define ASM_MOV_IMM_TO_REG(imm, reg) asm_thumb_mov_reg_i32_optimised(emit->as, (reg), (imm))
+#define ASM_MOV_IMM_TO_LOCAL(imm, local_num) do { asm_thumb_mov_reg_i32_optimised(emit->as, REG_R0, (imm)); asm_thumb_mov_local_reg(emit->as, (local_num), REG_R0); } while (false)
+#define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_thumb_mov_reg_local(emit->as, (reg), (local_num))
+#define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_thumb_mov_reg_reg(emit->as, (reg_dest), (reg_src))
+#define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_thumb_mov_reg_local_addr(emit->as, (reg), (local_num))
+
+#endif
 
 typedef enum {
     NEED_TO_PUSH_NOTHING,
@@ -73,22 +125,30 @@ struct _emit_t {
 
     scope_t *scope;
 
+#if defined(N_X64)
     asm_x64_t *as;
+#elif defined(N_THUMB)
+    asm_thumb_t *as;
+#endif
 };
 
-emit_t *emit_x64_new(uint max_num_labels) {
+emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
     emit->do_viper_types = false;
     emit->all_vtype = NULL;
+#if defined(N_X64)
     emit->as = asm_x64_new(max_num_labels);
+#elif defined(N_THUMB)
+    emit->as = asm_thumb_new(max_num_labels);
+#endif
     return emit;
 }
 
-static void emit_x64_set_viper_types(emit_t *emit, bool do_viper_types) {
+static void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
     emit->do_viper_types = do_viper_types;
 }
 
-static void emit_x64_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
+static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_start = 0;
     emit->stack_size = 0;
@@ -114,7 +174,11 @@ static void emit_x64_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
         }
     }
 
+#if defined(N_X64)
     asm_x64_start_pass(emit->as, pass);
+#elif defined(N_THUMB)
+    asm_thumb_start_pass(emit->as, pass);
+#endif
 
     // entry to function
     int num_locals = 0;
@@ -126,9 +190,14 @@ static void emit_x64_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
         emit->stack_start = num_locals;
         num_locals += scope->stack_size;
     }
+#if defined(N_X64)
     asm_x64_entry(emit->as, num_locals);
+#elif defined(N_THUMB)
+    asm_thumb_entry(emit->as, num_locals);
+#endif
 
     // initialise locals from parameters
+#if defined(N_X64)
     for (int i = 0; i < scope->num_params; i++) {
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
@@ -141,13 +210,38 @@ static void emit_x64_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
             assert(0);
         }
     }
+#elif defined(N_THUMB)
+    for (int i = 0; i < scope->num_params; i++) {
+        if (i == 0) {
+            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
+        } else if (i == 1) {
+            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_2, REG_ARG_2);
+        } else if (i == 2) {
+            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_3, REG_ARG_3);
+        } else if (i == 3) {
+            asm_thumb_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
+        } else {
+            // TODO not implemented
+            assert(0);
+        }
+    }
+
+    asm_thumb_mov_reg_i32(emit->as, REG_R7, (machine_uint_t)rt_fun_table);
+#endif
 }
 
-static void emit_x64_end_pass(emit_t *emit) {
+static void emit_native_end_pass(emit_t *emit) {
+#if defined(N_X64)
     if (!emit->last_emit_was_return_value) {
         asm_x64_exit(emit->as);
     }
     asm_x64_end_pass(emit->as);
+#elif defined(N_THUMB)
+    if (!emit->last_emit_was_return_value) {
+        asm_thumb_exit(emit->as);
+    }
+    asm_thumb_end_pass(emit->as);
+#endif
 
     // check stack is back to zero size
     if (emit->stack_size != 0) {
@@ -155,20 +249,25 @@ static void emit_x64_end_pass(emit_t *emit) {
     }
 
     if (emit->pass == PASS_3) {
+#if defined(N_X64)
         py_fun_t f = asm_x64_get_code(emit->as);
         rt_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+#elif defined(N_THUMB)
+        py_fun_t f = asm_thumb_get_code(emit->as);
+        rt_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+#endif
     }
 }
 
-static bool emit_x64_last_emit_was_return_value(emit_t *emit) {
+static bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-static int emit_x64_get_stack_size(emit_t *emit) {
+static int emit_native_get_stack_size(emit_t *emit) {
     return emit->stack_size;
 }
 
-static void emit_x64_set_stack_size(emit_t *emit, int size) {
+static void emit_native_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
 }
 
@@ -187,14 +286,13 @@ static void stack_settle(emit_t *emit) {
 
         case NEED_TO_PUSH_REG:
             emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            asm_x64_mov_r64_to_local(emit->as, emit->last_reg, emit->stack_start + emit->stack_size);
+            ASM_MOV_REG_TO_LOCAL(emit->last_reg, emit->stack_start + emit->stack_size);
             adjust_stack(emit, 1);
             break;
 
         case NEED_TO_PUSH_IMM:
             emit->stack_vtype[emit->stack_size] = emit->last_vtype;
-            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_imm, REG_RAX);
-            asm_x64_mov_r64_to_local(emit->as, REG_RAX, emit->stack_start + emit->stack_size);
+            ASM_MOV_IMM_TO_LOCAL(emit->last_imm, emit->stack_start + emit->stack_size);
             adjust_stack(emit, 1);
             break;
     }
@@ -226,26 +324,26 @@ static vtype_kind_t peek_vtype(emit_t *emit) {
     }
 }
 
-static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg) {
+static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
     switch (emit->need_to_push) {
         case NEED_TO_PUSH_NOTHING:
             *vtype = emit->stack_vtype[emit->stack_size - 1];
-            asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, reg);
+            ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, reg_dest);
             emit_pre_raw(emit, -1);
             break;
 
         case NEED_TO_PUSH_REG:
             emit_pre_raw(emit, 0);
             *vtype = emit->last_vtype;
-            if (emit->last_reg != reg) {
-                asm_x64_mov_r64_to_r64(emit->as, emit->last_reg, reg);
+            if (emit->last_reg != reg_dest) {
+                ASM_MOV_REG_TO_REG(emit->last_reg, reg_dest);
             }
             break;
 
         case NEED_TO_PUSH_IMM:
             emit_pre_raw(emit, 0);
             *vtype = emit->last_vtype;
-            asm_x64_mov_i64_to_r64_optimised(emit->as, emit->last_imm, reg);
+            ASM_MOV_IMM_TO_REG(emit->last_imm, reg_dest);
             break;
     }
     emit->need_to_push = NEED_TO_PUSH_NOTHING;
@@ -254,7 +352,7 @@ static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg) {
 static void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb) {
     emit_pre_pop_reg(emit, vtypea, rega);
     *vtypeb = emit->stack_vtype[emit->stack_size - 1];
-    asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, regb);
+    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, regb);
     adjust_stack(emit, -1);
 }
 
@@ -262,8 +360,8 @@ static void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int reg
     emit_pre_pop_reg(emit, vtypea, rega);
     *vtypeb = emit->stack_vtype[emit->stack_size - 1];
     *vtypec = emit->stack_vtype[emit->stack_size - 2];
-    asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, regb);
-    asm_x64_mov_local_to_r64(emit->as, emit->stack_start + emit->stack_size - 2, regc);
+    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 1, regb);
+    ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - 2, regc);
     adjust_stack(emit, -2);
 }
 
@@ -276,7 +374,7 @@ static void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
     emit->last_reg = reg;
 }
 
-static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, int64_t imm) {
+static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t imm) {
     emit->need_to_push = NEED_TO_PUSH_IMM;
     emit->last_vtype = vtype;
     emit->last_imm = imm;
@@ -284,7 +382,7 @@ static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, int64_t imm) {
 
 static void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb) {
     emit->stack_vtype[emit->stack_size] = vtypea;
-    asm_x64_mov_r64_to_local(emit->as, rega, emit->stack_start + emit->stack_size);
+    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
     emit->need_to_push = NEED_TO_PUSH_REG;
     emit->last_vtype = vtypeb;
     emit->last_reg = regb;
@@ -295,9 +393,9 @@ static void emit_post_push_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int re
     emit->stack_vtype[emit->stack_size] = vtypea;
     emit->stack_vtype[emit->stack_size + 1] = vtypeb;
     emit->stack_vtype[emit->stack_size + 2] = vtypec;
-    asm_x64_mov_r64_to_local(emit->as, rega, emit->stack_start + emit->stack_size);
-    asm_x64_mov_r64_to_local(emit->as, regb, emit->stack_start + emit->stack_size + 1);
-    asm_x64_mov_r64_to_local(emit->as, regc, emit->stack_start + emit->stack_size + 2);
+    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
+    ASM_MOV_REG_TO_LOCAL(regb, emit->stack_start + emit->stack_size + 1);
+    ASM_MOV_REG_TO_LOCAL(regc, emit->stack_start + emit->stack_size + 2);
     adjust_stack(emit, 3);
 }
 
@@ -306,38 +404,42 @@ static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, in
     emit->stack_vtype[emit->stack_size + 1] = vtypeb;
     emit->stack_vtype[emit->stack_size + 2] = vtypec;
     emit->stack_vtype[emit->stack_size + 3] = vtyped;
-    asm_x64_mov_r64_to_local(emit->as, rega, emit->stack_start + emit->stack_size);
-    asm_x64_mov_r64_to_local(emit->as, regb, emit->stack_start + emit->stack_size + 1);
-    asm_x64_mov_r64_to_local(emit->as, regc, emit->stack_start + emit->stack_size + 2);
-    asm_x64_mov_r64_to_local(emit->as, regd, emit->stack_start + emit->stack_size + 3);
+    ASM_MOV_REG_TO_LOCAL(rega, emit->stack_start + emit->stack_size);
+    ASM_MOV_REG_TO_LOCAL(regb, emit->stack_start + emit->stack_size + 1);
+    ASM_MOV_REG_TO_LOCAL(regc, emit->stack_start + emit->stack_size + 2);
+    ASM_MOV_REG_TO_LOCAL(regd, emit->stack_start + emit->stack_size + 3);
     adjust_stack(emit, 4);
 }
 
 // vtype of all n_pop objects is VTYPE_PYOBJ
-static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg, int n_pop) {
-    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size - 1, reg);
+static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size - 1, reg_dest);
     adjust_stack(emit, -n_pop);
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
-static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg, int n_push) {
+static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, int n_push) {
     for (int i = 0; i < n_push; i++) {
         emit->stack_vtype[emit->stack_size + i] = VTYPE_PYOBJ;
     }
-    asm_x64_mov_local_addr_to_r64(emit->as, emit->stack_start + emit->stack_size + n_push - 1, reg);
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size + n_push - 1, reg_dest);
     adjust_stack(emit, n_push);
 }
 
-static void emit_call(emit_t *emit, void *fun) {
+static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
+#if defined(N_X64)
     asm_x64_call_ind(emit->as, fun, REG_RAX);
+#elif defined(N_THUMB)
+    asm_thumb_bl_ind(emit->as, rt_fun_table[fun_kind], fun_kind, REG_R3);
+#endif
 }
 
-static void emit_call_with_imm_arg(emit_t *emit, void *fun, int64_t arg_val, int arg_reg) {
-    asm_x64_mov_i64_to_r64_optimised(emit->as, arg_val, arg_reg);
-    asm_x64_call_ind(emit->as, fun, REG_RAX);
+static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
+    ASM_MOV_IMM_TO_REG(arg_val, arg_reg);
+    emit_call(emit, fun_kind, fun);
 }
 
-static void emit_x64_load_id(emit_t *emit, qstr qstr) {
+static void emit_native_load_id(emit_t *emit, qstr qstr) {
     // check for built-ins
     if (strcmp(qstr_str(qstr), "v_int") == 0) {
         emit_pre(emit);
@@ -345,40 +447,44 @@ static void emit_x64_load_id(emit_t *emit, qstr qstr) {
 
     // not a built-in, so do usual thing
     } else {
-        emit_common_load_id(emit, &emit_x64_method_table, emit->scope, qstr);
+        emit_common_load_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
     }
 }
 
-static void emit_x64_store_id(emit_t *emit, qstr qstr) {
+static void emit_native_store_id(emit_t *emit, qstr qstr) {
     // TODO check for built-ins and disallow
-    emit_common_store_id(emit, &emit_x64_method_table, emit->scope, qstr);
+    emit_common_store_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-static void emit_x64_delete_id(emit_t *emit, qstr qstr) {
+static void emit_native_delete_id(emit_t *emit, qstr qstr) {
     // TODO check for built-ins and disallow
-    emit_common_delete_id(emit, &emit_x64_method_table, emit->scope, qstr);
+    emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-static void emit_x64_label_assign(emit_t *emit, int l) {
+static void emit_native_label_assign(emit_t *emit, int l) {
+#if defined(N_X64)
     asm_x64_label_assign(emit->as, l);
+#elif defined(N_THUMB)
+    asm_thumb_label_assign(emit->as, l);
+#endif
 }
 
-static void emit_x64_import_name(emit_t *emit, qstr qstr) {
-    // not supported
+static void emit_native_import_name(emit_t *emit, qstr qstr) {
+    // not implemented
     assert(0);
 }
 
-static void emit_x64_import_from(emit_t *emit, qstr qstr) {
-    // not supported
+static void emit_native_import_from(emit_t *emit, qstr qstr) {
+    // not implemented
     assert(0);
 }
 
-static void emit_x64_import_star(emit_t *emit) {
-    // not supported
+static void emit_native_import_star(emit_t *emit) {
+    // not implemented
     assert(0);
 }
 
-static void emit_x64_load_const_tok(emit_t *emit, py_token_kind_t tok) {
+static void emit_native_load_const_tok(emit_t *emit, py_token_kind_t tok) {
     emit_pre(emit);
     int vtype;
     machine_uint_t val;
@@ -401,7 +507,7 @@ static void emit_x64_load_const_tok(emit_t *emit, py_token_kind_t tok) {
     emit_post_push_imm(emit, vtype, val);
 }
 
-static void emit_x64_load_const_small_int(emit_t *emit, int arg) {
+static void emit_native_load_const_small_int(emit_t *emit, int arg) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);
@@ -410,23 +516,23 @@ static void emit_x64_load_const_small_int(emit_t *emit, int arg) {
     }
 }
 
-static void emit_x64_load_const_int(emit_t *emit, qstr qstr) {
+static void emit_native_load_const_int(emit_t *emit, qstr qstr) {
     // not implemented
     // load integer, check fits in 32 bits
     assert(0);
 }
 
-static void emit_x64_load_const_dec(emit_t *emit, qstr qstr) {
-    // not supported (although, could support floats in future)
+static void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
+    // not supported for viper (although, could support floats in future)
     assert(0);
 }
 
-static void emit_x64_load_const_id(emit_t *emit, qstr qstr) {
-    // not supported?
+static void emit_native_load_const_id(emit_t *emit, qstr qstr) {
+    // not supported for viper?
     assert(0);
 }
 
-static void emit_x64_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
+static void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         // not implemented properly
@@ -434,80 +540,92 @@ static void emit_x64_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
         assert(0);
         emit_post_push_imm(emit, VTYPE_PTR, (machine_uint_t)qstr_str(qstr));
     } else {
-        emit_call_with_imm_arg(emit, rt_load_const_str, qstr, REG_ARG_1);
+        emit_call_with_imm_arg(emit, RT_F_LOAD_CONST_STR, rt_load_const_str, qstr, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
 }
 
-static void emit_x64_load_const_verbatim_start(emit_t *emit) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_start(emit_t *emit) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_const_verbatim_int(emit_t *emit, int val) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_int(emit_t *emit, int val) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_const_verbatim_str(emit_t *emit, const char *str) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_const_verbatim_end(emit_t *emit) {
-    // not supported/needed
+static void emit_native_load_const_verbatim_end(emit_t *emit) {
+    // not supported/needed for viper
     assert(0);
 }
 
-static void emit_x64_load_fast(emit_t *emit, qstr qstr, int local_num) {
+static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qstr));
     }
+    emit_pre(emit);
+#if defined(N_X64)
     if (local_num == 0) {
-        emit_pre(emit);
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else {
-        emit_pre(emit);
         asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
         emit_post_push_reg(emit, vtype, REG_RAX);
     }
+#elif defined(N_THUMB)
+    if (local_num == 0) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
+    } else {
+        asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - 1);
+        emit_post_push_reg(emit, vtype, REG_R0);
+    }
+#endif
 }
 
-static void emit_x64_load_name(emit_t *emit, qstr qstr) {
+static void emit_native_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit);
-    emit_call_with_imm_arg(emit, rt_load_name, qstr, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_LOAD_NAME, rt_load_name, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_load_global(emit_t *emit, qstr qstr) {
+static void emit_native_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit);
-    emit_call_with_imm_arg(emit, rt_load_global, qstr, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_LOAD_GLOBAL, rt_load_global, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_load_deref(emit_t *emit, qstr qstr) {
+static void emit_native_load_deref(emit_t *emit, qstr qstr) {
     // not implemented
     // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
     assert(0);
 }
 
-static void emit_x64_load_closure(emit_t *emit, qstr qstr) {
+static void emit_native_load_closure(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_x64_load_attr(emit_t *emit, qstr qstr) {
+static void emit_native_load_attr(emit_t *emit, qstr qstr) {
     // depends on type of subject:
     //  - integer, function, pointer to integers: error
     //  - pointer to structure: get member, quite easy
@@ -515,33 +633,46 @@ static void emit_x64_load_attr(emit_t *emit, qstr qstr) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, rt_load_attr, qstr, REG_ARG_2); // arg2 = attribute name
+    emit_call_with_imm_arg(emit, RT_F_LOAD_ATTR, rt_load_attr, qstr, REG_ARG_2); // arg2 = attribute name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_load_method(emit_t *emit, qstr qstr) {
+static void emit_native_load_method(emit_t *emit, qstr qstr) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, rt_load_method, qstr, REG_ARG_2); // arg2 = method name
+    emit_call_with_imm_arg(emit, RT_F_LOAD_METHOD, rt_load_method, qstr, REG_ARG_2); // arg2 = method name
 }
 
-static void emit_x64_load_build_class(emit_t *emit) {
+static void emit_native_load_build_class(emit_t *emit) {
     // not supported
    assert(0);
 }
 
-static void emit_x64_store_fast(emit_t *emit, qstr qstr, int local_num) {
+static void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
+#if defined(N_X64)
     if (local_num == 0) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
-        emit_post(emit);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_RAX);
         asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - 1);
-        emit_post(emit);
     }
+#elif defined(N_THUMB)
+    if (local_num == 0) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
+    } else {
+        emit_pre_pop_reg(emit, &vtype, REG_R0);
+        asm_thumb_mov_local_reg(emit->as, local_num - 1, REG_R0);
+    }
+#endif
+
+    emit_post(emit);
 
     // check types
     if (emit->local_vtype[local_num] == VTYPE_UNBOUND) {
@@ -553,36 +684,36 @@ static void emit_x64_store_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
-static void emit_x64_store_name(emit_t *emit, qstr qstr) {
+static void emit_native_store_name(emit_t *emit, qstr qstr) {
     // rt_store_name, but needs conversion of object (maybe have rt_viper_store_name(obj, type))
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, rt_store_name, qstr, REG_ARG_1); // arg1 = name
+    emit_call_with_imm_arg(emit, RT_F_STORE_NAME, rt_store_name, qstr, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
-static void emit_x64_store_global(emit_t *emit, qstr qstr) {
+static void emit_native_store_global(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_x64_store_deref(emit_t *emit, qstr qstr) {
+static void emit_native_store_deref(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_x64_store_attr(emit_t *emit, qstr qstr) {
+static void emit_native_store_attr(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_x64_store_locals(emit_t *emit) {
+static void emit_native_store_locals(emit_t *emit) {
     // not supported
     assert(0);
 }
 
-static void emit_x64_store_subscr(emit_t *emit) {
+static void emit_native_store_subscr(emit_t *emit) {
     // depends on type of subject:
     //  - integer, function, pointer to structure: error
     //  - pointer to integers: store as per array
@@ -592,170 +723,179 @@ static void emit_x64_store_subscr(emit_t *emit) {
     assert(vtype_index == VTYPE_PYOBJ);
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
-    emit_call(emit, rt_store_subscr);
+    emit_call(emit, RT_F_STORE_SUBSCR, rt_store_subscr);
 }
 
-static void emit_x64_delete_fast(emit_t *emit, qstr qstr, int local_num) {
+static void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // could support for Python types, just set to None (so GC can reclaim it)
     assert(0);
 }
 
-static void emit_x64_delete_name(emit_t *emit, qstr qstr) {
+static void emit_native_delete_name(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_name
     assert(0);
 }
 
-static void emit_x64_delete_global(emit_t *emit, qstr qstr) {
+static void emit_native_delete_global(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_global
     assert(0);
 }
 
-static void emit_x64_delete_deref(emit_t *emit, qstr qstr) {
+static void emit_native_delete_deref(emit_t *emit, qstr qstr) {
     // not supported
     assert(0);
 }
 
-static void emit_x64_delete_attr(emit_t *emit, qstr qstr) {
+static void emit_native_delete_attr(emit_t *emit, qstr qstr) {
     // not supported
     assert(0);
 }
 
-static void emit_x64_delete_subscr(emit_t *emit) {
+static void emit_native_delete_subscr(emit_t *emit) {
     // not supported
     assert(0);
 }
 
-static void emit_x64_dup_top(emit_t *emit) {
+static void emit_native_dup_top(emit_t *emit) {
     vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_RAX);
-    emit_post_push_reg_reg(emit, vtype, REG_RAX, vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+    emit_post_push_reg_reg(emit, vtype, REG_TEMP0, vtype, REG_TEMP0);
 }
 
-static void emit_x64_dup_top_two(emit_t *emit) {
-    vtype_kind_t vtype1, vtype2;
-    emit_pre_pop_reg_reg(emit, &vtype1, REG_RAX, &vtype2, REG_RDI);
-    emit_post_push_reg_reg_reg_reg(emit, vtype2, REG_RDI, vtype1, REG_RAX, vtype2, REG_RDI, vtype1, REG_RAX);
+static void emit_native_dup_top_two(emit_t *emit) {
+    vtype_kind_t vtype0, vtype1;
+    emit_pre_pop_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1);
+    emit_post_push_reg_reg_reg_reg(emit, vtype1, REG_TEMP1, vtype0, REG_TEMP0, vtype1, REG_TEMP1, vtype0, REG_TEMP0);
 }
 
-static void emit_x64_pop_top(emit_t *emit) {
+static void emit_native_pop_top(emit_t *emit) {
     vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
     emit_post(emit);
 }
 
-static void emit_x64_rot_two(emit_t *emit) {
+static void emit_native_rot_two(emit_t *emit) {
     assert(0);
 }
 
-static void emit_x64_rot_three(emit_t *emit) {
-    vtype_kind_t vtype_rax, vtype_rdi, vtype_rsi;
-    emit_pre_pop_reg_reg_reg(emit, &vtype_rax, REG_RAX, &vtype_rdi, REG_RDI, &vtype_rsi, REG_RSI);
-    emit_post_push_reg_reg_reg(emit, vtype_rax, REG_RAX, vtype_rsi, REG_RSI, vtype_rdi, REG_RDI);
+static void emit_native_rot_three(emit_t *emit) {
+    vtype_kind_t vtype0, vtype1, vtype2;
+    emit_pre_pop_reg_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1, &vtype2, REG_TEMP2);
+    emit_post_push_reg_reg_reg(emit, vtype0, REG_TEMP0, vtype2, REG_TEMP2, vtype1, REG_TEMP1);
 }
 
-static void emit_x64_jump(emit_t *emit, int label) {
+static void emit_native_jump(emit_t *emit, int label) {
     emit_pre(emit);
+#if defined(N_X64)
     asm_x64_jmp_label(emit->as, label);
+#elif defined(N_THUMB)
+    asm_thumb_b_label(emit->as, label);
+#endif
     emit_post(emit);
 }
 
-static void emit_x64_pop_jump_if_false(emit_t *emit, int label) {
+static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
-        emit_pre_pop_reg(emit, &vtype, REG_RAX);
-        asm_x64_test_r8_with_r8(emit->as, REG_RAX, REG_RAX);
-        asm_x64_jcc_label(emit->as, JCC_JZ, label);
-        emit_post(emit);
+        emit_pre_pop_reg(emit, &vtype, REG_RET);
     } else if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-        emit_call(emit, rt_is_true);
-        asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
-        asm_x64_jcc_label(emit->as, JCC_JZ, label);
-        emit_post(emit);
+        emit_call(emit, RT_F_IS_TRUE, rt_is_true);
     } else {
         printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
         assert(0);
     }
+#if defined(N_X64)
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JZ, label);
+#elif defined(N_THUMB)
+    asm_thumb_cmp_reg_bz_label(emit->as, REG_RET, label);
+#endif
+    emit_post(emit);
 }
 
-static void emit_x64_pop_jump_if_true(emit_t *emit, int label) {
+static void emit_native_pop_jump_if_true(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_jump_if_true_or_pop(emit_t *emit, int label) {
+static void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_jump_if_false_or_pop(emit_t *emit, int label) {
+static void emit_native_jump_if_false_or_pop(emit_t *emit, int label) {
     assert(0);
 }
 
-static void emit_x64_setup_loop(emit_t *emit, int label) {
+static void emit_native_setup_loop(emit_t *emit, int label) {
     emit_pre(emit);
     emit_post(emit);
 }
 
-static void emit_x64_break_loop(emit_t *emit, int label) {
+static void emit_native_break_loop(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_continue_loop(emit_t *emit, int label) {
+static void emit_native_continue_loop(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_setup_with(emit_t *emit, int label) {
+static void emit_native_setup_with(emit_t *emit, int label) {
     // not supported, or could be with runtime call
     assert(0);
 }
-static void emit_x64_with_cleanup(emit_t *emit) {
+static void emit_native_with_cleanup(emit_t *emit) {
     assert(0);
 }
-static void emit_x64_setup_except(emit_t *emit, int label) {
+static void emit_native_setup_except(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_setup_finally(emit_t *emit, int label) {
+static void emit_native_setup_finally(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_end_finally(emit_t *emit) {
+static void emit_native_end_finally(emit_t *emit) {
     assert(0);
 }
-static void emit_x64_get_iter(emit_t *emit) {
+static void emit_native_get_iter(emit_t *emit) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
     assert(0);
 } // tos = getiter(tos)
-static void emit_x64_for_iter(emit_t *emit, int label) {
+static void emit_native_for_iter(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_x64_for_iter_end(emit_t *emit) {
+static void emit_native_for_iter_end(emit_t *emit) {
     assert(0);
 }
 
-static void emit_x64_pop_block(emit_t *emit) {
+static void emit_native_pop_block(emit_t *emit) {
     emit_pre(emit);
     emit_post(emit);
 }
 
-static void emit_x64_pop_except(emit_t *emit) {
+static void emit_native_pop_except(emit_t *emit) {
     assert(0);
 }
 
-static void emit_x64_unary_op(emit_t *emit, rt_unary_op_t op) {
+static void emit_native_unary_op(emit_t *emit, rt_unary_op_t op) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, rt_unary_op, op, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_UNARY_OP, rt_unary_op, op, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
+static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_BINARY_OP_ADD);
+#if defined(N_X64)
         asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
+#elif defined(N_THUMB)
+        asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
+#endif
         emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_imm_arg(emit, rt_binary_op, op, REG_ARG_1);
+        emit_call_with_imm_arg(emit, RT_F_BINARY_OP, rt_binary_op, op, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
@@ -763,17 +903,24 @@ static void emit_x64_binary_op(emit_t *emit, rt_binary_op_t op) {
     }
 }
 
-static void emit_x64_compare_op(emit_t *emit, rt_compare_op_t op) {
+static void emit_native_compare_op(emit_t *emit, rt_compare_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_COMPARE_OP_LESS);
+#if defined(N_X64)
         asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
         asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
         asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
+#elif defined(N_THUMB)
+        asm_thumb_cmp_reg_reg(emit->as, REG_ARG_2, REG_ARG_3);
+        asm_thumb_ite_ge(emit->as);
+        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
+        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
+#endif
         emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_imm_arg(emit, rt_compare_op, op, REG_ARG_1);
+        emit_call_with_imm_arg(emit, RT_F_COMPARE_OP, rt_compare_op, op, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do comparison between types %d and %d\n", vtype_lhs, vtype_rhs);
@@ -781,247 +928,252 @@ static void emit_x64_compare_op(emit_t *emit, rt_compare_op_t op) {
     }
 }
 
-static void emit_x64_build_tuple(emit_t *emit, int n_args) {
+static void emit_native_build_tuple(emit_t *emit, int n_args) {
     // call runtime, with types of args
     // if wrapped in byte_array, or something, allocates memory and fills it
     assert(0);
 }
 
-static void emit_x64_build_list(emit_t *emit, int n_args) {
+static void emit_native_build_list(emit_t *emit, int n_args) {
     emit_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
-    emit_call_with_imm_arg(emit, rt_build_list, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_BUILD_LIST, rt_build_list, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
 }
 
-static void emit_x64_list_append(emit_t *emit, int list_index) {
+static void emit_native_list_append(emit_t *emit, int list_index) {
     // only used in list comprehension, so call runtime
     assert(0);
 }
 
-static void emit_x64_build_map(emit_t *emit, int n_args) {
+static void emit_native_build_map(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_call_with_imm_arg(emit, rt_build_map, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_BUILD_MAP, rt_build_map, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
 }
 
-static void emit_x64_store_map(emit_t *emit) {
+static void emit_native_store_map(emit_t *emit) {
     vtype_kind_t vtype_key, vtype_value, vtype_map;
     emit_pre_pop_reg_reg_reg(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3, &vtype_map, REG_ARG_1); // key, value, map
     assert(vtype_key == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
     assert(vtype_map == VTYPE_PYOBJ);
-    emit_call(emit, rt_store_map);
+    emit_call(emit, RT_F_STORE_MAP, rt_store_map);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
 
-static void emit_x64_map_add(emit_t *emit, int map_index) {
+static void emit_native_map_add(emit_t *emit, int map_index) {
     assert(0);
 }
 
-static void emit_x64_build_set(emit_t *emit, int n_args) {
+static void emit_native_build_set(emit_t *emit, int n_args) {
     emit_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
-    emit_call_with_imm_arg(emit, rt_build_set, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_BUILD_SET, rt_build_set, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
 }
 
-static void emit_x64_set_add(emit_t *emit, int set_index) {
+static void emit_native_set_add(emit_t *emit, int set_index) {
     assert(0);
 }
-static void emit_x64_build_slice(emit_t *emit, int n_args) {
+static void emit_native_build_slice(emit_t *emit, int n_args) {
     assert(0);
 }
-static void emit_x64_unpack_sequence(emit_t *emit, int n_args) {
+static void emit_native_unpack_sequence(emit_t *emit, int n_args) {
     // call runtime, needs type decl
     assert(0);
 }
-static void emit_x64_unpack_ex(emit_t *emit, int n_left, int n_right) {
+static void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
     assert(0);
 }
 
-static void emit_x64_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+static void emit_native_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_default_params == 0 && n_dict_params == 0);
     emit_pre(emit);
-    emit_call_with_imm_arg(emit, rt_make_function_from_id, scope->unique_code_id, REG_ARG_1);
+    emit_call_with_imm_arg(emit, RT_F_MAKE_FUNCTION_FROM_ID, rt_make_function_from_id, scope->unique_code_id, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+static void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     assert(0);
 }
 
-static void emit_x64_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     // call special viper runtime routine with type info for args, and wanted type info for return
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     if (n_positional == 0) {
         vtype_kind_t vtype_fun;
         emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
         assert(vtype_fun == VTYPE_PYOBJ);
-        emit_call(emit, rt_call_function_0);
+        emit_call(emit, RT_F_CALL_FUNCTION_0, rt_call_function_0);
     } else if (n_positional == 1) {
         vtype_kind_t vtype_fun, vtype_arg1;
         emit_pre_pop_reg_reg(emit, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the single argument, the function
         assert(vtype_fun == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
-        emit_call(emit, rt_call_function_1);
+        emit_call(emit, RT_F_CALL_FUNCTION_1, rt_call_function_1);
     } else if (n_positional == 2) {
         vtype_kind_t vtype_fun, vtype_arg1, vtype_arg2;
         emit_pre_pop_reg_reg_reg(emit, &vtype_arg2, REG_ARG_3, &vtype_arg1, REG_ARG_2, &vtype_fun, REG_ARG_1); // the second argument, the first argument, the function
         assert(vtype_fun == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
         assert(vtype_arg2 == VTYPE_PYOBJ);
-        emit_call(emit, rt_call_function_2);
+        emit_call(emit, RT_F_CALL_FUNCTION_2, rt_call_function_2);
     } else {
         assert(0);
     }
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     if (n_positional == 0) {
         vtype_kind_t vtype_meth, vtype_self;
         emit_pre_pop_reg_reg(emit, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the self object (or NULL), the method
         assert(vtype_meth == VTYPE_PYOBJ);
         assert(vtype_self == VTYPE_PYOBJ);
-        emit_call(emit, rt_call_method_1);
+        emit_call(emit, RT_F_CALL_METHOD_1, rt_call_method_1);
     } else if (n_positional == 1) {
         vtype_kind_t vtype_meth, vtype_self, vtype_arg1;
         emit_pre_pop_reg_reg_reg(emit, &vtype_arg1, REG_ARG_3, &vtype_self, REG_ARG_2, &vtype_meth, REG_ARG_1); // the first argument, the self object (or NULL), the method
         assert(vtype_meth == VTYPE_PYOBJ);
         assert(vtype_self == VTYPE_PYOBJ);
         assert(vtype_arg1 == VTYPE_PYOBJ);
-        emit_call(emit, rt_call_method_2);
+        emit_call(emit, RT_F_CALL_METHOD_2, rt_call_method_2);
     } else {
         assert(0);
     }
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_x64_return_value(emit_t *emit) {
+static void emit_native_return_value(emit_t *emit) {
     // easy.  since we don't know who we return to, just return the raw value.
     // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_RAX);
+    emit_pre_pop_reg(emit, &vtype, REG_RET);
     if (emit->do_viper_types) {
         assert(vtype == VTYPE_PTR_NONE);
     } else {
         assert(vtype == VTYPE_PYOBJ);
     }
     emit->last_emit_was_return_value = true;
+#if defined(N_X64)
     //asm_x64_call_ind(emit->as, 0, REG_RAX); to seg fault for debugging with gdb
     asm_x64_exit(emit->as);
+#elif defined(N_THUMB)
+    //asm_thumb_call_ind(emit->as, 0, REG_R0); to seg fault for debugging with gdb
+    asm_thumb_exit(emit->as);
+#endif
 }
 
-static void emit_x64_raise_varargs(emit_t *emit, int n_args) {
+static void emit_native_raise_varargs(emit_t *emit, int n_args) {
     // call runtime
     assert(0);
 }
-static void emit_x64_yield_value(emit_t *emit) {
+static void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
     assert(0);
 }
-static void emit_x64_yield_from(emit_t *emit) {
+static void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
     assert(0);
 }
 
-const emit_method_table_t emit_x64_method_table = {
-    emit_x64_set_viper_types,
-    emit_x64_start_pass,
-    emit_x64_end_pass,
-    emit_x64_last_emit_was_return_value,
-    emit_x64_get_stack_size,
-    emit_x64_set_stack_size,
+const emit_method_table_t EXPORT_FUN(method_table) = {
+    emit_native_set_viper_types,
+    emit_native_start_pass,
+    emit_native_end_pass,
+    emit_native_last_emit_was_return_value,
+    emit_native_get_stack_size,
+    emit_native_set_stack_size,
 
-    emit_x64_load_id,
-    emit_x64_store_id,
-    emit_x64_delete_id,
+    emit_native_load_id,
+    emit_native_store_id,
+    emit_native_delete_id,
 
-    emit_x64_label_assign,
-    emit_x64_import_name,
-    emit_x64_import_from,
-    emit_x64_import_star,
-    emit_x64_load_const_tok,
-    emit_x64_load_const_small_int,
-    emit_x64_load_const_int,
-    emit_x64_load_const_dec,
-    emit_x64_load_const_id,
-    emit_x64_load_const_str,
-    emit_x64_load_const_verbatim_start,
-    emit_x64_load_const_verbatim_int,
-    emit_x64_load_const_verbatim_str,
-    emit_x64_load_const_verbatim_strn,
-    emit_x64_load_const_verbatim_quoted_str,
-    emit_x64_load_const_verbatim_end,
-    emit_x64_load_fast,
-    emit_x64_load_name,
-    emit_x64_load_global,
-    emit_x64_load_deref,
-    emit_x64_load_closure,
-    emit_x64_load_attr,
-    emit_x64_load_method,
-    emit_x64_load_build_class,
-    emit_x64_store_fast,
-    emit_x64_store_name,
-    emit_x64_store_global,
-    emit_x64_store_deref,
-    emit_x64_store_attr,
-    emit_x64_store_locals,
-    emit_x64_store_subscr,
-    emit_x64_delete_fast,
-    emit_x64_delete_name,
-    emit_x64_delete_global,
-    emit_x64_delete_deref,
-    emit_x64_delete_attr,
-    emit_x64_delete_subscr,
-    emit_x64_dup_top,
-    emit_x64_dup_top_two,
-    emit_x64_pop_top,
-    emit_x64_rot_two,
-    emit_x64_rot_three,
-    emit_x64_jump,
-    emit_x64_pop_jump_if_true,
-    emit_x64_pop_jump_if_false,
-    emit_x64_jump_if_true_or_pop,
-    emit_x64_jump_if_false_or_pop,
-    emit_x64_setup_loop,
-    emit_x64_break_loop,
-    emit_x64_continue_loop,
-    emit_x64_setup_with,
-    emit_x64_with_cleanup,
-    emit_x64_setup_except,
-    emit_x64_setup_finally,
-    emit_x64_end_finally,
-    emit_x64_get_iter,
-    emit_x64_for_iter,
-    emit_x64_for_iter_end,
-    emit_x64_pop_block,
-    emit_x64_pop_except,
-    emit_x64_unary_op,
-    emit_x64_binary_op,
-    emit_x64_compare_op,
-    emit_x64_build_tuple,
-    emit_x64_build_list,
-    emit_x64_list_append,
-    emit_x64_build_map,
-    emit_x64_store_map,
-    emit_x64_map_add,
-    emit_x64_build_set,
-    emit_x64_set_add,
-    emit_x64_build_slice,
-    emit_x64_unpack_sequence,
-    emit_x64_unpack_ex,
-    emit_x64_make_function,
-    emit_x64_make_closure,
-    emit_x64_call_function,
-    emit_x64_call_method,
-    emit_x64_return_value,
-    emit_x64_raise_varargs,
-    emit_x64_yield_value,
-    emit_x64_yield_from,
+    emit_native_label_assign,
+    emit_native_import_name,
+    emit_native_import_from,
+    emit_native_import_star,
+    emit_native_load_const_tok,
+    emit_native_load_const_small_int,
+    emit_native_load_const_int,
+    emit_native_load_const_dec,
+    emit_native_load_const_id,
+    emit_native_load_const_str,
+    emit_native_load_const_verbatim_start,
+    emit_native_load_const_verbatim_int,
+    emit_native_load_const_verbatim_str,
+    emit_native_load_const_verbatim_strn,
+    emit_native_load_const_verbatim_quoted_str,
+    emit_native_load_const_verbatim_end,
+    emit_native_load_fast,
+    emit_native_load_name,
+    emit_native_load_global,
+    emit_native_load_deref,
+    emit_native_load_closure,
+    emit_native_load_attr,
+    emit_native_load_method,
+    emit_native_load_build_class,
+    emit_native_store_fast,
+    emit_native_store_name,
+    emit_native_store_global,
+    emit_native_store_deref,
+    emit_native_store_attr,
+    emit_native_store_locals,
+    emit_native_store_subscr,
+    emit_native_delete_fast,
+    emit_native_delete_name,
+    emit_native_delete_global,
+    emit_native_delete_deref,
+    emit_native_delete_attr,
+    emit_native_delete_subscr,
+    emit_native_dup_top,
+    emit_native_dup_top_two,
+    emit_native_pop_top,
+    emit_native_rot_two,
+    emit_native_rot_three,
+    emit_native_jump,
+    emit_native_pop_jump_if_true,
+    emit_native_pop_jump_if_false,
+    emit_native_jump_if_true_or_pop,
+    emit_native_jump_if_false_or_pop,
+    emit_native_setup_loop,
+    emit_native_break_loop,
+    emit_native_continue_loop,
+    emit_native_setup_with,
+    emit_native_with_cleanup,
+    emit_native_setup_except,
+    emit_native_setup_finally,
+    emit_native_end_finally,
+    emit_native_get_iter,
+    emit_native_for_iter,
+    emit_native_for_iter_end,
+    emit_native_pop_block,
+    emit_native_pop_except,
+    emit_native_unary_op,
+    emit_native_binary_op,
+    emit_native_compare_op,
+    emit_native_build_tuple,
+    emit_native_build_list,
+    emit_native_list_append,
+    emit_native_build_map,
+    emit_native_store_map,
+    emit_native_map_add,
+    emit_native_build_set,
+    emit_native_set_add,
+    emit_native_build_slice,
+    emit_native_unpack_sequence,
+    emit_native_unpack_ex,
+    emit_native_make_function,
+    emit_native_make_closure,
+    emit_native_call_function,
+    emit_native_call_method,
+    emit_native_return_value,
+    emit_native_raise_varargs,
+    emit_native_yield_value,
+    emit_native_yield_from,
 };
 
-#endif // EMIT_ENABLE_X64
+#endif // defined(N_X64) || defined(N_THUMB)

@@ -2706,10 +2706,10 @@ void py_compile(py_parse_node_t pn) {
                 case EMIT_OPT_NATIVE_PYTHON:
                 case EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
-                        emit_native = emit_x64_new(max_num_labels);
+                        emit_native = emit_native_x64_new(max_num_labels);
                     }
                     comp->emit = emit_native;
-                    comp->emit_method_table = &emit_x64_method_table;
+                    comp->emit_method_table = &emit_native_x64_method_table;
                     comp->emit_method_table->set_native_types(comp->emit, s->emit_options == EMIT_OPT_VIPER);
                     break;
 
