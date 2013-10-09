@@ -331,9 +331,7 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
         tok->kind = PY_TOKEN_INDENT;
         lex->emit_dent -= 1;
 
-    } else if (had_physical_newline && lex->nested_bracket_level == 0
-                   && tok != &lex->tok_cur // so that we don't emit a newline if file starts with a comment
-               ) {
+    } else if (had_physical_newline && lex->nested_bracket_level == 0) {
         tok->kind = PY_TOKEN_NEWLINE;
 
         uint num_spaces = lex->column - 1;
@@ -348,12 +346,11 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
                 lex->emit_dent -= 1;
             }
             if (num_spaces != indent_top(lex)) {
-                //SyntaxError
+                tok->kind = PY_TOKEN_DEDENT_MISMATCH;
             }
         }
 
     } else if (is_end(lex)) {
-        // TODO emit a newline if file does not end in one
         if (indent_top(lex) > 0) {
             tok->kind = PY_TOKEN_NEWLINE;
             lex->emit_dent = 0;
@@ -613,7 +610,15 @@ py_lexer_t *py_lexer_from_str_len(const char *src_name, const char *str, uint le
     }
 
     py_lexer_next_token_into(lex, &lex->tok_cur);
-    py_lexer_next_token_into(lex, &lex->tok_next);
+
+    // check that the first token is in the first column
+    // (done to get equivalence with CPython)
+    if (lex->tok_cur.src_line == 1 && lex->tok_cur.src_column != 1) {
+        lex->tok_next = lex->tok_cur;
+        lex->tok_cur.kind = PY_TOKEN_INDENT;
+    } else {
+        py_lexer_next_token_into(lex, &lex->tok_next);
+    }
 
     return lex;
 }
@@ -674,4 +679,9 @@ bool py_lexer_opt_str(py_lexer_t *lex, const char *str) {
 
 bool py_lexer_show_error(py_lexer_t *lex, const char *msg) {
     return py_token_show_error(&lex->tok_cur, msg);
+}
+
+bool py_lexer_show_error_pythonic(py_lexer_t *lex, const char *msg) {
+    printf("  File \"%s\", line %d column %d\n%s\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
+    return false;
 }

@@ -12,20 +12,21 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_END,                   // 0
 
     PY_TOKEN_INVALID,
+    PY_TOKEN_DEDENT_MISMATCH,
     PY_TOKEN_LONELY_STRING_OPEN,
 
-    PY_TOKEN_NEWLINE,               // 3
-    PY_TOKEN_INDENT,                // 4
-    PY_TOKEN_DEDENT,                // 5
+    PY_TOKEN_NEWLINE,               // 4
+    PY_TOKEN_INDENT,                // 5
+    PY_TOKEN_DEDENT,                // 6
 
-    PY_TOKEN_NAME,                  // 6
+    PY_TOKEN_NAME,                  // 7
     PY_TOKEN_NUMBER,
     PY_TOKEN_STRING,
     PY_TOKEN_BYTES,
 
     PY_TOKEN_ELLIPSES,
 
-    PY_TOKEN_KW_FALSE,              // 11
+    PY_TOKEN_KW_FALSE,              // 12
     PY_TOKEN_KW_NONE,
     PY_TOKEN_KW_TRUE,
     PY_TOKEN_KW_AND,
@@ -34,7 +35,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_KW_BREAK,
     PY_TOKEN_KW_CLASS,
     PY_TOKEN_KW_CONTINUE,
-    PY_TOKEN_KW_DEF,                // 20
+    PY_TOKEN_KW_DEF,                // 21
     PY_TOKEN_KW_DEL,
     PY_TOKEN_KW_ELIF,
     PY_TOKEN_KW_ELSE,
@@ -44,7 +45,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_KW_FROM,
     PY_TOKEN_KW_GLOBAL,
     PY_TOKEN_KW_IF,
-    PY_TOKEN_KW_IMPORT,             // 30
+    PY_TOKEN_KW_IMPORT,             // 31
     PY_TOKEN_KW_IN,
     PY_TOKEN_KW_IS,
     PY_TOKEN_KW_LAMBDA,
@@ -54,12 +55,12 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_KW_PASS,
     PY_TOKEN_KW_RAISE,
     PY_TOKEN_KW_RETURN,
-    PY_TOKEN_KW_TRY,                // 40
+    PY_TOKEN_KW_TRY,                // 41
     PY_TOKEN_KW_WHILE,
     PY_TOKEN_KW_WITH,
     PY_TOKEN_KW_YIELD,
 
-    PY_TOKEN_OP_PLUS,               // 44
+    PY_TOKEN_OP_PLUS,               // 45
     PY_TOKEN_OP_MINUS,
     PY_TOKEN_OP_STAR,
     PY_TOKEN_OP_DBL_STAR,
@@ -69,7 +70,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_OP_LESS,
     PY_TOKEN_OP_DBL_LESS,
     PY_TOKEN_OP_MORE,
-    PY_TOKEN_OP_DBL_MORE,           // 54
+    PY_TOKEN_OP_DBL_MORE,           // 55
     PY_TOKEN_OP_AMPERSAND,
     PY_TOKEN_OP_PIPE,
     PY_TOKEN_OP_CARET,
@@ -79,7 +80,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_OP_DBL_EQUAL,
     PY_TOKEN_OP_NOT_EQUAL,
 
-    PY_TOKEN_DEL_PAREN_OPEN,        // 63
+    PY_TOKEN_DEL_PAREN_OPEN,        // 64
     PY_TOKEN_DEL_PAREN_CLOSE,
     PY_TOKEN_DEL_BRACKET_OPEN,
     PY_TOKEN_DEL_BRACKET_CLOSE,
@@ -89,7 +90,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_DEL_COLON,
     PY_TOKEN_DEL_PERIOD,
     PY_TOKEN_DEL_SEMICOLON,
-    PY_TOKEN_DEL_AT,                // 73
+    PY_TOKEN_DEL_AT,                // 74
     PY_TOKEN_DEL_EQUAL,
     PY_TOKEN_DEL_PLUS_EQUAL,
     PY_TOKEN_DEL_MINUS_EQUAL,
@@ -99,7 +100,7 @@ typedef enum _py_token_kind_t {
     PY_TOKEN_DEL_PERCENT_EQUAL,
     PY_TOKEN_DEL_AMPERSAND_EQUAL,
     PY_TOKEN_DEL_PIPE_EQUAL,
-    PY_TOKEN_DEL_CARET_EQUAL,       // 83
+    PY_TOKEN_DEL_CARET_EQUAL,       // 84
     PY_TOKEN_DEL_DBL_MORE_EQUAL,
     PY_TOKEN_DEL_DBL_LESS_EQUAL,
     PY_TOKEN_DEL_DBL_STAR_EQUAL,
@@ -137,5 +138,6 @@ bool py_lexer_opt_kind(py_lexer_t *lex, py_token_kind_t kind);
 bool py_lexer_opt_str(py_lexer_t *lex, const char *str);
 */
 bool py_lexer_show_error(py_lexer_t *lex, const char *msg);
+bool py_lexer_show_error_pythonic(py_lexer_t *lex, const char *msg);
 
 #endif /* INCLUDED_LEXER_H */

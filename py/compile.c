@@ -2192,7 +2192,14 @@ void compile_node(compiler_t *comp, py_parse_node_t pn) {
             case PY_PARSE_NODE_DECIMAL: EMIT(load_const_dec, arg); break;
             case PY_PARSE_NODE_STRING: EMIT(load_const_str, arg, false); break;
             case PY_PARSE_NODE_BYTES: EMIT(load_const_str, arg, true); break;
-            case PY_PARSE_NODE_TOKEN: EMIT(load_const_tok, arg); break;
+            case PY_PARSE_NODE_TOKEN:
+                if (arg == PY_TOKEN_NEWLINE) {
+                    // this can occur when file_input lets through a NEWLINE (eg if file starts with a newline)
+                    // do nothing
+                } else {
+                  EMIT(load_const_tok, arg);
+                }
+                break;
             default: assert(0);
         }
     } else {

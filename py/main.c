@@ -31,11 +31,13 @@ int main(int argc, char **argv) {
         }
     } else {
         py_parse_node_t pn = py_parse(lex, 0);
-        //printf("----------------\n");
-        //parse_node_show(pn, 0);
-        //printf("----------------\n");
-        py_compile(pn);
-        //printf("----------------\n");
+        if (pn != PY_PARSE_NODE_NULL) {
+            //printf("----------------\n");
+            parse_node_show(pn, 0);
+            //printf("----------------\n");
+            py_compile(pn);
+            //printf("----------------\n");
+        }
     }
 
     py_lexer_free(lex);

@@ -545,10 +545,12 @@ py_parse_node_t py_parse(py_lexer_t *lex, int wanted_rule) {
                 assert(0);
         }
     }
+
+    // check we are at the end of the token stream
     if (!py_lexer_is_kind(lex, PY_TOKEN_END)) {
-        py_lexer_show_error(lex, "unexpected token at end:");
-        py_token_show(py_lexer_cur(lex));
+        goto syntax_error;
     }
+
     //printf("--------------\n");
     //result_stack_show(parser);
     assert(parser->result_stack_top == 1);
@@ -557,10 +559,16 @@ py_parse_node_t py_parse(py_lexer_t *lex, int wanted_rule) {
     return parser->result_stack[0];
 
 syntax_error:
-    py_lexer_show_error(lex, "syntax error:");
+    if (py_lexer_is_kind(lex, PY_TOKEN_INDENT)) {
+        py_lexer_show_error_pythonic(lex, "IndentationError: unexpected indent");
+    } else if (py_lexer_is_kind(lex, PY_TOKEN_DEDENT_MISMATCH)) {
+        py_lexer_show_error_pythonic(lex, "IndentationError: unindent does not match any outer indentation level");
+    } else {
+        py_lexer_show_error_pythonic(lex, "syntax error:");
 #ifdef USE_RULE_NAME
-    py_lexer_show_error(lex, rule->rule_name);
+        py_lexer_show_error(lex, rule->rule_name);
 #endif
-    py_token_show(py_lexer_cur(lex));
+        py_token_show(py_lexer_cur(lex));
+    }
     return PY_PARSE_NODE_NULL;
 }
