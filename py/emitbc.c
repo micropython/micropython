@@ -348,14 +348,14 @@ static void emit_bc_store_attr(emit_t *emit, qstr qstr) {
     emit_write_byte_1_qstr(emit, PYBC_STORE_ATTR, qstr);
 }
 
-static void emit_bc_store_locals(emit_t *emit) {
-    emit_pre(emit, -1);
-    emit_write_byte_1(emit, PYBC_STORE_LOCALS);
-}
-
 static void emit_bc_store_subscr(emit_t *emit) {
     emit_pre(emit, -3);
     emit_write_byte_1(emit, PYBC_STORE_SUBSCR);
+}
+
+static void emit_bc_store_locals(emit_t *emit) {
+    // not needed for byte code
+    emit_pre(emit, -1);
 }
 
 static void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
@@ -718,8 +718,8 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_store_global,
     emit_bc_store_deref,
     emit_bc_store_attr,
-    emit_bc_store_locals,
     emit_bc_store_subscr,
+    emit_bc_store_locals,
     emit_bc_delete_fast,
     emit_bc_delete_name,
     emit_bc_delete_global,

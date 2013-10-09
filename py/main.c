@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
         py_parse_node_t pn = py_parse(lex, 0);
         if (pn != PY_PARSE_NODE_NULL) {
             //printf("----------------\n");
-            parse_node_show(pn, 0);
+            //parse_node_show(pn, 0);
             //printf("----------------\n");
             py_compile(pn);
             //printf("----------------\n");

@@ -352,17 +352,17 @@ static void emit_cpy_store_attr(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_cpy_store_locals(emit_t *emit) {
-    emit_pre(emit, -1, 1);
-    if (emit->pass == PASS_3) {
-        printf("STORE_LOCALS\n");
-    }
-}
-
 static void emit_cpy_store_subscr(emit_t *emit) {
     emit_pre(emit, -3, 1);
     if (emit->pass == PASS_3) {
         printf("STORE_SUBSCR\n");
+    }
+}
+
+static void emit_cpy_store_locals(emit_t *emit) {
+    emit_pre(emit, -1, 1);
+    if (emit->pass == PASS_3) {
+        printf("STORE_LOCALS\n");
     }
 }
 
@@ -870,8 +870,8 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_store_global,
     emit_cpy_store_deref,
     emit_cpy_store_attr,
-    emit_cpy_store_locals,
     emit_cpy_store_subscr,
+    emit_cpy_store_locals,
     emit_cpy_delete_fast,
     emit_cpy_delete_name,
     emit_cpy_delete_global,

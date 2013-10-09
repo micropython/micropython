@@ -9,8 +9,8 @@
 #include "runtime.h"
 #include "vm.h"
 
-//#define DEBUG_printf(args...) (void)0
-#define DEBUG_printf(args...) printf(args)
+#define DEBUG_printf(args...) (void)0
+//#define DEBUG_printf(args...) printf(args)
 
 #define DEBUG_OP_printf(args...) (void)0
 //#define DEBUG_OP_printf(args...) printf(args)
@@ -46,6 +46,7 @@ typedef enum {
     O_SET,
     O_MAP,
     O_CLASS,
+    O_OBJ,
 } py_obj_kind_t;
 
 typedef enum {
@@ -59,13 +60,15 @@ typedef struct _py_map_elem_t {
 } py_map_elem_t;
 
 typedef struct _py_map_t {
-    py_map_kind_t kind;
+    py_map_kind_t kind; // TODO merge this 1-bit field into alloc or used
     machine_uint_t alloc;
     machine_uint_t used;
     py_map_elem_t *table;
 } py_map_t;
 
-typedef struct _py_obj_base_t {
+typedef struct _py_obj_base_t py_obj_base_t;
+
+struct _py_obj_base_t {
     py_obj_kind_t kind;
     union {
         const char *id;
@@ -101,24 +104,22 @@ typedef struct _py_obj_base_t {
             py_obj_t *table;
         } u_set;
         py_map_t u_map; // for O_MAP
-        /*
-        struct { // for O_MAP
-            int alloc;
-            int used;
-            py_map_elem_t *table;
-        } u_map;
-        */
         struct { // for O_CLASS
-            py_map_t *map;
+            py_map_t *locals;
         } u_class;
+        struct { // for O_OBJ
+            py_obj_base_t *class; // points to a O_CLASS object
+            py_map_t *members;
+        } u_obj;
     };
-} py_obj_base_t;
+};
 
 py_obj_t py_const_none;
 py_obj_t py_const_false;
 py_obj_t py_const_true;
 
-py_map_t map_name;
+py_map_t map_locals;
+py_map_t map_globals;
 py_map_t map_builtins;
 
 // approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
@@ -334,10 +335,22 @@ py_obj_t py_builtin_len(py_obj_t o_in) {
     return TO_SMALL_INT(len);
 }
 
-py_obj_t py_builtin___build_class__(py_obj_t o1, py_obj_t o2) {
+py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name) {
+    // we differ from CPython: we set the new __locals__ object here
+    py_map_t old_locals = map_locals;
+    py_map_t *class_locals = py_map_new(MAP_QSTR, 0);
+    map_locals = *class_locals;
+
+    // call the class code
+    rt_call_function_1(o_class_fun, (py_obj_t)0xdeadbeef);
+
+    // restore old __locals__ object
+    map_locals = old_locals;
+
+    // create and return the new class
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_CLASS;
-    o->u_class.map = py_map_new(MAP_QSTR, 0);
+    o->u_class.locals = class_locals;
     return o;
 }
 
@@ -353,7 +366,10 @@ void rt_init() {
     py_const_false = py_obj_new_const("False");
     py_const_true = py_obj_new_const("True");
 
-    py_map_init(&map_name, MAP_QSTR, 0);
+    py_map_init(&map_locals, MAP_QSTR, 0);
+
+    py_map_init(&map_globals, MAP_QSTR, 1);
+    py_qstr_map_lookup(&map_globals, qstr_from_str_static("__name__"), true)->value = py_obj_new_str(qstr_from_str_static("__main__"));
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
     py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
@@ -446,6 +462,25 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     }
 }
 
+bool py_obj_is_callable(py_obj_t o_in) {
+    if (IS_SMALL_INT(o_in)) {
+        return false;
+    } else {
+        py_obj_base_t *o = o_in;
+        switch (o->kind) {
+            case O_FUN_0:
+            case O_FUN_1:
+            case O_FUN_2:
+            case O_FUN_N:
+            case O_FUN_BC:
+            case O_FUN_ASM:
+                return true;
+            default:
+                return false;
+        }
+    }
+}
+
 const char *py_obj_get_type_str(py_obj_t o_in) {
     if (IS_SMALL_INT(o_in)) {
         return "int";
@@ -476,6 +511,13 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
                 return "set";
             case O_MAP:
                 return "dict";
+            case O_OBJ:
+            {
+                py_map_elem_t *qn = py_qstr_map_lookup(o->u_obj.class->u_class.locals, qstr_from_str_static("__qualname__"), false);
+                assert(qn != NULL);
+                assert(IS_O(qn->value, O_STR));
+                return qstr_str(((py_obj_base_t*)qn->value)->u_str);
+            }
             default:
                 assert(0);
                 return "UnknownType";
@@ -546,6 +588,7 @@ void py_obj_print(py_obj_t o_in) {
                 break;
             }
             default:
+                printf("<? %d>", o->kind);
                 assert(0);
         }
     }
@@ -587,8 +630,25 @@ py_obj_t rt_load_const_str(qstr qstr) {
 
 py_obj_t rt_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
-    DEBUG_OP_printf("load %s\n", qstr_str(qstr));
-    py_map_elem_t *elem = py_qstr_map_lookup(&map_name, qstr, false);
+    DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
+    py_map_elem_t *elem = py_qstr_map_lookup(&map_locals, qstr, false);
+    if (elem == NULL) {
+        elem = py_qstr_map_lookup(&map_globals, qstr, false);
+        if (elem == NULL) {
+            elem = py_qstr_map_lookup(&map_builtins, qstr, false);
+            if (elem == NULL) {
+                printf("name doesn't exist: %s\n", qstr_str(qstr));
+                assert(0);
+            }
+        }
+    }
+    return elem->value;
+}
+
+py_obj_t rt_load_global(qstr qstr) {
+    // logic: search globals, builtins
+    DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
+    py_map_elem_t *elem = py_qstr_map_lookup(&map_globals, qstr, false);
     if (elem == NULL) {
         elem = py_qstr_map_lookup(&map_builtins, qstr, false);
         if (elem == NULL) {
@@ -597,10 +657,6 @@ py_obj_t rt_load_name(qstr qstr) {
         }
     }
     return elem->value;
-}
-
-py_obj_t rt_load_global(qstr qstr) {
-    return rt_load_name(qstr); // TODO
 }
 
 py_obj_t rt_load_build_class() {
@@ -614,8 +670,13 @@ py_obj_t rt_load_build_class() {
 }
 
 void rt_store_name(qstr qstr, py_obj_t obj) {
-    DEBUG_OP_printf("store %s <- %p\n", qstr_str(qstr), obj);
-    py_qstr_map_lookup(&map_name, qstr, true)->value = obj;
+    DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qstr), obj);
+    py_qstr_map_lookup(&map_locals, qstr, true)->value = obj;
+}
+
+void rt_store_global(qstr qstr, py_obj_t obj) {
+    DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
+    py_qstr_map_lookup(&map_globals, qstr, true)->value = obj;
 }
 
 py_obj_t rt_unary_op(int op, py_obj_t arg) {
@@ -803,6 +864,18 @@ py_obj_t rt_call_function_0(py_obj_t fun) {
         assert(o->u_fun_asm.n_args == 0);
         DEBUG_OP_printf("calling inline asm %p with no args\n", o->u_fun_asm.fun);
         return rt_convert_val_from_inline_asm(((inline_asm_fun_0_t)o->u_fun_asm.fun)());
+    } else if (IS_O(fun, O_BOUND_METH)) {
+        py_obj_base_t *o = fun;
+        DEBUG_OP_printf("calling bound method %p with self and no args\n", o->u_bound_meth.meth);
+        return rt_call_function_1(o->u_bound_meth.meth, o->u_bound_meth.self);
+    } else if (IS_O(fun, O_CLASS)) {
+        // instantiate an instance of a class
+        DEBUG_OP_printf("instantiate object of class %p with no args\n", fun);
+        py_obj_base_t *o = m_new(py_obj_base_t, 1);
+        o->kind = O_OBJ;
+        o->u_obj.class = fun;
+        o->u_obj.members = py_map_new(MAP_QSTR, 0);
+        return o;
     } else {
         printf("fun0:%p\n", fun);
         assert(0);
@@ -817,7 +890,10 @@ py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
         return ((py_fun_1_t)o->u_fun.fun)(arg);
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
-        assert(o->u_fun_bc.n_args == 1);
+        if (o->u_fun_bc.n_args != 1) {
+            printf("rt_call_function_1: trying to pass 1 argument to a function that takes %d arguments\n", o->u_fun_bc.n_args);
+            assert(0);
+        }
         DEBUG_OP_printf("calling byte code %p with 1 arg\n", o->u_fun_bc.code);
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &arg, 1);
     } else if (IS_O(fun, O_FUN_ASM)) {
@@ -845,14 +921,27 @@ py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
         assert(o->u_fun_bc.n_args == 2);
         DEBUG_OP_printf("calling byte code %p with 2 args\n", o->u_fun_bc.code);
         py_obj_t args[2];
-        args[0] = arg1;
-        args[1] = arg2;
+        args[1] = arg1;
+        args[0] = arg2;
         return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &args[0], 2);
     } else if (IS_O(fun, O_FUN_ASM)) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_asm.n_args == 2);
         DEBUG_OP_printf("calling inline asm %p with 2 args\n", o->u_fun_asm.fun);
         return rt_convert_val_from_inline_asm(((inline_asm_fun_2_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(arg1), rt_convert_obj_for_inline_asm(arg2)));
+    } else {
+        assert(0);
+        return py_const_none;
+    }
+}
+
+// args are in reverse order in the array
+py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
+    if (IS_O(fun, O_FUN_BC)) {
+        py_obj_base_t *o = fun;
+        assert(o->u_fun_bc.n_args == n_args);
+        DEBUG_OP_printf("calling byte code %p with %d args\n", o->u_fun_bc.code, n_args);
+        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, args, n_args);
     } else {
         assert(0);
         return py_const_none;
@@ -875,6 +964,13 @@ py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg) {
     } else {
         return rt_call_function_2(fun, self, arg);
     }
+}
+
+// args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
+// if n_args==0 then there are only self/NULL and fun
+py_obj_t rt_call_method_n(int n_args, const py_obj_t *args) {
+    DEBUG_OP_printf("call method %p %p %d args\n", args[n_args + 1], args[n_args] , n_args);
+    return rt_call_function_n(args[n_args + 1], n_args + ((args[n_args] == NULL) ? 0 : 1), args);
 }
 
 // items are in reverse order
@@ -964,6 +1060,107 @@ py_obj_t rt_store_map(py_obj_t map, py_obj_t key, py_obj_t value) {
     return map;
 }
 
+py_obj_t build_bound_method(py_obj_t self, py_obj_t meth) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_BOUND_METH;
+    o->u_bound_meth.meth = meth;
+    o->u_bound_meth.self = self;
+    return o;
+}
+
+py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
+    DEBUG_OP_printf("load attr %s\n", qstr_str(attr));
+    if (IS_O(base, O_LIST) && attr == q_append) {
+        return build_bound_method(base, fun_list_append);
+    } else if (IS_O(base, O_CLASS)) {
+        py_obj_base_t *o = base;
+        py_map_elem_t *elem = py_qstr_map_lookup(o->u_class.locals, attr, false);
+        if (elem == NULL) {
+            goto no_attr;
+        }
+        return elem->value;
+    } else if (IS_O(base, O_OBJ)) {
+        // logic: look in obj members then class locals (TODO check this against CPython)
+        py_obj_base_t *o = base;
+        py_map_elem_t *elem = py_qstr_map_lookup(o->u_obj.members, attr, false);
+        if (elem != NULL) {
+            // object member, always treated as a value
+            return elem->value;
+        }
+        elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, false);
+        if (elem != NULL) {
+            if (py_obj_is_callable(elem->value)) {
+                // class member is callable so build a bound method
+                return build_bound_method(base, elem->value);
+            } else {
+                // class member is a value, so just return that value
+                return elem->value;
+            }
+        }
+        goto no_attr;
+    }
+
+no_attr:
+    printf("AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
+    assert(0);
+    return py_const_none;
+}
+
+void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
+    DEBUG_OP_printf("load method %s\n", qstr_str(attr));
+    if (IS_O(base, O_LIST) && attr == q_append) {
+        dest[1] = fun_list_append;
+        dest[0] = base;
+        return;
+    } else if (IS_O(base, O_OBJ)) {
+        // logic: look in obj members then class locals (TODO check this against CPython)
+        py_obj_base_t *o = base;
+        py_map_elem_t *elem = py_qstr_map_lookup(o->u_obj.members, attr, false);
+        if (elem != NULL) {
+            // object member, always treated as a value
+            dest[1] = elem->value;
+            dest[0] = NULL;
+            return;
+        }
+        elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, false);
+        if (elem != NULL) {
+            if (py_obj_is_callable(elem->value)) {
+                // class member is callable so build a bound method
+                dest[1] = elem->value;
+                dest[0] = base;
+                return;
+            } else {
+                // class member is a value, so just return that value
+                dest[1] = elem->value;
+                dest[0] = NULL;
+                return;
+            }
+        }
+        goto no_attr;
+    }
+
+no_attr:
+    dest[1] = rt_load_attr(base, attr);
+    dest[0] = NULL;
+}
+
+void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val) {
+    DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), val);
+    if (IS_O(base, O_OBJ)) {
+        // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
+        py_obj_base_t *o = base;
+        py_map_elem_t *elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, false);
+        if (elem != NULL) {
+            elem->value = val;
+        } else {
+            elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, true)->value = val;
+        }
+    } else {
+        printf("?AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
+        assert(0);
+    }
+}
+
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
     if (IS_O(base, O_LIST) && IS_SMALL_INT(index)) {
         // list store
@@ -982,44 +1179,6 @@ void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
         py_map_lookup(base, index, true)->value = value;
     } else {
         assert(0);
-    }
-}
-
-py_obj_t build_bound_method(py_obj_t self, py_obj_t meth) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_BOUND_METH;
-    o->u_bound_meth.meth = meth;
-    o->u_bound_meth.self = self;
-    return o;
-}
-
-py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
-    DEBUG_OP_printf("load %s\n", qstr_str(attr));
-    if (IS_O(base, O_LIST) && attr == q_append) {
-        return build_bound_method(base, fun_list_append);
-    } else if (IS_O(base, O_CLASS)) {
-        py_obj_base_t *o = base;
-        py_map_elem_t *elem = py_qstr_map_lookup(o->u_class.map, attr, false);
-        if (elem == NULL) {
-            printf("Nope! %s\n", qstr_str(attr));
-            assert(0);
-        }
-        return elem->value;
-    } else {
-        printf("AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
-        assert(0);
-        return py_const_none;
-    }
-}
-
-void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
-    DEBUG_OP_printf("load method %s\n", qstr_str(attr));
-    if (IS_O(base, O_LIST) && attr == q_append) {
-        dest[1] = fun_list_append;
-        dest[0] = base;
-    } else {
-        dest[1] = rt_load_attr(base, attr);
-        dest[0] = NULL;
     }
 }
 

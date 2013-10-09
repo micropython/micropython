@@ -731,11 +731,6 @@ static void emit_native_store_attr(emit_t *emit, qstr qstr) {
     assert(0);
 }
 
-static void emit_native_store_locals(emit_t *emit) {
-    // not supported
-    assert(0);
-}
-
 static void emit_native_store_subscr(emit_t *emit) {
     // depends on type of subject:
     //  - integer, function, pointer to structure: error
@@ -747,6 +742,13 @@ static void emit_native_store_subscr(emit_t *emit) {
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
     emit_call(emit, RT_F_STORE_SUBSCR, rt_store_subscr);
+}
+
+static void emit_native_store_locals(emit_t *emit) {
+    // not needed
+    vtype_kind_t vtype;
+    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+    emit_post(emit);
 }
 
 static void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
@@ -1146,8 +1148,8 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_store_global,
     emit_native_store_deref,
     emit_native_store_attr,
-    emit_native_store_locals,
     emit_native_store_subscr,
+    emit_native_store_locals,
     emit_native_delete_fast,
     emit_native_delete_name,
     emit_native_delete_global,

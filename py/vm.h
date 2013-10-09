@@ -25,8 +25,7 @@
 #define PYBC_STORE_NAME         (0x34) // qstr
 #define PYBC_STORE_GLOBAL       (0x35) // qstr
 #define PYBC_STORE_ATTR         (0x36) // qstr
-#define PYBC_STORE_LOCALS       (0x37)
-#define PYBC_STORE_SUBSCR       (0x38)
+#define PYBC_STORE_SUBSCR       (0x37)
 
 #define PYBC_DELETE_FAST_N      (0x39) // uint
 #define PYBC_DELETE_NAME        (0x3a) // qstr
@@ -94,4 +93,4 @@
 #define PYBC_IMPORT_FROM (0xe1)
 #define PYBC_IMPORT_STAR (0xe2)
 
-py_obj_t py_execute_byte_code(byte *code, uint len, py_obj_t *args, uint n_args);
+py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, uint n_args);

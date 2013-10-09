@@ -14,8 +14,9 @@
 #define PUSH(val) *--sp = (val)
 #define POP() (*sp++)
 
-py_obj_t py_execute_byte_code(byte *code, uint len, py_obj_t *args, uint n_args) {
-    byte *ip = code;
+// args are in reverse order in array
+py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, uint n_args) {
+    const byte *ip = code;
     py_obj_t stack[10];
     py_obj_t *sp = &stack[10]; // stack grows down, sp points to top of stack
     machine_uint_t unum;
@@ -27,14 +28,14 @@ py_obj_t py_execute_byte_code(byte *code, uint len, py_obj_t *args, uint n_args)
     // init args
     for (int i = 0; i < n_args; i++) {
         if (i == 0) {
-            fast0 = args[0];
+            fast0 = args[n_args - 1];
         } else if (i == 1) {
-            fast1 = args[1];
+            fast1 = args[n_args - 2];
         } else if (i == 2) {
-            fast2 = args[2];
+            fast2 = args[n_args - 3];
         } else {
             assert(i - 3 < 4);
-            fastn[i - 3] = args[i];
+            fastn[i - 3] = args[n_args - 1 - i];
         }
     }
 
@@ -135,6 +136,12 @@ py_obj_t py_execute_byte_code(byte *code, uint len, py_obj_t *args, uint n_args)
             case PYBC_STORE_NAME:
                 DECODE_QSTR;
                 rt_store_name(qstr, POP());
+                break;
+
+            case PYBC_STORE_ATTR:
+                DECODE_QSTR;
+                rt_store_attr(sp[0], qstr, sp[1]);
+                sp += 2;
                 break;
 
             case PYBC_STORE_SUBSCR:
@@ -254,9 +261,12 @@ py_obj_t py_execute_byte_code(byte *code, uint len, py_obj_t *args, uint n_args)
                 } else if ((unum & 0xff) == 1) {
                     obj2 = *sp++; // the first argument
                     obj1 = *sp++; // the self object (or NULL)
-                    *sp = rt_call_function_2(*sp, obj1, obj2);
+                    *sp = rt_call_method_2(*sp, obj1, obj2);
                 } else {
-                    assert(0);
+                    unum = unum & 0xff;
+                    obj1 = rt_call_method_n(unum, sp);
+                    sp += unum + 1;
+                    *sp = obj1;
                 }
                 break;
 
