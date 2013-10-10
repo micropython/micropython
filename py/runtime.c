@@ -9,11 +9,13 @@
 #include "runtime.h"
 #include "vm.h"
 
+#if 0 // print debugging info
+#define DEBUG_printf(args...) printf(args)
+#define DEBUG_OP_printf(args...) printf(args)
+#else // don't print debugging info
 #define DEBUG_printf(args...) (void)0
-//#define DEBUG_printf(args...) printf(args)
-
 #define DEBUG_OP_printf(args...) (void)0
-//#define DEBUG_OP_printf(args...) printf(args)
+#endif
 
 // enable/disable float support with this definition
 #define PY_FLOAT (1)
@@ -914,7 +916,7 @@ py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
     if (IS_O(fun, O_FUN_2)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p with 2 args\n", o->u_fun.fun);
+        DEBUG_OP_printf("calling native %p(%p, %p)\n", o->u_fun.fun, arg1, arg2);
         return ((py_fun_2_t)o->u_fun.fun)(arg1, arg2);
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
@@ -937,7 +939,12 @@ py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
 
 // args are in reverse order in the array
 py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
-    if (IS_O(fun, O_FUN_BC)) {
+    if (IS_O(fun, O_FUN_2)) {
+        assert(n_args == 2);
+        py_obj_base_t *o = fun;
+        DEBUG_OP_printf("calling native %p(%p, %p)\n", o->u_fun.fun, args[1], args[0]);
+        return ((py_fun_2_t)o->u_fun.fun)(args[1], args[0]);
+    } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
         assert(o->u_fun_bc.n_args == n_args);
         DEBUG_OP_printf("calling byte code %p with %d args\n", o->u_fun_bc.code, n_args);
@@ -949,7 +956,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
 }
 
 py_obj_t rt_call_method_1(py_obj_t fun, py_obj_t self) {
-    DEBUG_OP_printf("call method %p %p\n", fun, self);
+    DEBUG_OP_printf("call method %p(self=%p)\n", fun, self);
     if (self == NULL) {
         return rt_call_function_0(fun);
     } else {
@@ -958,7 +965,7 @@ py_obj_t rt_call_method_1(py_obj_t fun, py_obj_t self) {
 }
 
 py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg) {
-    DEBUG_OP_printf("call method %p %p %p\n", fun, self, arg);
+    DEBUG_OP_printf("call method %p(self=%p, %p)\n", fun, self, arg);
     if (self == NULL) {
         return rt_call_function_1(fun, arg);
     } else {
@@ -969,7 +976,7 @@ py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg) {
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
 // if n_args==0 then there are only self/NULL and fun
 py_obj_t rt_call_method_n(int n_args, const py_obj_t *args) {
-    DEBUG_OP_printf("call method %p %p %d args\n", args[n_args + 1], args[n_args] , n_args);
+    DEBUG_OP_printf("call method %p(self=%p, n_args=%d)\n", args[n_args + 1], args[n_args], n_args);
     return rt_call_function_n(args[n_args + 1], n_args + ((args[n_args] == NULL) ? 0 : 1), args);
 }
 
@@ -1186,9 +1193,11 @@ void *rt_fun_table[RT_F_NUMBER_OF] = {
     rt_load_const_str,
     rt_load_name,
     rt_load_global,
+    rt_load_build_class,
     rt_load_attr,
     rt_load_method,
     rt_store_name,
+    rt_store_attr,
     rt_store_subscr,
     rt_is_true,
     rt_unary_op,
@@ -1202,6 +1211,7 @@ void *rt_fun_table[RT_F_NUMBER_OF] = {
     rt_call_function_2,
     rt_call_method_1,
     rt_call_method_2,
+    rt_call_method_n,
     rt_binary_op,
     rt_compare_op,
 };

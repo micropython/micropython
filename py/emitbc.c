@@ -354,8 +354,9 @@ static void emit_bc_store_subscr(emit_t *emit) {
 }
 
 static void emit_bc_store_locals(emit_t *emit) {
-    // not needed for byte code
+    // not needed
     emit_pre(emit, -1);
+    emit_write_byte_1(emit, PYBC_POP_TOP);
 }
 
 static void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
