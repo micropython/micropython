@@ -10,6 +10,8 @@
 #include "bc.h"
 
 #if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define WRITE_NATIVE (1)
 #define DEBUG_printf(args...) printf(args)
 #define DEBUG_OP_printf(args...) printf(args)
 #else // don't print debugging info
@@ -357,7 +359,9 @@ py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name)
     return o;
 }
 
+#ifdef WRITE_NATIVE
 FILE *fp_native = NULL;
+#endif
 
 void rt_init() {
     q_append = qstr_from_str_static("append");
@@ -383,13 +387,17 @@ void rt_init() {
 
     fun_list_append = rt_make_function_2(list_append);
 
+#ifdef WRITE_NATIVE
     fp_native = fopen("out-native", "wb");
+#endif
 }
 
 void rt_deinit() {
+#ifdef WRITE_NATIVE
     if (fp_native != NULL) {
         fclose(fp_native);
     }
+#endif
 }
 
 int rt_get_new_unique_code_id() {
@@ -425,6 +433,7 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].u_native.fun = fun;
 
+#ifdef DEBUG_PRINT
     DEBUG_printf("assign native code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
@@ -435,10 +444,13 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     }
     DEBUG_printf("\n");
 
+#ifdef WRITE_NATIVE
     if (fp_native != NULL) {
         fwrite(fun_data, len, 1, fp_native);
         fflush(fp_native);
     }
+#endif
+#endif
 }
 
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n_args) {
@@ -449,6 +461,7 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
 
+#ifdef DEBUG_PRINT
     DEBUG_printf("assign inline asm code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
@@ -459,9 +472,12 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     }
     DEBUG_printf("\n");
 
+#ifdef WRITE_NATIVE
     if (fp_native != NULL) {
         fwrite(fun_data, len, 1, fp_native);
     }
+#endif
+#endif
 }
 
 bool py_obj_is_callable(py_obj_t o_in) {
