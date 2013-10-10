@@ -13,7 +13,7 @@
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
-#include "vm.h"
+#include "bc.h"
 
 struct _emit_t {
     pass_kind_t pass;

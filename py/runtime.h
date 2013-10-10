@@ -64,11 +64,7 @@ typedef enum {
     RT_F_STORE_MAP,
     RT_F_BUILD_SET,
     RT_F_MAKE_FUNCTION_FROM_ID,
-    RT_F_CALL_FUNCTION_0,
-    RT_F_CALL_FUNCTION_1,
-    RT_F_CALL_FUNCTION_2,
-    RT_F_CALL_METHOD_1,
-    RT_F_CALL_METHOD_2,
+    RT_F_CALL_FUNCTION_N,
     RT_F_CALL_METHOD_N,
     RT_F_BINARY_OP,
     RT_F_COMPARE_OP,
@@ -115,6 +111,7 @@ py_obj_t rt_make_function(int n_args, py_fun_t code);
 py_obj_t rt_call_function_0(py_obj_t fun);
 py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg);
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2);
+py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args);
 py_obj_t rt_call_method_1(py_obj_t fun, py_obj_t self);
 py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg);
 py_obj_t rt_call_method_n(int n_args, const py_obj_t *args);

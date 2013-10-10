@@ -7,7 +7,7 @@
 #include "misc.h"
 #include "machine.h"
 #include "runtime.h"
-#include "vm.h"
+#include "bc.h"
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
@@ -236,38 +236,18 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
             case PYBC_CALL_FUNCTION:
                 DECODE_UINT;
                 assert((unum & 0xff00) == 0); // n_keyword
-                // switch on n_positional
-                if ((unum & 0xff) == 0) {
-                    *sp = rt_call_function_0(*sp);
-                } else if ((unum & 0xff) == 1) {
-                    obj1 = *sp++; // the single argument
-                    *sp = rt_call_function_1(*sp, obj1);
-                } else if ((unum & 0xff) == 2) {
-                    obj2 = *sp++; // the second argument
-                    obj1 = *sp++; // the first argument
-                    *sp = rt_call_function_2(*sp, obj1, obj2);
-                } else {
-                    assert(0);
-                }
+                unum &= 0xff; // n_positional
+                sp += unum;
+                *sp = rt_call_function_n(*sp, unum, sp - unum);
                 break;
 
             case PYBC_CALL_METHOD:
                 DECODE_UINT;
                 assert((unum & 0xff00) == 0); // n_keyword
-                // switch on n_positional
-                if ((unum & 0xff) == 0) {
-                    obj1 = *sp++; // the self object (or NULL)
-                    *sp = rt_call_method_1(*sp, obj1);
-                } else if ((unum & 0xff) == 1) {
-                    obj2 = *sp++; // the first argument
-                    obj1 = *sp++; // the self object (or NULL)
-                    *sp = rt_call_method_2(*sp, obj1, obj2);
-                } else {
-                    unum = unum & 0xff;
-                    obj1 = rt_call_method_n(unum, sp);
-                    sp += unum + 1;
-                    *sp = obj1;
-                }
+                unum &= 0xff;
+                obj1 = rt_call_method_n(unum, sp);
+                sp += unum + 1;
+                *sp = obj1;
                 break;
 
             case PYBC_RETURN_VALUE:

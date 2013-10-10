@@ -7,7 +7,7 @@
 #include "misc.h"
 #include "machine.h"
 #include "runtime.h"
-#include "vm.h"
+#include "bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf(args...) printf(args)
@@ -120,8 +120,9 @@ py_obj_t py_const_none;
 py_obj_t py_const_false;
 py_obj_t py_const_true;
 
-py_map_t map_locals;
-py_map_t map_globals;
+// locals and globals need to be pointers because they can be the same in outer module scope
+py_map_t *map_locals;
+py_map_t *map_globals;
 py_map_t map_builtins;
 
 // approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
@@ -339,9 +340,9 @@ py_obj_t py_builtin_len(py_obj_t o_in) {
 
 py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name) {
     // we differ from CPython: we set the new __locals__ object here
-    py_map_t old_locals = map_locals;
+    py_map_t *old_locals = map_locals;
     py_map_t *class_locals = py_map_new(MAP_QSTR, 0);
-    map_locals = *class_locals;
+    map_locals = class_locals;
 
     // call the class code
     rt_call_function_1(o_class_fun, (py_obj_t)0xdeadbeef);
@@ -368,10 +369,9 @@ void rt_init() {
     py_const_false = py_obj_new_const("False");
     py_const_true = py_obj_new_const("True");
 
-    py_map_init(&map_locals, MAP_QSTR, 0);
-
-    py_map_init(&map_globals, MAP_QSTR, 1);
-    py_qstr_map_lookup(&map_globals, qstr_from_str_static("__name__"), true)->value = py_obj_new_str(qstr_from_str_static("__main__"));
+    // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
+    map_locals = map_globals = py_map_new(MAP_QSTR, 1);
+    py_qstr_map_lookup(map_globals, qstr_from_str_static("__name__"), true)->value = py_obj_new_str(qstr_from_str_static("__main__"));
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
     py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
@@ -476,6 +476,7 @@ bool py_obj_is_callable(py_obj_t o_in) {
             case O_FUN_N:
             case O_FUN_BC:
             case O_FUN_ASM:
+            // what about O_CLASS, and an O_OBJ that has a __call__ method?
                 return true;
             default:
                 return false;
@@ -633,9 +634,9 @@ py_obj_t rt_load_const_str(qstr qstr) {
 py_obj_t rt_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
-    py_map_elem_t *elem = py_qstr_map_lookup(&map_locals, qstr, false);
+    py_map_elem_t *elem = py_qstr_map_lookup(map_locals, qstr, false);
     if (elem == NULL) {
-        elem = py_qstr_map_lookup(&map_globals, qstr, false);
+        elem = py_qstr_map_lookup(map_globals, qstr, false);
         if (elem == NULL) {
             elem = py_qstr_map_lookup(&map_builtins, qstr, false);
             if (elem == NULL) {
@@ -650,7 +651,7 @@ py_obj_t rt_load_name(qstr qstr) {
 py_obj_t rt_load_global(qstr qstr) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
-    py_map_elem_t *elem = py_qstr_map_lookup(&map_globals, qstr, false);
+    py_map_elem_t *elem = py_qstr_map_lookup(map_globals, qstr, false);
     if (elem == NULL) {
         elem = py_qstr_map_lookup(&map_builtins, qstr, false);
         if (elem == NULL) {
@@ -673,12 +674,12 @@ py_obj_t rt_load_build_class() {
 
 void rt_store_name(qstr qstr, py_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qstr), obj);
-    py_qstr_map_lookup(&map_locals, qstr, true)->value = obj;
+    py_qstr_map_lookup(map_locals, qstr, true)->value = obj;
 }
 
 void rt_store_global(qstr qstr, py_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
-    py_qstr_map_lookup(&map_globals, qstr, true)->value = obj;
+    py_qstr_map_lookup(map_globals, qstr, true)->value = obj;
 }
 
 py_obj_t rt_unary_op(int op, py_obj_t arg) {
@@ -809,6 +810,26 @@ py_obj_t rt_make_function(int n_args, py_fun_t code) {
     return o;
 }
 
+py_obj_t rt_call_function_0(py_obj_t fun) {
+    return rt_call_function_n(fun, 0, NULL);
+}
+
+py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
+    return rt_call_function_n(fun, 1, &arg);
+}
+
+py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
+    py_obj_t args[2];
+    args[1] = arg1;
+    args[0] = arg2;
+    return rt_call_function_n(fun, 2, args);
+}
+
+typedef machine_uint_t (*inline_asm_fun_0_t)();
+typedef machine_uint_t (*inline_asm_fun_1_t)(machine_uint_t);
+typedef machine_uint_t (*inline_asm_fun_2_t)(machine_uint_t, machine_uint_t);
+typedef machine_uint_t (*inline_asm_fun_3_t)(machine_uint_t, machine_uint_t, machine_uint_t);
+
 // convert a Python object to a sensible value for inline asm
 machine_uint_t rt_convert_obj_for_inline_asm(py_obj_t obj) {
     // TODO for byte_array, pass pointer to the array
@@ -847,130 +868,109 @@ py_obj_t rt_convert_val_from_inline_asm(machine_uint_t val) {
     return TO_SMALL_INT(val);
 }
 
-typedef machine_uint_t (*inline_asm_fun_0_t)();
-typedef machine_uint_t (*inline_asm_fun_1_t)(machine_uint_t);
-typedef machine_uint_t (*inline_asm_fun_2_t)(machine_uint_t, machine_uint_t);
-
-py_obj_t rt_call_function_0(py_obj_t fun) {
+// args are in reverse order in the array
+py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
+    int n_args_fun = 0;
     if (IS_O(fun, O_FUN_0)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p with no args\n", o->u_fun.fun);
+        if (n_args != 0) {
+            n_args_fun = 0;
+            goto bad_n_args;
+        }
+        DEBUG_OP_printf("calling native %p()\n", o->u_fun.fun);
         return ((py_fun_0_t)o->u_fun.fun)();
+
+    } else if (IS_O(fun, O_FUN_1)) {
+        py_obj_base_t *o = fun;
+        if (n_args != 1) {
+            n_args_fun = 1;
+            goto bad_n_args;
+        }
+        DEBUG_OP_printf("calling native %p(%p)\n", o->u_fun.fun, args[0]);
+        return ((py_fun_1_t)o->u_fun.fun)(args[0]);
+
+    } else if (IS_O(fun, O_FUN_2)) {
+        py_obj_base_t *o = fun;
+        if (n_args != 2) {
+            n_args_fun = 2;
+            goto bad_n_args;
+        }
+        DEBUG_OP_printf("calling native %p(%p, %p)\n", o->u_fun.fun, args[1], args[0]);
+        return ((py_fun_2_t)o->u_fun.fun)(args[1], args[0]);
+
+    // TODO O_FUN_N
+
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
-        assert(o->u_fun_bc.n_args == 0);
-        DEBUG_OP_printf("calling byte code %p with no args\n", o->u_fun_bc.code);
-        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, NULL, 0);
+        if (n_args != o->u_fun_bc.n_args) {
+            n_args_fun = o->u_fun_bc.n_args;
+            goto bad_n_args;
+        }
+        DEBUG_OP_printf("calling byte code %p(n_args=%d)\n", o->u_fun_bc.code, n_args);
+        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, args, n_args);
+
     } else if (IS_O(fun, O_FUN_ASM)) {
         py_obj_base_t *o = fun;
-        assert(o->u_fun_asm.n_args == 0);
-        DEBUG_OP_printf("calling inline asm %p with no args\n", o->u_fun_asm.fun);
-        return rt_convert_val_from_inline_asm(((inline_asm_fun_0_t)o->u_fun_asm.fun)());
+        if (n_args != o->u_fun_asm.n_args) {
+            n_args_fun = o->u_fun_asm.n_args;
+            goto bad_n_args;
+        }
+        DEBUG_OP_printf("calling inline asm %p(n_args=%d)\n", o->u_fun_asm.fun, n_args);
+        machine_uint_t ret;
+        if (n_args == 0) {
+            ret = ((inline_asm_fun_0_t)o->u_fun_asm.fun)();
+        } else if (n_args == 1) {
+            ret = ((inline_asm_fun_1_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(args[0]));
+        } else if (n_args == 2) {
+            ret = ((inline_asm_fun_2_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(args[1]), rt_convert_obj_for_inline_asm(args[0]));
+        } else if (n_args == 3) {
+            ret = ((inline_asm_fun_3_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(args[2]), rt_convert_obj_for_inline_asm(args[1]), rt_convert_obj_for_inline_asm(args[0]));
+        } else {
+            assert(0);
+            ret = 0;
+        }
+        return rt_convert_val_from_inline_asm(ret);
+
     } else if (IS_O(fun, O_BOUND_METH)) {
         py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling bound method %p with self and no args\n", o->u_bound_meth.meth);
-        return rt_call_function_1(o->u_bound_meth.meth, o->u_bound_meth.self);
+        DEBUG_OP_printf("calling bound method %p(self=%p, n_args=%d)\n", o->u_bound_meth.meth, o->u_bound_meth.self, n_args);
+        if (n_args == 0) {
+            return rt_call_function_n(o->u_bound_meth.meth, 1, &o->u_bound_meth.self);
+        } else if (n_args == 1) {
+            py_obj_t args2[2];
+            args2[1] = o->u_bound_meth.self;
+            args2[0] = args[0];
+            return rt_call_function_n(o->u_bound_meth.meth, 2, args2);
+        } else {
+            // TODO not implemented
+            assert(0);
+            return py_const_none;
+            //return rt_call_function_2(o->u_bound_meth.meth, n_args + 1, o->u_bound_meth.self + args);
+        }
+
     } else if (IS_O(fun, O_CLASS)) {
         // instantiate an instance of a class
+        if (n_args != 0) {
+            n_args_fun = 0;
+            goto bad_n_args;
+        }
         DEBUG_OP_printf("instantiate object of class %p with no args\n", fun);
         py_obj_base_t *o = m_new(py_obj_base_t, 1);
         o->kind = O_OBJ;
         o->u_obj.class = fun;
         o->u_obj.members = py_map_new(MAP_QSTR, 0);
         return o;
+
     } else {
-        printf("fun0:%p\n", fun);
+        printf("fun %p %d\n", fun, ((py_obj_base_t*)fun)->kind);
         assert(0);
         return py_const_none;
     }
-}
 
-py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg) {
-    if (IS_O(fun, O_FUN_1)) {
-        py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p with 1 arg\n", o->u_fun.fun);
-        return ((py_fun_1_t)o->u_fun.fun)(arg);
-    } else if (IS_O(fun, O_FUN_BC)) {
-        py_obj_base_t *o = fun;
-        if (o->u_fun_bc.n_args != 1) {
-            printf("rt_call_function_1: trying to pass 1 argument to a function that takes %d arguments\n", o->u_fun_bc.n_args);
-            assert(0);
-        }
-        DEBUG_OP_printf("calling byte code %p with 1 arg\n", o->u_fun_bc.code);
-        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &arg, 1);
-    } else if (IS_O(fun, O_FUN_ASM)) {
-        py_obj_base_t *o = fun;
-        assert(o->u_fun_asm.n_args == 1);
-        DEBUG_OP_printf("calling inline asm %p with 1 arg\n", o->u_fun_asm.fun);
-        return rt_convert_val_from_inline_asm(((inline_asm_fun_1_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(arg)));
-    } else if (IS_O(fun, O_BOUND_METH)) {
-        py_obj_base_t *o = fun;
-        return rt_call_function_2(o->u_bound_meth.meth, o->u_bound_meth.self, arg);
-    } else {
-        printf("fun1:%p\n", fun);
-        assert(0);
-        return py_const_none;
-    }
-}
-
-py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2) {
-    if (IS_O(fun, O_FUN_2)) {
-        py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p(%p, %p)\n", o->u_fun.fun, arg1, arg2);
-        return ((py_fun_2_t)o->u_fun.fun)(arg1, arg2);
-    } else if (IS_O(fun, O_FUN_BC)) {
-        py_obj_base_t *o = fun;
-        assert(o->u_fun_bc.n_args == 2);
-        DEBUG_OP_printf("calling byte code %p with 2 args\n", o->u_fun_bc.code);
-        py_obj_t args[2];
-        args[1] = arg1;
-        args[0] = arg2;
-        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, &args[0], 2);
-    } else if (IS_O(fun, O_FUN_ASM)) {
-        py_obj_base_t *o = fun;
-        assert(o->u_fun_asm.n_args == 2);
-        DEBUG_OP_printf("calling inline asm %p with 2 args\n", o->u_fun_asm.fun);
-        return rt_convert_val_from_inline_asm(((inline_asm_fun_2_t)o->u_fun_asm.fun)(rt_convert_obj_for_inline_asm(arg1), rt_convert_obj_for_inline_asm(arg2)));
-    } else {
-        assert(0);
-        return py_const_none;
-    }
-}
-
-// args are in reverse order in the array
-py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
-    if (IS_O(fun, O_FUN_2)) {
-        assert(n_args == 2);
-        py_obj_base_t *o = fun;
-        DEBUG_OP_printf("calling native %p(%p, %p)\n", o->u_fun.fun, args[1], args[0]);
-        return ((py_fun_2_t)o->u_fun.fun)(args[1], args[0]);
-    } else if (IS_O(fun, O_FUN_BC)) {
-        py_obj_base_t *o = fun;
-        assert(o->u_fun_bc.n_args == n_args);
-        DEBUG_OP_printf("calling byte code %p with %d args\n", o->u_fun_bc.code, n_args);
-        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, args, n_args);
-    } else {
-        assert(0);
-        return py_const_none;
-    }
-}
-
-py_obj_t rt_call_method_1(py_obj_t fun, py_obj_t self) {
-    DEBUG_OP_printf("call method %p(self=%p)\n", fun, self);
-    if (self == NULL) {
-        return rt_call_function_0(fun);
-    } else {
-        return rt_call_function_1(fun, self);
-    }
-}
-
-py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg) {
-    DEBUG_OP_printf("call method %p(self=%p, %p)\n", fun, self, arg);
-    if (self == NULL) {
-        return rt_call_function_1(fun, arg);
-    } else {
-        return rt_call_function_2(fun, self, arg);
-    }
+bad_n_args:
+    printf("TypeError: function takes %d positional arguments but %d were given\n", n_args_fun, n_args);
+    assert(0);
+    return py_const_none;
 }
 
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
@@ -1206,11 +1206,7 @@ void *rt_fun_table[RT_F_NUMBER_OF] = {
     rt_store_map,
     rt_build_set,
     rt_make_function_from_id,
-    rt_call_function_0,
-    rt_call_function_1,
-    rt_call_function_2,
-    rt_call_method_1,
-    rt_call_method_2,
+    rt_call_function_n,
     rt_call_method_n,
     rt_binary_op,
     rt_compare_op,
