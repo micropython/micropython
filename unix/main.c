@@ -3,8 +3,8 @@
 #include <string.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
 
     py_lexer_free(lex);
 
+#if !defined(MICROPY_EMIT_ENABLE_CPYTHON)
     if (1) {
         // execute it
         py_obj_t module_fun = rt_make_function_from_id(1);
@@ -52,6 +53,7 @@ int main(int argc, char **argv) {
             printf("\n");
         }
     }
+#endif
 
     rt_deinit();
 

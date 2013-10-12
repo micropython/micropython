@@ -6,15 +6,15 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 #include "compile.h"
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
 
-#ifdef EMIT_ENABLE_CPY
+#ifdef MICROPY_EMIT_ENABLE_CPYTHON
 
 struct _emit_t {
     int pass;
@@ -925,4 +925,4 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_yield_from,
 };
 
-#endif // EMIT_ENABLE_CPY
+#endif // MICROPY_EMIT_ENABLE_CPYTHON

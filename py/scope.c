@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "machine.h"
+#include "mpyconfig.h"
 #include "parse.h"
 #include "scope.h"
 

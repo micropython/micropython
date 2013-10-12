@@ -7,8 +7,8 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 
 #define RULE_ACT_KIND_MASK      (0xf0)

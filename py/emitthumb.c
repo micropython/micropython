@@ -6,15 +6,15 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
 #include "asmthumb.h"
 
-#ifdef EMIT_ENABLE_THUMB
+#ifdef MICROPY_EMIT_ENABLE_THUMB
 
 #define REG_LOCAL_1 (REG_R4)
 #define REG_LOCAL_2 (REG_R5)
@@ -775,4 +775,4 @@ const emit_method_table_t emit_thumb_method_table = {
     emit_thumb_yield_from,
 };
 
-#endif // EMIT_ENABLE_THUMB
+#endif // MICROPY_EMIT_ENABLE_THUMB

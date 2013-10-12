@@ -6,8 +6,8 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 #include "scope.h"
 #include "compile.h"
@@ -768,8 +768,10 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
     } else if (attr == comp->qstr_viper) {
         *emit_options = EMIT_OPT_VIPER;
+#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
     } else if (attr == comp->qstr_asm_thumb) {
         *emit_options = EMIT_OPT_ASM_THUMB;
+#endif
     } else {
         printf("SyntaxError: invalid micropython decorator\n");
     }
@@ -2673,8 +2675,11 @@ void py_compile(py_parse_node_t pn) {
     comp->emit_inline_asm_method_table = NULL;
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
-        if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+        if (false) {
+#ifdef MICROPY_EMIT_ENABLE_INLINE_THUMB
+        } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
             compile_scope_inline_asm(comp, s, PASS_1);
+#endif
         } else {
             compile_scope(comp, s, PASS_1);
         }
@@ -2694,11 +2699,20 @@ void py_compile(py_parse_node_t pn) {
     emit_pass1_free(comp->emit);
 
     // compile pass 2 and 3
+#if !defined(MICROPY_EMIT_ENABLE_CPYTHON)
     emit_t *emit_bc = NULL;
     emit_t *emit_native = NULL;
+#endif
+#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
     emit_inline_asm_t *emit_inline_thumb = NULL;
+#endif
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
-        if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+        if (false) {
+            // dummy
+
+#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
+        } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+            // inline assembly for thumb
             if (emit_inline_thumb == NULL) {
                 emit_inline_thumb = emit_inline_thumb_new(max_num_labels);
             }
@@ -2708,15 +2722,31 @@ void py_compile(py_parse_node_t pn) {
             comp->emit_inline_asm_method_table = &emit_inline_thumb_method_table;
             compile_scope_inline_asm(comp, s, PASS_2);
             compile_scope_inline_asm(comp, s, PASS_3);
+#endif
+
         } else {
+
+            // choose the emit type
+
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+            comp->emit = emit_cpython_new(max_num_labels);
+            comp->emit_method_table = &emit_cpython_method_table;
+#else
             switch (s->emit_options) {
                 case EMIT_OPT_NATIVE_PYTHON:
                 case EMIT_OPT_VIPER:
+#if defined(MICROPY_EMIT_ENABLE_X64)
                     if (emit_native == NULL) {
                         emit_native = emit_native_x64_new(max_num_labels);
                     }
-                    comp->emit = emit_native;
                     comp->emit_method_table = &emit_native_x64_method_table;
+#elif defined(MICROPY_EMIT_ENABLE_THUMB)
+                    if (emit_native == NULL) {
+                        emit_native = emit_native_thumb_new(max_num_labels);
+                    }
+                    comp->emit_method_table = &emit_native_thumb_method_table;
+#endif
+                    comp->emit = emit_native;
                     comp->emit_method_table->set_native_types(comp->emit, s->emit_options == EMIT_OPT_VIPER);
                     break;
 
@@ -2728,8 +2758,9 @@ void py_compile(py_parse_node_t pn) {
                     comp->emit_method_table = &emit_bc_method_table;
                     break;
             }
-            //comp->emit = emit_cpython_new(max_num_labels);
-            //comp->emit_method_table = &emit_cpython_method_table;
+#endif
+
+            // compile pass 2 and pass 3
             compile_scope(comp, s, PASS_2);
             compile_scope(comp, s, PASS_3);
         }

@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "machine.h"
+#include "mpyconfig.h"
 #include "runtime.h"
 #include "bc.h"
 

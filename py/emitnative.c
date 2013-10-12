@@ -24,21 +24,12 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpyconfig.h"
 #include "lexer.h"
-#include "machine.h"
 #include "parse.h"
 #include "scope.h"
 #include "runtime.h"
 #include "emit.h"
-
-// select a machine architecture
-#if 0
-#if defined(EMIT_ENABLE_NATIVE_X64)
-#define N_X64
-#elif defined(EMIT_ENABLE_NATIVE_THUMB)
-#define N_THUMB
-#endif
-#endif
 
 // wrapper around everything in this file
 #if defined(N_X64) || defined(N_THUMB)
