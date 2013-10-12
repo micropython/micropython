@@ -15,7 +15,6 @@
 #include "emit.h"
 
 // TODO need to mangle __attr names
-// TODO add #define to enable/disable CPython compatibility
 
 typedef enum {
     PN_none = 0,
@@ -250,7 +249,8 @@ void compile_generic_all_nodes(compiler_t *comp, py_parse_node_struct_t *pns) {
     }
 }
 
-bool c_tuple_is_const(py_parse_node_t pn) {
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+static bool cpython_c_tuple_is_const(py_parse_node_t pn) {
     if (!PY_PARSE_NODE_IS_LEAF(pn)) {
         return false;
     }
@@ -260,7 +260,7 @@ bool c_tuple_is_const(py_parse_node_t pn) {
     return true;
 }
 
-void c_tuple_emit_const(compiler_t *comp, py_parse_node_t pn) {
+static void cpython_c_tuple_emit_const(compiler_t *comp, py_parse_node_t pn) {
     assert(PY_PARSE_NODE_IS_LEAF(pn));
     int arg = PY_PARSE_NODE_LEAF_ARG(pn);
     switch (PY_PARSE_NODE_LEAF_KIND(pn)) {
@@ -282,8 +282,7 @@ void c_tuple_emit_const(compiler_t *comp, py_parse_node_t pn) {
     }
 }
 
-// funnelling all tuple creations through this function and all this constant stuff is purely to agree with CPython
-void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_list) {
+static void cpython_c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_list) {
     int n = 0;
     if (pns_list != NULL) {
         n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
@@ -292,12 +291,12 @@ void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_l
     bool is_const = true;
     if (!PY_PARSE_NODE_IS_NULL(pn)) {
         total += 1;
-        if (!c_tuple_is_const(pn)) {
+        if (!cpython_c_tuple_is_const(pn)) {
             is_const = false;
         }
     }
     for (int i = 0; i < n; i++) {
-        if (!c_tuple_is_const(pns_list->nodes[i])) {
+        if (!cpython_c_tuple_is_const(pns_list->nodes[i])) {
             is_const = false;
             break;
         }
@@ -307,14 +306,14 @@ void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_l
         EMIT(load_const_verbatim_start);
         EMIT(load_const_verbatim_str, "(");
         if (!PY_PARSE_NODE_IS_NULL(pn)) {
-            c_tuple_emit_const(comp, pn);
+            cpython_c_tuple_emit_const(comp, pn);
             need_comma = true;
         }
         for (int i = 0; i < n; i++) {
             if (need_comma) {
                 EMIT(load_const_verbatim_str, ", ");
             }
-            c_tuple_emit_const(comp, pns_list->nodes[i]);
+            cpython_c_tuple_emit_const(comp, pns_list->nodes[i]);
             need_comma = true;
         }
         if (total == 1) {
@@ -333,30 +332,46 @@ void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_l
         EMIT(build_tuple, total);
     }
 }
+#endif
+
+// funnelling all tuple creations through this function is purely so we can optionally agree with CPython
+void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_list) {
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+    cpython_c_tuple(comp, pn, pns_list);
+#else
+    int total = 0;
+    if (!PY_PARSE_NODE_IS_NULL(pn)) {
+        compile_node(comp, pn);
+        total += 1;
+    }
+    if (pns_list != NULL) {
+        int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
+        for (int i = 0; i < n; i++) {
+            compile_node(comp, pns_list->nodes[i]);
+        }
+        total += n;
+    }
+    EMIT(build_tuple, total);
+#endif
+}
 
 void compile_generic_tuple(compiler_t *comp, py_parse_node_struct_t *pns) {
     // a simple tuple expression
-    /*
-    int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < n; i++) {
-        compile_node(comp, pns->nodes[i]);
-    }
-    EMIT(build_tuple, n);
-    */
     c_tuple(comp, PY_PARSE_NODE_NULL, pns);
 }
 
-bool node_is_const_false(py_parse_node_t pn) {
+static bool node_is_const_false(py_parse_node_t pn) {
     return PY_PARSE_NODE_IS_TOKEN_KIND(pn, PY_TOKEN_KW_FALSE);
     // untested: || (PY_PARSE_NODE_IS_SMALL_INT(pn) && PY_PARSE_NODE_LEAF_ARG(pn) == 1);
 }
 
-bool node_is_const_true(py_parse_node_t pn) {
+static bool node_is_const_true(py_parse_node_t pn) {
     return PY_PARSE_NODE_IS_TOKEN_KIND(pn, PY_TOKEN_KW_TRUE) || (PY_PARSE_NODE_IS_SMALL_INT(pn) && PY_PARSE_NODE_LEAF_ARG(pn) == 1);
 }
 
-// having c_if_cond_2 and the is_nested variable is purely to match with CPython, which doesn't fully optimise not's
-void c_if_cond_2(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, bool is_nested) {
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+// the is_nested variable is purely to match with CPython, which doesn't fully optimise not's
+static void cpython_c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, bool is_nested) {
     if (node_is_const_false(pn)) {
         if (jump_if == false) {
             EMIT(jump, label);
@@ -374,32 +389,32 @@ void c_if_cond_2(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, 
             if (jump_if == false) {
                 int label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
-                    c_if_cond_2(comp, pns->nodes[i], true, label2, true);
+                    cpython_c_if_cond(comp, pns->nodes[i], true, label2, true);
                 }
-                c_if_cond_2(comp, pns->nodes[n - 1], false, label, true);
+                cpython_c_if_cond(comp, pns->nodes[n - 1], false, label, true);
                 EMIT(label_assign, label2);
             } else {
                 for (int i = 0; i < n; i++) {
-                    c_if_cond_2(comp, pns->nodes[i], true, label, true);
+                    cpython_c_if_cond(comp, pns->nodes[i], true, label, true);
                 }
             }
             return;
         } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_and_test) {
             if (jump_if == false) {
                 for (int i = 0; i < n; i++) {
-                    c_if_cond_2(comp, pns->nodes[i], false, label, true);
+                    cpython_c_if_cond(comp, pns->nodes[i], false, label, true);
                 }
             } else {
                 int label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
-                    c_if_cond_2(comp, pns->nodes[i], false, label2, true);
+                    cpython_c_if_cond(comp, pns->nodes[i], false, label2, true);
                 }
-                c_if_cond_2(comp, pns->nodes[n - 1], true, label, true);
+                cpython_c_if_cond(comp, pns->nodes[n - 1], true, label, true);
                 EMIT(label_assign, label2);
             }
             return;
         } else if (!is_nested && PY_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
-            c_if_cond_2(comp, pns->nodes[0], !jump_if, label, true);
+            cpython_c_if_cond(comp, pns->nodes[0], !jump_if, label, true);
             return;
         }
     }
@@ -412,9 +427,67 @@ void c_if_cond_2(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, 
         EMIT(pop_jump_if_true, label);
     }
 }
+#endif
 
-void c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label) {
-    c_if_cond_2(comp, pn, jump_if, label, false);
+static void c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label) {
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+    cpython_c_if_cond(comp, pn, jump_if, label, false);
+#else
+    if (node_is_const_false(pn)) {
+        if (jump_if == false) {
+            EMIT(jump, label);
+        }
+        return;
+    } else if (node_is_const_true(pn)) {
+        if (jump_if == true) {
+            EMIT(jump, label);
+        }
+        return;
+    } else if (PY_PARSE_NODE_IS_STRUCT(pn)) {
+        py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
+        int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
+            if (jump_if == false) {
+                int label2 = comp_next_label(comp);
+                for (int i = 0; i < n - 1; i++) {
+                    c_if_cond(comp, pns->nodes[i], true, label2);
+                }
+                c_if_cond(comp, pns->nodes[n - 1], false, label);
+                EMIT(label_assign, label2);
+            } else {
+                for (int i = 0; i < n; i++) {
+                    c_if_cond(comp, pns->nodes[i], true, label);
+                }
+            }
+            return;
+        } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_and_test) {
+            if (jump_if == false) {
+                for (int i = 0; i < n; i++) {
+                    c_if_cond(comp, pns->nodes[i], false, label);
+                }
+            } else {
+                int label2 = comp_next_label(comp);
+                for (int i = 0; i < n - 1; i++) {
+                    c_if_cond(comp, pns->nodes[i], false, label2);
+                }
+                c_if_cond(comp, pns->nodes[n - 1], true, label);
+                EMIT(label_assign, label2);
+            }
+            return;
+        } else if (PY_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
+            c_if_cond(comp, pns->nodes[0], !jump_if, label);
+            return;
+        }
+    }
+
+    // nothing special, fall back to default compiling for node and jump
+    compile_node(comp, pn);
+    if (jump_if == false) {
+        EMIT(pop_jump_if_false, label);
+    } else {
+        EMIT(pop_jump_if_true, label);
+    }
+#endif
 }
 
 typedef enum { ASSIGN_STORE, ASSIGN_AUG_LOAD, ASSIGN_AUG_STORE } assign_kind_t;
@@ -1859,9 +1932,6 @@ void compile_comprehension(compiler_t *comp, py_parse_node_struct_t *pns, scope_
 void compile_atom_paren(compiler_t *comp, py_parse_node_struct_t *pns) {
     if (PY_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // an empty tuple
-        /*
-        EMIT(build_tuple, 0);
-        */
         c_tuple(comp, PY_PARSE_NODE_NULL, NULL);
     } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
         pns = (py_parse_node_struct_t*)pns->nodes[0];
@@ -1871,18 +1941,9 @@ void compile_atom_paren(compiler_t *comp, py_parse_node_struct_t *pns) {
             if (PY_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3b) {
                 // tuple of one item, with trailing comma
                 assert(PY_PARSE_NODE_IS_NULL(pns2->nodes[0]));
-                /*
-                compile_node(comp, pns->nodes[0]);
-                EMIT(build_tuple, 1);
-                */
                 c_tuple(comp, pns->nodes[0], NULL);
             } else if (PY_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3c) {
                 // tuple of many items
-                /*
-                compile_node(comp, pns->nodes[0]);
-                compile_generic_all_nodes(comp, pns2);
-                EMIT(build_tuple, 1 + PY_PARSE_NODE_STRUCT_NUM_NODES(pns2));
-                */
                 c_tuple(comp, pns->nodes[0], pns2);
             } else if (PY_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for) {
                 // generator expression
@@ -1894,11 +1955,6 @@ void compile_atom_paren(compiler_t *comp, py_parse_node_struct_t *pns) {
         } else {
             // tuple with 2 items
             tuple_with_2_items:
-            /*
-            compile_node(comp, pns->nodes[0]);
-            compile_node(comp, pns->nodes[1]);
-            EMIT(build_tuple, 2);
-            */
             c_tuple(comp, PY_PARSE_NODE_NULL, pns);
         }
     } else {
