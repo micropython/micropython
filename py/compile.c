@@ -88,7 +88,7 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                     int arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                     int arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
                     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_DBL_LESS)) {
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
                         // can overflow; enabled only to compare with CPython
                         pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 << arg1);
 #endif
@@ -127,7 +127,7 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                     int arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                     int arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
                     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_STAR)) {
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
                         // can overflow; enabled only to compare with CPython
                         pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 * arg1);
 #endif
@@ -162,7 +162,7 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                 }
                 break;
 
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
             case PN_power:
                 // can overflow; enabled only to compare with CPython
                 if (PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && PY_PARSE_NODE_IS_NULL(pns->nodes[1]) && !PY_PARSE_NODE_IS_NULL(pns->nodes[2])) {
@@ -265,7 +265,7 @@ void compile_generic_all_nodes(compiler_t *comp, py_parse_node_struct_t *pns) {
     }
 }
 
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
 static bool cpython_c_tuple_is_const(py_parse_node_t pn) {
     if (!PY_PARSE_NODE_IS_LEAF(pn)) {
         return false;
@@ -352,7 +352,7 @@ static void cpython_c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_
 
 // funnelling all tuple creations through this function is purely so we can optionally agree with CPython
 void c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_struct_t *pns_list) {
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
     cpython_c_tuple(comp, pn, pns_list);
 #else
     int total = 0;
@@ -385,7 +385,7 @@ static bool node_is_const_true(py_parse_node_t pn) {
     return PY_PARSE_NODE_IS_TOKEN_KIND(pn, PY_TOKEN_KW_TRUE) || (PY_PARSE_NODE_IS_SMALL_INT(pn) && PY_PARSE_NODE_LEAF_ARG(pn) == 1);
 }
 
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
 // the is_nested variable is purely to match with CPython, which doesn't fully optimise not's
 static void cpython_c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label, bool is_nested) {
     if (node_is_const_false(pn)) {
@@ -446,7 +446,7 @@ static void cpython_c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if
 #endif
 
 static void c_if_cond(compiler_t *comp, py_parse_node_t pn, bool jump_if, int label) {
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
     cpython_c_if_cond(comp, pn, jump_if, label, false);
 #else
     if (node_is_const_false(pn)) {
@@ -857,7 +857,7 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
     } else if (attr == comp->qstr_viper) {
         *emit_options = EMIT_OPT_VIPER;
-#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
+#if MICROPY_EMIT_INLINE_THUMB
     } else if (attr == comp->qstr_asm_thumb) {
         *emit_options = EMIT_OPT_ASM_THUMB;
 #endif
@@ -2748,7 +2748,7 @@ void py_compile(py_parse_node_t pn) {
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         if (false) {
-#ifdef MICROPY_EMIT_ENABLE_INLINE_THUMB
+#if MICROPY_EMIT_INLINE_THUMB
         } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
             compile_scope_inline_asm(comp, s, PASS_1);
 #endif
@@ -2771,18 +2771,18 @@ void py_compile(py_parse_node_t pn) {
     emit_pass1_free(comp->emit);
 
     // compile pass 2 and 3
-#if !defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if !MICROPY_EMIT_CPYTHON
     emit_t *emit_bc = NULL;
     emit_t *emit_native = NULL;
 #endif
-#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
+#if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
     for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
         if (false) {
             // dummy
 
-#if defined(MICROPY_EMIT_ENABLE_INLINE_THUMB)
+#if MICROPY_EMIT_INLINE_THUMB
         } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
             // inline assembly for thumb
             if (emit_inline_thumb == NULL) {
@@ -2800,19 +2800,19 @@ void py_compile(py_parse_node_t pn) {
 
             // choose the emit type
 
-#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if MICROPY_EMIT_CPYTHON
             comp->emit = emit_cpython_new(max_num_labels);
             comp->emit_method_table = &emit_cpython_method_table;
 #else
             switch (s->emit_options) {
                 case EMIT_OPT_NATIVE_PYTHON:
                 case EMIT_OPT_VIPER:
-#if defined(MICROPY_EMIT_ENABLE_X64)
+#if MICROPY_EMIT_X64
                     if (emit_native == NULL) {
                         emit_native = emit_native_x64_new(max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_x64_method_table;
-#elif defined(MICROPY_EMIT_ENABLE_THUMB)
+#elif MICROPY_EMIT_THUMB
                     if (emit_native == NULL) {
                         emit_native = emit_native_thumb_new(max_num_labels);
                     }

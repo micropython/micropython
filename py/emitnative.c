@@ -32,9 +32,9 @@
 #include "emit.h"
 
 // wrapper around everything in this file
-#if defined(N_X64) || defined(N_THUMB)
+#if N_X64 || N_THUMB
 
-#if defined(N_X64)
+#if N_X64
 
 // x64 specific stuff
 
@@ -55,7 +55,7 @@
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_x64_mov_r64_to_r64(emit->as, (reg_src), (reg_dest))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_x64_mov_local_addr_to_r64(emit->as, (local_num), (reg))
 
-#elif defined(N_THUMB)
+#elif N_THUMB
 
 // thumb specific stuff
 
@@ -123,9 +123,9 @@ struct _emit_t {
 
     scope_t *scope;
 
-#if defined(N_X64)
+#if N_X64
     asm_x64_t *as;
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_t *as;
 #endif
 };
@@ -135,9 +135,9 @@ emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     emit->do_viper_types = false;
     emit->local_vtype = NULL;
     emit->stack_info = NULL;
-#if defined(N_X64)
+#if N_X64
     emit->as = asm_x64_new(max_num_labels);
-#elif defined(N_THUMB)
+#elif N_THUMB
     emit->as = asm_thumb_new(max_num_labels);
 #endif
     return emit;
@@ -182,9 +182,9 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 
-#if defined(N_X64)
+#if N_X64
     asm_x64_start_pass(emit->as, pass);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_start_pass(emit->as, pass);
 #endif
 
@@ -198,14 +198,14 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_start = num_locals;
         num_locals += scope->stack_size;
     }
-#if defined(N_X64)
+#if N_X64
     asm_x64_entry(emit->as, num_locals);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_entry(emit->as, num_locals);
 #endif
 
     // initialise locals from parameters
-#if defined(N_X64)
+#if N_X64
     for (int i = 0; i < scope->num_params; i++) {
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
@@ -218,7 +218,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             assert(0);
         }
     }
-#elif defined(N_THUMB)
+#elif N_THUMB
     for (int i = 0; i < scope->num_params; i++) {
         if (i == 0) {
             asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
@@ -239,12 +239,12 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 }
 
 static void emit_native_end_pass(emit_t *emit) {
-#if defined(N_X64)
+#if N_X64
     if (!emit->last_emit_was_return_value) {
         asm_x64_exit(emit->as);
     }
     asm_x64_end_pass(emit->as);
-#elif defined(N_THUMB)
+#elif N_THUMB
     if (!emit->last_emit_was_return_value) {
         asm_thumb_exit(emit->as);
     }
@@ -257,10 +257,10 @@ static void emit_native_end_pass(emit_t *emit) {
     }
 
     if (emit->pass == PASS_3) {
-#if defined(N_X64)
+#if N_X64
         py_fun_t f = asm_x64_get_code(emit->as);
         rt_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
-#elif defined(N_THUMB)
+#elif N_THUMB
         py_fun_t f = asm_thumb_get_code(emit->as);
         rt_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
 #endif
@@ -446,9 +446,9 @@ static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, i
 }
 
 static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
-#if defined(N_X64)
+#if N_X64
     asm_x64_call_ind(emit->as, fun, REG_RAX);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_bl_ind(emit->as, rt_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
@@ -483,9 +483,9 @@ static void emit_native_delete_id(emit_t *emit, qstr qstr) {
 }
 
 static void emit_native_label_assign(emit_t *emit, int l) {
-#if defined(N_X64)
+#if N_X64
     asm_x64_label_assign(emit->as, l);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_label_assign(emit->as, l);
 #endif
 }
@@ -607,7 +607,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qstr));
     }
     emit_pre(emit);
-#if defined(N_X64)
+#if N_X64
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else {
@@ -615,7 +615,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
         asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
         emit_post_push_reg(emit, vtype, REG_RAX);
     }
-#elif defined(N_THUMB)
+#elif N_THUMB
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
@@ -681,14 +681,14 @@ static void emit_native_load_build_class(emit_t *emit) {
 
 static void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
-#if defined(N_X64)
+#if N_X64
     if (local_num == 0) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_RAX);
         asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - 1);
     }
-#elif defined(N_THUMB)
+#elif N_THUMB
     if (local_num == 0) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
@@ -826,9 +826,9 @@ static void emit_native_rot_three(emit_t *emit) {
 
 static void emit_native_jump(emit_t *emit, int label) {
     emit_pre(emit);
-#if defined(N_X64)
+#if N_X64
     asm_x64_jmp_label(emit->as, label);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_b_label(emit->as, label);
 #endif
     emit_post(emit);
@@ -845,10 +845,10 @@ static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
         printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
         assert(0);
     }
-#if defined(N_X64)
+#if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
     asm_x64_jcc_label(emit->as, JCC_JZ, label);
-#elif defined(N_THUMB)
+#elif N_THUMB
     asm_thumb_cmp_reg_bz_label(emit->as, REG_RET, label);
 #endif
     emit_post(emit);
@@ -925,9 +925,9 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_BINARY_OP_ADD);
-#if defined(N_X64)
+#if N_X64
         asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
-#elif defined(N_THUMB)
+#elif N_THUMB
         asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
         emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
@@ -945,11 +945,11 @@ static void emit_native_compare_op(emit_t *emit, rt_compare_op_t op) {
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
         assert(op == RT_COMPARE_OP_LESS);
-#if defined(N_X64)
+#if N_X64
         asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
         asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
         asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
-#elif defined(N_THUMB)
+#elif N_THUMB
         asm_thumb_cmp_reg_reg(emit->as, REG_ARG_2, REG_ARG_3);
         asm_thumb_ite_ge(emit->as);
         asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
@@ -1108,10 +1108,10 @@ static void emit_native_return_value(emit_t *emit) {
         assert(vtype == VTYPE_PYOBJ);
     }
     emit->last_emit_was_return_value = true;
-#if defined(N_X64)
+#if N_X64
     //asm_x64_call_ind(emit->as, 0, REG_RAX); to seg fault for debugging with gdb
     asm_x64_exit(emit->as);
-#elif defined(N_THUMB)
+#elif N_THUMB
     //asm_thumb_call_ind(emit->as, 0, REG_R0); to seg fault for debugging with gdb
     asm_thumb_exit(emit->as);
 #endif
@@ -1226,4 +1226,4 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_yield_from,
 };
 
-#endif // defined(N_X64) || defined(N_THUMB)
+#endif // N_X64 || N_THUMB

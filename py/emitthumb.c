@@ -14,7 +14,7 @@
 #include "emit.h"
 #include "asmthumb.h"
 
-#ifdef MICROPY_EMIT_ENABLE_THUMB
+#if MICROPY_EMIT_THUMB
 
 #define REG_LOCAL_1 (REG_R4)
 #define REG_LOCAL_2 (REG_R5)
@@ -775,4 +775,4 @@ const emit_method_table_t emit_thumb_method_table = {
     emit_thumb_yield_from,
 };
 
-#endif // MICROPY_EMIT_ENABLE_THUMB
+#endif // MICROPY_EMIT_THUMB

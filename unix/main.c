@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
     py_lexer_free(lex);
 
-#if !defined(MICROPY_EMIT_ENABLE_CPYTHON)
+#if !MICROPY_EMIT_CPYTHON
     if (1) {
         // execute it
         py_obj_t module_fun = rt_make_function_from_id(1);

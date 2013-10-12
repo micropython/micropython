@@ -14,7 +14,7 @@
 #include "emit.h"
 #include "asmthumb.h"
 
-#ifdef MICROPY_EMIT_ENABLE_INLINE_THUMB
+#if MICROPY_EMIT_INLINE_THUMB
 
 struct _emit_inline_asm_t {
     int pass;
@@ -204,4 +204,4 @@ const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
     emit_inline_thumb_op,
 };
 
-#endif // MICROPY_EMIT_ENABLE_INLINE_THUMB
+#endif // MICROPY_EMIT_INLINE_THUMB

@@ -26,14 +26,14 @@ typedef machine_int_t py_small_int_t;
 #define FROM_SMALL_INT(o) (((py_small_int_t)(o)) >> 1)
 #define TO_SMALL_INT(o) ((py_obj_t)(((o) << 1) | 1))
 
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
 typedef machine_float_t float_t;
 #endif
 
 typedef enum {
     O_CONST,
     O_STR,
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
     O_FLOAT,
 #endif
     O_FUN_0,
@@ -74,7 +74,7 @@ struct _py_obj_base_t {
     union {
         const char *id;
         qstr u_str;
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
         float_t u_flt;
 #endif
         struct { // for O_FUN_[012N]
@@ -257,7 +257,7 @@ py_obj_t py_obj_new_str(qstr qstr) {
     return (py_obj_t)o;
 }
 
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
 py_obj_t py_obj_new_float(float_t val) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_FLOAT;
@@ -511,7 +511,7 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
                 }
             case O_STR:
                 return "str";
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
             case O_FLOAT:
                 return "float";
 #endif
@@ -554,7 +554,7 @@ void py_obj_print(py_obj_t o_in) {
                 // TODO need to escape chars etc
                 printf("'%s'", qstr_str(o->u_str));
                 break;
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
             case O_FLOAT:
                 printf("%f", o->u_flt);
                 break;
@@ -716,7 +716,7 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
             case RT_BINARY_OP_SUBTRACT: val = FROM_SMALL_INT(lhs) - FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_MULTIPLY: val = FROM_SMALL_INT(lhs) * FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_FLOOR_DIVIDE: val = FROM_SMALL_INT(lhs) / FROM_SMALL_INT(rhs); break;
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
             case RT_BINARY_OP_TRUE_DIVIDE: return py_obj_new_float((float_t)FROM_SMALL_INT(lhs) / (float_t)FROM_SMALL_INT(rhs));
 #endif
             default: printf("%d\n", op); assert(0); val = 0;
@@ -861,7 +861,7 @@ machine_uint_t rt_convert_obj_for_inline_asm(py_obj_t obj) {
                 // pointer to the string (it's probably constant though!)
                 return (machine_uint_t)qstr_str(o->u_str);
 
-#ifdef MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT
             case O_FLOAT:
                 // convert float to int (could also pass in float registers)
                 return (machine_int_t)o->u_flt;

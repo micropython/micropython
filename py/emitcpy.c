@@ -14,7 +14,7 @@
 #include "runtime.h"
 #include "emit.h"
 
-#ifdef MICROPY_EMIT_ENABLE_CPYTHON
+#if MICROPY_EMIT_CPYTHON
 
 struct _emit_t {
     int pass;
@@ -925,4 +925,4 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_yield_from,
 };
 
-#endif // MICROPY_EMIT_ENABLE_CPYTHON
+#endif // MICROPY_EMIT_CPYTHON
