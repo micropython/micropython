@@ -11,6 +11,11 @@ struct _py_lexer_t;
 //  - xxxx...1101: a token; bits 4 and above are py_token_kind_t
 //  - xxxx...xxx0: pointer to py_parse_node_struct_t
 
+// makes sure the top 5 bits of x are all cleared (positive number) or all set (negavite number)
+// these macros can probably go somewhere else because they are used more than just in the parser
+#define PY_UINT_HIGH_5_BITS (~((~((machine_uint_t)0)) >> 5))
+#define PY_FIT_SMALL_INT(x) (((((machine_uint_t)(x)) & PY_UINT_HIGH_5_BITS) == 0) || ((((machine_uint_t)(x)) & PY_UINT_HIGH_5_BITS) == PY_UINT_HIGH_5_BITS))
+
 #define PY_PARSE_NODE_NULL      (0)
 #define PY_PARSE_NODE_ID        (0x1)
 #define PY_PARSE_NODE_SMALL_INT (0x3)

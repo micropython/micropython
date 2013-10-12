@@ -88,7 +88,10 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                     int arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                     int arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
                     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_DBL_LESS)) {
-                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 << arg1); // XXX can overflow; enabled only to compare with CPython
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+                        // can overflow; enabled only to compare with CPython
+                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 << arg1);
+#endif
                     } else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_DBL_MORE)) {
                         pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 >> arg1);
                     } else {
@@ -99,32 +102,43 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                 break;
 
             case PN_arith_expr:
-                // XXX can overflow; enabled only to compare with CPython
+                // overflow checking here relies on SMALL_INT being strictly smaller than machine_int_t
                 if (n == 3 && PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    int arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-                    int arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
+                    machine_int_t arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                    machine_int_t arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
+                    machine_int_t res;
                     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_PLUS)) {
-                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 + arg1);
+                        res = arg0 + arg1;
                     } else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_MINUS)) {
-                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 - arg1);
+                        res = arg0 - arg1;
                     } else {
                         // shouldn't happen
                         assert(0);
+                        res = 0;
+                    }
+                    if (PY_FIT_SMALL_INT(res)) {
+                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, res);
                     }
                 }
                 break;
 
             case PN_term:
-                // XXX can overflow; enabled only to compare with CPython
                 if (n == 3 && PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
                     int arg0 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                     int arg1 = PY_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
                     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_STAR)) {
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
+                        // can overflow; enabled only to compare with CPython
                         pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 * arg1);
+#endif
                     } else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_SLASH)) {
                         ; // pass
-                    //} else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_)) {
-                        //pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 - arg1);
+                    } else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_PERCENT)) {
+                        // XXX implement this properly as Python's % operator acts differently to C's
+                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 % arg1);
+                    } else if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_DBL_SLASH)) {
+                        // XXX implement this properly as Python's // operator acts differently to C's
+                        pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, arg0 / arg1);
                     } else {
                         // shouldn't happen
                         assert(0);
@@ -148,8 +162,9 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                 }
                 break;
 
+#if defined(MICROPY_EMIT_ENABLE_CPYTHON)
             case PN_power:
-                // XXX can overflow; enabled only to compare with CPython
+                // can overflow; enabled only to compare with CPython
                 if (PY_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && PY_PARSE_NODE_IS_NULL(pns->nodes[1]) && !PY_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     py_parse_node_struct_t* pns2 = (py_parse_node_struct_t*)pns->nodes[2];
                     if (PY_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
@@ -165,6 +180,7 @@ py_parse_node_t fold_constants(py_parse_node_t pn) {
                     }
                 }
                 break;
+#endif
         }
     }
 
