@@ -71,7 +71,7 @@
 #include "usbd_msc_bot.h"
 #include "usbd_msc_mem.h"
 
-#define USB_PYB_CONFIG_DESC_SIZ 98
+#define USB_PYB_CONFIG_DESC_SIZ (98)
 
 #define MSC_EPIN_SIZE                MSC_MAX_PACKET
 #define MSC_EPOUT_SIZE               MSC_MAX_PACKET
@@ -150,7 +150,7 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     HIBYTE(USB_PYB_CONFIG_DESC_SIZ),
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
-    0x00,   // iConfiguration: Index of string descriptor describing the configuration
+    0x04,   // iConfiguration: Index of string descriptor describing the configuration
     0x80,   // bmAttributes: bus powered; 0xc0 for self powered
     0xfa,   // bMaxPower: in units of 2mA
 
@@ -163,7 +163,7 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     0x00,   // bFunctionClass: ?
     0x00,   // bFunctionSubClass: ?
     0x00,   // bFunctionProtocol: ?
-    0x00,   // iFunction: index of string for this function
+    0x04,   // iFunction: index of string for this function
 
     //--------------------------------------------------------------------------
     // Interface Descriptor
@@ -252,9 +252,9 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     USB_INTERFACE_DESCRIPTOR_TYPE,      // bDescriptorType: interface descriptor
     0x02,   // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
-    0x02,   // bNumEndpoints*/
+    0x02,   // bNumEndpoints
     0x08,   // bInterfaceClass: MSC Class
-    0x06,   // bInterfaceSubClass : SCSI transparent*/
+    0x06,   // bInterfaceSubClass : SCSI transparent
     0x50,   // nInterfaceProtocol
     0x00,   // iInterface:
 
@@ -397,6 +397,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
 
         // Standard Device Request ---------------------------------------------
         case (USB_REQ_TYPE_STANDARD | USB_REQ_RECIPIENT_DEVICE):
+            /*
             switch (req->bRequest) {
                 case USB_REQ_GET_DESCRIPTOR:
                 {
@@ -409,6 +410,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                     return USBD_CtlSendData(pdev, pbuf, len);
                 }
             }
+            */
             break;
 
         // Standard Interface Request ------------------------------------------
