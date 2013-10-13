@@ -30,8 +30,8 @@
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 
 /* Includes ------------------------------------------------------------------*/
+#include "usbd_conf.h"
 #include "usbd_cdc_vcp.h"
-#include "usbd_cdc_conf.h"
 #include "std.h"
 
 /* Private typedef -----------------------------------------------------------*/

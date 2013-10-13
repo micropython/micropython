@@ -212,7 +212,6 @@ int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint32_t *block_si
   */
 int8_t  STORAGE_IsReady (uint8_t lun)
 {
-  
     /*
 #ifndef USE_STM3210C_EVAL  
   
@@ -268,7 +267,6 @@ int8_t STORAGE_Read (uint8_t lun,
                  uint32_t blk_addr,                       
                  uint16_t blk_len)
 {
-  
     /*
   if( SD_ReadMultiBlocks (buf, 
                           blk_addr * 512, 

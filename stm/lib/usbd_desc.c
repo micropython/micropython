@@ -104,26 +104,26 @@ USBD_DEVICE USR_desc =
   #endif
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
-__ALIGN_BEGIN uint8_t USBD_DeviceDesc[USB_SIZ_DEVICE_DESC] __ALIGN_END =
-  {
-    0x12,                       /*bLength */
-    USB_DEVICE_DESCRIPTOR_TYPE, /*bDescriptorType*/
-    0x00,                       /*bcdUSB */
+__ALIGN_BEGIN static uint8_t USBD_DeviceDesc[USB_SIZ_DEVICE_DESC] __ALIGN_END =
+{
+    0x12,                       // bLength
+    USB_DEVICE_DESCRIPTOR_TYPE, // bDescriptorType
+    0x00,                       // bcdUSB: v2.0
     0x02,
-    0x00,                       /*bDeviceClass*/
-    0x00,                       /*bDeviceSubClass*/
-    0x00,                       /*bDeviceProtocol*/
-    USB_OTG_MAX_EP0_SIZE,      /*bMaxPacketSize*/
-    LOBYTE(USBD_VID),           /*idVendor*/
-    HIBYTE(USBD_VID),           /*idVendor*/
-    LOBYTE(USBD_PID),           /*idVendor*/
-    HIBYTE(USBD_PID),           /*idVendor*/
-    0x00,                       /*bcdDevice rel. 2.00*/
+    0xef,                       // bDeviceClass: Miscellaneous Device Class
+    0x02,                       // bDeviceSubClass: Common Class
+    0x01,                       // bDeviceProtocol: Interface Association Descriptor
+    USB_OTG_MAX_EP0_SIZE,       // bMaxPacketSize
+    LOBYTE(USBD_VID),           // idVendor
+    HIBYTE(USBD_VID),           // idVendor
+    LOBYTE(USBD_PID),           // idVendor
+    HIBYTE(USBD_PID),           // idVendor
+    0x00,                       // bcdDevice: rel. 2.00
     0x02,
     USBD_IDX_MFC_STR,           /*Index of manufacturer  string*/
     USBD_IDX_PRODUCT_STR,       /*Index of product string*/
     USBD_IDX_SERIAL_STR,        /*Index of serial number string*/
-    USBD_CFG_MAX_NUM            /*bNumConfigurations*/
+    USBD_CFG_MAX_NUM            // bNumConfigurations: 1
   } ; /* USB_DeviceDescriptor */
 
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED

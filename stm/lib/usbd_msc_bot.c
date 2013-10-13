@@ -30,7 +30,7 @@
 #include "usbd_msc_scsi.h"
 #include "usbd_ioreq.h"
 #include "usbd_msc_mem.h"
-#include "usbd_msc_conf.h"
+#include "usbd_conf.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{

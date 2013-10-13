@@ -716,7 +716,7 @@ int main() {
         }
 
         // read a file
-        if (1) {
+        if (0) {
             FIL fp;
             f_open(&fp, "0:/boot.py", FA_READ);
             UINT n;
@@ -744,10 +744,10 @@ int main() {
         //usb_vcp_init();
     }
 
-    // USB MSC testing
+    // USB testing
     if (1) {
-        void usb_msc_init();
-        usb_msc_init();
+        void usb_init();
+        usb_init();
     }
 
     int i = 0;

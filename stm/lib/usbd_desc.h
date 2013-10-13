@@ -50,6 +50,7 @@
 #define USB_STRING_DESCRIPTOR_TYPE              0x03
 #define USB_INTERFACE_DESCRIPTOR_TYPE           0x04
 #define USB_ENDPOINT_DESCRIPTOR_TYPE            0x05
+#define USB_INTERFACE_ASSOCIATION_TYPE          0x0b
 #define USB_SIZ_DEVICE_DESC                     18
 #define USB_SIZ_STRING_LANGID                   4
 
@@ -77,7 +78,7 @@
 /** @defgroup USBD_DESC_Exported_Variables
   * @{
   */ 
-extern  uint8_t USBD_DeviceDesc  [USB_SIZ_DEVICE_DESC];
+//extern  uint8_t USBD_DeviceDesc  [USB_SIZ_DEVICE_DESC];
 extern  uint8_t USBD_StrDesc[USB_MAX_STR_DESC_SIZ];
 extern  uint8_t USBD_OtherSpeedCfgDesc[USB_LEN_CFG_DESC]; 
 extern  uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC];

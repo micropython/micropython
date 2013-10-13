@@ -1,0 +1,1 @@
+extern USBD_Class_cb_TypeDef USBD_PYB_cb;

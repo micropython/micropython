@@ -30,7 +30,7 @@
 #include "usbd_msc_scsi.h"
 #include "usbd_msc_mem.h"
 #include "usbd_msc_data.h"
-#include "usbd_msc_conf.h"
+#include "usbd_conf.h"
 
 
 

@@ -9,7 +9,7 @@ LD = arm-none-eabi-ld
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfloat-abi=hard -DSTM32F40XX -DHSE_VALUE=8000000
 CFLAGS = -I. -I$(PYSRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 -Os -DNDEBUG $(CFLAGS_CORTEX_M4)
 CFLAGS_PY = -DEMIT_ENABLE_THUMB
-LDFLAGS = --nostdlib -T stm.ld
+LDFLAGS = --nostdlib -T stm32f405.ld
 
 SRC_C = \
 	main.c \
@@ -63,10 +63,9 @@ SRC_STM = \
 	usbd_req.c \
 	usbd_usr.c \
 	usbd_desc.c \
-	usbd_cdc_core.c \
+	usbd_pyb_core.c \
 	usbd_cdc_vcp.c \
 	usbd_msc_bot.c  \
-	usbd_msc_core.c \
 	usbd_msc_data.c \
 	usbd_msc_scsi.c \
 	usbd_storage_msd.c \
