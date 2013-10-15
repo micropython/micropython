@@ -418,7 +418,6 @@ void __fatal_error(const char *msg) {
 #include "compile.h"
 #include "runtime.h"
 
-/*
 py_obj_t pyb_delay(py_obj_t count) {
     delay_ms(rt_get_int(count));
     return py_const_none;
@@ -436,19 +435,44 @@ py_obj_t pyb_sw() {
         return py_const_false;
     }
 }
-*/
-
-#include "asmthumb.h"
-typedef void (*fun_t)();
 
 #include "ff.h"
 FATFS fatfs0;
 
+#include "nlr.h"
+void g(uint i) {
+    printf("g:%d\n", i);
+    if (i & 1) {
+        nlr_jump((void*)(42 + i));
+    }
+}
+void f() {
+    nlr_buf_t nlr;
+    int i;
+    for (i = 0; i < 4; i++) {
+        printf("f:loop:%d:%p\n", i, &nlr);
+        if (nlr_push(&nlr) == 0) {
+            // normal
+            //printf("a:%p:%p %p %p %u\n", &nlr, nlr.ip, nlr.sp, nlr.prev, nlr.ret_val);
+            g(i);
+            printf("f:lp:%d:nrm\n", i);
+            nlr_pop();
+        } else {
+            // nlr
+            //printf("b:%p:%p %p %p %u\n", &nlr, nlr.ip, nlr.sp, nlr.prev, nlr.ret_val);
+            printf("f:lp:%d:nlr:%d\n", i, (int)nlr.ret_val);
+        }
+    }
+}
+void nlr_test() {
+    f(1);
+}
+
 int main() {
     // should disable JTAG
 
-    //qstr_init();
-    //rt_init();
+    qstr_init();
+    rt_init();
 
     gpio_init();
     led_init();
@@ -503,9 +527,11 @@ int main() {
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //delay_ms(1000);
 
-    #if 0
+    nlr_test();
+
+    #if 1
     // Python!
-    if (0) {
+    if (1) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
         const char *pysrc =
             // impl01.py
@@ -521,6 +547,7 @@ int main() {
             "    x = x + 1\n";
             */
             // impl02.py
+            /*
             "#@micropython.native\n"
             "def f():\n"
             "    x = 0\n"
@@ -533,6 +560,7 @@ int main() {
             "            y = y + 1\n"
             "        x = x + 1\n"
             "f()\n";
+            */
             /*
             "print('in python!')\n"
             "x = 0\n"
@@ -573,6 +601,23 @@ int main() {
             "        x = x + 1\n"
             "flash(20)\n";
             */
+            // impl18.py
+            /*
+            "# basic exceptions\n"
+            "x = 1\n"
+            "try:\n"
+            "    x.a()\n"
+            "except:\n"
+            "    print(x)\n";
+            */
+            // impl19.py
+            "# for loop\n"
+            "def f():\n"
+            "    for x in range(400):\n"
+            "        for y in range(400):\n"
+            "            for z in range(400):\n"
+            "                pass\n"
+            "f()\n";
 
         py_lexer_t *lex = py_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
 
@@ -605,17 +650,30 @@ int main() {
 
                 py_obj_t module_fun = rt_make_function_from_id(1);
 
-                led_state(PYB_LEDG1_PORT_NUM, 1);
-                delay_ms(100);
-                led_state(PYB_LEDG1_PORT_NUM, 0);
-                py_obj_t ret = rt_call_function_0(module_fun);
+                // flash once
                 led_state(PYB_LEDG1_PORT_NUM, 1);
                 delay_ms(100);
                 led_state(PYB_LEDG1_PORT_NUM, 0);
 
-                printf("done! got: ");
-                py_obj_print(ret);
-                printf("\n");
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    py_obj_t ret = rt_call_function_0(module_fun);
+                    printf("done! got: ");
+                    py_obj_print(ret);
+                    printf("\n");
+                    nlr_pop();
+                } else {
+                    // uncaught exception
+                    printf("exception: ");
+                    py_obj_print((py_obj_t)nlr.ret_val);
+                    printf("\n");
+                }
+
+                // flash once
+                led_state(PYB_LEDG1_PORT_NUM, 1);
+                delay_ms(100);
+                led_state(PYB_LEDG1_PORT_NUM, 0);
+
                 delay_ms(1000);
                 printf("nalloc=%u\n", m_get_total_bytes_allocated());
                 delay_ms(1000);
@@ -690,7 +748,7 @@ int main() {
     }
 
     // fatfs testing
-    if (1) {
+    if (0) {
         FRESULT res = f_mount(&fatfs0, "0:", 1);
         if (res == FR_OK) {
             printf("mount success\n");
@@ -730,7 +788,7 @@ int main() {
         DWORD nclst;
         FATFS *fatfs;
         f_getfree("0:", &nclst, &fatfs);
-        printf("free=%d\n", nclst * fatfs->csize * 512);
+        printf("free=%u\n", (uint)(nclst * fatfs->csize * 512));
 
     }
 
@@ -745,7 +803,7 @@ int main() {
     }
 
     // USB testing
-    if (1) {
+    if (0) {
         void usb_init();
         usb_init();
     }

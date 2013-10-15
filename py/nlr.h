@@ -3,9 +3,9 @@
 
 #include <limits.h>
 
-#ifndef __WORDSIZE
-#error __WORDSIZE needs to be defined
-#endif
+//#ifndef __WORDSIZE
+//#error __WORDSIZE needs to be defined
+//#endif
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
@@ -17,7 +17,9 @@ struct _nlr_buf_t {
 #elif __WORDSIZE == 64
     void *regs[8];
 #else
-#error Unsupported __WORDSIZE
+    // hack for thumb
+    void *regs[10];
+//#error Unsupported __WORDSIZE
 #endif
 };
 
