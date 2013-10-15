@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpyconfig.h"
 #include "runtime.h"
@@ -24,6 +25,7 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
     qstr qstr;
     py_obj_t obj1, obj2;
     py_obj_t fast0 = NULL, fast1 = NULL, fast2 = NULL, fastn[4] = {NULL, NULL, NULL, NULL};
+    nlr_buf_t nlr;
 
     // init args
     for (int i = 0; i < n_args; i++) {
@@ -39,224 +41,290 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
         }
     }
 
-    // execute byte code
+    // outer exception handling loop
     for (;;) {
-        int op = *ip++;
-        switch (op) {
-            case PYBC_LOAD_CONST_FALSE:
-                PUSH(py_const_false);
-                break;
+        if (nlr_push(&nlr) == 0) {
+            // loop to execute byte code
+            for (;;) {
+                int op = *ip++;
+                switch (op) {
+                    case PYBC_LOAD_CONST_FALSE:
+                        PUSH(py_const_false);
+                        break;
 
-            case PYBC_LOAD_CONST_NONE:
-                PUSH(py_const_none);
-                break;
+                    case PYBC_LOAD_CONST_NONE:
+                        PUSH(py_const_none);
+                        break;
 
-            case PYBC_LOAD_CONST_TRUE:
-                PUSH(py_const_true);
-                break;
+                    case PYBC_LOAD_CONST_TRUE:
+                        PUSH(py_const_true);
+                        break;
 
-            case PYBC_LOAD_CONST_SMALL_INT:
-                snum = ip[0] | (ip[1] << 8);
-                if (snum & 0x8000) {
-                    snum |= ~0xffff;
+                    case PYBC_LOAD_CONST_SMALL_INT:
+                        snum = ip[0] | (ip[1] << 8);
+                        if (snum & 0x8000) {
+                            snum |= ~0xffff;
+                        }
+                        ip += 2;
+                        PUSH((py_obj_t)(snum << 1 | 1));
+                        break;
+
+                    case PYBC_LOAD_CONST_ID:
+                        DECODE_QSTR;
+                        PUSH(rt_load_const_str(qstr)); // TODO
+                        break;
+
+                    case PYBC_LOAD_CONST_STRING:
+                        DECODE_QSTR;
+                        PUSH(rt_load_const_str(qstr));
+                        break;
+
+                    case PYBC_LOAD_FAST_0:
+                        PUSH(fast0);
+                        break;
+
+                    case PYBC_LOAD_FAST_1:
+                        PUSH(fast1);
+                        break;
+
+                    case PYBC_LOAD_FAST_2:
+                        PUSH(fast2);
+                        break;
+
+                    case PYBC_LOAD_FAST_N:
+                        DECODE_UINT;
+                        PUSH(fastn[unum - 3]);
+                        break;
+
+                    case PYBC_LOAD_NAME:
+                        DECODE_QSTR;
+                        PUSH(rt_load_name(qstr));
+                        break;
+
+                    case PYBC_LOAD_GLOBAL:
+                        DECODE_QSTR;
+                        PUSH(rt_load_global(qstr));
+                        break;
+
+                    case PYBC_LOAD_ATTR:
+                        DECODE_QSTR;
+                        *sp = rt_load_attr(*sp, qstr);
+                        break;
+
+                    case PYBC_LOAD_METHOD:
+                        DECODE_QSTR;
+                        sp -= 1;
+                        rt_load_method(sp[1], qstr, sp);
+                        break;
+
+                    case PYBC_LOAD_BUILD_CLASS:
+                        PUSH(rt_load_build_class());
+                        break;
+
+                    case PYBC_STORE_FAST_0:
+                        fast0 = POP();
+                        break;
+
+                    case PYBC_STORE_FAST_1:
+                        fast1 = POP();
+                        break;
+
+                    case PYBC_STORE_FAST_2:
+                        fast2 = POP();
+                        break;
+
+                    case PYBC_STORE_FAST_N:
+                        DECODE_UINT;
+                        fastn[unum - 3] = POP();
+                        break;
+
+                    case PYBC_STORE_NAME:
+                        DECODE_QSTR;
+                        rt_store_name(qstr, POP());
+                        break;
+
+                    case PYBC_STORE_ATTR:
+                        DECODE_QSTR;
+                        rt_store_attr(sp[0], qstr, sp[1]);
+                        sp += 2;
+                        break;
+
+                    case PYBC_STORE_SUBSCR:
+                        rt_store_subscr(sp[1], sp[0], sp[2]);
+                        sp += 3;
+                        break;
+
+                    case PYBC_DUP_TOP:
+                        obj1 = *sp;
+                        PUSH(obj1);
+                        break;
+
+                    case PYBC_DUP_TOP_TWO:
+                        sp -= 2;
+                        sp[0] = sp[2];
+                        sp[1] = sp[3];
+                        break;
+
+                    case PYBC_POP_TOP:
+                        ++sp;
+                        break;
+
+                    case PYBC_ROT_THREE:
+                        obj1 = sp[0];
+                        sp[0] = sp[1];
+                        sp[1] = sp[2];
+                        sp[2] = obj1;
+                        break;
+
+                    case PYBC_JUMP:
+                        DECODE_UINT;
+                        ip = code + unum;
+                        break;
+
+                    case PYBC_POP_JUMP_IF_TRUE:
+                        DECODE_UINT;
+                        if (rt_is_true(POP())) {
+                            ip = code + unum;
+                        }
+                        break;
+
+                    case PYBC_POP_JUMP_IF_FALSE:
+                        DECODE_UINT;
+                        if (!rt_is_true(POP())) {
+                            ip = code + unum;
+                        }
+                        break;
+
+                        /* we are trying to get away without using this opcode
+                    case PYBC_SETUP_LOOP:
+                        DECODE_UINT;
+                        // push_block(PYBC_SETUP_LOOP, code + unum, sp)
+                        break;
+                        */
+
+                    case PYBC_SETUP_EXCEPT:
+                        // push_block(PYBC_SETUP_EXCEPT, code + unum, sp)
+                        assert(0);
+                        break;
+
+                    case PYBC_END_FINALLY:
+                        // not implemented
+                        // if TOS is an exception, reraises the exception (3 values on TOS)
+                        // if TOS is an integer, does something else
+                        // if TOS is None, just pops it and continues
+                        // else error
+                        assert(0);
+                        break;
+
+                    case PYBC_GET_ITER:
+                        *sp = rt_getiter(*sp);
+                        break;
+
+                    case PYBC_FOR_ITER:
+                        DECODE_UINT; // the jump offset if iteration finishes
+                        obj1 = rt_iternext(*sp);
+                        if (obj1 == py_const_stop_iteration) {
+                            ++sp; // pop the exhausted iterator
+                            ip = code + unum; // jump to after for-block
+                        } else {
+                            PUSH(obj1); // push the next iteration value
+                        }
+                        break;
+
+                    case PYBC_POP_BLOCK:
+                        // pops block and restores the stack
+                        assert(0);
+                        break;
+
+                    case PYBC_POP_EXCEPT:
+                        // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
+                        assert(0);
+                        break;
+
+                    case PYBC_BINARY_OP:
+                        unum = *ip++;
+                        obj2 = POP();
+                        obj1 = *sp;
+                        *sp = rt_binary_op(unum, obj1, obj2);
+                        break;
+
+                    case PYBC_COMPARE_OP:
+                        unum = *ip++;
+                        obj2 = POP();
+                        obj1 = *sp;
+                        *sp = rt_compare_op(unum, obj1, obj2);
+                        break;
+
+                    case PYBC_BUILD_LIST:
+                        DECODE_UINT;
+                        obj1 = rt_build_list(unum, sp);
+                        sp += unum - 1;
+                        *sp = obj1;
+                        break;
+
+                    case PYBC_BUILD_MAP:
+                        DECODE_UINT;
+                        PUSH(rt_build_map(unum));
+                        break;
+
+                    case PYBC_STORE_MAP:
+                        sp += 2;
+                        rt_store_map(sp[0], sp[-2], sp[-1]);
+                        break;
+
+                    case PYBC_BUILD_SET:
+                        DECODE_UINT;
+                        obj1 = rt_build_set(unum, sp);
+                        sp += unum - 1;
+                        *sp = obj1;
+                        break;
+
+                    case PYBC_MAKE_FUNCTION:
+                        DECODE_UINT;
+                        PUSH(rt_make_function_from_id(unum));
+                        break;
+
+                    case PYBC_CALL_FUNCTION:
+                        DECODE_UINT;
+                        assert((unum & 0xff00) == 0); // n_keyword
+                        unum &= 0xff; // n_positional
+                        sp += unum;
+                        *sp = rt_call_function_n(*sp, unum, sp - unum);
+                        break;
+
+                    case PYBC_CALL_METHOD:
+                        DECODE_UINT;
+                        assert((unum & 0xff00) == 0); // n_keyword
+                        unum &= 0xff;
+                        obj1 = rt_call_method_n(unum, sp);
+                        sp += unum + 1;
+                        *sp = obj1;
+                        break;
+
+                    case PYBC_RETURN_VALUE:
+                        nlr_pop();
+                        return *sp;
+
+                    default:
+                        printf("code %p, offset %u, byte code 0x%02x not implemented\n", code, (uint)(ip - code), op);
+                        assert(0);
+                        nlr_pop();
+                        return py_const_none;
                 }
-                ip += 2;
-                PUSH((py_obj_t)(snum << 1 | 1));
-                break;
+            }
 
-            case PYBC_LOAD_CONST_ID:
-                DECODE_QSTR;
-                PUSH(rt_load_const_str(qstr)); // TODO
-                break;
+        } else {
+            // exception occurred
 
-            case PYBC_LOAD_CONST_STRING:
-                DECODE_QSTR;
-                PUSH(rt_load_const_str(qstr));
-                break;
-
-            case PYBC_LOAD_FAST_0:
-                PUSH(fast0);
-                break;
-
-            case PYBC_LOAD_FAST_1:
-                PUSH(fast1);
-                break;
-
-            case PYBC_LOAD_FAST_2:
-                PUSH(fast2);
-                break;
-
-            case PYBC_LOAD_FAST_N:
-                DECODE_UINT;
-                PUSH(fastn[unum - 3]);
-                break;
-
-            case PYBC_LOAD_NAME:
-                DECODE_QSTR;
-                PUSH(rt_load_name(qstr));
-                break;
-
-            case PYBC_LOAD_GLOBAL:
-                DECODE_QSTR;
-                PUSH(rt_load_global(qstr));
-                break;
-
-            case PYBC_LOAD_ATTR:
-                DECODE_QSTR;
-                *sp = rt_load_attr(*sp, qstr);
-                break;
-
-            case PYBC_LOAD_METHOD:
-                DECODE_QSTR;
-                sp -= 1;
-                rt_load_method(sp[1], qstr, sp);
-                break;
-
-            case PYBC_LOAD_BUILD_CLASS:
-                PUSH(rt_load_build_class());
-                break;
-
-            case PYBC_STORE_FAST_0:
-                fast0 = POP();
-                break;
-
-            case PYBC_STORE_FAST_1:
-                fast1 = POP();
-                break;
-
-            case PYBC_STORE_FAST_2:
-                fast2 = POP();
-                break;
-
-            case PYBC_STORE_FAST_N:
-                DECODE_UINT;
-                fastn[unum - 3] = POP();
-                break;
-
-            case PYBC_STORE_NAME:
-                DECODE_QSTR;
-                rt_store_name(qstr, POP());
-                break;
-
-            case PYBC_STORE_ATTR:
-                DECODE_QSTR;
-                rt_store_attr(sp[0], qstr, sp[1]);
-                sp += 2;
-                break;
-
-            case PYBC_STORE_SUBSCR:
-                rt_store_subscr(sp[1], sp[0], sp[2]);
-                sp += 3;
-                break;
-
-            case PYBC_DUP_TOP:
-                obj1 = *sp;
-                PUSH(obj1);
-                break;
-
-            case PYBC_DUP_TOP_TWO:
-                sp -= 2;
-                sp[0] = sp[2];
-                sp[1] = sp[3];
-                break;
-
-            case PYBC_POP_TOP:
-                ++sp;
-                break;
-
-            case PYBC_ROT_THREE:
-                obj1 = sp[0];
-                sp[0] = sp[1];
-                sp[1] = sp[2];
-                sp[2] = obj1;
-                break;
-
-            case PYBC_JUMP:
-                DECODE_UINT;
-                ip = code + unum;
-                break;
-
-            case PYBC_POP_JUMP_IF_FALSE:
-                DECODE_UINT;
-                if (!rt_is_true(POP())) {
-                    ip = code + unum;
-                }
-                break;
-
-            case PYBC_SETUP_LOOP:
-                DECODE_UINT;
-                break;
-
-            case PYBC_POP_BLOCK:
-                break;
-
-            case PYBC_BINARY_OP:
-                unum = *ip++;
-                obj2 = POP();
-                obj1 = *sp;
-                *sp = rt_binary_op(unum, obj1, obj2);
-                break;
-
-            case PYBC_COMPARE_OP:
-                unum = *ip++;
-                obj2 = POP();
-                obj1 = *sp;
-                *sp = rt_compare_op(unum, obj1, obj2);
-                break;
-
-            case PYBC_BUILD_LIST:
-                DECODE_UINT;
-                obj1 = rt_build_list(unum, sp);
-                sp += unum - 1;
-                *sp = obj1;
-                break;
-
-            case PYBC_BUILD_MAP:
-                DECODE_UINT;
-                PUSH(rt_build_map(unum));
-                break;
-
-            case PYBC_STORE_MAP:
-                sp += 2;
-                rt_store_map(sp[0], sp[-2], sp[-1]);
-                break;
-
-            case PYBC_BUILD_SET:
-                DECODE_UINT;
-                obj1 = rt_build_set(unum, sp);
-                sp += unum - 1;
-                *sp = obj1;
-                break;
-
-            case PYBC_MAKE_FUNCTION:
-                DECODE_UINT;
-                PUSH(rt_make_function_from_id(unum));
-                break;
-
-            case PYBC_CALL_FUNCTION:
-                DECODE_UINT;
-                assert((unum & 0xff00) == 0); // n_keyword
-                unum &= 0xff; // n_positional
-                sp += unum;
-                *sp = rt_call_function_n(*sp, unum, sp - unum);
-                break;
-
-            case PYBC_CALL_METHOD:
-                DECODE_UINT;
-                assert((unum & 0xff00) == 0); // n_keyword
-                unum &= 0xff;
-                obj1 = rt_call_method_n(unum, sp);
-                sp += unum + 1;
-                *sp = obj1;
-                break;
-
-            case PYBC_RETURN_VALUE:
-                return *sp;
-
-            default:
-                printf("code %p, offset %u, byte code 0x%02x not implemented\n", code, (uint)(ip - code), op);
-                assert(0);
-                return py_const_none;
+            if (0) {
+                // catch exception and pass to byte code
+                //ip = pop
+                //sp = pop
+                //push(traceback, exc-val, exc-type)
+            } else {
+                // re-raise exception
+                nlr_jump(nlr.ret_val);
+            }
         }
     }
 }

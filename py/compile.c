@@ -16,6 +16,8 @@
 
 // TODO need to mangle __attr names
 
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB)
+
 typedef enum {
     PN_none = 0,
 #define DEF_RULE(rule, comp, kind, arg...) PN_##rule,
@@ -853,16 +855,19 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
     }
 
     qstr attr = PY_PARSE_NODE_LEAF_ARG(name_nodes[1]);
-    if (attr == comp->qstr_native) {
+    if (0) {
+#if MICROPY_EMIT_NATIVE
+    } else if (attr == comp->qstr_native) {
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
     } else if (attr == comp->qstr_viper) {
         *emit_options = EMIT_OPT_VIPER;
+#endif
 #if MICROPY_EMIT_INLINE_THUMB
     } else if (attr == comp->qstr_asm_thumb) {
         *emit_options = EMIT_OPT_ASM_THUMB;
 #endif
     } else {
-        printf("SyntaxError: invalid micropython decorator\n");
+        printf("SyntaxError: invalid micropython decorator '%s'\n", qstr_str(attr));
     }
 
     return true;
@@ -1302,15 +1307,16 @@ void compile_while_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     int old_break_label = comp->break_label;
     int old_continue_label = comp->continue_label;
 
-    int done_label = comp_next_label(comp);
-    int end_label = comp_next_label(comp);
     int break_label = comp_next_label(comp);
     int continue_label = comp_next_label(comp);
 
     comp->break_label = break_label;
     comp->continue_label = continue_label;
 
-    EMIT(setup_loop, end_label);
+    // compared to CPython, we have an optimised version of while loops
+#if MICROPY_EMIT_CPYTHON
+    int done_label = comp_next_label(comp);
+    EMIT(setup_loop, break_label);
     EMIT(label_assign, continue_label);
     c_if_cond(comp, pns->nodes[0], false, done_label); // condition
     compile_node(comp, pns->nodes[1]); // body
@@ -1318,21 +1324,27 @@ void compile_while_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
         EMIT(jump, continue_label);
     }
     EMIT(label_assign, done_label);
-
-    // break/continue apply to outer loop (if any) in the else block
-    comp->break_label = old_break_label;
-    comp->continue_label = old_continue_label;
-
     // CPython does not emit POP_BLOCK if the condition was a constant; don't undertand why
     // this is a small hack to agree with CPython
     if (!node_is_const_true(pns->nodes[0])) {
         EMIT(pop_block);
     }
+#else
+    int top_label = comp_next_label(comp);
+    EMIT(jump, continue_label);
+    EMIT(label_assign, top_label);
+    compile_node(comp, pns->nodes[1]); // body
+    EMIT(label_assign, continue_label);
+    c_if_cond(comp, pns->nodes[0], true, top_label); // condition
+#endif
+
+    // break/continue apply to outer loop (if any) in the else block
+    comp->break_label = old_break_label;
+    comp->continue_label = old_continue_label;
 
     compile_node(comp, pns->nodes[2]); // else
 
     EMIT(label_assign, break_label);
-    EMIT(label_assign, end_label);
 }
 
 void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
@@ -1348,7 +1360,11 @@ void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     comp->continue_label = for_label;
     comp->break_label = break_label;
 
+    // I don't think our implementation needs SETUP_LOOP/POP_BLOCK for for-statements
+#if MICROPY_EMIT_CPYTHON
     EMIT(setup_loop, end_label);
+#endif
+
     compile_node(comp, pns->nodes[1]); // iterator
     EMIT(get_iter);
     EMIT(label_assign, for_label);
@@ -1365,7 +1381,9 @@ void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     comp->break_label = old_break_label;
     comp->continue_label = old_continue_label;
 
+#if MICROPY_EMIT_CPYTHON
     EMIT(pop_block);
+#endif
 
     compile_node(comp, pns->nodes[3]); // else (not tested)
 

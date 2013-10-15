@@ -3,13 +3,13 @@ BUILD=build
 
 CC = gcc
 CFLAGS = -I. -I$(PYSRC) -Wall -ansi -std=gnu99 -Os #-DNDEBUG
-CFLAGS_PY = -DEMIT_ENABLE_CPY -DEMIT_ENABLE_THUMB
 LDFLAGS =
 
 SRC_C = \
 	main.c \
 
 PY_O = \
+	nlrx64.o \
 	malloc.o \
 	qstr.o \
 	misc.o \
@@ -43,19 +43,23 @@ $(BUILD):
 $(BUILD)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+$(BUILD)/%.o: $(PYSRC)/%.s
+	$(AS) -c -o $@ $<
+
 $(BUILD)/%.o: $(PYSRC)/%.c mpyconfig.h
-	$(CC) $(CFLAGS) $(CFLAGS_PY) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/emitnx64.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
-	$(CC) $(CFLAGS) $(CFLAGS_PY) -DN_X64 -c -o $@ $<
+	$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
 
 $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
-	$(CC) $(CFLAGS) $(CFLAGS_PY) -DN_THUMB -c -o $@ $<
+	$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(BUILD)/vm.o: $(PYSRC)/vm.c
-	$(CC) $(CFLAGS) $(CFLAGS_PY) -O3 -c -o $@ $<
+	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
+$(BUILD)/main.o: mpyconfig.h
 $(BUILD)/parse.o: $(PYSRC)/grammar.h
 $(BUILD)/compile.o: $(PYSRC)/grammar.h
 $(BUILD)/emitcpy.o: $(PYSRC)/emit.h

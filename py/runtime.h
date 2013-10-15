@@ -82,6 +82,7 @@ typedef py_obj_t (*py_fun_t)();
 extern py_obj_t py_const_none;
 extern py_obj_t py_const_false;
 extern py_obj_t py_const_true;
+extern py_obj_t py_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
 void rt_init();
 void rt_deinit();
@@ -123,3 +124,5 @@ py_obj_t rt_load_attr(py_obj_t base, qstr attr);
 void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest);
 void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val);
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t val);
+py_obj_t rt_getiter(py_obj_t o);
+py_obj_t rt_iternext(py_obj_t o);

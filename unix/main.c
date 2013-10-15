@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpyconfig.h"
 #include "lexer.h"
@@ -47,10 +48,19 @@ int main(int argc, char **argv) {
         // execute it
         py_obj_t module_fun = rt_make_function_from_id(1);
         if (module_fun != py_const_none) {
-            py_obj_t ret = rt_call_function_0(module_fun);
-            printf("done! got: ");
-            py_obj_print(ret);
-            printf("\n");
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                py_obj_t ret = rt_call_function_0(module_fun);
+                printf("done! got: ");
+                py_obj_print(ret);
+                printf("\n");
+                nlr_pop();
+            } else {
+                // uncaught exception
+                printf("exception: ");
+                py_obj_print((py_obj_t)nlr.ret_val);
+                printf("\n");
+            }
         }
     }
 #endif

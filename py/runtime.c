@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpyconfig.h"
 #include "runtime.h"
@@ -36,6 +37,10 @@ typedef enum {
 #if MICROPY_ENABLE_FLOAT
     O_FLOAT,
 #endif
+    O_EXCEPTION_0,
+    O_EXCEPTION_2,
+    O_RANGE,
+    O_RANGE_IT,
     O_FUN_0,
     O_FUN_1,
     O_FUN_2,
@@ -77,6 +82,28 @@ struct _py_obj_base_t {
 #if MICROPY_ENABLE_FLOAT
         float_t u_flt;
 #endif
+        struct { // for O_EXCEPTION_0
+            qstr id;
+        } u_exc0;
+        struct { // for O_EXCEPTION_2
+            // TODO reduce size or make generic object or something
+            qstr id;
+            const char *fmt;
+            const char *s1;
+            const char *s2;
+        } u_exc2;
+        struct { // for O_RANGE
+            // TODO make generic object or something
+            machine_int_t start;
+            machine_int_t stop;
+            machine_int_t step;
+        } u_range;
+        struct { // for O_RANGE_IT
+            // TODO make generic object or something
+            machine_int_t cur;
+            machine_int_t stop;
+            machine_int_t step;
+        } u_range_it;
         struct { // for O_FUN_[012N]
             int n_args;
             void *fun;
@@ -118,6 +145,7 @@ struct _py_obj_base_t {
 py_obj_t py_const_none;
 py_obj_t py_const_false;
 py_obj_t py_const_true;
+py_obj_t py_const_stop_iteration;
 
 // locals and globals need to be pointers because they can be the same in outer module scope
 py_map_t *map_locals;
@@ -266,6 +294,42 @@ py_obj_t py_obj_new_float(float_t val) {
 }
 #endif
 
+py_obj_t py_obj_new_exception_0(qstr id) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_EXCEPTION_0;
+    o->u_exc0.id = id;
+    return (py_obj_t)o;
+}
+
+py_obj_t py_obj_new_exception_2(qstr id, const char *fmt, const char *s1, const char *s2) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_EXCEPTION_2;
+    o->u_exc2.id = id;
+    o->u_exc2.fmt = fmt;
+    o->u_exc2.s1 = s1;
+    o->u_exc2.s2 = s2;
+    return (py_obj_t)o;
+}
+
+// range is a class and instances are immutable sequence objects
+py_obj_t py_obj_new_range(int start, int stop, int step) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_RANGE;
+    o->u_range.start = start;
+    o->u_range.stop = stop;
+    o->u_range.step = step;
+    return o;
+}
+
+py_obj_t py_obj_new_range_iterator(int cur, int stop, int step) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_RANGE_IT;
+    o->u_range_it.cur = cur;
+    o->u_range_it.stop = stop;
+    o->u_range_it.step = step;
+    return o;
+}
+
 py_obj_t list_append(py_obj_t self_in, py_obj_t arg) {
     assert(IS_O(self_in, O_LIST));
     py_obj_base_t *self = self_in;
@@ -281,6 +345,9 @@ static qstr q_append;
 static qstr q_print;
 static qstr q_len;
 static qstr q___build_class__;
+static qstr q_AttributeError;
+static qstr q_NameError;
+static qstr q_TypeError;
 
 typedef enum {
     PY_CODE_NONE,
@@ -356,6 +423,10 @@ py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name)
     return o;
 }
 
+py_obj_t py_builtin_range(py_obj_t o_arg) {
+    return py_obj_new_range(0, rt_get_int(o_arg), 1);
+}
+
 #ifdef WRITE_NATIVE
 FILE *fp_native = NULL;
 #endif
@@ -365,10 +436,14 @@ void rt_init() {
     q_print = qstr_from_str_static("print");
     q_len = qstr_from_str_static("len");
     q___build_class__ = qstr_from_str_static("__build_class__");
+    q_AttributeError = qstr_from_str_static("AttributeError");
+    q_NameError = qstr_from_str_static("NameError");
+    q_TypeError = qstr_from_str_static("TypeError");
 
     py_const_none = py_obj_new_const("None");
     py_const_false = py_obj_new_const("False");
     py_const_true = py_obj_new_const("True");
+    py_const_stop_iteration = py_obj_new_const("StopIteration");
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     map_locals = map_globals = py_map_new(MAP_QSTR, 1);
@@ -378,6 +453,7 @@ void rt_init() {
     py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
     py_qstr_map_lookup(&map_builtins, q_len, true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_1(py_builtin_range);
 
     next_unique_code_id = 1;
     unique_codes = NULL;
@@ -559,6 +635,10 @@ void py_obj_print(py_obj_t o_in) {
                 printf("%f", o->u_flt);
                 break;
 #endif
+            case O_EXCEPTION_2:
+                printf("%s: ", qstr_str(o->u_exc2.id));
+                printf(o->u_exc2.fmt, o->u_exc2.s1, o->u_exc2.s2);
+                break;
             case O_LIST:
                 printf("[");
                 for (int i = 0; i < o->u_list.len; i++) {
@@ -653,8 +733,7 @@ py_obj_t rt_load_name(qstr qstr) {
         if (elem == NULL) {
             elem = py_qstr_map_lookup(&map_builtins, qstr, false);
             if (elem == NULL) {
-                printf("name doesn't exist: %s\n", qstr_str(qstr));
-                assert(0);
+                nlr_jump(py_obj_new_exception_2(q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
             }
         }
     }
@@ -668,8 +747,7 @@ py_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = py_qstr_map_lookup(&map_builtins, qstr, false);
         if (elem == NULL) {
-            printf("name doesn't exist: %s\n", qstr_str(qstr));
-            assert(0);
+            nlr_jump(py_obj_new_exception_2(q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
         }
     }
     return elem->value;
@@ -1123,9 +1201,7 @@ py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
     }
 
 no_attr:
-    printf("AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
-    assert(0);
-    return py_const_none;
+    nlr_jump(py_obj_new_exception_2(q_AttributeError, "'%s' object has no attribute '%s'", py_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
@@ -1201,6 +1277,30 @@ void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
         py_map_lookup(base, index, true)->value = value;
     } else {
         assert(0);
+    }
+}
+
+py_obj_t rt_getiter(py_obj_t o_in) {
+    if (IS_O(o_in, O_RANGE)) {
+        py_obj_base_t *o = o_in;
+        return py_obj_new_range_iterator(o->u_range.start, o->u_range.stop, o->u_range.step);
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
+    }
+}
+
+py_obj_t rt_iternext(py_obj_t o_in) {
+    if (IS_O(o_in, O_RANGE_IT)) {
+        py_obj_base_t *o = o_in;
+        if ((o->u_range_it.step > 0 && o->u_range_it.cur < o->u_range_it.stop) || (o->u_range_it.step < 0 && o->u_range_it.cur > o->u_range_it.stop)) {
+            py_obj_t o_out = TO_SMALL_INT(o->u_range_it.cur);
+            o->u_range_it.cur += o->u_range_it.step;
+            return o_out;
+        } else {
+            return py_const_stop_iteration;
+        }
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "? '%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }
 }
 
