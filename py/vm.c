@@ -17,6 +17,8 @@
 
 // args are in reverse order in array
 py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, uint n_args) {
+    // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
+
     const byte *ip = code;
     py_obj_t stack[10];
     py_obj_t *sp = &stack[10]; // stack grows down, sp points to top of stack
@@ -26,6 +28,10 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
     py_obj_t obj1, obj2;
     py_obj_t fast0 = NULL, fast1 = NULL, fast2 = NULL, fastn[4] = {NULL, NULL, NULL, NULL};
     nlr_buf_t nlr;
+
+    // on the exception stack we store (ip, sp) for each block
+    machine_uint_t exc_stack[8];
+    machine_uint_t *volatile exc_sp = &exc_stack[-1]; // stack grows up, exc_sp points to top of stack
 
     // init args
     for (int i = 0; i < n_args; i++) {
@@ -203,8 +209,9 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
                         */
 
                     case PYBC_SETUP_EXCEPT:
-                        // push_block(PYBC_SETUP_EXCEPT, code + unum, sp)
-                        assert(0);
+                        DECODE_UINT;
+                        *++exc_sp = (machine_uint_t)code + unum;
+                        *++exc_sp = (machine_uint_t)sp;
                         break;
 
                     case PYBC_END_FINALLY:
@@ -237,8 +244,14 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
                         break;
 
                     case PYBC_POP_EXCEPT:
+                        // TODO need to work out how blocks work etc
                         // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
-                        assert(0);
+                        assert(exc_sp >= &exc_stack[0]);
+                        //sp = (py_obj_t*)(*exc_sp--);
+                        //exc_sp--; // discard ip
+                        exc_sp -= 2;
+                        //sp += 3; // pop 3 exception values
+                        assert(sp <= &stack[10]);
                         break;
 
                     case PYBC_BINARY_OP:
@@ -303,6 +316,8 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
 
                     case PYBC_RETURN_VALUE:
                         nlr_pop();
+                        assert(sp == &stack[9]);
+                        assert(exc_sp == &exc_stack[-1]);
                         return *sp;
 
                     default:
@@ -316,11 +331,14 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
         } else {
             // exception occurred
 
-            if (0) {
+            if (exc_sp >= &exc_stack[0]) {
                 // catch exception and pass to byte code
-                //ip = pop
-                //sp = pop
-                //push(traceback, exc-val, exc-type)
+                sp = (py_obj_t*)(exc_sp[0]);
+                ip = (const byte*)(exc_sp[-1]);
+                // push(traceback, exc-val, exc-type)
+                PUSH(py_const_none);
+                PUSH(nlr.ret_val);
+                PUSH(py_const_none);
             } else {
                 // re-raise exception
                 nlr_jump(nlr.ret_val);
