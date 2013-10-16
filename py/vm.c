@@ -319,6 +319,13 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         *sp = obj1;
                         break;
 
+                    case PYBC_SET_ADD:
+                        DECODE_UINT;
+                        // I think it's guaranteed by the compiler that sp[unum] is a set
+                        rt_store_set(sp[unum], sp[0]);
+                        sp++;
+                        break;
+
                     case PYBC_MAKE_FUNCTION:
                         DECODE_UINT;
                         PUSH(rt_make_function_from_id(unum));

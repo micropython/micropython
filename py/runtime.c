@@ -1305,6 +1305,11 @@ py_obj_t rt_build_set(int n_args, py_obj_t *items) {
     return o;
 }
 
+py_obj_t rt_store_set(py_obj_t set, py_obj_t item) {
+    py_set_lookup(set, item, true);
+    return set;
+}
+
 py_obj_t rt_build_map(int n_args) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_MAP;
