@@ -305,6 +305,13 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         rt_store_map(sp[0], sp[-2], sp[-1]);
                         break;
 
+                    case PYBC_MAP_ADD:
+                        DECODE_UINT;
+                        // I think it's guaranteed by the compiler that sp[unum + 1] is a map
+                        rt_store_map(sp[unum + 1], sp[0], sp[1]);
+                        sp += 2;
+                        break;
+
                     case PYBC_BUILD_SET:
                         DECODE_UINT;
                         obj1 = rt_build_set(unum, sp);
