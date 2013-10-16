@@ -268,11 +268,25 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
                         *sp = rt_compare_op(unum, obj1, obj2);
                         break;
 
+                    case PYBC_BUILD_TUPLE:
+                        DECODE_UINT;
+                        obj1 = rt_build_tuple(unum, sp);
+                        sp += unum - 1;
+                        *sp = obj1;
+                        break;
+
                     case PYBC_BUILD_LIST:
                         DECODE_UINT;
                         obj1 = rt_build_list(unum, sp);
                         sp += unum - 1;
                         *sp = obj1;
+                        break;
+
+                    case PYBC_LIST_APPEND:
+                        DECODE_UINT;
+                        // I think it's guaranteed by the compiler that sp[unum] is a list
+                        rt_list_append(sp[unum], sp[0]);
+                        sp++;
                         break;
 
                     case PYBC_BUILD_MAP:

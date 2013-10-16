@@ -1,3 +1,6 @@
+// in principle, rt_xxx functions are called only by vm/native/viper and make assumptions about args
+// py_xxx functions are safer and can be called by anyone
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,7 +51,10 @@ typedef enum {
     O_FUN_BC,
     O_FUN_ASM,
     O_BOUND_METH,
+    O_TUPLE,
     O_LIST,
+    O_TUPLE_IT,
+    O_LIST_IT,
     O_SET,
     O_MAP,
     O_CLASS,
@@ -121,11 +127,15 @@ struct _py_obj_base_t {
             py_obj_t meth;
             py_obj_t self;
         } u_bound_meth;
-        struct { // for O_LIST
+        struct { // for O_TUPLE, O_LIST
             int alloc;
             int len;
             py_obj_t *items;
-        } u_list;
+        } u_tuple_list;
+        struct { // for O_TUPLE_IT, O_LIST_IT
+            py_obj_base_t *obj;
+            int cur;
+        } u_tuple_list_it;
         struct { // for O_SET
             int alloc;
             int used;
@@ -330,14 +340,30 @@ py_obj_t py_obj_new_range_iterator(int cur, int stop, int step) {
     return o;
 }
 
-py_obj_t list_append(py_obj_t self_in, py_obj_t arg) {
+py_obj_t py_obj_new_tuple_iterator(py_obj_base_t *tuple, int cur) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_TUPLE_IT;
+    o->u_tuple_list_it.obj = tuple;
+    o->u_tuple_list_it.cur = cur;
+    return o;
+}
+
+py_obj_t py_obj_new_list_iterator(py_obj_base_t *list, int cur) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_LIST_IT;
+    o->u_tuple_list_it.obj = list;
+    o->u_tuple_list_it.cur = cur;
+    return o;
+}
+
+py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
     assert(IS_O(self_in, O_LIST));
     py_obj_base_t *self = self_in;
-    if (self->u_list.len >= self->u_list.alloc) {
-        self->u_list.alloc *= 2;
-        self->u_list.items = m_renew(py_obj_t, self->u_list.items, self->u_list.alloc);
+    if (self->u_tuple_list.len >= self->u_tuple_list.alloc) {
+        self->u_tuple_list.alloc *= 2;
+        self->u_tuple_list.items = m_renew(py_obj_t, self->u_tuple_list.items, self->u_tuple_list.alloc);
     }
-    self->u_list.items[self->u_list.len++] = arg;
+    self->u_tuple_list.items[self->u_tuple_list.len++] = arg;
     return arg;
 }
 
@@ -346,6 +372,7 @@ static qstr q_print;
 static qstr q_len;
 static qstr q___build_class__;
 static qstr q_AttributeError;
+static qstr q_IndexError;
 static qstr q_NameError;
 static qstr q_TypeError;
 
@@ -392,9 +419,9 @@ py_obj_t py_builtin_print(py_obj_t o) {
 
 py_obj_t py_builtin_len(py_obj_t o_in) {
     py_small_int_t len = 0;
-    if (IS_O(o_in, O_LIST)) {
+    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
         py_obj_base_t *o = o_in;
-        len = o->u_list.len;
+        len = o->u_tuple_list.len;
     } else if (IS_O(o_in, O_MAP)) {
         py_obj_base_t *o = o_in;
         len = o->u_map.used;
@@ -437,6 +464,7 @@ void rt_init() {
     q_len = qstr_from_str_static("len");
     q___build_class__ = qstr_from_str_static("__build_class__");
     q_AttributeError = qstr_from_str_static("AttributeError");
+    q_IndexError = qstr_from_str_static("IndexError");
     q_NameError = qstr_from_str_static("NameError");
     q_TypeError = qstr_from_str_static("TypeError");
 
@@ -458,7 +486,7 @@ void rt_init() {
     next_unique_code_id = 1;
     unique_codes = NULL;
 
-    fun_list_append = rt_make_function_2(list_append);
+    fun_list_append = rt_make_function_2(rt_list_append);
 
 #ifdef WRITE_NATIVE
     fp_native = fopen("out-native", "wb");
@@ -597,8 +625,14 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
             case O_FUN_N:
             case O_FUN_BC:
                 return "function";
+            case O_TUPLE:
+                return "tuple";
             case O_LIST:
                 return "list";
+            case O_TUPLE_IT:
+                return "tuple_iterator";
+            case O_LIST_IT:
+                return "list_iterator";
             case O_SET:
                 return "set";
             case O_MAP:
@@ -639,13 +673,26 @@ void py_obj_print(py_obj_t o_in) {
                 printf("%s: ", qstr_str(o->u_exc2.id));
                 printf(o->u_exc2.fmt, o->u_exc2.s1, o->u_exc2.s2);
                 break;
-            case O_LIST:
-                printf("[");
-                for (int i = 0; i < o->u_list.len; i++) {
+            case O_TUPLE:
+                printf("(");
+                for (int i = 0; i < o->u_tuple_list.len; i++) {
                     if (i > 0) {
                         printf(", ");
                     }
-                    py_obj_print(o->u_list.items[i]);
+                    py_obj_print(o->u_tuple_list.items[i]);
+                }
+                if (o->u_tuple_list.len == 1) {
+                    printf(",");
+                }
+                printf(")");
+                break;
+            case O_LIST:
+                printf("[");
+                for (int i = 0; i < o->u_tuple_list.len; i++) {
+                    if (i > 0) {
+                        printf(", ");
+                    }
+                    py_obj_print(o->u_tuple_list.items[i]);
                 }
                 printf("]");
                 break;
@@ -711,7 +758,11 @@ int rt_is_true(py_obj_t arg) {
 }
 
 int rt_get_int(py_obj_t arg) {
-    if (IS_SMALL_INT(arg)) {
+    if (arg == py_const_false) {
+        return 0;
+    } else if (arg == py_const_true) {
+        return 1;
+    } else if (IS_SMALL_INT(arg)) {
         return FROM_SMALL_INT(arg);
     } else {
         assert(0);
@@ -778,11 +829,30 @@ py_obj_t rt_unary_op(int op, py_obj_t arg) {
     return py_const_none;
 }
 
+uint get_index(py_obj_base_t *base, py_obj_t index) {
+    // assumes base is O_TUPLE or O_LIST
+    // TODO False and True are considered 0 and 1 for indexing purposes
+    int len = base->u_tuple_list.len;
+    if (IS_SMALL_INT(index)) {
+        int i = FROM_SMALL_INT(index);
+        if (i < 0) {
+            i += len;
+        }
+        if (i < 0 || i >= len) {
+            nlr_jump(py_obj_new_exception_2(q_IndexError, "%s index out of range", py_obj_get_type_str(base), NULL));
+        }
+        return i;
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "%s indices must be integers, not %s", py_obj_get_type_str(base), py_obj_get_type_str(index)));
+    }
+}
+
 py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
     DEBUG_OP_printf("binary %d %p %p\n", op, lhs, rhs);
     if (op == RT_BINARY_OP_SUBSCR) {
-        if (IS_O(lhs, O_LIST) && IS_SMALL_INT(rhs)) {
-            return ((py_obj_base_t*)lhs)->u_list.items[FROM_SMALL_INT(rhs)];
+        if ((IS_O(lhs, O_TUPLE) || IS_O(lhs, O_LIST))) {
+            uint index = get_index(lhs, rhs);
+            return ((py_obj_base_t*)lhs)->u_tuple_list.items[index];
         } else {
             assert(0);
         }
@@ -945,9 +1015,10 @@ machine_uint_t rt_convert_obj_for_inline_asm(py_obj_t obj) {
                 return (machine_int_t)o->u_flt;
 #endif
 
+            case O_TUPLE:
             case O_LIST:
-                // pointer to start of list (could pass length, but then could use len(x) for that)
-                return (machine_uint_t)o->u_list.items;
+                // pointer to start of tuple/list (could pass length, but then could use len(x) for that)
+                return (machine_uint_t)o->u_tuple_list.items;
 
             default:
                 // just pass along a pointer to the object
@@ -1074,17 +1145,27 @@ py_obj_t rt_call_method_n(int n_args, const py_obj_t *args) {
 }
 
 // items are in reverse order
+py_obj_t rt_build_tuple(int n_args, py_obj_t *items) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_TUPLE;
+    o->u_tuple_list.alloc = n_args < 4 ? 4 : n_args;
+    o->u_tuple_list.len = n_args;
+    o->u_tuple_list.items = m_new(py_obj_t, o->u_tuple_list.alloc);
+    for (int i = 0; i < n_args; i++) {
+        o->u_tuple_list.items[i] = items[n_args - i - 1];
+    }
+    return o;
+}
+
+// items are in reverse order
 py_obj_t rt_build_list(int n_args, py_obj_t *items) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_LIST;
-    o->u_list.alloc = n_args;
-    if (o->u_list.alloc < 4) {
-        o->u_list.alloc = 4;
-    }
-    o->u_list.len = n_args;
-    o->u_list.items = m_new(py_obj_t, o->u_list.alloc);
+    o->u_tuple_list.alloc = n_args < 4 ? 4 : n_args;
+    o->u_tuple_list.len = n_args;
+    o->u_tuple_list.items = m_new(py_obj_t, o->u_tuple_list.alloc);
     for (int i = 0; i < n_args; i++) {
-        o->u_list.items[i] = items[n_args - i - 1];
+        o->u_tuple_list.items[i] = items[n_args - i - 1];
     }
     return o;
 }
@@ -1260,18 +1341,10 @@ void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val) {
 }
 
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
-    if (IS_O(base, O_LIST) && IS_SMALL_INT(index)) {
+    if (IS_O(base, O_LIST)) {
         // list store
-        py_obj_base_t *o = base;
-        int idx = FROM_SMALL_INT(index);
-        if (idx < 0) {
-            idx += o->u_list.len;
-        }
-        if (0 <= idx && idx < o->u_list.len) {
-            o->u_list.items[idx] = value;
-        } else {
-            assert(0);
-        }
+        uint i = get_index(base, index);
+        ((py_obj_base_t*)base)->u_tuple_list.items[i] = value;
     } else if (IS_O(base, O_MAP)) {
         // map store
         py_map_lookup(base, index, true)->value = value;
@@ -1284,6 +1357,10 @@ py_obj_t rt_getiter(py_obj_t o_in) {
     if (IS_O(o_in, O_RANGE)) {
         py_obj_base_t *o = o_in;
         return py_obj_new_range_iterator(o->u_range.start, o->u_range.stop, o->u_range.step);
+    } else if (IS_O(o_in, O_TUPLE)) {
+        return py_obj_new_tuple_iterator(o_in, 0);
+    } else if (IS_O(o_in, O_LIST)) {
+        return py_obj_new_list_iterator(o_in, 0);
     } else {
         nlr_jump(py_obj_new_exception_2(q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }
@@ -1295,6 +1372,15 @@ py_obj_t rt_iternext(py_obj_t o_in) {
         if ((o->u_range_it.step > 0 && o->u_range_it.cur < o->u_range_it.stop) || (o->u_range_it.step < 0 && o->u_range_it.cur > o->u_range_it.stop)) {
             py_obj_t o_out = TO_SMALL_INT(o->u_range_it.cur);
             o->u_range_it.cur += o->u_range_it.step;
+            return o_out;
+        } else {
+            return py_const_stop_iteration;
+        }
+    } else if (IS_O(o_in, O_TUPLE_IT) || IS_O(o_in, O_LIST_IT)) {
+        py_obj_base_t *o = o_in;
+        if (o->u_tuple_list_it.cur < o->u_tuple_list_it.obj->u_tuple_list.len) {
+            py_obj_t o_out = o->u_tuple_list_it.obj->u_tuple_list.items[o->u_tuple_list_it.cur];
+            o->u_tuple_list_it.cur += 1;
             return o_out;
         } else {
             return py_const_stop_iteration;
