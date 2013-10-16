@@ -10,42 +10,49 @@
 #include "runtime.h"
 #include "bc.h"
 
+// (value) stack grows down (to be compatible with native code when passing pointers to the stack), top element is pointed to
+// exception stack grows up, top element is pointed to
+
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
 #define PUSH(val) *--sp = (val)
 #define POP() (*sp++)
 
 // args are in reverse order in array
-py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, uint n_args) {
+py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args) {
+    py_obj_t state[18]; // TODO allocate properly
+    // init args
+    for (int i = 0; i < n_args; i++) {
+        assert(i < 8);
+        state[i] = args[n_args - 1 - i];
+    }
+    py_obj_t *sp = &state[18];
+    const byte *ip = code;
+    if (py_execute_byte_code_2(code, &ip, &state[0], &sp)) {
+        // it shouldn't yield
+        assert(0);
+    }
+    assert(sp == &state[17]);
+    return *sp;
+}
+
+// fastn has items in normal order
+// sp points to top of stack which grows down
+bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
-    const byte *ip = code;
-    py_obj_t stack[10];
-    py_obj_t *sp = &stack[10]; // stack grows down, sp points to top of stack
+    const byte *ip = *ip_in_out;
+    py_obj_t *sp = *sp_in_out;
     machine_uint_t unum;
     machine_int_t snum;
     qstr qstr;
     py_obj_t obj1, obj2;
-    py_obj_t fast0 = NULL, fast1 = NULL, fast2 = NULL, fastn[4] = {NULL, NULL, NULL, NULL};
+    py_obj_t fast0 = fastn[0], fast1 = fastn[1], fast2 = fastn[2];
     nlr_buf_t nlr;
 
     // on the exception stack we store (ip, sp) for each block
     machine_uint_t exc_stack[8];
     machine_uint_t *volatile exc_sp = &exc_stack[-1]; // stack grows up, exc_sp points to top of stack
-
-    // init args
-    for (int i = 0; i < n_args; i++) {
-        if (i == 0) {
-            fast0 = args[n_args - 1];
-        } else if (i == 1) {
-            fast1 = args[n_args - 2];
-        } else if (i == 2) {
-            fast2 = args[n_args - 3];
-        } else {
-            assert(i - 3 < 4);
-            fastn[i - 3] = args[n_args - 1 - i];
-        }
-    }
 
     // outer exception handling loop
     for (;;) {
@@ -99,7 +106,7 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
 
                     case PYBC_LOAD_FAST_N:
                         DECODE_UINT;
-                        PUSH(fastn[unum - 3]);
+                        PUSH(fastn[unum]);
                         break;
 
                     case PYBC_LOAD_NAME:
@@ -141,7 +148,7 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
 
                     case PYBC_STORE_FAST_N:
                         DECODE_UINT;
-                        fastn[unum - 3] = POP();
+                        fastn[unum] = POP();
                         break;
 
                     case PYBC_STORE_NAME:
@@ -251,7 +258,6 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
                         //exc_sp--; // discard ip
                         exc_sp -= 2;
                         //sp += 3; // pop 3 exception values
-                        assert(sp <= &stack[10]);
                         break;
 
                     case PYBC_BINARY_OP:
@@ -330,15 +336,24 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
 
                     case PYBC_RETURN_VALUE:
                         nlr_pop();
-                        assert(sp == &stack[9]);
+                        *sp_in_out = sp;
                         assert(exc_sp == &exc_stack[-1]);
-                        return *sp;
+                        return false;
+
+                    case PYBC_YIELD_VALUE:
+                        nlr_pop();
+                        *ip_in_out = ip;
+                        fastn[0] = fast0;
+                        fastn[1] = fast1;
+                        fastn[2] = fast2;
+                        *sp_in_out = sp;
+                        return true;
 
                     default:
                         printf("code %p, offset %u, byte code 0x%02x not implemented\n", code, (uint)(ip - code), op);
                         assert(0);
                         nlr_pop();
-                        return py_const_none;
+                        return false;
                 }
             }
 
@@ -355,6 +370,7 @@ py_obj_t py_execute_byte_code(const byte *code, uint len, const py_obj_t *args, 
                 PUSH(py_const_none);
             } else {
                 // re-raise exception
+                // TODO what to do if this is a generator??
                 nlr_jump(nlr.ret_val);
             }
         }

@@ -1,5 +1,6 @@
 // in principle, rt_xxx functions are called only by vm/native/viper and make assumptions about args
 // py_xxx functions are safer and can be called by anyone
+// note that rt_assign_xxx are called only from emit*, and maybe we can rename them to reflect this
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -50,6 +51,8 @@ typedef enum {
     O_FUN_N,
     O_FUN_BC,
     O_FUN_ASM,
+    O_GEN_WRAP,
+    O_GEN_INSTANCE,
     O_BOUND_METH,
     O_TUPLE,
     O_LIST,
@@ -123,6 +126,15 @@ struct _py_obj_base_t {
             int n_args;
             void *fun;
         } u_fun_asm;
+        struct { // for O_GEN_WRAP
+            int n_state;
+            py_obj_base_t *fun;
+        } u_gen_wrap;
+        struct { // for O_GEN_INSTANCE
+            py_obj_t *state;
+            const byte *ip;
+            py_obj_t *sp;
+        } u_gen_instance;
         struct { // for O_BOUND_METH
             py_obj_t meth;
             py_obj_t self;
@@ -367,10 +379,20 @@ py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
     return arg;
 }
 
+py_obj_t rt_gen_instance_next(py_obj_t self_in) {
+    py_obj_t ret = rt_iternext(self_in);
+    if (ret == py_const_stop_iteration) {
+        nlr_jump(py_obj_new_exception_0(qstr_from_str_static("StopIteration")));
+    } else {
+        return ret;
+    }
+}
+
 static qstr q_append;
 static qstr q_print;
 static qstr q_len;
 static qstr q___build_class__;
+static qstr q___next__;
 static qstr q_AttributeError;
 static qstr q_IndexError;
 static qstr q_NameError;
@@ -386,6 +408,9 @@ typedef enum {
 typedef struct _py_code_t {
     py_code_kind_t kind;
     int n_args;
+    int n_locals;
+    int n_stack;
+    bool is_generator;
     union {
         struct {
             byte *code;
@@ -404,6 +429,7 @@ static int next_unique_code_id;
 static py_code_t *unique_codes;
 
 py_obj_t fun_list_append;
+py_obj_t fun_gen_instance_next;
 
 py_obj_t py_builtin_print(py_obj_t o) {
     if (IS_O(o, O_STR)) {
@@ -463,6 +489,7 @@ void rt_init() {
     q_print = qstr_from_str_static("print");
     q_len = qstr_from_str_static("len");
     q___build_class__ = qstr_from_str_static("__build_class__");
+    q___next__ = qstr_from_str_static("__next__");
     q_AttributeError = qstr_from_str_static("AttributeError");
     q_IndexError = qstr_from_str_static("IndexError");
     q_NameError = qstr_from_str_static("NameError");
@@ -487,6 +514,7 @@ void rt_init() {
     unique_codes = NULL;
 
     fun_list_append = rt_make_function_2(rt_list_append);
+    fun_gen_instance_next = rt_make_function_1(rt_gen_instance_next);
 
 #ifdef WRITE_NATIVE
     fp_native = fopen("out-native", "wb");
@@ -514,12 +542,15 @@ static void alloc_unique_codes() {
     }
 }
 
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args) {
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
     assert(unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_locals = n_locals;
+    unique_codes[unique_code_id].n_stack = n_stack;
+    unique_codes[unique_code_id].is_generator = is_generator;
     unique_codes[unique_code_id].u_byte.code = code;
     unique_codes[unique_code_id].u_byte.len = len;
 
@@ -532,6 +563,9 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_locals = 0;
+    unique_codes[unique_code_id].n_stack = 0;
+    unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_native.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -560,6 +594,9 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_INLINE_ASM;
     unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_locals = 0;
+    unique_codes[unique_code_id].n_stack = 0;
+    unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -625,6 +662,8 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
             case O_FUN_N:
             case O_FUN_BC:
                 return "function";
+            case O_GEN_INSTANCE:
+                return "generator";
             case O_TUPLE:
                 return "tuple";
             case O_LIST:
@@ -669,9 +708,15 @@ void py_obj_print(py_obj_t o_in) {
                 printf("%f", o->u_flt);
                 break;
 #endif
+            case O_EXCEPTION_0:
+                printf("%s", qstr_str(o->u_exc0.id));
+                break;
             case O_EXCEPTION_2:
                 printf("%s: ", qstr_str(o->u_exc2.id));
                 printf(o->u_exc2.fmt, o->u_exc2.s1, o->u_exc2.s2);
+                break;
+            case O_GEN_INSTANCE:
+                printf("<generator object 'fun-name' at %p>", o);
                 break;
             case O_TUPLE:
                 printf("(");
@@ -861,7 +906,8 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
         switch (op) {
             case RT_BINARY_OP_ADD:
             case RT_BINARY_OP_INPLACE_ADD: val = FROM_SMALL_INT(lhs) + FROM_SMALL_INT(rhs); break;
-            case RT_BINARY_OP_SUBTRACT: val = FROM_SMALL_INT(lhs) - FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_SUBTRACT:
+            case RT_BINARY_OP_INPLACE_SUBTRACT: val = FROM_SMALL_INT(lhs) - FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_MULTIPLY: val = FROM_SMALL_INT(lhs) * FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_FLOOR_DIVIDE: val = FROM_SMALL_INT(lhs) / FROM_SMALL_INT(rhs); break;
 #if MICROPY_ENABLE_FLOAT
@@ -938,6 +984,17 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
         default:
             assert(0);
     }
+
+    // check for generator functions and if so wrap in generator object
+    if (c->is_generator) {
+        py_obj_base_t *o2 = m_new(py_obj_base_t, 1);
+        o2->kind = O_GEN_WRAP;
+        // we have at least 3 locals so the bc can write back fast[0,1,2] safely; should improve how this is done
+        o2->u_gen_wrap.n_state = (c->n_locals < 3 ? 3 : c->n_locals) + c->n_stack;
+        o2->u_gen_wrap.fun = o;
+        o = o2;
+    }
+
     return o;
 }
 
@@ -1071,7 +1128,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
             goto bad_n_args;
         }
         DEBUG_OP_printf("calling byte code %p(n_args=%d)\n", o->u_fun_bc.code, n_args);
-        return py_execute_byte_code(o->u_fun_bc.code, o->u_fun_bc.len, args, n_args);
+        return py_execute_byte_code(o->u_fun_bc.code, args, n_args);
 
     } else if (IS_O(fun, O_FUN_ASM)) {
         py_obj_base_t *o = fun;
@@ -1094,6 +1151,28 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
             ret = 0;
         }
         return rt_convert_val_from_inline_asm(ret);
+
+    } else if (IS_O(fun, O_GEN_WRAP)) {
+        py_obj_base_t *o = fun;
+        py_obj_base_t *o_fun = o->u_gen_wrap.fun;
+        assert(o_fun->kind == O_FUN_BC); // TODO
+        if (n_args != o_fun->u_fun_bc.n_args) {
+            n_args_fun = o_fun->u_fun_bc.n_args;
+            goto bad_n_args;
+        }
+        py_obj_t *state = m_new(py_obj_t, 1 + o->u_gen_wrap.n_state);
+        // put function object at first slot in state (to keep u_gen_instance small)
+        state[0] = o_fun;
+        // init args
+        for (int i = 0; i < n_args; i++) {
+            state[1 + i] = args[n_args - 1 - i];
+        }
+        py_obj_base_t *o2 = m_new(py_obj_base_t, 1);
+        o2->kind = O_GEN_INSTANCE;
+        o2->u_gen_instance.state = state;
+        o2->u_gen_instance.ip = o_fun->u_fun_bc.code;
+        o2->u_gen_instance.sp = state + o->u_gen_wrap.n_state;
+        return o2;
 
     } else if (IS_O(fun, O_BOUND_METH)) {
         py_obj_base_t *o = fun;
@@ -1132,9 +1211,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
     }
 
 bad_n_args:
-    printf("TypeError: function takes %d positional arguments but %d were given\n", n_args_fun, n_args);
-    assert(0);
-    return py_const_none;
+    nlr_jump(py_obj_new_exception_2(q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)n_args_fun, (const char*)(machine_int_t)n_args));
 }
 
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
@@ -1287,7 +1364,11 @@ no_attr:
 
 void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
     DEBUG_OP_printf("load method %s\n", qstr_str(attr));
-    if (IS_O(base, O_LIST) && attr == q_append) {
+    if (IS_O(base, O_GEN_INSTANCE) && attr == q___next__) {
+        dest[1] = fun_gen_instance_next;
+        dest[0] = base;
+        return;
+    } else if (IS_O(base, O_LIST) && attr == q_append) {
         dest[1] = fun_list_append;
         dest[0] = base;
         return;
@@ -1354,7 +1435,9 @@ void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
 }
 
 py_obj_t rt_getiter(py_obj_t o_in) {
-    if (IS_O(o_in, O_RANGE)) {
+    if (IS_O(o_in, O_GEN_INSTANCE)) {
+        return o_in;
+    } else if (IS_O(o_in, O_RANGE)) {
         py_obj_base_t *o = o_in;
         return py_obj_new_range_iterator(o->u_range.start, o->u_range.stop, o->u_range.step);
     } else if (IS_O(o_in, O_TUPLE)) {
@@ -1367,7 +1450,23 @@ py_obj_t rt_getiter(py_obj_t o_in) {
 }
 
 py_obj_t rt_iternext(py_obj_t o_in) {
-    if (IS_O(o_in, O_RANGE_IT)) {
+    if (IS_O(o_in, O_GEN_INSTANCE)) {
+        py_obj_base_t *self = o_in;
+        py_obj_base_t *fun = self->u_gen_instance.state[0];
+        assert(fun->kind == O_FUN_BC);
+        bool yield = py_execute_byte_code_2(fun->u_fun_bc.code, &self->u_gen_instance.ip, &self->u_gen_instance.state[1], &self->u_gen_instance.sp);
+        if (yield) {
+            return *self->u_gen_instance.sp;
+        } else {
+            if (*self->u_gen_instance.sp == py_const_none) {
+                return py_const_stop_iteration;
+            } else {
+                // TODO return StopIteration with value *self->u_gen_instance.sp
+                return py_const_stop_iteration;
+            }
+        }
+
+    } else if (IS_O(o_in, O_RANGE_IT)) {
         py_obj_base_t *o = o_in;
         if ((o->u_range_it.step > 0 && o->u_range_it.cur < o->u_range_it.stop) || (o->u_range_it.step < 0 && o->u_range_it.cur > o->u_range_it.stop)) {
             py_obj_t o_out = TO_SMALL_INT(o->u_range_it.cur);
@@ -1376,6 +1475,7 @@ py_obj_t rt_iternext(py_obj_t o_in) {
         } else {
             return py_const_stop_iteration;
         }
+
     } else if (IS_O(o_in, O_TUPLE_IT) || IS_O(o_in, O_LIST_IT)) {
         py_obj_base_t *o = o_in;
         if (o->u_tuple_list_it.cur < o->u_tuple_list_it.obj->u_tuple_list.len) {
@@ -1385,6 +1485,7 @@ py_obj_t rt_iternext(py_obj_t o_in) {
         } else {
             return py_const_stop_iteration;
         }
+
     } else {
         nlr_jump(py_obj_new_exception_2(q_TypeError, "? '%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }

@@ -76,7 +76,7 @@ static void emit_bc_end_pass(emit_t *emit) {
         printf("code_size: %u\n", emit->code_size);
 
     } else if (emit->pass == PASS_3) {
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params);
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
     }
 }
 
