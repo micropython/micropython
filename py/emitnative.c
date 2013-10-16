@@ -325,12 +325,17 @@ static vtype_kind_t peek_vtype(emit_t *emit) {
     return emit->stack_info[emit->stack_size - 1].vtype;
 }
 
-static void need_reg_single(emit_t *emit, int reg_needed) {
+// pos=1 is TOS, pos=2 is next, etc
+// use pos=0 for no skipping
+static void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
+    skip_stack_pos = emit->stack_size - skip_stack_pos;
     for (int i = 0; i < emit->stack_size; i++) {
-        stack_info_t *si = &emit->stack_info[i];
-        if (si->kind == STACK_REG && si->u_reg == reg_needed) {
-            si->kind = STACK_VALUE;
-            ASM_MOV_REG_TO_LOCAL(si->u_reg, emit->stack_start + i);
+        if (i != skip_stack_pos) {
+            stack_info_t *si = &emit->stack_info[i];
+            if (si->kind == STACK_REG && si->u_reg == reg_needed) {
+                si->kind = STACK_VALUE;
+                ASM_MOV_REG_TO_LOCAL(si->u_reg, emit->stack_start + i);
+            }
         }
     }
 }
@@ -345,15 +350,30 @@ static void need_reg_all(emit_t *emit) {
     }
 }
 
-static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
-    emit->last_emit_was_return_value = false;
-    adjust_stack(emit, -1);
-    need_reg_single(emit, reg_dest);
-    stack_info_t *si = &emit->stack_info[emit->stack_size];
+static void need_stack_settled(emit_t *emit) {
+    for (int i = 0; i < emit->stack_size; i++) {
+        stack_info_t *si = &emit->stack_info[i];
+        if (si->kind == STACK_REG) {
+            si->kind = STACK_VALUE;
+            ASM_MOV_REG_TO_LOCAL(si->u_reg, emit->stack_start + i);
+        }
+    }
+    for (int i = 0; i < emit->stack_size; i++) {
+        stack_info_t *si = &emit->stack_info[i];
+        if (si->kind == STACK_IMM) {
+            ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + i, REG_TEMP0);
+        }
+    }
+}
+
+// pos=1 is TOS, pos=2 is next, etc
+static void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int reg_dest) {
+    need_reg_single(emit, reg_dest, pos);
+    stack_info_t *si = &emit->stack_info[emit->stack_size - pos];
     *vtype = si->vtype;
     switch (si->kind) {
         case STACK_VALUE:
-            ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
+            ASM_MOV_LOCAL_TO_REG(emit->stack_start + emit->stack_size - pos, reg_dest);
             break;
 
         case STACK_REG:
@@ -366,6 +386,12 @@ static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
             ASM_MOV_IMM_TO_REG(si->u_imm, reg_dest);
             break;
     }
+}
+
+static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
+    emit->last_emit_was_return_value = false;
+    emit_access_stack(emit, 1, vtype, reg_dest);
+    adjust_stack(emit, -1);
 }
 
 static void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb) {
@@ -446,6 +472,7 @@ static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, i
 }
 
 static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
+    need_reg_all(emit);
 #if N_X64
     asm_x64_call_ind(emit->as, fun, REG_RAX);
 #elif N_THUMB
@@ -456,7 +483,11 @@ static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
 static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
     need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val, arg_reg);
-    emit_call(emit, fun_kind, fun);
+#if N_X64
+    asm_x64_call_ind(emit->as, fun, REG_RAX);
+#elif N_THUMB
+    asm_thumb_bl_ind(emit->as, rt_fun_table[fun_kind], fun_kind, REG_R3);
+#endif
 }
 
 static void emit_native_load_id(emit_t *emit, qstr qstr) {
@@ -483,6 +514,8 @@ static void emit_native_delete_id(emit_t *emit, qstr qstr) {
 }
 
 static void emit_native_label_assign(emit_t *emit, int l) {
+    // need to commit stack because we can jump here from elsewhere
+    need_stack_settled(emit);
 #if N_X64
     asm_x64_label_assign(emit->as, l);
 #elif N_THUMB
@@ -611,7 +644,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else {
-        need_reg_single(emit, REG_RAX);
+        need_reg_single(emit, REG_RAX, 0);
         asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
         emit_post_push_reg(emit, vtype, REG_RAX);
     }
@@ -623,7 +656,7 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
-        need_reg_single(emit, REG_R0);
+        need_reg_single(emit, REG_R0, 0);
         asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - 1);
         emit_post_push_reg(emit, vtype, REG_R0);
     }
@@ -891,16 +924,42 @@ static void emit_native_setup_finally(emit_t *emit, int label) {
 static void emit_native_end_finally(emit_t *emit) {
     assert(0);
 }
+
 static void emit_native_get_iter(emit_t *emit) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
-    assert(0);
-} // tos = getiter(tos)
-static void emit_native_for_iter(emit_t *emit, int label) {
-    assert(0);
+
+    vtype_kind_t vtype;
+    emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+    assert(vtype == VTYPE_PYOBJ);
+    emit_call(emit, RT_F_GETITER, rt_getiter);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
+
+static void emit_native_for_iter(emit_t *emit, int label) {
+    emit_pre(emit);
+    vtype_kind_t vtype;
+    emit_access_stack(emit, 1, &vtype, REG_ARG_1);
+    assert(vtype == VTYPE_PYOBJ);
+    emit_call(emit, RT_F_ITERNEXT, rt_iternext);
+    ASM_MOV_IMM_TO_REG((machine_uint_t)py_const_stop_iteration, REG_TEMP1);
+#if N_X64
+    asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
+    asm_x64_jcc_label(emit->as, JCC_JE, label);
+#elif N_THUMB
+    assert(0); // XXX TODO
+    asm_thumb_cmp_reg_reg(emit->as, REG_RET, REG_TEMP1);
+    // use it, b?
+    asm_thumb_b_label(emit->as, label);
+#endif
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+}
+
 static void emit_native_for_iter_end(emit_t *emit) {
-    assert(0);
+    // adjust stack counter (we get here from for_iter ending, which popped the value for us)
+    emit_pre(emit);
+    adjust_stack(emit, -1);
+    emit_post(emit);
 }
 
 static void emit_native_pop_block(emit_t *emit) {
@@ -966,9 +1025,12 @@ static void emit_native_compare_op(emit_t *emit, rt_compare_op_t op) {
 }
 
 static void emit_native_build_tuple(emit_t *emit, int n_args) {
-    // call runtime, with types of args
-    // if wrapped in byte_array, or something, allocates memory and fills it
-    assert(0);
+    // for viper: call runtime, with types of args
+    //   if wrapped in byte_array, or something, allocates memory and fills it
+    emit_pre(emit);
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_call_with_imm_arg(emit, RT_F_BUILD_TUPLE, rt_build_tuple, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
 }
 
 static void emit_native_build_list(emit_t *emit, int n_args) {
@@ -979,8 +1041,14 @@ static void emit_native_build_list(emit_t *emit, int n_args) {
 }
 
 static void emit_native_list_append(emit_t *emit, int list_index) {
-    // only used in list comprehension, so call runtime
-    assert(0);
+    // only used in list comprehension
+    vtype_kind_t vtype_list, vtype_item;
+    emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
+    emit_access_stack(emit, list_index, &vtype_list, REG_ARG_1);
+    assert(vtype_list == VTYPE_PYOBJ);
+    assert(vtype_item == VTYPE_PYOBJ);
+    emit_call(emit, RT_F_LIST_APPEND, rt_list_append);
+    emit_post(emit);
 }
 
 static void emit_native_build_map(emit_t *emit, int n_args) {
@@ -1000,7 +1068,15 @@ static void emit_native_store_map(emit_t *emit) {
 }
 
 static void emit_native_map_add(emit_t *emit, int map_index) {
-    assert(0);
+    // only used in list comprehension
+    vtype_kind_t vtype_map, vtype_key, vtype_value;
+    emit_pre_pop_reg_reg(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3);
+    emit_access_stack(emit, map_index, &vtype_map, REG_ARG_1);
+    assert(vtype_map == VTYPE_PYOBJ);
+    assert(vtype_key == VTYPE_PYOBJ);
+    assert(vtype_value == VTYPE_PYOBJ);
+    emit_call(emit, RT_F_STORE_MAP, rt_store_map);
+    emit_post(emit);
 }
 
 static void emit_native_build_set(emit_t *emit, int n_args) {
@@ -1011,8 +1087,16 @@ static void emit_native_build_set(emit_t *emit, int n_args) {
 }
 
 static void emit_native_set_add(emit_t *emit, int set_index) {
-    assert(0);
+    // only used in set comprehension
+    vtype_kind_t vtype_set, vtype_item;
+    emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
+    emit_access_stack(emit, set_index, &vtype_set, REG_ARG_1);
+    assert(vtype_set == VTYPE_PYOBJ);
+    assert(vtype_item == VTYPE_PYOBJ);
+    emit_call(emit, RT_F_STORE_SET, rt_store_set);
+    emit_post(emit);
 }
+
 static void emit_native_build_slice(emit_t *emit, int n_args) {
     assert(0);
 }

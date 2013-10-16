@@ -2,7 +2,7 @@
 
 #define MICROPY_ENABLE_FLOAT        (1)
 #define MICROPY_EMIT_CPYTHON        (0)
-#define MICROPY_EMIT_X64            (0)
+#define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 

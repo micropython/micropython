@@ -1508,15 +1508,20 @@ void *rt_fun_table[RT_F_NUMBER_OF] = {
     rt_store_subscr,
     rt_is_true,
     rt_unary_op,
+    rt_build_tuple,
     rt_build_list,
+    rt_list_append,
     rt_build_map,
     rt_store_map,
     rt_build_set,
+    rt_store_set,
     rt_make_function_from_id,
     rt_call_function_n,
     rt_call_method_n,
     rt_binary_op,
     rt_compare_op,
+    rt_getiter,
+    rt_iternext,
 };
 
 /*
