@@ -5,7 +5,8 @@ static uint32_t mem = 0;
 
 void *malloc(size_t n) {
     if (mem == 0) {
-        mem = 0x20008000; // need to use big ram block so we can execute code from it; start up a bit in case that's where bss is...?
+        extern uint32_t _heap_start;
+        mem = &_heap_start; // need to use big ram block so we can execute code from it (is it true that we can't execute from CCM?)
     }
     void *ptr = (void*)mem;
     mem = (mem + n + 3) & (~3);

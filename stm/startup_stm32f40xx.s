@@ -72,6 +72,7 @@ defined in linker script */
 Reset_Handler:  
 
 /* Copy the data segment initializers from flash to SRAM */  
+/*
   movs  r1, #0
   b  LoopCopyDataInit
 
@@ -87,9 +88,23 @@ LoopCopyDataInit:
   adds  r2, r0, r1
   cmp  r2, r3
   bcc  CopyDataInit
+  */
+    ldr     r0, =_sidata        @ source pointer
+    ldr     r1, =_sdata         @ destination pointer
+    ldr     r2, =_edata         @ maximum destination pointer
+    b       data_init_entry
+data_init_loop:
+    ldr     r3, [r0], #4
+    str     r3, [r1], #4
+data_init_entry:
+    cmp     r1, r2
+    bcc     data_init_loop
+
+
+/* Zero fill the bss segment. */  
+    /*
   ldr  r2, =_sbss
   b  LoopFillZerobss
-/* Zero fill the bss segment. */  
 FillZerobss:
   movs  r3, #0
   str  r3, [r2], #4
@@ -98,6 +113,17 @@ LoopFillZerobss:
   ldr  r3, = _ebss
   cmp  r2, r3
   bcc  FillZerobss
+  */
+
+    movs    r0, #0              @ source value
+    ldr     r1, =_sbss          @ destination pointer
+    ldr     r2, =_ebss          @ maximum destination pointer
+    b       bss_init_entry
+bss_init_loop:
+    str     r0, [r1], #4
+bss_init_entry:
+    cmp     r1, r2
+    bcc     bss_init_loop
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit   

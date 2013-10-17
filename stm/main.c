@@ -6,7 +6,7 @@
 
 void delay_ms(int ms);
 
-void impl02_c_version() {
+static void impl02_c_version() {
     int x = 0;
     while (x < 400) {
         int y = 0;
@@ -52,7 +52,7 @@ void gpio_pin_af(GPIO_TypeDef *gpio, uint32_t pin, uint32_t af) {
     set_bits(&gpio->AFR[pin >> 3], 4 * (pin & 0x07), 0xf, af);
 }
 
-void mma_init() {
+static void mma_init() {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
     gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
     gpio_pin_init(GPIOB, 7 /* B7 is SDA */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
@@ -82,14 +82,14 @@ void mma_init() {
     // set START bit in CR1 to generate a start cond!
 }
 
-uint32_t i2c_get_sr() {
+static uint32_t i2c_get_sr() {
     // must read SR1 first, then SR2, as the read can clear some flags
     uint32_t sr1 = I2C1->SR1;
     uint32_t sr2 = I2C1->SR2;
     return (sr2 << 16) | sr1;
 }
 
-void mma_restart(uint8_t addr, int write) {
+static void mma_restart(uint8_t addr, int write) {
     // send start condition
     I2C1->CR1 |= I2C_CR1_START;
 
@@ -112,7 +112,7 @@ void mma_restart(uint8_t addr, int write) {
     }
 }
 
-void mma_start(uint8_t addr, int write) {
+static void mma_start(uint8_t addr, int write) {
     // wait until I2C is not busy
     while (I2C1->SR2 & I2C_SR2_BUSY) {
     }
@@ -121,7 +121,7 @@ void mma_start(uint8_t addr, int write) {
     mma_restart(addr, write);
 }
 
-void mma_send_byte(uint8_t data) {
+static void mma_send_byte(uint8_t data) {
     // send byte
     I2C1->DR = data;
     // wait for TRA, BUSY, MSL, TXE and BTF (byte transmitted)
@@ -134,7 +134,7 @@ void mma_send_byte(uint8_t data) {
     }
 }
 
-uint8_t mma_read_ack() {
+static uint8_t mma_read_ack() {
     // enable ACK of received byte
     I2C1->CR1 |= I2C_CR1_ACK;
     // wait for BUSY, MSL and RXNE (byte received)
@@ -145,7 +145,7 @@ uint8_t mma_read_ack() {
     return data;
 }
 
-uint8_t mma_read_nack() {
+static uint8_t mma_read_nack() {
     // disable ACK of received byte (to indicate end of receiving)
     I2C1->CR1 &= (uint16_t)~((uint16_t)I2C_CR1_ACK);
     // last byte should apparently also generate a stop condition
@@ -158,7 +158,7 @@ uint8_t mma_read_nack() {
     return data;
 }
 
-void mma_stop() {
+static void mma_stop() {
     // send stop condition
     I2C1->CR1 |= I2C_CR1_STOP;
 }
@@ -440,6 +440,8 @@ py_obj_t pyb_sw() {
 FATFS fatfs0;
 
 #include "nlr.h"
+
+/*
 void g(uint i) {
     printf("g:%d\n", i);
     if (i & 1) {
@@ -467,8 +469,13 @@ void f() {
 void nlr_test() {
     f(1);
 }
+*/
+
+int dummy_bss;
 
 int main() {
+    int dummy;
+
     // should disable JTAG
 
     qstr_init();
@@ -486,12 +493,13 @@ int main() {
     for (int i = 0; i < 2; i++) {
         led_state(PYB_LEDR1_PORT_NUM, 1);
         led_state(PYB_LEDR2_PORT_NUM, 0);
-        delay_ms(200);
+        delay_ms(100);
         led_state(PYB_LEDR1_PORT_NUM, 0);
         led_state(PYB_LEDR2_PORT_NUM, 1);
-        delay_ms(200);
+        delay_ms(100);
     }
 
+    // turn LEDs off
     led_state(PYB_LEDR1_PORT_NUM, 0);
     led_state(PYB_LEDR2_PORT_NUM, 0);
     led_state(PYB_LEDG1_PORT_NUM, 0);
@@ -508,30 +516,48 @@ int main() {
     }
     */
 
-    /*
-    extern int _sidata;
-    extern int _sdata;
-    extern int _edata;
-    extern int _sbss;
-    extern int _ebss;
-    delay_ms(2000);
-    printf("_sidata=%04x\n", _sidata);
-    printf("_sdata=%04x\n", _sdata);
-    printf("_edata=%04x\n", _edata);
-    printf("_sbss=%04x\n", _sbss);
-    printf("_ebss=%04x\n", _ebss);
-    //printf("sizeof(int)=%d\n", sizeof(int)); // 4
-    delay_ms(2000);
-    */
+    // USB
+    if (1) {
+        void usb_init();
+        usb_init();
+    }
+
+    for (;;) {
+        led_state(PYB_LEDG1_PORT_NUM, 1);
+        delay_ms(100);
+        led_state(PYB_LEDG1_PORT_NUM, 0);
+        extern void *_sidata;
+        extern void *_sdata;
+        extern void *_edata;
+        extern void *_sbss;
+        extern void *_ebss;
+        extern void *_estack;
+        extern void *_etext;
+        extern void *_heap_start;
+        if (sw_get()) {
+            printf("_sidata=%p\n", &_sidata);
+            printf("_sdata=%p\n", &_sdata);
+            printf("_edata=%p\n", &_edata);
+            printf("_sbss=%p\n", &_sbss);
+            printf("_ebss=%p\n", &_ebss);
+            printf("_estack=%p\n", &_estack);
+            printf("_etext=%p\n", &_etext);
+            printf("_heap_start=%p\n", &_heap_start);
+            printf("&dummy=%p\n", &dummy);
+            printf("&dummy_bss=%p\n", &dummy_bss);
+            printf("dummy_bss=%x\n", dummy_bss);
+            //printf("sizeof(int)=%d\n", sizeof(int)); // 4
+            delay_ms(1000);
+        }
+        delay_ms(500);
+    }
 
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //delay_ms(1000);
 
-    nlr_test();
-
     #if 1
     // Python!
-    if (1) {
+    if (0) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
         const char *pysrc =
             // impl01.py
@@ -802,12 +828,6 @@ int main() {
         //usb_vcp_init();
     }
 
-    // USB testing
-    if (0) {
-        void usb_init();
-        usb_init();
-    }
-
     int i = 0;
     int n = 0;
 
@@ -833,55 +853,3 @@ int main() {
 
     return 0;
 }
-
-/*
-void testf() {
-    testf(1, 2, 3);
-    testf(1, 2, 3, 4);
-    testf(1, 2, 3, 4, 5);
-    testf(1, 2, 3, 4, 5, 6);
-    testf(1, 2, 3, 4, 5, 6, 7);
-}
-
-int testg(int a, int b, int c, int d, int e) {
-    return a + b + c + d + testh(e);
-}
-
-int testh(int x, byte *y) {
-    return x + (y[-2] << 2);
-}
-*/
-
-/*
-void print_int(int x, int y, int z, int zz) {
-    printf("I %x %x %x %x", x, y, z, zz);
-    byte* ptr = (byte*)z;
-    printf("\nP %02x %02x %02x %02x", ptr[-4], ptr[-3], ptr[-2], ptr[-1]);
-    for (;;) {
-    }
-}
-void print_int_0(int x) { printf("P0 %x", x); }
-void print_int_1(int x) { printf("P1 %x", x); }
-void print_int_2(int x) { printf("P2 %x", x); }
-void print_int_3(int x) { printf("P3 %x", x); }
-void print_int_4(int x) { printf("P4 %x", x); }
-
-typedef struct _b_t {
-    void (*m1)(void*, int);
-    void (*m2)(void*, int);
-} b_t;
-typedef struct _a_t {
-    b_t *b;
-} a_t;
-void b_m1(b_t*, int);
-void b_m2(b_t*, int);
-void f1(a_t *a) {
-    a->b->m1(a->b, 2);
-    a->b->m2(a->b, 4);
-    b_m1(a->b, 2);
-    b_m2(a->b, 4);
-}
-void b_m1(b_t *b, int x) {
-    b->m1(b, x);
-}
-*/

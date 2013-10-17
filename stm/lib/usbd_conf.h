@@ -20,7 +20,4 @@
 #define MSC_MAX_PACKET              64
 #define MSC_MEDIA_PACKET            4096
 
-// for both?
-#define APP_FOPS                        VCP_fops
-
 #endif //__USBD_CONF__H__

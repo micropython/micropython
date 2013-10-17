@@ -209,17 +209,17 @@ int pfenv_printf(pfenv_t *pfenv, const char *fmt, va_list args) {
 }
 
 void lcd_print_strn(const char *str, unsigned int len);
+void usb_vcp_send(const char* str, int len);
 
-void xxx(void *data, const char *str, unsigned int len) {
+void stdout_print_strn(void *data, const char *str, unsigned int len) {
+    // send stdout to LCD and USB CDC VCP
     lcd_print_strn(str, len);
+    usb_vcp_send(str, len);
 }
 
-pfenv_t pfenv_stdout = {0, xxx};
+pfenv_t pfenv_stdout = {0, stdout_print_strn};
 
 int printf(const char *fmt, ...) {
-    //pfenv_t pfenv;
-    //pfenv.data = 0;
-    //pfenv.print_strn = xxx;
     va_list args;
     va_start(args, fmt);
     return pfenv_printf(&pfenv_stdout, fmt, args);
@@ -228,15 +228,15 @@ int printf(const char *fmt, ...) {
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    xxx(0, &chr, 1);
+    stdout_print_strn(0, &chr, 1);
     return chr;
 }
 
 // need this because gcc optimises printf("string\n") -> puts("string")
 int puts(const char *s) {
-    xxx(0, s, strlen(s));
+    stdout_print_strn(0, s, strlen(s));
     char chr = '\n';
-    xxx(0, &chr, 1);
+    stdout_print_strn(0, &chr, 1);
     return 1;
 }
 

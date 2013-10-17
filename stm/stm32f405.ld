@@ -2,27 +2,22 @@
     GNU linker script for STM32F405
 */
 
-/* Entry Point */
-ENTRY(Reset_Handler)
-     
 /* Specify the memory areas */
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x100000 /* 1 MiB */
-    RAM_CCM (xrw)   : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
+    CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x020000 /* 128 KiB */
 }
  
-/* define stack size and heap size here */
-stack_size = 2048;
-heap_size = 0x4000; /* 16KiB */
+/* produce a link error if there is not this amount of RAM for these sections */
+_minimum_stack_size = 2K;
+_minimum_heap_size = 16K;
  
-/* define beginning and ending of stack */
-_stack_start = ORIGIN(RAM) + LENGTH(RAM);
-_stack_end = _stack_start - stack_size;
-_estack = _stack_end;
- 
-/* Define output sections */
+/* top end of the stack */
+_estack = ORIGIN(RAM) + LENGTH(RAM);
+
+/* define output sections */
 SECTIONS
 {
     /* The startup code goes first into FLASH */
@@ -30,6 +25,7 @@ SECTIONS
     {
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
+
         . = ALIGN(4);
     } >FLASH
    
@@ -43,10 +39,13 @@ SECTIONS
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
     /*  *(.glue_7t)  */    /* glue thumb to arm code */
+
         . = ALIGN(4);
-        _etext = .;        /* define a global symbols at end of code */
+        _etext = .;        /* define a global symbol at end of code */
+        _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
     } >FLASH
      
+    /*
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -58,51 +57,51 @@ SECTIONS
         *(.ARM.exidx*)
         __exidx_end = .;
     } >FLASH
+    */
         
-    /* used by the startup to initialize data */
-    _sidata = .;
-          
-    /* Initialized data sections goes into RAM, load LMA copy after code */
+    /* This is the initialized data section
+    The program executes knowing that the data is in the RAM
+    but the loader puts the initial values in the FLASH (inidata).
+    It is one task of the startup to copy the initial values from FLASH to RAM. */
     .data : AT ( _sidata )
     {
         . = ALIGN(4);
-        _sdata = .;        /* create a global symbol at data start */
+        _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
-        _edata = .;        /* define a global symbol at data end */
+        _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
             
     /* Uninitialized data section */
-    . = ALIGN(4);
     .bss :
     {
-        /*  Used by the startup in order to initialize the .bss secion */
-        _sbss = .;         /* define a global symbol at bss start */
-        __bss_start__ = _sbss;
+        . = ALIGN(4);
+        _sbss = .;         /* define a global symbol at bss start; used by startup code */
         *(.bss)
         *(.bss*)
         *(COMMON)
 
         . = ALIGN(4);
-        _ebss = .;         /* define a global symbol at bss end */
-        __bss_end__ = _ebss;
+        _ebss = .;         /* define a global symbol at bss end; used by startup code */
     } >RAM
 
-    . = ALIGN(4);
+    /* this is to define the start of the heap, and make sure we have a minimum size */
     .heap :
     {
-        _heap_start = .;
-        . = . + heap_size;
-    } > RAM
+        . = ALIGN(4);
+        _heap_start = .;    /* define a global symbol at heap start */
+        . = . + _minimum_heap_size;
+    } >RAM
 
-    . = ALIGN(4);
-    . = _stack_end;
+    /* this just checks there is enough RAM for the stack */
     .stack :
     {
-        . = . + stack_size;
-    } > RAM
+        . = ALIGN(4);
+        . = . + _minimum_stack_size;
+        . = ALIGN(4);
+    } >RAM
 
     /* Remove information from the standard libraries */
     /*

@@ -96,7 +96,7 @@ static uint8_t *usbd_pyb_GetCfgDesc (uint8_t speed, uint16_t *length);
 /** @defgroup usbd_cdc_Private_Variables
   * @{
   */ 
-extern CDC_IF_Prop_TypeDef  APP_FOPS;
+extern CDC_IF_Prop_TypeDef  VCP_fops;
 extern uint8_t USBD_DeviceDesc   [USB_SIZ_DEVICE_DESC];
 
 __ALIGN_BEGIN static uint8_t usbd_cdc_AltSet __ALIGN_END = 0;
@@ -322,7 +322,7 @@ static uint8_t usbd_pyb_Init(void *pdev, uint8_t cfgidx) {
     */
 
     // Initialize the Interface physical components
-    APP_FOPS.pIf_Init();
+    VCP_fops.pIf_Init();
 
     // Prepare Out endpoint to receive next packet */
     DCD_EP_PrepareRx(pdev,
@@ -367,7 +367,7 @@ static uint8_t usbd_pyb_DeInit(void *pdev, uint8_t cfgidx) {
     DCD_EP_Close(pdev, CDC_CMD_EP);
 
     // Restore default state of the Interface physical components
-    APP_FOPS.pIf_DeInit();
+    VCP_fops.pIf_DeInit();
 
     //----------------------------------
     // MSC component
@@ -475,7 +475,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                         // Device-to-Host request
 
                         // Get the data to be sent to Host from interface layer
-                        APP_FOPS.pIf_Ctrl(req->bRequest, CmdBuff, req->wLength);
+                        VCP_fops.pIf_Ctrl(req->bRequest, CmdBuff, req->wLength);
 
                         // Send the data to the host
                         return USBD_CtlSendData(pdev, CmdBuff, req->wLength);
@@ -495,7 +495,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                     // Not a Data request
 
                     // Transfer the command to the interface layer */
-                    return APP_FOPS.pIf_Ctrl(req->bRequest, NULL, 0);
+                    return VCP_fops.pIf_Ctrl(req->bRequest, NULL, 0);
                 }
 
             } else if (req->wIndex == 2) {
@@ -537,7 +537,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
 static uint8_t usbd_pyb_EP0_RxReady(void *pdev) {
     if (cdcCmd != NO_CMD) {
         // Process the data
-        APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
+        VCP_fops.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
 
         // Reset the command variable to default value
         cdcCmd = NO_CMD;
@@ -612,7 +612,7 @@ static uint8_t usbd_pyb_DataOut(void *pdev, uint8_t epnum) {
 
             /* USB data will be immediately processed, this allow next USB traffic being 
                NAKed till the end of the application Xfer */
-            APP_FOPS.pIf_DataRx(USB_Rx_Buffer, USB_Rx_Cnt);
+            VCP_fops.pIf_DataRx(USB_Rx_Buffer, USB_Rx_Cnt);
 
             // Prepare Out endpoint to receive next packet */
             DCD_EP_PrepareRx(pdev,
