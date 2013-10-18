@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_flash.h>
+#include "flash.h"
 
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 16 Kbytes */
@@ -15,7 +17,73 @@
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
 
-static uint32_t GetSector(uint32_t Address);
+static const uint32_t flash_info_table[26] = {
+    ADDR_FLASH_SECTOR_0, FLASH_Sector_0,
+    ADDR_FLASH_SECTOR_1, FLASH_Sector_1,
+    ADDR_FLASH_SECTOR_2, FLASH_Sector_2,
+    ADDR_FLASH_SECTOR_3, FLASH_Sector_3,
+    ADDR_FLASH_SECTOR_4, FLASH_Sector_4,
+    ADDR_FLASH_SECTOR_5, FLASH_Sector_5,
+    ADDR_FLASH_SECTOR_6, FLASH_Sector_6,
+    ADDR_FLASH_SECTOR_7, FLASH_Sector_7,
+    ADDR_FLASH_SECTOR_8, FLASH_Sector_8,
+    ADDR_FLASH_SECTOR_9, FLASH_Sector_9,
+    ADDR_FLASH_SECTOR_10, FLASH_Sector_10,
+    ADDR_FLASH_SECTOR_11, FLASH_Sector_11,
+    ADDR_FLASH_SECTOR_11 + 0x20000, 0,
+};
+
+uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
+    if (addr >= flash_info_table[0]) {
+        for (int i = 0; i < 24; i += 2) {
+            if (addr < flash_info_table[i + 2]) {
+                if (start_addr != NULL) {
+                    *start_addr = flash_info_table[i];
+                }
+                if (size != NULL) {
+                    *size = flash_info_table[i + 2] - flash_info_table[i];
+                }
+                return flash_info_table[i + 1];
+            }
+        }
+    }
+    return 0;
+}
+
+#if 0
+/**
+  * @brief  Gets the sector of a given address
+  * @param  None
+  * @retval The sector of a given address
+  */
+uint32_t flash_get_sector(uint32_t addr) {
+    if ((addr < ADDR_FLASH_SECTOR_1) && (addr >= ADDR_FLASH_SECTOR_0)) {
+        return FLASH_Sector_0;
+    } else if ((addr < ADDR_FLASH_SECTOR_2) && (addr >= ADDR_FLASH_SECTOR_1)) {
+        return FLASH_Sector_1;
+    } else if ((addr < ADDR_FLASH_SECTOR_3) && (addr >= ADDR_FLASH_SECTOR_2)) {
+        return FLASH_Sector_2;
+    } else if ((addr < ADDR_FLASH_SECTOR_4) && (addr >= ADDR_FLASH_SECTOR_3)) {
+        return FLASH_Sector_3;
+    } else if ((addr < ADDR_FLASH_SECTOR_5) && (addr >= ADDR_FLASH_SECTOR_4)) {
+        return FLASH_Sector_4;
+    } else if ((addr < ADDR_FLASH_SECTOR_6) && (addr >= ADDR_FLASH_SECTOR_5)) {
+        return FLASH_Sector_5;
+    } else if ((addr < ADDR_FLASH_SECTOR_7) && (addr >= ADDR_FLASH_SECTOR_6)) {
+        return FLASH_Sector_6;
+    } else if ((addr < ADDR_FLASH_SECTOR_8) && (addr >= ADDR_FLASH_SECTOR_7)) {
+        return FLASH_Sector_7;
+    } else if ((addr < ADDR_FLASH_SECTOR_9) && (addr >= ADDR_FLASH_SECTOR_8)) {
+        return FLASH_Sector_8;
+    } else if ((addr < ADDR_FLASH_SECTOR_10) && (addr >= ADDR_FLASH_SECTOR_9)) {
+        return FLASH_Sector_9;
+    } else if ((addr < ADDR_FLASH_SECTOR_11) && (addr >= ADDR_FLASH_SECTOR_10)) {
+        return FLASH_Sector_10;
+    } else {
+        return FLASH_Sector_11;
+    }
+}
+#endif
 
 void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
     // unlock
@@ -26,7 +94,7 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
                     FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
 
     // Device voltage range supposed to be [2.7V to 3.6V], the operation will be done by word
-    if (FLASH_EraseSector(GetSector(flash_dest), VoltageRange_3) != FLASH_COMPLETE) {
+    if (FLASH_EraseSector(flash_get_sector_info(flash_dest, NULL, NULL), VoltageRange_3) != FLASH_COMPLETE) {
         /* Error occurred while sector erase.
          User can add here some code to deal with this error  */
         return;
@@ -50,60 +118,4 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
     // lock
     FLASH_Lock();
-}
-
-/**
-  * @brief  Gets the sector of a given address
-  * @param  None
-  * @retval The sector of a given address
-  */
-static uint32_t GetSector(uint32_t Address)
-{
-  uint32_t sector = 0;
-
-  if((Address < ADDR_FLASH_SECTOR_1) && (Address >= ADDR_FLASH_SECTOR_0))
-  {
-    sector = FLASH_Sector_0;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_2) && (Address >= ADDR_FLASH_SECTOR_1))
-  {
-    sector = FLASH_Sector_1;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_3) && (Address >= ADDR_FLASH_SECTOR_2))
-  {
-    sector = FLASH_Sector_2;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_4) && (Address >= ADDR_FLASH_SECTOR_3))
-  {
-    sector = FLASH_Sector_3;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_5) && (Address >= ADDR_FLASH_SECTOR_4))
-  {
-    sector = FLASH_Sector_4;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_6) && (Address >= ADDR_FLASH_SECTOR_5))
-  {
-    sector = FLASH_Sector_5;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_7) && (Address >= ADDR_FLASH_SECTOR_6))
-  {
-    sector = FLASH_Sector_6;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_8) && (Address >= ADDR_FLASH_SECTOR_7))
-  {
-    sector = FLASH_Sector_7;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_9) && (Address >= ADDR_FLASH_SECTOR_8))
-  {
-    sector = FLASH_Sector_8;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_10) && (Address >= ADDR_FLASH_SECTOR_9))
-  {
-    sector = FLASH_Sector_9;
-  }
-  else if((Address < ADDR_FLASH_SECTOR_11) && (Address >= ADDR_FLASH_SECTOR_10))
-  {
-    sector = FLASH_Sector_10;
-  }
-  return sector;
 }

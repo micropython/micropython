@@ -14,7 +14,9 @@ SRC_C = \
 	main.c \
 	printf.c \
 	system_stm32f4xx.c \
+	led.c \
 	flash.c \
+	storage.c \
 	string0.c \
 	malloc0.c \
 	stm32fxxx_it.c \
@@ -84,11 +86,14 @@ OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.
 
 all: $(BUILD) $(BUILD)/flash.dfu
 
-$(BUILD)/flash.dfu: $(BUILD)/flash.bin
-	python2 ~/stm/dfu/dfu.py -b 0x08000000:$< $@
+$(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
+	python2 ~/stm/dfu/dfu.py -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
 
-$(BUILD)/flash.bin: $(BUILD)/flash.elf
-	arm-none-eabi-objcopy -O binary -j .isr_vector -j .text -j .data $^ $@
+$(BUILD)/flash0.bin: $(BUILD)/flash.elf
+	arm-none-eabi-objcopy -O binary -j .isr_vector $^ $@
+
+$(BUILD)/flash1.bin: $(BUILD)/flash.elf
+	arm-none-eabi-objcopy -O binary -j .text -j .data $^ $@
 
 $(BUILD)/flash.elf: $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ)

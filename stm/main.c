@@ -2,6 +2,9 @@
 #include <stm32f4xx_rcc.h>
 #include "std.h"
 
+#include "misc.h"
+#include "led.h"
+#include "storage.h"
 #include "font_petme128_8x8.h"
 
 void delay_ms(int ms);
@@ -31,13 +34,6 @@ void set_bits(__IO uint32_t *addr, uint32_t shift, uint32_t mask, uint32_t value
 void gpio_init() {
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOAEN;
 }
-
-#define PYB_LEDR_PORT (GPIOA)
-#define PYB_LEDR1_PORT_NUM (8)
-#define PYB_LEDR2_PORT_NUM (10)
-#define PYB_LEDG_PORT (GPIOC)
-#define PYB_LEDG1_PORT_NUM (4)
-#define PYB_LEDG2_PORT_NUM (5)
 
 void gpio_pin_init(GPIO_TypeDef *gpio, uint32_t pin, uint32_t moder, uint32_t otyper, uint32_t ospeedr, uint32_t pupdr) {
     set_bits(&gpio->MODER, 2 * pin, 3, moder);
@@ -161,37 +157,6 @@ static uint8_t mma_read_nack() {
 static void mma_stop() {
     // send stop condition
     I2C1->CR1 |= I2C_CR1_STOP;
-}
-
-void led_init() {
-    // set the output high (so LED is off)
-    PYB_LEDR_PORT->BSRRL = 1 << PYB_LEDR1_PORT_NUM;
-    PYB_LEDR_PORT->BSRRL = 1 << PYB_LEDR2_PORT_NUM;
-    PYB_LEDG_PORT->BSRRL = 1 << PYB_LEDG1_PORT_NUM;
-    PYB_LEDG_PORT->BSRRL = 1 << PYB_LEDG2_PORT_NUM;
-    // make it an open drain output
-    gpio_pin_init(PYB_LEDR_PORT, PYB_LEDR1_PORT_NUM, 1, 1, 0, 0);
-    gpio_pin_init(PYB_LEDR_PORT, PYB_LEDR2_PORT_NUM, 1, 1, 0, 0);
-    gpio_pin_init(PYB_LEDG_PORT, PYB_LEDG1_PORT_NUM, 1, 1, 0, 0);
-    gpio_pin_init(PYB_LEDG_PORT, PYB_LEDG2_PORT_NUM, 1, 1, 0, 0);
-}
-
-static void led_state(uint32_t led_port, int s) {
-    if (s == 0) {
-        // LED off, output is high
-        if (led_port == PYB_LEDR1_PORT_NUM || led_port == PYB_LEDR2_PORT_NUM) {
-            PYB_LEDR_PORT->BSRRL = 1 << led_port;
-        } else {
-            PYB_LEDG_PORT->BSRRL = 1 << led_port;
-        }
-    } else {
-        // LED on, output is low
-        if (led_port == PYB_LEDR1_PORT_NUM || led_port == PYB_LEDR2_PORT_NUM) {
-            PYB_LEDR_PORT->BSRRH = 1 << led_port;
-        } else {
-            PYB_LEDG_PORT->BSRRH = 1 << led_port;
-        }
-    }
 }
 
 #define PYB_USRSW_PORT (GPIOA)
@@ -402,11 +367,11 @@ void __fatal_error(const char *msg) {
     lcd_print_strn(msg, strlen(msg));
 
     for (;;) {
-        led_state(PYB_LEDR1_PORT_NUM, 1);
-        led_state(PYB_LEDR2_PORT_NUM, 0);
+        led_state(PYB_LED_R1, 1);
+        led_state(PYB_LED_R2, 0);
         delay_ms(150);
-        led_state(PYB_LEDR1_PORT_NUM, 0);
-        led_state(PYB_LEDR2_PORT_NUM, 1);
+        led_state(PYB_LED_R1, 0);
+        led_state(PYB_LED_R2, 1);
         delay_ms(150);
     }
 }
@@ -424,7 +389,7 @@ py_obj_t pyb_delay(py_obj_t count) {
 }
 
 py_obj_t pyb_led(py_obj_t state) {
-    led_state(PYB_LEDG1_PORT_NUM, rt_is_true(state));
+    led_state(PYB_LED_G1, rt_is_true(state));
     return state;
 }
 
@@ -471,12 +436,8 @@ void nlr_test() {
 }
 */
 
-int dummy_bss;
-
 int main() {
-    int dummy;
-
-    // should disable JTAG
+    // TODO disable JTAG
 
     qstr_init();
     rt_init();
@@ -485,25 +446,26 @@ int main() {
     led_init();
     sw_init();
     lcd_init();
+    storage_init();
 
     // print a message
     printf(" micro py board\n");
 
     // flash to indicate we are alive!
     for (int i = 0; i < 2; i++) {
-        led_state(PYB_LEDR1_PORT_NUM, 1);
-        led_state(PYB_LEDR2_PORT_NUM, 0);
+        led_state(PYB_LED_R1, 1);
+        led_state(PYB_LED_R2, 0);
         delay_ms(100);
-        led_state(PYB_LEDR1_PORT_NUM, 0);
-        led_state(PYB_LEDR2_PORT_NUM, 1);
+        led_state(PYB_LED_R1, 0);
+        led_state(PYB_LED_R2, 1);
         delay_ms(100);
     }
 
     // turn LEDs off
-    led_state(PYB_LEDR1_PORT_NUM, 0);
-    led_state(PYB_LEDR2_PORT_NUM, 0);
-    led_state(PYB_LEDG1_PORT_NUM, 0);
-    led_state(PYB_LEDG2_PORT_NUM, 0);
+    led_state(PYB_LED_R1, 0);
+    led_state(PYB_LED_R2, 0);
+    led_state(PYB_LED_G1, 0);
+    led_state(PYB_LED_G2, 0);
 
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
@@ -522,10 +484,12 @@ int main() {
         usb_init();
     }
 
+    /*
+    // to print info about memory
     for (;;) {
-        led_state(PYB_LEDG1_PORT_NUM, 1);
+        led_state(PYB_LED_G1, 1);
         delay_ms(100);
-        led_state(PYB_LEDG1_PORT_NUM, 0);
+        led_state(PYB_LED_G1, 0);
         extern void *_sidata;
         extern void *_sdata;
         extern void *_edata;
@@ -543,14 +507,11 @@ int main() {
             printf("_estack=%p\n", &_estack);
             printf("_etext=%p\n", &_etext);
             printf("_heap_start=%p\n", &_heap_start);
-            printf("&dummy=%p\n", &dummy);
-            printf("&dummy_bss=%p\n", &dummy_bss);
-            printf("dummy_bss=%x\n", dummy_bss);
-            //printf("sizeof(int)=%d\n", sizeof(int)); // 4
             delay_ms(1000);
         }
         delay_ms(500);
     }
+    */
 
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //delay_ms(1000);
@@ -662,7 +623,7 @@ int main() {
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
             delay_ms(1000);
             //parse_node_show(pn, 0);
-            py_compile(pn);
+            py_compile(pn, false);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
             delay_ms(1000);
 
@@ -677,9 +638,9 @@ int main() {
                 py_obj_t module_fun = rt_make_function_from_id(1);
 
                 // flash once
-                led_state(PYB_LEDG1_PORT_NUM, 1);
+                led_state(PYB_LED_G1, 1);
                 delay_ms(100);
-                led_state(PYB_LEDG1_PORT_NUM, 0);
+                led_state(PYB_LED_G1, 0);
 
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
@@ -696,9 +657,9 @@ int main() {
                 }
 
                 // flash once
-                led_state(PYB_LEDG1_PORT_NUM, 1);
+                led_state(PYB_LED_G1, 1);
                 delay_ms(100);
-                led_state(PYB_LEDG1_PORT_NUM, 0);
+                led_state(PYB_LED_G1, 0);
 
                 delay_ms(1000);
                 printf("nalloc=%u\n", m_get_total_bytes_allocated());
@@ -710,13 +671,13 @@ int main() {
 
     // benchmark C version of impl02.py
     if (0) {
-        led_state(PYB_LEDG1_PORT_NUM, 1);
+        led_state(PYB_LED_G1, 1);
         delay_ms(100);
-        led_state(PYB_LEDG1_PORT_NUM, 0);
+        led_state(PYB_LED_G1, 0);
         impl02_c_version();
-        led_state(PYB_LEDG1_PORT_NUM, 1);
+        led_state(PYB_LED_G1, 1);
         delay_ms(100);
-        led_state(PYB_LEDG1_PORT_NUM, 0);
+        led_state(PYB_LED_G1, 0);
     }
 
     // MMA testing
@@ -834,8 +795,8 @@ int main() {
     for (;;) {
         delay_ms(10);
         if (sw_get()) {
-            led_state(PYB_LEDR1_PORT_NUM, 1);
-            led_state(PYB_LEDG1_PORT_NUM, 0);
+            led_state(PYB_LED_R1, 1);
+            led_state(PYB_LED_G1, 0);
             i = 1 - i;
             if (i) {
                 printf(" angel %05x.\n", n);
@@ -846,8 +807,8 @@ int main() {
             }
             n += 1;
         } else {
-            led_state(PYB_LEDR1_PORT_NUM, 0);
-            led_state(PYB_LEDG1_PORT_NUM, 1);
+            led_state(PYB_LED_R1, 0);
+            led_state(PYB_LED_G1, 1);
         }
     }
 

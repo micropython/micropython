@@ -5,7 +5,9 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x100000 /* 1 MiB */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x100000 /* entire flash, 1 MiB */
+    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x004000 /* sector 0, 16 KiB */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x020000 /* sector 5, 128 KiB */
     CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x020000 /* 128 KiB */
 }
@@ -27,7 +29,7 @@ SECTIONS
         KEEP(*(.isr_vector)) /* Startup code */
 
         . = ALIGN(4);
-    } >FLASH
+    } >FLASH_ISR
    
     /* The program code and other data goes into FLASH */
     .text :
@@ -43,7 +45,7 @@ SECTIONS
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
         _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
-    } >FLASH
+    } >FLASH_TEXT
      
     /*
     .ARM.extab :
