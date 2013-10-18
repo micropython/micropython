@@ -6,11 +6,12 @@
 // #       single_input is a single interactive statement;
 // #       file_input is a module or sequence of commands read from an input file;
 // #       eval_input is the input for the eval() functions.
-// # NB: compound_stmt in single_input is followed by extra NEWLINE!
-// single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
+// # NB: compound_stmt in single_input is followed by extra NEWLINE! --> not in Micropython
+// single_input: NEWLINE | simple_stmt | compound_stmt
 // file_input: (NEWLINE | stmt)* ENDMARKER
 // eval_input: testlist NEWLINE* ENDMARKER
 
+DEF_RULE(single_input, nc, or(3), tok(NEWLINE), rule(simple_stmt), rule(compound_stmt))
 DEF_RULE(file_input, nc, and(1), opt_rule(file_input_2))
 DEF_RULE(file_input_2, c(generic_all_nodes), one_or_more, rule(file_input_3))
 DEF_RULE(file_input_3, nc, or(2), tok(NEWLINE), rule(stmt))
@@ -129,6 +130,7 @@ DEF_RULE(name_list, nc, list, tok(NAME), tok(DEL_COMMA))
 DEF_RULE(assert_stmt, c(assert_stmt), and(3), tok(KW_ASSERT), rule(test), opt_rule(assert_stmt_extra))
 DEF_RULE(assert_stmt_extra, nc, and(2), tok(DEL_COMMA), rule(test))
 
+// compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated
 // if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
 // while_stmt: 'while' test ':' suite ['else' ':' suite]
 // for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
@@ -139,6 +141,7 @@ DEF_RULE(assert_stmt_extra, nc, and(2), tok(DEL_COMMA), rule(test))
 // with_item: test ['as' expr]
 // suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
 
+DEF_RULE(compound_stmt, nc, or(8), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated))
 DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
 DEF_RULE(if_stmt_elif_list, nc, one_or_more, rule(if_stmt_elif))
 DEF_RULE(if_stmt_elif, nc, and(4), tok(KW_ELIF), rule(test), tok(DEL_COLON), rule(suite))
