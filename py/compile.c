@@ -44,11 +44,14 @@ typedef struct _compiler_t {
     qstr qstr___doc__;
     qstr qstr_assertion_error;
     qstr qstr_micropython;
+    qstr qstr_byte_code;
     qstr qstr_native;
     qstr qstr_viper;
     qstr qstr_asm_thumb;
 
+    bool is_repl;
     pass_kind_t pass;
+    bool had_error; // try to keep compiler clean from nlr
 
     int next_label;
 
@@ -196,7 +199,7 @@ static int comp_next_label(compiler_t *comp) {
 }
 
 static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, py_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, rt_get_new_unique_code_id(), emit_options);
+    scope_t *scope = scope_new(kind, pn, rt_get_unique_code_id(kind == SCOPE_MODULE), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -855,7 +858,8 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, py_parse_
     }
 
     qstr attr = PY_PARSE_NODE_LEAF_ARG(name_nodes[1]);
-    if (0) {
+    if (attr == comp->qstr_byte_code) {
+        *emit_options = EMIT_OPT_BYTE_CODE;
 #if MICROPY_EMIT_NATIVE
     } else if (attr == comp->qstr_native) {
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
@@ -1046,7 +1050,13 @@ void compile_continue_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
 }
 
 void compile_return_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
+    if (comp->scope_cur->kind != SCOPE_FUNCTION) {
+        printf("SyntaxError: 'return' outside function\n");
+        comp->had_error = true;
+        return;
+    }
     if (PY_PARSE_NODE_IS_NULL(pns->nodes[0])) {
+        // no argument to 'return', so return None
         EMIT(load_const_tok, PY_TOKEN_KW_NONE);
     } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_test_if_expr)) {
         // special case when returning an if-expression; to match CPython optimisation
@@ -1566,11 +1576,21 @@ void compile_with_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
 
 void compile_expr_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     if (PY_PARSE_NODE_IS_NULL(pns->nodes[1])) {
-        if (PY_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !PY_PARSE_NODE_IS_ID(pns->nodes[0])) {
-            // do nothing with a lonely constant
+        if (comp->is_repl && comp->scope_cur->kind == SCOPE_MODULE) {
+            // for REPL, evaluate then print the expression
+            EMIT(load_id, qstr_from_str_static("__repl_print__"));
+            compile_node(comp, pns->nodes[0]);
+            EMIT(call_function, 1, 0, false, false);
+            EMIT(pop_top);
+
         } else {
-            compile_node(comp, pns->nodes[0]); // just an expression
-            EMIT(pop_top); // discard last result since this is a statement and leaves nothing on the stack
+            // for non-REPL, evaluate then discard the expression
+            if (PY_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !PY_PARSE_NODE_IS_ID(pns->nodes[0])) {
+                // do nothing with a lonely constant
+            } else {
+                compile_node(comp, pns->nodes[0]); // just an expression
+                EMIT(pop_top); // discard last result since this is a statement and leaves nothing on the stack
+            }
         }
     } else {
         py_parse_node_struct_t *pns1 = (py_parse_node_struct_t*)pns->nodes[1];
@@ -2287,6 +2307,7 @@ void compile_node(compiler_t *comp, py_parse_node_t pn) {
             case PY_PARSE_NODE_TOKEN:
                 if (arg == PY_TOKEN_NEWLINE) {
                     // this can occur when file_input lets through a NEWLINE (eg if file starts with a newline)
+                    // or when single_input lets through a NEWLINE (user enters a blank line)
                     // do nothing
                 } else {
                   EMIT(load_const_tok, arg);
@@ -2299,7 +2320,7 @@ void compile_node(compiler_t *comp, py_parse_node_t pn) {
         compile_function_t f = compile_function[PY_PARSE_NODE_STRUCT_KIND(pns)];
         if (f == NULL) {
             printf("node %u cannot be compiled\n", (uint)PY_PARSE_NODE_STRUCT_KIND(pns));
-            parse_node_show(pn, 0);
+            py_parse_node_show(pn, 0);
             assert(0);
         } else {
             f(comp, pns);
@@ -2481,14 +2502,17 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         scope->stack_size = 0;
     }
 
+#if MICROPY_EMIT_CPYTHON
     if (comp->pass == PASS_3) {
-        //printf("----\n");
         scope_print_info(scope);
     }
+#endif
 
     // compile
     if (scope->kind == SCOPE_MODULE) {
-        check_for_doc_string(comp, scope->pn);
+        if (!comp->is_repl) {
+            check_for_doc_string(comp, scope->pn);
+        }
         compile_node(comp, scope->pn);
         EMIT(load_const_tok, PY_TOKEN_KW_NONE);
         EMIT(return_value);
@@ -2731,7 +2755,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 }
 
-void py_compile(py_parse_node_t pn) {
+bool py_compile(py_parse_node_t pn, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
     comp->qstr___class__ = qstr_from_str_static("__class__");
@@ -2742,9 +2766,13 @@ void py_compile(py_parse_node_t pn) {
     comp->qstr___doc__ = qstr_from_str_static("__doc__");
     comp->qstr_assertion_error = qstr_from_str_static("AssertionError");
     comp->qstr_micropython = qstr_from_str_static("micropython");
+    comp->qstr_byte_code = qstr_from_str_static("byte_code");
     comp->qstr_native = qstr_from_str_static("native");
     comp->qstr_viper = qstr_from_str_static("viper");
     comp->qstr_asm_thumb = qstr_from_str_static("asm_thumb");
+
+    comp->is_repl = is_repl;
+    comp->had_error = false;
 
     comp->break_label = 0;
     comp->continue_label = 0;
@@ -2764,7 +2792,7 @@ void py_compile(py_parse_node_t pn) {
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
     uint max_num_labels = 0;
-    for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
 #if MICROPY_EMIT_INLINE_THUMB
         } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
@@ -2781,7 +2809,7 @@ void py_compile(py_parse_node_t pn) {
     }
 
     // compute some things related to scope and identifiers
-    for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         compile_scope_compute_things(comp, s);
     }
 
@@ -2796,7 +2824,7 @@ void py_compile(py_parse_node_t pn) {
 #if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
-    for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
             // dummy
 
@@ -2857,4 +2885,6 @@ void py_compile(py_parse_node_t pn) {
     }
 
     m_free(comp);
+
+    return !comp->had_error;
 }

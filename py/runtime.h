@@ -91,7 +91,7 @@ extern py_obj_t py_const_stop_iteration; // special object indicating end of ite
 
 void rt_init();
 void rt_deinit();
-int rt_get_new_unique_code_id();
+int rt_get_unique_code_id(bool is_main_module);
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
 void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t f, uint len, int n_args);

@@ -54,6 +54,12 @@ typedef struct _py_parse_node_struct_t {
 
 py_parse_node_t py_parse_node_new_leaf(machine_int_t kind, machine_int_t arg);
 
-void parse_node_show(py_parse_node_t pn, int indent);
+void py_parse_node_show(py_parse_node_t pn, int indent);
 
-py_parse_node_t py_parse(struct _py_lexer_t *lex, int wanted_rule);
+typedef enum {
+    PY_PARSE_SINGLE_INPUT,
+    PY_PARSE_FILE_INPUT,
+    PY_PARSE_EVAL_INPUT,
+} py_parse_input_kind_t;
+
+py_parse_node_t py_parse(struct _py_lexer_t *lex, py_parse_input_kind_t input_kind);

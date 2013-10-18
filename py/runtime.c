@@ -192,11 +192,7 @@ void py_map_init(py_map_t *map, py_map_kind_t kind, int n) {
     map->kind = kind;
     map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
     map->used = 0;
-    map->table = m_new(py_map_elem_t, map->alloc);
-    for (int i = 0; i < map->alloc; i++) {
-        map->table[i].key = NULL;
-        map->table[i].value = NULL;
-    }
+    map->table = m_new0(py_map_elem_t, map->alloc);
 }
 
 py_map_t *py_map_new(py_map_kind_t kind, int n) {
@@ -205,9 +201,15 @@ py_map_t *py_map_new(py_map_kind_t kind, int n) {
     return map;
 }
 
-int py_obj_hash(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
+machine_int_t py_obj_hash(py_obj_t o_in) {
+    if (o_in == py_const_false) {
+        return 0; // needs to hash to same as the integer 0, since False==0
+    } else if (o_in == py_const_true) {
+        return 1; // needs to hash to same as the integer 1, since True==1
+    } else if (IS_SMALL_INT(o_in)) {
         return FROM_SMALL_INT(o_in);
+    } else if (IS_O(o_in, O_CONST)) {
+        return (machine_int_t)o_in;
     } else if (IS_O(o_in, O_STR)) {
         return ((py_obj_base_t*)o_in)->u_str;
     } else {
@@ -216,11 +218,32 @@ int py_obj_hash(py_obj_t o_in) {
     }
 }
 
+// this function implements the '==' operator (and so the inverse of '!=')
+// from the python language reference:
+// "The objects need not have the same type. If both are numbers, they are converted
+// to a common type. Otherwise, the == and != operators always consider objects of
+// different types to be unequal."
+// note also that False==0 and True==1 are true expressions
 bool py_obj_equal(py_obj_t o1, py_obj_t o2) {
     if (o1 == o2) {
         return true;
-    } else if (IS_SMALL_INT(o1) && IS_SMALL_INT(o2)) {
-        return false;
+    } else if (IS_SMALL_INT(o1) || IS_SMALL_INT(o2)) {
+        if (IS_SMALL_INT(o1) && IS_SMALL_INT(o2)) {
+            return false;
+        } else {
+            if (IS_SMALL_INT(o2)) {
+                py_obj_t temp = o1; o1 = o2; o2 = temp;
+            }
+            // o1 is the SMALL_INT, o2 is not
+            py_small_int_t val = FROM_SMALL_INT(o1);
+            if (o2 == py_const_false) {
+                return val == 0;
+            } else if (o2 == py_const_true) {
+                return val == 1;
+            } else {
+                return false;
+            }
+        }
     } else if (IS_O(o1, O_STR) && IS_O(o2, O_STR)) {
         return ((py_obj_base_t*)o1)->u_str == ((py_obj_base_t*)o2)->u_str;
     } else {
@@ -249,7 +272,7 @@ py_map_elem_t* py_map_lookup_helper(py_map_t *map, py_obj_t index, bool add_if_n
                     py_map_elem_t *old_table = map->table;
                     map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
                     map->used = 0;
-                    map->table = m_new(py_map_elem_t, map->alloc);
+                    map->table = m_new0(py_map_elem_t, map->alloc);
                     for (int i = 0; i < old_alloc; i++) {
                         if (old_table[i].key != NULL) {
                             py_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
@@ -268,9 +291,11 @@ py_map_elem_t* py_map_lookup_helper(py_map_t *map, py_obj_t index, bool add_if_n
             }
         } else if (elem->key == index || (is_map_py_obj && py_obj_equal(elem->key, index))) {
             // found it
+            /* it seems CPython does not replace the index; try x={True:'true'};x[1]='one';x
             if (add_if_not_found) {
                 elem->key = index;
             }
+            */
             return elem;
         } else {
             // not yet found, keep searching in this table
@@ -395,6 +420,7 @@ static qstr q___build_class__;
 static qstr q___next__;
 static qstr q_AttributeError;
 static qstr q_IndexError;
+static qstr q_KeyError;
 static qstr q_NameError;
 static qstr q_TypeError;
 
@@ -430,6 +456,14 @@ static py_code_t *unique_codes;
 
 py_obj_t fun_list_append;
 py_obj_t fun_gen_instance_next;
+
+py_obj_t py_builtin___repl_print__(py_obj_t o) {
+    if (o != py_const_none) {
+        py_obj_print(o);
+        printf("\n");
+    }
+    return py_const_none;
+}
 
 py_obj_t py_builtin_print(py_obj_t o) {
     if (IS_O(o, O_STR)) {
@@ -492,6 +526,7 @@ void rt_init() {
     q___next__ = qstr_from_str_static("__next__");
     q_AttributeError = qstr_from_str_static("AttributeError");
     q_IndexError = qstr_from_str_static("IndexError");
+    q_KeyError = qstr_from_str_static("KeyError");
     q_NameError = qstr_from_str_static("NameError");
     q_TypeError = qstr_from_str_static("TypeError");
 
@@ -505,12 +540,13 @@ void rt_init() {
     py_qstr_map_lookup(map_globals, qstr_from_str_static("__name__"), true)->value = py_obj_new_str(qstr_from_str_static("__main__"));
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
     py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
     py_qstr_map_lookup(&map_builtins, q_len, true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_1(py_builtin_range);
 
-    next_unique_code_id = 1;
+    next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
     unique_codes = NULL;
 
     fun_list_append = rt_make_function_2(rt_list_append);
@@ -529,8 +565,12 @@ void rt_deinit() {
 #endif
 }
 
-int rt_get_new_unique_code_id() {
-    return next_unique_code_id++;
+int rt_get_unique_code_id(bool is_main_module) {
+    if (is_main_module) {
+        return 1;
+    } else {
+        return next_unique_code_id++;
+    }
 }
 
 static void alloc_unique_codes() {
@@ -896,8 +936,17 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
     DEBUG_OP_printf("binary %d %p %p\n", op, lhs, rhs);
     if (op == RT_BINARY_OP_SUBSCR) {
         if ((IS_O(lhs, O_TUPLE) || IS_O(lhs, O_LIST))) {
+            // tuple/list load
             uint index = get_index(lhs, rhs);
             return ((py_obj_base_t*)lhs)->u_tuple_list.items[index];
+        } else if (IS_O(lhs, O_MAP)) {
+            // map load
+            py_map_elem_t *elem = py_map_lookup(lhs, rhs, false);
+            if (elem == NULL) {
+                nlr_jump(py_obj_new_exception_2(q_KeyError, "<value>", NULL, NULL));
+            } else {
+                return elem->value;
+            }
         } else {
             assert(0);
         }
@@ -1409,16 +1458,16 @@ no_attr:
     dest[0] = NULL;
 }
 
-void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val) {
-    DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), val);
+void rt_store_attr(py_obj_t base, qstr attr, py_obj_t value) {
+    DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     if (IS_O(base, O_OBJ)) {
         // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
         py_obj_base_t *o = base;
         py_map_elem_t *elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, false);
         if (elem != NULL) {
-            elem->value = val;
+            elem->value = value;
         } else {
-            elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, true)->value = val;
+            elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, true)->value = value;
         }
     } else {
         printf("?AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
@@ -1427,6 +1476,7 @@ void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val) {
 }
 
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t value) {
+    DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
     if (IS_O(base, O_LIST)) {
         // list store
         uint i = get_index(base, index);

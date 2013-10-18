@@ -128,7 +128,7 @@ py_parse_node_struct_t *parse_node_new_struct(int rule_id, int num_args) {
     return pn;
 }
 
-void parse_node_show(py_parse_node_t pn, int indent) {
+void py_parse_node_show(py_parse_node_t pn, int indent) {
     for (int i = 0; i < indent; i++) {
         printf(" ");
     }
@@ -155,7 +155,7 @@ void parse_node_show(py_parse_node_t pn, int indent) {
         printf("rule(%u) (n=%d)\n", (uint)PY_PARSE_NODE_STRUCT_KIND(pns2), n);
 #endif
         for (int i = 0; i < n; i++) {
-            parse_node_show(pns2->nodes[i], indent + 2);
+            py_parse_node_show(pns2->nodes[i], indent + 2);
         }
     }
 }
@@ -164,7 +164,7 @@ void parse_node_show(py_parse_node_t pn, int indent) {
 static void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
     for (int i = parser->result_stack_top - 1; i >= 0; i--) {
-        parse_node_show(parser->result_stack[i], 0);
+        py_parse_node_show(parser->result_stack[i], 0);
     }
 }
 */
@@ -251,8 +251,7 @@ static void push_result_rule(parser_t *parser, rule_t *rule, int num_args) {
     push_result_node(parser, (py_parse_node_t)pn);
 }
 
-py_parse_node_t py_parse(py_lexer_t *lex, int wanted_rule) {
-    wanted_rule = RULE_file_input;
+py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
     parser_t *parser = m_new(parser_t, 1);
     parser->rule_stack_alloc = 64;
     parser->rule_stack_top = 0;
@@ -261,7 +260,13 @@ py_parse_node_t py_parse(py_lexer_t *lex, int wanted_rule) {
     parser->result_stack = m_new(py_parse_node_t, 1000);
     parser->result_stack_top = 0;
 
-    push_rule(parser, rules[wanted_rule], 0);
+    int top_level_rule;
+    switch (input_kind) {
+        case PY_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
+        //case PY_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
+        default: top_level_rule = RULE_file_input;
+    }
+    push_rule(parser, rules[top_level_rule], 0);
 
     uint n, i;
     bool backtrack = false;

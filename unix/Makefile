@@ -31,7 +31,7 @@ PY_O = \
 	vm.o \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(PY_O))
-LIB =
+LIB = -lreadline
 PROG = py
 
 $(PROG): $(BUILD) $(OBJ)
