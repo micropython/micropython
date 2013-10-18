@@ -178,7 +178,7 @@ static void next_char(py_lexer_t *lex) {
             lex->chr2 = lex->src_cur[2];
         } else {
             // EOF
-            if (lex->chr1 != '\n' && lex->chr1 != '\r') {
+            if (lex->chr1 != CHR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
                 lex->chr2 = '\n'; // insert newline at end of file
             } else {
                 lex->chr2 = CHR_EOF;
