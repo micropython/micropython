@@ -19,9 +19,9 @@ typedef struct _pfenv_t {
 static void print_str_dummy(void *data, const char *str, unsigned int len) {
 }
 
-pfenv_t pfenv_dummy = {0, print_str_dummy};
+const pfenv_t pfenv_dummy = {0, print_str_dummy};
 
-static int pfenv_print_strn(pfenv_t *pfenv, const char *str, unsigned int len, int flags, int width) {
+static int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, int flags, int width) {
     int pad = width - len;
     if (pad > 0 && (flags & PF_FLAG_LEFT_ADJUST) == 0) {
         while (pad > 0) {
@@ -46,7 +46,7 @@ static int pfenv_print_strn(pfenv_t *pfenv, const char *str, unsigned int len, i
 // enough room for 32 signed number
 #define INT_BUF_SIZE (12)
 
-static int pfenv_print_int(pfenv_t *pfenv, unsigned int x, int sgn, int base, int base_char, int flags, int width) {
+static int pfenv_print_int(const pfenv_t *pfenv, unsigned int x, int sgn, int base, int base_char, int flags, int width) {
     char sign = 0;
     if (sgn) {
         if ((int)x < 0) {
@@ -84,11 +84,11 @@ static int pfenv_print_int(pfenv_t *pfenv, unsigned int x, int sgn, int base, in
     return pfenv_print_strn(pfenv, b, buf + INT_BUF_SIZE - b, flags, width);
 }
 
-void pfenv_prints(pfenv_t *pfenv, const char *str) {
+void pfenv_prints(const pfenv_t *pfenv, const char *str) {
     pfenv->print_strn(pfenv->data, str, strlen(str));
 }
 
-int pfenv_printf(pfenv_t *pfenv, const char *fmt, va_list args) {
+int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
     int chrs = 0;
     for (;;) {
         {
@@ -217,7 +217,7 @@ void stdout_print_strn(void *data, const char *str, unsigned int len) {
     usb_vcp_send(str, len);
 }
 
-pfenv_t pfenv_stdout = {0, stdout_print_strn};
+static const pfenv_t pfenv_stdout = {0, stdout_print_strn};
 
 int printf(const char *fmt, ...) {
     va_list args;
