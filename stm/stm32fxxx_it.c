@@ -56,6 +56,8 @@ extern uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 /*             Cortex-M Processor Exceptions Handlers                         */
 /******************************************************************************/
 
+extern void fatality();
+
 /**
   * @brief   This function handles NMI exception.
   * @param  None
@@ -73,6 +75,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
+  fatality();
   while (1)
   {
   }
@@ -86,6 +89,7 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* Go to infinite loop when Memory Manage exception occurs */
+  fatality();
   while (1)
   {
   }
@@ -99,6 +103,7 @@ void MemManage_Handler(void)
 void BusFault_Handler(void)
 {
   /* Go to infinite loop when Bus Fault exception occurs */
+  fatality();
   while (1)
   {
   }
@@ -112,6 +117,7 @@ void BusFault_Handler(void)
 void UsageFault_Handler(void)
 {
   /* Go to infinite loop when Usage Fault exception occurs */
+  fatality();
   while (1)
   {
   }
@@ -141,15 +147,6 @@ void DebugMon_Handler(void)
   * @retval None
   */
 void PendSV_Handler(void)
-{
-}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void)
 {
 }
 

@@ -17,6 +17,6 @@ void usb_init() {
 
 void usb_vcp_send(const char* str, int len) {
     if (is_enabled) {
-        VCP_fops.pIf_DataTx((const uint8_t*)str, len);
+        //VCP_fops.pIf_DataTx((const uint8_t*)str, len);
     }
 }

@@ -7,3 +7,4 @@ typedef enum {
 
 void led_init();
 void led_state(pyb_led_t led, int state);
+void led_toggle(pyb_led_t led);

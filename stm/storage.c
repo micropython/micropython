@@ -46,9 +46,11 @@ static uint8_t *cache_get_addr_for_write(uint32_t flash_addr) {
 }
 
 void storage_init() {
-    cache_flash_sector_id = 0;
-    cache_dirty = false;
-    is_initialised = true;
+    if (!is_initialised) {
+        cache_flash_sector_id = 0;
+        cache_dirty = false;
+        is_initialised = true;
+    }
 }
 
 void storage_flush() {

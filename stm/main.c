@@ -1,13 +1,14 @@
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
+#include <stm32f4xx_gpio.h>
+#include <stm_misc.h>
 #include "std.h"
 
 #include "misc.h"
+#include "systick.h"
 #include "led.h"
+#include "lcd.h"
 #include "storage.h"
-#include "font_petme128_8x8.h"
-
-void delay_ms(int ms);
 
 static void impl02_c_version() {
     int x = 0;
@@ -35,25 +36,21 @@ void gpio_init() {
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOAEN;
 }
 
-void gpio_pin_init(GPIO_TypeDef *gpio, uint32_t pin, uint32_t moder, uint32_t otyper, uint32_t ospeedr, uint32_t pupdr) {
-    set_bits(&gpio->MODER, 2 * pin, 3, moder);
-    set_bits(&gpio->OTYPER, pin, 1, otyper);
-    set_bits(&gpio->OSPEEDR, 2 * pin, 3, ospeedr);
-    set_bits(&gpio->PUPDR, 2 * pin, 3, pupdr);
-}
-
+/*
 void gpio_pin_af(GPIO_TypeDef *gpio, uint32_t pin, uint32_t af) {
     // set the AF bits for the given pin
     // pins 0-7 use low word of AFR, pins 8-15 use high word
     set_bits(&gpio->AFR[pin >> 3], 4 * (pin & 0x07), 0xf, af);
 }
+*/
 
 static void mma_init() {
+    // XXX
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
-    gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
-    gpio_pin_init(GPIOB, 7 /* B7 is SDA */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
-    gpio_pin_af(GPIOB, 6, 4 /* AF 4 for I2C1 */);
-    gpio_pin_af(GPIOB, 7, 4 /* AF 4 for I2C1 */);
+    //gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
+    //gpio_pin_init(GPIOB, 7 /* B7 is SDA */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
+    //gpio_pin_af(GPIOB, 6, 4 /* AF 4 for I2C1 */);
+    //gpio_pin_af(GPIOB, 7, 4 /* AF 4 for I2C1 */);
 
     // get clock speeds
     RCC_ClocksTypeDef rcc_clocks;
@@ -160,206 +157,25 @@ static void mma_stop() {
 }
 
 #define PYB_USRSW_PORT (GPIOA)
-#define PYB_USRSW_PORT_NUM (13)
+#define PYB_USRSW_PIN (GPIO_Pin_13)
 
 void sw_init() {
     // make it an input with pull-up
-    gpio_pin_init(PYB_USRSW_PORT, PYB_USRSW_PORT_NUM, 0, 0, 0, 1);
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = PYB_USRSW_PIN;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(PYB_USRSW_PORT, &GPIO_InitStructure);
 }
 
 int sw_get() {
-    if (PYB_USRSW_PORT->IDR & (1 << PYB_USRSW_PORT_NUM)) {
+    if (PYB_USRSW_PORT->IDR & PYB_USRSW_PIN) {
         // pulled high, so switch is not pressed
         return 0;
     } else {
         // pulled low, so switch is pressed
         return 1;
     }
-}
-
-#define PYB_LCD_PORT        (GPIOA)
-#define PYB_LCD_CS1_PIN     (0)
-#define PYB_LCD_RST_PIN     (1)
-#define PYB_LCD_A0_PIN      (2)
-#define PYB_LCD_SCL_PIN     (3)
-#define PYB_LCD_SI_PIN      (4)
-
-static void lcd_comm_out(uint8_t i) {
-    delay_ms(0);
-    PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_CS1_PIN; // CS=0; enable
-    PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_A0_PIN; // A0=0; select instr reg
-    // send byte bigendian, latches on rising clock
-    for (uint32_t n = 0; n < 8; n++) {
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_SCL_PIN; // SCL=0
-        if ((i & 0x80) == 0) {
-            PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_SI_PIN; // SI=0
-        } else {
-            PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SI_PIN; // SI=1
-        }
-        i <<= 1;
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SCL_PIN; // SCL=1
-    }
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_CS1_PIN; // CS=1; disable
-
-    /*
-    in Python, native types:
-    CS1_PIN(const) = 0
-    n = int(0)
-    delay_ms(0)
-    PORT[word:BSRRH] = 1 << CS1_PIN
-    for n in range(0, 8):
-        delay_ms(0)
-        PORT[word:BSRRH] = 1 << SCL_PIN
-        if i & 0x80 == 0:
-            PORT[word:BSRRH] = 1 << SI_PIN
-        else:
-            PORT[word:BSRRL] = 1 << SI_PIN
-        i <<= 1
-        delay_ms(0)
-        PORT[word:BSRRL] = 1 << SCL_PIN
-    */
-}
-
-static void lcd_data_out(uint8_t i) {
-    delay_ms(0);
-    PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_CS1_PIN; // CS=0; enable
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_A0_PIN; // A0=1; select data reg
-    // send byte bigendian, latches on rising clock
-    for (uint32_t n = 0; n < 8; n++) {
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_SCL_PIN; // SCL=0
-        if ((i & 0x80) == 0) {
-            PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_SI_PIN; // SI=0
-        } else {
-            PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SI_PIN; // SI=1
-        }
-        i <<= 1;
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SCL_PIN; // SCL=1
-    }
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_CS1_PIN; // CS=1; disable
-}
-
-#define LCD_BUF_W (16)
-#define LCD_BUF_H (4)
-char lcd_buffer[LCD_BUF_W * LCD_BUF_H];
-int lcd_line;
-int lcd_column;
-int lcd_next_line;
-
-void lcd_print_strn(const char *str, unsigned int len) {
-    int redraw_min = lcd_line * LCD_BUF_W + lcd_column;
-    int redraw_max = redraw_min;
-    int did_new_line = 0;
-    for (; len > 0; len--, str++) {
-        // move to next line if needed
-        if (lcd_next_line) {
-            if (lcd_line + 1 < LCD_BUF_H) {
-                lcd_line += 1;
-            } else {
-                lcd_line = LCD_BUF_H - 1;
-                for (int i = 0; i < LCD_BUF_W * (LCD_BUF_H - 1); i++) {
-                    lcd_buffer[i] = lcd_buffer[i + LCD_BUF_W];
-                }
-                for (int i = 0; i < LCD_BUF_W; i++) {
-                    lcd_buffer[LCD_BUF_W * (LCD_BUF_H - 1) + i] = ' ';
-                }
-                redraw_min = 0;
-                redraw_max = LCD_BUF_W * LCD_BUF_H;
-            }
-            lcd_next_line = 0;
-            lcd_column = 0;
-            did_new_line = 1;
-        }
-        if (*str == '\n') {
-            lcd_next_line = 1;
-        } else if (lcd_column >= LCD_BUF_W) {
-            lcd_next_line = 1;
-            str -= 1;
-            len += 1;
-        } else {
-            lcd_buffer[lcd_line * LCD_BUF_W + lcd_column] = *str;
-            lcd_column += 1;
-            int max = lcd_line * LCD_BUF_W + lcd_column;
-            if (max > redraw_max) {
-                redraw_max = max;
-            }
-        }
-    }
-
-    int last_page = -1;
-    for (int i = redraw_min; i < redraw_max; i++) {
-        int page = i / LCD_BUF_W;
-        if (page != last_page) {
-            int offset = 8 * (i - (page * LCD_BUF_W));
-            lcd_comm_out(0xb0 | page); // page address set
-            lcd_comm_out(0x10 | ((offset >> 4) & 0x0f)); // column address set upper
-            lcd_comm_out(0x00 | (offset & 0x0f)); // column address set lower
-            last_page = page;
-        }
-        int chr = lcd_buffer[i];
-        if (chr < 32 || chr > 126) {
-            chr = 127;
-        }
-        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
-        for (int i = 0; i < 8; i++) {
-            lcd_data_out(chr_data[i]);
-        }
-    }
-
-    if (did_new_line) {
-        delay_ms(200);
-    }
-}
-
-static void lcd_init() {
-    // set the outputs high
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_CS1_PIN;
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_RST_PIN;
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_A0_PIN;
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SCL_PIN;
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_SI_PIN;
-    // make them push/pull outputs
-    gpio_pin_init(PYB_LCD_PORT, PYB_LCD_CS1_PIN, 1, 0, 0, 0);
-    gpio_pin_init(PYB_LCD_PORT, PYB_LCD_RST_PIN, 1, 0, 0, 0);
-    gpio_pin_init(PYB_LCD_PORT, PYB_LCD_A0_PIN, 1, 0, 0, 0);
-    gpio_pin_init(PYB_LCD_PORT, PYB_LCD_SCL_PIN, 1, 0, 0, 0);
-    gpio_pin_init(PYB_LCD_PORT, PYB_LCD_SI_PIN, 1, 0, 0, 0);
-
-    // init the LCD
-    delay_ms(1); // wait a bit
-    PYB_LCD_PORT->BSRRH = 1 << PYB_LCD_RST_PIN; // RST=0; reset
-    delay_ms(1); // wait for reset; 2us min
-    PYB_LCD_PORT->BSRRL = 1 << PYB_LCD_RST_PIN; // RST=1; enable
-    delay_ms(1); // wait for reset; 2us min
-    lcd_comm_out(0xa0); // ADC select, normal
-    lcd_comm_out(0xc8); // common output mode select, reverse
-    lcd_comm_out(0xa2); // LCD bias set, 1/9 bias
-    lcd_comm_out(0x2f); // power control set, 0b111=(booster on, vreg on, vfollow on)
-    lcd_comm_out(0x21); // v0 voltage regulator internal resistor ratio set, 0b001=small
-    lcd_comm_out(0x81); // electronic volume mode set
-    lcd_comm_out(0x34); // electronic volume register set, 0b110100
-    lcd_comm_out(0x40); // display start line set, 0
-    lcd_comm_out(0xaf); // LCD display, on
-
-    // clear display
-    for (int page = 0; page < 4; page++) {
-        lcd_comm_out(0xb0 | page); // page address set
-        lcd_comm_out(0x10); // column address set upper
-        lcd_comm_out(0x00); // column address set lower
-        for (int i = 0; i < 128; i++) {
-            lcd_data_out(0x00);
-        }
-    }
-
-    for (int i = 0; i < LCD_BUF_H * LCD_BUF_W; i++) {
-        lcd_buffer[i] = ' ';
-    }
-    lcd_line = 0;
-    lcd_column = 0;
-    lcd_next_line = 0;
 }
 
 void __fatal_error(const char *msg) {
@@ -369,10 +185,10 @@ void __fatal_error(const char *msg) {
     for (;;) {
         led_state(PYB_LED_R1, 1);
         led_state(PYB_LED_R2, 0);
-        delay_ms(150);
+        sys_tick_delay_ms(150);
         led_state(PYB_LED_R1, 0);
         led_state(PYB_LED_R2, 1);
-        delay_ms(150);
+        sys_tick_delay_ms(150);
     }
 }
 
@@ -384,7 +200,7 @@ void __fatal_error(const char *msg) {
 #include "runtime.h"
 
 py_obj_t pyb_delay(py_obj_t count) {
-    delay_ms(rt_get_int(count));
+    sys_tick_delay_ms(rt_get_int(count));
     return py_const_none;
 }
 
@@ -436,60 +252,37 @@ void nlr_test() {
 }
 */
 
-int main() {
-    // TODO disable JTAG
+void fatality() {
+    led_state(PYB_LED_R1, 1);
+    led_state(PYB_LED_G1, 1);
+    led_state(PYB_LED_R2, 1);
+    led_state(PYB_LED_G2, 1);
+}
 
-    qstr_init();
-    rt_init();
+static const char *fresh_boot_py =
+"# boot.py -- run on boot-up\n"
+"# can run arbitrary Python, but best to keep it minimal\n"
+"\n"
+"pyb.source_dir('/src')\n"
+"pyb.main('main.py')\n"
+"#pyb.usb_usr('VCP')\n"
+"#pyb.usb_msd(True, 'dual partition')\n"
+"#pyb.flush_cache(False)\n"
+"#pyb.error_log('error.txt')\n"
+;
 
-    gpio_init();
-    led_init();
-    sw_init();
-    lcd_init();
-    storage_init();
-
-    // print a message
-    printf(" micro py board\n");
-
-    // flash to indicate we are alive!
-    for (int i = 0; i < 2; i++) {
-        led_state(PYB_LED_R1, 1);
-        led_state(PYB_LED_R2, 0);
-        delay_ms(100);
-        led_state(PYB_LED_R1, 0);
-        led_state(PYB_LED_R2, 1);
-        delay_ms(100);
-    }
-
-    // turn LEDs off
-    led_state(PYB_LED_R1, 0);
-    led_state(PYB_LED_R2, 0);
-    led_state(PYB_LED_G1, 0);
-    led_state(PYB_LED_G2, 0);
-
+// get lots of info about the board
+static void board_info() {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
-    /*
     {
         RCC_ClocksTypeDef rcc_clocks;
         RCC_GetClocksFreq(&rcc_clocks);
-        printf("S=%lu H=%lu P1=%lu P2=%lu\n", rcc_clocks.SYSCLK_Frequency, rcc_clocks.HCLK_Frequency, rcc_clocks.PCLK1_Frequency, rcc_clocks.PCLK2_Frequency);
-        delay_ms(1000);
-    }
-    */
-
-    // USB
-    if (1) {
-        void usb_init();
-        usb_init();
+        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n", rcc_clocks.SYSCLK_Frequency, rcc_clocks.HCLK_Frequency, rcc_clocks.PCLK1_Frequency, rcc_clocks.PCLK2_Frequency);
     }
 
-    /*
     // to print info about memory
-    for (;;) {
-        led_state(PYB_LED_G1, 1);
-        delay_ms(100);
-        led_state(PYB_LED_G1, 0);
+    {
         extern void *_sidata;
         extern void *_sdata;
         extern void *_edata;
@@ -498,25 +291,142 @@ int main() {
         extern void *_estack;
         extern void *_etext;
         extern void *_heap_start;
-        if (sw_get()) {
-            printf("_sidata=%p\n", &_sidata);
-            printf("_sdata=%p\n", &_sdata);
-            printf("_edata=%p\n", &_edata);
-            printf("_sbss=%p\n", &_sbss);
-            printf("_ebss=%p\n", &_ebss);
-            printf("_estack=%p\n", &_estack);
-            printf("_etext=%p\n", &_etext);
-            printf("_heap_start=%p\n", &_heap_start);
-            delay_ms(1000);
+        printf("_sidata=%p\n", &_sidata);
+        printf("_sdata=%p\n", &_sdata);
+        printf("_edata=%p\n", &_edata);
+        printf("_sbss=%p\n", &_sbss);
+        printf("_ebss=%p\n", &_ebss);
+        printf("_estack=%p\n", &_estack);
+        printf("_etext=%p\n", &_etext);
+        printf("_heap_start=%p\n", &_heap_start);
+    }
+
+    // free space on flash
+    {
+        DWORD nclst;
+        FATFS *fatfs;
+        f_getfree("0:", &nclst, &fatfs);
+        printf("free=%u\n", (uint)(nclst * fatfs->csize * 512));
+    }
+}
+
+int main() {
+    // TODO disable JTAG
+
+    // basic sub-system init
+    sys_tick_init();
+    gpio_init();
+    led_init();
+
+    // turn on LED to indicate bootup
+    led_state(PYB_LED_G1, 1);
+
+    // more sub-system init
+    sw_init();
+    lcd_init();
+    storage_init();
+
+    // Python init
+    qstr_init();
+    rt_init();
+
+    // print a message
+    printf(" micro py board\n");
+
+    // local filesystem init
+    {
+        // try to mount the flash
+        FRESULT res = f_mount(&fatfs0, "0:", 1);
+        if (res == FR_OK) {
+            // mount sucessful
+        } else if (res == FR_NO_FILESYSTEM) {
+            // no filesystem, so create a fresh one
+
+            // LED on to indicate creation of LFS
+            led_state(PYB_LED_R2, 1);
+            uint32_t stc = sys_tick_counter;
+
+            res = f_mkfs("0:", 0, 0);
+            if (res == FR_OK) {
+                // success creating fresh LFS
+            } else {
+                __fatal_error("could not create LFS");
+            }
+
+            // keep LED on for at least 100ms
+            sys_tick_wait_at_least(stc, 100);
+            led_state(PYB_LED_R2, 0);
+        } else {
+            __fatal_error("could not access LFS");
         }
-        delay_ms(500);
+    }
+
+    // make sure we have a /boot.py
+    {
+        FILINFO fno;
+        FRESULT res = f_stat("0:/boot.py", &fno);
+        if (res == FR_OK) {
+            if (fno.fattrib & AM_DIR) {
+                // exists as a directory
+                // TODO handle this case
+                // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
+            } else {
+                // exists as a file, good!
+            }
+        } else {
+            // doesn't exist, create fresh file
+
+            // LED on to indicate creation of boot.py
+            led_state(PYB_LED_R2, 1);
+            uint32_t stc = sys_tick_counter;
+
+            FIL fp;
+            f_open(&fp, "0:/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+            UINT n;
+            f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py), &n);
+            // TODO check we could write n bytes
+            f_close(&fp);
+
+            // keep LED on for at least 100ms
+            sys_tick_wait_at_least(stc, 100);
+            led_state(PYB_LED_R2, 0);
+        }
+    }
+
+    // run /boot.py
+    if (0) {
+        FIL fp;
+        f_open(&fp, "0:/boot.py", FA_READ);
+        UINT n;
+        char buf[20];
+        f_read(&fp, buf, 18, &n);
+        buf[n + 1] = 0;
+        printf("read %d\n%s", n, buf);
+        f_close(&fp);
+    }
+
+    // turn boot-up LED off
+    led_state(PYB_LED_G1, 0);
+
+    /*
+    for (;;) {
+        led_state(PYB_LED_G2, 1);
+        sys_tick_wait_at_least(sys_tick_counter, 500);
+        led_state(PYB_LED_G2, 0);
+        sys_tick_wait_at_least(sys_tick_counter, 500);
     }
     */
 
-    //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
-    //delay_ms(1000);
+    // USB
+    if (0) {
+        void usb_init();
+        usb_init();
+    }
 
-    #if 1
+    //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
+    //sys_tick_delay_ms(1000);
+
+    #if 0
     // Python!
     if (0) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
@@ -612,20 +522,20 @@ int main() {
             while (!py_lexer_is_kind(lex, PY_TOKEN_END)) {
                 py_token_show(py_lexer_cur(lex));
                 py_lexer_to_next(lex);
-                delay_ms(1000);
+                sys_tick_delay_ms(1000);
             }
         } else {
             // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
             printf("lex; al=%u\n", m_get_total_bytes_allocated());
-            delay_ms(1000);
+            sys_tick_delay_ms(1000);
             py_parse_node_t pn = py_parse(lex, 0);
             //printf("----------------\n");
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
-            delay_ms(1000);
+            sys_tick_delay_ms(1000);
             //parse_node_show(pn, 0);
             py_compile(pn, false);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
-            delay_ms(1000);
+            sys_tick_delay_ms(1000);
 
             if (1) {
                 // execute it!
@@ -639,7 +549,7 @@ int main() {
 
                 // flash once
                 led_state(PYB_LED_G1, 1);
-                delay_ms(100);
+                sys_tick_delay_ms(100);
                 led_state(PYB_LED_G1, 0);
 
                 nlr_buf_t nlr;
@@ -658,12 +568,12 @@ int main() {
 
                 // flash once
                 led_state(PYB_LED_G1, 1);
-                delay_ms(100);
+                sys_tick_delay_ms(100);
                 led_state(PYB_LED_G1, 0);
 
-                delay_ms(1000);
+                sys_tick_delay_ms(1000);
                 printf("nalloc=%u\n", m_get_total_bytes_allocated());
-                delay_ms(1000);
+                sys_tick_delay_ms(1000);
             }
         }
     }
@@ -672,11 +582,11 @@ int main() {
     // benchmark C version of impl02.py
     if (0) {
         led_state(PYB_LED_G1, 1);
-        delay_ms(100);
+        sys_tick_delay_ms(100);
         led_state(PYB_LED_G1, 0);
         impl02_c_version();
         led_state(PYB_LED_G1, 1);
-        delay_ms(100);
+        sys_tick_delay_ms(100);
         led_state(PYB_LED_G1, 0);
     }
 
@@ -713,7 +623,7 @@ int main() {
         mma_stop();
 
         for (;;) {
-            delay_ms(500);
+            sys_tick_delay_ms(500);
 
             mma_start(0x4c, 1);
             mma_send_byte(0);
@@ -734,69 +644,19 @@ int main() {
         }
     }
 
-    // fatfs testing
-    if (0) {
-        FRESULT res = f_mount(&fatfs0, "0:", 1);
-        if (res == FR_OK) {
-            printf("mount success\n");
-        } else if (res == FR_NO_FILESYSTEM) {
-            res = f_mkfs("0:", 0, 0);
-            if (res == FR_OK) {
-                printf("mkfs success\n");
-            } else {
-                printf("mkfs fail %d\n", res);
-            }
-        } else {
-            printf("mount fail %d\n", res);
-        }
-
-        // write a file
-        if (0) {
-            FIL fp;
-            f_open(&fp, "0:/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
-            UINT n;
-            f_write(&fp, "# this is boot.py\n", 18, &n);
-            printf("wrote %d\n", n);
-            f_close(&fp);
-        }
-
-        // read a file
-        if (0) {
-            FIL fp;
-            f_open(&fp, "0:/boot.py", FA_READ);
-            UINT n;
-            char buf[20];
-            f_read(&fp, buf, 18, &n);
-            buf[n + 1] = 0;
-            printf("read %d\n%s", n, buf);
-            f_close(&fp);
-        }
-
-        DWORD nclst;
-        FATFS *fatfs;
-        f_getfree("0:", &nclst, &fatfs);
-        printf("free=%u\n", (uint)(nclst * fatfs->csize * 512));
-
-    }
-
     // SD card testing
     if (0) {
         //sdio_init();
     }
 
-    // USB VCP testing
-    if (0) {
-        //usb_vcp_init();
-    }
-
     int i = 0;
     int n = 0;
+    uint32_t stc = sys_tick_counter;
 
     for (;;) {
-        delay_ms(10);
+        sys_tick_delay_ms(10);
         if (sw_get()) {
-            led_state(PYB_LED_R1, 1);
-            led_state(PYB_LED_G1, 0);
+            led_state(PYB_LED_G1, 1);
             i = 1 - i;
             if (i) {
                 printf(" angel %05x.\n", n);
@@ -807,8 +667,11 @@ int main() {
             }
             n += 1;
         } else {
-            led_state(PYB_LED_R1, 0);
-            led_state(PYB_LED_G1, 1);
+            led_state(PYB_LED_G1, 0);
+        }
+        if (sys_tick_has_passed(stc, 500)) {
+            stc = sys_tick_counter;
+            led_toggle(PYB_LED_G2);
         }
     }
 

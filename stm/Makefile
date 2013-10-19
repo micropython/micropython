@@ -15,23 +15,26 @@ SRC_C = \
 	printf.c \
 	system_stm32f4xx.c \
 	led.c \
+	lcd.c \
 	flash.c \
 	storage.c \
 	string0.c \
 	malloc0.c \
+	systick.c  \
 	stm32fxxx_it.c \
 	usb.c \
 #	sd.c \
 
 SRC_S = \
-	delay.s \
 	startup_stm32f40xx.s \
 
 PY_O = \
 	nlrthumb.o \
 	malloc.o \
 	qstr.o \
-	misc.o \
+	runtime.o \
+	vm.o \
+#	misc.o \
 	lexer.o \
 	parse.o \
 	scope.o \
@@ -42,8 +45,6 @@ PY_O = \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
-	runtime.o \
-	vm.o \
 
 SRC_FATFS = \
 	ff.c \

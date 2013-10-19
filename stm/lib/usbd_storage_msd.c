@@ -28,6 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_mem.h"
 #include "usb_conf.h"
+#include "diskio.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
@@ -256,12 +257,6 @@ int8_t  STORAGE_IsWriteProtected (uint8_t lun)
   * @param  blk_len : nmber of blocks to be read
   * @retval Status
   */
-int disk_read (
-    uint8_t pdrv,        /* Physical drive nmuber (0..) */
-    uint8_t *buff,        /* Data buffer to store read data */
-    uint32_t sector,    /* Sector address (LBA) */
-    uint32_t count        /* Number of sectors to read (1..128) */
-);
 int8_t STORAGE_Read (uint8_t lun, 
                  uint8_t *buf, 
                  uint32_t blk_addr,                       
@@ -291,12 +286,6 @@ int8_t STORAGE_Read (uint8_t lun,
   * @param  blk_len : nmber of blocks to be read
   * @retval Status
   */
-int disk_write (
-    uint8_t pdrv,            /* Physical drive nmuber (0..) */
-    const uint8_t *buff,    /* Data to be written */
-    uint32_t sector,        /* Sector address (LBA) */
-    uint32_t count            /* Number of sectors to write (1..128) */
-);
 int8_t STORAGE_Write (uint8_t lun, 
                   uint8_t *buf, 
                   uint32_t blk_addr,

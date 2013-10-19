@@ -38,10 +38,29 @@ void led_state(pyb_led_t led, int state) {
         default: return;
     }
     if (state == 0) {
-        // LED off, output is high
+        // turn LED off (output is high)
         port->BSRRL = pin;
     } else {
-        // LED on, output is low
+        // turn LED on (output is low)
+        port->BSRRH = pin;
+    }
+}
+
+void led_toggle(pyb_led_t led) {
+    GPIO_TypeDef *port;
+    uint32_t pin;
+    switch (led) {
+        case PYB_LED_R1: port = PYB_LED_R_PORT; pin = PYB_LED_R1_PIN; break;
+        case PYB_LED_R2: port = PYB_LED_R_PORT; pin = PYB_LED_R2_PIN; break;
+        case PYB_LED_G1: port = PYB_LED_G_PORT; pin = PYB_LED_G1_PIN; break;
+        case PYB_LED_G2: port = PYB_LED_G_PORT; pin = PYB_LED_G2_PIN; break;
+        default: return;
+    }
+    if (!(port->ODR & pin)) {
+        // turn LED off (output high)
+        port->BSRRL = pin;
+    } else {
+        // turn LED on (output low)
         port->BSRRH = pin;
     }
 }
