@@ -8,6 +8,7 @@ void sys_tick_init() {
     // sys-tick interrupt called at 1ms intervals
     sys_tick_counter = 0;
     SysTick_Config(SystemCoreClock / 1000);
+    NVIC_SetPriority(SysTick_IRQn, 0); // make it highest priority
 }
 
 // called on SysTick interrupt

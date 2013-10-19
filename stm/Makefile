@@ -18,6 +18,7 @@ SRC_C = \
 	lcd.c \
 	flash.c \
 	storage.c \
+	mma.c \
 	string0.c \
 	malloc0.c \
 	systick.c  \
@@ -29,10 +30,10 @@ SRC_S = \
 	startup_stm32f40xx.s \
 
 PY_O = \
-#	nlrthumb.o \
+	nlrthumb.o \
 	malloc.o \
 	qstr.o \
-#	misc.o \
+	misc.o \
 	lexer.o \
 	parse.o \
 	scope.o \

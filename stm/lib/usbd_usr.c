@@ -46,8 +46,8 @@ USBD_Usr_cb_TypeDef USR_cb = {
 * @retval None
 */
 void USBD_USR_Init() {
-    printf("USB OTG FS\n");
-    printf("USB device start\n");
+    //printf("USB OTG FS\n");
+    //printf("USB device start\n");
 }
 
 /**
@@ -57,7 +57,7 @@ void USBD_USR_Init() {
 * @retval None
 */
 void USBD_USR_DeviceReset(uint8_t speed) {
-    printf("USB reset %d\n", speed);
+    //printf("USB reset %d\n", speed);
 }
 
 /**
@@ -67,7 +67,7 @@ void USBD_USR_DeviceReset(uint8_t speed) {
 * @retval Staus
 */
 void USBD_USR_DeviceConfigured() {
-    printf("USB dev config\n");
+    //printf("USB dev config\n");
 }
 
 /**
@@ -77,7 +77,7 @@ void USBD_USR_DeviceConfigured() {
 * @retval None
 */
 void USBD_USR_DeviceSuspended() {
-    printf("USB dev suspend\n");
+    //printf("USB dev suspend\n");
 }
 
 /**
@@ -87,7 +87,7 @@ void USBD_USR_DeviceSuspended() {
 * @retval None
 */
 void USBD_USR_DeviceResumed() {
-    printf("USB dev resume\n");
+    //printf("USB dev resume\n");
 }
 
 
@@ -98,7 +98,7 @@ void USBD_USR_DeviceResumed() {
 * @retval Staus
 */
 void USBD_USR_DeviceConnected() {
-    printf("USB dev connect\n");
+    //printf("USB dev connect\n");
 }
 
 
@@ -109,7 +109,7 @@ void USBD_USR_DeviceConnected() {
 * @retval Staus
 */
 void USBD_USR_DeviceDisconnected() {
-    printf("USB dev disconn\n");
+    //printf("USB dev disconn\n");
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

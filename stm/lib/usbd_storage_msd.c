@@ -28,6 +28,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_mem.h"
 #include "usb_conf.h"
+
+#include "misc.h"
+#include "storage.h"
 #include "diskio.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -198,9 +201,9 @@ int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint32_t *block_si
   */
 
   
-  *block_size =  512;  
+  *block_size = storage_get_block_size();
   //*block_num =  SDCardInfo.CardCapacity / 512;  
-  *block_num = 256 + 128;
+  *block_num = storage_get_block_count();
   
   return (0);
   
@@ -305,7 +308,7 @@ int8_t STORAGE_Write (uint8_t lun,
   while (SD_GetStatus() != SD_TRANSFER_OK);  
 #endif  
 */
-    disk_write(0, buf, blk_addr, blk_len);
+    //disk_write(0, buf, blk_addr, blk_len);
   return (0);
 }
 

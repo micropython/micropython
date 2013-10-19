@@ -9,6 +9,7 @@
 #include "led.h"
 #include "lcd.h"
 #include "storage.h"
+#include "mma.h"
 #include "usb.h"
 
 static void impl02_c_version() {
@@ -24,137 +25,6 @@ static void impl02_c_version() {
         }
         x = x + 1;
     }
-}
-
-void set_bits(__IO uint32_t *addr, uint32_t shift, uint32_t mask, uint32_t value) {
-    uint32_t x = *addr;
-    x &= ~(mask << shift);
-    x |= (value << shift);
-    *addr = x;
-}
-
-void gpio_init() {
-    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOAEN;
-}
-
-/*
-void gpio_pin_af(GPIO_TypeDef *gpio, uint32_t pin, uint32_t af) {
-    // set the AF bits for the given pin
-    // pins 0-7 use low word of AFR, pins 8-15 use high word
-    set_bits(&gpio->AFR[pin >> 3], 4 * (pin & 0x07), 0xf, af);
-}
-*/
-
-static void mma_init() {
-    // XXX
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
-    //gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
-    //gpio_pin_init(GPIOB, 7 /* B7 is SDA */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
-    //gpio_pin_af(GPIOB, 6, 4 /* AF 4 for I2C1 */);
-    //gpio_pin_af(GPIOB, 7, 4 /* AF 4 for I2C1 */);
-
-    // get clock speeds
-    RCC_ClocksTypeDef rcc_clocks;
-    RCC_GetClocksFreq(&rcc_clocks);
-
-    // disable the I2C peripheral before we configure it
-    I2C1->CR1 &= ~I2C_CR1_PE;
-
-    // program peripheral input clock
-    I2C1->CR2 = 4; // no interrupts; 4 MHz (hopefully!) (could go up to 42MHz)
-
-    // configure clock control reg
-    uint32_t freq = rcc_clocks.PCLK1_Frequency / (100000 << 1); // want 100kHz, this is the formula for freq
-    I2C1->CCR = freq; // standard mode (speed), freq calculated as above
-
-    // configure rise time reg
-    I2C1->TRISE = (rcc_clocks.PCLK1_Frequency / 1000000) + 1; // formula for trise, gives maximum rise time
-
-    // enable the I2C peripheral
-    I2C1->CR1 |= I2C_CR1_PE;
-
-    // set START bit in CR1 to generate a start cond!
-}
-
-static uint32_t i2c_get_sr() {
-    // must read SR1 first, then SR2, as the read can clear some flags
-    uint32_t sr1 = I2C1->SR1;
-    uint32_t sr2 = I2C1->SR2;
-    return (sr2 << 16) | sr1;
-}
-
-static void mma_restart(uint8_t addr, int write) {
-    // send start condition
-    I2C1->CR1 |= I2C_CR1_START;
-
-    // wait for BUSY, MSL and SB --> Slave has acknowledged start condition
-    while ((i2c_get_sr() & 0x00030001) != 0x00030001) {
-    }
-
-    if (write) {
-        // send address and write bit
-        I2C1->DR = (addr << 1) | 0;
-        // wait for BUSY, MSL, ADDR, TXE and TRA
-        while ((i2c_get_sr() & 0x00070082) != 0x00070082) {
-        }
-    } else {
-        // send address and read bit
-        I2C1->DR = (addr << 1) | 1;
-        // wait for BUSY, MSL and ADDR flags
-        while ((i2c_get_sr() & 0x00030002) != 0x00030002) {
-        }
-    }
-}
-
-static void mma_start(uint8_t addr, int write) {
-    // wait until I2C is not busy
-    while (I2C1->SR2 & I2C_SR2_BUSY) {
-    }
-
-    // do rest of start
-    mma_restart(addr, write);
-}
-
-static void mma_send_byte(uint8_t data) {
-    // send byte
-    I2C1->DR = data;
-    // wait for TRA, BUSY, MSL, TXE and BTF (byte transmitted)
-    int timeout = 1000000;
-    while ((i2c_get_sr() & 0x00070084) != 0x00070084) {
-        if (timeout-- <= 0) {
-            printf("mma_send_byte timed out!\n");
-            break;
-        }
-    }
-}
-
-static uint8_t mma_read_ack() {
-    // enable ACK of received byte
-    I2C1->CR1 |= I2C_CR1_ACK;
-    // wait for BUSY, MSL and RXNE (byte received)
-    while ((i2c_get_sr() & 0x00030040) != 0x00030040) {
-    }
-    // read and return data
-    uint8_t data = I2C1->DR;
-    return data;
-}
-
-static uint8_t mma_read_nack() {
-    // disable ACK of received byte (to indicate end of receiving)
-    I2C1->CR1 &= (uint16_t)~((uint16_t)I2C_CR1_ACK);
-    // last byte should apparently also generate a stop condition
-    I2C1->CR1 |= I2C_CR1_STOP;
-    // wait for BUSY, MSL and RXNE (byte received)
-    while ((i2c_get_sr() & 0x00030040) != 0x00030040) {
-    }
-    // read and return data
-    uint8_t data = I2C1->DR;
-    return data;
-}
-
-static void mma_stop() {
-    // send stop condition
-    I2C1->CR1 |= I2C_CR1_STOP;
 }
 
 #define PYB_USRSW_PORT (GPIOA)
@@ -200,7 +70,6 @@ void __fatal_error(const char *msg) {
 #include "compile.h"
 #include "runtime.h"
 
-#if 0
 py_obj_t pyb_delay(py_obj_t count) {
     sys_tick_delay_ms(rt_get_int(count));
     return py_const_none;
@@ -218,14 +87,13 @@ py_obj_t pyb_sw() {
         return py_const_false;
     }
 }
-#endif
 
 #include "ff.h"
 FATFS fatfs0;
 
+#include "nlr.h"
 
 /*
-#include "nlr.h"
 void g(uint i) {
     printf("g:%d\n", i);
     if (i & 1) {
@@ -262,7 +130,7 @@ void fatality() {
     led_state(PYB_LED_G2, 1);
 }
 
-static const char *fresh_boot_py =
+static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\n"
 "# can run arbitrary Python, but best to keep it minimal\n"
 "\n"
@@ -316,9 +184,14 @@ static void board_info() {
 int main() {
     // TODO disable JTAG
 
+    // set interrupt priority config to use all 4 bits for pre-empting
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+    // enable the CCM RAM and the GPIO's
+    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
+
     // basic sub-system init
     sys_tick_init();
-    gpio_init();
     led_init();
 
     // turn on LED to indicate bootup
@@ -330,8 +203,8 @@ int main() {
     storage_init();
 
     // Python init
-    //qstr_init();
-    //rt_init();
+    qstr_init();
+    rt_init();
 
     // print a message
     printf(" micro py board\n");
@@ -356,8 +229,8 @@ int main() {
                 __fatal_error("could not create LFS");
             }
 
-            // keep LED on for at least 100ms
-            sys_tick_wait_at_least(stc, 100);
+            // keep LED on for at least 200ms
+            sys_tick_wait_at_least(stc, 200);
             led_state(PYB_LED_R2, 0);
         } else {
             __fatal_error("could not access LFS");
@@ -390,8 +263,8 @@ int main() {
             // TODO check we could write n bytes
             f_close(&fp);
 
-            // keep LED on for at least 100ms
-            sys_tick_wait_at_least(stc, 100);
+            // keep LED on for at least 200ms
+            sys_tick_wait_at_least(stc, 200);
             led_state(PYB_LED_R2, 0);
         }
     }
@@ -419,7 +292,6 @@ int main() {
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //sys_tick_delay_ms(1000);
 
-    #if 0
     // Python!
     if (0) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
@@ -570,7 +442,6 @@ int main() {
             }
         }
     }
-    #endif
 
     // benchmark C version of impl02.py
     if (0) {
@@ -663,7 +534,7 @@ int main() {
             led_state(PYB_LED_G1, 0);
         }
         if (sys_tick_has_passed(stc, 500)) {
-            stc = sys_tick_counter;
+            stc += 500;
             led_toggle(PYB_LED_G2);
         }
     }

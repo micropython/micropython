@@ -53,6 +53,14 @@ void storage_init() {
     }
 }
 
+uint32_t storage_get_block_size() {
+    return BLOCK_SIZE;
+}
+
+uint32_t storage_get_block_count() {
+    return FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS;
+}
+
 void storage_flush() {
     cache_flush();
 }

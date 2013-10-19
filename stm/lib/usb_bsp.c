@@ -106,8 +106,8 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_OTG1_FS);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_OTG1_FS);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_OTG_FS);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_OTG_FS);
 
     /* Configure VBUS Pin (or disable VBUS_SENSING_ENABLED) */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
@@ -123,16 +123,16 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
 
 /**
 * @brief  USB_OTG_BSP_EnableInterrupt
-*         Enabele USB Global interrupt
+*         Enable USB Global interrupt
 * @param  None
 * @retval None
 */
 void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev) {
+    // this assumes we use NVIC_PriorityGroup_4
     NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
     NVIC_InitStructure.NVIC_IRQChannel = OTG_FS_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 8;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }
