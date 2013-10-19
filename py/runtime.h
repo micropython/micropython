@@ -76,7 +76,7 @@ typedef enum {
     RT_F_NUMBER_OF,
 } rt_fun_kind_t;
 
-extern const void *const rt_fun_table[RT_F_NUMBER_OF];
+extern void *const rt_fun_table[RT_F_NUMBER_OF];
 
 typedef machine_ptr_t py_obj_t; // must be of pointer size
 typedef py_obj_t (*py_fun_0_t)();

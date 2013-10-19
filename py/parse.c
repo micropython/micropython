@@ -55,9 +55,9 @@ enum {
 #define opt_tok(t)              (RULE_ARG_OPT_TOK | PY_TOKEN_##t)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 #ifdef USE_RULE_NAME
-#define DEF_RULE(rule, comp, kind, arg...) static rule_t rule_##rule = { RULE_##rule, kind, #rule, { arg } };
+#define DEF_RULE(rule, comp, kind, arg...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { arg } };
 #else
-#define DEF_RULE(rule, comp, kind, arg...) static rule_t rule_##rule = { RULE_##rule, kind, { arg } };
+#define DEF_RULE(rule, comp, kind, arg...) static const rule_t rule_##rule = { RULE_##rule, kind, { arg } };
 #endif
 #include "grammar.h"
 #undef or
@@ -71,7 +71,7 @@ enum {
 #undef one_or_more
 #undef DEF_RULE
 
-static rule_t *rules[] = {
+static const rule_t *rules[] = {
     NULL,
 #define DEF_RULE(rule, comp, kind, arg...) &rule_##rule,
 #include "grammar.h"
@@ -92,7 +92,7 @@ typedef struct _parser_t {
     py_parse_node_t *result_stack;
 } parser_t;
 
-static void push_rule(parser_t *parser, rule_t *rule, int arg_i) {
+static void push_rule(parser_t *parser, const rule_t *rule, int arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
         parser->rule_stack_alloc *= 2;
         parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc);
@@ -109,7 +109,7 @@ static void push_rule_from_arg(parser_t *parser, uint arg) {
     push_rule(parser, rules[rule_id], 0);
 }
 
-static void pop_rule(parser_t *parser, rule_t **rule, uint *arg_i) {
+static void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i) {
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
@@ -243,7 +243,7 @@ static void push_result_token(parser_t *parser, const py_lexer_t *lex) {
     push_result_node(parser, pn);
 }
 
-static void push_result_rule(parser_t *parser, rule_t *rule, int num_args) {
+static void push_result_rule(parser_t *parser, const rule_t *rule, int num_args) {
     py_parse_node_struct_t *pn = parse_node_new_struct(rule->rule_id, num_args);
     for (int i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
@@ -270,7 +270,7 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
 
     uint n, i;
     bool backtrack = false;
-    rule_t *rule;
+    const rule_t *rule;
     py_token_kind_t tok_kind;
     bool emit_rule;
     bool had_trailing_sep;
