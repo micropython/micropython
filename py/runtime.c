@@ -1546,7 +1546,7 @@ py_obj_t rt_iternext(py_obj_t o_in) {
     }
 }
 
-void *rt_fun_table[RT_F_NUMBER_OF] = {
+const void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_load_const_str,
     rt_load_name,
     rt_load_global,
