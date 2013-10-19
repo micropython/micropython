@@ -9,6 +9,7 @@
 #include "led.h"
 #include "lcd.h"
 #include "storage.h"
+#include "usb.h"
 
 static void impl02_c_version() {
     int x = 0;
@@ -199,6 +200,7 @@ void __fatal_error(const char *msg) {
 #include "compile.h"
 #include "runtime.h"
 
+#if 0
 py_obj_t pyb_delay(py_obj_t count) {
     sys_tick_delay_ms(rt_get_int(count));
     return py_const_none;
@@ -216,13 +218,14 @@ py_obj_t pyb_sw() {
         return py_const_false;
     }
 }
+#endif
 
 #include "ff.h"
 FATFS fatfs0;
 
-#include "nlr.h"
 
 /*
+#include "nlr.h"
 void g(uint i) {
     printf("g:%d\n", i);
     if (i & 1) {
@@ -327,8 +330,8 @@ int main() {
     storage_init();
 
     // Python init
-    qstr_init();
-    rt_init();
+    //qstr_init();
+    //rt_init();
 
     // print a message
     printf(" micro py board\n");
@@ -408,18 +411,8 @@ int main() {
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
 
-    /*
-    for (;;) {
-        led_state(PYB_LED_G2, 1);
-        sys_tick_wait_at_least(sys_tick_counter, 500);
-        led_state(PYB_LED_G2, 0);
-        sys_tick_wait_at_least(sys_tick_counter, 500);
-    }
-    */
-
     // USB
-    if (0) {
-        void usb_init();
+    if (1) {
         usb_init();
     }
 

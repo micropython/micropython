@@ -1,4 +1,6 @@
 #include <stm32f4xx_gpio.h>
+
+#include "misc.h"
 #include "systick.h"
 #include "lcd.h"
 #include "font_petme128_8x8.h"

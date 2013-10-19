@@ -4,6 +4,7 @@
 #include "usbd_pyb_core.h"
 #include "usbd_usr.h"
 #include "usbd_desc.h"
+#include "usb.h"
 
 extern CDC_IF_Prop_TypeDef VCP_fops;
 

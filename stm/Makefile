@@ -29,11 +29,9 @@ SRC_S = \
 	startup_stm32f40xx.s \
 
 PY_O = \
-	nlrthumb.o \
+#	nlrthumb.o \
 	malloc.o \
 	qstr.o \
-	runtime.o \
-	vm.o \
 #	misc.o \
 	lexer.o \
 	parse.o \
@@ -45,6 +43,8 @@ PY_O = \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
+	runtime.o \
+	vm.o \
 
 SRC_FATFS = \
 	ff.c \
