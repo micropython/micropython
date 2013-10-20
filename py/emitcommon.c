@@ -28,7 +28,7 @@ void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_ta
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
         EMIT(load_fast, qstr, id->local_num);
     } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(load_deref, qstr);
+        EMIT(load_deref, qstr, id->local_num);
     } else {
         assert(0);
     }
@@ -48,7 +48,7 @@ void emit_common_store_id(emit_t *emit, const emit_method_table_t *emit_method_t
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
         EMIT(store_fast, qstr, id->local_num);
     } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(store_deref, qstr);
+        EMIT(store_deref, qstr, id->local_num);
     } else {
         assert(0);
     }
@@ -68,7 +68,7 @@ void emit_common_delete_id(emit_t *emit, const emit_method_table_t *emit_method_
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
         EMIT(delete_fast, qstr, id->local_num);
     } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(delete_deref, qstr);
+        EMIT(delete_deref, qstr, id->local_num);
     } else {
         assert(0);
     }

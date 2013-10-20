@@ -279,17 +279,17 @@ static void emit_cpy_load_global(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_cpy_load_deref(emit_t *emit, qstr qstr) {
+static void emit_cpy_load_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
-        printf("LOAD_DEREF %s\n", qstr_str(qstr));
+        printf("LOAD_DEREF %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
-static void emit_cpy_load_closure(emit_t *emit, qstr qstr) {
+static void emit_cpy_load_closure(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
-        printf("LOAD_CLOSURE %s\n", qstr_str(qstr));
+        printf("LOAD_CLOSURE %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
@@ -332,10 +332,10 @@ static void emit_cpy_store_global(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_cpy_store_deref(emit_t *emit, qstr qstr) {
+static void emit_cpy_store_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
-        printf("STORE_DEREF %s\n", qstr_str(qstr));
+        printf("STORE_DEREF %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
@@ -381,10 +381,10 @@ static void emit_cpy_delete_global(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_cpy_delete_deref(emit_t *emit, qstr qstr) {
+static void emit_cpy_delete_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
-        printf("DELETE_DEREF %s\n", qstr_str(qstr));
+        printf("DELETE_DEREF %d %s\n", local_num, qstr_str(qstr));
     }
 }
 

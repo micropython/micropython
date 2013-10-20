@@ -7,6 +7,7 @@ enum {
 };
 
 typedef struct _id_info_t {
+    // TODO compress this info to make structure smaller in memory
     bool param;
     int kind;
     qstr qstr;

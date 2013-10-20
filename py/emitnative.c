@@ -675,13 +675,13 @@ static void emit_native_load_global(emit_t *emit, qstr qstr) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_load_deref(emit_t *emit, qstr qstr) {
+static void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
     assert(0);
 }
 
-static void emit_native_load_closure(emit_t *emit, qstr qstr) {
+static void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     assert(0);
 }
@@ -760,7 +760,7 @@ static void emit_native_store_global(emit_t *emit, qstr qstr) {
     assert(0);
 }
 
-static void emit_native_store_deref(emit_t *emit, qstr qstr) {
+static void emit_native_store_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     assert(0);
 }
@@ -812,7 +812,7 @@ static void emit_native_delete_global(emit_t *emit, qstr qstr) {
     assert(0);
 }
 
-static void emit_native_delete_deref(emit_t *emit, qstr qstr) {
+static void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
     // not supported
     assert(0);
 }

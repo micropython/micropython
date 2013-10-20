@@ -291,12 +291,12 @@ static void emit_bc_load_global(emit_t *emit, qstr qstr) {
     emit_write_byte_1_qstr(emit, PYBC_LOAD_GLOBAL, qstr);
 }
 
-static void emit_bc_load_deref(emit_t *emit, qstr qstr) {
+static void emit_bc_load_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1);
     assert(0);
 }
 
-static void emit_bc_load_closure(emit_t *emit, qstr qstr) {
+static void emit_bc_load_closure(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1);
     assert(0);
 }
@@ -337,7 +337,7 @@ static void emit_bc_store_global(emit_t *emit, qstr qstr) {
     emit_write_byte_1_qstr(emit, PYBC_STORE_GLOBAL, qstr);
 }
 
-static void emit_bc_store_deref(emit_t *emit, qstr qstr) {
+static void emit_bc_store_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, -1);
     assert(0);
 }
@@ -374,9 +374,10 @@ static void emit_bc_delete_global(emit_t *emit, qstr qstr) {
     emit_write_byte_1_qstr(emit, PYBC_DELETE_GLOBAL, qstr);
 }
 
-static void emit_bc_delete_deref(emit_t *emit, qstr qstr) {
+static void emit_bc_delete_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 0);
-    emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, qstr);
+    assert(0);
+    //emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, qstr);
 }
 
 static void emit_bc_delete_attr(emit_t *emit, qstr qstr) {

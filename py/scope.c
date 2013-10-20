@@ -103,6 +103,7 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
     id_info->param = false;
     id_info->kind = 0;
     id_info->qstr = qstr;
+    id_info->local_num = 0;
     *added = true;
     return id_info;
 }

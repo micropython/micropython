@@ -721,7 +721,7 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
         for (int i = 0; i < this_scope->id_info_len; i++) {
             id_info_t *id_info = &this_scope->id_info[i];
             if (id_info->kind == ID_INFO_KIND_FREE) {
-                EMIT(load_closure, id_info->qstr);
+                EMIT(load_closure, id_info->qstr, id_info->local_num);
                 nfree += 1;
             }
         }
@@ -2624,7 +2624,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (id->kind == ID_INFO_KIND_LOCAL) {
             EMIT(load_const_tok, PY_TOKEN_KW_NONE);
         } else {
-            EMIT(load_closure, comp->qstr___class__);
+            EMIT(load_closure, comp->qstr___class__, 0); // XXX check this is the correct local num
         }
         EMIT(return_value);
     }
@@ -2728,6 +2728,8 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
             scope->num_locals += 1;
         }
     }
+
+    // TODO compute the index of free and cell vars (freevars[idx] in CPython)
 
     // compute flags
     //scope->flags = 0; since we set some things in parameters
