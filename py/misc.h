@@ -58,9 +58,15 @@ void encode_le32(byte *buf, unsigned int i);
 
 /** variable string *********************************************/
 
-/*
-typedef struct _vstr_t vstr_t;
+typedef struct _vstr_t {
+    int alloc;
+    int len;
+    char *buf;
+    bool had_error;
+} vstr_t;
 
+void vstr_init(vstr_t *vstr);
+void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new();
 void vstr_free(vstr_t *vstr);
 void vstr_reset(vstr_t *vstr);
@@ -69,14 +75,14 @@ char *vstr_str(vstr_t *vstr);
 int vstr_len(vstr_t *vstr);
 void vstr_hint_size(vstr_t *vstr, int size);
 char *vstr_add_len(vstr_t *vstr, int len);
+void vstr_add_byte(vstr_t *vstr, byte v);
+void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);
 void vstr_add_strn(vstr_t *vstr, const char *str, int len);
-void vstr_add_byte(vstr_t *vstr, byte v);
-void vstr_add_le16(vstr_t *vstr, unsigned short v);
-void vstr_add_le32(vstr_t *vstr, unsigned int v);
+//void vstr_add_le16(vstr_t *vstr, unsigned short v);
+//void vstr_add_le32(vstr_t *vstr, unsigned int v);
 void vstr_cut_tail(vstr_t *vstr, int len);
-void vstr_printf(vstr_t *vstr, const char *fmt, ...);
-*/
+//void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 
 /** unique string ***********************************************/
 
