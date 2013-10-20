@@ -24,6 +24,7 @@ SRC_C = \
 	systick.c  \
 	stm32fxxx_it.c \
 	usb.c \
+	lexerstm.c \
 #	sd.c \
 
 SRC_S = \
@@ -33,6 +34,7 @@ PY_O = \
 	nlrthumb.o \
 	malloc.o \
 	qstr.o \
+	vstr.o \
 	misc.o \
 	lexer.o \
 	parse.o \

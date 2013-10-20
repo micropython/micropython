@@ -122,7 +122,7 @@ typedef struct _py_token_t {
 // it can be called again after returning PY_LEXER_CHAR_EOF, and in that case must return PY_LEXER_CHAR_EOF
 #define PY_LEXER_CHAR_EOF (-1)
 typedef unichar (*py_lexer_stream_next_char_t)(void*);
-typedef void (*py_lexer_stream_free_t)(void*);
+typedef void (*py_lexer_stream_close_t)(void*);
 
 typedef struct _py_lexer_t py_lexer_t;
 
@@ -130,7 +130,7 @@ void py_token_show(const py_token_t *tok);
 void py_token_show_error_prefix(const py_token_t *tok);
 bool py_token_show_error(const py_token_t *tok, const char *msg);
 
-py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_free_t stream_free);
+py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_close_t stream_close);
 void py_lexer_free(py_lexer_t *lex);
 void py_lexer_to_next(py_lexer_t *lex);
 const py_token_t *py_lexer_cur(const py_lexer_t *lex);

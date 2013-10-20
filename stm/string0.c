@@ -11,6 +11,21 @@ void *memcpy(void *dest, const void *src, size_t n) {
     return dest;
 }
 
+void *memmove(void *dest, const void *src, size_t n) {
+    if (src < dest && dest < src + n) {
+        // need to copy backwards
+        uint8_t *d = dest + n - 1;
+        const uint8_t *s = src + n - 1;
+        for (; n > 0; n--) {
+            *d-- = *s--;
+        }
+        return dest;
+    } else {
+        // can use normal memcpy
+        return memcpy(dest, src, n);
+    }
+}
+
 void *memset(void *s, int c, size_t n) {
     uint8_t *s2 = s;
     for (; n > 0; n--) {

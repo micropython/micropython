@@ -11,6 +11,7 @@
 #include "storage.h"
 #include "mma.h"
 #include "usb.h"
+#include "ff.h"
 
 static void impl02_c_version() {
     int x = 0;
@@ -63,8 +64,10 @@ void __fatal_error(const char *msg) {
     }
 }
 
+#include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
+#include "lexerstm.h"
 #include "mpyconfig.h"
 #include "parse.h"
 #include "compile.h"
@@ -88,10 +91,8 @@ py_obj_t pyb_sw() {
     }
 }
 
-#include "ff.h"
 FATFS fatfs0;
 
-#include "nlr.h"
 
 /*
 void g(uint i) {
@@ -293,7 +294,7 @@ int main() {
     //sys_tick_delay_ms(1000);
 
     // Python!
-    if (0) {
+    if (1) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
         const char *pysrc =
             // impl01.py
@@ -323,7 +324,6 @@ int main() {
             "        x = x + 1\n"
             "f()\n";
             */
-            /*
             "print('in python!')\n"
             "x = 0\n"
             "while x < 4:\n"
@@ -331,11 +331,10 @@ int main() {
             "    pyb_delay(201)\n"
             "    pyb_led(False)\n"
             "    pyb_delay(201)\n"
-            "    x = x + 1\n"
+            "    x += 1\n"
             "print('press me!')\n"
             "while True:\n"
             "    pyb_led(pyb_sw())\n";
-            */
             /*
             // impl16.py
             "@micropython.asm_thumb\n"
@@ -372,6 +371,7 @@ int main() {
             "except:\n"
             "    print(x)\n";
             */
+            /*
             // impl19.py
             "# for loop\n"
             "def f():\n"
@@ -380,29 +380,27 @@ int main() {
             "            for z in range(400):\n"
             "                pass\n"
             "f()\n";
+            */
 
-        py_lexer_t *lex = py_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
+        py_lexer_str_buf_t py_lexer_str_buf;
+        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &py_lexer_str_buf);
 
-        if (0) {
-            while (!py_lexer_is_kind(lex, PY_TOKEN_END)) {
-                py_token_show(py_lexer_cur(lex));
-                py_lexer_to_next(lex);
-                sys_tick_delay_ms(1000);
-            }
-        } else {
-            // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
-            printf("lex; al=%u\n", m_get_total_bytes_allocated());
-            sys_tick_delay_ms(1000);
-            py_parse_node_t pn = py_parse(lex, 0);
-            //printf("----------------\n");
+        // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
+        printf("lex; al=%u\n", m_get_total_bytes_allocated());
+        sys_tick_delay_ms(1000);
+        py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
+        py_lexer_free(lex);
+        if (pn != PY_PARSE_NODE_NULL) {
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
             //parse_node_show(pn, 0);
-            py_compile(pn, false);
+            bool comp_ok = py_compile(pn, false);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
 
-            if (1) {
+            if (!comp_ok) {
+                printf("compile error\n");
+            } else {
                 // execute it!
 
                 // add some functions to the python namespace

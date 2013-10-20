@@ -14,7 +14,7 @@ struct _py_lexer_t {
     const char *name;           // name of source
     void *stream_data;          // data for stream
     py_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
-    py_lexer_stream_free_t stream_free;             // stream callback to free
+    py_lexer_stream_close_t stream_close;           // stream callback to free
 
     unichar chr0, chr1, chr2;   // current cached characters from source
 
@@ -589,13 +589,13 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
     }
 }
 
-py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_free_t stream_free) {
+py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_close_t stream_close) {
     py_lexer_t *lex = m_new(py_lexer_t, 1);
 
     lex->name = src_name; // TODO do we need to strdup this?
     lex->stream_data = stream_data;
     lex->stream_next_char = stream_next_char;
-    lex->stream_free = stream_free;
+    lex->stream_close = stream_close;
     lex->line = 1;
     lex->column = 1;
     lex->emit_dent = 0;
@@ -632,8 +632,8 @@ py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_strea
 
 void py_lexer_free(py_lexer_t *lex) {
     if (lex) {
-        if (lex->stream_free) {
-            lex->stream_free(lex->stream_data);
+        if (lex->stream_close) {
+            lex->stream_close(lex->stream_data);
         }
         m_free(lex);
     }

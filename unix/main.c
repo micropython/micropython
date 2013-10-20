@@ -68,8 +68,11 @@ void do_repl() {
                 line = line3;
             }
         }
+
         py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
         py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
+        py_lexer_free(lex);
+
         if (pn != PY_PARSE_NODE_NULL) {
             //py_parse_node_show(pn, 0);
             bool comp_ok = py_compile(pn, true);
@@ -111,14 +114,14 @@ void do_file(const char *file) {
         // compile
 
         py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
+        py_lexer_free(lex);
+
         if (pn != PY_PARSE_NODE_NULL) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
             bool comp_ok = py_compile(pn, false);
             //printf("----------------\n");
-
-            py_lexer_free(lex);
 
 #if MICROPY_EMIT_CPYTHON
             if (!comp_ok) {
