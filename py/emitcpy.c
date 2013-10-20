@@ -211,7 +211,6 @@ static void emit_cpy_load_const_verbatim_strn(emit_t *emit, const char *str, int
 }
 
 static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
-    // TODO strings should be escaped before we get here
     if (emit->pass == PASS_3) {
         const char *str = qstr_str(qstr);
         int len = strlen(str);
@@ -237,13 +236,8 @@ static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, boo
         for (int i = 0; i < len; i++) {
             if (str[i] == '\n') {
                 printf("\\n");
-            } else if (str[i] == '\\' && str[i + 1] == '\'') {
-                i += 1;
-                if (quote_single) {
-                    printf("\\'");
-                } else {
-                    printf("'");
-                }
+            } else if (str[i] == '\\') {
+                printf("\\\\");
             } else if (str[i] == '\'' && quote_single) {
                 printf("\\'");
             } else {

@@ -6,6 +6,7 @@
 #include "misc.h"
 #include "mpyconfig.h"
 #include "lexer.h"
+#include "lexerunix.h"
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
@@ -67,7 +68,7 @@ void do_repl() {
                 line = line3;
             }
         }
-        py_lexer_t *lex = py_lexer_from_str_len("<stdin>", line, strlen(line), false);
+        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
         py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
         if (pn != PY_PARSE_NODE_NULL) {
             //py_parse_node_show(pn, 0);
@@ -91,7 +92,7 @@ void do_repl() {
 }
 
 void do_file(const char *file) {
-    py_lexer_t *lex = py_lexer_from_file(file);
+    py_lexer_t *lex = py_lexer_new_from_file(file);
     //const char *pysrc = "def f():\n  x=x+1\n  print(42)\n";
     //py_lexer_t *lex = py_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
     if (lex == NULL) {
@@ -119,7 +120,11 @@ void do_file(const char *file) {
 
             py_lexer_free(lex);
 
-#if !MICROPY_EMIT_CPYTHON
+#if MICROPY_EMIT_CPYTHON
+            if (!comp_ok) {
+                printf("compile error\n");
+            }
+#else
             if (1 && comp_ok) {
                 // execute it
                 py_obj_t module_fun = rt_make_function_from_id(1);

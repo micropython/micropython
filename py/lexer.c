@@ -9,48 +9,43 @@
 #include "lexer.h"
 
 #define TAB_SIZE (8)
-#define CHR_EOF (-1)
 
 struct _py_lexer_t {
-    const char *name;           // (file) name of source
-    bool free;                  // free source when done with it
+    const char *name;           // name of source
+    void *stream_data;          // data for stream
+    py_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
+    py_lexer_stream_free_t stream_free;             // stream callback to free
 
-    const char *src_beg;        // beginning of source
-    const char *src_cur;        // current location in source; points to chr0
-    const char *src_end;        // end (exclusive) of source
-    unichar chr0, chr1, chr2;   // current characters from source
+    unichar chr0, chr1, chr2;   // current cached characters from source
 
     uint line;                  // source line
     uint column;                // source column
 
-    uint cont_line;             // continued line
-
-    int emit_dent;
-    int nested_bracket_level;
+    int emit_dent;              // non-zero when there are INDENT/DEDENT tokens to emit
+    int nested_bracket_level;   // >0 when there are nested brackets over multiple lines
 
     uint alloc_indent_level;
     uint num_indent_level;
     uint16_t *indent_level;
 
+    vstr_t vstr;
     py_token_t tok_cur;
-    py_token_t tok_next;
 };
 
-static bool py_token_is_str(const py_token_t *tok, const char *str) {
+bool str_strn_equal(const char *str, const char *strn, int len) {
     uint i = 0;
-    const char *tstr = tok->str;
 
-    while (i < tok->len && *tstr == *str) {
+    while (i < len && *str == *strn) {
         ++i;
-        ++tstr;
         ++str;
+        ++strn;
     }
 
-    return i == tok->len && *str == 0;
+    return i == len && *str == 0;
 }
 
 void py_token_show(const py_token_t *tok) {
-    printf("(%s:%d:%d) kind:%d cont_line:%d str:%p len:%d", tok->src_name, tok->src_line, tok->src_column, tok->kind, tok->cont_line, tok->str, tok->len);
+    printf("(%s:%d:%d) kind:%d str:%p len:%d", tok->src_name, tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
     if (tok->str != NULL && tok->len > 0) {
         const char *i = tok->str;
         const char *j = i + tok->len;
@@ -77,8 +72,10 @@ bool py_token_show_error(const py_token_t *tok, const char *msg) {
     return false;
 }
 
+#define CUR_CHAR(lex) ((lex)->chr0)
+
 static bool is_end(py_lexer_t *lex) {
-    return lex->chr0 == CHR_EOF;
+    return lex->chr0 == PY_LEXER_CHAR_EOF;
 }
 
 static bool is_physical_newline(py_lexer_t *lex) {
@@ -142,7 +139,7 @@ static bool is_tail_of_identifier(py_lexer_t *lex) {
 }
 
 static void next_char(py_lexer_t *lex) {
-    if (lex->chr0 == CHR_EOF) {
+    if (lex->chr0 == PY_LEXER_CHAR_EOF) {
         return;
     }
 
@@ -152,12 +149,10 @@ static void next_char(py_lexer_t *lex) {
         // LF is a new line
         ++lex->line;
         lex->column = 1;
-        lex->cont_line = lex->line;
     } else if (lex->chr0 == '\r') {
         // CR is a new line
         ++lex->line;
         lex->column = 1;
-        lex->cont_line = lex->line;
         if (lex->chr1 == '\n') {
             // CR LF is a single new line
             advance = 2;
@@ -173,15 +168,11 @@ static void next_char(py_lexer_t *lex) {
     for (; advance > 0; advance--) {
         lex->chr0 = lex->chr1;
         lex->chr1 = lex->chr2;
-        lex->src_cur++;
-        if (lex->src_cur + 2 < lex->src_end) {
-            lex->chr2 = lex->src_cur[2];
-        } else {
+        lex->chr2 = lex->stream_next_char(lex->stream_data);
+        if (lex->chr2 == PY_LEXER_CHAR_EOF) {
             // EOF
-            if (lex->chr1 != CHR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
+            if (lex->chr1 != PY_LEXER_CHAR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
                 lex->chr2 = '\n'; // insert newline at end of file
-            } else {
-                lex->chr2 = CHR_EOF;
             }
         }
     }
@@ -286,9 +277,9 @@ static const char *tok_kw[] = {
     NULL,
 };
 
-static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
+static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool first_token) {
+    // skip white space and comments
     bool had_physical_newline = false;
-
     while (!is_end(lex)) {
         if (is_physical_newline(lex)) {
             had_physical_newline = true;
@@ -315,15 +306,22 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
         }
     }
 
+    // set token source information
     tok->src_name = lex->name;
     tok->src_line = lex->line;
     tok->src_column = lex->column;
-    tok->kind = PY_TOKEN_INVALID;
-    tok->cont_line = lex->cont_line;
-    tok->str = lex->src_cur;
-    tok->len = 0;
 
-    if (lex->emit_dent < 0) {
+    // start new token text
+    vstr_reset(&lex->vstr);
+
+    if (first_token && lex->line == 1 && lex->column != 1) {
+        // check that the first token is in the first column
+        // if first token is not on first line, we get a physical newline and
+        // this check is done as part of normal indent/dedent checking below
+        // (done to get equivalence with CPython)
+        tok->kind = PY_TOKEN_INDENT;
+
+    } else if (lex->emit_dent < 0) {
         tok->kind = PY_TOKEN_DEDENT;
         lex->emit_dent += 1;
 
@@ -414,19 +412,42 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
             num_quotes = 1;
         }
 
-        // set start of token
-        tok->str = lex->src_cur;
-
         // parse the literal
-        // TODO proper escaping
         int n_closing = 0;
         while (!is_end(lex) && (num_quotes > 1 || !is_char(lex, '\n')) && n_closing < num_quotes) {
             if (is_char(lex, quote_char)) {
                 n_closing += 1;
+                vstr_add_char(&lex->vstr, CUR_CHAR(lex));
             } else {
                 n_closing = 0;
                 if (!is_raw && is_char(lex, '\\')) {
                     next_char(lex);
+                    unichar c = CUR_CHAR(lex);
+                    switch (c) {
+                        case PY_LEXER_CHAR_EOF: break; // TODO a proper error message?
+                        case '\n': c = PY_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                        case '\\': break;
+                        case '\'': break;
+                        case '"': break;
+                        case 'a': c = 0x07; break;
+                        case 'b': c = 0x08; break;
+                        case 't': c = 0x09; break;
+                        case 'n': c = 0x0a; break;
+                        case 'v': c = 0x0b; break;
+                        case 'f': c = 0x0c; break;
+                        case 'r': c = 0x0d; break;
+                        // TODO \ooo octal
+                        case 'x': // TODO \xhh
+                        case 'N': // TODO \N{name} only in strings
+                        case 'u': // TODO \uxxxx only in strings
+                        case 'U': // TODO \Uxxxxxxxx only in strings
+                        default: break; // TODO error message
+                    }
+                    if (c != PY_LEXER_CHAR_EOF) {
+                        vstr_add_char(&lex->vstr, c);
+                    }
+                } else {
+                    vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                 }
             }
             next_char(lex);
@@ -437,33 +458,40 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
             tok->kind = PY_TOKEN_LONELY_STRING_OPEN;
         }
 
-        // set token string (byte) length
-        tok->len = lex->src_cur - tok->str - n_closing;
-
-        // we set the length, return now so it's not set incorrectly below
-        return;
+        // cut off the end quotes from the token text
+        vstr_cut_tail(&lex->vstr, n_closing);
 
     } else if (is_head_of_identifier(lex)) {
         tok->kind = PY_TOKEN_NAME;
 
+        // get first char
+        vstr_add_char(&lex->vstr, CUR_CHAR(lex));
         next_char(lex);
 
+        // get tail chars
         while (!is_end(lex) && is_tail_of_identifier(lex)) {
+            vstr_add_char(&lex->vstr, CUR_CHAR(lex));
             next_char(lex);
         }
 
     } else if (is_digit(lex) || (is_char(lex, '.') && is_following_digit(lex))) {
         tok->kind = PY_TOKEN_NUMBER;
 
+        // get first char
+        vstr_add_char(&lex->vstr, CUR_CHAR(lex));
         next_char(lex);
 
+        // get tail chars
         while (!is_end(lex)) {
             if (is_char_or(lex, 'e', 'E')) {
+                vstr_add_char(&lex->vstr, 'e');
                 next_char(lex);
                 if (is_char(lex, '+') || is_char(lex, '-')) {
+                    vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                     next_char(lex);
                 }
             } else if (is_letter(lex) || is_digit(lex) || is_char_or(lex, '_', '.')) {
+                vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                 next_char(lex);
             } else {
                 break;
@@ -546,13 +574,14 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
         }
     }
 
-    // set token string (byte) length
-    tok->len = lex->src_cur - tok->str;
+    // point token text to vstr buffer
+    tok->str = vstr_str(&lex->vstr);
+    tok->len = vstr_len(&lex->vstr);
 
-    // check for keywords (must be done after setting token string length)
+    // check for keywords
     if (tok->kind == PY_TOKEN_NAME) {
         for (int i = 0; tok_kw[i] != NULL; i++) {
-            if (py_token_is_str(tok, tok_kw[i])) {
+            if (str_strn_equal(tok_kw[i], tok->str, tok->len)) {
                 tok->kind = PY_TOKEN_KW_FALSE + i;
                 break;
             }
@@ -560,83 +589,58 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok) {
     }
 }
 
-py_lexer_t *py_lexer_from_str_len(const char *src_name, const char *str, uint len, bool free_str) {
-    py_lexer_t *lex;
+py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_free_t stream_free) {
+    py_lexer_t *lex = m_new(py_lexer_t, 1);
 
-    lex = m_new(py_lexer_t, 1);
-
-    //lex->name = g_strdup(src_name); // TODO
-    lex->name = src_name;
-    lex->free = free_str;
-    lex->src_beg = str;
-    lex->src_cur = str;
-    lex->src_end = str + len;
+    lex->name = src_name; // TODO do we need to strdup this?
+    lex->stream_data = stream_data;
+    lex->stream_next_char = stream_next_char;
+    lex->stream_free = stream_free;
     lex->line = 1;
     lex->column = 1;
-    lex->cont_line = lex->line;
     lex->emit_dent = 0;
     lex->nested_bracket_level = 0;
     lex->alloc_indent_level = 16;
     lex->num_indent_level = 1;
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     lex->indent_level[0] = 0;
+    vstr_init(&lex->vstr);
 
     // preload characters
-    // TODO unicode
-    if (len == 0) {
-        lex->chr0 = '\n'; // insert newline at end of file
-        lex->chr1 = CHR_EOF;
-        lex->chr2 = CHR_EOF;
-    } else if (len == 1) {
-        lex->chr0 = str[0];
+    lex->chr0 = stream_next_char(stream_data);
+    lex->chr1 = stream_next_char(stream_data);
+    lex->chr2 = stream_next_char(stream_data);
+
+    // if input stream is 0, 1 or 2 characters long and doesn't end in a newline, then insert a newline at the end
+    if (lex->chr0 == PY_LEXER_CHAR_EOF) {
+        lex->chr0 = '\n';
+    } else if (lex->chr1 == PY_LEXER_CHAR_EOF) {
         if (lex->chr0 != '\n' && lex->chr0 != '\r') {
-            lex->chr1 = '\n'; // insert newline at end of file
-        } else {
-            lex->chr1 = CHR_EOF;
+            lex->chr1 = '\n';
         }
-        lex->chr2 = CHR_EOF;
-    } else if (len == 2) {
-        lex->chr0 = str[0];
-        lex->chr1 = str[1];
+    } else if (lex->chr2 == PY_LEXER_CHAR_EOF) {
         if (lex->chr1 != '\n' && lex->chr1 != '\r') {
-            lex->chr2 = '\n'; // insert newline at end of file
-        } else {
-            lex->chr2 = CHR_EOF;
+            lex->chr2 = '\n';
         }
-    } else {
-        lex->chr0 = str[0];
-        lex->chr1 = str[1];
-        lex->chr2 = str[2];
     }
 
-    py_lexer_next_token_into(lex, &lex->tok_cur);
-
-    // check that the first token is in the first column
-    // (done to get equivalence with CPython)
-    if (lex->tok_cur.src_line == 1 && lex->tok_cur.src_column != 1) {
-        lex->tok_next = lex->tok_cur;
-        lex->tok_cur.kind = PY_TOKEN_INDENT;
-    } else {
-        py_lexer_next_token_into(lex, &lex->tok_next);
-    }
+    // preload first token
+    py_lexer_next_token_into(lex, &lex->tok_cur, true);
 
     return lex;
 }
 
 void py_lexer_free(py_lexer_t *lex) {
-    if (lex == NULL) {
-        return;
+    if (lex) {
+        if (lex->stream_free) {
+            lex->stream_free(lex->stream_data);
+        }
+        m_free(lex);
     }
-    //m_free(lex->name);
-    if (lex->free) {
-        m_free((char*)lex->src_beg);
-    }
-    m_free(lex);
 }
 
 void py_lexer_to_next(py_lexer_t *lex) {
-    lex->tok_cur = lex->tok_next;
-    py_lexer_next_token_into(lex, &lex->tok_next);
+    py_lexer_next_token_into(lex, &lex->tok_cur, false);
 }
 
 const py_token_t *py_lexer_cur(const py_lexer_t *lex) {
@@ -650,14 +654,6 @@ bool py_lexer_is_kind(py_lexer_t *lex, py_token_kind_t kind) {
 /*
 bool py_lexer_is_str(py_lexer_t *lex, const char *str) {
     return py_token_is_str(&lex->tok_cur, str);
-}
-
-bool py_lexer_is_next_kind(py_lexer_t *lex, py_token_kind_t kind) {
-    return lex->tok_next.kind == kind;
-}
-
-bool py_lexer_is_next_str(py_lexer_t *lex, const char *str) {
-    return py_token_is_str(&lex->tok_next, str);
 }
 
 bool py_lexer_opt_kind(py_lexer_t *lex, py_token_kind_t kind) {

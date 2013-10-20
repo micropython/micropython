@@ -108,15 +108,21 @@ typedef enum _py_token_kind_t {
 } py_token_kind_t;
 
 typedef struct _py_token_t {
-    const char *src_name;       // (file) name of source
-    uint src_line;              // actual source line
-    uint src_column;            // actual source column
+    const char *src_name;       // name of source
+    uint src_line;              // source line
+    uint src_column;            // source column
 
     py_token_kind_t kind;       // kind of token
-    uint cont_line;             // token belongs to this line in a continued line
-    const char *str;            // string of token
+    const char *str;            // string of token (valid only while this token is current token)
     uint len;                   // (byte) length of string of token
 } py_token_t;
+
+// the next-char function must return the next character in the stream
+// it must return PY_LEXER_CHAR_EOF if end of stream
+// it can be called again after returning PY_LEXER_CHAR_EOF, and in that case must return PY_LEXER_CHAR_EOF
+#define PY_LEXER_CHAR_EOF (-1)
+typedef unichar (*py_lexer_stream_next_char_t)(void*);
+typedef void (*py_lexer_stream_free_t)(void*);
 
 typedef struct _py_lexer_t py_lexer_t;
 
@@ -124,16 +130,13 @@ void py_token_show(const py_token_t *tok);
 void py_token_show_error_prefix(const py_token_t *tok);
 bool py_token_show_error(const py_token_t *tok, const char *msg);
 
-py_lexer_t *py_lexer_from_file(const char *filename);
-py_lexer_t *py_lexer_from_str_len(const char *src_name, const char *str, uint len, bool free_str);
+py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_free_t stream_free);
 void py_lexer_free(py_lexer_t *lex);
 void py_lexer_to_next(py_lexer_t *lex);
 const py_token_t *py_lexer_cur(const py_lexer_t *lex);
 bool py_lexer_is_kind(py_lexer_t *lex, py_token_kind_t kind);
 /* unused
 bool py_lexer_is_str(py_lexer_t *lex, const char *str);
-bool py_lexer_is_next_kind(py_lexer_t *lex, py_token_kind_t kind);
-bool py_lexer_is_next_str(py_lexer_t *lex, const char *str);
 bool py_lexer_opt_kind(py_lexer_t *lex, py_token_kind_t kind);
 bool py_lexer_opt_str(py_lexer_t *lex, const char *str);
 */

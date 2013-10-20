@@ -7,14 +7,15 @@ LDFLAGS =
 
 SRC_C = \
 	main.c \
+	lexerunix.c \
 
 PY_O = \
 	nlrx64.o \
 	malloc.o \
 	qstr.o \
+	vstr.o \
 	misc.o \
 	lexer.o \
-	lexerfile.o \
 	parse.o \
 	scope.o \
 	compile.o \
