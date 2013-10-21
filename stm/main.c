@@ -6,6 +6,8 @@
 #include "std.h"
 
 #include "misc.h"
+#include "mpyconfig.h"
+#include "gc.h"
 #include "systick.h"
 #include "led.h"
 #include "lcd.h"
@@ -13,6 +15,8 @@
 #include "mma.h"
 #include "usb.h"
 #include "ff.h"
+
+extern uint32_t _heap_start;
 
 static void impl02_c_version() {
     int x = 0;
@@ -163,7 +167,6 @@ static void board_info() {
         extern void *_ebss;
         extern void *_estack;
         extern void *_etext;
-        extern void *_heap_start;
         printf("_sidata=%p\n", &_sidata);
         printf("_sdata=%p\n", &_sdata);
         printf("_edata=%p\n", &_edata);
@@ -263,6 +266,14 @@ void do_repl() {
     }
 }
 
+void gc_collect() {
+    gc_collect_start();
+    gc_collect_root((void**)0x20000000, (((uint32_t)&_heap_start) - 0x20000000) / 4);
+    gc_collect_root((void**)(0x20000000 + 0x18000), (0x20000 - 0x18000) / 4);
+    // TODO registers
+    gc_collect_end();
+}
+
 int main() {
     // TODO disable JTAG
 
@@ -283,6 +294,10 @@ int main() {
     sw_init();
     lcd_init();
     storage_init();
+
+    // GC init
+    gc_init(&_heap_start, (void*)(0x20000000 + 0x18000));
+    sys_tick_delay_ms(2000);
 
     // Python init
     qstr_init();

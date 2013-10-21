@@ -12,17 +12,22 @@
 
 extern CDC_IF_Prop_TypeDef VCP_fops;
 
-int is_enabled = 0;
 USB_OTG_CORE_HANDLE USB_OTG_dev;
-char rx_buf[64];
-int rx_buf_in;
-int rx_buf_out;
+
+static int is_enabled = 0;
+static char rx_buf[64];
+static int rx_buf_in;
+static int rx_buf_out;
 
 void usb_init() {
     USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
     rx_buf_in = 0;
     rx_buf_out = 0;
     is_enabled = 1;
+}
+
+bool usb_vcp_is_enabled() {
+    return is_enabled;
 }
 
 void usb_vcp_receive(const char *buf, uint32_t len) {

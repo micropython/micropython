@@ -1,5 +1,8 @@
 #include <stdarg.h>
 #include "std.h"
+#include "misc.h"
+#include "lcd.h"
+#include "usb.h"
 
 #define PF_FLAG_LEFT_ADJUST (0x01)
 #define PF_FLAG_SHOW_SIGN   (0x02)
@@ -208,13 +211,13 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
     return chrs;
 }
 
-void lcd_print_strn(const char *str, unsigned int len);
-void usb_vcp_send_strn(const char* str, int len);
-
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // send stdout to LCD and USB CDC VCP
-    lcd_print_strn(str, len);
-    usb_vcp_send_strn(str, len);
+    if (usb_vcp_is_enabled()) {
+        usb_vcp_send_strn(str, len);
+    } else {
+        lcd_print_strn(str, len);
+    }
 }
 
 static const pfenv_t pfenv_stdout = {0, stdout_print_strn};

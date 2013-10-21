@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include "std.h"
+#include "mpyconfig.h"
+#include "gc.h"
 
+#if 0
 static uint32_t mem = 0;
 
 void *malloc(size_t n) {
@@ -20,6 +23,12 @@ void *malloc(size_t n) {
 void free(void *ptr) {
 }
 
+void *realloc(void *ptr, size_t n) {
+    return malloc(n);
+}
+
+#endif
+
 void *calloc(size_t sz, size_t n) {
     char *ptr = malloc(sz * n);
     for (int i = 0; i < sz * n; i++) {
@@ -28,8 +37,15 @@ void *calloc(size_t sz, size_t n) {
     return ptr;
 }
 
+void *malloc(size_t n) {
+    return gc_alloc(n);
+}
+
+void free(void *ptr) {
+}
+
 void *realloc(void *ptr, size_t n) {
-    return malloc(n);
+    return gc_realloc(ptr, n);
 }
 
 void __assert_func() {

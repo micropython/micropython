@@ -32,6 +32,7 @@ SRC_S = \
 
 PY_O = \
 	nlrthumb.o \
+	gc.o \
 	malloc.o \
 	qstr.o \
 	vstr.o \

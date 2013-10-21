@@ -8,6 +8,8 @@
 
 // type definitions for the specific machine
 
+#define BYTES_PER_WORD (4)
+
 typedef int32_t machine_int_t; // must be pointer size
 typedef uint32_t machine_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
