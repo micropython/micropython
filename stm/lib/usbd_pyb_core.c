@@ -588,12 +588,14 @@ static uint8_t usbd_pyb_DataIn(void *pdev, uint8_t epnum) {
                               USB_Tx_length);
                 }
             }
-            break;
+            return USBD_OK;
 
         case (MSC_IN_EP & 0x7f): // TODO?
             MSC_BOT_DataIn(pdev, epnum);
-            break;
+            return USBD_OK;
     }
+
+    printf("DI %x\n", epnum);
 
     return USBD_OK;
 }
@@ -622,12 +624,14 @@ static uint8_t usbd_pyb_DataOut(void *pdev, uint8_t epnum) {
                              CDC_OUT_EP,
                              (uint8_t*)(USB_Rx_Buffer),
                              CDC_DATA_OUT_PACKET_SIZE);
-            break;
+            return USBD_OK;
 
         case (MSC_OUT_EP & 0x7f): // TODO is this correct?
             MSC_BOT_DataOut(pdev, epnum);
-            break;
+            return USBD_OK;
     }
+
+    printf("DO %x\n", epnum);
 
     return USBD_OK;
 }
