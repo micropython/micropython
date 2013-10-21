@@ -26,15 +26,17 @@ void usb_init() {
 }
 
 void usb_vcp_receive(const char *buf, uint32_t len) {
-    for (int i = 0; i < len; i++) {
-        rx_buf[rx_buf_in++] = buf[i];
-        if (rx_buf_in >= sizeof(rx_buf)) {
-            rx_buf_in = 0;
-        }
-        if (rx_buf_in == rx_buf_out) {
-            rx_buf_out = rx_buf_in + 1;
-            if (rx_buf_out >= sizeof(rx_buf)) {
-                rx_buf_out = 0;
+    if (is_enabled) {
+        for (int i = 0; i < len; i++) {
+            rx_buf[rx_buf_in++] = buf[i];
+            if (rx_buf_in >= sizeof(rx_buf)) {
+                rx_buf_in = 0;
+            }
+            if (rx_buf_in == rx_buf_out) {
+                rx_buf_out = rx_buf_in + 1;
+                if (rx_buf_out >= sizeof(rx_buf)) {
+                    rx_buf_out = 0;
+                }
             }
         }
     }

@@ -184,32 +184,38 @@ static void board_info() {
 }
 
 char *readline(const char *prompt) {
-    printf("a\n");
-    led_state(PYB_LED_R1, 1);
-    printf("b\n");
+    vstr_t vstr;
+    vstr_init(&vstr);
     usb_vcp_send_str(prompt);
     for (;;) {
-        printf("c\n");
-        led_state(PYB_LED_R2, 1);
+        //extern int rx_buf_in;
+        //extern int rx_buf_out;
+        while (usb_vcp_rx_any() == 0) {
+            //printf("nope %x %x\n", rx_buf_in, rx_buf_out);
+            sys_tick_delay_ms(10);
+        }
         char c = usb_vcp_rx_get();
-        led_state(PYB_LED_R2, 0);
-        usb_vcp_send_strn(&c, 1);
-        led_state(PYB_LED_G1, 1);
+        if (c == 4 && vstr_len(&vstr) == 0) {
+            return NULL;
+        } else if (c == '\r') {
+            usb_vcp_send_str("\r\n");
+            return vstr_str(&vstr);
+        } else if (c == 127) {
+            if (vstr_len(&vstr) > 0) {
+                vstr_cut_tail(&vstr, 1);
+                usb_vcp_send_str("\b \b");
+            }
+        } else if (32 <= c && c <= 126) {
+            vstr_add_char(&vstr, c);
+            usb_vcp_send_strn(&c, 1);
+        }
         sys_tick_delay_ms(100);
-        led_state(PYB_LED_G1, 0);
     }
     return NULL;
 }
 
-extern char rx_buf[];
-extern int rx_buf_out;
 void do_repl() {
-    int i = 0;
-    for (;;) {
     usb_vcp_send_str("Micro Python\r\n");
-    printf("%d %d %c\n", i++, usb_vcp_rx_any(), rx_buf[rx_buf_out]);
-    sys_tick_delay_ms(1000);
-    }
 
     for (;;) {
         char *line = readline(">>> ");
@@ -281,6 +287,11 @@ int main() {
     // Python init
     qstr_init();
     rt_init();
+
+    // add some functions to the python namespace
+    rt_store_name(qstr_from_str_static("pyb_delay"), rt_make_function_1(pyb_delay));
+    rt_store_name(qstr_from_str_static("pyb_led"), rt_make_function_1(pyb_led));
+    rt_store_name(qstr_from_str_static("pyb_sw"), rt_make_function_0(pyb_sw));
 
     // print a message
     printf(" micro py board\n");
@@ -477,11 +488,6 @@ int main() {
                 printf("compile error\n");
             } else {
                 // execute it!
-
-                // add some functions to the python namespace
-                rt_store_name(qstr_from_str_static("pyb_delay"), rt_make_function_1(pyb_delay));
-                rt_store_name(qstr_from_str_static("pyb_led"), rt_make_function_1(pyb_led));
-                rt_store_name(qstr_from_str_static("pyb_sw"), rt_make_function_0(pyb_sw));
 
                 py_obj_t module_fun = rt_make_function_from_id(1);
 
