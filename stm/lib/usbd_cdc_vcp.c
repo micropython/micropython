@@ -212,7 +212,8 @@ static uint16_t VCP_DataTx (const uint8_t* Buf, uint32_t Len)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
   */
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len) {
-    //printf("%.*s", (int)Len, Buf);
+    extern void usb_vcp_receive(uint8_t *buf, uint32_t len);
+    usb_vcp_receive(Buf, Len);
     return USBD_OK;
 }
 

@@ -214,7 +214,7 @@ void usb_vcp_send(const char* str, int len);
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // send stdout to LCD and USB CDC VCP
     lcd_print_strn(str, len);
-    usb_vcp_send(str, len);
+    //usb_vcp_send(str, len);
 }
 
 static const pfenv_t pfenv_stdout = {0, stdout_print_strn};

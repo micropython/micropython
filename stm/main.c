@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
@@ -182,6 +183,80 @@ static void board_info() {
     }
 }
 
+char *readline(const char *prompt) {
+    printf("a\n");
+    led_state(PYB_LED_R1, 1);
+    printf("b\n");
+    usb_vcp_send_str(prompt);
+    for (;;) {
+        printf("c\n");
+        led_state(PYB_LED_R2, 1);
+        char c = usb_vcp_rx_get();
+        led_state(PYB_LED_R2, 0);
+        usb_vcp_send_strn(&c, 1);
+        led_state(PYB_LED_G1, 1);
+        sys_tick_delay_ms(100);
+        led_state(PYB_LED_G1, 0);
+    }
+    return NULL;
+}
+
+extern char rx_buf[];
+extern int rx_buf_out;
+void do_repl() {
+    int i = 0;
+    for (;;) {
+    usb_vcp_send_str("Micro Python\r\n");
+    printf("%d %d %c\n", i++, usb_vcp_rx_any(), rx_buf[rx_buf_out]);
+    sys_tick_delay_ms(1000);
+    }
+
+    for (;;) {
+        char *line = readline(">>> ");
+        if (line == NULL) {
+            // EOF
+            return;
+        }
+        /*
+        if (is_compound_stmt(line)) {
+            for (;;) {
+                char *line2 = readline("... ");
+                if (line2 == NULL || strlen(line2) == 0) {
+                    break;
+                }
+                char *line3 = str_join(line, '\n', line2);
+                m_free(line);
+                m_free(line2);
+                line = line3;
+            }
+        }
+        */
+
+        py_lexer_str_buf_t sb;
+        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", line, strlen(line), false, &sb);
+        py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
+        py_lexer_free(lex);
+
+        if (pn != PY_PARSE_NODE_NULL) {
+            bool comp_ok = py_compile(pn, true);
+            if (comp_ok) {
+                py_obj_t module_fun = rt_make_function_from_id(1);
+                if (module_fun != py_const_none) {
+                    nlr_buf_t nlr;
+                    if (nlr_push(&nlr) == 0) {
+                        rt_call_function_0(module_fun);
+                        nlr_pop();
+                    } else {
+                        // uncaught exception
+                        py_obj_print((py_obj_t)nlr.ret_val);
+                        printf("\n");
+                    }
+                }
+            }
+        }
+    }
+}
+
 int main() {
     // TODO disable JTAG
 
@@ -294,7 +369,7 @@ int main() {
     //sys_tick_delay_ms(1000);
 
     // Python!
-    if (1) {
+    if (0) {
         //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
         const char *pysrc =
             // impl01.py
@@ -440,6 +515,8 @@ int main() {
             }
         }
     }
+
+    do_repl();
 
     // benchmark C version of impl02.py
     if (0) {

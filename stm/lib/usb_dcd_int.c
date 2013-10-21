@@ -675,6 +675,16 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
     ep->xfer_buff  += len;
     ep->xfer_count += len;
     
+    // this code turns off the "empty interrupt"
+    // without it the USB is subject to perpetual interrupts
+    // see my.st.com, "Yet another STM32F105/7 USB OTG driver issue (VCP device)"
+    // this code might also work if put in DCD_HandleInEP_ISR
+    if (ep->xfer_count >= ep->xfer_len) {
+      uint32_t fifoemptymsk = 1 << ep->num;
+      USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
+      break;
+    }
+
     txstatus.d32 = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DTXFSTS);
   }
   

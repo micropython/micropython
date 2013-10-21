@@ -73,7 +73,8 @@
 #include "usbd_msc_bot.h"
 #include "usbd_msc_mem.h"
 
-#define USB_PYB_CONFIG_DESC_SIZ (98)
+#define USB_PYB_CONFIG_DESC_SIZ (98) // for both CDC VCP and MSC interfaces
+//#define USB_PYB_CONFIG_DESC_SIZ (67) // for only CDC VCP interfaces
 
 #define MSC_EPIN_SIZE                MSC_MAX_PACKET
 #define MSC_EPOUT_SIZE               MSC_MAX_PACKET
