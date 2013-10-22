@@ -514,7 +514,7 @@ py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name)
 }
 
 py_obj_t py_builtin_range(py_obj_t o_arg) {
-    return py_obj_new_range(0, rt_get_int(o_arg), 1);
+    return py_obj_new_range(0, py_get_int(o_arg), 1);
 }
 
 #ifdef WRITE_NATIVE
@@ -845,13 +845,22 @@ int rt_is_true(py_obj_t arg) {
     }
 }
 
-int rt_get_int(py_obj_t arg) {
+int py_get_int(py_obj_t arg) {
     if (arg == py_const_false) {
         return 0;
     } else if (arg == py_const_true) {
         return 1;
     } else if (IS_SMALL_INT(arg)) {
         return FROM_SMALL_INT(arg);
+    } else {
+        assert(0);
+        return 0;
+    }
+}
+
+qstr py_get_qstr(py_obj_t arg) {
+    if (IS_O(arg, O_STR)) {
+        return ((py_obj_base_t*)arg)->u_str;
     } else {
         assert(0);
         return 0;

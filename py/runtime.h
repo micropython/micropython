@@ -97,7 +97,8 @@ void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args)
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void py_obj_print(py_obj_t o);
 int rt_is_true(py_obj_t arg);
-int rt_get_int(py_obj_t arg);
+int py_get_int(py_obj_t arg);
+qstr py_get_qstr(py_obj_t arg);
 py_obj_t rt_load_const_str(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);
