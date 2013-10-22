@@ -33,6 +33,8 @@ static machine_uint_t *gc_sp;
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
+
+    // calculate parameters for GC
     machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
     gc_alloc_table_byte_len = total_word_len * BYTES_PER_WORD / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     gc_alloc_table_start = (byte*)start;
@@ -41,6 +43,9 @@ void gc_init(void *start, void *end) {
     machine_uint_t gc_pool_word_len = gc_pool_block_len * WORDS_PER_BLOCK;
     gc_pool_start = (machine_uint_t*)end - gc_pool_word_len;
     gc_pool_end = end;
+
+    // clear ATBs
+    memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
 
     /*
     printf("GC layout:\n");
@@ -80,19 +85,6 @@ void gc_init(void *start, void *end) {
 #define ATB_HEAD_TO_MARK(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
 #define ATB_MARK_TO_HEAD(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
 
-void gc_dump_at() {
-    for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
-        printf("block % 6u ", bl);
-        switch (ATB_GET_KIND(bl)) {
-            case AT_FREE: printf("FREE"); break;
-            case AT_HEAD: printf("HEAD"); break;
-            case AT_TAIL: printf("TAIL"); break;
-            default: printf("MARK"); break;
-        }
-        printf("\n");
-    }
-}
-
 #define BLOCK_FROM_PTR(ptr) (((ptr) - (machine_uint_t)gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (machine_uint_t)gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
@@ -122,7 +114,7 @@ static void gc_drain_stack() {
         // pop the next block off the stack
         machine_uint_t block = *--gc_sp;
 
-        // work out number of consecutive blocks in the chain starting with this on
+        // work out number of consecutive blocks in the chain starting with this one
         machine_uint_t n_blocks = 0;
         do {
             n_blocks += 1;
@@ -192,26 +184,51 @@ void gc_collect_root(void **ptrs, machine_uint_t len) {
 void gc_collect_end() {
     gc_deal_with_stack_overflow();
     gc_sweep();
+}
 
-    machine_uint_t n_free = 0;
-    machine_uint_t n_used = 0;
-    for (machine_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
-        switch (ATB_GET_KIND(block)) {
+void gc_info(gc_info_t *info) {
+    info->total = (gc_pool_end - gc_pool_start) * sizeof(machine_uint_t);
+    info->used = 0;
+    info->free = 0;
+    info->num_1block = 0;
+    info->num_2block = 0;
+    info->max_block = 0;
+    for (machine_uint_t block = 0, len = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+        machine_uint_t kind = ATB_GET_KIND(block);
+        if (kind == AT_FREE || kind == AT_HEAD) {
+            if (len == 1) {
+                info->num_1block += 1;
+            } else if (len == 2) {
+                info->num_2block += 1;
+            }
+            if (len > info->max_block) {
+                info->max_block = len;
+            }
+        }
+        switch (kind) {
             case AT_FREE:
-                n_free += 1;
+                info->free += 1;
+                len = 0;
                 break;
 
             case AT_HEAD:
+                info->used += 1;
+                len = 1;
+                break;
+
             case AT_TAIL:
-                n_used += 1;
+                info->used += 1;
+                len += 1;
                 break;
 
             case AT_MARK:
+                // shouldn't happen
                 break;
         }
     }
 
-    printf("GC %u/%u\n", n_used * BYTES_PER_BLOCK, (n_free + n_used) * BYTES_PER_BLOCK);
+    info->used *= BYTES_PER_BLOCK;
+    info->free *= BYTES_PER_BLOCK;
 }
 
 void *gc_alloc(machine_uint_t n_bytes) {
@@ -301,6 +318,19 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
 }
 
 /*
+static void gc_dump_at() {
+    for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
+        printf("block % 6u ", bl);
+        switch (ATB_GET_KIND(bl)) {
+            case AT_FREE: printf("FREE"); break;
+            case AT_HEAD: printf("HEAD"); break;
+            case AT_TAIL: printf("TAIL"); break;
+            default: printf("MARK"); break;
+        }
+        printf("\n");
+    }
+}
+
 int main() {
     machine_uint_t len = 1000;
     machine_uint_t *heap = malloc(len);
