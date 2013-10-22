@@ -4,7 +4,8 @@ void gc_collect_root(void **ptrs, machine_uint_t len);
 void gc_collect_end();
 void gc_collect();
 void *gc_alloc(machine_uint_t n_bytes);
-machine_uint_t gc_nbytes(void *ptr_in);
+void gc_free(void *ptr);
+machine_uint_t gc_nbytes(void *ptr);
 void *gc_realloc(void *ptr, machine_uint_t n_bytes);
 
 typedef struct _gc_info_t {

@@ -52,7 +52,6 @@ void gc_init(void *start, void *end) {
     printf("  alloc table at %p, length %u bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
     printf("  pool at %p, length %u blocks = %u words = %u bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
     */
-    printf("GC: %u bytes\n", gc_pool_word_len * BYTES_PER_WORD);
 }
 
 // ATB = allocation table byte
@@ -89,13 +88,15 @@ void gc_init(void *start, void *end) {
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (machine_uint_t)gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
 
+#define VERIFY_PTR(ptr) ( \
+        (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+        && ptr >= (machine_uint_t)gc_pool_start     /* must be above start of pool */ \
+        && ptr < (machine_uint_t)gc_pool_end        /* must be below end of pool */ \
+    )
+
 #define VERIFY_MARK_AND_PUSH(ptr) \
     do { \
-        if ( \
-            (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-            && ptr >= (machine_uint_t)gc_pool_start     /* must be above start of pool */ \
-            && ptr < (machine_uint_t)gc_pool_end        /* must be below end of pool */ \
-           ) { \
+        if (VERIFY_PTR(ptr)) { \
             machine_uint_t _block = BLOCK_FROM_PTR(ptr); \
             if (ATB_GET_KIND(_block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
@@ -283,14 +284,26 @@ found:
     return (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 }
 
+// force the freeing of a piece of memory
+void gc_free(void *ptr_in) {
+    machine_uint_t ptr = (machine_uint_t)ptr_in;
+
+    if (VERIFY_PTR(ptr)) {
+        machine_uint_t block = BLOCK_FROM_PTR(ptr);
+        if (ATB_GET_KIND(block) == AT_HEAD) {
+            // free head and all of its tail blocks
+            do {
+                ATB_ANY_TO_FREE(block);
+                block += 1;
+            } while (ATB_GET_KIND(block) == AT_TAIL);
+        }
+    }
+}
+
 machine_uint_t gc_nbytes(void *ptr_in) {
     machine_uint_t ptr = (machine_uint_t)ptr_in;
 
-    if (
-        (ptr & (BYTES_PER_BLOCK - 1)) == 0          // must be aligned on a block
-        && ptr >= (machine_uint_t)gc_pool_start     // must be above start of pool
-        && ptr < (machine_uint_t)gc_pool_end        // must be below end of pool
-       ) {
+    if (VERIFY_PTR(ptr)) {
         machine_uint_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
             // work out number of consecutive blocks in the chain starting with this on
