@@ -522,7 +522,6 @@ FILE *fp_native = NULL;
 #endif
 
 void rt_init() {
-    printf("%u\n", sizeof(py_obj_base_t));
     q_append = qstr_from_str_static("append");
     q_print = qstr_from_str_static("print");
     q_len = qstr_from_str_static("len");
@@ -957,14 +956,27 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
     } else if (IS_SMALL_INT(lhs) && IS_SMALL_INT(rhs)) {
         py_small_int_t val;
         switch (op) {
+            case RT_BINARY_OP_OR:
+            case RT_BINARY_OP_INPLACE_OR: val = FROM_SMALL_INT(lhs) | FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_XOR:
+            case RT_BINARY_OP_INPLACE_XOR: val = FROM_SMALL_INT(lhs) ^ FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_AND:
+            case RT_BINARY_OP_INPLACE_AND: val = FROM_SMALL_INT(lhs) & FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_LSHIFT:
+            case RT_BINARY_OP_INPLACE_LSHIFT: val = FROM_SMALL_INT(lhs) << FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_RSHIFT:
+            case RT_BINARY_OP_INPLACE_RSHIFT: val = FROM_SMALL_INT(lhs) >> FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_ADD:
             case RT_BINARY_OP_INPLACE_ADD: val = FROM_SMALL_INT(lhs) + FROM_SMALL_INT(rhs); break;
             case RT_BINARY_OP_SUBTRACT:
             case RT_BINARY_OP_INPLACE_SUBTRACT: val = FROM_SMALL_INT(lhs) - FROM_SMALL_INT(rhs); break;
-            case RT_BINARY_OP_MULTIPLY: val = FROM_SMALL_INT(lhs) * FROM_SMALL_INT(rhs); break;
-            case RT_BINARY_OP_FLOOR_DIVIDE: val = FROM_SMALL_INT(lhs) / FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_MULTIPLY:
+            case RT_BINARY_OP_INPLACE_MULTIPLY: val = FROM_SMALL_INT(lhs) * FROM_SMALL_INT(rhs); break;
+            case RT_BINARY_OP_FLOOR_DIVIDE:
+            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = FROM_SMALL_INT(lhs) / FROM_SMALL_INT(rhs); break;
 #if MICROPY_ENABLE_FLOAT
-            case RT_BINARY_OP_TRUE_DIVIDE: return py_obj_new_float((float_t)FROM_SMALL_INT(lhs) / (float_t)FROM_SMALL_INT(rhs));
+            case RT_BINARY_OP_TRUE_DIVIDE:
+            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return py_obj_new_float((float_t)FROM_SMALL_INT(lhs) / (float_t)FROM_SMALL_INT(rhs));
 #endif
             default: printf("%d\n", op); assert(0); val = 0;
         }
@@ -988,11 +1000,32 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
 
 py_obj_t rt_compare_op(int op, py_obj_t lhs, py_obj_t rhs) {
     DEBUG_OP_printf("compare %d %p %p\n", op, lhs, rhs);
+
+    // deal with == and !=
+    if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
+        if (py_obj_equal(lhs, rhs)) {
+            if (op == RT_COMPARE_OP_EQUAL) {
+                return py_const_true;
+            } else {
+                return py_const_false;
+            }
+        } else {
+            if (op == RT_COMPARE_OP_EQUAL) {
+                return py_const_false;
+            } else {
+                return py_const_true;
+            }
+        }
+    }
+
+    // deal with small ints
     if (IS_SMALL_INT(lhs) && IS_SMALL_INT(rhs)) {
         int cmp;
         switch (op) {
             case RT_COMPARE_OP_LESS: cmp = FROM_SMALL_INT(lhs) < FROM_SMALL_INT(rhs); break;
             case RT_COMPARE_OP_MORE: cmp = FROM_SMALL_INT(lhs) > FROM_SMALL_INT(rhs); break;
+            case RT_COMPARE_OP_LESS_EQUAL: cmp = FROM_SMALL_INT(lhs) <= FROM_SMALL_INT(rhs); break;
+            case RT_COMPARE_OP_MORE_EQUAL: cmp = FROM_SMALL_INT(lhs) >= FROM_SMALL_INT(rhs); break;
             default: assert(0); cmp = 0;
         }
         if (cmp) {
@@ -1001,6 +1034,8 @@ py_obj_t rt_compare_op(int op, py_obj_t lhs, py_obj_t rhs) {
             return py_const_false;
         }
     }
+
+    // not implemented
     assert(0);
     return py_const_none;
 }
