@@ -29,6 +29,7 @@ SRC_C = \
 
 SRC_S = \
 	startup_stm32f40xx.s \
+	gchelper.s \
 
 PY_O = \
 	nlrthumb.o \
@@ -127,6 +128,10 @@ $(BUILD)/%.o: $(PYSRC)/%.c mpyconfig.h
 
 $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
 	$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
+
+# optimising gc for speed; 5ms down to 4ms
+$(BUILD)/gc.o: $(PYSRC)/gc.c
+	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(BUILD)/vm.o: $(PYSRC)/vm.c

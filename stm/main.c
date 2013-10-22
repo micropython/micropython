@@ -217,6 +217,16 @@ char *readline(const char *prompt) {
     return NULL;
 }
 
+/*
+void gc_print_info() {
+    gc_info_t info;
+    gc_info(&info);
+    printf("! %lu total\n", info.total);
+    printf("! %lu : %lu\n", info.used, info.free);
+    printf("! 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+}
+*/
+
 void do_repl() {
     usb_vcp_send_str("Micro Python\r\n");
 
@@ -266,12 +276,32 @@ void do_repl() {
     }
 }
 
+#define RAM_START (0x20000000) // fixed for chip
+#define HEAP_END  (0x2001c000) // tunable
+#define RAM_END   (0x20020000) // fixed for chip
+
+void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
+
 void gc_collect() {
+    uint32_t start = sys_tick_counter;
     gc_collect_start();
-    gc_collect_root((void**)0x20000000, (((uint32_t)&_heap_start) - 0x20000000) / 4);
-    gc_collect_root((void**)(0x20000000 + 0x18000), (0x20000 - 0x18000) / 4);
-    // TODO registers
+    gc_collect_root((void**)RAM_START, (((uint32_t)&_heap_start) - RAM_START) / 4);
+    machine_uint_t regs[10];
+    gc_helper_get_regs_and_clean_stack(regs, HEAP_END);
+    gc_collect_root((void**)HEAP_END, (RAM_END - HEAP_END) / 4); // will trace regs since they now live in this function on the stack
     gc_collect_end();
+    uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+    gc_info_t info;
+    gc_info(&info);
+    printf("GC@%lu %lums\n", start, ticks);
+    printf(" %lu total\n", info.total);
+    printf(" %lu : %lu\n", info.used, info.free);
+    printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+}
+
+py_obj_t py_gc_collect() {
+    gc_collect();
+    return py_const_none;
 }
 
 int main() {
@@ -296,14 +326,14 @@ int main() {
     storage_init();
 
     // GC init
-    gc_init(&_heap_start, (void*)(0x20000000 + 0x18000));
-    sys_tick_delay_ms(2000);
+    gc_init(&_heap_start, (void*)HEAP_END);
 
     // Python init
     qstr_init();
     rt_init();
 
     // add some functions to the python namespace
+    rt_store_name(qstr_from_str_static("gc"), rt_make_function_0(py_gc_collect));
     rt_store_name(qstr_from_str_static("pyb_delay"), rt_make_function_1(pyb_delay));
     rt_store_name(qstr_from_str_static("pyb_led"), rt_make_function_1(pyb_led));
     rt_store_name(qstr_from_str_static("pyb_sw"), rt_make_function_0(pyb_sw));
@@ -373,14 +403,28 @@ int main() {
 
     // run /boot.py
     if (0) {
-        FIL fp;
-        f_open(&fp, "0:/boot.py", FA_READ);
-        UINT n;
-        char buf[20];
-        f_read(&fp, buf, 18, &n);
-        buf[n + 1] = 0;
-        printf("read %d\n%s", n, buf);
-        f_close(&fp);
+        py_lexer_file_buf_t fb;
+        py_lexer_t *lex = py_lexer_new_from_file("0:/boot.py", &fb);
+        py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
+        py_lexer_free(lex);
+
+        if (pn != PY_PARSE_NODE_NULL) {
+            bool comp_ok = py_compile(pn, true);
+            if (comp_ok) {
+                py_obj_t module_fun = rt_make_function_from_id(1);
+                if (module_fun != py_const_none) {
+                    nlr_buf_t nlr;
+                    if (nlr_push(&nlr) == 0) {
+                        rt_call_function_0(module_fun);
+                        nlr_pop();
+                    } else {
+                        // uncaught exception
+                        py_obj_print((py_obj_t)nlr.ret_val);
+                        printf("\n");
+                    }
+                }
+            }
+        }
     }
 
     // turn boot-up LED off
@@ -425,6 +469,7 @@ int main() {
             "        x = x + 1\n"
             "f()\n";
             */
+            /*
             "print('in python!')\n"
             "x = 0\n"
             "while x < 4:\n"
@@ -436,6 +481,7 @@ int main() {
             "print('press me!')\n"
             "while True:\n"
             "    pyb_led(pyb_sw())\n";
+            */
             /*
             // impl16.py
             "@micropython.asm_thumb\n"
@@ -472,7 +518,6 @@ int main() {
             "except:\n"
             "    print(x)\n";
             */
-            /*
             // impl19.py
             "# for loop\n"
             "def f():\n"
@@ -481,7 +526,6 @@ int main() {
             "            for z in range(400):\n"
             "                pass\n"
             "f()\n";
-            */
 
         py_lexer_str_buf_t py_lexer_str_buf;
         py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &py_lexer_str_buf);

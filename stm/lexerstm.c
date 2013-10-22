@@ -36,6 +36,9 @@ unichar file_buf_next_char(py_lexer_file_buf_t *fb) {
         } else {
             UINT n;
             f_read(&fb->fp, fb->buf, sizeof(fb->buf), &n);
+            if (n == 0) {
+                return PY_LEXER_CHAR_EOF;
+            }
             fb->len = n;
             fb->pos = 0;
         }

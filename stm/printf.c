@@ -214,7 +214,7 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // send stdout to LCD and USB CDC VCP
     if (usb_vcp_is_enabled()) {
-        usb_vcp_send_strn(str, len);
+        usb_vcp_send_strn_cooked(str, len);
     } else {
         lcd_print_strn(str, len);
     }

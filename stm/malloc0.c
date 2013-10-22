@@ -42,6 +42,7 @@ void *malloc(size_t n) {
 }
 
 void free(void *ptr) {
+    gc_free(ptr);
 }
 
 void *realloc(void *ptr, size_t n) {

@@ -18,6 +18,6 @@
 #define MSC_IN_EP                   0x83
 #define MSC_OUT_EP                  0x03
 #define MSC_MAX_PACKET              64
-#define MSC_MEDIA_PACKET            4096
+#define MSC_MEDIA_PACKET            2048 /* XXX was 4096; how small can we make it? */
 
 #endif //__USBD_CONF__H__

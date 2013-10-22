@@ -75,3 +75,25 @@ void usb_vcp_send_strn(const char *str, int len) {
         VCP_fops.pIf_DataTx((const uint8_t*)str, len);
     }
 }
+
+#include "lib/usbd_conf.h"
+
+/* These are external variables imported from CDC core to be used for IN 
+   transfer management. */
+extern uint8_t  APP_Rx_Buffer []; /* Write CDC received data in this buffer.
+                                     These data will be sent over USB IN endpoint
+                                     in the CDC core functions. */
+extern uint32_t APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
+                                     start address when writing received data
+                                     in the buffer APP_Rx_Buffer. */
+
+void usb_vcp_send_strn_cooked(const char *str, int len) {
+    for (const char *top = str + len; str < top; str++) {
+        if (*str == '\n') {
+            APP_Rx_Buffer[APP_Rx_ptr_in] = '\r';
+            APP_Rx_ptr_in = (APP_Rx_ptr_in + 1) & (APP_RX_DATA_SIZE - 1);
+        }
+        APP_Rx_Buffer[APP_Rx_ptr_in] = *str;
+        APP_Rx_ptr_in = (APP_Rx_ptr_in + 1) & (APP_RX_DATA_SIZE - 1);
+    }
+}
