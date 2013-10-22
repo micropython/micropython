@@ -20,7 +20,10 @@ static int rx_buf_in;
 static int rx_buf_out;
 
 void usb_init() {
-    USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
+    if (!is_enabled) {
+        // only init USB once in the device's power-lifetime
+        USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
+    }
     rx_buf_in = 0;
     rx_buf_out = 0;
     is_enabled = 1;

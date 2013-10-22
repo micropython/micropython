@@ -77,6 +77,15 @@ void __fatal_error(const char *msg) {
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
+#include "repl.h"
+
+py_obj_t pyb_source_dir(py_obj_t source_dir) {
+    return py_const_none;
+}
+
+py_obj_t pyb_main(py_obj_t main) {
+    return py_const_none;
+}
 
 py_obj_t pyb_delay(py_obj_t count) {
     sys_tick_delay_ms(rt_get_int(count));
@@ -97,7 +106,6 @@ py_obj_t pyb_sw() {
 }
 
 FATFS fatfs0;
-
 
 /*
 void g(uint i) {
@@ -149,7 +157,7 @@ static const char fresh_boot_py[] =
 ;
 
 // get lots of info about the board
-static void board_info() {
+static py_obj_t pyb_info() {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
@@ -184,37 +192,8 @@ static void board_info() {
         f_getfree("0:", &nclst, &fatfs);
         printf("free=%u\n", (uint)(nclst * fatfs->csize * 512));
     }
-}
 
-char *readline(const char *prompt) {
-    vstr_t vstr;
-    vstr_init(&vstr);
-    usb_vcp_send_str(prompt);
-    for (;;) {
-        //extern int rx_buf_in;
-        //extern int rx_buf_out;
-        while (usb_vcp_rx_any() == 0) {
-            //printf("nope %x %x\n", rx_buf_in, rx_buf_out);
-            sys_tick_delay_ms(10);
-        }
-        char c = usb_vcp_rx_get();
-        if (c == 4 && vstr_len(&vstr) == 0) {
-            return NULL;
-        } else if (c == '\r') {
-            usb_vcp_send_str("\r\n");
-            return vstr_str(&vstr);
-        } else if (c == 127) {
-            if (vstr_len(&vstr) > 0) {
-                vstr_cut_tail(&vstr, 1);
-                usb_vcp_send_str("\b \b");
-            }
-        } else if (32 <= c && c <= 126) {
-            vstr_add_char(&vstr, c);
-            usb_vcp_send_strn(&c, 1);
-        }
-        sys_tick_delay_ms(100);
-    }
-    return NULL;
+    return py_const_none;
 }
 
 /*
@@ -227,32 +206,65 @@ void gc_print_info() {
 }
 */
 
+int readline(vstr_t *line, const char *prompt) {
+    usb_vcp_send_str(prompt);
+    int len = vstr_len(line);
+    for (;;) {
+        while (usb_vcp_rx_any() == 0) {
+            sys_tick_delay_ms(10);
+        }
+        char c = usb_vcp_rx_get();
+        if (c == 4 && vstr_len(line) == len) {
+            return 0;
+        } else if (c == '\r') {
+            usb_vcp_send_str("\r\n");
+            return 1;
+        } else if (c == 127) {
+            if (vstr_len(line) > len) {
+                vstr_cut_tail(line, 1);
+                usb_vcp_send_str("\b \b");
+            }
+        } else if (32 <= c && c <= 126) {
+            vstr_add_char(line, c);
+            usb_vcp_send_strn(&c, 1);
+        }
+        sys_tick_delay_ms(100);
+    }
+}
+
 void do_repl() {
-    usb_vcp_send_str("Micro Python\r\n");
+    usb_vcp_send_str("Micro Python 0.5; STM32F405RG; PYBv2\r\n");
+    usb_vcp_send_str("Type \"help\" for more information.\r\n");
+
+    vstr_t line;
+    vstr_init(&line);
 
     for (;;) {
-        char *line = readline(">>> ");
-        if (line == NULL) {
+        vstr_reset(&line);
+        int ret = readline(&line, ">>> ");
+        if (ret == 0) {
             // EOF
-            return;
+            break;
         }
-        /*
-        if (is_compound_stmt(line)) {
+
+        if (vstr_len(&line) == 0) {
+            continue;
+        }
+
+        if (py_repl_is_compound_stmt(vstr_str(&line))) {
             for (;;) {
-                char *line2 = readline("... ");
-                if (line2 == NULL || strlen(line2) == 0) {
+                vstr_add_char(&line, '\n');
+                int len = vstr_len(&line);
+                int ret = readline(&line, "... ");
+                if (ret == 0 || vstr_len(&line) == len) {
+                    // done entering compound statement
                     break;
                 }
-                char *line3 = str_join(line, '\n', line2);
-                m_free(line);
-                m_free(line2);
-                line = line3;
             }
         }
-        */
 
         py_lexer_str_buf_t sb;
-        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", line, strlen(line), false, &sb);
+        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
         py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
         py_lexer_free(lex);
 
@@ -274,6 +286,8 @@ void do_repl() {
             }
         }
     }
+
+    usb_vcp_send_str("\r\nMicro Python REPL finished\r\n");
 }
 
 #define RAM_START (0x20000000) // fixed for chip
@@ -299,7 +313,7 @@ void gc_collect() {
     printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
 }
 
-py_obj_t py_gc_collect() {
+py_obj_t pyb_gc() {
     gc_collect();
     return py_const_none;
 }
@@ -322,24 +336,35 @@ int main() {
 
     // more sub-system init
     sw_init();
-    lcd_init();
     storage_init();
+
+soft_reset:
+
+    // LCD init
+    lcd_init();
 
     // GC init
     gc_init(&_heap_start, (void*)HEAP_END);
 
-    // Python init
+    // Micro Python init
     qstr_init();
     rt_init();
 
     // add some functions to the python namespace
-    rt_store_name(qstr_from_str_static("gc"), rt_make_function_0(py_gc_collect));
-    rt_store_name(qstr_from_str_static("pyb_delay"), rt_make_function_1(pyb_delay));
-    rt_store_name(qstr_from_str_static("pyb_led"), rt_make_function_1(pyb_led));
-    rt_store_name(qstr_from_str_static("pyb_sw"), rt_make_function_0(pyb_sw));
+    {
+        py_obj_t m = py_module_new();
+        rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
+        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
+        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
+        rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
+        rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
+        rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
+        rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
+        rt_store_name(qstr_from_str_static("pyb"), m);
+    }
 
-    // print a message
-    printf(" micro py board\n");
+    // print a message to the LCD
+    lcd_print_str(" micro py board\n");
 
     // local filesystem init
     {
@@ -391,7 +416,7 @@ int main() {
             FIL fp;
             f_open(&fp, "0:/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
             UINT n;
-            f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py), &n);
+            f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
             // TODO check we could write n bytes
             f_close(&fp);
 
@@ -401,8 +426,11 @@ int main() {
         }
     }
 
+    // USB
+    usb_init();
+
     // run /boot.py
-    if (0) {
+    if (1) {
         py_lexer_file_buf_t fb;
         py_lexer_t *lex = py_lexer_new_from_file("0:/boot.py", &fb);
         py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
@@ -429,11 +457,6 @@ int main() {
 
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
-
-    // USB
-    if (1) {
-        usb_init();
-    }
 
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //sys_tick_delay_ms(1000);
@@ -653,31 +676,5 @@ int main() {
         //sdio_init();
     }
 
-    int i = 0;
-    int n = 0;
-    uint32_t stc = sys_tick_counter;
-
-    for (;;) {
-        sys_tick_delay_ms(10);
-        if (sw_get()) {
-            led_state(PYB_LED_G1, 1);
-            i = 1 - i;
-            if (i) {
-                printf(" angel %05x.\n", n);
-                //usb_vcp_send("hello!\r\n", 8);
-            } else {
-                printf(" mishka %4u.\n", n);
-                //usb_vcp_send("angel!\r\n", 8);
-            }
-            n += 1;
-        } else {
-            led_state(PYB_LED_G1, 0);
-        }
-        if (sys_tick_has_passed(stc, 500)) {
-            stc += 500;
-            led_toggle(PYB_LED_G2);
-        }
-    }
-
-    return 0;
+    goto soft_reset;
 }

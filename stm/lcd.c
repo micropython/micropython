@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stm32f4xx_gpio.h>
 
 #include "misc.h"
@@ -136,6 +137,10 @@ void lcd_init() {
     lcd_line = 0;
     lcd_column = 0;
     lcd_next_line = 0;
+}
+
+void lcd_print_str(const char *str) {
+    lcd_print_strn(str, strlen(str));
 }
 
 void lcd_print_strn(const char *str, unsigned int len) {

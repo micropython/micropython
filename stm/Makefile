@@ -50,6 +50,7 @@ PY_O = \
 	emitinlinethumb.o \
 	runtime.o \
 	vm.o \
+	repl.o \
 
 SRC_FATFS = \
 	ff.c \
