@@ -20,7 +20,6 @@ typedef unsigned char byte;
 #define STACK_SIZE (64) // tunable; minimum is 1
 
 static byte *gc_alloc_table_start;
-static byte *gc_alloc_table_end;
 static machine_uint_t gc_alloc_table_byte_len;
 static machine_uint_t *gc_pool_start;
 static machine_uint_t *gc_pool_end;
@@ -28,31 +27,6 @@ static machine_uint_t *gc_pool_end;
 static int gc_stack_overflow;
 static machine_uint_t gc_stack[STACK_SIZE];
 static machine_uint_t *gc_sp;
-
-// TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
-void gc_init(void *start, void *end) {
-    // align end pointer on block boundary
-    end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
-
-    // calculate parameters for GC
-    machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
-    gc_alloc_table_byte_len = total_word_len * BYTES_PER_WORD / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
-    gc_alloc_table_start = (byte*)start;
-    gc_alloc_table_end = gc_alloc_table_start + gc_alloc_table_byte_len;
-    machine_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BITS_PER_BYTE / 2;
-    machine_uint_t gc_pool_word_len = gc_pool_block_len * WORDS_PER_BLOCK;
-    gc_pool_start = (machine_uint_t*)end - gc_pool_word_len;
-    gc_pool_end = end;
-
-    // clear ATBs
-    memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
-
-    /*
-    printf("GC layout:\n");
-    printf("  alloc table at %p, length %u bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
-    printf("  pool at %p, length %u blocks = %u words = %u bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
-    */
-}
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
@@ -87,6 +61,37 @@ void gc_init(void *start, void *end) {
 #define BLOCK_FROM_PTR(ptr) (((ptr) - (machine_uint_t)gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (machine_uint_t)gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
+
+// TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
+void gc_init(void *start, void *end) {
+    // align end pointer on block boundary
+    end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
+
+    // calculate parameters for GC
+    machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
+    gc_alloc_table_byte_len = total_word_len * BYTES_PER_WORD / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+    gc_alloc_table_start = (byte*)start;
+    machine_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BITS_PER_BYTE / 2;
+    machine_uint_t gc_pool_word_len = gc_pool_block_len * WORDS_PER_BLOCK;
+    gc_pool_start = (machine_uint_t*)end - gc_pool_word_len;
+    gc_pool_end = end;
+
+    // clear ATBs
+    memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
+
+    // allocate first block because gc_pool_start points there and it will never
+    // be freed, so allocating 1 block with null pointers will minimise memory loss
+    ATB_FREE_TO_HEAD(0);
+    for (int i = 0; i < WORDS_PER_BLOCK; i++) {
+        gc_pool_start[i] = 0;
+    }
+
+    /*
+    printf("GC layout:\n");
+    printf("  alloc table at %p, length %u bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
+    printf("  pool at %p, length %u blocks = %u words = %u bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
+    */
+}
 
 #define VERIFY_PTR(ptr) ( \
         (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \

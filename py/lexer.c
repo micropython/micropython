@@ -635,6 +635,7 @@ void py_lexer_free(py_lexer_t *lex) {
         if (lex->stream_close) {
             lex->stream_close(lex->stream_data);
         }
+        vstr_clear(&lex->vstr);
         m_free(lex);
     }
 }
