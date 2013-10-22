@@ -30,6 +30,7 @@ PY_O = \
 	emitinlinethumb.o \
 	runtime.o \
 	vm.o \
+	repl.o \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(PY_O))
 LIB = -lreadline

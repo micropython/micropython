@@ -10,6 +10,9 @@
 
 #define TAB_SIZE (8)
 
+// TODO seems that CPython allows NULL byte in the input stream
+// don't know if that's intentional or not, but we don't allow it
+
 struct _py_lexer_t {
     const char *name;           // name of source
     void *stream_data;          // data for stream

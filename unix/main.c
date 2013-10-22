@@ -10,31 +10,9 @@
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
+#include "repl.h"
 
 #include <readline/readline.h>
-
-bool str_startswith_word(const char *str, const char *head) {
-    int i;
-    for (i = 0; str[i] && head[i]; i++) {
-        if (str[i] != head[i]) {
-            return false;
-        }
-    }
-    return head[i] == '\0' && (str[i] == '\0' || !g_unichar_isalpha(str[i]));
-}
-
-bool is_compound_stmt(const char *line) {
-    // TODO also "compound" if unmatched open bracket
-    return
-           str_startswith_word(line, "if")
-        || str_startswith_word(line, "while")
-        || str_startswith_word(line, "for")
-        || str_startswith_word(line, "true")
-        || str_startswith_word(line, "with")
-        || str_startswith_word(line, "def")
-        || str_startswith_word(line, "class")
-        || str_startswith_word(line, "@");
-}
 
 char *str_join(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
@@ -46,6 +24,7 @@ char *str_join(const char *s1, int sep_char, const char *s2) {
         l1 += 1;
     }
     memcpy(s + l1, s2, l2);
+    s[l1 + l2] = 0;
     return s;
 }
 
@@ -56,7 +35,7 @@ void do_repl() {
             // EOF
             return;
         }
-        if (is_compound_stmt(line)) {
+        if (py_repl_is_compound_stmt(line)) {
             for (;;) {
                 char *line2 = readline("... ");
                 if (line2 == NULL || strlen(line2) == 0) {
