@@ -36,7 +36,7 @@ py_lexer_t *py_lexer_new_from_str_len(const char *src_name, const char *str, uin
     sb->src_beg = str;
     sb->src_cur = str;
     sb->src_end = str + len;
-    return py_lexer_new(src_name, sb, (py_lexer_stream_next_char_t)str_buf_next_char, (py_lexer_stream_free_t)str_buf_free);
+    return py_lexer_new(src_name, sb, (py_lexer_stream_next_char_t)str_buf_next_char, (py_lexer_stream_close_t)str_buf_free);
 }
 
 py_lexer_t *py_lexer_new_from_file(const char *filename) {
