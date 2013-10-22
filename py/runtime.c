@@ -42,7 +42,7 @@ typedef enum {
     O_FLOAT,
 #endif
     O_EXCEPTION_0,
-    O_EXCEPTION_2,
+    O_EXCEPTION_N,
     O_RANGE,
     O_RANGE_IT,
     O_FUN_0,
@@ -75,9 +75,11 @@ typedef struct _py_map_elem_t {
 } py_map_elem_t;
 
 typedef struct _py_map_t {
-    py_map_kind_t kind; // TODO merge this 1-bit field into alloc or used
+    struct {
+        py_map_kind_t kind : 1;
+        machine_uint_t used : (8 * BYTES_PER_WORD - 1);
+    };
     machine_uint_t alloc;
-    machine_uint_t used;
     py_map_elem_t *table;
 } py_map_t;
 
@@ -94,13 +96,12 @@ struct _py_obj_base_t {
         struct { // for O_EXCEPTION_0
             qstr id;
         } u_exc0;
-        struct { // for O_EXCEPTION_2
-            // TODO reduce size or make generic object or something
+        struct { // for O_EXCEPTION_N
+            // TODO make generic object or something
             qstr id;
-            const char *fmt;
-            const char *s1;
-            const char *s2;
-        } u_exc2;
+            int n_args;
+            const void **args;
+        } u_exc_n;
         struct { // for O_RANGE
             // TODO make generic object or something
             machine_int_t start;
@@ -140,17 +141,17 @@ struct _py_obj_base_t {
             py_obj_t self;
         } u_bound_meth;
         struct { // for O_TUPLE, O_LIST
-            int alloc;
-            int len;
+            machine_uint_t alloc;
+            machine_uint_t len;
             py_obj_t *items;
         } u_tuple_list;
         struct { // for O_TUPLE_IT, O_LIST_IT
             py_obj_base_t *obj;
-            int cur;
+            machine_uint_t cur;
         } u_tuple_list_it;
         struct { // for O_SET
-            int alloc;
-            int used;
+            machine_uint_t alloc;
+            machine_uint_t used;
             py_obj_t *table;
         } u_set;
         py_map_t u_map; // for O_MAP
@@ -190,8 +191,8 @@ int get_doubling_prime_greater_or_equal_to(int x) {
 
 void py_map_init(py_map_t *map, py_map_kind_t kind, int n) {
     map->kind = kind;
-    map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
     map->used = 0;
+    map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
     map->table = m_new0(py_map_elem_t, map->alloc);
 }
 
@@ -350,11 +351,13 @@ py_obj_t py_obj_new_exception_0(qstr id) {
 
 py_obj_t py_obj_new_exception_2(qstr id, const char *fmt, const char *s1, const char *s2) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_EXCEPTION_2;
-    o->u_exc2.id = id;
-    o->u_exc2.fmt = fmt;
-    o->u_exc2.s1 = s1;
-    o->u_exc2.s2 = s2;
+    o->kind = O_EXCEPTION_N;
+    o->u_exc_n.id = id;
+    o->u_exc_n.n_args = 3;
+    o->u_exc_n.args = m_new(const void*, 3);
+    o->u_exc_n.args[0] = fmt;
+    o->u_exc_n.args[1] = s1;
+    o->u_exc_n.args[2] = s2;
     return (py_obj_t)o;
 }
 
@@ -519,6 +522,7 @@ FILE *fp_native = NULL;
 #endif
 
 void rt_init() {
+    printf("%u\n", sizeof(py_obj_base_t));
     q_append = qstr_from_str_static("append");
     q_print = qstr_from_str_static("print");
     q_len = qstr_from_str_static("len");
@@ -751,9 +755,9 @@ void py_obj_print(py_obj_t o_in) {
             case O_EXCEPTION_0:
                 printf("%s", qstr_str(o->u_exc0.id));
                 break;
-            case O_EXCEPTION_2:
-                printf("%s: ", qstr_str(o->u_exc2.id));
-                printf(o->u_exc2.fmt, o->u_exc2.s1, o->u_exc2.s2);
+            case O_EXCEPTION_N:
+                printf("%s: ", qstr_str(o->u_exc_n.id));
+                printf(o->u_exc_n.args[0], o->u_exc_n.args[1], o->u_exc_n.args[2]);
                 break;
             case O_GEN_INSTANCE:
                 printf("<generator object 'fun-name' at %p>", o);
