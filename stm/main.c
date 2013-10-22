@@ -16,7 +16,21 @@
 #include "usb.h"
 #include "ff.h"
 
+static FATFS fatfs0;
+
 extern uint32_t _heap_start;
+
+void flash_error(int n) {
+    for (int i = 0; i < n; i++) {
+        led_state(PYB_LED_R1, 1);
+        led_state(PYB_LED_R2, 0);
+        sys_tick_delay_ms(250);
+        led_state(PYB_LED_R1, 0);
+        led_state(PYB_LED_R2, 1);
+        sys_tick_delay_ms(250);
+    }
+    led_state(PYB_LED_R2, 0);
+}
 
 static void impl02_c_version() {
     int x = 0;
@@ -58,14 +72,8 @@ int sw_get() {
 void __fatal_error(const char *msg) {
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
-
     for (;;) {
-        led_state(PYB_LED_R1, 1);
-        led_state(PYB_LED_R2, 0);
-        sys_tick_delay_ms(150);
-        led_state(PYB_LED_R1, 0);
-        led_state(PYB_LED_R2, 1);
-        sys_tick_delay_ms(150);
+        flash_error(1);
     }
 }
 
@@ -79,16 +87,27 @@ void __fatal_error(const char *msg) {
 #include "runtime.h"
 #include "repl.h"
 
+static qstr pyb_config_source_dir = 0;
+static qstr pyb_config_main = 0;
+
 py_obj_t pyb_source_dir(py_obj_t source_dir) {
+    pyb_config_source_dir = py_get_qstr(source_dir);
     return py_const_none;
 }
 
 py_obj_t pyb_main(py_obj_t main) {
+    pyb_config_main = py_get_qstr(main);
+    return py_const_none;
+}
+
+// sync all file systems
+py_obj_t pyb_sync() {
+    storage_flush();
     return py_const_none;
 }
 
 py_obj_t pyb_delay(py_obj_t count) {
-    sys_tick_delay_ms(rt_get_int(count));
+    sys_tick_delay_ms(py_get_int(count));
     return py_const_none;
 }
 
@@ -104,8 +123,6 @@ py_obj_t pyb_sw() {
         return py_const_false;
     }
 }
-
-FATFS fatfs0;
 
 /*
 void g(uint i) {
@@ -185,26 +202,26 @@ static py_obj_t pyb_info() {
         printf("_heap_start=%p\n", &_heap_start);
     }
 
+    // GC info
+    {
+        gc_info_t info;
+        gc_info(&info);
+        printf("GC:\n");
+        printf("  %lu total\n", info.total);
+        printf("  %lu : %lu\n", info.used, info.free);
+        printf("  1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+    }
+
     // free space on flash
     {
         DWORD nclst;
         FATFS *fatfs;
         f_getfree("0:", &nclst, &fatfs);
-        printf("free=%u\n", (uint)(nclst * fatfs->csize * 512));
+        printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 
     return py_const_none;
 }
-
-/*
-void gc_print_info() {
-    gc_info_t info;
-    gc_info(&info);
-    printf("! %lu total\n", info.total);
-    printf("! %lu : %lu\n", info.used, info.free);
-    printf("! 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
-}
-*/
 
 int readline(vstr_t *line, const char *prompt) {
     usb_vcp_send_str(prompt);
@@ -287,7 +304,46 @@ void do_repl() {
         }
     }
 
-    usb_vcp_send_str("\r\nMicro Python REPL finished\r\n");
+    usb_vcp_send_str("\r\n");
+}
+
+bool do_file(const char *filename) {
+    py_lexer_file_buf_t fb;
+    py_lexer_t *lex = py_lexer_new_from_file(filename, &fb);
+
+    if (lex == NULL) {
+        printf("could not open file '%s' for reading\n", filename);
+        return false;
+    }
+
+    py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
+    py_lexer_free(lex);
+
+    if (pn == PY_PARSE_NODE_NULL) {
+        return false;
+    }
+
+    bool comp_ok = py_compile(pn, false);
+    if (!comp_ok) {
+        return false;
+    }
+
+    py_obj_t module_fun = rt_make_function_from_id(1);
+    if (module_fun == py_const_none) {
+        return false;
+    }
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        rt_call_function_0(module_fun);
+        nlr_pop();
+        return true;
+    } else {
+        // uncaught exception
+        py_obj_print((py_obj_t)nlr.ret_val);
+        printf("\n");
+        return false;
+    }
 }
 
 #define RAM_START (0x20000000) // fixed for chip
@@ -356,6 +412,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
         rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
         rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
+        rt_store_attr(m, qstr_from_str_static("sync"), rt_make_function_0(pyb_sync));
         rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
@@ -426,37 +483,37 @@ soft_reset:
         }
     }
 
+    // run /boot.py
+    if (!do_file("0:/boot.py")) {
+        flash_error(4);
+    }
+
     // USB
     usb_init();
 
-    // run /boot.py
-    if (1) {
-        py_lexer_file_buf_t fb;
-        py_lexer_t *lex = py_lexer_new_from_file("0:/boot.py", &fb);
-        py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
-        py_lexer_free(lex);
-
-        if (pn != PY_PARSE_NODE_NULL) {
-            bool comp_ok = py_compile(pn, true);
-            if (comp_ok) {
-                py_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != py_const_none) {
-                    nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) {
-                        rt_call_function_0(module_fun);
-                        nlr_pop();
-                    } else {
-                        // uncaught exception
-                        py_obj_print((py_obj_t)nlr.ret_val);
-                        printf("\n");
-                    }
-                }
-            }
-        }
-    }
-
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
+
+    // run main script
+    {
+        vstr_t *vstr = vstr_new();
+        vstr_add_str(vstr, "0:/");
+        if (pyb_config_source_dir == 0) {
+            vstr_add_str(vstr, "src");
+        } else {
+            vstr_add_str(vstr, qstr_str(pyb_config_source_dir));
+        }
+        vstr_add_char(vstr, '/');
+        if (pyb_config_main == 0) {
+            vstr_add_str(vstr, "main.py");
+        } else {
+            vstr_add_str(vstr, qstr_str(pyb_config_main));
+        }
+        if (!do_file(vstr_str(vstr))) {
+            flash_error(3);
+        }
+        vstr_free(vstr);
+    }
 
     //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
     //sys_tick_delay_ms(1000);
@@ -676,5 +733,9 @@ soft_reset:
         //sdio_init();
     }
 
+    printf("PYB: sync filesystems\n");
+    pyb_sync();
+
+    printf("PYB: soft reboot\n");
     goto soft_reset;
 }

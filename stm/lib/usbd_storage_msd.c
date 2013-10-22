@@ -308,7 +308,7 @@ int8_t STORAGE_Write (uint8_t lun,
   while (SD_GetStatus() != SD_TRANSFER_OK);  
 #endif  
 */
-    //disk_write(0, buf, blk_addr, blk_len);
+    disk_write(0, buf, blk_addr, blk_len);
   return (0);
 }
 
