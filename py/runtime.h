@@ -95,12 +95,10 @@ int rt_get_unique_code_id(bool is_main_module);
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
 void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t f, uint len, int n_args);
-py_fun_t rt_get_code(qstr id);
 void py_obj_print(py_obj_t o);
 int rt_is_true(py_obj_t arg);
 int rt_get_int(py_obj_t arg);
 py_obj_t rt_load_const_str(qstr qstr);
-//py_obj_t rt_load_const_code(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);
 py_obj_t rt_load_build_class();
@@ -118,8 +116,6 @@ py_obj_t rt_call_function_0(py_obj_t fun);
 py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg);
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2);
 py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args);
-py_obj_t rt_call_method_1(py_obj_t fun, py_obj_t self);
-py_obj_t rt_call_method_2(py_obj_t fun, py_obj_t self, py_obj_t arg);
 py_obj_t rt_call_method_n(int n_args, const py_obj_t *args);
 py_obj_t rt_build_tuple(int n_args, py_obj_t *items);
 py_obj_t rt_build_list(int n_args, py_obj_t *items);
@@ -134,3 +130,6 @@ void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val);
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t val);
 py_obj_t rt_getiter(py_obj_t o);
 py_obj_t rt_iternext(py_obj_t o);
+
+// temporary way of making C modules
+py_obj_t py_module_new();

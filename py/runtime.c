@@ -1499,14 +1499,18 @@ no_attr:
 
 void rt_store_attr(py_obj_t base, qstr attr, py_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
-    if (IS_O(base, O_OBJ)) {
+    if (IS_O(base, O_CLASS)) {
+        // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
+        py_obj_base_t *o = base;
+        py_qstr_map_lookup(o->u_class.locals, attr, true)->value = value;
+    } else if (IS_O(base, O_OBJ)) {
         // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
         py_obj_base_t *o = base;
         py_map_elem_t *elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, false);
         if (elem != NULL) {
             elem->value = value;
         } else {
-            elem = py_qstr_map_lookup(o->u_obj.class->u_class.locals, attr, true)->value = value;
+            py_qstr_map_lookup(o->u_obj.members, attr, true)->value = value;
         }
     } else {
         printf("?AttributeError: '%s' object has no attribute '%s'\n", py_obj_get_type_str(base), qstr_str(attr));
@@ -1618,3 +1622,13 @@ void rt_f_vector(rt_fun_kind_t fun_kind) {
     (rt_f_table[fun_kind])();
 }
 */
+
+// temporary way of making C modules
+// hack: use class to mimic a module
+
+py_obj_t py_module_new() {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_CLASS;
+    o->u_class.locals = py_map_new(MAP_QSTR, 0);
+    return o;
+}
