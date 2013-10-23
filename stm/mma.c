@@ -6,7 +6,7 @@
 
 #include "mma.h"
 
-void mma_init() {
+void mma_init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
     //gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
     //gpio_pin_init(GPIOB, 7 /* B7 is SDA */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
@@ -46,7 +46,7 @@ void mma_init() {
     // set START bit in CR1 to generate a start cond!
 }
 
-static uint32_t i2c_get_sr() {
+static uint32_t i2c_get_sr(void) {
     // must read SR1 first, then SR2, as the read can clear some flags
     uint32_t sr1 = I2C1->SR1;
     uint32_t sr2 = I2C1->SR2;
@@ -98,7 +98,7 @@ void mma_send_byte(uint8_t data) {
     }
 }
 
-uint8_t mma_read_ack() {
+uint8_t mma_read_ack(void) {
     // enable ACK of received byte
     I2C1->CR1 |= I2C_CR1_ACK;
     // wait for BUSY, MSL and RXNE (byte received)
@@ -109,7 +109,7 @@ uint8_t mma_read_ack() {
     return data;
 }
 
-uint8_t mma_read_nack() {
+uint8_t mma_read_nack(void) {
     // disable ACK of received byte (to indicate end of receiving)
     I2C1->CR1 &= (uint16_t)~((uint16_t)I2C_CR1_ACK);
     // last byte should apparently also generate a stop condition
@@ -122,7 +122,7 @@ uint8_t mma_read_nack() {
     return data;
 }
 
-void mma_stop() {
+void mma_stop(void) {
     // send stop condition
     I2C1->CR1 |= I2C_CR1_STOP;
 }

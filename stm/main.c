@@ -2,6 +2,7 @@
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
+#include <stm32f4xx_tim.h>
 #include <stm_misc.h>
 #include "std.h"
 
@@ -32,7 +33,7 @@ void flash_error(int n) {
     led_state(PYB_LED_R2, 0);
 }
 
-static void impl02_c_version() {
+static void impl02_c_version(void) {
     int x = 0;
     while (x < 400) {
         int y = 0;
@@ -50,7 +51,7 @@ static void impl02_c_version() {
 #define PYB_USRSW_PORT (GPIOA)
 #define PYB_USRSW_PIN (GPIO_Pin_13)
 
-void sw_init() {
+void sw_init(void) {
     // make it an input with pull-up
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = PYB_USRSW_PIN;
@@ -59,7 +60,7 @@ void sw_init() {
     GPIO_Init(PYB_USRSW_PORT, &GPIO_InitStructure);
 }
 
-int sw_get() {
+int sw_get(void) {
     if (PYB_USRSW_PORT->IDR & PYB_USRSW_PIN) {
         // pulled high, so switch is not pressed
         return 0;
@@ -101,7 +102,7 @@ py_obj_t pyb_main(py_obj_t main) {
 }
 
 // sync all file systems
-py_obj_t pyb_sync() {
+py_obj_t pyb_sync(void) {
     storage_flush();
     return py_const_none;
 }
@@ -116,7 +117,7 @@ py_obj_t pyb_led(py_obj_t state) {
     return state;
 }
 
-py_obj_t pyb_sw() {
+py_obj_t pyb_sw(void) {
     if (sw_get()) {
         return py_const_true;
     } else {
@@ -131,7 +132,7 @@ void g(uint i) {
         nlr_jump((void*)(42 + i));
     }
 }
-void f() {
+void f(void) {
     nlr_buf_t nlr;
     int i;
     for (i = 0; i < 4; i++) {
@@ -149,12 +150,12 @@ void f() {
         }
     }
 }
-void nlr_test() {
+void nlr_test(void) {
     f(1);
 }
 */
 
-void fatality() {
+void fatality(void) {
     led_state(PYB_LED_R1, 1);
     led_state(PYB_LED_G1, 1);
     led_state(PYB_LED_R2, 1);
@@ -174,7 +175,7 @@ static const char fresh_boot_py[] =
 ;
 
 // get lots of info about the board
-static py_obj_t pyb_info() {
+static py_obj_t pyb_info(void) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
@@ -249,7 +250,7 @@ int readline(vstr_t *line, const char *prompt) {
     }
 }
 
-void do_repl() {
+void do_repl(void) {
     usb_vcp_send_str("Micro Python 0.5; STM32F405RG; PYBv2\r\n");
     usb_vcp_send_str("Type \"help\" for more information.\r\n");
 
@@ -352,7 +353,7 @@ bool do_file(const char *filename) {
 
 void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
 
-void gc_collect() {
+void gc_collect(void) {
     uint32_t start = sys_tick_counter;
     gc_collect_start();
     gc_collect_root((void**)RAM_START, (((uint32_t)&_heap_start) - RAM_START) / 4);
@@ -369,12 +370,70 @@ void gc_collect() {
     printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
 }
 
-py_obj_t pyb_gc() {
+py_obj_t pyb_gc(void) {
     gc_collect();
     return py_const_none;
 }
 
-int main() {
+// PWM
+// TIM2 and TIM5 have CH1, CH2, CH3, CH4 on PA0-PA3 respectively
+// they are both 32-bit counters
+// 16-bit prescaler
+// TIM2_CH3 also on PB10 (used below)
+void servo_init(void) {
+    // TIM2 clock enable
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+    // GPIOC Configuration: TIM2_CH3 (PB10)
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    // Connect TIM2 pins to AF1
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_TIM2);
+
+    // Compute the prescaler value so TIM2 runs at 100kHz
+    uint16_t PrescalerValue = (uint16_t) ((SystemCoreClock / 2) / 100000) - 1;
+
+    // Time base configuration
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseStructure.TIM_Period = 2000; // timer cycles at 50Hz
+    TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+
+    // PWM1 Mode configuration: Channel1
+    TIM_OCInitTypeDef TIM_OCInitStructure;
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+    TIM_OCInitStructure.TIM_Pulse = 150; // units of 10us
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+    TIM_OC3Init(TIM2, &TIM_OCInitStructure);
+
+    // ?
+    TIM_OC3PreloadConfig(TIM2, TIM_OCPreload_Enable);
+
+    // ?
+    TIM_ARRPreloadConfig(TIM2, ENABLE);
+
+    // TIM2 enable counter
+    TIM_Cmd(TIM2, ENABLE);
+}
+
+py_obj_t pyb_servo_set(py_obj_t value) {
+    int v = py_get_int(value);
+    if (v < 100) { v = 100; }
+    if (v > 200) { v = 200; }
+    TIM2->CCR3 = v;
+    return py_const_none;
+}
+
+int main(void) {
     // TODO disable JTAG
 
     // set interrupt priority config to use all 4 bits for pre-empting
@@ -406,6 +465,9 @@ soft_reset:
     qstr_init();
     rt_init();
 
+    // servo
+    servo_init();
+
     // add some functions to the python namespace
     {
         py_obj_t m = py_module_new();
@@ -417,6 +479,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
+        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 

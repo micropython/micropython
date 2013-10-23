@@ -19,7 +19,7 @@ static char rx_buf[64];
 static int rx_buf_in;
 static int rx_buf_out;
 
-void usb_init() {
+void usb_init(void) {
     if (!is_enabled) {
         // only init USB once in the device's power-lifetime
         USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
@@ -29,7 +29,7 @@ void usb_init() {
     is_enabled = 1;
 }
 
-bool usb_vcp_is_enabled() {
+bool usb_vcp_is_enabled(void) {
     return is_enabled;
 }
 
@@ -50,7 +50,7 @@ void usb_vcp_receive(const char *buf, uint32_t len) {
     }
 }
 
-int usb_vcp_rx_any() {
+int usb_vcp_rx_any(void) {
     if (rx_buf_in >= rx_buf_out) {
         return rx_buf_in - rx_buf_out;
     } else {
@@ -58,7 +58,7 @@ int usb_vcp_rx_any() {
     }
 }
 
-char usb_vcp_rx_get() {
+char usb_vcp_rx_get(void) {
     while (rx_buf_out == rx_buf_in) {
     }
     char c = rx_buf[rx_buf_out];

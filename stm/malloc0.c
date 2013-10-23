@@ -49,7 +49,7 @@ void *realloc(void *ptr, size_t n) {
     return gc_realloc(ptr, n);
 }
 
-void __assert_func() {
+void __assert_func(void) {
     printf("\nASSERT FAIL!");
     for (;;) {
     }

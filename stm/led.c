@@ -9,7 +9,7 @@
 #define PYB_LED_G1_PIN (GPIO_Pin_4)
 #define PYB_LED_G2_PIN (GPIO_Pin_5)
 
-void led_init() {
+void led_init(void) {
     // set the output high (so LED is off)
     PYB_LED_R_PORT->BSRRL = PYB_LED_R1_PIN;
     PYB_LED_R_PORT->BSRRL = PYB_LED_R2_PIN;

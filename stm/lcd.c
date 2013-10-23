@@ -88,7 +88,7 @@ int lcd_line;
 int lcd_column;
 int lcd_next_line;
 
-void lcd_init() {
+void lcd_init(void) {
     // set the outputs high
     PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN;
     PYB_LCD_PORT->BSRRL = PYB_LCD_RST_PIN;

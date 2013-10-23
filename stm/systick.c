@@ -4,7 +4,7 @@
 
 volatile uint32_t sys_tick_counter;
 
-void sys_tick_init() {
+void sys_tick_init(void) {
     // sys-tick interrupt called at 1ms intervals
     sys_tick_counter = 0;
     SysTick_Config(SystemCoreClock / 1000);
@@ -12,7 +12,7 @@ void sys_tick_init() {
 }
 
 // called on SysTick interrupt
-void SysTick_Handler() {
+void SysTick_Handler(void) {
     sys_tick_counter++;
 }
 

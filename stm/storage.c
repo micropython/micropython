@@ -18,7 +18,7 @@ static uint32_t cache_flash_sector_start;
 static uint32_t cache_flash_sector_size;
 static bool cache_dirty;
 
-static void cache_flush() {
+static void cache_flush(void) {
     if (cache_dirty) {
         // sync the cache RAM buffer by writing it to the flash page
         flash_write(cache_flash_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, cache_flash_sector_size / 4);
@@ -45,7 +45,7 @@ static uint8_t *cache_get_addr_for_write(uint32_t flash_addr) {
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
 
-void storage_init() {
+void storage_init(void) {
     if (!is_initialised) {
         cache_flash_sector_id = 0;
         cache_dirty = false;
@@ -53,15 +53,15 @@ void storage_init() {
     }
 }
 
-uint32_t storage_get_block_size() {
+uint32_t storage_get_block_size(void) {
     return BLOCK_SIZE;
 }
 
-uint32_t storage_get_block_count() {
+uint32_t storage_get_block_count(void) {
     return FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS;
 }
 
-void storage_flush() {
+void storage_flush(void) {
     cache_flush();
 }
 
