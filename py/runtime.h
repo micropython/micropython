@@ -99,6 +99,7 @@ void py_obj_print(py_obj_t o);
 int rt_is_true(py_obj_t arg);
 int py_get_int(py_obj_t arg);
 qstr py_get_qstr(py_obj_t arg);
+py_obj_t py_obj_new_int(int value);
 py_obj_t rt_load_const_str(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);

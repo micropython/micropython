@@ -433,6 +433,24 @@ py_obj_t pyb_servo_set(py_obj_t value) {
     return py_const_none;
 }
 
+#define MMA_ADDR (0x4c)
+
+py_obj_t pyb_mma_read() {
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(0);
+    mma_restart(MMA_ADDR, 0);
+    py_obj_t data[4];
+    for (int i = 3; i >= 1; i--) {
+        int v = mma_read_ack() & 0x3f;
+        if (v & 0x20) {
+            v |= ~0x1f;
+        }
+        data[i] = py_obj_new_int(v);
+    }
+    data[0] = py_obj_new_int(mma_read_nack());
+    return rt_build_tuple(4, data); // items in reverse order in data
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -480,6 +498,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
+        rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 
@@ -553,6 +572,62 @@ soft_reset:
 
     // USB
     usb_init();
+
+    // MMA
+    {
+        // init and reset address to zero
+        mma_init();
+        mma_start(MMA_ADDR, 1);
+        mma_send_byte(0);
+        mma_stop();
+
+        /*
+        // read and print all 11 registers
+        mma_start(MMA_ADDR, 1);
+        mma_send_byte(0);
+        mma_restart(MMA_ADDR, 0);
+        for (int i = 0; i <= 0xa; i++) {
+            int data;
+            if (i == 0xa) {
+                data = mma_read_nack();
+            } else {
+                data = mma_read_ack();
+            }
+            printf(" %02x", data);
+        }
+        printf("\n");
+        */
+
+        // put into active mode
+        mma_start(MMA_ADDR, 1);
+        mma_send_byte(7); // mode
+        mma_send_byte(1); // active mode
+        mma_stop();
+
+        /*
+        // infinite loop to read values
+        for (;;) {
+            sys_tick_delay_ms(500);
+
+            mma_start(MMA_ADDR, 1);
+            mma_send_byte(0);
+            mma_restart(MMA_ADDR, 0);
+            for (int i = 0; i <= 3; i++) {
+                int data;
+                if (i == 3) {
+                    data = mma_read_nack();
+                    printf(" %02x\n", data);
+                } else {
+                    data = mma_read_ack() & 0x3f;
+                    if (data & 0x20) {
+                        data |= ~0x1f;
+                    }
+                    printf(" % 2d", data);
+                }
+            }
+        }
+        */
+    }
 
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
@@ -735,60 +810,6 @@ soft_reset:
         led_state(PYB_LED_G1, 1);
         sys_tick_delay_ms(100);
         led_state(PYB_LED_G1, 0);
-    }
-
-    // MMA testing
-    if (0) {
-        printf("1");
-        mma_init();
-        printf("2");
-        mma_start(0x4c, 1);
-        printf("3");
-        mma_send_byte(0);
-        printf("4");
-        mma_stop();
-        printf("5");
-        mma_start(0x4c, 1);
-        printf("6");
-        mma_send_byte(0);
-        printf("7");
-        mma_restart(0x4c, 0);
-        for (int i = 0; i <= 0xa; i++) {
-            int data;
-            if (i == 0xa) {
-                data = mma_read_nack();
-            } else {
-                data = mma_read_ack();
-            }
-            printf(" %02x", data);
-        }
-        printf("\n");
-
-        mma_start(0x4c, 1);
-        mma_send_byte(7); // mode
-        mma_send_byte(1); // active mode
-        mma_stop();
-
-        for (;;) {
-            sys_tick_delay_ms(500);
-
-            mma_start(0x4c, 1);
-            mma_send_byte(0);
-            mma_restart(0x4c, 0);
-            for (int i = 0; i <= 3; i++) {
-                int data;
-                if (i == 3) {
-                    data = mma_read_nack();
-                    printf(" %02x\n", data);
-                } else {
-                    data = mma_read_ack() & 0x3f;
-                    if (data & 0x20) {
-                        data |= 0xc0;
-                    }
-                    printf(" % 2d", data);
-                }
-            }
-        }
     }
 
     // SD card testing

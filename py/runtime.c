@@ -319,6 +319,10 @@ static bool fit_small_int(py_small_int_t o) {
     return true;
 }
 
+py_obj_t py_obj_new_int(int value) {
+    return TO_SMALL_INT(value);
+}
+
 py_obj_t py_obj_new_const(const char *id) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_CONST;
