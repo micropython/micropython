@@ -329,8 +329,10 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     if (n_bytes <= n_existing) {
         return ptr;
     } else {
+        // TODO check if we can grow inplace
         void *ptr2 = gc_alloc(n_bytes);
         memcpy(ptr2, ptr, n_existing);
+        gc_free(ptr);
         return ptr2;
     }
 }
