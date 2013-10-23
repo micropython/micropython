@@ -460,6 +460,21 @@ int main(void) {
     // enable the CCM RAM and the GPIO's
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
 
+    // configure SDIO pins to be high to start with (doesn't seem to fix problem...)
+    {
+      GPIO_InitTypeDef GPIO_InitStructure;
+      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
+      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+      GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+      GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+      // Configure PD.02 CMD line
+      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+      GPIO_Init(GPIOD, &GPIO_InitStructure);
+    }
+
     // basic sub-system init
     sys_tick_init();
     led_init();
@@ -813,8 +828,9 @@ soft_reset:
     }
 
     // SD card testing
-    if (0) {
-        //sdio_init();
+    if (1) {
+        extern void sdio_init(void);
+        sdio_init();
     }
 
     printf("PYB: sync filesystems\n");

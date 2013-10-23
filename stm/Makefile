@@ -24,8 +24,8 @@ SRC_C = \
 	systick.c  \
 	stm32fxxx_it.c \
 	usb.c \
+	sdio.c \
 	lexerstm.c \
-#	sd.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -63,6 +63,7 @@ SRC_STM = \
 	stm32f4xx_exti.c \
 	stm32f4xx_gpio.c \
 	stm32f4xx_tim.c \
+	stm32f4xx_sdio.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \
@@ -79,16 +80,8 @@ SRC_STM = \
 	usbd_msc_data.c \
 	usbd_msc_scsi.c \
 	usbd_storage_msd.c \
-
-# not needed
-#	usb_otg.c \
-#	usb_hcd.c \
-#	usb_hcd_int.c \
-
-# for SD card
-#	stm32f4xx_sdio.c \
-#	stm324x7i_eval.c \
-#	stm324x7i_eval_sdio_sd.c \
+	stm324x7i_eval.c \
+	stm324x7i_eval_sdio_sd.c \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o))
 

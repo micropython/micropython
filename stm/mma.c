@@ -61,6 +61,7 @@ void mma_init(void) {
     I2C1->CR1 |= I2C_CR1_PE;
 
     // wait 20ms, then turn on AVDD, then wait 20ms again; this seems to work, but maybe can decrease delays
+    // doesn't work for soft reboot; 50ms doesn't work either...
     sys_tick_delay_ms(20);
     GPIOB->BSRRL = GPIO_Pin_5;
     sys_tick_delay_ms(20);

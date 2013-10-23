@@ -230,7 +230,9 @@ void OTG_HS_EP1_OUT_IRQHandler(void)
 void SDIO_IRQHandler(void)
 {
   /* Process All SDIO Interrupt Sources */
-  //SD_ProcessIRQSrc();
+  // dpgeorge: i don't think this is used at the moment...
+  extern void SD_ProcessIRQSrc(void);
+  SD_ProcessIRQSrc();
 }
 
 /******************************************************************************/
