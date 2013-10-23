@@ -521,7 +521,7 @@ py_obj_t py_builtin_range(py_obj_t o_arg) {
 FILE *fp_native = NULL;
 #endif
 
-void rt_init() {
+void rt_init(void) {
     q_append = qstr_from_str_static("append");
     q_print = qstr_from_str_static("print");
     q_len = qstr_from_str_static("len");
@@ -560,7 +560,7 @@ void rt_init() {
 #endif
 }
 
-void rt_deinit() {
+void rt_deinit(void) {
 #ifdef WRITE_NATIVE
     if (fp_native != NULL) {
         fclose(fp_native);
@@ -576,7 +576,7 @@ int rt_get_unique_code_id(bool is_main_module) {
     }
 }
 
-static void alloc_unique_codes() {
+static void alloc_unique_codes(void) {
     if (unique_codes == NULL) {
         unique_codes = m_new(py_code_t, next_unique_code_id);
         for (int i = 0; i < next_unique_code_id; i++) {
@@ -901,7 +901,7 @@ py_obj_t rt_load_global(qstr qstr) {
     return elem->value;
 }
 
-py_obj_t rt_load_build_class() {
+py_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     py_map_elem_t *elem = py_qstr_map_lookup(&map_builtins, q___build_class__, false);
     if (elem == NULL) {
@@ -1635,7 +1635,7 @@ void rt_f_vector(rt_fun_kind_t fun_kind) {
 // temporary way of making C modules
 // hack: use class to mimic a module
 
-py_obj_t py_module_new() {
+py_obj_t py_module_new(void) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_CLASS;
     o->u_class.locals = py_map_new(MAP_QSTR, 0);

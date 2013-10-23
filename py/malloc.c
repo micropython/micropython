@@ -51,6 +51,6 @@ void *m_realloc(void *ptr, int num_bytes) {
     return ptr;
 }
 
-int m_get_total_bytes_allocated() {
+int m_get_total_bytes_allocated(void) {
     return total_bytes_allocated;
 }

@@ -115,7 +115,7 @@ void gc_init(void *start, void *end) {
         } \
     } while (0)
 
-static void gc_drain_stack() {
+static void gc_drain_stack(void) {
     while (gc_sp > gc_stack) {
         // pop the next block off the stack
         machine_uint_t block = *--gc_sp;
@@ -135,7 +135,7 @@ static void gc_drain_stack() {
     }
 }
 
-static void gc_deal_with_stack_overflow() {
+static void gc_deal_with_stack_overflow(void) {
     while (gc_stack_overflow) {
         gc_stack_overflow = 0;
         gc_sp = gc_stack;
@@ -151,7 +151,7 @@ static void gc_deal_with_stack_overflow() {
     }
 }
 
-static void gc_sweep() {
+static void gc_sweep(void) {
     // free unmarked heads and their tails
     int free_tail = 0;
     for (machine_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
@@ -174,7 +174,7 @@ static void gc_sweep() {
     }
 }
 
-void gc_collect_start() {
+void gc_collect_start(void) {
     gc_stack_overflow = 0;
     gc_sp = gc_stack;
 }
@@ -187,7 +187,7 @@ void gc_collect_root(void **ptrs, machine_uint_t len) {
     }
 }
 
-void gc_collect_end() {
+void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
 }
@@ -336,7 +336,7 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
 }
 
 /*
-static void gc_dump_at() {
+static void gc_dump_at(void) {
     for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
         printf("block % 6u ", bl);
         switch (ATB_GET_KIND(bl)) {
@@ -349,7 +349,7 @@ static void gc_dump_at() {
     }
 }
 
-int main() {
+int main(void) {
     machine_uint_t len = 1000;
     machine_uint_t *heap = malloc(len);
     gc_init(heap, heap + len / sizeof(machine_uint_t));

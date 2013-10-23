@@ -25,7 +25,7 @@ void *m_malloc(int num_bytes);
 void *m_malloc0(int num_bytes);
 void *m_realloc(void *ptr, int num_bytes);
 
-int m_get_total_bytes_allocated();
+int m_get_total_bytes_allocated(void);
 
 /** unichar / UTF-8 *********************************************/
 
@@ -67,7 +67,7 @@ typedef struct _vstr_t {
 
 void vstr_init(vstr_t *vstr);
 void vstr_clear(vstr_t *vstr);
-vstr_t *vstr_new();
+vstr_t *vstr_new(void);
 void vstr_free(vstr_t *vstr);
 void vstr_reset(vstr_t *vstr);
 bool vstr_had_error(vstr_t *vstr);
@@ -88,7 +88,7 @@ void vstr_cut_tail(vstr_t *vstr, int len);
 
 typedef unsigned int qstr;
 
-void qstr_init();
+void qstr_init(void);
 qstr qstr_from_str_static(const char *str);
 qstr qstr_from_str_take(char *str);
 qstr qstr_from_strn_copy(const char *str, int len);

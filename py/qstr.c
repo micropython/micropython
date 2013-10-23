@@ -7,7 +7,7 @@ static int qstrs_alloc;
 static int qstrs_len;
 static const char **qstrs;
 
-void qstr_init() {
+void qstr_init(void) {
     qstrs_alloc = 400;
     qstrs_len = 1;
     qstrs = m_new(const char*, qstrs_alloc);

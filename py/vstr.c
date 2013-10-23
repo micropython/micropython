@@ -24,7 +24,7 @@ void vstr_clear(vstr_t *vstr) {
     vstr->buf = NULL;
 }
 
-vstr_t *vstr_new() {
+vstr_t *vstr_new(void) {
     vstr_t *vstr = m_new(vstr_t, 1);
     if (vstr == NULL) {
         return NULL;
@@ -193,7 +193,7 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...) {
 /** testing *****************************************************/
 
 /*
-int main() {
+int main(void) {
     vstr_t *vstr = vstr_new();
     int i;
     for (i = 0; i < 10; i++) {

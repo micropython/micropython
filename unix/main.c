@@ -28,7 +28,7 @@ char *str_join(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-void do_repl() {
+void do_repl(void) {
     for (;;) {
         char *line = readline(">>> ");
         if (line == NULL) {

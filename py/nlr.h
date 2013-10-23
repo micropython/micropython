@@ -24,5 +24,5 @@ struct _nlr_buf_t {
 };
 
 unsigned int nlr_push(nlr_buf_t *);
-void nlr_pop();
+void nlr_pop(void);
 void nlr_jump(void *val) __attribute__((noreturn));

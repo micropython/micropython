@@ -79,18 +79,18 @@ typedef enum {
 extern void *const rt_fun_table[RT_F_NUMBER_OF];
 
 typedef machine_ptr_t py_obj_t; // must be of pointer size
-typedef py_obj_t (*py_fun_0_t)();
+typedef py_obj_t (*py_fun_0_t)(void);
 typedef py_obj_t (*py_fun_1_t)(py_obj_t);
 typedef py_obj_t (*py_fun_2_t)(py_obj_t, py_obj_t);
-typedef py_obj_t (*py_fun_t)();
+typedef py_obj_t (*py_fun_t)(void);
 
 extern py_obj_t py_const_none;
 extern py_obj_t py_const_false;
 extern py_obj_t py_const_true;
 extern py_obj_t py_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
-void rt_init();
-void rt_deinit();
+void rt_init(void);
+void rt_deinit(void);
 int rt_get_unique_code_id(bool is_main_module);
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
 void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args);
@@ -102,7 +102,7 @@ qstr py_get_qstr(py_obj_t arg);
 py_obj_t rt_load_const_str(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);
-py_obj_t rt_load_build_class();
+py_obj_t rt_load_build_class(void);
 void rt_store_name(qstr qstr, py_obj_t obj);
 void rt_store_global(qstr qstr, py_obj_t obj);
 py_obj_t rt_unary_op(int op, py_obj_t arg);
@@ -133,4 +133,4 @@ py_obj_t rt_getiter(py_obj_t o);
 py_obj_t rt_iternext(py_obj_t o);
 
 // temporary way of making C modules
-py_obj_t py_module_new();
+py_obj_t py_module_new(void);
