@@ -871,6 +871,18 @@ qstr py_get_qstr(py_obj_t arg) {
     }
 }
 
+py_obj_t *py_get_array_fixed_n(py_obj_t o_in, int n) {
+    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
+        py_obj_base_t *o = o_in;
+        if (o->u_tuple_list.len != n) {
+            nlr_jump(py_obj_new_exception_2(q_IndexError, "requested length %d but object has length %d", (void*)n, (void*)o->u_tuple_list.len));
+        }
+        return o->u_tuple_list.items;
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "object '%s' is not a tuple or list", py_obj_get_type_str(o_in), NULL));
+    }
+}
+
 py_obj_t rt_load_const_str(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
     return py_obj_new_str(qstr);
