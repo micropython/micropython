@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdarg.h>
 #include "std.h"
 #include "misc.h"

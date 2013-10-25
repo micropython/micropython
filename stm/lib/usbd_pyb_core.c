@@ -73,11 +73,26 @@
 #include "usbd_msc_bot.h"
 #include "usbd_msc_mem.h"
 
-#define USB_PYB_CONFIG_DESC_SIZ (98) // for both CDC VCP and MSC interfaces
+#define USB_PYB_USE_MSC (1)
+
+#if USB_PYB_USE_MSC
 //#define USB_PYB_CONFIG_DESC_SIZ (67) // for only CDC VCP interfaces
+#define USB_PYB_CONFIG_DESC_SIZ (98) // for both CDC VCP and MSC interfaces
+#else // USE_HID
+#define USB_PYB_CONFIG_DESC_SIZ (100) // for both CDC VCP and HID interfaces
+#endif
 
 #define MSC_EPIN_SIZE                MSC_MAX_PACKET
 #define MSC_EPOUT_SIZE               MSC_MAX_PACKET
+
+#define HID_MOUSE_REPORT_DESC_SIZE   (74)
+
+#define HID_DESCRIPTOR_TYPE           0x21
+#define HID_REPORT_DESC               0x22
+
+// HID parameters
+#define HID_IN_EP                   (0x83)
+#define HID_IN_PACKET               (4) /* maximum, and actual, packet size */
 
 /*********************************************
    PYB Device library callbacks
@@ -108,8 +123,14 @@ __ALIGN_BEGIN uint8_t APP_Rx_Buffer[APP_RX_DATA_SIZE] __ALIGN_END;
 
 __ALIGN_BEGIN static uint8_t CmdBuff[CDC_CMD_PACKET_SZE] __ALIGN_END;
 
+#if USB_PYB_USE_MSC
 __ALIGN_BEGIN static uint8_t USBD_MSC_MaxLun __ALIGN_END = 0;
 __ALIGN_BEGIN static uint8_t USBD_MSC_AltSet __ALIGN_END = 0;
+#else
+__ALIGN_BEGIN static uint8_t USBD_HID_AltSet __ALIGN_END = 0;
+__ALIGN_BEGIN static uint8_t USBD_HID_Protocol __ALIGN_END = 0;
+__ALIGN_BEGIN static uint8_t USBD_HID_IdleState __ALIGN_END = 0;
+#endif
 
 uint32_t APP_Rx_ptr_in  = 0;
 uint32_t APP_Rx_ptr_out = 0;
@@ -246,6 +267,7 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     HIBYTE(CDC_DATA_MAX_PACKET_SIZE),
     0x00,                               // bInterval: ignore for Bulk transfer
 
+#if USB_PYB_USE_MSC
     //==========================================================================
     // MSC only has 1 interface so doesn't need an IAD
 
@@ -278,8 +300,97 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
     HIBYTE(MSC_MAX_PACKET),
     0x00,                           // bInterval: ignore for Bulk transfer
+
+#else
+    //==========================================================================
+    // HID only has 1 interface so doesn't need an IAD
+
+    //--------------------------------------------------------------------------
+    // Interface Descriptor
+    0x09,   // bLength: Interface Descriptor size
+    USB_INTERFACE_DESCRIPTOR_TYPE,      // bDescriptorType: interface descriptor
+    0x02,   // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x01,   // bNumEndpoints
+    0x03,   // bInterfaceClass: HID Class
+    0x01,   // bInterfaceSubClass: 0=no boot, 1=BOOT
+    0x01,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
+    0x00,   // iInterface:
+
+    // Descriptor of Joystick Mouse HID
+    0x09,   // bLength: HID Descriptor size
+    HID_DESCRIPTOR_TYPE, // bDescriptorType: HID
+    0x11,   // bcdHID: HID Class Spec release number, low byte
+    0x01,   // bcdHID: high byte
+    0x00,   // bCountryCode: Hardware target country (0=unsupported)
+    0x01,   // bNumDescriptors: Number of HID class descriptors to follow
+    HID_REPORT_DESC,            // bDescriptorType: report
+    HID_MOUSE_REPORT_DESC_SIZE, // wItemLength: Total length of Report descriptor
+    0x00,
+
+    // Endpoint IN descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_ENDPOINT_DESCRIPTOR_TYPE,   // bDescriptorType: Endpoint descriptor type
+    HID_IN_EP,                      // bEndpointAddress: IN, address of HID
+    0x03,                           // bmAttributes: Interrupt endpoint type
+    LOBYTE(HID_IN_PACKET),          // wMaxPacketSize
+    HIBYTE(HID_IN_PACKET),
+    0x0a,                           // bInterval: polling interval, units of 1ms
+
+#endif
 };
 
+#if 0
+__ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE] __ALIGN_END =
+{
+  0x05,   0x01,
+  0x09,   0x02,
+  0xA1,   0x01,
+  0x09,   0x01,
+  
+  0xA1,   0x00,
+  0x05,   0x09,
+  0x19,   0x01,
+  0x29,   0x03,
+  
+  0x15,   0x00,
+  0x25,   0x01,
+  0x95,   0x03,
+  0x75,   0x01,
+  
+  0x81,   0x02,
+  0x95,   0x01,
+  0x75,   0x05,
+  0x81,   0x01,
+  
+  0x05,   0x01,
+  0x09,   0x30,
+  0x09,   0x31,
+  0x09,   0x38,
+  
+  0x15,   0x81,
+  0x25,   0x7F,
+  0x75,   0x08,
+  0x95,   0x03,
+  
+  0x81,   0x06,
+  0xC0,   0x09,
+  0x3c,   0x05,
+  0xff,   0x09,
+  
+  0x01,   0x15,
+  0x00,   0x25,
+  0x01,   0x75,
+  0x01,   0x95,
+  
+  0x02,   0xb1,
+  0x22,   0x75,
+  0x06,   0x95,
+  0x01,   0xb1,
+  
+  0x01,   0xc0
+}; 
+#endif
 
 /** @defgroup usbd_pyb_Private_Functions
   * @{
@@ -333,6 +444,7 @@ static uint8_t usbd_pyb_Init(void *pdev, uint8_t cfgidx) {
                      (uint8_t*)(USB_Rx_Buffer),
                      CDC_DATA_OUT_PACKET_SIZE);
 
+#if USB_PYB_USE_MSC
     //----------------------------------
     // MSC component
 
@@ -350,6 +462,17 @@ static uint8_t usbd_pyb_Init(void *pdev, uint8_t cfgidx) {
 
     // Init the BOT layer
     MSC_BOT_Init(pdev);
+
+#else
+    //----------------------------------
+    // HID component
+
+    // Open EP IN
+    DCD_EP_Open(pdev,
+                HID_IN_EP,
+                HID_IN_PACKET,
+                USB_OTG_EP_INT);
+#endif
 
     return USBD_OK;
 }
@@ -372,6 +495,7 @@ static uint8_t usbd_pyb_DeInit(void *pdev, uint8_t cfgidx) {
     // Restore default state of the Interface physical components
     VCP_fops.pIf_DeInit();
 
+#if USB_PYB_USE_MSC
     //----------------------------------
     // MSC component
 
@@ -382,11 +506,26 @@ static uint8_t usbd_pyb_DeInit(void *pdev, uint8_t cfgidx) {
     // Un Init the BOT layer
     MSC_BOT_DeInit(pdev);
 
+#else
+    //----------------------------------
+    // HID component
+
+    // Close HID EP
+    DCD_EP_Close(pdev, HID_IN_EP);
+#endif
+
     return USBD_OK;
 }
 
 #define BOT_GET_MAX_LUN              0xFE
 #define BOT_RESET                    0xFF
+
+#define HID_REQ_SET_PROTOCOL         (0x0B)
+#define HID_REQ_GET_PROTOCOL         (0x03)
+#define HID_REQ_SET_IDLE             (0x0A)
+#define HID_REQ_GET_IDLE             (0x02)
+#define HID_REQ_SET_REPORT           (0x09) // used?
+#define HID_REQ_GET_REPORT           (0x01) // used?
 
 /**
   * @brief  usbd_pyb_Setup
@@ -411,6 +550,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                         len = MIN(USB_CDC_DESC_SIZ, req->wLength); // TODO
                     }
                     return USBD_CtlSendData(pdev, pbuf, len);
+                    // TODO stuff here for HID, using HID_MOUSE_ReportDesc
                 }
             }
             */
@@ -424,7 +564,11 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                     if ((req->wIndex & 0xff) <= 1) {
                         return USBD_CtlSendData(pdev, &usbd_cdc_AltSet, 1);
                     } else {
+#if USB_PYB_USE_MSC
                         return USBD_CtlSendData(pdev, &USBD_MSC_AltSet, 1);
+#else
+                        return USBD_CtlSendData(pdev, &USBD_HID_AltSet, 1);
+#endif
                     }
 
                 case USB_REQ_SET_INTERFACE:
@@ -432,7 +576,11 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                         if ((req->wIndex & 0xff) <= 1) {
                             usbd_cdc_AltSet = req->wValue;
                         } else {
+#if USB_PYB_USE_MSC
                             USBD_MSC_AltSet = req->wValue;
+#else
+                            USBD_HID_AltSet = req->wValue;
+#endif
                         }
                         return USBD_OK;
                     }
@@ -442,6 +590,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
         // Standard Endpoint Request -------------------------------------------
         case (USB_REQ_TYPE_STANDARD | USB_REQ_RECIPIENT_ENDPOINT):
             // req->wIndex is the endpoint number, including direction
+#if USB_PYB_USE_MSC
             if (req->wIndex == MSC_IN_EP || req->wIndex == MSC_OUT_EP) {
                 // MSC component
                 switch (req->bRequest) {
@@ -464,6 +613,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                         return USBD_OK;
                 }
             }
+#endif
             break;
 
         // CDC Class Requests ------------------------------
@@ -502,6 +652,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                 }
 
             } else if (req->wIndex == 2) {
+#if USB_PYB_USE_MSC
                 // MSC component
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
@@ -520,6 +671,24 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                         }
                         break;
                 }
+#else
+                // HID component
+                switch (req->bRequest) {
+                    case HID_REQ_SET_PROTOCOL:
+                        USBD_HID_Protocol = req->wValue;
+                        return USBD_OK;
+
+                    case HID_REQ_GET_PROTOCOL:
+                        return USBD_CtlSendData(pdev, &USBD_HID_Protocol, 1);
+
+                    case HID_REQ_SET_IDLE:
+                        USBD_HID_IdleState = (req->wValue >> 8);
+                        return USBD_OK;
+
+                    case HID_REQ_GET_IDLE:
+                        return USBD_CtlSendData(pdev, &USBD_HID_IdleState, 1);
+                }
+#endif
             }
             break;
     }
@@ -590,9 +759,18 @@ static uint8_t usbd_pyb_DataIn(void *pdev, uint8_t epnum) {
             }
             return USBD_OK;
 
+#if USB_PYB_USE_MSC
         case (MSC_IN_EP & 0x7f): // TODO?
             MSC_BOT_DataIn(pdev, epnum);
             return USBD_OK;
+
+#else
+        case (HID_IN_EP & 0x7f):
+            /* Ensure that the FIFO is empty before a new transfer, this condition could
+            be caused by  a new transfer before the end of the previous transfer */
+            DCD_EP_Flush(pdev, HID_IN_EP);
+            return USBD_OK;
+#endif
     }
 
     printf("DI %x\n", epnum);
@@ -626,9 +804,11 @@ static uint8_t usbd_pyb_DataOut(void *pdev, uint8_t epnum) {
                              CDC_DATA_OUT_PACKET_SIZE);
             return USBD_OK;
 
+#if USB_PYB_USE_MSC
         case (MSC_OUT_EP & 0x7f): // TODO is this correct?
             MSC_BOT_DataOut(pdev, epnum);
             return USBD_OK;
+#endif
     }
 
     printf("DO %x\n", epnum);
@@ -733,3 +913,19 @@ static uint8_t *usbd_pyb_GetCfgDesc(uint8_t speed, uint16_t *length) {
     *length = sizeof(usbd_pyb_CfgDesc);
     return usbd_pyb_CfgDesc;
 }
+
+/**
+  * @brief  USBD_HID_SendReport
+  *         Send HID Report
+  * @param  pdev: device instance
+  * @param  buff: pointer to report (4 bytes: ?, x, y, ?)
+  * @retval status
+  */
+/*
+uint8_t USBD_HID_SendReport(USB_OTG_CORE_HANDLE *pdev, uint8_t *report, uint16_t len) {
+    if (pdev->dev.device_status == USB_OTG_CONFIGURED) {
+        DCD_EP_Tx(pdev, HID_IN_EP, report, len);
+    }
+    return USBD_OK;
+}
+*/

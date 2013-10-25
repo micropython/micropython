@@ -75,6 +75,7 @@ SRC_STM = \
 	usbd_usr.c \
 	usbd_desc.c \
 	usbd_pyb_core.c \
+	usbd_pyb_core2.c \
 	usbd_cdc_vcp.c \
 	usbd_msc_bot.c  \
 	usbd_msc_data.c \

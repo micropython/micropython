@@ -23,6 +23,7 @@ void usb_init(void) {
     if (!is_enabled) {
         // only init USB once in the device's power-lifetime
         USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
+        //USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
     }
     rx_buf_in = 0;
     rx_buf_out = 0;
@@ -99,4 +100,8 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
         APP_Rx_Buffer[APP_Rx_ptr_in] = *str;
         APP_Rx_ptr_in = (APP_Rx_ptr_in + 1) & (APP_RX_DATA_SIZE - 1);
     }
+}
+
+void usb_hid_send_report(uint8_t *buf) {
+    USBD_HID_SendReport(&USB_OTG_dev, buf, 4);
 }

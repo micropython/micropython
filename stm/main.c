@@ -451,6 +451,17 @@ py_obj_t pyb_mma_read() {
     return rt_build_tuple(4, data); // items in reverse order in data
 }
 
+py_obj_t pyb_hid_send_report(py_obj_t arg) {
+    py_obj_t *items = py_get_array_fixed_n(arg, 4);
+    uint8_t data[4];
+    data[0] = py_get_int(items[0]);
+    data[1] = py_get_int(items[1]);
+    data[2] = py_get_int(items[2]);
+    data[3] = py_get_int(items[3]);
+    usb_hid_send_report(data);
+    return py_const_none;
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -514,6 +525,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
+        rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 
@@ -811,6 +823,35 @@ soft_reset:
                 printf("nalloc=%u\n", m_get_total_bytes_allocated());
                 sys_tick_delay_ms(1000);
             }
+        }
+    }
+
+    // HID example
+    if (0) {
+        uint8_t data[4];
+        data[0] = 0;
+        data[1] = 1;
+        data[2] = -2;
+        data[3] = 0;
+        for (;;) {
+            if (sw_get()) {
+                data[0] = 0x01; // 0x04 is middle, 0x02 is right
+            } else {
+                data[0] = 0x00;
+            }
+            mma_start(MMA_ADDR, 1);
+            mma_send_byte(0);
+            mma_restart(MMA_ADDR, 0);
+            for (int i = 0; i <= 1; i++) {
+                int v = mma_read_ack() & 0x3f;
+                if (v & 0x20) {
+                    v |= ~0x1f;
+                }
+                data[1 + i] = v;
+            }
+            mma_read_nack();
+            usb_hid_send_report(data);
+            sys_tick_delay_ms(15);
         }
     }
 
