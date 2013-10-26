@@ -612,7 +612,7 @@ int main(void) {
     // enable the CCM RAM and the GPIO's
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
 
-    // configure SDIO pins to be high to start with (doesn't seem to fix problem...)
+    // configure SDIO pins to be high to start with (apparently makes it more robust)
     {
       GPIO_InitTypeDef GPIO_InitStructure;
       GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
