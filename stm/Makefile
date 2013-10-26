@@ -23,6 +23,7 @@ SRC_C = \
 	malloc0.c \
 	systick.c  \
 	stm32fxxx_it.c \
+	usart.c \
 	usb.c \
 	sdio.c \
 	lexerstm.c \
@@ -66,6 +67,7 @@ SRC_STM = \
 	stm32f4xx_sdio.c \
 	stm32f4xx_pwr.c \
 	stm32f4xx_rtc.c \
+	stm32f4xx_usart.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \

@@ -5,6 +5,7 @@
 #include <stm32f4xx_tim.h>
 #include <stm32f4xx_pwr.h>
 #include <stm32f4xx_rtc.h>
+#include <stm32f4xx_usart.h>
 #include <stm_misc.h>
 #include "std.h"
 
@@ -16,6 +17,7 @@
 #include "lcd.h"
 #include "storage.h"
 #include "mma.h"
+#include "usart.h"
 #include "usb.h"
 #include "ff.h"
 
@@ -226,6 +228,23 @@ static py_obj_t pyb_info(void) {
     return py_const_none;
 }
 
+py_obj_t pyb_usart_send(py_obj_t data) {
+    usart_tx_char(py_get_int(data));
+    return py_const_none;
+}
+
+py_obj_t pyb_usart_receive(void) {
+    return py_obj_new_int(usart_rx_char());
+}
+
+py_obj_t pyb_usart_status(void) {
+    if (usart_rx_any()) {
+        return py_const_true;
+    } else {
+        return py_const_false;
+    }
+}
+
 char *strdup(const char *str) {
     uint32_t len = strlen(str);
     char *s2 = m_new(char, len + 1);
@@ -238,21 +257,33 @@ char *strdup(const char *str) {
 
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
+void stdout_tx_str(const char *str) {
+    usart_tx_str(str);
+    usb_vcp_send_str(str);
+}
+
 int readline(vstr_t *line, const char *prompt) {
-    usb_vcp_send_str(prompt);
+    stdout_tx_str(prompt);
     int len = vstr_len(line);
     int escape = 0;
     int hist_num = 0;
     for (;;) {
-        while (usb_vcp_rx_any() == 0) {
+        char c;
+        for (;;) {
+            if (usb_vcp_rx_any() != 0) {
+                c = usb_vcp_rx_get();
+                break;
+            } else if (usart_rx_any()) {
+                c = usart_rx_char();
+                break;
+            }
             sys_tick_delay_ms(1);
         }
-        char c = usb_vcp_rx_get();
         if (escape == 0) {
             if (c == 4 && vstr_len(line) == len) {
                 return 0;
             } else if (c == '\r') {
-                usb_vcp_send_str("\r\n");
+                stdout_tx_str("\r\n");
                 for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
                     readline_hist[i] = readline_hist[i - 1];
                 }
@@ -263,11 +294,11 @@ int readline(vstr_t *line, const char *prompt) {
             } else if (c == 127) {
                 if (vstr_len(line) > len) {
                     vstr_cut_tail(line, 1);
-                    usb_vcp_send_str("\b \b");
+                    stdout_tx_str("\b \b");
                 }
             } else if (32 <= c && c <= 126) {
                 vstr_add_char(line, c);
-                usb_vcp_send_strn(&c, 1);
+                stdout_tx_str(line->buf + line->len - 1);
             }
         } else if (escape == 1) {
             if (c == '[') {
@@ -282,13 +313,13 @@ int readline(vstr_t *line, const char *prompt) {
                 if (hist_num < READLINE_HIST_SIZE && readline_hist[hist_num] != NULL) {
                     // erase line
                     for (int i = line->len - len; i > 0; i--) {
-                        usb_vcp_send_str("\b \b");
+                        stdout_tx_str("\b \b");
                     }
                     // set line to history
                     line->len = len;
                     vstr_add_str(line, readline_hist[hist_num]);
                     // draw line
-                    usb_vcp_send_str(readline_hist[hist_num]);
+                    stdout_tx_str(readline_hist[hist_num]);
                     // increase hist num
                     hist_num += 1;
                 }
@@ -301,8 +332,8 @@ int readline(vstr_t *line, const char *prompt) {
 }
 
 void do_repl(void) {
-    usb_vcp_send_str("Micro Python 0.5; STM32F405RG; PYBv2\r\n");
-    usb_vcp_send_str("Type \"help\" for more information.\r\n");
+    stdout_tx_str("Micro Python 0.5; STM32F405RG; PYBv2\r\n");
+    stdout_tx_str("Type \"help\" for more information.\r\n");
 
     vstr_t line;
     vstr_init(&line);
@@ -355,7 +386,7 @@ void do_repl(void) {
         }
     }
 
-    usb_vcp_send_str("\r\n");
+    stdout_tx_str("\r\n");
 }
 
 bool do_file(const char *filename) {
@@ -607,6 +638,7 @@ int main(void) {
     // more sub-system init
     sw_init();
     storage_init();
+    usart_init();
 
 soft_reset:
 
@@ -638,6 +670,9 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
+        rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
+        rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
+        rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 

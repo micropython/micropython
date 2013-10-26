@@ -3,6 +3,7 @@
 #include "std.h"
 #include "misc.h"
 #include "lcd.h"
+#include "usart.h"
 #include "usb.h"
 
 #define PF_FLAG_LEFT_ADJUST (0x01)
@@ -213,10 +214,17 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 }
 
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
-    // send stdout to LCD and USB CDC VCP
+    // send stdout to USART, USB CDC VCP, and LCD if nothing else
+    bool any = false;
+    if (usart_is_enabled()) {
+        usart_tx_strn_cooked(str, len);
+        any = true;
+    }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
-    } else {
+        any = true;
+    }
+    if (!any) {
         lcd_print_strn(str, len);
     }
 }
