@@ -3,6 +3,7 @@
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_tim.h>
+#include <stm32f4xx_pwr.h>
 #include <stm32f4xx_rtc.h>
 #include <stm_misc.h>
 #include "std.h"
@@ -225,29 +226,77 @@ static py_obj_t pyb_info(void) {
     return py_const_none;
 }
 
+char *strdup(const char *str) {
+    uint32_t len = strlen(str);
+    char *s2 = m_new(char, len + 1);
+    memcpy(s2, str, len);
+    s2[len] = 0;
+    return s2;
+}
+
+#define READLINE_HIST_SIZE (8)
+
+static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+
 int readline(vstr_t *line, const char *prompt) {
     usb_vcp_send_str(prompt);
     int len = vstr_len(line);
+    int escape = 0;
+    int hist_num = 0;
     for (;;) {
         while (usb_vcp_rx_any() == 0) {
-            sys_tick_delay_ms(10);
+            sys_tick_delay_ms(1);
         }
         char c = usb_vcp_rx_get();
-        if (c == 4 && vstr_len(line) == len) {
-            return 0;
-        } else if (c == '\r') {
-            usb_vcp_send_str("\r\n");
-            return 1;
-        } else if (c == 127) {
-            if (vstr_len(line) > len) {
-                vstr_cut_tail(line, 1);
-                usb_vcp_send_str("\b \b");
+        if (escape == 0) {
+            if (c == 4 && vstr_len(line) == len) {
+                return 0;
+            } else if (c == '\r') {
+                usb_vcp_send_str("\r\n");
+                for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
+                    readline_hist[i] = readline_hist[i - 1];
+                }
+                readline_hist[0] = strdup(vstr_str(line));
+                return 1;
+            } else if (c == 27) {
+                escape = true;
+            } else if (c == 127) {
+                if (vstr_len(line) > len) {
+                    vstr_cut_tail(line, 1);
+                    usb_vcp_send_str("\b \b");
+                }
+            } else if (32 <= c && c <= 126) {
+                vstr_add_char(line, c);
+                usb_vcp_send_strn(&c, 1);
             }
-        } else if (32 <= c && c <= 126) {
-            vstr_add_char(line, c);
-            usb_vcp_send_strn(&c, 1);
+        } else if (escape == 1) {
+            if (c == '[') {
+                escape = 2;
+            } else {
+                escape = 0;
+            }
+        } else if (escape == 2) {
+            escape = 0;
+            if (c == 'A') {
+                // up arrow
+                if (hist_num < READLINE_HIST_SIZE && readline_hist[hist_num] != NULL) {
+                    // erase line
+                    for (int i = line->len - len; i > 0; i--) {
+                        usb_vcp_send_str("\b \b");
+                    }
+                    // set line to history
+                    line->len = len;
+                    vstr_add_str(line, readline_hist[hist_num]);
+                    // draw line
+                    usb_vcp_send_str(readline_hist[hist_num]);
+                    // increase hist num
+                    hist_num += 1;
+                }
+            }
+        } else {
+            escape = 0;
         }
-        sys_tick_delay_ms(100);
+        sys_tick_delay_ms(10);
     }
 }
 
