@@ -64,6 +64,8 @@ SRC_STM = \
 	stm32f4xx_gpio.c \
 	stm32f4xx_tim.c \
 	stm32f4xx_sdio.c \
+	stm32f4xx_pwr.c \
+	stm32f4xx_rtc.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \

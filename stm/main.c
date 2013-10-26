@@ -3,6 +3,7 @@
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_tim.h>
+#include <stm32f4xx_rtc.h>
 #include <stm_misc.h>
 #include "std.h"
 
@@ -462,6 +463,66 @@ py_obj_t pyb_hid_send_report(py_obj_t arg) {
     return py_const_none;
 }
 
+static void rtc_init(void) {
+    /* Enable the PWR clock */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+
+    /* Allow access to RTC */
+    PWR_BackupAccessCmd(ENABLE);
+
+    /* Enable the LSE OSC */
+    RCC_LSEConfig(RCC_LSE_ON);
+
+    /* Wait till LSE is ready */
+    while(RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) {
+    }
+
+    /* Select the RTC Clock Source */
+    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
+    /* ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)*/
+    uint32_t uwSynchPrediv = 0xFF;
+    uint32_t uwAsynchPrediv = 0x7F;
+
+    /* Enable the RTC Clock */
+    RCC_RTCCLKCmd(ENABLE);
+
+    /* Wait for RTC APB registers synchronisation */
+    RTC_WaitForSynchro();
+
+    /* Configure the RTC data register and RTC prescaler */
+    RTC_InitTypeDef RTC_InitStructure;
+    RTC_InitStructure.RTC_AsynchPrediv = uwAsynchPrediv;
+    RTC_InitStructure.RTC_SynchPrediv = uwSynchPrediv;
+    RTC_InitStructure.RTC_HourFormat = RTC_HourFormat_24;
+    RTC_Init(&RTC_InitStructure);
+
+    // Set the date (BCD)
+    RTC_DateTypeDef RTC_DateStructure;
+    RTC_DateStructure.RTC_Year = 0x13;
+    RTC_DateStructure.RTC_Month = RTC_Month_October;
+    RTC_DateStructure.RTC_Date = 0x26;
+    RTC_DateStructure.RTC_WeekDay = RTC_Weekday_Saturday;
+    RTC_SetDate(RTC_Format_BCD, &RTC_DateStructure);
+
+    // Set the time (BCD)
+    RTC_TimeTypeDef RTC_TimeStructure;
+    RTC_TimeStructure.RTC_H12     = RTC_H12_AM;
+    RTC_TimeStructure.RTC_Hours   = 0x01;
+    RTC_TimeStructure.RTC_Minutes = 0x53;
+    RTC_TimeStructure.RTC_Seconds = 0x00;
+    RTC_SetTime(RTC_Format_BCD, &RTC_TimeStructure);
+
+    // Indicator for the RTC configuration
+    //RTC_WriteBackupRegister(RTC_BKP_DR0, 0x32F2);
+}
+
+py_obj_t pyb_rtc_read(void) {
+    RTC_TimeTypeDef RTC_TimeStructure;
+    RTC_GetTime(RTC_Format_BIN, &RTC_TimeStructure);
+    printf("%02d:%02d:%02d\n", RTC_TimeStructure.RTC_Hours, RTC_TimeStructure.RTC_Minutes, RTC_TimeStructure.RTC_Seconds);
+    return py_const_none;
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -489,6 +550,7 @@ int main(void) {
     // basic sub-system init
     sys_tick_init();
     led_init();
+    rtc_init();
 
     // turn on LED to indicate bootup
     led_state(PYB_LED_G1, 1);
@@ -526,6 +588,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
+        rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 
