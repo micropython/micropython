@@ -242,6 +242,7 @@ void SD_LowLevel_Init(void)
   /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
   // dpgeorge: switch is normally open, connected to VDD when card inserted
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; // needs to be 2MHz due to restrictions on PC13
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);
