@@ -6,7 +6,7 @@ BUILD=build
 AS = arm-none-eabi-as
 CC = arm-none-eabi-gcc
 LD = arm-none-eabi-ld
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfloat-abi=hard -DSTM32F40XX -DHSE_VALUE=8000000
+CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40XX -DHSE_VALUE=8000000
 CFLAGS = -I. -I$(PYSRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 -Os -DNDEBUG $(CFLAGS_CORTEX_M4)
 LDFLAGS = --nostdlib -T stm32f405.ld
 
