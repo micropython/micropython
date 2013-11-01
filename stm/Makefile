@@ -59,15 +59,17 @@ SRC_FATFS = \
 
 SRC_STM = \
 	stm32f4xx_rcc.c \
+	stm32f4xx_syscfg.c \
 	stm32f4xx_flash.c \
 	stm32f4xx_dma.c \
-	stm32f4xx_exti.c \
 	stm32f4xx_gpio.c \
+	stm32f4xx_exti.c \
 	stm32f4xx_tim.c \
 	stm32f4xx_sdio.c \
 	stm32f4xx_pwr.c \
 	stm32f4xx_rtc.c \
 	stm32f4xx_usart.c \
+	stm32f4xx_spi.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \
