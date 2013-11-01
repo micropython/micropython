@@ -414,7 +414,6 @@ SD_Error SD_Init(void)
 
   if (errorstatus != SD_OK)
   {
-      printf("here1\n");
     /*!< CMD Response TimeOut (wait for CMDSENT flag) */
     return(errorstatus);
   }
@@ -423,7 +422,6 @@ SD_Error SD_Init(void)
 
   if (errorstatus != SD_OK)
   {
-      printf("here2\n");
     /*!< CMD Response TimeOut (wait for CMDSENT flag) */
     return(errorstatus);
   }
@@ -568,7 +566,6 @@ SD_Error SD_PowerON(void)
   SDIO_SendCommand(&SDIO_CmdInitStructure);
 
   errorstatus = CmdError();
-      printf("here pwr 1 %d\n", errorstatus);
 
   if (errorstatus != SD_OK)
   {
@@ -590,7 +587,6 @@ SD_Error SD_PowerON(void)
   SDIO_SendCommand(&SDIO_CmdInitStructure);
 
   errorstatus = CmdResp7Error();
-      printf("here pwr 2 %d\n", errorstatus);
 
   if (errorstatus == SD_OK)
   {
@@ -616,7 +612,6 @@ SD_Error SD_PowerON(void)
   SDIO_CmdInitStructure.SDIO_CPSM = SDIO_CPSM_Enable;
   SDIO_SendCommand(&SDIO_CmdInitStructure);
   errorstatus = CmdResp1Error(SD_CMD_APP_CMD);
-      printf("here pwr 3 %d\n", errorstatus);
 
   /*!< If errorstatus is Command TimeOut, it is a MMC card */
   /*!< If errorstatus is SD_OK it is a SD card: SD card 2.0 (voltage range mismatch)
