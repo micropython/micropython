@@ -603,6 +603,13 @@ py_obj_t pyb_rtc_read(void) {
     return py_const_none;
 }
 
+py_obj_t pyb_lcd8(py_obj_t pos, py_obj_t val) {
+    int pos_val = py_get_int(pos);
+    int val_val = py_get_int(val);
+    lcd_draw_pixel_8(pos_val, val_val);
+    return py_const_none;
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -673,6 +680,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
         rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
+        rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(pyb_lcd8));
         rt_store_name(qstr_from_str_static("pyb"), m);
     }
 
@@ -1026,4 +1034,9 @@ soft_reset:
 
     printf("PYB: soft reboot\n");
     goto soft_reset;
+}
+
+double __aeabi_f2d(float x) {
+    // TODO
+    return 0.0;
 }

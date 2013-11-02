@@ -198,12 +198,23 @@ void lcd_print_strn(const char *str, unsigned int len) {
             chr = 127;
         }
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
-        for (int i = 0; i < 8; i++) {
-            lcd_out(LCD_DATA, chr_data[i]);
+        for (int j = 0; j < 8; j++) {
+            lcd_out(LCD_DATA, chr_data[j]);
         }
     }
 
     if (did_new_line) {
         sys_tick_delay_ms(200);
     }
+}
+
+// writes 8 vertical pixels
+// pos 0 is upper left, pos 1 is 8 pixels to right of that, pos 128 is 8 pixels below that
+void lcd_draw_pixel_8(int pos, int val) {
+    int page = pos / 128;
+    int offset = pos - (page * 128);
+    lcd_out(LCD_INSTR, 0xb0 | page); // page address set
+    lcd_out(LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
+    lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
+    lcd_out(LCD_DATA, val); // write data
 }
