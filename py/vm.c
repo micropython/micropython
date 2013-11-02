@@ -32,7 +32,8 @@ py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_arg
         // it shouldn't yield
         assert(0);
     }
-    assert(sp == &state[17]);
+    // TODO check fails if, eg, return from within for loop
+    //assert(sp == &state[17]);
     return *sp;
 }
 
@@ -180,6 +181,12 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
 
                     case PYBC_POP_TOP:
                         ++sp;
+                        break;
+
+                    case PYBC_ROT_TWO:
+                        obj1 = sp[0];
+                        sp[0] = sp[1];
+                        sp[1] = obj1;
                         break;
 
                     case PYBC_ROT_THREE:
