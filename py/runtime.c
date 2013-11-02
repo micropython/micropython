@@ -453,7 +453,7 @@ py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
         self->u_tuple_list.items = m_renew(py_obj_t, self->u_tuple_list.items, self->u_tuple_list.alloc);
     }
     self->u_tuple_list.items[self->u_tuple_list.len++] = arg;
-    return arg;
+    return py_const_none; // return None, as per CPython
 }
 
 py_obj_t rt_gen_instance_next(py_obj_t self_in) {
