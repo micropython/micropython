@@ -83,6 +83,11 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         PUSH((py_obj_t)(snum << 1 | 1));
                         break;
 
+                    case PYBC_LOAD_CONST_DEC:
+                        DECODE_QSTR;
+                        PUSH(rt_load_const_dec(qstr));
+                        break;
+
                     case PYBC_LOAD_CONST_ID:
                         DECODE_QSTR;
                         PUSH(rt_load_const_str(qstr)); // TODO
@@ -265,6 +270,11 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         //exc_sp--; // discard ip
                         exc_sp -= 2;
                         //sp += 3; // pop 3 exception values
+                        break;
+
+                    case PYBC_UNARY_OP:
+                        unum = *ip++;
+                        *sp = rt_unary_op(unum, *sp);
                         break;
 
                     case PYBC_BINARY_OP:

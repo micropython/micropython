@@ -14,6 +14,11 @@
 #include "runtime.h"
 #include "bc.h"
 
+#if MICROPY_ENABLE_FLOAT
+// for sqrt
+#include <math.h>
+#endif
+
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_NATIVE (1)
@@ -32,7 +37,7 @@ typedef machine_int_t py_small_int_t;
 #define TO_SMALL_INT(o) ((py_obj_t)(((o) << 1) | 1))
 
 #if MICROPY_ENABLE_FLOAT
-typedef machine_float_t float_t;
+typedef machine_float_t py_float_t;
 #endif
 
 typedef enum {
@@ -40,6 +45,7 @@ typedef enum {
     O_STR,
 #if MICROPY_ENABLE_FLOAT
     O_FLOAT,
+    O_COMPLEX,
 #endif
     O_EXCEPTION_0,
     O_EXCEPTION_N,
@@ -91,7 +97,11 @@ struct _py_obj_base_t {
         const char *id;
         qstr u_str;
 #if MICROPY_ENABLE_FLOAT
-        float_t u_flt;
+        py_float_t u_float; // for O_FLOAT
+        struct { // for O_COMPLEX
+            py_float_t real;
+            py_float_t imag;
+        } u_complex;
 #endif
         struct { // for O_EXCEPTION_0
             qstr id;
@@ -176,6 +186,7 @@ static qstr q_IndexError;
 static qstr q_KeyError;
 static qstr q_NameError;
 static qstr q_TypeError;
+static qstr q_SyntaxError;
 
 py_obj_t py_const_none;
 py_obj_t py_const_false;
@@ -350,10 +361,18 @@ py_obj_t py_obj_new_str(qstr qstr) {
 }
 
 #if MICROPY_ENABLE_FLOAT
-py_obj_t py_obj_new_float(float_t val) {
+py_obj_t py_obj_new_float(py_float_t val) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_FLOAT;
-    o->u_flt = val;
+    o->u_float = val;
+    return (py_obj_t)o;
+}
+
+py_obj_t py_obj_new_complex(py_float_t real, py_float_t imag) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_COMPLEX;
+    o->u_complex.real = real;
+    o->u_complex.imag = imag;
     return (py_obj_t)o;
 }
 #endif
@@ -533,6 +552,30 @@ py_obj_t py_builtin_len(py_obj_t o_in) {
     return TO_SMALL_INT(len);
 }
 
+py_obj_t py_builtin_abs(py_obj_t o_in) {
+    if (IS_SMALL_INT(o_in)) {
+        py_small_int_t val = FROM_SMALL_INT(o_in);
+        if (val < 0) {
+            val = -val;
+        }
+        return TO_SMALL_INT(val);
+    } else if (IS_O(o_in, O_FLOAT)) {
+        py_obj_base_t *o = o_in;
+        // TODO check for NaN etc
+        if (o->u_float < 0) {
+            return py_obj_new_float(-o->u_float);
+        } else {
+            return o_in;
+        }
+    } else if (IS_O(o_in, O_COMPLEX)) {
+        py_obj_base_t *o = o_in;
+        return py_obj_new_float(sqrt(o->u_complex.real*o->u_complex.real + o->u_complex.imag*o->u_complex.imag));
+    } else {
+        assert(0);
+        return py_const_none;
+    }
+}
+
 py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name) {
     // we differ from CPython: we set the new __locals__ object here
     py_map_t *old_locals = map_locals;
@@ -572,6 +615,7 @@ void rt_init(void) {
     q_KeyError = qstr_from_str_static("KeyError");
     q_NameError = qstr_from_str_static("NameError");
     q_TypeError = qstr_from_str_static("TypeError");
+    q_SyntaxError = qstr_from_str_static("SyntaxError");
 
     py_const_none = py_obj_new_const("None");
     py_const_false = py_obj_new_const("False");
@@ -586,6 +630,7 @@ void rt_init(void) {
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
     py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
     py_qstr_map_lookup(&map_builtins, q_len, true)->value = rt_make_function_1(py_builtin_len);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_1(py_builtin_range);
 
@@ -789,7 +834,14 @@ void py_obj_print(py_obj_t o_in) {
                 break;
 #if MICROPY_ENABLE_FLOAT
             case O_FLOAT:
-                printf("%f", o->u_flt);
+                printf("%.8g", o->u_float);
+                break;
+            case O_COMPLEX:
+                if (o->u_complex.real == 0) {
+                    printf("%.8gj", o->u_complex.imag);
+                } else {
+                    printf("(%.8g+%.8gj)", o->u_complex.real, o->u_complex.imag);
+                }
                 break;
 #endif
             case O_EXCEPTION_0:
@@ -907,10 +959,33 @@ machine_float_t py_obj_get_float(py_obj_t arg) {
     } else if (IS_SMALL_INT(arg)) {
         return FROM_SMALL_INT(arg);
     } else if (IS_O(arg, O_FLOAT)) {
-        return ((py_obj_base_t*)arg)->u_flt;
+        return ((py_obj_base_t*)arg)->u_float;
     } else {
         assert(0);
         return 0;
+    }
+}
+
+void py_obj_get_complex(py_obj_t arg, py_float_t *real, py_float_t *imag) {
+    if (arg == py_const_false) {
+        *real = 0;
+        *imag = 0;
+    } else if (arg == py_const_true) {
+        *real = 1;
+        *imag = 0;
+    } else if (IS_SMALL_INT(arg)) {
+        *real = FROM_SMALL_INT(arg);
+        *imag = 0;
+    } else if (IS_O(arg, O_FLOAT)) {
+        *real = ((py_obj_base_t*)arg)->u_float;
+        *imag = 0;
+    } else if (IS_O(arg, O_COMPLEX)) {
+        *real = ((py_obj_base_t*)arg)->u_complex.real;
+        *imag = ((py_obj_base_t*)arg)->u_complex.imag;
+    } else {
+        assert(0);
+        *real = 0;
+        *imag = 0;
     }
 }
 
@@ -933,6 +1008,74 @@ py_obj_t *py_get_array_fixed_n(py_obj_t o_in, machine_int_t n) {
     } else {
         nlr_jump(py_obj_new_exception_2(q_TypeError, "object '%s' is not a tuple or list", py_obj_get_type_str(o_in), NULL));
     }
+}
+
+#define PARSE_DEC_IN_INTG (1)
+#define PARSE_DEC_IN_FRAC (2)
+#define PARSE_DEC_IN_EXP  (3)
+
+py_obj_t rt_load_const_dec(qstr qstr) {
+#if MICROPY_ENABLE_FLOAT
+    DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
+    const char *s = qstr_str(qstr);
+    int in = PARSE_DEC_IN_INTG;
+    py_float_t dec_val = 0;
+    bool exp_neg = false;
+    int exp_val = 0;
+    int exp_extra = 0;
+    bool imag = false;
+    for (; *s; s++) {
+        int dig = *s;
+        if ('0' <= dig && dig <= '9') {
+            dig -= '0';
+            if (in == PARSE_DEC_IN_EXP) {
+                exp_val = 10 * exp_val + dig;
+            } else {
+                dec_val = 10 * dec_val + dig;
+                if (in == PARSE_DEC_IN_FRAC) {
+                    exp_extra -= 1;
+                }
+            }
+        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
+            in = PARSE_DEC_IN_FRAC;
+        } else if (in != PARSE_DEC_IN_EXP && (dig == 'E' || dig == 'e')) {
+            in = PARSE_DEC_IN_EXP;
+            if (s[1] == '+') {
+                s++;
+            } else if (s[1] == '-') {
+                s++;
+                exp_neg = true;
+            }
+        } else if (dig == 'J' || dig == 'j') {
+            s++;
+            imag = true;
+            break;
+        } else {
+            // unknown character
+            break;
+        }
+    }
+    if (*s != 0) {
+        nlr_jump(py_obj_new_exception_2(q_SyntaxError, "invalid syntax for number", NULL, NULL));
+    }
+    if (exp_neg) {
+        exp_val = -exp_val;
+    }
+    exp_val += exp_extra;
+    for (; exp_val > 0; exp_val--) {
+        dec_val *= 10;
+    }
+    for (; exp_val < 0; exp_val++) {
+        dec_val *= 0.1;
+    }
+    if (imag) {
+        return py_obj_new_complex(0, dec_val);
+    } else {
+        return py_obj_new_float(dec_val);
+    }
+#else
+    nlr_jump(py_obj_new_exception_2(q_SyntaxError, "decimal numbers not supported", NULL, NULL));
+#endif
 }
 
 py_obj_t rt_load_const_str(qstr qstr) {
@@ -990,6 +1133,32 @@ void rt_store_global(qstr qstr, py_obj_t obj) {
 }
 
 py_obj_t rt_unary_op(int op, py_obj_t arg) {
+    DEBUG_OP_printf("unary %d %p\n", op, arg);
+    if (IS_SMALL_INT(arg)) {
+        py_small_int_t val = FROM_SMALL_INT(arg);
+        switch (op) {
+            case RT_UNARY_OP_NOT: if (val != 0) { return py_const_true;} else { return py_const_false; }
+            case RT_UNARY_OP_POSITIVE: break;
+            case RT_UNARY_OP_NEGATIVE: val = -val; break;
+            case RT_UNARY_OP_INVERT: val = ~val; break;
+            default: assert(0); val = 0;
+        }
+        if (fit_small_int(val)) {
+            return TO_SMALL_INT(val);
+        }
+#if MICROPY_ENABLE_FLOAT
+    } else if (IS_O(arg, O_FLOAT)) {
+        py_float_t val = py_obj_get_float(arg);
+        switch (op) {
+            case RT_UNARY_OP_NOT: if (val != 0) { return py_const_true;} else { return py_const_false; }
+            case RT_UNARY_OP_POSITIVE: break;
+            case RT_UNARY_OP_NEGATIVE: val = -val; break;
+            case RT_UNARY_OP_INVERT: nlr_jump(py_obj_new_exception_2(q_TypeError, "bad operand type for unary ~: 'float'", NULL, NULL));
+            default: assert(0); val = 0;
+        }
+        return py_obj_new_float(val);
+#endif
+    }
     assert(0);
     return py_const_none;
 }
@@ -1033,63 +1202,95 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
     } else if (IS_SMALL_INT(lhs) && IS_SMALL_INT(rhs)) {
         py_small_int_t lhs_val = FROM_SMALL_INT(lhs);
         py_small_int_t rhs_val = FROM_SMALL_INT(rhs);
-        py_small_int_t val;
         switch (op) {
             case RT_BINARY_OP_OR:
-            case RT_BINARY_OP_INPLACE_OR: val = lhs_val | rhs_val; break;
+            case RT_BINARY_OP_INPLACE_OR: lhs_val |= rhs_val; break;
             case RT_BINARY_OP_XOR:
-            case RT_BINARY_OP_INPLACE_XOR: val = lhs_val ^ rhs_val; break;
+            case RT_BINARY_OP_INPLACE_XOR: lhs_val ^= rhs_val; break;
             case RT_BINARY_OP_AND:
-            case RT_BINARY_OP_INPLACE_AND: val = lhs_val & rhs_val; break;
+            case RT_BINARY_OP_INPLACE_AND: lhs_val &= rhs_val; break;
             case RT_BINARY_OP_LSHIFT:
-            case RT_BINARY_OP_INPLACE_LSHIFT: val = lhs_val << rhs_val; break;
+            case RT_BINARY_OP_INPLACE_LSHIFT: lhs_val <<= rhs_val; break;
             case RT_BINARY_OP_RSHIFT:
-            case RT_BINARY_OP_INPLACE_RSHIFT: val = lhs_val >> rhs_val; break;
+            case RT_BINARY_OP_INPLACE_RSHIFT: lhs_val >>= rhs_val; break;
             case RT_BINARY_OP_ADD:
-            case RT_BINARY_OP_INPLACE_ADD: val = lhs_val + rhs_val; break;
+            case RT_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
             case RT_BINARY_OP_SUBTRACT:
-            case RT_BINARY_OP_INPLACE_SUBTRACT: val = lhs_val - rhs_val; break;
+            case RT_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
             case RT_BINARY_OP_MULTIPLY:
-            case RT_BINARY_OP_INPLACE_MULTIPLY: val = lhs_val * rhs_val; break;
+            case RT_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
             case RT_BINARY_OP_FLOOR_DIVIDE:
-            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
+            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: lhs_val /= rhs_val; break;
 #if MICROPY_ENABLE_FLOAT
             case RT_BINARY_OP_TRUE_DIVIDE:
-            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return py_obj_new_float((float_t)lhs_val / (float_t)rhs_val);
+            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return py_obj_new_float((py_float_t)lhs_val / (py_float_t)rhs_val);
 #endif
             case RT_BINARY_OP_POWER:
             case RT_BINARY_OP_INPLACE_POWER:
                 // TODO
                 if (rhs_val == 2) {
-                    val = lhs_val * lhs_val;
+                    lhs_val = lhs_val * lhs_val;
                     break;
                 }
-            default: printf("%d\n", op); assert(0); val = 0;
+            default: printf("%d\n", op); assert(0);
         }
-        if (fit_small_int(val)) {
-            return TO_SMALL_INT(val);
+        if (fit_small_int(lhs_val)) {
+            return TO_SMALL_INT(lhs_val);
         }
 #if MICROPY_ENABLE_FLOAT
-    } else if (IS_O(lhs, O_FLOAT) || IS_O(rhs, O_FLOAT)) {
-        float_t lhs_val = py_obj_get_float(lhs);
-        float_t rhs_val = py_obj_get_float(rhs);
-        float_t val;
+    } else if (IS_O(lhs, O_COMPLEX) || IS_O(rhs, O_COMPLEX)) {
+        py_float_t lhs_real, lhs_imag, rhs_real, rhs_imag;
+        py_obj_get_complex(lhs, &lhs_real, &lhs_imag);
+        py_obj_get_complex(rhs, &rhs_real, &rhs_imag);
         switch (op) {
             case RT_BINARY_OP_ADD:
-            case RT_BINARY_OP_INPLACE_ADD: val = lhs_val + rhs_val; break;
+            case RT_BINARY_OP_INPLACE_ADD:
+                lhs_real += rhs_real;
+                lhs_imag += rhs_imag;
+                break;
             case RT_BINARY_OP_SUBTRACT:
-            case RT_BINARY_OP_INPLACE_SUBTRACT: val = lhs_val - rhs_val; break;
+            case RT_BINARY_OP_INPLACE_SUBTRACT:
+                lhs_real -= rhs_real;
+                lhs_imag -= rhs_imag;
+                break;
             case RT_BINARY_OP_MULTIPLY:
-            case RT_BINARY_OP_INPLACE_MULTIPLY: val = lhs_val * rhs_val; break;
+            case RT_BINARY_OP_INPLACE_MULTIPLY:
+            {
+                py_float_t real = lhs_real * rhs_real - lhs_imag * rhs_imag;
+                lhs_imag = lhs_real * rhs_imag + lhs_imag * rhs_real;
+                lhs_real = real;
+                break;
+            }
+            /* TODO floor(?) the value
+            case RT_BINARY_OP_FLOOR_DIVIDE:
+            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
+            */
+            /* TODO
+            case RT_BINARY_OP_TRUE_DIVIDE:
+            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: val = lhs_val / rhs_val; break;
+            */
+            default: printf("%d\n", op); assert(0);
+        }
+        return py_obj_new_complex(lhs_real, lhs_imag);
+    } else if (IS_O(lhs, O_FLOAT) || IS_O(rhs, O_FLOAT)) {
+        py_float_t lhs_val = py_obj_get_float(lhs);
+        py_float_t rhs_val = py_obj_get_float(rhs);
+        switch (op) {
+            case RT_BINARY_OP_ADD:
+            case RT_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+            case RT_BINARY_OP_SUBTRACT:
+            case RT_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+            case RT_BINARY_OP_MULTIPLY:
+            case RT_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
             /* TODO floor(?) the value
             case RT_BINARY_OP_FLOOR_DIVIDE:
             case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
             */
             case RT_BINARY_OP_TRUE_DIVIDE:
-            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: val = lhs_val / rhs_val; break;
-            default: printf("%d\n", op); assert(0); val = 0;
+            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: lhs_val /= rhs_val; break;
+            default: printf("%d\n", op); assert(0);
         }
-        return py_obj_new_float(val);
+        return py_obj_new_float(lhs_val);
 #endif
     } else if (IS_O(lhs, O_STR) && IS_O(rhs, O_STR)) {
         const char *lhs_str = qstr_str(((py_obj_base_t*)lhs)->u_str);
@@ -1148,8 +1349,8 @@ py_obj_t rt_compare_op(int op, py_obj_t lhs, py_obj_t rhs) {
 #if MICROPY_ENABLE_FLOAT
     // deal with floats
     if (IS_O(lhs, O_FLOAT) || IS_O(rhs, O_FLOAT)) {
-        float_t lhs_val = py_obj_get_float(lhs);
-        float_t rhs_val = py_obj_get_float(rhs);
+        py_float_t lhs_val = py_obj_get_float(lhs);
+        py_float_t rhs_val = py_obj_get_float(rhs);
         int cmp;
         switch (op) {
             case RT_COMPARE_OP_LESS: cmp = lhs_val < rhs_val; break;
@@ -1288,7 +1489,7 @@ machine_uint_t rt_convert_obj_for_inline_asm(py_obj_t obj) {
 #if MICROPY_ENABLE_FLOAT
             case O_FLOAT:
                 // convert float to int (could also pass in float registers)
-                return (machine_int_t)o->u_flt;
+                return (machine_int_t)o->u_float;
 #endif
 
             case O_TUPLE:

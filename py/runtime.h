@@ -102,6 +102,7 @@ machine_float_t py_obj_get_float(py_obj_t arg);
 qstr py_get_qstr(py_obj_t arg);
 py_obj_t *py_get_array_fixed_n(py_obj_t o, machine_int_t n);
 py_obj_t py_obj_new_int(machine_int_t value);
+py_obj_t rt_load_const_dec(qstr qstr);
 py_obj_t rt_load_const_str(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);
