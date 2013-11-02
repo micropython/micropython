@@ -131,9 +131,37 @@ void do_file(const char *file) {
     }
 }
 
+void test_print(py_obj_t o_in) {
+    printf("<test>");
+}
+
+py_obj_t test_get(py_obj_t o_in) {
+    py_obj_t d1;
+    py_obj_t d2;
+    py_user_get_data(o_in, &d1, &d2);
+    return d1;
+}
+
+py_obj_t test_set(py_obj_t o_in, py_obj_t arg) {
+    py_user_set_data(o_in, (machine_uint_t)arg, (machine_uint_t)arg);
+    return py_const_none;
+}
+
+const py_user_info_t test_obj_info = {
+    "Test",
+    test_print,
+    {
+        { "get", 0, test_get },
+        { "set", 1, test_set },
+        { NULL, 0, NULL },
+    }
+};
+
 int main(int argc, char **argv) {
     qstr_init();
     rt_init();
+
+    rt_store_name(qstr_from_str_static("test"), py_obj_new_user(&test_obj_info, py_obj_new_int(42), 0));
 
     if (argc == 1) {
         do_repl();
