@@ -139,3 +139,21 @@ py_obj_t rt_iternext(py_obj_t o);
 
 // temporary way of making C modules
 py_obj_t py_module_new(void);
+
+// user defined objects
+
+typedef struct _py_user_method_t {
+    const char *name;
+    machine_uint_t kind;
+    void *fun;
+} py_user_method_t;
+
+typedef struct _py_user_info_t {
+    const char *type_name;
+    void (*print)(py_obj_t);
+    const py_user_method_t methods[];
+} py_user_info_t;
+
+py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2);
+void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2);
+void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2);

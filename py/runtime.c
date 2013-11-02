@@ -68,6 +68,7 @@ typedef enum {
     O_MAP,
     O_CLASS,
     O_OBJ,
+    O_USER,
 } py_obj_kind_t;
 
 typedef enum {
@@ -172,6 +173,11 @@ struct _py_obj_base_t {
             py_obj_base_t *class; // points to a O_CLASS object
             py_map_t *members;
         } u_obj;
+        struct { // for O_USER
+            const py_user_info_t *info;
+            machine_uint_t data1;
+            machine_uint_t data2;
+        } u_user;
     };
 };
 
@@ -429,6 +435,34 @@ py_obj_t py_obj_new_list_iterator(py_obj_base_t *list, int cur) {
     o->u_tuple_list_it.obj = list;
     o->u_tuple_list_it.cur = cur;
     return o;
+}
+
+py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_USER;
+    // TODO should probably parse the info to turn strings to qstr's, and wrap functions in O_FUN_N objects
+    // that'll take up some memory.  maybe we can lazily do the O_FUN_N: leave it a ptr to a C function, and
+    // only when the method is looked-up do we change that to the O_FUN_N object.
+    o->u_user.info = info;
+    o->u_user.data1 = data1;
+    o->u_user.data2 = data2;
+    return o;
+}
+
+void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2) {
+    assert(IS_O(o, O_USER));
+    if (data1 != NULL) {
+        *data1 = ((py_obj_base_t*)o)->u_user.data1;
+    }
+    if (data2 != NULL) {
+        *data2 = ((py_obj_base_t*)o)->u_user.data2;
+    }
+}
+
+void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2) {
+    assert(IS_O(o, O_USER));
+    ((py_obj_base_t*)o)->u_user.data1 = data1;
+    ((py_obj_base_t*)o)->u_user.data2 = data2;
 }
 
 py_obj_t rt_str_join(py_obj_t self_in, py_obj_t arg) {
@@ -812,6 +846,8 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
                 assert(IS_O(qn->value, O_STR));
                 return qstr_str(((py_obj_base_t*)qn->value)->u_str);
             }
+            case O_USER:
+                return o->u_user.info->type_name;
             default:
                 assert(0);
                 return "UnknownType";
@@ -911,6 +947,9 @@ void py_obj_print(py_obj_t o_in) {
                 printf("}");
                 break;
             }
+            case O_USER:
+                o->u_user.info->print(o_in);
+                break;
             default:
                 printf("<? %d>", o->kind);
                 assert(0);
@@ -1826,6 +1865,22 @@ void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
             }
         }
         goto no_attr;
+    } else if (IS_O(base, O_USER)) {
+        py_obj_base_t *o = base;
+        const py_user_method_t *meth = &o->u_user.info->methods[0];
+        for (; meth->name != NULL; meth++) {
+            if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                if (meth->kind == 0) {
+                    dest[1] = rt_make_function_1(meth->fun);
+                } else if (meth->kind == 1) {
+                    dest[1] = rt_make_function_2(meth->fun);
+                } else {
+                    assert(0);
+                }
+                dest[0] = base;
+                return;
+            }
+        }
     }
 
 no_attr:
