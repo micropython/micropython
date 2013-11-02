@@ -514,6 +514,7 @@ static void emit_native_delete_id(emit_t *emit, qstr qstr) {
 }
 
 static void emit_native_label_assign(emit_t *emit, int l) {
+    emit_pre(emit);
     // need to commit stack because we can jump here from elsewhere
     need_stack_settled(emit);
 #if N_X64
@@ -521,6 +522,7 @@ static void emit_native_label_assign(emit_t *emit, int l) {
 #elif N_THUMB
     asm_thumb_label_assign(emit->as, l);
 #endif
+    emit_post(emit);
 }
 
 static void emit_native_import_name(emit_t *emit, qstr qstr) {
@@ -577,8 +579,10 @@ static void emit_native_load_const_int(emit_t *emit, qstr qstr) {
 }
 
 static void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
-    // not supported for viper (although, could support floats in future)
-    assert(0);
+    // for viper, a float/complex is just a Python object
+    emit_pre(emit);
+    emit_call_with_imm_arg(emit, RT_F_LOAD_CONST_DEC, rt_load_const_dec, qstr, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_native_load_const_id(emit_t *emit, qstr qstr) {
@@ -903,7 +907,7 @@ static void emit_native_setup_loop(emit_t *emit, int label) {
 }
 
 static void emit_native_break_loop(emit_t *emit, int label) {
-    assert(0);
+    emit_native_jump(emit, label); // TODO properly
 }
 static void emit_native_continue_loop(emit_t *emit, int label) {
     assert(0);

@@ -48,7 +48,8 @@ typedef enum {
 } rt_compare_op_t;
 
 typedef enum {
-    RT_F_LOAD_CONST_STR = 0,
+    RT_F_LOAD_CONST_DEC = 0,
+    RT_F_LOAD_CONST_STR,
     RT_F_LOAD_NAME,
     RT_F_LOAD_GLOBAL,
     RT_F_LOAD_BUILD_CLASS,
