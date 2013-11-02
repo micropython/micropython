@@ -619,7 +619,7 @@ int rt_get_unique_code_id(bool is_main_module) {
 
 static void alloc_unique_codes(void) {
     if (unique_codes == NULL) {
-        unique_codes = m_new(py_code_t, next_unique_code_id);
+        unique_codes = m_new(py_code_t, next_unique_code_id + 10); // XXX hack until we fix the REPL allocation problem
         for (int i = 0; i < next_unique_code_id; i++) {
             unique_codes[i].kind = PY_CODE_NONE;
         }
