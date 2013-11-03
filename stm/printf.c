@@ -232,9 +232,15 @@ void stdout_print_strn(void *data, const char *str, unsigned int len) {
 static const pfenv_t pfenv_stdout = {0, stdout_print_strn};
 
 int printf(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    return pfenv_printf(&pfenv_stdout, fmt, args);
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = pfenv_printf(&pfenv_stdout, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int vprintf(const char *fmt, va_list ap) {
+    return pfenv_printf(&pfenv_stdout, fmt, ap);
 }
 
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
@@ -267,16 +273,14 @@ void strn_print_strn(void *data, const char *str, unsigned int len) {
     strn_pfenv->remain -= len;
 }
 
-int snprintf(char *str, size_t size, const char *fmt, ...) {
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
     strn_pfenv_t strn_pfenv;
     strn_pfenv.cur = str;
     strn_pfenv.remain = size;
     pfenv_t pfenv;
     pfenv.data = &strn_pfenv;
     pfenv.print_strn = strn_print_strn;
-    va_list args;
-    va_start(args, fmt);
-    int len = pfenv_printf(&pfenv, fmt, args);
+    int len = pfenv_printf(&pfenv, fmt, ap);
     // add terminating null byte
     if (size > 0) {
         if (strn_pfenv.remain == 0) {
@@ -286,4 +290,12 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
         }
     }
     return len;
+}
+
+int snprintf(char *str, size_t size, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vsnprintf(str, size, fmt, ap);
+    va_end(ap);
+    return ret;
 }
