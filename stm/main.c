@@ -514,6 +514,14 @@ py_obj_t pyb_servo_set(py_obj_t value) {
     return py_const_none;
 }
 
+py_obj_t pyb_pwm_set(py_obj_t period, py_obj_t pulse) {
+    int pe = py_obj_get_int(period);
+    int pu = py_obj_get_int(pulse);
+    TIM2->ARR = pe;
+    TIM2->CCR3 = pu;
+    return py_const_none;
+}
+
 #define MMA_ADDR (0x4c)
 
 py_obj_t pyb_mma_read() {
@@ -749,6 +757,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
+        rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
         rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
