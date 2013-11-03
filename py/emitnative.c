@@ -871,7 +871,7 @@ static void emit_native_jump(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
+static void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
@@ -882,18 +882,32 @@ static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
         printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
         assert(0);
     }
+}
+
+static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
+    emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
     asm_x64_jcc_label(emit->as, JCC_JZ, label);
 #elif N_THUMB
-    asm_thumb_cmp_reg_bz_label(emit->as, REG_RET, label);
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
 #endif
     emit_post(emit);
 }
 
 static void emit_native_pop_jump_if_true(emit_t *emit, int label) {
-    assert(0);
+    emit_native_pop_jump_pre_helper(emit, label);
+#if N_X64
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JNZ, label);
+#elif N_THUMB
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#endif
+    emit_post(emit);
 }
+
 static void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
     assert(0);
 }

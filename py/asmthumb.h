@@ -26,6 +26,21 @@
 #define REG_ARG_3 REG_R2
 #define REG_ARG_4 REG_R3
 
+#define THUMB_CC_EQ (0x0)
+#define THUMB_CC_NE (0x1)
+#define THUMB_CC_CS (0x2)
+#define THUMB_CC_CC (0x3)
+#define THUMB_CC_MI (0x4)
+#define THUMB_CC_PL (0x5)
+#define THUMB_CC_VS (0x6)
+#define THUMB_CC_VC (0x7)
+#define THUMB_CC_HI (0x8)
+#define THUMB_CC_LS (0x9)
+#define THUMB_CC_GE (0xa)
+#define THUMB_CC_LT (0xb)
+#define THUMB_CC_GT (0xc)
+#define THUMB_CC_LE (0xd)
+
 typedef struct _asm_thumb_t asm_thumb_t;
 
 asm_thumb_t *asm_thumb_new(uint max_num_labels);
@@ -50,7 +65,7 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
 void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src);
 void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8);
 void asm_thumb_b_n(asm_thumb_t *as, int label);
-void asm_thumb_bgt_n(asm_thumb_t *as, int label);
+void asm_thumb_bcc_n(asm_thumb_t *as, int cond, int label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
@@ -63,6 +78,6 @@ void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b); // convenie
 void asm_thumb_ite_ge(asm_thumb_t *as); // convenience ?
 
 void asm_thumb_b_label(asm_thumb_t *as, int label); // convenience ?
-void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label); // convenience ?
+void asm_thumb_bcc_label(asm_thumb_t *as, int cc, int label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience ?
 

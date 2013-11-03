@@ -154,7 +154,7 @@ static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, p
         }
         int label_num = get_arg_label(emit, op, pn_args, 0);
         // TODO check that this succeeded, ie branch was within range
-        asm_thumb_bgt_n(emit->as, label_num);
+        asm_thumb_bcc_n(emit->as, THUMB_CC_GT, label_num);
 
     // 2 args
     } else if (strcmp(qstr_str(op), "movs") == 0) {

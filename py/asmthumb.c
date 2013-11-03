@@ -301,29 +301,16 @@ void asm_thumb_b_n(asm_thumb_t *as, int label) {
     }
 }
 
-#define OP_BEQ_N(byte_offset) (0xd000 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BNE_N(byte_offset) (0xd100 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BCS_N(byte_offset) (0xd200 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BCC_N(byte_offset) (0xd300 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BMI_N(byte_offset) (0xd400 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BPL_N(byte_offset) (0xd500 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BVS_N(byte_offset) (0xd600 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BVC_N(byte_offset) (0xd700 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BHI_N(byte_offset) (0xd800 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BLS_N(byte_offset) (0xd900 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BGE_N(byte_offset) (0xda00 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BLT_N(byte_offset) (0xdb00 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BGT_N(byte_offset) (0xdc00 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BLE_N(byte_offset) (0xdd00 | (((byte_offset) >> 1) & 0x00ff))
+#define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-void asm_thumb_bgt_n(asm_thumb_t *as, int label) {
+void asm_thumb_bcc_n(asm_thumb_t *as, int cond, int label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (SIGNED_FIT9(rel)) {
-        asm_thumb_write_op16(as, OP_BGT_N(rel));
+        asm_thumb_write_op16(as, OP_BCC_N(cond, rel));
     } else {
-        printf("asm_thumb_bgt: branch does not fit in 9 bits\n");
+        printf("asm_thumb_bcc_n: branch does not fit in 9 bits\n");
     }
 }
 
@@ -408,17 +395,10 @@ void asm_thumb_b_label(asm_thumb_t *as, int label) {
 }
 
 // all these bit arithmetics need coverage testing!
-#define OP_BEQ(byte_offset) (0xd000 | (((byte_offset) >> 1) & 0x00ff))
-#define OP_BEQW_HI(byte_offset) (0xf000 | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
-#define OP_BEQW_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
+#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
+#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
 
-void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label) {
-    assert(rlo < REG_R8);
-
-    // compare reg with 0
-    asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, 0));
-
-    // branch if equal
+void asm_thumb_bcc_label(asm_thumb_t *as, int cond, int label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
@@ -426,14 +406,14 @@ void asm_thumb_cmp_reg_bz_label(asm_thumb_t *as, uint rlo, int label) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 9 bit relative jump
         if (SIGNED_FIT9(rel)) {
-            asm_thumb_write_op16(as, OP_BEQ(rel));
+            asm_thumb_write_op16(as, OP_BCC_N(cond, rel));
         } else {
             goto large_jump;
         }
     } else {
         // is a forwards jump, so need to assume it's large
         large_jump:
-        asm_thumb_write_op32(as, OP_BEQW_HI(rel), OP_BEQW_LO(rel));
+        asm_thumb_write_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
     }
 }
 
