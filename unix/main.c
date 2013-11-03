@@ -138,7 +138,7 @@ void test_print(py_obj_t o_in) {
 py_obj_t test_get(py_obj_t o_in) {
     py_obj_t d1;
     py_obj_t d2;
-    py_user_get_data(o_in, &d1, &d2);
+    py_user_get_data(o_in, (machine_uint_t*)&d1, (machine_uint_t*)&d2);
     return d1;
 }
 
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
-    rt_store_name(qstr_from_str_static("test"), py_obj_new_user(&test_obj_info, py_obj_new_int(42), 0));
+    rt_store_name(qstr_from_str_static("test"), py_obj_new_user(&test_obj_info, (machine_uint_t)py_obj_new_int(42), 0));
 
     if (argc == 1) {
         do_repl();
