@@ -96,12 +96,12 @@ static qstr pyb_config_source_dir = 0;
 static qstr pyb_config_main = 0;
 
 py_obj_t pyb_source_dir(py_obj_t source_dir) {
-    pyb_config_source_dir = py_get_qstr(source_dir);
+    pyb_config_source_dir = py_obj_get_qstr(source_dir);
     return py_const_none;
 }
 
 py_obj_t pyb_main(py_obj_t main) {
-    pyb_config_main = py_get_qstr(main);
+    pyb_config_main = py_obj_get_qstr(main);
     return py_const_none;
 }
 
@@ -112,7 +112,7 @@ py_obj_t pyb_sync(void) {
 }
 
 py_obj_t pyb_delay(py_obj_t count) {
-    sys_tick_delay_ms(py_get_int(count));
+    sys_tick_delay_ms(py_obj_get_int(count));
     return py_const_none;
 }
 
@@ -229,7 +229,7 @@ static py_obj_t pyb_info(void) {
 }
 
 py_obj_t pyb_usart_send(py_obj_t data) {
-    usart_tx_char(py_get_int(data));
+    usart_tx_char(py_obj_get_int(data));
     return py_const_none;
 }
 
@@ -507,7 +507,7 @@ void servo_init(void) {
 }
 
 py_obj_t pyb_servo_set(py_obj_t value) {
-    int v = py_get_int(value);
+    int v = py_obj_get_int(value);
     if (v < 100) { v = 100; }
     if (v > 200) { v = 200; }
     TIM2->CCR3 = v;
@@ -533,12 +533,12 @@ py_obj_t pyb_mma_read() {
 }
 
 py_obj_t pyb_hid_send_report(py_obj_t arg) {
-    py_obj_t *items = py_get_array_fixed_n(arg, 4);
+    py_obj_t *items = py_obj_get_array_fixed_n(arg, 4);
     uint8_t data[4];
-    data[0] = py_get_int(items[0]);
-    data[1] = py_get_int(items[1]);
-    data[2] = py_get_int(items[2]);
-    data[3] = py_get_int(items[3]);
+    data[0] = py_obj_get_int(items[0]);
+    data[1] = py_obj_get_int(items[1]);
+    data[2] = py_obj_get_int(items[2]);
+    data[3] = py_obj_get_int(items[3]);
     usb_hid_send_report(data);
     return py_const_none;
 }
@@ -604,10 +604,85 @@ py_obj_t pyb_rtc_read(void) {
 }
 
 py_obj_t pyb_lcd8(py_obj_t pos, py_obj_t val) {
-    int pos_val = py_get_int(pos);
-    int val_val = py_get_int(val);
+    int pos_val = py_obj_get_int(pos);
+    int val_val = py_obj_get_int(val);
     lcd_draw_pixel_8(pos_val, val_val);
     return py_const_none;
+}
+
+void file_obj_print(py_obj_t o) {
+    FIL *fp;
+    py_user_get_data(o, (machine_uint_t*)&fp, NULL);
+    printf("<file %p>", fp);
+}
+
+py_obj_t file_obj_read(py_obj_t self, py_obj_t arg) {
+    FIL *fp;
+    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
+    int n = py_obj_get_int(arg);
+    char *buf = m_new(char, n + 1);
+    UINT n_out;
+    f_read(fp, buf, n, &n_out);
+    buf[n_out] = 0;
+    return py_obj_new_str(qstr_from_str_take(buf));
+}
+
+py_obj_t file_obj_write(py_obj_t self, py_obj_t arg) {
+    FIL *fp;
+    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
+    const char *s = qstr_str(py_obj_get_qstr(arg));
+    UINT n_out;
+    FRESULT res = f_write(fp, s, strlen(s), &n_out);
+    if (res != FR_OK) {
+        printf("File error: could not write to file; error code %d\n", res);
+    } else if (n_out != strlen(s)) {
+        printf("File error: could not write all data to file; wrote %d / %d bytes\n", n_out, strlen(s));
+    }
+    return py_const_none;
+}
+
+py_obj_t file_obj_close(py_obj_t self) {
+    FIL *fp;
+    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
+    f_close(fp);
+    return py_const_none;
+}
+
+// TODO gc hook to close the file if not already closed
+const py_user_info_t file_obj_info = {
+    "File",
+    file_obj_print,
+    {
+        {"read", 1, file_obj_read},
+        {"write", 1, file_obj_write},
+        {"close", 0, file_obj_close},
+        {NULL, 0, NULL},
+    }
+};
+
+py_obj_t pyb_io_open(py_obj_t o_filename, py_obj_t o_mode) {
+    const char *filename = qstr_str(py_obj_get_qstr(o_filename));
+    const char *mode = qstr_str(py_obj_get_qstr(o_mode));
+    FIL *fp = m_new(FIL, 1);
+    if (mode[0] == 'r') {
+        // open for reading
+        FRESULT res = f_open(fp, filename, FA_READ);
+        if (res != FR_OK) {
+            printf("FileNotFoundError: [Errno 2] No such file or directory: '%s'\n", filename);
+            return py_const_none;
+        }
+    } else if (mode[0] == 'w') {
+        // open for writing, truncate the file first
+        FRESULT res = f_open(fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
+        if (res != FR_OK) {
+            printf("?FileError: could not create file: '%s'\n", filename);
+            return py_const_none;
+        }
+    } else {
+        printf("ValueError: invalid mode: '%s'\n", mode);
+        return py_const_none;
+    }
+    return py_obj_new_user(&file_obj_info, (machine_uint_t)fp, 0);
 }
 
 int main(void) {
@@ -682,6 +757,8 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
         rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(pyb_lcd8));
         rt_store_name(qstr_from_str_static("pyb"), m);
+
+        rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
     }
 
     // print a message to the LCD
@@ -1037,6 +1114,16 @@ soft_reset:
 }
 
 double __aeabi_f2d(float x) {
+    // TODO
+    return 0.0;
+}
+
+float __aeabi_d2f(double x) {
+    // TODO
+    return 0.0;
+}
+
+double sqrt(double x) {
     // TODO
     return 0.0;
 }

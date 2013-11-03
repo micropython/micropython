@@ -25,12 +25,12 @@ gc_helper_get_regs_and_clean_stack:
     @ clean the stack from given pointer up to current sp
     movs    r0, #0
     mov     r2, sp
-    b       .entry
+    b.n     .entry
 .loop:
     str     r0, [r1], #4
 .entry:
     cmp     r1, r2
-    bcc     .loop
+    bcc.n   .loop
     bx      lr
 
     .size   gc_helper_get_regs_and_clean_stack, .-gc_helper_get_regs_and_clean_stack
