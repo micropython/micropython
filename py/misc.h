@@ -83,7 +83,10 @@ void vstr_add_strn(vstr_t *vstr, const char *str, int len);
 //void vstr_add_le32(vstr_t *vstr, unsigned int v);
 void vstr_cut_tail(vstr_t *vstr, int len);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
+
+#ifdef va_start
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
+#endif
 
 /** unique string ***********************************************/
 

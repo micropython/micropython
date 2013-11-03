@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 
@@ -613,8 +614,6 @@ void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2) {
     ((py_obj_base_t*)o)->u_user.data1 = data1;
     ((py_obj_base_t*)o)->u_user.data2 = data2;
 }
-
-#include <stdarg.h>
 
 void printf_wrapper(void *env, const char *fmt, ...) {
     va_list args;
