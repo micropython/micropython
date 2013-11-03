@@ -154,8 +154,14 @@ void vstr_cut_tail(vstr_t *vstr, int len) {
     }
 }
 
-/*
 void vstr_printf(vstr_t *vstr, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vstr_vprintf(vstr, fmt, ap);
+    va_end(ap);
+}
+
+void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, strlen(fmt))) {
         return;
     }
@@ -163,10 +169,7 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...) {
     while (1) {
         // try to print in the allocated space
         int size = vstr->alloc - vstr->len;
-        va_list ap;
-        va_start(ap, fmt);
         int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap);
-        va_end(ap);
 
         // if that worked, return
         if (n > -1 && n < size) {
@@ -188,7 +191,6 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...) {
         }
     }
 }
-*/
 
 /** testing *****************************************************/
 

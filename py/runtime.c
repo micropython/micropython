@@ -55,6 +55,7 @@ typedef enum {
     O_FUN_1,
     O_FUN_2,
     O_FUN_N,
+    O_FUN_VAR,
     O_FUN_BC,
     O_FUN_ASM,
     O_GEN_WRAP,
@@ -125,7 +126,7 @@ struct _py_obj_base_t {
             machine_int_t stop;
             machine_int_t step;
         } u_range_it;
-        struct { // for O_FUN_[012N]
+        struct { // for O_FUN_[012N], O_FUN_VAR
             int n_args;
             void *fun;
         } u_fun;
@@ -183,8 +184,7 @@ struct _py_obj_base_t {
 
 static qstr q_append;
 static qstr q_join;
-static qstr q_print;
-static qstr q_len;
+static qstr q_format;
 static qstr q___build_class__;
 static qstr q___next__;
 static qstr q_AttributeError;
@@ -471,6 +471,7 @@ const char *py_obj_get_type_str(py_obj_t o_in) {
             case O_FUN_1:
             case O_FUN_2:
             case O_FUN_N:
+            case O_FUN_VAR:
             case O_FUN_BC:
                 return "function";
             case O_GEN_INSTANCE:
@@ -613,6 +614,124 @@ void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2) {
     ((py_obj_base_t*)o)->u_user.data2 = data2;
 }
 
+#include <stdarg.h>
+
+void printf_wrapper(void *env, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+
+void vstr_printf_wrapper(void *env, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vstr_vprintf(env, fmt, args);
+    va_end(args);
+}
+
+void py_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, py_obj_t o_in) {
+    if (IS_SMALL_INT(o_in)) {
+        print(env, "%d", (int)FROM_SMALL_INT(o_in));
+    } else {
+        py_obj_base_t *o = o_in;
+        switch (o->kind) {
+            case O_CONST:
+                print(env, "%s", o->id);
+                break;
+            case O_STR:
+                // TODO need to escape chars etc
+                print(env, "'%s'", qstr_str(o->u_str));
+                break;
+#if MICROPY_ENABLE_FLOAT
+            case O_FLOAT:
+                print(env, "%.8g", o->u_float);
+                break;
+            case O_COMPLEX:
+                if (o->u_complex.real == 0) {
+                    print(env, "%.8gj", o->u_complex.imag);
+                } else {
+                    print(env, "(%.8g+%.8gj)", o->u_complex.real, o->u_complex.imag);
+                }
+                break;
+#endif
+            case O_EXCEPTION_0:
+                print(env, "%s", qstr_str(o->u_exc0.id));
+                break;
+            case O_EXCEPTION_N:
+                print(env, "%s: ", qstr_str(o->u_exc_n.id));
+                print(env, o->u_exc_n.args[0], o->u_exc_n.args[1], o->u_exc_n.args[2]);
+                break;
+            case O_GEN_INSTANCE:
+                print(env, "<generator object 'fun-name' at %p>", o);
+                break;
+            case O_TUPLE:
+                print(env, "(");
+                for (int i = 0; i < o->u_tuple_list.len; i++) {
+                    if (i > 0) {
+                        print(env, ", ");
+                    }
+                    py_obj_print_helper(print, env, o->u_tuple_list.items[i]);
+                }
+                if (o->u_tuple_list.len == 1) {
+                    print(env, ",");
+                }
+                print(env, ")");
+                break;
+            case O_LIST:
+                print(env, "[");
+                for (int i = 0; i < o->u_tuple_list.len; i++) {
+                    if (i > 0) {
+                        print(env, ", ");
+                    }
+                    py_obj_print_helper(print, env, o->u_tuple_list.items[i]);
+                }
+                print(env, "]");
+                break;
+            case O_SET:
+            {
+                bool first = true;
+                print(env, "{");
+                for (int i = 0; i < o->u_set.alloc; i++) {
+                    if (o->u_set.table[i] != NULL) {
+                        if (!first) {
+                            print(env, ", ");
+                        }
+                        first = false;
+                        py_obj_print_helper(print, env, o->u_set.table[i]);
+                    }
+                }
+                print(env, "}");
+                break;
+            }
+            case O_MAP:
+            {
+                bool first = true;
+                print(env, "{");
+                for (int i = 0; i < o->u_map.alloc; i++) {
+                    if (o->u_map.table[i].key != NULL) {
+                        if (!first) {
+                            print(env, ", ");
+                        }
+                        first = false;
+                        py_obj_print_helper(print, env, o->u_map.table[i].key);
+                        print(env, ": ");
+                        py_obj_print_helper(print, env, o->u_map.table[i].value);
+                    }
+                }
+                print(env, "}");
+                break;
+            }
+            case O_USER:
+                o->u_user.info->print(o_in);
+                break;
+            default:
+                print(env, "<? %d>", o->kind);
+                assert(0);
+        }
+    }
+}
+
 py_obj_t rt_str_join(py_obj_t self_in, py_obj_t arg) {
     assert(IS_O(self_in, O_STR));
     py_obj_base_t *self = self_in;
@@ -644,6 +763,33 @@ py_obj_t rt_str_join(py_obj_t self_in, py_obj_t arg) {
 
 bad_arg:
     nlr_jump(py_obj_new_exception_2(q_TypeError, "?str.join expecting a list of str's", NULL, NULL));
+}
+
+py_obj_t rt_str_format(int n_args, const py_obj_t* args) {
+    assert(IS_O(args[0], O_STR));
+    py_obj_base_t *self = args[0];
+
+    const char *str = qstr_str(self->u_str);
+    int arg_i = 1;
+    vstr_t *vstr = vstr_new();
+    for (; *str; str++) {
+        if (*str == '{') {
+            str++;
+            if (*str == '{') {
+                vstr_add_char(vstr, '{');
+            } else if (*str == '}') {
+                if (arg_i >= n_args) {
+                    nlr_jump(py_obj_new_exception_2(q_IndexError, "tuple index out of range", NULL, NULL));
+                }
+                py_obj_print_helper(vstr_printf_wrapper, vstr, args[arg_i]);
+                arg_i++;
+            }
+        } else {
+            vstr_add_char(vstr, *str);
+        }
+    }
+
+    return py_obj_new_str(qstr_from_str_take(vstr->buf));
 }
 
 py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
@@ -697,6 +843,7 @@ static int next_unique_code_id;
 static py_code_t *unique_codes;
 
 py_obj_t fun_str_join;
+py_obj_t fun_str_format;
 py_obj_t fun_list_append;
 py_obj_t fun_gen_instance_next;
 
@@ -788,8 +935,7 @@ FILE *fp_native = NULL;
 void rt_init(void) {
     q_append = qstr_from_str_static("append");
     q_join = qstr_from_str_static("join");
-    q_print = qstr_from_str_static("print");
-    q_len = qstr_from_str_static("len");
+    q_format = qstr_from_str_static("format");
     q___build_class__ = qstr_from_str_static("__build_class__");
     q___next__ = qstr_from_str_static("__next__");
     q_AttributeError = qstr_from_str_static("AttributeError");
@@ -810,8 +956,8 @@ void rt_init(void) {
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
-    py_qstr_map_lookup(&map_builtins, q_print, true)->value = rt_make_function_1(py_builtin_print);
-    py_qstr_map_lookup(&map_builtins, q_len, true)->value = rt_make_function_1(py_builtin_len);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_1(py_builtin_print);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_1(py_builtin_range);
@@ -820,6 +966,7 @@ void rt_init(void) {
     unique_codes = NULL;
 
     fun_str_join = rt_make_function_2(rt_str_join);
+    fun_str_format = rt_make_function_var(1, rt_str_format);
     fun_list_append = rt_make_function_2(rt_list_append);
     fun_gen_instance_next = rt_make_function_1(rt_gen_instance_next);
 
@@ -938,6 +1085,7 @@ bool py_obj_is_callable(py_obj_t o_in) {
             case O_FUN_0:
             case O_FUN_1:
             case O_FUN_2:
+            case O_FUN_VAR:
             case O_FUN_N:
             case O_FUN_BC:
             case O_FUN_ASM:
@@ -950,105 +1098,7 @@ bool py_obj_is_callable(py_obj_t o_in) {
 }
 
 void py_obj_print(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        printf("%d", (int)FROM_SMALL_INT(o_in));
-    } else {
-        py_obj_base_t *o = o_in;
-        switch (o->kind) {
-            case O_CONST:
-                printf("%s", o->id);
-                break;
-            case O_STR:
-                // TODO need to escape chars etc
-                printf("'%s'", qstr_str(o->u_str));
-                break;
-#if MICROPY_ENABLE_FLOAT
-            case O_FLOAT:
-                printf("%.8g", o->u_float);
-                break;
-            case O_COMPLEX:
-                if (o->u_complex.real == 0) {
-                    printf("%.8gj", o->u_complex.imag);
-                } else {
-                    printf("(%.8g+%.8gj)", o->u_complex.real, o->u_complex.imag);
-                }
-                break;
-#endif
-            case O_EXCEPTION_0:
-                printf("%s", qstr_str(o->u_exc0.id));
-                break;
-            case O_EXCEPTION_N:
-                printf("%s: ", qstr_str(o->u_exc_n.id));
-                printf(o->u_exc_n.args[0], o->u_exc_n.args[1], o->u_exc_n.args[2]);
-                break;
-            case O_GEN_INSTANCE:
-                printf("<generator object 'fun-name' at %p>", o);
-                break;
-            case O_TUPLE:
-                printf("(");
-                for (int i = 0; i < o->u_tuple_list.len; i++) {
-                    if (i > 0) {
-                        printf(", ");
-                    }
-                    py_obj_print(o->u_tuple_list.items[i]);
-                }
-                if (o->u_tuple_list.len == 1) {
-                    printf(",");
-                }
-                printf(")");
-                break;
-            case O_LIST:
-                printf("[");
-                for (int i = 0; i < o->u_tuple_list.len; i++) {
-                    if (i > 0) {
-                        printf(", ");
-                    }
-                    py_obj_print(o->u_tuple_list.items[i]);
-                }
-                printf("]");
-                break;
-            case O_SET:
-            {
-                bool first = true;
-                printf("{");
-                for (int i = 0; i < o->u_set.alloc; i++) {
-                    if (o->u_set.table[i] != NULL) {
-                        if (!first) {
-                            printf(", ");
-                        }
-                        first = false;
-                        py_obj_print(o->u_set.table[i]);
-                    }
-                }
-                printf("}");
-                break;
-            }
-            case O_MAP:
-            {
-                bool first = true;
-                printf("{");
-                for (int i = 0; i < o->u_map.alloc; i++) {
-                    if (o->u_map.table[i].key != NULL) {
-                        if (!first) {
-                            printf(", ");
-                        }
-                        first = false;
-                        py_obj_print(o->u_map.table[i].key);
-                        printf(": ");
-                        py_obj_print(o->u_map.table[i].value);
-                    }
-                }
-                printf("}");
-                break;
-            }
-            case O_USER:
-                o->u_user.info->print(o_in);
-                break;
-            default:
-                printf("<? %d>", o->kind);
-                assert(0);
-        }
-    }
+    py_obj_print_helper(printf_wrapper, NULL, o_in);
 }
 
 #define PARSE_DEC_IN_INTG (1)
@@ -1489,6 +1539,14 @@ py_obj_t rt_make_function(int n_args, py_fun_t code) {
     return o;
 }
 
+py_obj_t rt_make_function_var(int n_fixed_args, py_fun_var_t f) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_FUN_VAR;
+    o->u_fun.n_args = n_fixed_args;
+    o->u_fun.fun = f;
+    return o;
+}
+
 py_obj_t rt_call_function_0(py_obj_t fun) {
     return rt_call_function_n(fun, 0, NULL);
 }
@@ -1581,6 +1639,20 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
         return ((py_fun_2_t)o->u_fun.fun)(args[1], args[0]);
 
     // TODO O_FUN_N
+
+    } else if (IS_O(fun, O_FUN_VAR)) {
+        py_obj_base_t *o = fun;
+        if (n_args < o->u_fun.n_args) {
+            nlr_jump(py_obj_new_exception_2(q_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(o->u_fun.n_args - n_args), NULL));
+        }
+        // really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
+        py_obj_t *args_ordered = m_new(py_obj_t, o->u_fun.n_args);
+        for (int i = 0; i < n_args; i++) {
+            args_ordered[i] = args[n_args - i - 1];
+        }
+        py_obj_t res = ((py_fun_var_t)o->u_fun.fun)(n_args, args_ordered);
+        m_free(args_ordered);
+        return res;
 
     } else if (IS_O(fun, O_FUN_BC)) {
         py_obj_base_t *o = fun;
@@ -1830,10 +1902,16 @@ no_attr:
 
 void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
     DEBUG_OP_printf("load method %s\n", qstr_str(attr));
-    if (IS_O(base, O_STR) && attr == q_join) {
-        dest[1] = fun_str_join;
-        dest[0] = base;
-        return;
+    if (IS_O(base, O_STR)) {
+        if (attr == q_join) {
+            dest[1] = fun_str_join;
+            dest[0] = base;
+            return;
+        } else if (attr == q_format) {
+            dest[1] = fun_str_format;
+            dest[0] = base;
+            return;
+        }
     } else if (IS_O(base, O_GEN_INSTANCE) && attr == q___next__) {
         dest[1] = fun_gen_instance_next;
         dest[0] = base;

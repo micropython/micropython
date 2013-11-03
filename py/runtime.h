@@ -84,6 +84,7 @@ typedef py_obj_t (*py_fun_0_t)(void);
 typedef py_obj_t (*py_fun_1_t)(py_obj_t);
 typedef py_obj_t (*py_fun_2_t)(py_obj_t, py_obj_t);
 typedef py_obj_t (*py_fun_t)(void);
+typedef py_obj_t (*py_fun_var_t)(int n, const py_obj_t *);
 
 extern py_obj_t py_const_none;
 extern py_obj_t py_const_false;
@@ -122,6 +123,7 @@ py_obj_t rt_make_function_0(py_fun_0_t f);
 py_obj_t rt_make_function_1(py_fun_1_t f);
 py_obj_t rt_make_function_2(py_fun_2_t f);
 py_obj_t rt_make_function(int n_args, py_fun_t code);
+py_obj_t rt_make_function_var(int n_fixed_args, py_fun_var_t f);
 py_obj_t rt_call_function_0(py_obj_t fun);
 py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg);
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2);
