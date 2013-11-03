@@ -449,6 +449,154 @@ py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machi
     return o;
 }
 
+const char *py_obj_get_type_str(py_obj_t o_in) {
+    if (IS_SMALL_INT(o_in)) {
+        return "int";
+    } else {
+        py_obj_base_t *o = o_in;
+        switch (o->kind) {
+            case O_CONST:
+                if (o == py_const_none) {
+                    return "NoneType";
+                } else {
+                    return "bool";
+                }
+            case O_STR:
+                return "str";
+#if MICROPY_ENABLE_FLOAT
+            case O_FLOAT:
+                return "float";
+#endif
+            case O_FUN_0:
+            case O_FUN_1:
+            case O_FUN_2:
+            case O_FUN_N:
+            case O_FUN_BC:
+                return "function";
+            case O_GEN_INSTANCE:
+                return "generator";
+            case O_TUPLE:
+                return "tuple";
+            case O_LIST:
+                return "list";
+            case O_TUPLE_IT:
+                return "tuple_iterator";
+            case O_LIST_IT:
+                return "list_iterator";
+            case O_SET:
+                return "set";
+            case O_MAP:
+                return "dict";
+            case O_OBJ:
+            {
+                py_map_elem_t *qn = py_qstr_map_lookup(o->u_obj.class->u_class.locals, qstr_from_str_static("__qualname__"), false);
+                assert(qn != NULL);
+                assert(IS_O(qn->value, O_STR));
+                return qstr_str(((py_obj_base_t*)qn->value)->u_str);
+            }
+            case O_USER:
+                return o->u_user.info->type_name;
+            default:
+                assert(0);
+                return "UnknownType";
+        }
+    }
+}
+
+int rt_is_true(py_obj_t arg) {
+    DEBUG_OP_printf("is true %p\n", arg);
+    if (IS_SMALL_INT(arg)) {
+        if (FROM_SMALL_INT(arg) == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
+    } else if (arg == py_const_none) {
+        return 0;
+    } else if (arg == py_const_false) {
+        return 0;
+    } else if (arg == py_const_true) {
+        return 1;
+    } else {
+        assert(0);
+        return 0;
+    }
+}
+
+machine_int_t py_obj_get_int(py_obj_t arg) {
+    if (arg == py_const_false) {
+        return 0;
+    } else if (arg == py_const_true) {
+        return 1;
+    } else if (IS_SMALL_INT(arg)) {
+        return FROM_SMALL_INT(arg);
+    } else {
+        assert(0);
+        return 0;
+    }
+}
+
+#if MICROPY_ENABLE_FLOAT
+machine_float_t py_obj_get_float(py_obj_t arg) {
+    if (arg == py_const_false) {
+        return 0;
+    } else if (arg == py_const_true) {
+        return 1;
+    } else if (IS_SMALL_INT(arg)) {
+        return FROM_SMALL_INT(arg);
+    } else if (IS_O(arg, O_FLOAT)) {
+        return ((py_obj_base_t*)arg)->u_float;
+    } else {
+        assert(0);
+        return 0;
+    }
+}
+
+void py_obj_get_complex(py_obj_t arg, py_float_t *real, py_float_t *imag) {
+    if (arg == py_const_false) {
+        *real = 0;
+        *imag = 0;
+    } else if (arg == py_const_true) {
+        *real = 1;
+        *imag = 0;
+    } else if (IS_SMALL_INT(arg)) {
+        *real = FROM_SMALL_INT(arg);
+        *imag = 0;
+    } else if (IS_O(arg, O_FLOAT)) {
+        *real = ((py_obj_base_t*)arg)->u_float;
+        *imag = 0;
+    } else if (IS_O(arg, O_COMPLEX)) {
+        *real = ((py_obj_base_t*)arg)->u_complex.real;
+        *imag = ((py_obj_base_t*)arg)->u_complex.imag;
+    } else {
+        assert(0);
+        *real = 0;
+        *imag = 0;
+    }
+}
+#endif
+
+qstr py_obj_get_qstr(py_obj_t arg) {
+    if (IS_O(arg, O_STR)) {
+        return ((py_obj_base_t*)arg)->u_str;
+    } else {
+        assert(0);
+        return 0;
+    }
+}
+
+py_obj_t *py_obj_get_array_fixed_n(py_obj_t o_in, machine_int_t n) {
+    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
+        py_obj_base_t *o = o_in;
+        if (o->u_tuple_list.len != n) {
+            nlr_jump(py_obj_new_exception_2(q_IndexError, "requested length %d but object has length %d", (void*)n, (void*)o->u_tuple_list.len));
+        }
+        return o->u_tuple_list.items;
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "object '%s' is not a tuple or list", py_obj_get_type_str(o_in), NULL));
+    }
+}
+
 void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2) {
     assert(IS_O(o, O_USER));
     if (data1 != NULL) {
@@ -630,7 +778,7 @@ py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name)
 }
 
 py_obj_t py_builtin_range(py_obj_t o_arg) {
-    return py_obj_new_range(0, py_get_int(o_arg), 1);
+    return py_obj_new_range(0, py_obj_get_int(o_arg), 1);
 }
 
 #ifdef WRITE_NATIVE
@@ -801,60 +949,6 @@ bool py_obj_is_callable(py_obj_t o_in) {
     }
 }
 
-const char *py_obj_get_type_str(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        return "int";
-    } else {
-        py_obj_base_t *o = o_in;
-        switch (o->kind) {
-            case O_CONST:
-                if (o == py_const_none) {
-                    return "NoneType";
-                } else {
-                    return "bool";
-                }
-            case O_STR:
-                return "str";
-#if MICROPY_ENABLE_FLOAT
-            case O_FLOAT:
-                return "float";
-#endif
-            case O_FUN_0:
-            case O_FUN_1:
-            case O_FUN_2:
-            case O_FUN_N:
-            case O_FUN_BC:
-                return "function";
-            case O_GEN_INSTANCE:
-                return "generator";
-            case O_TUPLE:
-                return "tuple";
-            case O_LIST:
-                return "list";
-            case O_TUPLE_IT:
-                return "tuple_iterator";
-            case O_LIST_IT:
-                return "list_iterator";
-            case O_SET:
-                return "set";
-            case O_MAP:
-                return "dict";
-            case O_OBJ:
-            {
-                py_map_elem_t *qn = py_qstr_map_lookup(o->u_obj.class->u_class.locals, qstr_from_str_static("__qualname__"), false);
-                assert(qn != NULL);
-                assert(IS_O(qn->value, O_STR));
-                return qstr_str(((py_obj_base_t*)qn->value)->u_str);
-            }
-            case O_USER:
-                return o->u_user.info->type_name;
-            default:
-                assert(0);
-                return "UnknownType";
-        }
-    }
-}
-
 void py_obj_print(py_obj_t o_in) {
     if (IS_SMALL_INT(o_in)) {
         printf("%d", (int)FROM_SMALL_INT(o_in));
@@ -954,98 +1048,6 @@ void py_obj_print(py_obj_t o_in) {
                 printf("<? %d>", o->kind);
                 assert(0);
         }
-    }
-}
-
-int rt_is_true(py_obj_t arg) {
-    DEBUG_OP_printf("is true %p\n", arg);
-    if (IS_SMALL_INT(arg)) {
-        if (FROM_SMALL_INT(arg) == 0) {
-            return 0;
-        } else {
-            return 1;
-        }
-    } else if (arg == py_const_none) {
-        return 0;
-    } else if (arg == py_const_false) {
-        return 0;
-    } else if (arg == py_const_true) {
-        return 1;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-machine_int_t py_get_int(py_obj_t arg) {
-    if (arg == py_const_false) {
-        return 0;
-    } else if (arg == py_const_true) {
-        return 1;
-    } else if (IS_SMALL_INT(arg)) {
-        return FROM_SMALL_INT(arg);
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-machine_float_t py_obj_get_float(py_obj_t arg) {
-    if (arg == py_const_false) {
-        return 0;
-    } else if (arg == py_const_true) {
-        return 1;
-    } else if (IS_SMALL_INT(arg)) {
-        return FROM_SMALL_INT(arg);
-    } else if (IS_O(arg, O_FLOAT)) {
-        return ((py_obj_base_t*)arg)->u_float;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-void py_obj_get_complex(py_obj_t arg, py_float_t *real, py_float_t *imag) {
-    if (arg == py_const_false) {
-        *real = 0;
-        *imag = 0;
-    } else if (arg == py_const_true) {
-        *real = 1;
-        *imag = 0;
-    } else if (IS_SMALL_INT(arg)) {
-        *real = FROM_SMALL_INT(arg);
-        *imag = 0;
-    } else if (IS_O(arg, O_FLOAT)) {
-        *real = ((py_obj_base_t*)arg)->u_float;
-        *imag = 0;
-    } else if (IS_O(arg, O_COMPLEX)) {
-        *real = ((py_obj_base_t*)arg)->u_complex.real;
-        *imag = ((py_obj_base_t*)arg)->u_complex.imag;
-    } else {
-        assert(0);
-        *real = 0;
-        *imag = 0;
-    }
-}
-
-qstr py_get_qstr(py_obj_t arg) {
-    if (IS_O(arg, O_STR)) {
-        return ((py_obj_base_t*)arg)->u_str;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-py_obj_t *py_get_array_fixed_n(py_obj_t o_in, machine_int_t n) {
-    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
-        py_obj_base_t *o = o_in;
-        if (o->u_tuple_list.len != n) {
-            nlr_jump(py_obj_new_exception_2(q_IndexError, "requested length %d but object has length %d", (void*)n, (void*)o->u_tuple_list.len));
-        }
-        return o->u_tuple_list.items;
-    } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "object '%s' is not a tuple or list", py_obj_get_type_str(o_in), NULL));
     }
 }
 
