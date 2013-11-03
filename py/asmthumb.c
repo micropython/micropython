@@ -349,10 +349,13 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
     asm_thumb_write_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
 }
 
-void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint reg_dest, int local_num) {
-    assert(0);
-    // see format 12, load address
-    asm_thumb_write_op16(as, 0x0000);
+#define OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset) (0xa800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
+
+void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
+    assert(rlo_dest < REG_R8);
+    int word_offset = as->num_locals - local_num - 1;
+    assert(as->pass < ASM_THUMB_PASS_3 || word_offset >= 0);
+    asm_thumb_write_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
 }
 
 #define OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))

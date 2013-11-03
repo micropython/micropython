@@ -965,10 +965,8 @@ static void emit_native_for_iter(emit_t *emit, int label) {
     asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
     asm_x64_jcc_label(emit->as, JCC_JE, label);
 #elif N_THUMB
-    assert(0); // XXX TODO
     asm_thumb_cmp_reg_reg(emit->as, REG_RET, REG_TEMP1);
-    // use it, b?
-    asm_thumb_b_label(emit->as, label);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
 #endif
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
