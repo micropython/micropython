@@ -26,6 +26,7 @@ SRC_C = \
 	usart.c \
 	usb.c \
 	sdio.c \
+	audio.c \
 	lexerstm.c \
 
 SRC_S = \
@@ -70,6 +71,7 @@ SRC_STM = \
 	stm32f4xx_rtc.c \
 	stm32f4xx_usart.c \
 	stm32f4xx_spi.c \
+	stm32f4xx_dac.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \

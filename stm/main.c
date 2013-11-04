@@ -20,6 +20,7 @@
 #include "usart.h"
 #include "usb.h"
 #include "ff.h"
+#include "audio.h"
 
 static FATFS fatfs0;
 
@@ -744,6 +745,9 @@ soft_reset:
 
     // servo
     servo_init();
+
+    // audio
+    audio_init();
 
     // add some functions to the python namespace
     {

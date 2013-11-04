@@ -14,6 +14,9 @@ void sys_tick_init(void) {
 // called on SysTick interrupt
 void SysTick_Handler(void) {
     sys_tick_counter++;
+    // hack!
+    void audio_drain(void);
+    audio_drain();
 }
 
 void sys_tick_delay_ms(uint32_t delay_ms) {
