@@ -106,11 +106,12 @@ static void emit_write_byte_1_byte(emit_t* emit, byte b1, uint b2) {
 }
 
 static void emit_write_byte_1_int(emit_t* emit, byte b1, int num) {
-    assert((num & (~0x7fff)) == 0 || (num & (~0x7fff)) == (~0x7fff));
-    byte* c = emit_get_cur_to_write_bytes(emit, 3);
+    assert((num & (~0x7fffff)) == 0 || (num & (~0x7fffff)) == (~0x7fffff));
+    byte* c = emit_get_cur_to_write_bytes(emit, 4);
     c[0] = b1;
     c[1] = num;
     c[2] = num >> 8;
+    c[3] = num >> 16;
 }
 
 static void emit_write_byte_1_uint(emit_t* emit, byte b1, uint num) {
@@ -186,8 +187,8 @@ static void emit_bc_label_assign(emit_t *emit, int l) {
         emit->label_offsets[l] = emit->code_offset;
     } else if (emit->pass == PASS_3) {
         // ensure label offset has not changed from PASS_2 to PASS_3
+        //printf("l%d: (at %d vs %d)\n", l, emit->code_offset, emit->label_offsets[l]);
         assert(emit->label_offsets[l] == emit->code_offset);
-        //printf("l%d: (at %d)\n", l, emit->code_offset);
     }
 }
 

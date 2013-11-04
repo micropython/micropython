@@ -75,11 +75,11 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         break;
 
                     case PYBC_LOAD_CONST_SMALL_INT:
-                        snum = ip[0] | (ip[1] << 8);
+                        snum = ip[0] | (ip[1] << 8) | (ip[2] << 16);
                         if (snum & 0x8000) {
                             snum |= ~0xffff;
                         }
-                        ip += 2;
+                        ip += 3;
                         PUSH((py_obj_t)(snum << 1 | 1));
                         break;
 
@@ -160,6 +160,11 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                     case PYBC_STORE_NAME:
                         DECODE_QSTR;
                         rt_store_name(qstr, POP());
+                        break;
+
+                    case PYBC_STORE_GLOBAL:
+                        DECODE_QSTR;
+                        rt_store_global(qstr, POP());
                         break;
 
                     case PYBC_STORE_ATTR:
