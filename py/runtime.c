@@ -2020,9 +2020,9 @@ py_obj_t rt_getiter(py_obj_t o_in) {
 py_obj_t rt_iternext(py_obj_t o_in) {
     if (IS_O(o_in, O_GEN_INSTANCE)) {
         py_obj_base_t *self = o_in;
-        py_obj_base_t *fun = self->u_gen_instance.state[0];
-        assert(fun->kind == O_FUN_BC);
-        bool yield = py_execute_byte_code_2(fun->u_fun_bc.code, &self->u_gen_instance.ip, &self->u_gen_instance.state[1], &self->u_gen_instance.sp);
+        //py_obj_base_t *fun = self->u_gen_instance.state[0];
+        //assert(fun->kind == O_FUN_BC);
+        bool yield = py_execute_byte_code_2(&self->u_gen_instance.ip, &self->u_gen_instance.state[1], &self->u_gen_instance.sp);
         if (yield) {
             return *self->u_gen_instance.sp;
         } else {

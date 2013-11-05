@@ -1,7 +1,7 @@
 #define PYBC_LOAD_CONST_FALSE   (0x10)
 #define PYBC_LOAD_CONST_NONE    (0x11)
 #define PYBC_LOAD_CONST_TRUE    (0x12)
-#define PYBC_LOAD_CONST_SMALL_INT   (0x13) // int
+#define PYBC_LOAD_CONST_SMALL_INT   (0x13) // 24-bit, in excess
 #define PYBC_LOAD_CONST_INT     (0x14) // qstr
 #define PYBC_LOAD_CONST_DEC     (0x15) // qstr
 #define PYBC_LOAD_CONST_ID      (0x16) // qstr
@@ -39,21 +39,22 @@
 #define PYBC_POP_TOP            (0x42)
 #define PYBC_ROT_TWO            (0x43)
 #define PYBC_ROT_THREE          (0x44)
-#define PYBC_JUMP               (0x45) // pos
-#define PYBC_POP_JUMP_IF_TRUE   (0x46) // pos
-#define PYBC_POP_JUMP_IF_FALSE  (0x47) // pos
-#define PYBC_JUMP_IF_TRUE_OR_POP    (0x48) // pos
-#define PYBC_JUMP_IF_FALSE_OR_POP   (0x49) // pos
-#define PYBC_SETUP_LOOP         (0x4a) // pos
-#define PYBC_BREAK_LOOP         (0x4b) // pos
-#define PYBC_CONTINUE_LOOP      (0x4c) // pos
-#define PYBC_SETUP_WITH         (0x4d) // pos
+
+#define PYBC_JUMP               (0x45) // rel byte code offset, 16-bit signed, in excess
+#define PYBC_POP_JUMP_IF_TRUE   (0x46) // rel byte code offset, 16-bit signed, in excess
+#define PYBC_POP_JUMP_IF_FALSE  (0x47) // rel byte code offset, 16-bit signed, in excess
+#define PYBC_JUMP_IF_TRUE_OR_POP    (0x48) // rel byte code offset, 16-bit signed, in excess
+#define PYBC_JUMP_IF_FALSE_OR_POP   (0x49) // rel byte code offset, 16-bit signed, in excess
+#define PYBC_SETUP_LOOP         (0x4a) // rel byte code offset, 16-bit unsigned
+#define PYBC_BREAK_LOOP         (0x4b) // rel byte code offset, 16-bit unsigned
+#define PYBC_CONTINUE_LOOP      (0x4c) // rel byte code offset, 16-bit unsigned
+#define PYBC_SETUP_WITH         (0x4d) // rel byte code offset, 16-bit unsigned
 #define PYBC_WITH_CLEANUP       (0x4e)
-#define PYBC_SETUP_EXCEPT       (0x4f) // pos
-#define PYBC_SETUP_FINALLY      (0x50) // pos
+#define PYBC_SETUP_EXCEPT       (0x4f) // rel byte code offset, 16-bit unsigned
+#define PYBC_SETUP_FINALLY      (0x50) // rel byte code offset, 16-bit unsigned
 #define PYBC_END_FINALLY        (0x51)
 #define PYBC_GET_ITER           (0x52)
-#define PYBC_FOR_ITER           (0x53) // pos
+#define PYBC_FOR_ITER           (0x53) // rel byte code offset, 16-bit unsigned
 #define PYBC_POP_BLOCK          (0x54)
 #define PYBC_POP_EXCEPT         (0x55)
 
@@ -94,4 +95,4 @@
 #define PYBC_IMPORT_STAR (0xe2)
 
 py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args);
-bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out);
+bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out);

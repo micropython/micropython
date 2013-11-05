@@ -14,6 +14,8 @@
 // exception stack grows up, top element is pointed to
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
+#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
 #define PUSH(val) *--sp = (val)
 #define POP() (*sp++)
@@ -28,7 +30,7 @@ py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_arg
     }
     py_obj_t *sp = &state[18];
     const byte *ip = code;
-    if (py_execute_byte_code_2(code, &ip, &state[0], &sp)) {
+    if (py_execute_byte_code_2(&ip, &state[0], &sp)) {
         // it shouldn't yield
         assert(0);
     }
@@ -39,13 +41,12 @@ py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_arg
 
 // fastn has items in normal order
 // sp points to top of stack which grows down
-bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out) {
+bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
     const byte *ip = *ip_in_out;
     py_obj_t *sp = *sp_in_out;
     machine_uint_t unum;
-    machine_int_t snum;
     qstr qstr;
     py_obj_t obj1, obj2;
     py_obj_t fast0 = fastn[0], fast1 = fastn[1], fast2 = fastn[2];
@@ -75,12 +76,9 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         break;
 
                     case PYBC_LOAD_CONST_SMALL_INT:
-                        snum = ip[0] | (ip[1] << 8) | (ip[2] << 16);
-                        if (snum & 0x8000) {
-                            snum |= ~0xffff;
-                        }
+                        unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
                         ip += 3;
-                        PUSH((py_obj_t)(snum << 1 | 1));
+                        PUSH((py_obj_t)(unum << 1 | 1));
                         break;
 
                     case PYBC_LOAD_CONST_DEC:
@@ -207,34 +205,34 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         break;
 
                     case PYBC_JUMP:
-                        DECODE_UINT;
-                        ip = code + unum;
+                        DECODE_SLABEL;
+                        ip += unum;
                         break;
 
                     case PYBC_POP_JUMP_IF_TRUE:
-                        DECODE_UINT;
+                        DECODE_SLABEL;
                         if (rt_is_true(POP())) {
-                            ip = code + unum;
+                            ip += unum;
                         }
                         break;
 
                     case PYBC_POP_JUMP_IF_FALSE:
-                        DECODE_UINT;
+                        DECODE_SLABEL;
                         if (!rt_is_true(POP())) {
-                            ip = code + unum;
+                            ip += unum;
                         }
                         break;
 
                         /* we are trying to get away without using this opcode
                     case PYBC_SETUP_LOOP:
                         DECODE_UINT;
-                        // push_block(PYBC_SETUP_LOOP, code + unum, sp)
+                        // push_block(PYBC_SETUP_LOOP, ip + unum, sp)
                         break;
                         */
 
                     case PYBC_SETUP_EXCEPT:
-                        DECODE_UINT;
-                        *++exc_sp = (machine_uint_t)code + unum;
+                        DECODE_ULABEL; // except labels are always forward
+                        *++exc_sp = (machine_uint_t)ip + unum;
                         *++exc_sp = (machine_uint_t)sp;
                         break;
 
@@ -252,11 +250,11 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         break;
 
                     case PYBC_FOR_ITER:
-                        DECODE_UINT; // the jump offset if iteration finishes
+                        DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                         obj1 = rt_iternext(*sp);
                         if (obj1 == py_const_stop_iteration) {
                             ++sp; // pop the exhausted iterator
-                            ip = code + unum; // jump to after for-block
+                            ip += unum; // jump to after for-block
                         } else {
                             PUSH(obj1); // push the next iteration value
                         }
@@ -386,7 +384,7 @@ bool py_execute_byte_code_2(const byte *code, const byte **ip_in_out, py_obj_t *
                         return true;
 
                     default:
-                        printf("code %p, offset %u, byte code 0x%02x not implemented\n", code, (uint)(ip - code), op);
+                        printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                         assert(0);
                         nlr_pop();
                         return false;

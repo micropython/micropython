@@ -105,8 +105,10 @@ static void emit_write_byte_1_byte(emit_t* emit, byte b1, uint b2) {
     c[1] = b2;
 }
 
+// integers (for small ints) are stored as 24 bits, in excess
 static void emit_write_byte_1_int(emit_t* emit, byte b1, int num) {
-    assert((num & (~0x7fffff)) == 0 || (num & (~0x7fffff)) == (~0x7fffff));
+    num += 0x800000;
+    assert(0 <= num && num <= 0xffffff);
     byte* c = emit_get_cur_to_write_bytes(emit, 4);
     c[0] = b1;
     c[1] = num;
@@ -136,14 +138,32 @@ static void emit_write_byte_1_qstr(emit_t* emit, byte b1, qstr qstr) {
     emit_write_byte_1_uint(emit, b1, qstr);
 }
 
-static void emit_write_byte_1_label(emit_t* emit, byte b1, int label) {
+// unsigned labels are relative to ip following this instruction, stored as 16 bits
+static void emit_write_byte_1_unsigned_label(emit_t* emit, byte b1, int label) {
     uint code_offset;
     if (emit->pass < PASS_3) {
         code_offset = 0;
     } else {
-        code_offset = emit->label_offsets[label];
+        code_offset = emit->label_offsets[label] - emit->code_offset - 3;
     }
-    emit_write_byte_1_uint(emit, b1, code_offset);
+    byte* c = emit_get_cur_to_write_bytes(emit, 3);
+    c[0] = b1;
+    c[1] = code_offset;
+    c[2] = code_offset >> 8;
+}
+
+// signed labels are relative to ip following this instruction, stored as 16 bits, in excess
+static void emit_write_byte_1_signed_label(emit_t* emit, byte b1, int label) {
+    int code_offset;
+    if (emit->pass < PASS_3) {
+        code_offset = 0;
+    } else {
+        code_offset = emit->label_offsets[label] - emit->code_offset - 3 + 0x8000;
+    }
+    byte* c = emit_get_cur_to_write_bytes(emit, 3);
+    c[0] = b1;
+    c[1] = code_offset;
+    c[2] = code_offset >> 8;
 }
 
 bool emit_bc_last_emit_was_return_value(emit_t *emit) {
@@ -418,47 +438,47 @@ static void emit_bc_rot_three(emit_t *emit) {
 
 static void emit_bc_jump(emit_t *emit, int label) {
     emit_pre(emit, 0);
-    emit_write_byte_1_label(emit, PYBC_JUMP, label);
+    emit_write_byte_1_signed_label(emit, PYBC_JUMP, label);
 }
 
 static void emit_bc_pop_jump_if_true(emit_t *emit, int label) {
     emit_pre(emit, -1);
-    emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_TRUE, label);
+    emit_write_byte_1_signed_label(emit, PYBC_POP_JUMP_IF_TRUE, label);
 }
 
 static void emit_bc_pop_jump_if_false(emit_t *emit, int label) {
     emit_pre(emit, -1);
-    emit_write_byte_1_label(emit, PYBC_POP_JUMP_IF_FALSE, label);
+    emit_write_byte_1_signed_label(emit, PYBC_POP_JUMP_IF_FALSE, label);
 }
 
 static void emit_bc_jump_if_true_or_pop(emit_t *emit, int label) {
     emit_pre(emit, -1);
-    emit_write_byte_1_label(emit, PYBC_JUMP_IF_TRUE_OR_POP, label);
+    emit_write_byte_1_signed_label(emit, PYBC_JUMP_IF_TRUE_OR_POP, label);
 }
 
 static void emit_bc_jump_if_false_or_pop(emit_t *emit, int label) {
     emit_pre(emit, -1);
-    emit_write_byte_1_label(emit, PYBC_JUMP_IF_FALSE_OR_POP, label);
+    emit_write_byte_1_signed_label(emit, PYBC_JUMP_IF_FALSE_OR_POP, label);
 }
 
 static void emit_bc_setup_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
-    emit_write_byte_1_label(emit, PYBC_SETUP_LOOP, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_SETUP_LOOP, label);
 }
 
 static void emit_bc_break_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
-    emit_write_byte_1_label(emit, PYBC_BREAK_LOOP, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_BREAK_LOOP, label);
 }
 
 static void emit_bc_continue_loop(emit_t *emit, int label) {
     emit_pre(emit, 0);
-    emit_write_byte_1_label(emit, PYBC_CONTINUE_LOOP, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_CONTINUE_LOOP, label);
 }
 
 static void emit_bc_setup_with(emit_t *emit, int label) {
     emit_pre(emit, 7);
-    emit_write_byte_1_label(emit, PYBC_SETUP_WITH, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_SETUP_WITH, label);
 }
 
 static void emit_bc_with_cleanup(emit_t *emit) {
@@ -468,12 +488,12 @@ static void emit_bc_with_cleanup(emit_t *emit) {
 
 static void emit_bc_setup_except(emit_t *emit, int label) {
     emit_pre(emit, 6);
-    emit_write_byte_1_label(emit, PYBC_SETUP_EXCEPT, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_SETUP_EXCEPT, label);
 }
 
 static void emit_bc_setup_finally(emit_t *emit, int label) {
     emit_pre(emit, 6);
-    emit_write_byte_1_label(emit, PYBC_SETUP_FINALLY, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_SETUP_FINALLY, label);
 }
 
 static void emit_bc_end_finally(emit_t *emit) {
@@ -488,7 +508,7 @@ static void emit_bc_get_iter(emit_t *emit) {
 
 static void emit_bc_for_iter(emit_t *emit, int label) {
     emit_pre(emit, 1);
-    emit_write_byte_1_label(emit, PYBC_FOR_ITER, label);
+    emit_write_byte_1_unsigned_label(emit, PYBC_FOR_ITER, label);
 }
 
 static void emit_bc_for_iter_end(emit_t *emit) {
