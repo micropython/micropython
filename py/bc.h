@@ -94,5 +94,5 @@
 #define PYBC_IMPORT_FROM (0xe1)
 #define PYBC_IMPORT_STAR (0xe2)
 
-py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args);
+py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args, uint n_state);
 bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out);

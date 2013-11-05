@@ -21,14 +21,19 @@
 #define POP() (*sp++)
 
 // args are in reverse order in array
-py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args) {
-    py_obj_t state[18]; // TODO allocate properly
+py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args, uint n_state) {
+    py_obj_t temp_state[10]; // TODO allocate properly
+    py_obj_t *state = &temp_state[0];
+    py_obj_t *sp = &state[10];
+    if (n_state > 10) {
+        state = m_new(py_obj_t, n_state);
+        sp = &state[n_state];
+    }
     // init args
     for (int i = 0; i < n_args; i++) {
         assert(i < 8);
         state[i] = args[n_args - 1 - i];
     }
-    py_obj_t *sp = &state[18];
     const byte *ip = code;
     if (py_execute_byte_code_2(&ip, &state[0], &sp)) {
         // it shouldn't yield

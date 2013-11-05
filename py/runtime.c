@@ -133,8 +133,8 @@ struct _py_obj_base_t {
         } u_fun;
         struct { // for O_FUN_BC
             int n_args;
+            uint n_state;
             byte *code;
-            uint len;
         } u_fun_bc;
         struct { // for O_FUN_ASM
             int n_args;
@@ -1474,8 +1474,8 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
         case PY_CODE_BYTE:
             o->kind = O_FUN_BC;
             o->u_fun_bc.n_args = c->n_args;
+            o->u_fun_bc.n_state = c->n_locals + c->n_stack;
             o->u_fun_bc.code = c->u_byte.code;
-            o->u_fun_bc.len = c->u_byte.len;
             break;
         case PY_CODE_NATIVE:
             switch (c->n_args) {
@@ -1660,7 +1660,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
             goto bad_n_args;
         }
         DEBUG_OP_printf("calling byte code %p(n_args=%d)\n", o->u_fun_bc.code, n_args);
-        return py_execute_byte_code(o->u_fun_bc.code, args, n_args);
+        return py_execute_byte_code(o->u_fun_bc.code, args, n_args, o->u_fun_bc.n_state);
 
     } else if (IS_O(fun, O_FUN_ASM)) {
         py_obj_base_t *o = fun;
