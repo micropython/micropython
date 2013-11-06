@@ -854,15 +854,20 @@ py_obj_t py_builtin___repl_print__(py_obj_t o) {
     return py_const_none;
 }
 
-py_obj_t py_builtin_print(py_obj_t o) {
-    if (IS_O(o, O_STR)) {
-        // special case, print string raw
-        printf("%s\n", qstr_str(((py_obj_base_t*)o)->u_str));
-    } else {
-        // print the object Python style
-        py_obj_print(o);
-        printf("\n");
+py_obj_t py_builtin_print(int n_args, const py_obj_t* args) {
+    for (int i = 0; i < n_args; i++) {
+        if (i > 0) {
+            printf(" ");
+        }
+        if (IS_O(args[i], O_STR)) {
+            // special case, print string raw
+            printf("%s", qstr_str(((py_obj_base_t*)args[i])->u_str));
+        } else {
+            // print the object Python style
+            py_obj_print(args[i]);
+        }
     }
+    printf("\n");
     return py_const_none;
 }
 
@@ -955,7 +960,7 @@ void rt_init(void) {
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_1(py_builtin_print);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_var(0, py_builtin_print);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
@@ -1644,8 +1649,8 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
         if (n_args < o->u_fun.n_args) {
             nlr_jump(py_obj_new_exception_2(q_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(o->u_fun.n_args - n_args), NULL));
         }
-        // really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
-        py_obj_t *args_ordered = m_new(py_obj_t, o->u_fun.n_args);
+        // TODO really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
+        py_obj_t *args_ordered = m_new(py_obj_t, n_args);
         for (int i = 0; i < n_args; i++) {
             args_ordered[i] = args[n_args - i - 1];
         }
