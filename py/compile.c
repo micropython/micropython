@@ -1357,7 +1357,88 @@ void compile_while_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     EMIT(label_assign, break_label);
 }
 
+// TODO preload end and step onto stack if they are not constants
+// TODO check if step is negative and do opposite test
+void compile_for_stmt_optimised_range(compiler_t *comp, py_parse_node_t pn_var, py_parse_node_t pn_start, py_parse_node_t pn_end, py_parse_node_t pn_step, py_parse_node_t pn_body, py_parse_node_t pn_else) {
+    int old_break_label = comp->break_label;
+    int old_continue_label = comp->continue_label;
+
+    int break_label = comp_next_label(comp);
+    int continue_label = comp_next_label(comp);
+
+    comp->break_label = break_label;
+    comp->continue_label = continue_label;
+
+    int top_label = comp_next_label(comp);
+
+    // compile: var = start
+    compile_node(comp, pn_start);
+    c_assign(comp, pn_var, ASSIGN_STORE);
+
+    EMIT(jump, continue_label);
+    EMIT(label_assign, top_label);
+
+    // compile: var += step
+    c_assign(comp, pn_var, ASSIGN_AUG_LOAD);
+    compile_node(comp, pn_step);
+    EMIT(binary_op, RT_BINARY_OP_INPLACE_ADD);
+    c_assign(comp, pn_var, ASSIGN_AUG_STORE);
+
+    // compile body
+    compile_node(comp, pn_body);
+
+    EMIT(label_assign, continue_label);
+
+    // compile: if var < end: goto top
+    compile_node(comp, pn_var);
+    compile_node(comp, pn_end);
+    EMIT(compare_op, RT_COMPARE_OP_LESS);
+    EMIT(pop_jump_if_true, top_label);
+
+    // break/continue apply to outer loop (if any) in the else block
+    comp->break_label = old_break_label;
+    comp->continue_label = old_continue_label;
+
+    compile_node(comp, pn_else);
+
+    EMIT(label_assign, break_label);
+}
+
 void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
+#if !MICROPY_EMIT_CPYTHON
+    // this bit optimises: for <x> in range(...), turning it into an explicitly incremented variable
+    // this is actually slower, but uses no heap memory
+    // for viper it will be much, much faster
+    if (PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
+        py_parse_node_struct_t *pns_it = (py_parse_node_struct_t*)pns->nodes[1];
+        if (PY_PARSE_NODE_IS_ID(pns_it->nodes[0]) && PY_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren) && PY_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
+            py_parse_node_t pn_range_args = ((py_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
+            py_parse_node_t *args;
+            int n_args = list_get(&pn_range_args, PN_arglist, &args);
+            if (1 <= n_args && n_args <= 3) {
+                py_parse_node_t pn_range_start;
+                py_parse_node_t pn_range_end;
+                py_parse_node_t pn_range_step;
+                if (n_args == 1) {
+                    pn_range_start = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, 0);
+                    pn_range_end = args[0];
+                    pn_range_step = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, 1);
+                } else if (n_args == 2) {
+                    pn_range_start = args[0];
+                    pn_range_end = args[1];
+                    pn_range_step = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, 1);
+                } else {
+                    pn_range_start = args[0];
+                    pn_range_end = args[1];
+                    pn_range_step = args[2];
+                }
+                compile_for_stmt_optimised_range(comp, pns->nodes[0], pn_range_start, pn_range_end, pn_range_step, pns->nodes[2], pns->nodes[3]);
+                return;
+            }
+        }
+    }
+#endif
+
     int old_break_label = comp->break_label;
     int old_continue_label = comp->continue_label;
 
