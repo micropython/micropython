@@ -999,7 +999,7 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        assert(op == RT_BINARY_OP_ADD);
+        assert(op == RT_BINARY_OP_ADD || op == RT_BINARY_OP_INPLACE_ADD);
 #if N_X64
         asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
 #elif N_THUMB
