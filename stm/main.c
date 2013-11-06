@@ -20,6 +20,7 @@
 #include "usart.h"
 #include "usb.h"
 #include "ff.h"
+#include "timer.h"
 #include "audio.h"
 
 static FATFS fatfs0;
@@ -525,7 +526,7 @@ py_obj_t pyb_pwm_set(py_obj_t period, py_obj_t pulse) {
 
 #define MMA_ADDR (0x4c)
 
-py_obj_t pyb_mma_read() {
+py_obj_t pyb_mma_read(void) {
     mma_start(MMA_ADDR, 1);
     mma_send_byte(0);
     mma_restart(MMA_ADDR, 0);
@@ -731,6 +732,8 @@ int main(void) {
     storage_init();
     usart_init();
 
+    int first_soft_reset = true;
+
 soft_reset:
 
     // LCD init
@@ -748,6 +751,9 @@ soft_reset:
 
     // audio
     audio_init();
+
+    // timer
+    timer_init();
 
     // add some functions to the python namespace
     {
@@ -846,7 +852,7 @@ soft_reset:
     usb_init();
 
     // MMA
-    {
+    if (first_soft_reset) {
         // init and reset address to zero
         mma_init();
         mma_start(MMA_ADDR, 1);
@@ -1123,6 +1129,8 @@ soft_reset:
     pyb_sync();
 
     printf("PYB: soft reboot\n");
+
+    first_soft_reset = false;
     goto soft_reset;
 }
 

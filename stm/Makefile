@@ -26,6 +26,7 @@ SRC_C = \
 	usart.c \
 	usb.c \
 	sdio.c \
+	timer.c \
 	audio.c \
 	lexerstm.c \
 

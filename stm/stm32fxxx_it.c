@@ -251,4 +251,19 @@ void SDIO_IRQHandler(void)
 {
 }*/
 
+// TIM6 Update event
+#include "stm32f4xx_tim.h"
+void TIM6_DAC_IRQHandler(void) {
+    // work out if it's TIM6 that had the interrupt
+    if (TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET) {
+        extern void timer_interrupt(void);
+        timer_interrupt();
+        TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+    } else {
+        // it seems we get 2 calls to this interrupt handler, and only 1 is the TIM_IT_Update...
+        // TODO work out what the other one is, and if we can disable it
+        //printf("unhandled TIM6_DAC\n");
+    }
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

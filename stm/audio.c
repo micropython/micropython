@@ -6,12 +6,12 @@
 
 #include "nlr.h"
 #include "misc.h"
-//#include "lexer.h"
-//#include "lexerstm.h"
 #include "mpyconfig.h"
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
+
+#include "audio.h"
 
 #define SAMPLE_BUF_SIZE (32)
 
