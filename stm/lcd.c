@@ -1,10 +1,16 @@
 #include <string.h>
 #include <stm32f4xx_gpio.h>
 
+#include "nlr.h"
 #include "misc.h"
+#include "mpyconfig.h"
+#include "parse.h"
+#include "compile.h"
+#include "runtime.h"
+
 #include "systick.h"
-#include "lcd.h"
 #include "font_petme128_8x8.h"
+#include "lcd.h"
 
 #define PYB_LCD_PORT        (GPIOA)
 #define PYB_LCD_CS1_PIN     (GPIO_Pin_0)
@@ -80,13 +86,82 @@ static void lcd_data_out(uint8_t i) {
 }
 */
 
+// writes 8 vertical pixels
+// pos 0 is upper left, pos 1 is 8 pixels to right of that, pos 128 is 8 pixels below that
+py_obj_t lcd_draw_pixel_8(py_obj_t py_pos, py_obj_t py_val) {
+    int pos = py_obj_get_int(py_pos);
+    int val = py_obj_get_int(py_val);
+    int page = pos / 128;
+    int offset = pos - (page * 128);
+    lcd_out(LCD_INSTR, 0xb0 | page); // page address set
+    lcd_out(LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
+    lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
+    lcd_out(LCD_DATA, val); // write data
+    return py_const_none;
+}
+
 #define LCD_BUF_W (16)
 #define LCD_BUF_H (4)
 
-char lcd_buffer[LCD_BUF_W * LCD_BUF_H];
+char lcd_char_buffer[LCD_BUF_W * LCD_BUF_H];
 int lcd_line;
 int lcd_column;
 int lcd_next_line;
+
+#define LCD_PIX_BUF_SIZE (128 * 32 / 8)
+byte lcd_pix_buf[LCD_PIX_BUF_SIZE];
+byte lcd_pix_buf2[LCD_PIX_BUF_SIZE];
+
+py_obj_t lcd_pix_clear(void) {
+    memset(lcd_pix_buf, 0, LCD_PIX_BUF_SIZE);
+    memset(lcd_pix_buf2, 0, LCD_PIX_BUF_SIZE);
+    return py_const_none;
+}
+
+py_obj_t lcd_pix_get(py_obj_t py_x, py_obj_t py_y) {
+    int x = py_obj_get_int(py_x);
+    int y = py_obj_get_int(py_y);
+    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
+        uint byte_pos = x + 128 * ((uint)y >> 3);
+        if (lcd_pix_buf[byte_pos] & (1 << (y & 7))) {
+            return py_obj_new_int(1);
+        }
+    }
+    return py_obj_new_int(0);
+}
+
+py_obj_t lcd_pix_set(py_obj_t py_x, py_obj_t py_y) {
+    int x = py_obj_get_int(py_x);
+    int y = py_obj_get_int(py_y);
+    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
+        uint byte_pos = x + 128 * ((uint)y >> 3);
+        lcd_pix_buf2[byte_pos] |= 1 << (y & 7);
+    }
+    return py_const_none;
+}
+
+py_obj_t lcd_pix_reset(py_obj_t py_x, py_obj_t py_y) {
+    int x = py_obj_get_int(py_x);
+    int y = py_obj_get_int(py_y);
+    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
+        uint byte_pos = x + 128 * ((uint)y >> 3);
+        lcd_pix_buf2[byte_pos] &= ~(1 << (y & 7));
+    }
+    return py_const_none;
+}
+
+py_obj_t lcd_pix_show(void) {
+    memcpy(lcd_pix_buf, lcd_pix_buf2, LCD_PIX_BUF_SIZE);
+    for (uint page = 0; page < 4; page++) {
+        lcd_out(LCD_INSTR, 0xb0 | page); // page address set
+        lcd_out(LCD_INSTR, 0x10); // column address set upper; 0
+        lcd_out(LCD_INSTR, 0x00); // column address set lower; 0
+        for (uint i = 0; i < 128; i++) {
+            lcd_out(LCD_DATA, lcd_pix_buf[i + 128 * page]);
+        }
+    }
+    return py_const_none;
+}
 
 void lcd_init(void) {
     // set the outputs high
@@ -132,11 +207,21 @@ void lcd_init(void) {
     }
 
     for (int i = 0; i < LCD_BUF_H * LCD_BUF_W; i++) {
-        lcd_buffer[i] = ' ';
+        lcd_char_buffer[i] = ' ';
     }
     lcd_line = 0;
     lcd_column = 0;
     lcd_next_line = 0;
+
+    // Python interface
+    py_obj_t m = py_module_new();
+    rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(lcd_draw_pixel_8));
+    rt_store_attr(m, qstr_from_str_static("clear"), rt_make_function_0(lcd_pix_clear));
+    rt_store_attr(m, qstr_from_str_static("get"), rt_make_function_2(lcd_pix_get));
+    rt_store_attr(m, qstr_from_str_static("set"), rt_make_function_2(lcd_pix_set));
+    rt_store_attr(m, qstr_from_str_static("reset"), rt_make_function_2(lcd_pix_reset));
+    rt_store_attr(m, qstr_from_str_static("show"), rt_make_function_0(lcd_pix_show));
+    rt_store_name(qstr_from_str_static("lcd"), m);
 }
 
 void lcd_print_str(const char *str) {
@@ -155,10 +240,10 @@ void lcd_print_strn(const char *str, unsigned int len) {
             } else {
                 lcd_line = LCD_BUF_H - 1;
                 for (int i = 0; i < LCD_BUF_W * (LCD_BUF_H - 1); i++) {
-                    lcd_buffer[i] = lcd_buffer[i + LCD_BUF_W];
+                    lcd_char_buffer[i] = lcd_char_buffer[i + LCD_BUF_W];
                 }
                 for (int i = 0; i < LCD_BUF_W; i++) {
-                    lcd_buffer[LCD_BUF_W * (LCD_BUF_H - 1) + i] = ' ';
+                    lcd_char_buffer[LCD_BUF_W * (LCD_BUF_H - 1) + i] = ' ';
                 }
                 redraw_min = 0;
                 redraw_max = LCD_BUF_W * LCD_BUF_H;
@@ -174,7 +259,7 @@ void lcd_print_strn(const char *str, unsigned int len) {
             str -= 1;
             len += 1;
         } else {
-            lcd_buffer[lcd_line * LCD_BUF_W + lcd_column] = *str;
+            lcd_char_buffer[lcd_line * LCD_BUF_W + lcd_column] = *str;
             lcd_column += 1;
             int max = lcd_line * LCD_BUF_W + lcd_column;
             if (max > redraw_max) {
@@ -193,7 +278,7 @@ void lcd_print_strn(const char *str, unsigned int len) {
             lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
             last_page = page;
         }
-        int chr = lcd_buffer[i];
+        int chr = lcd_char_buffer[i];
         if (chr < 32 || chr > 126) {
             chr = 127;
         }
@@ -206,15 +291,4 @@ void lcd_print_strn(const char *str, unsigned int len) {
     if (did_new_line) {
         sys_tick_delay_ms(200);
     }
-}
-
-// writes 8 vertical pixels
-// pos 0 is upper left, pos 1 is 8 pixels to right of that, pos 128 is 8 pixels below that
-void lcd_draw_pixel_8(int pos, int val) {
-    int page = pos / 128;
-    int offset = pos - (page * 128);
-    lcd_out(LCD_INSTR, 0xb0 | page); // page address set
-    lcd_out(LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
-    lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
-    lcd_out(LCD_DATA, val); // write data
 }

@@ -6,6 +6,7 @@
 #include <stm32f4xx_pwr.h>
 #include <stm32f4xx_rtc.h>
 #include <stm32f4xx_usart.h>
+#include <stm32f4xx_rng.h>
 #include <stm_misc.h>
 #include "std.h"
 
@@ -613,13 +614,6 @@ py_obj_t pyb_rtc_read(void) {
     return py_const_none;
 }
 
-py_obj_t pyb_lcd8(py_obj_t pos, py_obj_t val) {
-    int pos_val = py_obj_get_int(pos);
-    int val_val = py_obj_get_int(val);
-    lcd_draw_pixel_8(pos_val, val_val);
-    return py_const_none;
-}
-
 void file_obj_print(py_obj_t o) {
     FIL *fp;
     py_user_get_data(o, (machine_uint_t*)&fp, NULL);
@@ -695,6 +689,10 @@ py_obj_t pyb_io_open(py_obj_t o_filename, py_obj_t o_mode) {
     return py_obj_new_user(&file_obj_info, (machine_uint_t)fp, 0);
 }
 
+py_obj_t pyb_rng_get(void) {
+    return py_obj_new_int(RNG_GetRandomNumber() >> 16);
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -736,15 +734,15 @@ int main(void) {
 
 soft_reset:
 
-    // LCD init
-    lcd_init();
-
     // GC init
     gc_init(&_heap_start, (void*)HEAP_END);
 
     // Micro Python init
     qstr_init();
     rt_init();
+
+    // LCD init
+    lcd_init();
 
     // servo
     servo_init();
@@ -754,6 +752,12 @@ soft_reset:
 
     // timer
     timer_init();
+
+    // RNG
+    {
+        RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
+        RNG_Cmd(ENABLE);
+    }
 
     // add some functions to the python namespace
     {
@@ -774,7 +778,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
         rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
-        rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(pyb_lcd8));
+        rt_store_attr(m, qstr_from_str_static("rng"), rt_make_function_0(pyb_rng_get));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
@@ -1147,4 +1151,9 @@ float __aeabi_d2f(double x) {
 double sqrt(double x) {
     // TODO
     return 0.0;
+}
+
+machine_float_t machine_sqrt(machine_float_t x) {
+    // TODO
+    return x;
 }
