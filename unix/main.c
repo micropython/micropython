@@ -176,3 +176,9 @@ int main(int argc, char **argv) {
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;
 }
+
+// for sqrt
+#include <math.h>
+machine_float_t machine_sqrt(machine_float_t x) {
+    return sqrt(x);
+}
