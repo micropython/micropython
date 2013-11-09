@@ -73,6 +73,7 @@ SRC_STM = \
 	stm32f4xx_usart.c \
 	stm32f4xx_spi.c \
 	stm32f4xx_dac.c \
+	stm32f4xx_rng.c \
 	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \
