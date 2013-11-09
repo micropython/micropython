@@ -228,6 +228,24 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         }
                         break;
 
+                    case PYBC_JUMP_IF_TRUE_OR_POP:
+                        DECODE_SLABEL;
+                        if (rt_is_true(*sp)) {
+                            ip += unum;
+                        } else {
+                            sp++;
+                        }
+                        break;
+
+                    case PYBC_JUMP_IF_FALSE_OR_POP:
+                        DECODE_SLABEL;
+                        if (rt_is_true(*sp)) {
+                            sp++;
+                        } else {
+                            ip += unum;
+                        }
+                        break;
+
                         /* we are trying to get away without using this opcode
                     case PYBC_SETUP_LOOP:
                         DECODE_UINT;
