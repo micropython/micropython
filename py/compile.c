@@ -1378,14 +1378,14 @@ void compile_for_stmt_optimised_range(compiler_t *comp, py_parse_node_t pn_var, 
     EMIT(jump, continue_label);
     EMIT(label_assign, top_label);
 
+    // compile body
+    compile_node(comp, pn_body);
+
     // compile: var += step
     c_assign(comp, pn_var, ASSIGN_AUG_LOAD);
     compile_node(comp, pn_step);
     EMIT(binary_op, RT_BINARY_OP_INPLACE_ADD);
     c_assign(comp, pn_var, ASSIGN_AUG_STORE);
-
-    // compile body
-    compile_node(comp, pn_body);
 
     EMIT(label_assign, continue_label);
 
