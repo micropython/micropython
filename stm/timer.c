@@ -24,7 +24,11 @@ py_obj_t timer_py_set_callback(py_obj_t f) {
 
 py_obj_t timer_py_set_period(py_obj_t period) {
     TIM6->ARR = py_obj_get_int(period) & 0xffff;
-    //TIM6->PSC = prescaler & 0xffff;
+    return py_const_none;
+}
+
+py_obj_t timer_py_set_prescaler(py_obj_t prescaler) {
+    TIM6->PSC = py_obj_get_int(prescaler) & 0xffff;
     return py_const_none;
 }
 
@@ -38,12 +42,12 @@ void timer_init(void) {
     // TIM6 clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
 
-    // Compute the prescaler value so TIM6 runs at 10kHz
-    uint16_t PrescalerValue = (uint16_t) ((SystemCoreClock / 2) / 10000) - 1;
+    // Compute the prescaler value so TIM6 runs at 20kHz
+    uint16_t PrescalerValue = (uint16_t) ((SystemCoreClock / 2) / 20000) - 1;
 
     // Time base configuration
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    TIM_TimeBaseStructure.TIM_Period = 10000; // timer cycles at 1Hz
+    TIM_TimeBaseStructure.TIM_Period = 20000; // timer cycles at 1Hz
     TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
     TIM_TimeBaseStructure.TIM_ClockDivision = 0; // unused for TIM6
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; // unused for TIM6
@@ -70,6 +74,7 @@ void timer_init(void) {
     py_obj_t m = py_module_new();
     rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_1(timer_py_set_callback));
     rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_1(timer_py_set_period));
+    rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_1(timer_py_set_prescaler));
     rt_store_attr(m, qstr_from_str_static("value"), rt_make_function_0(timer_py_get_value));
     rt_store_name(qstr_from_str_static("timer"), m);
 }
@@ -78,6 +83,7 @@ void timer_interrupt(void) {
     if (timer_py_callback != py_const_none) {
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
+            // XXX what to do if the GC is in the middle of running??
             rt_call_function_0(timer_py_callback);
             nlr_pop();
         } else {
