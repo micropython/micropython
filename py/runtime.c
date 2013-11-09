@@ -15,11 +15,6 @@
 #include "runtime.h"
 #include "bc.h"
 
-#if MICROPY_ENABLE_FLOAT
-// for sqrt
-#include <math.h>
-#endif
-
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_NATIVE (1)
@@ -873,7 +868,10 @@ py_obj_t py_builtin_print(int n_args, const py_obj_t* args) {
 
 py_obj_t py_builtin_len(py_obj_t o_in) {
     py_small_int_t len = 0;
-    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
+    if (IS_O(o_in, O_STR)) {
+        py_obj_base_t *o = o_in;
+        len = strlen(qstr_str(o->u_str));
+    } else if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
         py_obj_base_t *o = o_in;
         len = o->u_tuple_list.len;
     } else if (IS_O(o_in, O_MAP)) {
@@ -892,6 +890,7 @@ py_obj_t py_builtin_abs(py_obj_t o_in) {
             val = -val;
         }
         return TO_SMALL_INT(val);
+#if MICROPY_ENABLE_FLOAT
     } else if (IS_O(o_in, O_FLOAT)) {
         py_obj_base_t *o = o_in;
         // TODO check for NaN etc
@@ -902,7 +901,8 @@ py_obj_t py_builtin_abs(py_obj_t o_in) {
         }
     } else if (IS_O(o_in, O_COMPLEX)) {
         py_obj_base_t *o = o_in;
-        return py_obj_new_float(sqrt(o->u_complex.real*o->u_complex.real + o->u_complex.imag*o->u_complex.imag));
+        return py_obj_new_float(machine_sqrt(o->u_complex.real*o->u_complex.real + o->u_complex.imag*o->u_complex.imag));
+#endif
     } else {
         assert(0);
         return py_const_none;
@@ -1279,7 +1279,12 @@ uint get_index(py_obj_base_t *base, py_obj_t index) {
 py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
     DEBUG_OP_printf("binary %d %p %p\n", op, lhs, rhs);
     if (op == RT_BINARY_OP_SUBSCR) {
-        if ((IS_O(lhs, O_TUPLE) || IS_O(lhs, O_LIST))) {
+        if (IS_O(lhs, O_STR)) {
+            // string access
+            // XXX a hack!
+            const char *str = qstr_str(((py_obj_base_t*)lhs)->u_str);
+            return py_obj_new_int(str[FROM_SMALL_INT(rhs)]);
+        } else if ((IS_O(lhs, O_TUPLE) || IS_O(lhs, O_LIST))) {
             // tuple/list load
             uint index = get_index(lhs, rhs);
             return ((py_obj_base_t*)lhs)->u_tuple_list.items[index];
