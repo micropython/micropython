@@ -444,14 +444,35 @@ static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, in
 
 // vtype of all n_pop objects is VTYPE_PYOBJ
 // does not use any temporary registers (but may use reg_dest before loading it with stack pointer)
+// TODO this needs some thinking for viper code
 static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
     need_reg_all(emit);
     for (int i = 0; i < n_pop; i++) {
         stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
         // must push any imm's to stack
+        // must convert them to VTYPE_PYOBJ for viper code
         if (si->kind == STACK_IMM) {
             si->kind = STACK_VALUE;
-            ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+            switch (si->vtype) {
+                case VTYPE_PYOBJ:
+                    ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    break;
+                case VTYPE_BOOL:
+                    si->vtype = VTYPE_PYOBJ;
+                    if (si->u_imm == 0) {
+                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)py_const_false, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    } else {
+                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)py_const_true, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    }
+                    break;
+                case VTYPE_INT:
+                    si->vtype = VTYPE_PYOBJ;
+                    ASM_MOV_IMM_TO_LOCAL_USING((si->u_imm << 1) | 1, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    break;
+                default:
+                    // not handled
+                    assert(0);
+            }
         }
         assert(si->kind == STACK_VALUE);
         assert(si->vtype == VTYPE_PYOBJ);
