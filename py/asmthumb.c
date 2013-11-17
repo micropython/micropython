@@ -74,7 +74,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
         // calculate size of code in bytes
         as->code_size = as->code_offset;
         as->code_base = m_new(byte, as->code_size);
-        printf("code_size: %u\n", as->code_size);
+        //printf("code_size: %u\n", as->code_size);
     }
 
     /*

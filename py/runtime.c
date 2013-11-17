@@ -17,7 +17,7 @@
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
-#define WRITE_NATIVE (1)
+#define WRITE_CODE (1)
 #define DEBUG_printf(args...) printf(args)
 #define DEBUG_OP_printf(args...) printf(args)
 #else // don't print debugging info
@@ -932,8 +932,8 @@ py_obj_t py_builtin_range(py_obj_t o_arg) {
     return py_obj_new_range(0, py_obj_get_int(o_arg), 1);
 }
 
-#ifdef WRITE_NATIVE
-FILE *fp_native = NULL;
+#ifdef WRITE_CODE
+FILE *fp_write_code = NULL;
 #endif
 
 void rt_init(void) {
@@ -974,15 +974,15 @@ void rt_init(void) {
     fun_list_append = rt_make_function_2(rt_list_append);
     fun_gen_instance_next = rt_make_function_1(rt_gen_instance_next);
 
-#ifdef WRITE_NATIVE
-    fp_native = fopen("out-native", "wb");
+#ifdef WRITE_CODE
+    fp_write_code = fopen("out-code", "wb");
 #endif
 }
 
 void rt_deinit(void) {
-#ifdef WRITE_NATIVE
-    if (fp_native != NULL) {
-        fclose(fp_native);
+#ifdef WRITE_CODE
+    if (fp_write_code != NULL) {
+        fclose(fp_write_code);
     }
 #endif
 }
@@ -1016,7 +1016,26 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
     unique_codes[unique_code_id].u_byte.code = code;
     unique_codes[unique_code_id].u_byte.len = len;
 
+    printf("byte code: %d bytes\n", len);
+
+#ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d\n", unique_code_id, code, len, n_args);
+    for (int i = 0; i < 128 && i < len; i++) {
+        if (i > 0 && i % 16 == 0) {
+            DEBUG_printf("\n");
+        }
+        DEBUG_printf(" %02x", code[i]);
+    }
+    DEBUG_printf("\n");
+    py_un_byte_code(code, len);
+
+#ifdef WRITE_CODE
+    if (fp_write_code != NULL) {
+        fwrite(code, len, 1, fp_write_code);
+        fflush(fp_write_code);
+    }
+#endif
+#endif
 }
 
 void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_args) {
@@ -1030,6 +1049,8 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_native.fun = fun;
 
+    printf("native code: %d bytes\n", len);
+
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign native code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
@@ -1041,10 +1062,10 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     }
     DEBUG_printf("\n");
 
-#ifdef WRITE_NATIVE
-    if (fp_native != NULL) {
-        fwrite(fun_data, len, 1, fp_native);
-        fflush(fp_native);
+#ifdef WRITE_CODE
+    if (fp_write_code != NULL) {
+        fwrite(fun_data, len, 1, fp_write_code);
+        fflush(fp_write_code);
     }
 #endif
 #endif
@@ -1072,9 +1093,9 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     }
     DEBUG_printf("\n");
 
-#ifdef WRITE_NATIVE
-    if (fp_native != NULL) {
-        fwrite(fun_data, len, 1, fp_native);
+#ifdef WRITE_CODE
+    if (fp_write_code != NULL) {
+        fwrite(fun_data, len, 1, fp_write_code);
     }
 #endif
 #endif

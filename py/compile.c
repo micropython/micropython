@@ -1409,7 +1409,7 @@ void compile_for_stmt(compiler_t *comp, py_parse_node_struct_t *pns) {
     // this bit optimises: for <x> in range(...), turning it into an explicitly incremented variable
     // this is actually slower, but uses no heap memory
     // for viper it will be much, much faster
-    if (PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
+    if (/*comp->scope_cur->emit_options == EMIT_OPT_VIPER &&*/ PY_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
         py_parse_node_struct_t *pns_it = (py_parse_node_struct_t*)pns->nodes[1];
         if (PY_PARSE_NODE_IS_ID(pns_it->nodes[0]) && PY_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren) && PY_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
             py_parse_node_t pn_range_args = ((py_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
