@@ -1027,7 +1027,8 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
         DEBUG_printf(" %02x", code[i]);
     }
     DEBUG_printf("\n");
-    py_un_byte_code(code, len);
+    extern void py_show_byte_code(const byte *code, int len);
+    py_show_byte_code(code, len);
 
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
