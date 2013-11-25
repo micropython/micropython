@@ -1757,15 +1757,41 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
 
     } else if (IS_O(fun, O_CLASS)) {
         // instantiate an instance of a class
-        if (n_args != 0) {
-            n_args_fun = 0;
-            goto bad_n_args;
-        }
-        DEBUG_OP_printf("instantiate object of class %p with no args\n", fun);
+
+        DEBUG_OP_printf("instantiate object of class %p with %d args\n", fun, n_args);
         py_obj_base_t *o = m_new(py_obj_base_t, 1);
         o->kind = O_OBJ;
         o->u_obj.class = fun;
         o->u_obj.members = py_map_new(MAP_QSTR, 0);
+
+        // look for __init__ function
+        py_obj_base_t *o_class = fun;
+        py_map_elem_t *init_fn = py_qstr_map_lookup(o_class->u_class.locals, qstr_from_str_static("__init__"), false);
+
+        if (init_fn != NULL) {
+            // call __init__ function
+            py_obj_t init_ret;
+            if (n_args == 0) {
+                init_ret = rt_call_function_n(init_fn->value, 1, (py_obj_t*)&o);
+            } else {
+                py_obj_t *args2 = m_new(py_obj_t, n_args + 1);
+                memcpy(args2, args, n_args * sizeof(py_obj_t));
+                args2[n_args] = o;
+                init_ret = rt_call_function_n(init_fn->value, n_args + 1, args2);
+                m_free(args2);
+            }
+            if (init_ret != py_const_none) {
+                nlr_jump(py_obj_new_exception_2(q_TypeError, "__init__() should return None, not '%s'", py_obj_get_type_str(init_ret), NULL));
+            }
+
+        } else {
+            // TODO
+            if (n_args != 0) {
+                n_args_fun = 0;
+                goto bad_n_args;
+            }
+        }
+
         return o;
 
     } else {
