@@ -45,12 +45,14 @@ void py_show_byte_code(const byte *ip, int len) {
                 DECODE_QSTR;
                 PUSH(rt_load_const_dec(qstr));
                 break;
+                */
 
             case PYBC_LOAD_CONST_ID:
                 DECODE_QSTR;
-                PUSH(rt_load_const_str(qstr)); // TODO
+                printf("LOAD_CONST_ID %s", qstr_str(qstr));
                 break;
 
+                /*
             case PYBC_LOAD_CONST_STRING:
                 DECODE_QSTR;
                 PUSH(rt_load_const_str(qstr));
@@ -86,23 +88,19 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_GLOBAL %s", qstr_str(qstr));
                 break;
 
-                /*
             case PYBC_LOAD_ATTR:
                 DECODE_QSTR;
-                *sp = rt_load_attr(*sp, qstr);
+                printf("LOAD_ATTR %s", qstr_str(qstr));
                 break;
-                */
 
             case PYBC_LOAD_METHOD:
                 DECODE_QSTR;
                 printf("LOAD_METHOD %s", qstr_str(qstr));
                 break;
 
-                /*
             case PYBC_LOAD_BUILD_CLASS:
-                PUSH(rt_load_build_class());
+                printf("LOAD_BUILD_CLASS");
                 break;
-                */
 
             case PYBC_STORE_FAST_0:
                 printf("STORE_FAST_0");
@@ -133,13 +131,14 @@ void py_show_byte_code(const byte *ip, int len) {
                 DECODE_QSTR;
                 rt_store_global(qstr, POP());
                 break;
+                */
 
             case PYBC_STORE_ATTR:
                 DECODE_QSTR;
-                rt_store_attr(sp[0], qstr, sp[1]);
-                sp += 2;
+                printf("STORE_ATTR %s", qstr_str(qstr));
                 break;
 
+                /*
             case PYBC_STORE_SUBSCR:
                 rt_store_subscr(sp[1], sp[0], sp[2]);
                 sp += 3;
