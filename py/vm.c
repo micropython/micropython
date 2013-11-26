@@ -369,6 +369,12 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         sp++;
                         break;
 
+                    case PYBC_UNPACK_SEQUENCE:
+                        DECODE_UINT;
+                        rt_unpack_sequence(sp[0], unum, sp - unum + 1);
+                        sp -= unum - 1;
+                        break;
+
                     case PYBC_MAKE_FUNCTION:
                         DECODE_UINT;
                         PUSH(rt_make_function_from_id(unum));
@@ -384,10 +390,16 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_CALL_METHOD:
                         DECODE_UINT;
-                        assert((unum & 0xff00) == 0); // n_keyword
-                        unum &= 0xff;
-                        obj1 = rt_call_method_n(unum, sp);
-                        sp += unum + 1;
+                        if ((unum & 0xff00) == 0) {
+                            // no keywords
+                            unum &= 0xff;
+                            obj1 = rt_call_method_n(unum, sp);
+                            sp += unum + 1;
+                        } else {
+                            // keywords
+                            obj1 = rt_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp);
+                            sp += (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                        }
                         *sp = obj1;
                         break;
 
