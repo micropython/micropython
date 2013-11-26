@@ -179,6 +179,8 @@ struct _py_obj_base_t {
 };
 
 static qstr q_append;
+static qstr q_pop;
+static qstr q_sort;
 static qstr q_join;
 static qstr q_format;
 static qstr q___build_class__;
@@ -189,6 +191,7 @@ static qstr q_KeyError;
 static qstr q_NameError;
 static qstr q_TypeError;
 static qstr q_SyntaxError;
+static qstr q_ValueError;
 
 py_obj_t py_const_none;
 py_obj_t py_const_false;
@@ -786,6 +789,24 @@ py_obj_t rt_str_format(int n_args, const py_obj_t* args) {
     return py_obj_new_str(qstr_from_str_take(vstr->buf));
 }
 
+uint get_index(py_obj_base_t *base, py_obj_t index) {
+    // assumes base is O_TUPLE or O_LIST
+    // TODO False and True are considered 0 and 1 for indexing purposes
+    int len = base->u_tuple_list.len;
+    if (IS_SMALL_INT(index)) {
+        int i = FROM_SMALL_INT(index);
+        if (i < 0) {
+            i += len;
+        }
+        if (i < 0 || i >= len) {
+            nlr_jump(py_obj_new_exception_2(q_IndexError, "%s index out of range", py_obj_get_type_str(base), NULL));
+        }
+        return i;
+    } else {
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "%s indices must be integers, not %s", py_obj_get_type_str(base), py_obj_get_type_str(index)));
+    }
+}
+
 py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
     assert(IS_O(self_in, O_LIST));
     py_obj_base_t *self = self_in;
@@ -794,6 +815,47 @@ py_obj_t rt_list_append(py_obj_t self_in, py_obj_t arg) {
         self->u_tuple_list.items = m_renew(py_obj_t, self->u_tuple_list.items, self->u_tuple_list.alloc);
     }
     self->u_tuple_list.items[self->u_tuple_list.len++] = arg;
+    return py_const_none; // return None, as per CPython
+}
+
+py_obj_t rt_list_pop(py_obj_t self_in, py_obj_t arg) {
+    assert(IS_O(self_in, O_LIST));
+    py_obj_base_t *self = self_in;
+    uint index = get_index(self, arg);
+    py_obj_t ret = self->u_tuple_list.items[index];
+    self->u_tuple_list.len -= 1;
+    memcpy(self->u_tuple_list.items + index, self->u_tuple_list.items + index + 1, (self->u_tuple_list.len - index) * sizeof(py_obj_t));
+    return ret;
+}
+
+// TODO make this conform to CPython's definition of sort
+static void py_quicksort(py_obj_t *head, py_obj_t *tail, py_obj_t key_fn) {
+    while (head < tail) {
+        py_obj_t *h = head - 1;
+        py_obj_t *t = tail;
+        py_obj_t v = rt_call_function_1(key_fn, tail[0]); // get pivot using key_fn
+        for (;;) {
+            do ++h; while (rt_compare_op(RT_COMPARE_OP_LESS, rt_call_function_1(key_fn, h[0]), v) == py_const_true);
+            do --t; while (h < t && rt_compare_op(RT_COMPARE_OP_LESS, v, rt_call_function_1(key_fn, t[0])) == py_const_true);
+            if (h >= t) break;
+            py_obj_t x = h[0];
+            h[0] = t[0];
+            t[0] = x;
+        }
+        py_obj_t x = h[0];
+        h[0] = tail[0];
+        tail[0] = x;
+        py_quicksort(head, t, key_fn);
+        head = h + 1;
+    }
+}
+
+py_obj_t rt_list_sort(py_obj_t self_in, py_obj_t key_fn) {
+    assert(IS_O(self_in, O_LIST));
+    py_obj_base_t *self = self_in;
+    if (self->u_tuple_list.len > 1) {
+        py_quicksort(self->u_tuple_list.items, self->u_tuple_list.items + self->u_tuple_list.len - 1, key_fn);
+    }
     return py_const_none; // return None, as per CPython
 }
 
@@ -839,6 +901,8 @@ static py_code_t *unique_codes;
 py_obj_t fun_str_join;
 py_obj_t fun_str_format;
 py_obj_t fun_list_append;
+py_obj_t fun_list_pop;
+py_obj_t fun_list_sort;
 py_obj_t fun_gen_instance_next;
 
 py_obj_t py_builtin___repl_print__(py_obj_t o) {
@@ -938,6 +1002,8 @@ FILE *fp_write_code = NULL;
 
 void rt_init(void) {
     q_append = qstr_from_str_static("append");
+    q_pop = qstr_from_str_static("pop");
+    q_sort = qstr_from_str_static("sort");
     q_join = qstr_from_str_static("join");
     q_format = qstr_from_str_static("format");
     q___build_class__ = qstr_from_str_static("__build_class__");
@@ -948,6 +1014,7 @@ void rt_init(void) {
     q_NameError = qstr_from_str_static("NameError");
     q_TypeError = qstr_from_str_static("TypeError");
     q_SyntaxError = qstr_from_str_static("SyntaxError");
+    q_ValueError = qstr_from_str_static("ValueError");
 
     py_const_none = py_obj_new_const("None");
     py_const_false = py_obj_new_const("False");
@@ -972,6 +1039,8 @@ void rt_init(void) {
     fun_str_join = rt_make_function_2(rt_str_join);
     fun_str_format = rt_make_function_var(1, rt_str_format);
     fun_list_append = rt_make_function_2(rt_list_append);
+    fun_list_pop = rt_make_function_2(rt_list_pop);
+    fun_list_sort = rt_make_function_2(rt_list_sort);
     fun_gen_instance_next = rt_make_function_1(rt_gen_instance_next);
 
 #ifdef WRITE_CODE
@@ -1278,24 +1347,6 @@ py_obj_t rt_unary_op(int op, py_obj_t arg) {
     }
     assert(0);
     return py_const_none;
-}
-
-uint get_index(py_obj_base_t *base, py_obj_t index) {
-    // assumes base is O_TUPLE or O_LIST
-    // TODO False and True are considered 0 and 1 for indexing purposes
-    int len = base->u_tuple_list.len;
-    if (IS_SMALL_INT(index)) {
-        int i = FROM_SMALL_INT(index);
-        if (i < 0) {
-            i += len;
-        }
-        if (i < 0 || i >= len) {
-            nlr_jump(py_obj_new_exception_2(q_IndexError, "%s index out of range", py_obj_get_type_str(base), NULL));
-        }
-        return i;
-    } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "%s indices must be integers, not %s", py_obj_get_type_str(base), py_obj_get_type_str(index)));
-    }
 }
 
 py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
@@ -1804,11 +1855,26 @@ bad_n_args:
     nlr_jump(py_obj_new_exception_2(q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)n_args_fun, (const char*)(machine_int_t)n_args));
 }
 
+// args are in reverse order in the array; keyword arguments come first, value then key
+// eg: (value1, key1, value0, key0, arg1, arg0)
+py_obj_t rt_call_function_n_kw(py_obj_t fun, uint n_args, uint n_kw, const py_obj_t *args) {
+    // TODO
+    assert(0);
+    return py_const_none;
+}
+
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
 // if n_args==0 then there are only self/NULL and fun
-py_obj_t rt_call_method_n(int n_args, const py_obj_t *args) {
-    DEBUG_OP_printf("call method %p(self=%p, n_args=%d)\n", args[n_args + 1], args[n_args], n_args);
+py_obj_t rt_call_method_n(uint n_args, const py_obj_t *args) {
+    DEBUG_OP_printf("call method %p(self=%p, n_args=%u)\n", args[n_args + 1], args[n_args], n_args);
     return rt_call_function_n(args[n_args + 1], n_args + ((args[n_args] == NULL) ? 0 : 1), args);
+}
+
+// args contains: kw_val(n_kw-1)  kw_key(n_kw-1) ... kw_val(0)  kw_key(0)  arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
+py_obj_t rt_call_method_n_kw(uint n_args, uint n_kw, const py_obj_t *args) {
+    uint n = n_args + 2 * n_kw;
+    DEBUG_OP_printf("call method %p(self=%p, n_args=%u, n_kw=%u)\n", args[n + 1], args[n], n_args, n_kw);
+    return rt_call_function_n_kw(args[n + 1], n_args + ((args[n] == NULL) ? 0 : 1), n_kw, args);
 }
 
 // items are in reverse order
@@ -1900,6 +1966,22 @@ py_obj_t rt_store_set(py_obj_t set, py_obj_t item) {
     return set;
 }
 
+// unpacked items are stored in order into the array pointed to by items
+void rt_unpack_sequence(py_obj_t seq_in, uint num, py_obj_t *items) {
+    if (IS_O(seq_in, O_TUPLE) || IS_O(seq_in, O_LIST)) {
+        py_obj_base_t *seq = seq_in;
+        if (seq->u_tuple_list.len < num) {
+            nlr_jump(py_obj_new_exception_2(q_ValueError, "need more than %d values to unpack", (void*)seq->u_tuple_list.len, NULL));
+        } else if (seq->u_tuple_list.len > num) {
+            nlr_jump(py_obj_new_exception_2(q_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num, NULL));
+        }
+        memcpy(items, seq->u_tuple_list.items, num * sizeof(py_obj_t));
+    } else {
+        // TODO call rt_getiter and extract via rt_iternext
+        nlr_jump(py_obj_new_exception_2(q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(seq_in), NULL));
+    }
+}
+
 py_obj_t rt_build_map(int n_args) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_MAP;
@@ -1925,6 +2007,10 @@ py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %s\n", qstr_str(attr));
     if (IS_O(base, O_LIST) && attr == q_append) {
         return build_bound_method(base, fun_list_append);
+    } else if (IS_O(base, O_LIST) && attr == q_pop) {
+        return build_bound_method(base, fun_list_pop);
+    } else if (IS_O(base, O_LIST) && attr == q_sort) {
+        return build_bound_method(base, fun_list_sort);
     } else if (IS_O(base, O_CLASS)) {
         py_obj_base_t *o = base;
         py_map_elem_t *elem = py_qstr_map_lookup(o->u_class.locals, attr, false);
@@ -1975,6 +2061,14 @@ void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
         return;
     } else if (IS_O(base, O_LIST) && attr == q_append) {
         dest[1] = fun_list_append;
+        dest[0] = base;
+        return;
+    } else if (IS_O(base, O_LIST) && attr == q_pop) {
+        dest[1] = fun_list_pop;
+        dest[0] = base;
+        return;
+    } else if (IS_O(base, O_LIST) && attr == q_sort) {
+        dest[1] = fun_list_sort;
         dest[0] = base;
         return;
     } else if (IS_O(base, O_OBJ)) {
