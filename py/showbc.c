@@ -52,12 +52,10 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_CONST_ID %s", qstr_str(qstr));
                 break;
 
-                /*
             case PYBC_LOAD_CONST_STRING:
                 DECODE_QSTR;
-                PUSH(rt_load_const_str(qstr));
+                printf("LOAD_CONST_STRING %s", qstr_str(qstr));
                 break;
-                */
 
             case PYBC_LOAD_FAST_0:
                 printf("LOAD_FAST_0");
@@ -71,12 +69,10 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_FAST_2");
                 break;
 
-                /*
             case PYBC_LOAD_FAST_N:
                 DECODE_UINT;
-                PUSH(fastn[unum]);
+                printf("LOAD_FAST_N %lu", unum);
                 break;
-                */
 
             case PYBC_LOAD_NAME:
                 DECODE_QSTR;
@@ -114,12 +110,10 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("STORE_FAST_2");
                 break;
 
-                /*
             case PYBC_STORE_FAST_N:
                 DECODE_UINT;
-                fastn[unum] = POP();
+                printf("STORE_FAST_N %lu", unum);
                 break;
-                */
 
             case PYBC_STORE_NAME:
                 DECODE_QSTR;
@@ -138,23 +132,20 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("STORE_ATTR %s", qstr_str(qstr));
                 break;
 
-                /*
             case PYBC_STORE_SUBSCR:
-                rt_store_subscr(sp[1], sp[0], sp[2]);
-                sp += 3;
+                printf("STORE_SUBSCR");
                 break;
 
+                /*
             case PYBC_DUP_TOP:
                 obj1 = *sp;
                 PUSH(obj1);
                 break;
+                */
 
             case PYBC_DUP_TOP_TWO:
-                sp -= 2;
-                sp[0] = sp[2];
-                sp[1] = sp[3];
+                printf("DUP_TOP_TWO");
                 break;
-                */
 
             case PYBC_POP_TOP:
                 printf("POP_TOP");
@@ -166,14 +157,11 @@ void py_show_byte_code(const byte *ip, int len) {
                 sp[0] = sp[1];
                 sp[1] = obj1;
                 break;
+                */
 
             case PYBC_ROT_THREE:
-                obj1 = sp[0];
-                sp[0] = sp[1];
-                sp[1] = sp[2];
-                sp[2] = obj1;
+                printf("ROT_THREE");
                 break;
-                */
 
             case PYBC_JUMP:
                 DECODE_SLABEL;
@@ -185,14 +173,12 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("POP_JUMP_IF_TRUE %lu", ip + unum - ip_start);
                 break;
 
-                /*
             case PYBC_POP_JUMP_IF_FALSE:
                 DECODE_SLABEL;
-                if (!rt_is_true(POP())) {
-                    ip += unum;
-                }
+                printf("POP_JUMP_IF_FALSE %lu", ip + unum - ip_start);
                 break;
 
+                /*
             case PYBC_JUMP_IF_TRUE_OR_POP:
                 DECODE_SLABEL;
                 if (rt_is_true(*sp)) {
@@ -225,22 +211,18 @@ void py_show_byte_code(const byte *ip, int len) {
                 // else error
                 assert(0);
                 break;
+                */
 
             case PYBC_GET_ITER:
-                *sp = rt_getiter(*sp);
+                printf("GET_ITER");
                 break;
 
             case PYBC_FOR_ITER:
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                obj1 = rt_iternext(*sp);
-                if (obj1 == py_const_stop_iteration) {
-                    ++sp; // pop the exhausted iterator
-                    ip += unum; // jump to after for-block
-                } else {
-                    PUSH(obj1); // push the next iteration value
-                }
+                printf("FOR_ITER %lu", ip + unum - ip_start);
                 break;
 
+                /*
             case PYBC_POP_BLOCK:
                 // pops block and restores the stack
                 assert(0);
@@ -272,21 +254,17 @@ void py_show_byte_code(const byte *ip, int len) {
                 printf("COMPARE_OP %lu", unum);
                 break;
 
-                /*
             case PYBC_BUILD_TUPLE:
                 DECODE_UINT;
-                obj1 = rt_build_tuple(unum, sp);
-                sp += unum - 1;
-                *sp = obj1;
+                printf("BUILD_TUPLE %lu", unum);
                 break;
 
             case PYBC_BUILD_LIST:
                 DECODE_UINT;
-                obj1 = rt_build_list(unum, sp);
-                sp += unum - 1;
-                *sp = obj1;
+                printf("BUILD_LIST %lu", unum);
                 break;
 
+                /*
             case PYBC_LIST_APPEND:
                 DECODE_UINT;
                 // I think it's guaranteed by the compiler that sp[unum] is a list
@@ -326,6 +304,11 @@ void py_show_byte_code(const byte *ip, int len) {
                 break;
                 */
 
+            case PYBC_UNPACK_SEQUENCE:
+                DECODE_UINT;
+                printf("UNPACK_SEQUENCE %lu", unum);
+                break;
+
             case PYBC_MAKE_FUNCTION:
                 DECODE_UINT;
                 printf("MAKE_FUNCTION %lu", unum);
@@ -333,16 +316,12 @@ void py_show_byte_code(const byte *ip, int len) {
 
             case PYBC_CALL_FUNCTION:
                 DECODE_UINT;
-                assert((unum & 0xff00) == 0); // n_keyword
-                unum &= 0xff; // n_positional
-                printf("CALL_FUNCTION %lu", unum);
+                printf("CALL_FUNCTION n=%lu nkw=%lu", unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
             case PYBC_CALL_METHOD:
                 DECODE_UINT;
-                assert((unum & 0xff00) == 0); // n_keyword
-                unum &= 0xff;
-                printf("CALL_METHOD %lu", unum);
+                printf("CALL_METHOD n=%lu nkw=%lu", unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
             case PYBC_RETURN_VALUE:
