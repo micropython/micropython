@@ -992,8 +992,13 @@ py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name)
     return o;
 }
 
-py_obj_t py_builtin_range(py_obj_t o_arg) {
-    return py_obj_new_range(0, py_obj_get_int(o_arg), 1);
+py_obj_t py_builtin_range(int n_args, const py_obj_t* args) {
+    switch (n_args) {
+        case 1: return py_obj_new_range(0, py_obj_get_int(args[0]), 1);
+        case 2: return py_obj_new_range(py_obj_get_int(args[0]), py_obj_get_int(args[1]), 1);
+        case 3: return py_obj_new_range(py_obj_get_int(args[0]), py_obj_get_int(args[1]), py_obj_get_int(args[2]));
+        default: nlr_jump(py_obj_new_exception_2(q_TypeError, "range expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args, NULL));
+    }
 }
 
 #ifdef WRITE_CODE
@@ -1031,7 +1036,7 @@ void rt_init(void) {
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
     py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_1(py_builtin_range);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, py_builtin_range);
 
     next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
     unique_codes = NULL;
