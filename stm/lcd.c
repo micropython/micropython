@@ -163,6 +163,11 @@ py_obj_t lcd_pix_show(void) {
     return py_const_none;
 }
 
+py_obj_t lcd_print(py_obj_t text) {
+    lcd_print_str(qstr_str(py_obj_get_qstr(text)));
+    return py_const_none;
+}
+
 void lcd_init(void) {
     // set the outputs high
     PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN;
@@ -221,6 +226,7 @@ void lcd_init(void) {
     rt_store_attr(m, qstr_from_str_static("set"), rt_make_function_2(lcd_pix_set));
     rt_store_attr(m, qstr_from_str_static("reset"), rt_make_function_2(lcd_pix_reset));
     rt_store_attr(m, qstr_from_str_static("show"), rt_make_function_0(lcd_pix_show));
+    rt_store_attr(m, qstr_from_str_static("text"), rt_make_function_1(lcd_print));
     rt_store_name(qstr_from_str_static("lcd"), m);
 }
 
