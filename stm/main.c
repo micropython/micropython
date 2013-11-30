@@ -24,9 +24,9 @@
 #include "timer.h"
 #include "audio.h"
 
-static FATFS fatfs0;
-
 extern uint32_t _heap_start;
+
+static FATFS fatfs0;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -376,9 +376,12 @@ void do_repl(void) {
                 py_obj_t module_fun = rt_make_function_from_id(1);
                 if (module_fun != py_const_none) {
                     nlr_buf_t nlr;
+                    uint32_t start = sys_tick_counter;
                     if (nlr_push(&nlr) == 0) {
                         rt_call_function_0(module_fun);
                         nlr_pop();
+                        uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+                        printf("(took %lu ms)\n", ticks);
                     } else {
                         // uncaught exception
                         py_obj_print((py_obj_t)nlr.ret_val);
@@ -468,7 +471,9 @@ void servo_init(void) {
     // TIM2 clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
-    // GPIOC Configuration: TIM2_CH3 (PB10)
+    // for PB10
+    /*
+    // GPIOB Configuration: TIM2_CH3 (PB10)
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -479,6 +484,25 @@ void servo_init(void) {
 
     // Connect TIM2 pins to AF1
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_TIM2);
+    */
+
+    // for PA0, PA1, PA2, PA3
+    {
+        // GPIOA Configuration: TIM2_CH0, TIM2_CH1 (PA0, PA1)
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+        // Connect TIM2 pins to AF1
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_TIM2);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM2);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM2);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_TIM2);
+    }
 
     // Compute the prescaler value so TIM2 runs at 100kHz
     uint16_t PrescalerValue = (uint16_t) ((SystemCoreClock / 2) / 100000) - 1;
@@ -491,16 +515,22 @@ void servo_init(void) {
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 
-    // PWM1 Mode configuration: Channel1
+    // PWM Mode configuration
     TIM_OCInitTypeDef TIM_OCInitStructure;
     TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_Pulse = 150; // units of 10us
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-    TIM_OC3Init(TIM2, &TIM_OCInitStructure);
+    TIM_OC1Init(TIM2, &TIM_OCInitStructure); // channel 1
+    TIM_OC2Init(TIM2, &TIM_OCInitStructure); // channel 2
+    TIM_OC3Init(TIM2, &TIM_OCInitStructure); // channel 3
+    TIM_OC4Init(TIM2, &TIM_OCInitStructure); // channel 4
 
     // ?
-    TIM_OC3PreloadConfig(TIM2, TIM_OCPreload_Enable);
+    TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 1
+    TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 2
+    TIM_OC3PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 3
+    TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 4
 
     // ?
     TIM_ARRPreloadConfig(TIM2, ENABLE);
@@ -509,11 +539,17 @@ void servo_init(void) {
     TIM_Cmd(TIM2, ENABLE);
 }
 
-py_obj_t pyb_servo_set(py_obj_t value) {
+py_obj_t pyb_servo_set(py_obj_t port, py_obj_t value) {
+    int p = py_obj_get_int(port);
     int v = py_obj_get_int(value);
     if (v < 100) { v = 100; }
     if (v > 200) { v = 200; }
-    TIM2->CCR3 = v;
+    switch (p) {
+        case 1: TIM2->CCR1 = v; break;
+        case 2: TIM2->CCR2 = v; break;
+        case 3: TIM2->CCR3 = v; break;
+        case 4: TIM2->CCR4 = v; break;
+    }
     return py_const_none;
 }
 
@@ -527,19 +563,33 @@ py_obj_t pyb_pwm_set(py_obj_t period, py_obj_t pulse) {
 
 #define MMA_ADDR (0x4c)
 
+int mma_buf[12];
+
 py_obj_t pyb_mma_read(void) {
+    for (int i = 0; i <= 6; i += 3) {
+        mma_buf[0 + i] = mma_buf[0 + i + 3];
+        mma_buf[1 + i] = mma_buf[1 + i + 3];
+        mma_buf[2 + i] = mma_buf[2 + i + 3];
+    }
+
     mma_start(MMA_ADDR, 1);
     mma_send_byte(0);
     mma_restart(MMA_ADDR, 0);
-    py_obj_t data[4];
-    for (int i = 3; i >= 1; i--) {
+    for (int i = 0; i <= 2; i++) {
         int v = mma_read_ack() & 0x3f;
         if (v & 0x20) {
             v |= ~0x1f;
         }
-        data[i] = py_obj_new_int(v);
+        mma_buf[9 + i] = v;
     }
-    data[0] = py_obj_new_int(mma_read_nack());
+    int jolt_info = mma_read_nack();
+
+    py_obj_t data[4];
+    data[0] = py_obj_new_int(jolt_info);
+    data[1] = py_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
+    data[2] = py_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
+    data[3] = py_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+
     return rt_build_tuple(4, data); // items in reverse order in data
 }
 
@@ -742,7 +792,7 @@ soft_reset:
     rt_init();
 
     // LCD init
-    lcd_init();
+    //lcd_init(); disabled while servos on PA0 PA1
 
     // servo
     servo_init();
@@ -770,7 +820,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
-        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_1(pyb_servo_set));
+        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
         rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
@@ -1126,7 +1176,7 @@ soft_reset:
     // SD card testing
     if (1) {
         extern void sdio_init(void);
-        sdio_init();
+        //sdio_init();
     }
 
     printf("PYB: sync filesystems\n");
