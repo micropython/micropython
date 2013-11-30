@@ -14,21 +14,21 @@ SRC_C = \
 	main.c \
 	printf.c \
 	system_stm32f4xx.c \
+	stm32fxxx_it.c \
+	string0.c \
+	malloc0.c \
+	systick.c  \
+	lexerstm.c \
 	led.c \
 	lcd.c \
 	flash.c \
 	storage.c \
 	mma.c \
-	string0.c \
-	malloc0.c \
-	systick.c  \
-	stm32fxxx_it.c \
 	usart.c \
 	usb.c \
-	sdio.c \
 	timer.c \
 	audio.c \
-	lexerstm.c \
+	sdio.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -62,6 +62,7 @@ SRC_FATFS = \
 SRC_STM = \
 	stm32f4xx_rcc.c \
 	stm32f4xx_syscfg.c \
+	stm_misc.c \
 	stm32f4xx_flash.c \
 	stm32f4xx_dma.c \
 	stm32f4xx_gpio.c \
@@ -74,7 +75,6 @@ SRC_STM = \
 	stm32f4xx_spi.c \
 	stm32f4xx_dac.c \
 	stm32f4xx_rng.c \
-	stm_misc.c \
 	usb_core.c \
 	usb_dcd.c \
 	usb_dcd_int.c \
