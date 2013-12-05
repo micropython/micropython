@@ -266,4 +266,26 @@ void TIM6_DAC_IRQHandler(void) {
     }
 }
 
+#include "std.h"
+#include "led.h"
+// EXTI, for cc3000 on A14
+void EXTI15_10_IRQHandler(void) {
+    // work out if it's A14 that had the interrupt
+    if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
+        led_toggle(PYB_LED_G2);
+        extern void SpiIntGPIOHandler(void);
+        extern uint32_t exti14_enabled;
+        extern uint32_t exti14_missed;
+        //printf("-> EXTI14 en=%lu miss=%lu\n", exti14_enabled, exti14_missed);
+        if (exti14_enabled) {
+            exti14_missed = 0;
+            SpiIntGPIOHandler(); // CC3000 interrupt
+        } else {
+            exti14_missed = 1;
+        }
+        EXTI_ClearITPendingBit(EXTI_Line14);
+        //printf("<- EXTI14 done\n");
+    }
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

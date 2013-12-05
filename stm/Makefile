@@ -1,5 +1,6 @@
 STMSRC=lib
 FATFSSRC=fatfs
+CC3KSRC=cc3k
 PYSRC=../py
 BUILD=build
 
@@ -29,6 +30,7 @@ SRC_C = \
 	timer.c \
 	audio.c \
 	sdio.c \
+	pybwlan.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -94,7 +96,19 @@ SRC_STM = \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o))
+SRC_CC3K = \
+	cc3000_common.c \
+	evnt_handler.c \
+	hci.c \
+	netapp.c \
+	nvmem.c \
+	security.c \
+	socket.c \
+	wlan.c \
+	ccspi.c \
+	pybcc3k.c \
+
+OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o) $(SRC_CC3K:.c=.o))
 
 all: $(BUILD) $(BUILD)/flash.dfu
 
@@ -124,6 +138,9 @@ $(BUILD)/%.o: $(FATFSSRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(STMSRC)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/%.o: $(CC3KSRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(PYSRC)/%.s

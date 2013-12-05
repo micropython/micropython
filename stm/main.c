@@ -23,6 +23,9 @@
 #include "ff.h"
 #include "timer.h"
 #include "audio.h"
+#include "pybwlan.h"
+
+int errno;
 
 extern uint32_t _heap_start;
 
@@ -778,7 +781,8 @@ int main(void) {
     // more sub-system init
     sw_init();
     storage_init();
-    usart_init();
+
+    //usart_init(); disabled while wi-fi is enabled
 
     int first_soft_reset = true;
 
@@ -1159,6 +1163,10 @@ soft_reset:
             sys_tick_delay_ms(15);
         }
     }
+
+    // wifi
+    pyb_wlan_init();
+    pyb_wlan_start();
 
     do_repl();
 
