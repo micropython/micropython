@@ -33,10 +33,12 @@ void sys_tick_wait_at_least(uint32_t stc, uint32_t delay_ms) {
     if (stc_wait < stc) {
         // stc_wait wrapped around
         while (stc <= sys_tick_counter || sys_tick_counter < stc_wait) {
+            __WFI(); // enter sleep mode, waiting for interrupt
         }
     } else {
         // stc_wait did not wrap around
         while (stc <= sys_tick_counter && sys_tick_counter < stc_wait) {
+            __WFI(); // enter sleep mode, waiting for interrupt
         }
     }
 }
