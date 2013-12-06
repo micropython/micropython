@@ -127,6 +127,44 @@ py_obj_t pyb_led(py_obj_t state) {
     return state;
 }
 
+py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2);
+void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2);
+void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2);
+
+py_obj_t led_obj_on(py_obj_t self) {
+    machine_uint_t led_id;
+    py_user_get_data(self, &led_id, NULL);
+    switch (led_id) {
+        case 1: led_state(PYB_LED_G1, 1); break;
+        case 2: led_state(PYB_LED_G2, 1); break;
+    }
+    return py_const_none;
+}
+
+py_obj_t led_obj_off(py_obj_t self) {
+    machine_uint_t led_id;
+    py_user_get_data(self, &led_id, NULL);
+    switch (led_id) {
+        case 1: led_state(PYB_LED_G1, 0); break;
+        case 2: led_state(PYB_LED_G2, 0); break;
+    }
+    return py_const_none;
+}
+
+const py_user_info_t led_obj_info = {
+    "Led",
+    NULL, // print
+    {
+        {"on", 0, led_obj_on},
+        {"off", 0, led_obj_off},
+        {NULL, 0, NULL},
+    }
+};
+
+py_obj_t pyb_Led(py_obj_t led_id) {
+    return py_obj_new_user(&led_obj_info, (machine_uint_t)py_obj_get_int(led_id), 0);
+}
+
 py_obj_t pyb_sw(void) {
     if (sw_get()) {
         return py_const_true;
@@ -749,6 +787,9 @@ py_obj_t pyb_rng_get(void) {
 int main(void) {
     // TODO disable JTAG
 
+    // update the SystemCoreClock variable
+    SystemCoreClockUpdate();
+
     // set interrupt priority config to use all 4 bits for pre-empting
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
@@ -833,6 +874,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
         rt_store_attr(m, qstr_from_str_static("rng"), rt_make_function_0(pyb_rng_get));
+        rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
@@ -841,14 +883,28 @@ soft_reset:
     // print a message to the LCD
     lcd_print_str(" micro py board\n");
 
+    // check if user switch held (initiates reset of filesystem)
+    bool reset_filesystem = false;
+    if (sw_get()) {
+        reset_filesystem = true;
+        for (int i = 0; i < 50; i++) {
+            if (!sw_get()) {
+                reset_filesystem = false;
+                break;
+            }
+            sys_tick_delay_ms(10);
+        }
+    }
+
     // local filesystem init
     {
         // try to mount the flash
         FRESULT res = f_mount(&fatfs0, "0:", 1);
-        if (res == FR_OK) {
+        if (!reset_filesystem && res == FR_OK) {
             // mount sucessful
-        } else if (res == FR_NO_FILESYSTEM) {
+        } else if (reset_filesystem || res == FR_NO_FILESYSTEM) {
             // no filesystem, so create a fresh one
+            // TODO doesn't seem to work correctly when reset_filesystem is true...
 
             // LED on to indicate creation of LFS
             led_state(PYB_LED_R2, 1);
@@ -1165,8 +1221,8 @@ soft_reset:
     }
 
     // wifi
-    pyb_wlan_init();
-    pyb_wlan_start();
+    //pyb_wlan_init();
+    //pyb_wlan_start();
 
     do_repl();
 
