@@ -19,6 +19,8 @@
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
 #define PUSH(val) *--sp = (val)
 #define POP() (*sp++)
+#define TOP() (*sp)
+#define SET_TOP(val) *sp = (val)
 
 // args are in reverse order in array
 py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args, uint n_state) {
@@ -130,7 +132,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_LOAD_ATTR:
                         DECODE_QSTR;
-                        *sp = rt_load_attr(*sp, qstr);
+                        SET_TOP(rt_load_attr(TOP(), qstr));
                         break;
 
                     case PYBC_LOAD_METHOD:
@@ -182,7 +184,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         break;
 
                     case PYBC_DUP_TOP:
-                        obj1 = *sp;
+                        obj1 = TOP();
                         PUSH(obj1);
                         break;
 
@@ -230,7 +232,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_JUMP_IF_TRUE_OR_POP:
                         DECODE_SLABEL;
-                        if (rt_is_true(*sp)) {
+                        if (rt_is_true(TOP())) {
                             ip += unum;
                         } else {
                             sp++;
@@ -239,7 +241,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_JUMP_IF_FALSE_OR_POP:
                         DECODE_SLABEL;
-                        if (rt_is_true(*sp)) {
+                        if (rt_is_true(TOP())) {
                             sp++;
                         } else {
                             ip += unum;
@@ -269,12 +271,12 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         break;
 
                     case PYBC_GET_ITER:
-                        *sp = rt_getiter(*sp);
+                        SET_TOP(rt_getiter(TOP()));
                         break;
 
                     case PYBC_FOR_ITER:
                         DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                        obj1 = rt_iternext(*sp);
+                        obj1 = rt_iternext(TOP());
                         if (obj1 == py_const_stop_iteration) {
                             ++sp; // pop the exhausted iterator
                             ip += unum; // jump to after for-block
@@ -300,35 +302,35 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_UNARY_OP:
                         unum = *ip++;
-                        *sp = rt_unary_op(unum, *sp);
+                        SET_TOP(rt_unary_op(unum, TOP()));
                         break;
 
                     case PYBC_BINARY_OP:
                         unum = *ip++;
                         obj2 = POP();
-                        obj1 = *sp;
-                        *sp = rt_binary_op(unum, obj1, obj2);
+                        obj1 = TOP();
+                        SET_TOP(rt_binary_op(unum, obj1, obj2));
                         break;
 
                     case PYBC_COMPARE_OP:
                         unum = *ip++;
                         obj2 = POP();
-                        obj1 = *sp;
-                        *sp = rt_compare_op(unum, obj1, obj2);
+                        obj1 = TOP();
+                        SET_TOP(rt_compare_op(unum, obj1, obj2));
                         break;
 
                     case PYBC_BUILD_TUPLE:
                         DECODE_UINT;
                         obj1 = rt_build_tuple(unum, sp);
                         sp += unum - 1;
-                        *sp = obj1;
+                        SET_TOP(obj1);
                         break;
 
                     case PYBC_BUILD_LIST:
                         DECODE_UINT;
                         obj1 = rt_build_list(unum, sp);
                         sp += unum - 1;
-                        *sp = obj1;
+                        SET_TOP(obj1);
                         break;
 
                     case PYBC_LIST_APPEND:
@@ -359,7 +361,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         DECODE_UINT;
                         obj1 = rt_build_set(unum, sp);
                         sp += unum - 1;
-                        *sp = obj1;
+                        SET_TOP(obj1);
                         break;
 
                     case PYBC_SET_ADD:
@@ -400,7 +402,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                             obj1 = rt_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp);
                             sp += (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
                         }
-                        *sp = obj1;
+                        SET_TOP(obj1);
                         break;
 
                     case PYBC_RETURN_VALUE:
@@ -417,6 +419,18 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         fastn[2] = fast2;
                         *sp_in_out = sp;
                         return true;
+
+                    case PYBC_IMPORT_NAME:
+                        DECODE_QSTR;
+                        obj1 = POP();
+                        SET_TOP(rt_import_name(qstr, obj1, TOP()));
+                        break;
+
+                    case PYBC_IMPORT_FROM:
+                        DECODE_QSTR;
+                        obj1 = rt_import_from(TOP(), qstr);
+                        PUSH(obj1);
+                        break;
 
                     default:
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);

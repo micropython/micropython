@@ -145,6 +145,8 @@ void rt_store_attr(py_obj_t base, qstr attr, py_obj_t val);
 void rt_store_subscr(py_obj_t base, py_obj_t index, py_obj_t val);
 py_obj_t rt_getiter(py_obj_t o);
 py_obj_t rt_iternext(py_obj_t o);
+py_obj_t rt_import_name(qstr name, py_obj_t fromlist, py_obj_t level);
+py_obj_t rt_import_from(py_obj_t module, qstr name);
 
 // temporary way of making C modules
 py_obj_t py_module_new(void);

@@ -2216,6 +2216,39 @@ py_obj_t rt_iternext(py_obj_t o_in) {
     }
 }
 
+py_obj_t py_builtin___import__(int n, py_obj_t *args) {
+    printf("import:\n");
+    for (int i = 0; i < n; i++) {
+    printf("  ");
+    py_obj_print(args[i]);
+    printf("\n");
+    }
+    return py_const_none;
+}
+
+py_obj_t rt_import_name(qstr name, py_obj_t fromlist, py_obj_t level) {
+    // build args array
+    py_obj_t args[5];
+    args[0] = py_obj_new_str(name);
+    args[1] = py_const_none; // TODO should be globals
+    args[2] = py_const_none; // TODO should be locals
+    args[3] = fromlist;
+    args[4] = level; // must be 0; we don't yet support other values
+
+    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    return py_builtin___import__(5, args);
+}
+
+py_obj_t rt_import_from(py_obj_t module, qstr name) {
+    py_obj_t x = rt_load_attr(module, name);
+    /* TODO convert AttributeError to ImportError
+    if (fail) {
+        (ImportError, "cannot import name %s", qstr_str(name), NULL)
+    }
+    */
+    return x;
+}
+
 // these must correspond to the respective enum
 void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_load_const_dec,

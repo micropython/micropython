@@ -90,9 +90,9 @@
 #define PYBC_CALL_METHOD_KW     (0x98) // uint
 #define PYBC_CALL_METHOD_VAR_KW (0x99) // uint
 
-#define PYBC_IMPORT_NAME (0xe0)
-#define PYBC_IMPORT_FROM (0xe1)
-#define PYBC_IMPORT_STAR (0xe2)
+#define PYBC_IMPORT_NAME        (0xe0) // qstr
+#define PYBC_IMPORT_FROM        (0xe1) // qstr
+#define PYBC_IMPORT_STAR        (0xe2)
 
 py_obj_t py_execute_byte_code(const byte *code, const py_obj_t *args, uint n_args, uint n_state);
 bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **sp_in_out);

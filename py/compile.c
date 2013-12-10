@@ -1168,18 +1168,30 @@ void compile_import_name(compiler_t *comp, py_parse_node_struct_t *pns) {
 
 void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
     if (PY_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], PY_TOKEN_OP_STAR)) {
-        EMIT(load_const_small_int, 0); // what's this for??
+        EMIT(load_const_small_int, 0); // level 0 for __import__
+
+        // build the "fromlist" tuple
+#if MICROPY_EMIT_CPYTHON
         EMIT(load_const_verbatim_start);
         EMIT(load_const_verbatim_str, "('*',)");
         EMIT(load_const_verbatim_end);
+#else
+        EMIT(load_const_str, qstr_from_str_static("*"), false);
+        EMIT(build_tuple, 1);
+#endif
+
+        // do the import
         qstr dummy_q, id1;
         do_import_name(comp, pns->nodes[0], &dummy_q, &id1);
         EMIT(import_star);
+
     } else {
+        EMIT(load_const_small_int, 0); // level 0 for __import__
+
+        // build the "fromlist" tuple
         py_parse_node_t *pn_nodes;
         int n = list_get(&pns->nodes[1], PN_import_as_names, &pn_nodes);
-
-        EMIT(load_const_small_int, 0); // what's this for??
+#if MICROPY_EMIT_CPYTHON
         EMIT(load_const_verbatim_start);
         EMIT(load_const_verbatim_str, "(");
         for (int i = 0; i < n; i++) {
@@ -1198,6 +1210,17 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
         }
         EMIT(load_const_verbatim_str, ")");
         EMIT(load_const_verbatim_end);
+#else
+        for (int i = 0; i < n; i++) {
+            assert(PY_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
+            py_parse_node_struct_t *pns3 = (py_parse_node_struct_t*)pn_nodes[i];
+            qstr id2 = PY_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
+            EMIT(load_const_str, id2, false);
+        }
+        EMIT(build_tuple, n);
+#endif
+
+        // do the import
         qstr dummy_q, id1;
         do_import_name(comp, pns->nodes[0], &dummy_q, &id1);
         for (int i = 0; i < n; i++) {
