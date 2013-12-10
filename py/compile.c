@@ -717,13 +717,19 @@ void c_assign(compiler_t *comp, py_parse_node_t pn, assign_kind_t assign_kind) {
 // stuff for lambda and comprehensions and generators
 void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_params, int n_default_params) {
     // make closed over variables, if any
+    // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
     if (comp->scope_cur->kind != SCOPE_MODULE) {
-        for (int i = 0; i < this_scope->id_info_len; i++) {
-            id_info_t *id_info = &this_scope->id_info[i];
-            if (id_info->kind == ID_INFO_KIND_FREE) {
-                EMIT(load_closure, id_info->qstr, id_info->local_num);
-                nfree += 1;
+        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
+            id_info_t *id = &comp->scope_cur->id_info[i];
+            if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
+                for (int j = 0; j < this_scope->id_info_len; j++) {
+                    id_info_t *id2 = &this_scope->id_info[j];
+                    if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
+                        EMIT(load_closure, id->qstr, id->local_num);
+                        nfree += 1;
+                    }
+                }
             }
         }
     }
@@ -2836,7 +2842,9 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
 void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals
     // compute num_locals, and the index of each local
+    // compute the index of free and cell vars (freevars[idx] in CPython)
     scope->num_locals = 0;
+    int num_closed = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (scope->kind == SCOPE_CLASS && id->qstr == comp->qstr___class__) {
@@ -2849,10 +2857,15 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         if (id->param || id->kind == ID_INFO_KIND_LOCAL) {
             id->local_num = scope->num_locals;
             scope->num_locals += 1;
+        } else if (id->kind == ID_INFO_KIND_CELL) {
+            id->local_num = num_closed;
+            num_closed += 1;
+        } else if (id->kind == ID_INFO_KIND_FREE) {
+            id_info_t *id_parent = scope_find_local_in_parent(scope, id->qstr);
+            assert(id_parent != NULL); // should never be NULL
+            id->local_num = id_parent->local_num;
         }
     }
-
-    // TODO compute the index of free and cell vars (freevars[idx] in CPython)
 
     // compute flags
     //scope->flags = 0; since we set some things in parameters
