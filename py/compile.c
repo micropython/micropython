@@ -2050,18 +2050,36 @@ void compile_power_dbl_star(compiler_t *comp, py_parse_node_struct_t *pns) {
 
 void compile_atom_string(compiler_t *comp, py_parse_node_struct_t *pns) {
     // a list of strings
-    EMIT(load_const_verbatim_start);
-    EMIT(load_const_verbatim_str, "'");
+
+    // check type of list (string or bytes) and count total number of bytes
     int n = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
+    int n_bytes = 0;
+    int string_kind = PY_PARSE_NODE_NULL;
     for (int i = 0; i < n; i++) {
-        // TODO allow concatenation of either strings or bytes, but not mixed
         assert(PY_PARSE_NODE_IS_LEAF(pns->nodes[i]));
-        assert(PY_PARSE_NODE_LEAF_KIND(pns->nodes[i]) == PY_PARSE_NODE_STRING);
+        int pn_kind = PY_PARSE_NODE_LEAF_KIND(pns->nodes[i]);
+        assert(pn_kind == PY_PARSE_NODE_STRING || pn_kind == PY_PARSE_NODE_BYTES);
+        if (i == 0) {
+            string_kind = pn_kind;
+        } else if (pn_kind != string_kind) {
+            printf("SyntaxError: cannot mix bytes and nonbytes literals\n");
+            return;
+        }
         const char *str = qstr_str(PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-        EMIT(load_const_verbatim_strn, str, strlen(str));
+        n_bytes += strlen(str);
     }
-    EMIT(load_const_verbatim_str, "'");
-    EMIT(load_const_verbatim_end);
+
+    // allocate memory for concatenated string/bytes
+    char *cat_str = m_new(char, n_bytes + 1);
+    cat_str[0] = '\0';
+
+    // concatenate string/bytes
+    for (int i = 0; i < n; i++) {
+        const char *str = qstr_str(PY_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+        strcat(cat_str, str);
+    }
+
+    EMIT(load_const_str, qstr_from_str_take(cat_str), string_kind == PY_PARSE_NODE_BYTES);
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
