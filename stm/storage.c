@@ -2,6 +2,7 @@
 #include "std.h"
 
 #include "misc.h"
+#include "systick.h"
 #include "led.h"
 #include "flash.h"
 #include "storage.h"
@@ -17,6 +18,7 @@ static uint32_t cache_flash_sector_id;
 static uint32_t cache_flash_sector_start;
 static uint32_t cache_flash_sector_size;
 static bool cache_dirty;
+static uint32_t sys_tick_counter_last_write;
 
 static void cache_flush(void) {
     if (cache_dirty) {
@@ -50,6 +52,7 @@ void storage_init(void) {
         cache_flash_sector_id = 0;
         cache_dirty = false;
         is_initialised = true;
+        sys_tick_counter_last_write = 0;
     }
 }
 
@@ -59,6 +62,11 @@ uint32_t storage_get_block_size(void) {
 
 uint32_t storage_get_block_count(void) {
     return FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS;
+}
+
+bool storage_needs_flush(void) {
+    // wait 2 seconds after last write to flush
+    return cache_dirty && sys_tick_has_passed(sys_tick_counter_last_write, 2000);
 }
 
 void storage_flush(void) {
@@ -143,6 +151,7 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * BLOCK_SIZE;
         uint8_t *dest = cache_get_addr_for_write(flash_addr);
         memcpy(dest, src, BLOCK_SIZE);
+        sys_tick_counter_last_write = sys_tick_counter;
         return true;
 
     } else {
