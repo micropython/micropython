@@ -688,6 +688,17 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
 #endif
 }
 
+static void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
+    // not implemented
+    // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
+    assert(0);
+}
+
+static void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
+    // not implemented
+    assert(0);
+}
+
 static void emit_native_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_LOAD_NAME, rt_load_name, qstr, REG_ARG_1);
@@ -698,17 +709,6 @@ static void emit_native_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_LOAD_GLOBAL, rt_load_global, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-}
-
-static void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
-    // not implemented
-    // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
-    assert(0);
-}
-
-static void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    // not implemented
-    assert(0);
 }
 
 static void emit_native_load_attr(emit_t *emit, qstr qstr) {
@@ -771,6 +771,11 @@ static void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
+static void emit_native_store_deref(emit_t *emit, qstr qstr, int local_num) {
+    // not implemented
+    assert(0);
+}
+
 static void emit_native_store_name(emit_t *emit, qstr qstr) {
     // rt_store_name, but needs conversion of object (maybe have rt_viper_store_name(obj, type))
     vtype_kind_t vtype;
@@ -781,11 +786,6 @@ static void emit_native_store_name(emit_t *emit, qstr qstr) {
 }
 
 static void emit_native_store_global(emit_t *emit, qstr qstr) {
-    // not implemented
-    assert(0);
-}
-
-static void emit_native_store_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     assert(0);
 }
@@ -825,6 +825,11 @@ static void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(0);
 }
 
+static void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
+    // not supported
+    assert(0);
+}
+
 static void emit_native_delete_name(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_name
@@ -834,11 +839,6 @@ static void emit_native_delete_name(emit_t *emit, qstr qstr) {
 static void emit_native_delete_global(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_global
-    assert(0);
-}
-
-static void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    // not supported
     assert(0);
 }
 
@@ -1280,24 +1280,24 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_verbatim_quoted_str,
     emit_native_load_const_verbatim_end,
     emit_native_load_fast,
-    emit_native_load_name,
-    emit_native_load_global,
     emit_native_load_deref,
     emit_native_load_closure,
+    emit_native_load_name,
+    emit_native_load_global,
     emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
     emit_native_store_fast,
+    emit_native_store_deref,
     emit_native_store_name,
     emit_native_store_global,
-    emit_native_store_deref,
     emit_native_store_attr,
     emit_native_store_subscr,
     emit_native_store_locals,
     emit_native_delete_fast,
+    emit_native_delete_deref,
     emit_native_delete_name,
     emit_native_delete_global,
-    emit_native_delete_deref,
     emit_native_delete_attr,
     emit_native_delete_subscr,
     emit_native_dup_top,

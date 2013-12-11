@@ -43,6 +43,7 @@ typedef enum {
     O_FLOAT,
     O_COMPLEX,
 #endif
+    O_CELL,
     O_EXCEPTION_0,
     O_EXCEPTION_N,
     O_RANGE,
@@ -57,6 +58,7 @@ typedef enum {
     O_GEN_WRAP,
     O_GEN_INSTANCE,
     O_BOUND_METH,
+    O_CLOSURE,
     O_TUPLE,
     O_LIST,
     O_TUPLE_IT,
@@ -101,6 +103,7 @@ struct _py_obj_base_t {
             py_float_t imag;
         } u_complex;
 #endif
+        py_obj_t u_cell; // for O_CELL
         struct { // for O_EXCEPTION_0
             qstr id;
         } u_exc0;
@@ -148,6 +151,10 @@ struct _py_obj_base_t {
             py_obj_t meth;
             py_obj_t self;
         } u_bound_meth;
+        struct { // for O_CLOSURE
+            py_obj_t fun;
+            py_obj_t vars;
+        } u_closure;
         struct { // for O_TUPLE, O_LIST
             machine_uint_t alloc;
             machine_uint_t len;
@@ -382,6 +389,13 @@ py_obj_t py_obj_new_complex(py_float_t real, py_float_t imag) {
 }
 #endif
 
+py_obj_t py_obj_new_cell(py_obj_t val) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_CELL;
+    o->u_cell = val;
+    return (py_obj_t)o;
+}
+
 py_obj_t py_obj_new_exception_0(qstr id) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_EXCEPTION_0;
@@ -582,6 +596,23 @@ qstr py_obj_get_qstr(py_obj_t arg) {
     } else {
         assert(0);
         return 0;
+    }
+}
+
+py_obj_t py_obj_get_cell(py_obj_t cell) {
+    if (IS_O(cell, O_CELL)) {
+        return ((py_obj_base_t*)cell)->u_cell;
+    } else {
+        assert(0);
+        return py_const_none;
+    }
+}
+
+void py_obj_set_cell(py_obj_t cell, py_obj_t val) {
+    if (IS_O(cell, O_CELL)) {
+        ((py_obj_base_t*)cell)->u_cell = val;
+    } else {
+        assert(0);
     }
 }
 
@@ -879,6 +910,7 @@ typedef struct _py_code_t {
     py_code_kind_t kind;
     int n_args;
     int n_locals;
+    int n_cells;
     int n_stack;
     bool is_generator;
     union {
@@ -1078,19 +1110,20 @@ static void alloc_unique_codes(void) {
     }
 }
 
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_cells, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
     assert(unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = PY_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = n_locals;
+    unique_codes[unique_code_id].n_cells = n_cells;
     unique_codes[unique_code_id].n_stack = n_stack;
     unique_codes[unique_code_id].is_generator = is_generator;
     unique_codes[unique_code_id].u_byte.code = code;
     unique_codes[unique_code_id].u_byte.len = len;
 
-    printf("byte code: %d bytes\n", len);
+    //printf("byte code: %d bytes\n", len);
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d\n", unique_code_id, code, len, n_args);
@@ -1120,6 +1153,7 @@ void rt_assign_native_code(int unique_code_id, py_fun_t fun, uint len, int n_arg
     unique_codes[unique_code_id].kind = PY_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
+    unique_codes[unique_code_id].n_cells = 0;
     unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_native.fun = fun;
@@ -1153,6 +1187,7 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
     unique_codes[unique_code_id].kind = PY_CODE_INLINE_ASM;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
+    unique_codes[unique_code_id].n_cells = 0;
     unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
@@ -1562,7 +1597,7 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
         case PY_CODE_BYTE:
             o->kind = O_FUN_BC;
             o->u_fun_bc.n_args = c->n_args;
-            o->u_fun_bc.n_state = c->n_locals + c->n_stack;
+            o->u_fun_bc.n_state = c->n_locals + c->n_cells + c->n_stack;
             o->u_fun_bc.code = c->u_byte.code;
             break;
         case PY_CODE_NATIVE:
@@ -1588,7 +1623,7 @@ py_obj_t rt_make_function_from_id(int unique_code_id) {
         py_obj_base_t *o2 = m_new(py_obj_base_t, 1);
         o2->kind = O_GEN_WRAP;
         // we have at least 3 locals so the bc can write back fast[0,1,2] safely; should improve how this is done
-        o2->u_gen_wrap.n_state = (c->n_locals < 3 ? 3 : c->n_locals) + c->n_stack;
+        o2->u_gen_wrap.n_state = ((c->n_locals + c->n_cells) < 3 ? 3 : (c->n_locals + c->n_cells)) + c->n_stack;
         o2->u_gen_wrap.fun = o;
         o = o2;
     }
@@ -1632,6 +1667,16 @@ py_obj_t rt_make_function_var(int n_fixed_args, py_fun_var_t f) {
     o->u_fun.n_args = n_fixed_args;
     o->u_fun.fun = f;
     return o;
+}
+
+py_obj_t rt_make_closure_from_id(int unique_code_id, py_obj_t closure_tuple) {
+    py_obj_t f = rt_make_function_from_id(unique_code_id);
+    // wrap function in closure object
+    py_obj_base_t *f2 = m_new(py_obj_base_t, 1);
+    f2->kind = O_CLOSURE;
+    f2->u_closure.fun = f;
+    f2->u_closure.vars = closure_tuple;
+    return f2;
 }
 
 py_obj_t rt_call_function_0(py_obj_t fun) {

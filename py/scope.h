@@ -11,7 +11,10 @@ typedef struct _id_info_t {
     bool param;
     int kind;
     qstr qstr;
-    int local_num; // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
+
+    // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
+    // whet it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
+    int local_num;
 } id_info_t;
 
 // taken from python source, Include/code.h
@@ -46,6 +49,7 @@ typedef struct _scope_t {
     int num_dict_params;
     */
     int num_locals;
+    int num_cells;
     int stack_size;
     uint unique_code_id;
     uint emit_options;

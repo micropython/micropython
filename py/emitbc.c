@@ -75,7 +75,7 @@ static void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new(byte, emit->code_size);
 
     } else if (emit->pass == PASS_3) {
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->num_cells, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
     }
 }
 
@@ -302,6 +302,16 @@ static void emit_bc_load_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
+static void emit_bc_load_deref(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_uint(emit, PYBC_LOAD_DEREF, local_num);
+}
+
+static void emit_bc_load_closure(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 1);
+    emit_write_byte_1_uint(emit, PYBC_LOAD_CLOSURE, local_num);
+}
+
 static void emit_bc_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_NAME, qstr);
@@ -310,16 +320,6 @@ static void emit_bc_load_name(emit_t *emit, qstr qstr) {
 static void emit_bc_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 1);
     emit_write_byte_1_qstr(emit, PYBC_LOAD_GLOBAL, qstr);
-}
-
-static void emit_bc_load_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 1);
-    assert(0);
-}
-
-static void emit_bc_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 1);
-    assert(0);
 }
 
 static void emit_bc_load_attr(emit_t *emit, qstr qstr) {
@@ -348,6 +348,11 @@ static void emit_bc_store_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
+static void emit_bc_store_deref(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, -1);
+    emit_write_byte_1_uint(emit, PYBC_STORE_DEREF, local_num);
+}
+
 static void emit_bc_store_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_STORE_NAME, qstr);
@@ -356,11 +361,6 @@ static void emit_bc_store_name(emit_t *emit, qstr qstr) {
 static void emit_bc_store_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1);
     emit_write_byte_1_qstr(emit, PYBC_STORE_GLOBAL, qstr);
-}
-
-static void emit_bc_store_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, -1);
-    assert(0);
 }
 
 static void emit_bc_store_attr(emit_t *emit, qstr qstr) {
@@ -385,6 +385,11 @@ static void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     emit_write_byte_1_uint(emit, PYBC_DELETE_FAST_N, local_num);
 }
 
+static void emit_bc_delete_deref(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 0);
+    emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, local_num);
+}
+
 static void emit_bc_delete_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_NAME, qstr);
@@ -393,12 +398,6 @@ static void emit_bc_delete_name(emit_t *emit, qstr qstr) {
 static void emit_bc_delete_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0);
     emit_write_byte_1_qstr(emit, PYBC_DELETE_GLOBAL, qstr);
-}
-
-static void emit_bc_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 0);
-    assert(0);
-    //emit_write_byte_1_qstr(emit, PYBC_DELETE_DEREF, qstr);
 }
 
 static void emit_bc_delete_attr(emit_t *emit, qstr qstr) {
@@ -612,11 +611,9 @@ static void emit_bc_make_function(emit_t *emit, scope_t *scope, int n_dict_param
 }
 
 static void emit_bc_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
-    assert(0);
-    emit_pre(emit, -2 - n_default_params - 2 * n_dict_params);
-    if (emit->pass == PASS_3) {
-        printf("MAKE_CLOSURE %d\n", (n_dict_params << 8) | n_default_params);
-    }
+    assert(n_default_params == 0 && n_dict_params == 0);
+    emit_pre(emit, 0);
+    emit_write_byte_1_uint(emit, PYBC_MAKE_CLOSURE, scope->unique_code_id);
 }
 
 static void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
@@ -728,24 +725,24 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_verbatim_quoted_str,
     emit_bc_load_const_verbatim_end,
     emit_bc_load_fast,
-    emit_bc_load_name,
-    emit_bc_load_global,
     emit_bc_load_deref,
     emit_bc_load_closure,
+    emit_bc_load_name,
+    emit_bc_load_global,
     emit_bc_load_attr,
     emit_bc_load_method,
     emit_bc_load_build_class,
     emit_bc_store_fast,
+    emit_bc_store_deref,
     emit_bc_store_name,
     emit_bc_store_global,
-    emit_bc_store_deref,
     emit_bc_store_attr,
     emit_bc_store_subscr,
     emit_bc_store_locals,
     emit_bc_delete_fast,
+    emit_bc_delete_deref,
     emit_bc_delete_name,
     emit_bc_delete_global,
-    emit_bc_delete_deref,
     emit_bc_delete_attr,
     emit_bc_delete_subscr,
     emit_bc_dup_top,

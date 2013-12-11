@@ -120,6 +120,16 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                         PUSH(fastn[unum]);
                         break;
 
+                    case PYBC_LOAD_DEREF:
+                        DECODE_UINT;
+                        PUSH(py_obj_get_cell(fastn[unum]));
+                        break;
+
+                    case PYBC_LOAD_CLOSURE:
+                        DECODE_UINT;
+                        PUSH(fastn[unum]);
+                        break;
+
                     case PYBC_LOAD_NAME:
                         DECODE_QSTR;
                         PUSH(rt_load_name(qstr));
@@ -160,6 +170,11 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                     case PYBC_STORE_FAST_N:
                         DECODE_UINT;
                         fastn[unum] = POP();
+                        break;
+
+                    case PYBC_STORE_DEREF:
+                        DECODE_UINT;
+                        py_obj_set_cell(fastn[unum], POP());
                         break;
 
                     case PYBC_STORE_NAME:
@@ -380,6 +395,12 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
                     case PYBC_MAKE_FUNCTION:
                         DECODE_UINT;
                         PUSH(rt_make_function_from_id(unum));
+                        break;
+
+                    case PYBC_MAKE_CLOSURE:
+                        DECODE_UINT;
+                        obj1 = POP();
+                        PUSH(rt_make_closure_from_id(unum, obj1));
                         break;
 
                     case PYBC_CALL_FUNCTION:

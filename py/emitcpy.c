@@ -265,20 +265,6 @@ static void emit_cpy_load_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
-static void emit_cpy_load_name(emit_t *emit, qstr qstr) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_NAME %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_load_global(emit_t *emit, qstr qstr) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
 static void emit_cpy_load_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
@@ -290,6 +276,20 @@ static void emit_cpy_load_closure(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_CLOSURE %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
+static void emit_cpy_load_name(emit_t *emit, qstr qstr) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == PASS_3) {
+        printf("LOAD_NAME %s\n", qstr_str(qstr));
+    }
+}
+
+static void emit_cpy_load_global(emit_t *emit, qstr qstr) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == PASS_3) {
+        printf("LOAD_GLOBAL %s\n", qstr_str(qstr));
     }
 }
 
@@ -318,6 +318,13 @@ static void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
+static void emit_cpy_store_deref(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, -1, 3);
+    if (emit->pass == PASS_3) {
+        printf("STORE_DEREF %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
 static void emit_cpy_store_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
@@ -329,13 +336,6 @@ static void emit_cpy_store_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("STORE_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_store_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, -1, 3);
-    if (emit->pass == PASS_3) {
-        printf("STORE_DEREF %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
@@ -367,6 +367,13 @@ static void emit_cpy_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
+static void emit_cpy_delete_deref(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 0, 3);
+    if (emit->pass == PASS_3) {
+        printf("DELETE_DEREF %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
 static void emit_cpy_delete_name(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
@@ -378,13 +385,6 @@ static void emit_cpy_delete_global(emit_t *emit, qstr qstr) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("DELETE_GLOBAL %s\n", qstr_str(qstr));
-    }
-}
-
-static void emit_cpy_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 0, 3);
-    if (emit->pass == PASS_3) {
-        printf("DELETE_DEREF %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
@@ -852,24 +852,24 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_const_verbatim_quoted_str,
     emit_cpy_load_const_verbatim_end,
     emit_cpy_load_fast,
-    emit_cpy_load_name,
-    emit_cpy_load_global,
     emit_cpy_load_deref,
     emit_cpy_load_closure,
+    emit_cpy_load_name,
+    emit_cpy_load_global,
     emit_cpy_load_attr,
     emit_cpy_load_method,
     emit_cpy_load_build_class,
     emit_cpy_store_fast,
+    emit_cpy_store_deref,
     emit_cpy_store_name,
     emit_cpy_store_global,
-    emit_cpy_store_deref,
     emit_cpy_store_attr,
     emit_cpy_store_subscr,
     emit_cpy_store_locals,
     emit_cpy_delete_fast,
+    emit_cpy_delete_deref,
     emit_cpy_delete_name,
     emit_cpy_delete_global,
-    emit_cpy_delete_deref,
     emit_cpy_delete_attr,
     emit_cpy_delete_subscr,
     emit_cpy_dup_top,

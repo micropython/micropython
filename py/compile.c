@@ -2842,9 +2842,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
 void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals
     // compute num_locals, and the index of each local
-    // compute the index of free and cell vars (freevars[idx] in CPython)
     scope->num_locals = 0;
-    int num_closed = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (scope->kind == SCOPE_CLASS && id->qstr == comp->qstr___class__) {
@@ -2854,16 +2852,47 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
+        // note: params always count for 1 local, even if they are a cell
         if (id->param || id->kind == ID_INFO_KIND_LOCAL) {
             id->local_num = scope->num_locals;
             scope->num_locals += 1;
-        } else if (id->kind == ID_INFO_KIND_CELL) {
+        }
+    }
+
+    // compute the index of cell vars (freevars[idx] in CPython)
+    int num_closed = 0;
+    for (int i = 0; i < scope->id_info_len; i++) {
+        id_info_t *id = &scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
             id->local_num = num_closed;
+#if !MICROPY_EMIT_CPYTHON
+            // the cells come right after the fast locals (CPython doesn't add this offset)
+            id->local_num += scope->num_locals;
+#endif
             num_closed += 1;
-        } else if (id->kind == ID_INFO_KIND_FREE) {
-            id_info_t *id_parent = scope_find_local_in_parent(scope, id->qstr);
-            assert(id_parent != NULL); // should never be NULL
-            id->local_num = id_parent->local_num;
+        }
+    }
+    scope->num_cells = num_closed;
+
+    // compute the index of free vars (freevars[idx] in CPython)
+    // make sure they are in the order of the parent scope
+    if (scope->parent != NULL) {
+        int num_free = 0;
+        for (int i = 0; i < scope->parent->id_info_len; i++) {
+            id_info_t *id = &scope->parent->id_info[i];
+            if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
+                for (int j = 0; j < scope->id_info_len; j++) {
+                    id_info_t *id2 = &scope->id_info[j];
+                    if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
+                        id2->local_num = num_closed + num_free;
+#if !MICROPY_EMIT_CPYTHON
+                        // the frees come right after the cells (CPython doesn't add this offset)
+                        id2->local_num += scope->num_locals;
+#endif
+                        num_free += 1;
+                    }
+                }
+            }
         }
     }
 

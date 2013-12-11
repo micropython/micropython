@@ -94,18 +94,23 @@ extern py_obj_t py_const_stop_iteration; // special object indicating end of ite
 void rt_init(void);
 void rt_deinit(void);
 int rt_get_unique_code_id(bool is_main_module);
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_cells, int n_stack, bool is_generator);
 void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void py_obj_print(py_obj_t o);
 
 py_obj_t py_obj_new_int(machine_int_t value);
 py_obj_t py_obj_new_str(qstr qstr);
+py_obj_t py_obj_new_cell(py_obj_t val);
 
 int rt_is_true(py_obj_t arg);
 machine_int_t py_obj_get_int(py_obj_t arg);
 machine_float_t py_obj_get_float(py_obj_t arg);
 qstr py_obj_get_qstr(py_obj_t arg);
+
+py_obj_t py_obj_get_cell(py_obj_t cell);
+void py_obj_set_cell(py_obj_t cell, py_obj_t val);
+
 py_obj_t *py_obj_get_array_fixed_n(py_obj_t o, machine_int_t n);
 
 py_obj_t rt_load_const_dec(qstr qstr);
@@ -124,6 +129,7 @@ py_obj_t rt_make_function_1(py_fun_1_t f);
 py_obj_t rt_make_function_2(py_fun_2_t f);
 py_obj_t rt_make_function(int n_args, py_fun_t code);
 py_obj_t rt_make_function_var(int n_fixed_args, py_fun_var_t f);
+py_obj_t rt_make_closure_from_id(int unique_code_id, py_obj_t closure_tuple);
 py_obj_t rt_call_function_0(py_obj_t fun);
 py_obj_t rt_call_function_1(py_obj_t fun, py_obj_t arg);
 py_obj_t rt_call_function_2(py_obj_t fun, py_obj_t arg1, py_obj_t arg2);

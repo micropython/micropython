@@ -12,25 +12,28 @@
 #define PYBC_LOAD_FAST_1        (0x21)
 #define PYBC_LOAD_FAST_2        (0x22)
 #define PYBC_LOAD_FAST_N        (0x23) // uint
-#define PYBC_LOAD_NAME          (0x24) // qstr
-#define PYBC_LOAD_GLOBAL        (0x25) // qstr
-#define PYBC_LOAD_ATTR          (0x26) // qstr
-#define PYBC_LOAD_METHOD        (0x27) // qstr
-#define PYBC_LOAD_BUILD_CLASS   (0x28)
+#define PYBC_LOAD_DEREF         (0x24) // uint
+#define PYBC_LOAD_CLOSURE       (0x25) // uint
+#define PYBC_LOAD_NAME          (0x26) // qstr
+#define PYBC_LOAD_GLOBAL        (0x27) // qstr
+#define PYBC_LOAD_ATTR          (0x28) // qstr
+#define PYBC_LOAD_METHOD        (0x29) // qstr
+#define PYBC_LOAD_BUILD_CLASS   (0x2a)
 
 #define PYBC_STORE_FAST_0       (0x30)
 #define PYBC_STORE_FAST_1       (0x31)
 #define PYBC_STORE_FAST_2       (0x32)
 #define PYBC_STORE_FAST_N       (0x33) // uint
-#define PYBC_STORE_NAME         (0x34) // qstr
-#define PYBC_STORE_GLOBAL       (0x35) // qstr
-#define PYBC_STORE_ATTR         (0x36) // qstr
-#define PYBC_STORE_SUBSCR       (0x37)
+#define PYBC_STORE_DEREF        (0x34) // uint
+#define PYBC_STORE_NAME         (0x35) // qstr
+#define PYBC_STORE_GLOBAL       (0x36) // qstr
+#define PYBC_STORE_ATTR         (0x37) // qstr
+#define PYBC_STORE_SUBSCR       (0x38)
 
 #define PYBC_DELETE_FAST_N      (0x39) // uint
-#define PYBC_DELETE_NAME        (0x3a) // qstr
-#define PYBC_DELETE_GLOBAL      (0x3b) // qstr
-#define PYBC_DELETE_DEREF       (0x3c) // qstr
+#define PYBC_DELETE_DEREF       (0x3a) // uint
+#define PYBC_DELETE_NAME        (0x3b) // qstr
+#define PYBC_DELETE_GLOBAL      (0x3c) // qstr
 #define PYBC_DELETE_ATTR        (0x3d) // qstr
 #define PYBC_DELETE_SUBSCR      (0x3e)
 
@@ -80,7 +83,7 @@
 #define PYBC_YIELD_FROM         (0x83)
 
 #define PYBC_MAKE_FUNCTION      (0x90) // uint
-#define PYBC_MAKE_CLOSURE       (0x91) // uint?
+#define PYBC_MAKE_CLOSURE       (0x91) // uint
 #define PYBC_CALL_FUNCTION      (0x92) // uint
 #define PYBC_CALL_FUNCTION_VAR  (0x93) // uint
 #define PYBC_CALL_FUNCTION_KW   (0x94) // uint

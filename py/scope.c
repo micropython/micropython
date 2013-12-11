@@ -52,6 +52,7 @@ scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id, u
     scope->num_dict_params = 0;
     */
     scope->num_locals = 0;
+    scope->num_cells = 0;
     scope->unique_code_id = unique_code_id;
     scope->emit_options = emit_options;
 
