@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
+#include <stm32f4xx_syscfg.h>
 #include <stm32f4xx_gpio.h>
+#include <stm32f4xx_exti.h>
 #include <stm32f4xx_tim.h>
 #include <stm32f4xx_pwr.h>
 #include <stm32f4xx_rtc.h>
@@ -68,6 +70,30 @@ void sw_init(void) {
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_Init(PYB_USRSW_PORT, &GPIO_InitStructure);
+
+    // the rest does the EXTI interrupt
+
+    /* Enable SYSCFG clock */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
+    /* Connect EXTI Line13 to PA13 pin */
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource13);
+
+    /* Configure EXTI Line13, rising edge */
+    EXTI_InitTypeDef EXTI_InitStructure;
+    EXTI_InitStructure.EXTI_Line = EXTI_Line13;
+    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStructure);
+
+    /* Enable and set EXTI15_10 Interrupt to the lowest priority */
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 }
 
 int sw_get(void) {
@@ -173,6 +199,34 @@ py_obj_t pyb_sw(void) {
     }
 }
 
+py_obj_t servo_obj_angle(py_obj_t self, py_obj_t angle) {
+    machine_uint_t servo_id;
+    py_user_get_data(self, &servo_id, NULL);
+    machine_int_t v = 152 + 85.0 * py_obj_get_float(angle) / 90.0;
+    if (v < 65) { v = 65; }
+    if (v > 210) { v = 210; }
+    switch (servo_id) {
+        case 1: TIM2->CCR1 = v; break;
+        case 2: TIM2->CCR2 = v; break;
+        case 3: TIM2->CCR3 = v; break;
+        case 4: TIM2->CCR4 = v; break;
+    }
+    return py_const_none;
+}
+
+const py_user_info_t servo_obj_info = {
+    "Servo",
+    NULL, // print
+    {
+        {"angle", 1, servo_obj_angle},
+        {NULL, 0, NULL},
+    }
+};
+
+py_obj_t pyb_Servo(py_obj_t servo_id) {
+    return py_obj_new_user(&servo_obj_info, (machine_uint_t)py_obj_get_int(servo_id), 0);
+}
+
 /*
 void g(uint i) {
     printf("g:%d\n", i);
@@ -272,6 +326,51 @@ static py_obj_t pyb_info(void) {
     return py_const_none;
 }
 
+static void SYSCLKConfig_STOP(void) {
+    /* After wake-up from STOP reconfigure the system clock */
+    /* Enable HSE */
+    RCC_HSEConfig(RCC_HSE_ON);
+
+    /* Wait till HSE is ready */
+    while (RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET) {
+    }
+
+    /* Enable PLL */
+    RCC_PLLCmd(ENABLE);
+
+    /* Wait till PLL is ready */
+    while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET) {
+    }
+
+    /* Select PLL as system clock source */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+
+    /* Wait till PLL is used as system clock source */
+    while (RCC_GetSYSCLKSource() != 0x08) {
+    }
+}
+
+static py_obj_t pyb_stop(void) {
+    PWR_EnterSTANDBYMode();
+    //PWR_FlashPowerDownCmd(ENABLE); don't know what the logic is with this
+
+    /* Enter Stop Mode */
+    PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
+
+    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select 
+     *        PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+    SYSCLKConfig_STOP();
+
+    //PWR_FlashPowerDownCmd(DISABLE);
+
+    return py_const_none;
+}
+
+static py_obj_t pyb_standby(void) {
+    PWR_EnterSTANDBYMode();
+    return py_const_none;
+}
+
 py_obj_t pyb_usart_send(py_obj_t data) {
     usart_tx_char(py_obj_get_int(data));
     return py_const_none;
@@ -322,6 +421,9 @@ int readline(vstr_t *line, const char *prompt) {
                 break;
             }
             sys_tick_delay_ms(1);
+            if (storage_needs_flush()) {
+                storage_flush();
+            }
         }
         if (escape == 0) {
             if (c == 4 && vstr_len(line) == len) {
@@ -422,7 +524,7 @@ void do_repl(void) {
                         rt_call_function_0(module_fun);
                         nlr_pop();
                         uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-                        printf("(took %lu ms)\n", ticks);
+                        //printf("(took %lu ms)\n", ticks);
                     } else {
                         // uncaught exception
                         py_obj_print((py_obj_t)nlr.ret_val);
@@ -583,8 +685,8 @@ void servo_init(void) {
 py_obj_t pyb_servo_set(py_obj_t port, py_obj_t value) {
     int p = py_obj_get_int(port);
     int v = py_obj_get_int(value);
-    if (v < 100) { v = 100; }
-    if (v > 200) { v = 200; }
+    if (v < 50) { v = 50; }
+    if (v > 250) { v = 250; }
     switch (p) {
         case 1: TIM2->CCR1 = v; break;
         case 2: TIM2->CCR2 = v; break;
@@ -843,13 +945,13 @@ soft_reset:
     servo_init();
 
     // audio
-    audio_init();
+    //audio_init();
 
     // timer
     timer_init();
 
     // RNG
-    {
+    if (0) {
         RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
         RNG_Cmd(ENABLE);
     }
@@ -858,6 +960,8 @@ soft_reset:
     {
         py_obj_t m = py_module_new();
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
+        rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
+        rt_store_attr(m, qstr_from_str_static("standby"), rt_make_function_0(pyb_standby));
         rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
         rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
         rt_store_attr(m, qstr_from_str_static("sync"), rt_make_function_0(pyb_sync));
@@ -875,6 +979,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
         rt_store_attr(m, qstr_from_str_static("rng"), rt_make_function_0(pyb_rng_get));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
+        rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));

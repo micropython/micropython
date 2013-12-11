@@ -268,8 +268,15 @@ void TIM6_DAC_IRQHandler(void) {
 
 #include "std.h"
 #include "led.h"
-// EXTI, for cc3000 on A14
+// EXTI
+// for USRSW on A13
+// for cc3000 on A14
 void EXTI15_10_IRQHandler(void) {
+    // work out if it's A13 that had the interrupt
+    if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
+        // this is used just to wake the device
+        EXTI_ClearITPendingBit(EXTI_Line13);
+    }
     // work out if it's A14 that had the interrupt
     if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
         led_toggle(PYB_LED_G2);
