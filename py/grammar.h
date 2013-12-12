@@ -6,7 +6,7 @@
 // #       single_input is a single interactive statement;
 // #       file_input is a module or sequence of commands read from an input file;
 // #       eval_input is the input for the eval() functions.
-// # NB: compound_stmt in single_input is followed by extra NEWLINE! --> not in Micropython
+// # NB: compound_stmt in single_input is followed by extra NEWLINE! --> not in Micro Python
 // single_input: NEWLINE | simple_stmt | compound_stmt
 // file_input: (NEWLINE | stmt)* ENDMARKER
 // eval_input: testlist NEWLINE* ENDMARKER

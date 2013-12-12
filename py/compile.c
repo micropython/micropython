@@ -2646,10 +2646,21 @@ void check_for_doc_string(compiler_t *comp, py_parse_node_t pn) {
 
     // look for the first statement
     if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_expr_stmt)) {
-        // fall through
+        // a statement; fall through
     } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_file_input_2)) {
-        pn = ((py_parse_node_struct_t*)pn)->nodes[0];
+        // file input; find the first non-newline node
+        py_parse_node_struct_t *pns = (py_parse_node_struct_t*)pn;
+        int num_nodes = PY_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        for (int i = 0; i < num_nodes; i++) {
+            pn = pns->nodes[i];
+            if (!(PY_PARSE_NODE_IS_LEAF(pn) && PY_PARSE_NODE_LEAF_KIND(pn) == PY_PARSE_NODE_TOKEN && PY_PARSE_NODE_LEAF_ARG(pn) == PY_TOKEN_NEWLINE)) {
+                // not a newline, so this is the first statement; finish search
+                break;
+            }
+        }
+        // if we didn't find a non-newline then it's okay to fall through; pn will be a newline and so doc-string test below will fail gracefully
     } else if (PY_PARSE_NODE_IS_STRUCT_KIND(pn, PN_suite_block_stmts)) {
+        // a list of statements; get the first one
         pn = ((py_parse_node_struct_t*)pn)->nodes[0];
     } else {
         return;
