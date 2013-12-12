@@ -282,21 +282,61 @@ static bool cpython_c_tuple_is_const(py_parse_node_t pn) {
     return true;
 }
 
-static void cpython_c_tuple_emit_const(compiler_t *comp, py_parse_node_t pn) {
+static void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
+    const char *str = qstr_str(qstr);
+    int len = strlen(str);
+    bool has_single_quote = false;
+    bool has_double_quote = false;
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\'') {
+            has_single_quote = true;
+        } else if (str[i] == '"') {
+            has_double_quote = true;
+        }
+    }
+    if (bytes) {
+        vstr_printf(vstr, "b");
+    }
+    bool quote_single = false;
+    if (has_single_quote && !has_double_quote) {
+        vstr_printf(vstr, "\"");
+    } else {
+        quote_single = true;
+        vstr_printf(vstr, "'");
+    }
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\n') {
+            vstr_printf(vstr, "\\n");
+        } else if (str[i] == '\\') {
+            vstr_printf(vstr, "\\\\");
+        } else if (str[i] == '\'' && quote_single) {
+            vstr_printf(vstr, "\\'");
+        } else {
+            vstr_printf(vstr, "%c", str[i]);
+        }
+    }
+    if (has_single_quote && !has_double_quote) {
+        vstr_printf(vstr, "\"");
+    } else {
+        vstr_printf(vstr, "'");
+    }
+}
+
+static void cpython_c_tuple_emit_const(compiler_t *comp, py_parse_node_t pn, vstr_t *vstr) {
     assert(PY_PARSE_NODE_IS_LEAF(pn));
     int arg = PY_PARSE_NODE_LEAF_ARG(pn);
     switch (PY_PARSE_NODE_LEAF_KIND(pn)) {
         case PY_PARSE_NODE_ID: assert(0);
-        case PY_PARSE_NODE_SMALL_INT: EMIT(load_const_verbatim_int, arg); break;
-        case PY_PARSE_NODE_INTEGER: EMIT(load_const_verbatim_str, qstr_str(arg)); break;
-        case PY_PARSE_NODE_DECIMAL: EMIT(load_const_verbatim_str, qstr_str(arg)); break;
-        case PY_PARSE_NODE_STRING: EMIT(load_const_verbatim_quoted_str, arg, false); break;
-        case PY_PARSE_NODE_BYTES: EMIT(load_const_verbatim_quoted_str, arg, true); break;
+        case PY_PARSE_NODE_SMALL_INT: vstr_printf(vstr, "%d", arg); break;
+        case PY_PARSE_NODE_INTEGER: vstr_printf(vstr, "%s", qstr_str(arg)); break;
+        case PY_PARSE_NODE_DECIMAL: vstr_printf(vstr, "%s", qstr_str(arg)); break;
+        case PY_PARSE_NODE_STRING: cpython_c_print_quoted_str(vstr, arg, false); break;
+        case PY_PARSE_NODE_BYTES: cpython_c_print_quoted_str(vstr, arg, true); break;
         case PY_PARSE_NODE_TOKEN:
             switch (arg) {
-                case PY_TOKEN_KW_FALSE: EMIT(load_const_verbatim_str, "False"); break;
-                case PY_TOKEN_KW_NONE: EMIT(load_const_verbatim_str, "None"); break;
-                case PY_TOKEN_KW_TRUE: EMIT(load_const_verbatim_str, "True"); break;
+                case PY_TOKEN_KW_FALSE: vstr_printf(vstr, "False"); break;
+                case PY_TOKEN_KW_NONE: vstr_printf(vstr, "None"); break;
+                case PY_TOKEN_KW_TRUE: vstr_printf(vstr, "True"); break;
                 default: assert(0);
             }
             break;
@@ -325,25 +365,28 @@ static void cpython_c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_
     }
     if (total > 0 && is_const) {
         bool need_comma = false;
-        EMIT(load_const_verbatim_start);
-        EMIT(load_const_verbatim_str, "(");
+        vstr_t *vstr = vstr_new();
+        vstr_printf(vstr, "(");
         if (!PY_PARSE_NODE_IS_NULL(pn)) {
-            cpython_c_tuple_emit_const(comp, pn);
+            cpython_c_tuple_emit_const(comp, pn, vstr);
             need_comma = true;
         }
         for (int i = 0; i < n; i++) {
             if (need_comma) {
-                EMIT(load_const_verbatim_str, ", ");
+                vstr_printf(vstr, ", ");
             }
-            cpython_c_tuple_emit_const(comp, pns_list->nodes[i]);
+            cpython_c_tuple_emit_const(comp, pns_list->nodes[i], vstr);
             need_comma = true;
         }
         if (total == 1) {
-            EMIT(load_const_verbatim_str, ",)");
+            vstr_printf(vstr, ",)");
         } else {
-            EMIT(load_const_verbatim_str, ")");
+            vstr_printf(vstr, ")");
         }
+        EMIT(load_const_verbatim_start);
+        EMIT(load_const_verbatim_str, vstr_str(vstr));
         EMIT(load_const_verbatim_end);
+        vstr_free(vstr);
     } else {
         if (!PY_PARSE_NODE_IS_NULL(pn)) {
             compile_node(comp, pn);
@@ -1198,24 +1241,29 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
         py_parse_node_t *pn_nodes;
         int n = list_get(&pns->nodes[1], PN_import_as_names, &pn_nodes);
 #if MICROPY_EMIT_CPYTHON
-        EMIT(load_const_verbatim_start);
-        EMIT(load_const_verbatim_str, "(");
-        for (int i = 0; i < n; i++) {
-            assert(PY_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
-            py_parse_node_struct_t *pns3 = (py_parse_node_struct_t*)pn_nodes[i];
-            qstr id2 = PY_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
-            if (i > 0) {
-                EMIT(load_const_verbatim_str, ", ");
+        {
+            vstr_t *vstr = vstr_new();
+            vstr_printf(vstr, "(");
+            for (int i = 0; i < n; i++) {
+                assert(PY_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
+                py_parse_node_struct_t *pns3 = (py_parse_node_struct_t*)pn_nodes[i];
+                qstr id2 = PY_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
+                if (i > 0) {
+                    vstr_printf(vstr, ", ");
+                }
+                vstr_printf(vstr, "'");
+                vstr_printf(vstr, qstr_str(id2));
+                vstr_printf(vstr, "'");
             }
-            EMIT(load_const_verbatim_str, "'");
-            EMIT(load_const_verbatim_str, qstr_str(id2));
-            EMIT(load_const_verbatim_str, "'");
+            if (n == 1) {
+                vstr_printf(vstr, ",");
+            }
+            vstr_printf(vstr, ")");
+            EMIT(load_const_verbatim_start);
+            EMIT(load_const_verbatim_str, vstr_str(vstr));
+            EMIT(load_const_verbatim_end);
+            vstr_free(vstr);
         }
-        if (n == 1) {
-            EMIT(load_const_verbatim_str, ",");
-        }
-        EMIT(load_const_verbatim_str, ")");
-        EMIT(load_const_verbatim_end);
 #else
         for (int i = 0; i < n; i++) {
             assert(PY_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
