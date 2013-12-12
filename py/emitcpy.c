@@ -28,9 +28,6 @@ struct _emit_t {
     int *label_offsets;
 };
 
-// forward declaration
-static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes);
-
 emit_t *emit_cpython_new(uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
     emit->max_num_labels = max_num_labels;
@@ -176,85 +173,59 @@ static void emit_cpy_load_const_id(emit_t *emit, qstr qstr) {
     }
 }
 
+static void print_quoted_str(qstr qstr, bool bytes) {
+    const char *str = qstr_str(qstr);
+    int len = strlen(str);
+    bool has_single_quote = false;
+    bool has_double_quote = false;
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\'') {
+            has_single_quote = true;
+        } else if (str[i] == '"') {
+            has_double_quote = true;
+        }
+    }
+    if (bytes) {
+        printf("b");
+    }
+    bool quote_single = false;
+    if (has_single_quote && !has_double_quote) {
+        printf("\"");
+    } else {
+        quote_single = true;
+        printf("'");
+    }
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\n') {
+            printf("\\n");
+        } else if (str[i] == '\\') {
+            printf("\\\\");
+        } else if (str[i] == '\'' && quote_single) {
+            printf("\\'");
+        } else {
+            printf("%c", str[i]);
+        }
+    }
+    if (has_single_quote && !has_double_quote) {
+        printf("\"");
+    } else {
+        printf("'");
+    }
+}
+
 static void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_CONST ");
-        emit_cpy_load_const_verbatim_quoted_str(emit, qstr, bytes);
+        print_quoted_str(qstr, bytes);
         printf("\n");
-    }
-}
-
-static void emit_cpy_load_const_verbatim_start(emit_t *emit) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_CONST ");
-    }
-}
-
-static void emit_cpy_load_const_verbatim_int(emit_t *emit, int val) {
-    if (emit->pass == PASS_3) {
-        printf("%d", val);
     }
 }
 
 static void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
+    emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
-        printf("%s", str);
-    }
-}
-
-static void emit_cpy_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
-    if (emit->pass == PASS_3) {
-        printf("%.*s", len, str);
-    }
-}
-
-static void emit_cpy_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
-    if (emit->pass == PASS_3) {
-        const char *str = qstr_str(qstr);
-        int len = strlen(str);
-        bool has_single_quote = false;
-        bool has_double_quote = false;
-        for (int i = 0; i < len; i++) {
-            if (str[i] == '\'') {
-                has_single_quote = true;
-            } else if (str[i] == '"') {
-                has_double_quote = true;
-            }
-        }
-        if (bytes) {
-            printf("b");
-        }
-        bool quote_single = false;
-        if (has_single_quote && !has_double_quote) {
-            printf("\"");
-        } else {
-            quote_single = true;
-            printf("'");
-        }
-        for (int i = 0; i < len; i++) {
-            if (str[i] == '\n') {
-                printf("\\n");
-            } else if (str[i] == '\\') {
-                printf("\\\\");
-            } else if (str[i] == '\'' && quote_single) {
-                printf("\\'");
-            } else {
-                printf("%c", str[i]);
-            }
-        }
-        if (has_single_quote && !has_double_quote) {
-            printf("\"");
-        } else {
-            printf("'");
-        }
-    }
-}
-
-static void emit_cpy_load_const_verbatim_end(emit_t *emit) {
-    if (emit->pass == PASS_3) {
-        printf("\n");
+        printf("LOAD_CONST %s\n", str);
     }
 }
 
@@ -845,12 +816,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_const_dec,
     emit_cpy_load_const_id,
     emit_cpy_load_const_str,
-    emit_cpy_load_const_verbatim_start,
-    emit_cpy_load_const_verbatim_int,
     emit_cpy_load_const_verbatim_str,
-    emit_cpy_load_const_verbatim_strn,
-    emit_cpy_load_const_verbatim_quoted_str,
-    emit_cpy_load_const_verbatim_end,
     emit_cpy_load_fast,
     emit_cpy_load_deref,
     emit_cpy_load_closure,

@@ -383,9 +383,7 @@ static void cpython_c_tuple(compiler_t *comp, py_parse_node_t pn, py_parse_node_
         } else {
             vstr_printf(vstr, ")");
         }
-        EMIT(load_const_verbatim_start);
         EMIT(load_const_verbatim_str, vstr_str(vstr));
-        EMIT(load_const_verbatim_end);
         vstr_free(vstr);
     } else {
         if (!PY_PARSE_NODE_IS_NULL(pn)) {
@@ -1221,9 +1219,7 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
 
         // build the "fromlist" tuple
 #if MICROPY_EMIT_CPYTHON
-        EMIT(load_const_verbatim_start);
         EMIT(load_const_verbatim_str, "('*',)");
-        EMIT(load_const_verbatim_end);
 #else
         EMIT(load_const_str, qstr_from_str_static("*"), false);
         EMIT(build_tuple, 1);
@@ -1259,9 +1255,7 @@ void compile_import_from(compiler_t *comp, py_parse_node_struct_t *pns) {
                 vstr_printf(vstr, ",");
             }
             vstr_printf(vstr, ")");
-            EMIT(load_const_verbatim_start);
             EMIT(load_const_verbatim_str, vstr_str(vstr));
-            EMIT(load_const_verbatim_end);
             vstr_free(vstr);
         }
 #else

@@ -266,28 +266,8 @@ static void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-static void emit_bc_load_const_verbatim_start(emit_t *emit) {
-    emit_pre(emit, 1);
-    assert(0);
-}
-
-static void emit_bc_load_const_verbatim_int(emit_t *emit, int val) {
-    assert(0);
-}
-
 static void emit_bc_load_const_verbatim_str(emit_t *emit, const char *str) {
-    assert(0);
-}
-
-static void emit_bc_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
-    assert(0);
-}
-
-static void emit_bc_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
-    assert(0);
-}
-
-static void emit_bc_load_const_verbatim_end(emit_t *emit) {
+    // not needed/supported for BC
     assert(0);
 }
 
@@ -718,12 +698,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_dec,
     emit_bc_load_const_id,
     emit_bc_load_const_str,
-    emit_bc_load_const_verbatim_start,
-    emit_bc_load_const_verbatim_int,
     emit_bc_load_const_verbatim_str,
-    emit_bc_load_const_verbatim_strn,
-    emit_bc_load_const_verbatim_quoted_str,
-    emit_bc_load_const_verbatim_end,
     emit_bc_load_fast,
     emit_bc_load_deref,
     emit_bc_load_closure,

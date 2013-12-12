@@ -629,32 +629,7 @@ static void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-static void emit_native_load_const_verbatim_start(emit_t *emit) {
-    // not supported/needed for viper
-    assert(0);
-}
-
-static void emit_native_load_const_verbatim_int(emit_t *emit, int val) {
-    // not supported/needed for viper
-    assert(0);
-}
-
 static void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
-    // not supported/needed for viper
-    assert(0);
-}
-
-static void emit_native_load_const_verbatim_strn(emit_t *emit, const char *str, int len) {
-    // not supported/needed for viper
-    assert(0);
-}
-
-static void emit_native_load_const_verbatim_quoted_str(emit_t *emit, qstr qstr, bool bytes) {
-    // not supported/needed for viper
-    assert(0);
-}
-
-static void emit_native_load_const_verbatim_end(emit_t *emit) {
     // not supported/needed for viper
     assert(0);
 }
@@ -1273,12 +1248,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_dec,
     emit_native_load_const_id,
     emit_native_load_const_str,
-    emit_native_load_const_verbatim_start,
-    emit_native_load_const_verbatim_int,
     emit_native_load_const_verbatim_str,
-    emit_native_load_const_verbatim_strn,
-    emit_native_load_const_verbatim_quoted_str,
-    emit_native_load_const_verbatim_end,
     emit_native_load_fast,
     emit_native_load_deref,
     emit_native_load_closure,

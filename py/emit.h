@@ -38,12 +38,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_dec)(emit_t *emit, qstr qstr);
     void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
-    void (*load_const_verbatim_start)(emit_t *emit);
-    void (*load_const_verbatim_int)(emit_t *emit, int val);
-    void (*load_const_verbatim_str)(emit_t *emit, const char *str);
-    void (*load_const_verbatim_strn)(emit_t *emit, const char *str, int len);
-    void (*load_const_verbatim_quoted_str)(emit_t *emit, qstr qstr, bool bytes);
-    void (*load_const_verbatim_end)(emit_t *emit);
+    void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
     void (*load_fast)(emit_t *emit, qstr qstr, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
     void (*load_closure)(emit_t *emit, qstr qstr, int local_num);
