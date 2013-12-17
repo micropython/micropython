@@ -2,7 +2,7 @@ PYSRC=../py
 BUILD=build
 
 CC = gcc
-CFLAGS = -I. -I$(PYSRC) -Wall -ansi -std=gnu99 -Os #-DNDEBUG
+CFLAGS = -I. -I$(PYSRC) -Wall -Werror -ansi -std=gnu99 -Os #-DNDEBUG
 LDFLAGS = -lm
 
 SRC_C = \
@@ -29,6 +29,9 @@ PY_O = \
 	emitnthumb.o \
 	emitinlinethumb.o \
 	runtime.o \
+	map.o \
+	obj.o \
+	builtin.o \
 	vm.o \
 	showbc.o \
 	repl.o \

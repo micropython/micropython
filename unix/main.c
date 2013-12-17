@@ -10,6 +10,7 @@
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
+#include "obj.h"
 #include "repl.h"
 
 #include <readline/readline.h>
