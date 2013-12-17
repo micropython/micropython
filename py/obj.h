@@ -39,6 +39,7 @@ void py_obj_print(py_obj_t o);
 bool py_obj_is_callable(py_obj_t o_in);
 machine_int_t py_obj_hash(py_obj_t o_in);
 bool py_obj_equal(py_obj_t o1, py_obj_t o2);
+bool py_obj_less(py_obj_t o1, py_obj_t o2);
 
 machine_int_t py_obj_get_int(py_obj_t arg);
 #if MICROPY_ENABLE_FLOAT

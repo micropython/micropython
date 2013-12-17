@@ -157,3 +157,5 @@ py_obj_t rt_getiter(py_obj_t o);
 py_obj_t rt_iternext(py_obj_t o);
 py_obj_t rt_import_name(qstr name, py_obj_t fromlist, py_obj_t level);
 py_obj_t rt_import_from(py_obj_t module, qstr name);
+
+py_obj_t rt_gen_instance_next(py_obj_t self_in);

@@ -128,7 +128,7 @@ bad_arg:
     nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "?str.join expecting a list of str's", NULL, NULL));
 }
 
-py_obj_t rt_str_format(int n_args, const py_obj_t* args) {
+py_obj_t rt_str_format(int n_args, const py_obj_t *args) {
     assert(IS_O(args[0], O_STR));
     py_obj_base_t *self = args[0];
 
@@ -302,12 +302,29 @@ void rt_init(void) {
     py_qstr_map_lookup(map_globals, qstr_from_str_static("__name__"), true)->value = py_obj_new_str(qstr_from_str_static("__main__"));
 
     py_map_init(&map_builtins, MAP_QSTR, 3);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_var(0, py_builtin_print);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
-    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
     py_qstr_map_lookup(&map_builtins, rt_q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(py_builtin___repl_print__);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("all"), true)->value = rt_make_function_1(py_builtin_all);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("any"), true)->value = rt_make_function_1(py_builtin_any);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("bool"), true)->value = rt_make_function_var(0, py_builtin_bool);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("callable"), true)->value = rt_make_function_1(py_builtin_callable);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("complex"), true)->value = rt_make_function_var(0, py_builtin_complex);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("chr"), true)->value = rt_make_function_1(py_builtin_chr);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("dict"), true)->value = rt_make_function_0(py_builtin_dict);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("divmod"), true)->value = rt_make_function_2(py_builtin_divmod);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("hash"), true)->value = rt_make_function_1(py_builtin_hash);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("iter"), true)->value = rt_make_function_1(py_builtin_iter);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("list"), true)->value = rt_make_function_var(0, py_builtin_list);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("max"), true)->value = rt_make_function_var(1, py_builtin_max);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("min"), true)->value = rt_make_function_var(1, py_builtin_min);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("next"), true)->value = rt_make_function_1(py_builtin_next);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("ord"), true)->value = rt_make_function_1(py_builtin_ord);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("pow"), true)->value = rt_make_function_var(2, py_builtin_pow);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_var(0, py_builtin_print);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, py_builtin_range);
+    py_qstr_map_lookup(&map_builtins, qstr_from_str_static("sum"), true)->value = rt_make_function_var(1, py_builtin_sum);
 
     next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
     unique_codes = NULL;
@@ -676,13 +693,27 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
             case RT_BINARY_OP_TRUE_DIVIDE:
             case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return py_obj_new_float((py_float_t)lhs_val / (py_float_t)rhs_val);
 #endif
+
+            // TODO implement modulo as specified by Python
+            case RT_BINARY_OP_MODULO:
+            case RT_BINARY_OP_INPLACE_MODULO: lhs_val %= rhs_val; break;
+
+            // TODO check for negative power, and overflow
             case RT_BINARY_OP_POWER:
             case RT_BINARY_OP_INPLACE_POWER:
-                // TODO
-                if (rhs_val == 2) {
-                    lhs_val = lhs_val * lhs_val;
-                    break;
+            {
+                int ans = 1;
+                while (rhs_val > 0) {
+                    if (rhs_val & 1) {
+                        ans *= lhs_val;
+                    }
+                    lhs_val *= lhs_val;
+                    rhs_val /= 2;
                 }
+                lhs_val = ans;
+                break;
+            }
+
             default: printf("%d\n", op); assert(0);
         }
         if (fit_small_int(lhs_val)) {
@@ -1454,16 +1485,6 @@ py_obj_t rt_iternext(py_obj_t o_in) {
     } else {
         nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "? '%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }
-}
-
-py_obj_t py_builtin___import__(int n, py_obj_t *args) {
-    printf("import:\n");
-    for (int i = 0; i < n; i++) {
-    printf("  ");
-    py_obj_print(args[i]);
-    printf("\n");
-    }
-    return py_const_none;
 }
 
 py_obj_t rt_import_name(qstr name, py_obj_t fromlist, py_obj_t level) {

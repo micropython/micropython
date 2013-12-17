@@ -358,6 +358,17 @@ bool py_obj_equal(py_obj_t o1, py_obj_t o2) {
     }
 }
 
+bool py_obj_less(py_obj_t o1, py_obj_t o2) {
+    if (IS_SMALL_INT(o1) && IS_SMALL_INT(o2)) {
+        py_small_int_t i1 = FROM_SMALL_INT(o1);
+        py_small_int_t i2 = FROM_SMALL_INT(o2);
+        return i1 < i2;
+    } else {
+        assert(0);
+        return false;
+    }
+}
+
 machine_int_t py_obj_get_int(py_obj_t arg) {
     if (arg == py_const_false) {
         return 0;
