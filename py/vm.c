@@ -122,7 +122,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(py_obj_get_cell(fastn[unum]));
+                        PUSH(rt_get_cell(fastn[unum]));
                         break;
 
                     case PYBC_LOAD_CLOSURE:
@@ -174,7 +174,7 @@ bool py_execute_byte_code_2(const byte **ip_in_out, py_obj_t *fastn, py_obj_t **
 
                     case PYBC_STORE_DEREF:
                         DECODE_UINT;
-                        py_obj_set_cell(fastn[unum], POP());
+                        rt_set_cell(fastn[unum], POP());
                         break;
 
                     case PYBC_STORE_NAME:

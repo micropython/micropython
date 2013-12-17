@@ -15,6 +15,11 @@
 #include "runtime.h"
 #include "bc.h"
 
+#include "map.h"
+#include "obj.h"
+#include "objprivate.h"
+#include "builtin.h"
+
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
@@ -25,180 +30,21 @@
 #define DEBUG_OP_printf(args...) (void)0
 #endif
 
-typedef machine_int_t py_small_int_t;
-
-#define IS_O(o, k) (((((py_small_int_t)(o)) & 1) == 0) && (((py_obj_base_t*)(o))->kind == (k)))
-#define IS_SMALL_INT(o) (((py_small_int_t)(o)) & 1)
-#define FROM_SMALL_INT(o) (((py_small_int_t)(o)) >> 1)
-#define TO_SMALL_INT(o) ((py_obj_t)(((o) << 1) | 1))
-
-#if MICROPY_ENABLE_FLOAT
-typedef machine_float_t py_float_t;
-#endif
-
-typedef enum {
-    O_CONST,
-    O_STR,
-#if MICROPY_ENABLE_FLOAT
-    O_FLOAT,
-    O_COMPLEX,
-#endif
-    O_CELL,
-    O_EXCEPTION_0,
-    O_EXCEPTION_N,
-    O_RANGE,
-    O_RANGE_IT,
-    O_FUN_0,
-    O_FUN_1,
-    O_FUN_2,
-    O_FUN_N,
-    O_FUN_VAR,
-    O_FUN_BC,
-    O_FUN_ASM,
-    O_GEN_WRAP,
-    O_GEN_INSTANCE,
-    O_BOUND_METH,
-    O_CLOSURE,
-    O_TUPLE,
-    O_LIST,
-    O_TUPLE_IT,
-    O_LIST_IT,
-    O_SET,
-    O_MAP,
-    O_CLASS,
-    O_OBJ,
-    O_USER,
-} py_obj_kind_t;
-
-typedef enum {
-    MAP_QSTR,
-    MAP_PY_OBJ,
-} py_map_kind_t;
-
-typedef struct _py_map_elem_t {
-    py_obj_t key;
-    py_obj_t value;
-} py_map_elem_t;
-
-typedef struct _py_map_t {
-    struct {
-        py_map_kind_t kind : 1;
-        machine_uint_t used : (8 * BYTES_PER_WORD - 1);
-    };
-    machine_uint_t alloc;
-    py_map_elem_t *table;
-} py_map_t;
-
-typedef struct _py_obj_base_t py_obj_base_t;
-
-struct _py_obj_base_t {
-    py_obj_kind_t kind;
-    union {
-        const char *id;
-        qstr u_str;
-#if MICROPY_ENABLE_FLOAT
-        py_float_t u_float; // for O_FLOAT
-        struct { // for O_COMPLEX
-            py_float_t real;
-            py_float_t imag;
-        } u_complex;
-#endif
-        py_obj_t u_cell; // for O_CELL
-        struct { // for O_EXCEPTION_0
-            qstr id;
-        } u_exc0;
-        struct { // for O_EXCEPTION_N
-            // TODO make generic object or something
-            qstr id;
-            int n_args;
-            const void **args;
-        } u_exc_n;
-        struct { // for O_RANGE
-            // TODO make generic object or something
-            machine_int_t start;
-            machine_int_t stop;
-            machine_int_t step;
-        } u_range;
-        struct { // for O_RANGE_IT
-            // TODO make generic object or something
-            machine_int_t cur;
-            machine_int_t stop;
-            machine_int_t step;
-        } u_range_it;
-        struct { // for O_FUN_[012N], O_FUN_VAR
-            int n_args;
-            void *fun;
-        } u_fun;
-        struct { // for O_FUN_BC
-            int n_args;
-            uint n_state;
-            byte *code;
-        } u_fun_bc;
-        struct { // for O_FUN_ASM
-            int n_args;
-            void *fun;
-        } u_fun_asm;
-        struct { // for O_GEN_WRAP
-            int n_state;
-            py_obj_base_t *fun;
-        } u_gen_wrap;
-        struct { // for O_GEN_INSTANCE
-            py_obj_t *state;
-            const byte *ip;
-            py_obj_t *sp;
-        } u_gen_instance;
-        struct { // for O_BOUND_METH
-            py_obj_t meth;
-            py_obj_t self;
-        } u_bound_meth;
-        struct { // for O_CLOSURE
-            py_obj_t fun;
-            py_obj_t vars;
-        } u_closure;
-        struct { // for O_TUPLE, O_LIST
-            machine_uint_t alloc;
-            machine_uint_t len;
-            py_obj_t *items;
-        } u_tuple_list;
-        struct { // for O_TUPLE_IT, O_LIST_IT
-            py_obj_base_t *obj;
-            machine_uint_t cur;
-        } u_tuple_list_it;
-        struct { // for O_SET
-            machine_uint_t alloc;
-            machine_uint_t used;
-            py_obj_t *table;
-        } u_set;
-        py_map_t u_map; // for O_MAP
-        struct { // for O_CLASS
-            py_map_t *locals;
-        } u_class;
-        struct { // for O_OBJ
-            py_obj_base_t *class; // points to a O_CLASS object
-            py_map_t *members;
-        } u_obj;
-        struct { // for O_USER
-            const py_user_info_t *info;
-            machine_uint_t data1;
-            machine_uint_t data2;
-        } u_user;
-    };
-};
-
-static qstr q_append;
-static qstr q_pop;
-static qstr q_sort;
-static qstr q_join;
-static qstr q_format;
-static qstr q___build_class__;
-static qstr q___next__;
-static qstr q_AttributeError;
-static qstr q_IndexError;
-static qstr q_KeyError;
-static qstr q_NameError;
-static qstr q_TypeError;
-static qstr q_SyntaxError;
-static qstr q_ValueError;
+// TODO make these predefined so they don't take up RAM
+qstr rt_q_append;
+qstr rt_q_pop;
+qstr rt_q_sort;
+qstr rt_q_join;
+qstr rt_q_format;
+qstr rt_q___build_class__;
+qstr rt_q___next__;
+qstr rt_q_AttributeError;
+qstr rt_q_IndexError;
+qstr rt_q_KeyError;
+qstr rt_q_NameError;
+qstr rt_q_TypeError;
+qstr rt_q_SyntaxError;
+qstr rt_q_ValueError;
 
 py_obj_t py_const_none;
 py_obj_t py_const_false;
@@ -210,311 +56,16 @@ static py_map_t *map_locals;
 static py_map_t *map_globals;
 static py_map_t map_builtins;
 
-// approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
-static int doubling_primes[] = {7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
-
-int get_doubling_prime_greater_or_equal_to(int x) {
-    for (int i = 0; i < sizeof(doubling_primes) / sizeof(int); i++) {
-        if (doubling_primes[i] >= x) {
-            return doubling_primes[i];
-        }
-    }
-    // ran out of primes in the table!
-    // return something sensible, at least make it odd
-    return x | 1;
+py_map_t *rt_get_map_locals(void) {
+    return map_locals;
 }
 
-void py_map_init(py_map_t *map, py_map_kind_t kind, int n) {
-    map->kind = kind;
-    map->used = 0;
-    map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
-    map->table = m_new0(py_map_elem_t, map->alloc);
-}
-
-py_map_t *py_map_new(py_map_kind_t kind, int n) {
-    py_map_t *map = m_new(py_map_t, 1);
-    py_map_init(map, kind, n);
-    return map;
-}
-
-machine_int_t py_obj_hash(py_obj_t o_in) {
-    if (o_in == py_const_false) {
-        return 0; // needs to hash to same as the integer 0, since False==0
-    } else if (o_in == py_const_true) {
-        return 1; // needs to hash to same as the integer 1, since True==1
-    } else if (IS_SMALL_INT(o_in)) {
-        return FROM_SMALL_INT(o_in);
-    } else if (IS_O(o_in, O_CONST)) {
-        return (machine_int_t)o_in;
-    } else if (IS_O(o_in, O_STR)) {
-        return ((py_obj_base_t*)o_in)->u_str;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-// this function implements the '==' operator (and so the inverse of '!=')
-// from the python language reference:
-// "The objects need not have the same type. If both are numbers, they are converted
-// to a common type. Otherwise, the == and != operators always consider objects of
-// different types to be unequal."
-// note also that False==0 and True==1 are true expressions
-bool py_obj_equal(py_obj_t o1, py_obj_t o2) {
-    if (o1 == o2) {
-        return true;
-    } else if (IS_SMALL_INT(o1) || IS_SMALL_INT(o2)) {
-        if (IS_SMALL_INT(o1) && IS_SMALL_INT(o2)) {
-            return false;
-        } else {
-            if (IS_SMALL_INT(o2)) {
-                py_obj_t temp = o1; o1 = o2; o2 = temp;
-            }
-            // o1 is the SMALL_INT, o2 is not
-            py_small_int_t val = FROM_SMALL_INT(o1);
-            if (o2 == py_const_false) {
-                return val == 0;
-            } else if (o2 == py_const_true) {
-                return val == 1;
-            } else {
-                return false;
-            }
-        }
-    } else if (IS_O(o1, O_STR) && IS_O(o2, O_STR)) {
-        return ((py_obj_base_t*)o1)->u_str == ((py_obj_base_t*)o2)->u_str;
-    } else {
-        assert(0);
-        return false;
-    }
-}
-
-py_map_elem_t* py_map_lookup_helper(py_map_t *map, py_obj_t index, bool add_if_not_found) {
-    bool is_map_py_obj = (map->kind == MAP_PY_OBJ);
-    machine_uint_t hash;
-    if (is_map_py_obj) {
-        hash = py_obj_hash(index);
-    } else {
-        hash = (machine_uint_t)index;
-    }
-    uint pos = hash % map->alloc;
-    for (;;) {
-        py_map_elem_t *elem = &map->table[pos];
-        if (elem->key == NULL) {
-            // not in table
-            if (add_if_not_found) {
-                if (map->used + 1 >= map->alloc) {
-                    // not enough room in table, rehash it
-                    int old_alloc = map->alloc;
-                    py_map_elem_t *old_table = map->table;
-                    map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
-                    map->used = 0;
-                    map->table = m_new0(py_map_elem_t, map->alloc);
-                    for (int i = 0; i < old_alloc; i++) {
-                        if (old_table[i].key != NULL) {
-                            py_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
-                        }
-                    }
-                    m_free(old_table);
-                    // restart the search for the new element
-                    pos = hash % map->alloc;
-                } else {
-                    map->used += 1;
-                    elem->key = index;
-                    return elem;
-                }
-            } else {
-                return NULL;
-            }
-        } else if (elem->key == index || (is_map_py_obj && py_obj_equal(elem->key, index))) {
-            // found it
-            /* it seems CPython does not replace the index; try x={True:'true'};x[1]='one';x
-            if (add_if_not_found) {
-                elem->key = index;
-            }
-            */
-            return elem;
-        } else {
-            // not yet found, keep searching in this table
-            pos = (pos + 1) % map->alloc;
-        }
-    }
-}
-
-py_map_elem_t* py_qstr_map_lookup(py_map_t *map, qstr index, bool add_if_not_found) {
-    py_obj_t o = (py_obj_t)(machine_uint_t)index;
-    return py_map_lookup_helper(map, o, add_if_not_found);
-}
-
-py_map_elem_t* py_map_lookup(py_obj_t o, py_obj_t index, bool add_if_not_found) {
-    assert(IS_O(o, O_MAP));
-    return py_map_lookup_helper(&((py_obj_base_t *)o)->u_map, index, add_if_not_found);
+void rt_set_map_locals(py_map_t *m) {
+    map_locals = m;
 }
 
 static bool fit_small_int(py_small_int_t o) {
     return true;
-}
-
-py_obj_t py_obj_new_int(machine_int_t value) {
-    return TO_SMALL_INT(value);
-}
-
-py_obj_t py_obj_new_const(const char *id) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_CONST;
-    o->id = id;
-    return (py_obj_t)o;
-}
-
-py_obj_t py_obj_new_str(qstr qstr) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_STR;
-    o->u_str = qstr;
-    return (py_obj_t)o;
-}
-
-#if MICROPY_ENABLE_FLOAT
-py_obj_t py_obj_new_float(py_float_t val) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_FLOAT;
-    o->u_float = val;
-    return (py_obj_t)o;
-}
-
-py_obj_t py_obj_new_complex(py_float_t real, py_float_t imag) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_COMPLEX;
-    o->u_complex.real = real;
-    o->u_complex.imag = imag;
-    return (py_obj_t)o;
-}
-#endif
-
-py_obj_t py_obj_new_cell(py_obj_t val) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_CELL;
-    o->u_cell = val;
-    return (py_obj_t)o;
-}
-
-py_obj_t py_obj_new_exception_0(qstr id) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_EXCEPTION_0;
-    o->u_exc0.id = id;
-    return (py_obj_t)o;
-}
-
-py_obj_t py_obj_new_exception_2(qstr id, const char *fmt, const char *s1, const char *s2) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_EXCEPTION_N;
-    o->u_exc_n.id = id;
-    o->u_exc_n.n_args = 3;
-    o->u_exc_n.args = m_new(const void*, 3);
-    o->u_exc_n.args[0] = fmt;
-    o->u_exc_n.args[1] = s1;
-    o->u_exc_n.args[2] = s2;
-    return (py_obj_t)o;
-}
-
-// range is a class and instances are immutable sequence objects
-py_obj_t py_obj_new_range(int start, int stop, int step) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_RANGE;
-    o->u_range.start = start;
-    o->u_range.stop = stop;
-    o->u_range.step = step;
-    return o;
-}
-
-py_obj_t py_obj_new_range_iterator(int cur, int stop, int step) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_RANGE_IT;
-    o->u_range_it.cur = cur;
-    o->u_range_it.stop = stop;
-    o->u_range_it.step = step;
-    return o;
-}
-
-py_obj_t py_obj_new_tuple_iterator(py_obj_base_t *tuple, int cur) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_TUPLE_IT;
-    o->u_tuple_list_it.obj = tuple;
-    o->u_tuple_list_it.cur = cur;
-    return o;
-}
-
-py_obj_t py_obj_new_list_iterator(py_obj_base_t *list, int cur) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_LIST_IT;
-    o->u_tuple_list_it.obj = list;
-    o->u_tuple_list_it.cur = cur;
-    return o;
-}
-
-py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_USER;
-    // TODO should probably parse the info to turn strings to qstr's, and wrap functions in O_FUN_N objects
-    // that'll take up some memory.  maybe we can lazily do the O_FUN_N: leave it a ptr to a C function, and
-    // only when the method is looked-up do we change that to the O_FUN_N object.
-    o->u_user.info = info;
-    o->u_user.data1 = data1;
-    o->u_user.data2 = data2;
-    return o;
-}
-
-const char *py_obj_get_type_str(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        return "int";
-    } else {
-        py_obj_base_t *o = o_in;
-        switch (o->kind) {
-            case O_CONST:
-                if (o == py_const_none) {
-                    return "NoneType";
-                } else {
-                    return "bool";
-                }
-            case O_STR:
-                return "str";
-#if MICROPY_ENABLE_FLOAT
-            case O_FLOAT:
-                return "float";
-#endif
-            case O_FUN_0:
-            case O_FUN_1:
-            case O_FUN_2:
-            case O_FUN_N:
-            case O_FUN_VAR:
-            case O_FUN_BC:
-                return "function";
-            case O_GEN_INSTANCE:
-                return "generator";
-            case O_TUPLE:
-                return "tuple";
-            case O_LIST:
-                return "list";
-            case O_TUPLE_IT:
-                return "tuple_iterator";
-            case O_LIST_IT:
-                return "list_iterator";
-            case O_SET:
-                return "set";
-            case O_MAP:
-                return "dict";
-            case O_OBJ:
-            {
-                py_map_elem_t *qn = py_qstr_map_lookup(o->u_obj.class->u_class.locals, qstr_from_str_static("__qualname__"), false);
-                assert(qn != NULL);
-                assert(IS_O(qn->value, O_STR));
-                return qstr_str(((py_obj_base_t*)qn->value)->u_str);
-            }
-            case O_USER:
-                return o->u_user.info->type_name;
-            default:
-                assert(0);
-                return "UnknownType";
-        }
-    }
 }
 
 int rt_is_true(py_obj_t arg) {
@@ -537,227 +88,11 @@ int rt_is_true(py_obj_t arg) {
     }
 }
 
-machine_int_t py_obj_get_int(py_obj_t arg) {
-    if (arg == py_const_false) {
-        return 0;
-    } else if (arg == py_const_true) {
-        return 1;
-    } else if (IS_SMALL_INT(arg)) {
-        return FROM_SMALL_INT(arg);
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-#if MICROPY_ENABLE_FLOAT
-machine_float_t py_obj_get_float(py_obj_t arg) {
-    if (arg == py_const_false) {
-        return 0;
-    } else if (arg == py_const_true) {
-        return 1;
-    } else if (IS_SMALL_INT(arg)) {
-        return FROM_SMALL_INT(arg);
-    } else if (IS_O(arg, O_FLOAT)) {
-        return ((py_obj_base_t*)arg)->u_float;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-void py_obj_get_complex(py_obj_t arg, py_float_t *real, py_float_t *imag) {
-    if (arg == py_const_false) {
-        *real = 0;
-        *imag = 0;
-    } else if (arg == py_const_true) {
-        *real = 1;
-        *imag = 0;
-    } else if (IS_SMALL_INT(arg)) {
-        *real = FROM_SMALL_INT(arg);
-        *imag = 0;
-    } else if (IS_O(arg, O_FLOAT)) {
-        *real = ((py_obj_base_t*)arg)->u_float;
-        *imag = 0;
-    } else if (IS_O(arg, O_COMPLEX)) {
-        *real = ((py_obj_base_t*)arg)->u_complex.real;
-        *imag = ((py_obj_base_t*)arg)->u_complex.imag;
-    } else {
-        assert(0);
-        *real = 0;
-        *imag = 0;
-    }
-}
-#endif
-
-qstr py_obj_get_qstr(py_obj_t arg) {
-    if (IS_O(arg, O_STR)) {
-        return ((py_obj_base_t*)arg)->u_str;
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
-py_obj_t py_obj_get_cell(py_obj_t cell) {
-    if (IS_O(cell, O_CELL)) {
-        return ((py_obj_base_t*)cell)->u_cell;
-    } else {
-        assert(0);
-        return py_const_none;
-    }
-}
-
-void py_obj_set_cell(py_obj_t cell, py_obj_t val) {
-    if (IS_O(cell, O_CELL)) {
-        ((py_obj_base_t*)cell)->u_cell = val;
-    } else {
-        assert(0);
-    }
-}
-
-py_obj_t *py_obj_get_array_fixed_n(py_obj_t o_in, machine_int_t n) {
-    if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
-        py_obj_base_t *o = o_in;
-        if (o->u_tuple_list.len != n) {
-            nlr_jump(py_obj_new_exception_2(q_IndexError, "requested length %d but object has length %d", (void*)n, (void*)o->u_tuple_list.len));
-        }
-        return o->u_tuple_list.items;
-    } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "object '%s' is not a tuple or list", py_obj_get_type_str(o_in), NULL));
-    }
-}
-
-void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2) {
-    assert(IS_O(o, O_USER));
-    if (data1 != NULL) {
-        *data1 = ((py_obj_base_t*)o)->u_user.data1;
-    }
-    if (data2 != NULL) {
-        *data2 = ((py_obj_base_t*)o)->u_user.data2;
-    }
-}
-
-void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2) {
-    assert(IS_O(o, O_USER));
-    ((py_obj_base_t*)o)->u_user.data1 = data1;
-    ((py_obj_base_t*)o)->u_user.data2 = data2;
-}
-
-void printf_wrapper(void *env, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
-
 void vstr_printf_wrapper(void *env, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vstr_vprintf(env, fmt, args);
     va_end(args);
-}
-
-void py_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        print(env, "%d", (int)FROM_SMALL_INT(o_in));
-    } else {
-        py_obj_base_t *o = o_in;
-        switch (o->kind) {
-            case O_CONST:
-                print(env, "%s", o->id);
-                break;
-            case O_STR:
-                // TODO need to escape chars etc
-                print(env, "'%s'", qstr_str(o->u_str));
-                break;
-#if MICROPY_ENABLE_FLOAT
-            case O_FLOAT:
-                print(env, "%.8g", o->u_float);
-                break;
-            case O_COMPLEX:
-                if (o->u_complex.real == 0) {
-                    print(env, "%.8gj", o->u_complex.imag);
-                } else {
-                    print(env, "(%.8g+%.8gj)", o->u_complex.real, o->u_complex.imag);
-                }
-                break;
-#endif
-            case O_EXCEPTION_0:
-                print(env, "%s", qstr_str(o->u_exc0.id));
-                break;
-            case O_EXCEPTION_N:
-                print(env, "%s: ", qstr_str(o->u_exc_n.id));
-                print(env, o->u_exc_n.args[0], o->u_exc_n.args[1], o->u_exc_n.args[2]);
-                break;
-            case O_GEN_INSTANCE:
-                print(env, "<generator object 'fun-name' at %p>", o);
-                break;
-            case O_TUPLE:
-                print(env, "(");
-                for (int i = 0; i < o->u_tuple_list.len; i++) {
-                    if (i > 0) {
-                        print(env, ", ");
-                    }
-                    py_obj_print_helper(print, env, o->u_tuple_list.items[i]);
-                }
-                if (o->u_tuple_list.len == 1) {
-                    print(env, ",");
-                }
-                print(env, ")");
-                break;
-            case O_LIST:
-                print(env, "[");
-                for (int i = 0; i < o->u_tuple_list.len; i++) {
-                    if (i > 0) {
-                        print(env, ", ");
-                    }
-                    py_obj_print_helper(print, env, o->u_tuple_list.items[i]);
-                }
-                print(env, "]");
-                break;
-            case O_SET:
-            {
-                bool first = true;
-                print(env, "{");
-                for (int i = 0; i < o->u_set.alloc; i++) {
-                    if (o->u_set.table[i] != NULL) {
-                        if (!first) {
-                            print(env, ", ");
-                        }
-                        first = false;
-                        py_obj_print_helper(print, env, o->u_set.table[i]);
-                    }
-                }
-                print(env, "}");
-                break;
-            }
-            case O_MAP:
-            {
-                bool first = true;
-                print(env, "{");
-                for (int i = 0; i < o->u_map.alloc; i++) {
-                    if (o->u_map.table[i].key != NULL) {
-                        if (!first) {
-                            print(env, ", ");
-                        }
-                        first = false;
-                        py_obj_print_helper(print, env, o->u_map.table[i].key);
-                        print(env, ": ");
-                        py_obj_print_helper(print, env, o->u_map.table[i].value);
-                    }
-                }
-                print(env, "}");
-                break;
-            }
-            case O_USER:
-                o->u_user.info->print(o_in);
-                break;
-            default:
-                print(env, "<? %d>", o->kind);
-                assert(0);
-        }
-    }
 }
 
 py_obj_t rt_str_join(py_obj_t self_in, py_obj_t arg) {
@@ -790,7 +125,7 @@ py_obj_t rt_str_join(py_obj_t self_in, py_obj_t arg) {
     return py_obj_new_str(qstr_from_str_take(joined_str));
 
 bad_arg:
-    nlr_jump(py_obj_new_exception_2(q_TypeError, "?str.join expecting a list of str's", NULL, NULL));
+    nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "?str.join expecting a list of str's", NULL, NULL));
 }
 
 py_obj_t rt_str_format(int n_args, const py_obj_t* args) {
@@ -807,7 +142,7 @@ py_obj_t rt_str_format(int n_args, const py_obj_t* args) {
                 vstr_add_char(vstr, '{');
             } else if (*str == '}') {
                 if (arg_i >= n_args) {
-                    nlr_jump(py_obj_new_exception_2(q_IndexError, "tuple index out of range", NULL, NULL));
+                    nlr_jump(py_obj_new_exception_2(rt_q_IndexError, "tuple index out of range", NULL, NULL));
                 }
                 py_obj_print_helper(vstr_printf_wrapper, vstr, args[arg_i]);
                 arg_i++;
@@ -830,11 +165,11 @@ uint get_index(py_obj_base_t *base, py_obj_t index) {
             i += len;
         }
         if (i < 0 || i >= len) {
-            nlr_jump(py_obj_new_exception_2(q_IndexError, "%s index out of range", py_obj_get_type_str(base), NULL));
+            nlr_jump(py_obj_new_exception_2(rt_q_IndexError, "%s index out of range", py_obj_get_type_str(base), NULL));
         }
         return i;
     } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "%s indices must be integers, not %s", py_obj_get_type_str(base), py_obj_get_type_str(index)));
+        nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "%s indices must be integers, not %s", py_obj_get_type_str(base), py_obj_get_type_str(index)));
     }
 }
 
@@ -937,121 +272,25 @@ py_obj_t fun_list_pop;
 py_obj_t fun_list_sort;
 py_obj_t fun_gen_instance_next;
 
-py_obj_t py_builtin___repl_print__(py_obj_t o) {
-    if (o != py_const_none) {
-        py_obj_print(o);
-        printf("\n");
-    }
-    return py_const_none;
-}
-
-py_obj_t py_builtin_print(int n_args, const py_obj_t* args) {
-    for (int i = 0; i < n_args; i++) {
-        if (i > 0) {
-            printf(" ");
-        }
-        if (IS_O(args[i], O_STR)) {
-            // special case, print string raw
-            printf("%s", qstr_str(((py_obj_base_t*)args[i])->u_str));
-        } else {
-            // print the object Python style
-            py_obj_print(args[i]);
-        }
-    }
-    printf("\n");
-    return py_const_none;
-}
-
-py_obj_t py_builtin_len(py_obj_t o_in) {
-    py_small_int_t len = 0;
-    if (IS_O(o_in, O_STR)) {
-        py_obj_base_t *o = o_in;
-        len = strlen(qstr_str(o->u_str));
-    } else if (IS_O(o_in, O_TUPLE) || IS_O(o_in, O_LIST)) {
-        py_obj_base_t *o = o_in;
-        len = o->u_tuple_list.len;
-    } else if (IS_O(o_in, O_MAP)) {
-        py_obj_base_t *o = o_in;
-        len = o->u_map.used;
-    } else {
-        assert(0);
-    }
-    return TO_SMALL_INT(len);
-}
-
-py_obj_t py_builtin_abs(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        py_small_int_t val = FROM_SMALL_INT(o_in);
-        if (val < 0) {
-            val = -val;
-        }
-        return TO_SMALL_INT(val);
-#if MICROPY_ENABLE_FLOAT
-    } else if (IS_O(o_in, O_FLOAT)) {
-        py_obj_base_t *o = o_in;
-        // TODO check for NaN etc
-        if (o->u_float < 0) {
-            return py_obj_new_float(-o->u_float);
-        } else {
-            return o_in;
-        }
-    } else if (IS_O(o_in, O_COMPLEX)) {
-        py_obj_base_t *o = o_in;
-        return py_obj_new_float(machine_sqrt(o->u_complex.real*o->u_complex.real + o->u_complex.imag*o->u_complex.imag));
-#endif
-    } else {
-        assert(0);
-        return py_const_none;
-    }
-}
-
-py_obj_t py_builtin___build_class__(py_obj_t o_class_fun, py_obj_t o_class_name) {
-    // we differ from CPython: we set the new __locals__ object here
-    py_map_t *old_locals = map_locals;
-    py_map_t *class_locals = py_map_new(MAP_QSTR, 0);
-    map_locals = class_locals;
-
-    // call the class code
-    rt_call_function_1(o_class_fun, (py_obj_t)0xdeadbeef);
-
-    // restore old __locals__ object
-    map_locals = old_locals;
-
-    // create and return the new class
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_CLASS;
-    o->u_class.locals = class_locals;
-    return o;
-}
-
-py_obj_t py_builtin_range(int n_args, const py_obj_t* args) {
-    switch (n_args) {
-        case 1: return py_obj_new_range(0, py_obj_get_int(args[0]), 1);
-        case 2: return py_obj_new_range(py_obj_get_int(args[0]), py_obj_get_int(args[1]), 1);
-        case 3: return py_obj_new_range(py_obj_get_int(args[0]), py_obj_get_int(args[1]), py_obj_get_int(args[2]));
-        default: nlr_jump(py_obj_new_exception_2(q_TypeError, "range expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args, NULL));
-    }
-}
-
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
 #endif
 
 void rt_init(void) {
-    q_append = qstr_from_str_static("append");
-    q_pop = qstr_from_str_static("pop");
-    q_sort = qstr_from_str_static("sort");
-    q_join = qstr_from_str_static("join");
-    q_format = qstr_from_str_static("format");
-    q___build_class__ = qstr_from_str_static("__build_class__");
-    q___next__ = qstr_from_str_static("__next__");
-    q_AttributeError = qstr_from_str_static("AttributeError");
-    q_IndexError = qstr_from_str_static("IndexError");
-    q_KeyError = qstr_from_str_static("KeyError");
-    q_NameError = qstr_from_str_static("NameError");
-    q_TypeError = qstr_from_str_static("TypeError");
-    q_SyntaxError = qstr_from_str_static("SyntaxError");
-    q_ValueError = qstr_from_str_static("ValueError");
+    rt_q_append = qstr_from_str_static("append");
+    rt_q_pop = qstr_from_str_static("pop");
+    rt_q_sort = qstr_from_str_static("sort");
+    rt_q_join = qstr_from_str_static("join");
+    rt_q_format = qstr_from_str_static("format");
+    rt_q___build_class__ = qstr_from_str_static("__build_class__");
+    rt_q___next__ = qstr_from_str_static("__next__");
+    rt_q_AttributeError = qstr_from_str_static("AttributeError");
+    rt_q_IndexError = qstr_from_str_static("IndexError");
+    rt_q_KeyError = qstr_from_str_static("KeyError");
+    rt_q_NameError = qstr_from_str_static("NameError");
+    rt_q_TypeError = qstr_from_str_static("TypeError");
+    rt_q_SyntaxError = qstr_from_str_static("SyntaxError");
+    rt_q_ValueError = qstr_from_str_static("ValueError");
 
     py_const_none = py_obj_new_const("None");
     py_const_false = py_obj_new_const("False");
@@ -1067,7 +306,7 @@ void rt_init(void) {
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_var(0, py_builtin_print);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(py_builtin_len);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(py_builtin_abs);
-    py_qstr_map_lookup(&map_builtins, q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
+    py_qstr_map_lookup(&map_builtins, rt_q___build_class__, true)->value = rt_make_function_2(py_builtin___build_class__);
     py_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, py_builtin_range);
 
     next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
@@ -1211,31 +450,6 @@ void rt_assign_inline_asm_code(int unique_code_id, py_fun_t fun, uint len, int n
 #endif
 }
 
-bool py_obj_is_callable(py_obj_t o_in) {
-    if (IS_SMALL_INT(o_in)) {
-        return false;
-    } else {
-        py_obj_base_t *o = o_in;
-        switch (o->kind) {
-            case O_FUN_0:
-            case O_FUN_1:
-            case O_FUN_2:
-            case O_FUN_VAR:
-            case O_FUN_N:
-            case O_FUN_BC:
-            case O_FUN_ASM:
-            // what about O_CLASS, and an O_OBJ that has a __call__ method?
-                return true;
-            default:
-                return false;
-        }
-    }
-}
-
-void py_obj_print(py_obj_t o_in) {
-    py_obj_print_helper(printf_wrapper, NULL, o_in);
-}
-
 #define PARSE_DEC_IN_INTG (1)
 #define PARSE_DEC_IN_FRAC (2)
 #define PARSE_DEC_IN_EXP  (3)
@@ -1282,7 +496,7 @@ py_obj_t rt_load_const_dec(qstr qstr) {
         }
     }
     if (*s != 0) {
-        nlr_jump(py_obj_new_exception_2(q_SyntaxError, "invalid syntax for number", NULL, NULL));
+        nlr_jump(py_obj_new_exception_2(rt_q_SyntaxError, "invalid syntax for number", NULL, NULL));
     }
     if (exp_neg) {
         exp_val = -exp_val;
@@ -1300,7 +514,7 @@ py_obj_t rt_load_const_dec(qstr qstr) {
         return py_obj_new_float(dec_val);
     }
 #else
-    nlr_jump(py_obj_new_exception_2(q_SyntaxError, "decimal numbers not supported", NULL, NULL));
+    nlr_jump(py_obj_new_exception_2(rt_q_SyntaxError, "decimal numbers not supported", NULL, NULL));
 #endif
 }
 
@@ -1318,7 +532,7 @@ py_obj_t rt_load_name(qstr qstr) {
         if (elem == NULL) {
             elem = py_qstr_map_lookup(&map_builtins, qstr, false);
             if (elem == NULL) {
-                nlr_jump(py_obj_new_exception_2(q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
+                nlr_jump(py_obj_new_exception_2(rt_q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
             }
         }
     }
@@ -1332,7 +546,7 @@ py_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = py_qstr_map_lookup(&map_builtins, qstr, false);
         if (elem == NULL) {
-            nlr_jump(py_obj_new_exception_2(q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
+            nlr_jump(py_obj_new_exception_2(rt_q_NameError, "name '%s' is not defined", qstr_str(qstr), NULL));
         }
     }
     return elem->value;
@@ -1340,12 +554,36 @@ py_obj_t rt_load_global(qstr qstr) {
 
 py_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
-    py_map_elem_t *elem = py_qstr_map_lookup(&map_builtins, q___build_class__, false);
+    py_map_elem_t *elem = py_qstr_map_lookup(&map_builtins, rt_q___build_class__, false);
     if (elem == NULL) {
         printf("name doesn't exist: __build_class__\n");
         assert(0);
     }
     return elem->value;
+}
+
+py_obj_t rt_new_cell(py_obj_t val) {
+    py_obj_base_t *o = m_new(py_obj_base_t, 1);
+    o->kind = O_CELL;
+    o->u_cell = val;
+    return (py_obj_t)o;
+}
+
+py_obj_t rt_get_cell(py_obj_t cell) {
+    if (IS_O(cell, O_CELL)) {
+        return ((py_obj_base_t*)cell)->u_cell;
+    } else {
+        assert(0);
+        return py_const_none;
+    }
+}
+
+void rt_set_cell(py_obj_t cell, py_obj_t val) {
+    if (IS_O(cell, O_CELL)) {
+        ((py_obj_base_t*)cell)->u_cell = val;
+    } else {
+        assert(0);
+    }
 }
 
 void rt_store_name(qstr qstr, py_obj_t obj) {
@@ -1379,7 +617,7 @@ py_obj_t rt_unary_op(int op, py_obj_t arg) {
             case RT_UNARY_OP_NOT: if (val != 0) { return py_const_true;} else { return py_const_false; }
             case RT_UNARY_OP_POSITIVE: break;
             case RT_UNARY_OP_NEGATIVE: val = -val; break;
-            case RT_UNARY_OP_INVERT: nlr_jump(py_obj_new_exception_2(q_TypeError, "bad operand type for unary ~: 'float'", NULL, NULL));
+            case RT_UNARY_OP_INVERT: nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "bad operand type for unary ~: 'float'", NULL, NULL));
             default: assert(0); val = 0;
         }
         return py_obj_new_float(val);
@@ -1405,7 +643,7 @@ py_obj_t rt_binary_op(int op, py_obj_t lhs, py_obj_t rhs) {
             // map load
             py_map_elem_t *elem = py_map_lookup(lhs, rhs, false);
             if (elem == NULL) {
-                nlr_jump(py_obj_new_exception_2(q_KeyError, "<value>", NULL, NULL));
+                nlr_jump(py_obj_new_exception_2(rt_q_KeyError, "<value>", NULL, NULL));
             } else {
                 return elem->value;
             }
@@ -1775,7 +1013,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
     } else if (IS_O(fun, O_FUN_VAR)) {
         py_obj_base_t *o = fun;
         if (n_args < o->u_fun.n_args) {
-            nlr_jump(py_obj_new_exception_2(q_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(o->u_fun.n_args - n_args), NULL));
+            nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(o->u_fun.n_args - n_args), NULL));
         }
         // TODO really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
         py_obj_t *args_ordered = m_new(py_obj_t, n_args);
@@ -1882,7 +1120,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
                 m_free(args2);
             }
             if (init_ret != py_const_none) {
-                nlr_jump(py_obj_new_exception_2(q_TypeError, "__init__() should return None, not '%s'", py_obj_get_type_str(init_ret), NULL));
+                nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "__init__() should return None, not '%s'", py_obj_get_type_str(init_ret), NULL));
             }
 
         } else {
@@ -1902,7 +1140,7 @@ py_obj_t rt_call_function_n(py_obj_t fun, int n_args, const py_obj_t *args) {
     }
 
 bad_n_args:
-    nlr_jump(py_obj_new_exception_2(q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)n_args_fun, (const char*)(machine_int_t)n_args));
+    nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)n_args_fun, (const char*)(machine_int_t)n_args));
 }
 
 // args are in reverse order in the array; keyword arguments come first, value then key
@@ -1953,49 +1191,6 @@ py_obj_t rt_build_list(int n_args, py_obj_t *items) {
     return o;
 }
 
-py_obj_t py_set_lookup(py_obj_t o_in, py_obj_t index, bool add_if_not_found) {
-    assert(IS_O(o_in, O_SET));
-    py_obj_base_t *o = o_in;
-    int hash = py_obj_hash(index);
-    int pos = hash % o->u_set.alloc;
-    for (;;) {
-        py_obj_t elem = o->u_set.table[pos];
-        if (elem == NULL) {
-            // not in table
-            if (add_if_not_found) {
-                if (o->u_set.used + 1 >= o->u_set.alloc) {
-                    // not enough room in table, rehash it
-                    int old_alloc = o->u_set.alloc;
-                    py_obj_t *old_table = o->u_set.table;
-                    o->u_set.alloc = get_doubling_prime_greater_or_equal_to(o->u_set.alloc + 1);
-                    o->u_set.used = 0;
-                    o->u_set.table = m_new(py_obj_t, o->u_set.alloc);
-                    for (int i = 0; i < old_alloc; i++) {
-                        if (old_table[i] != NULL) {
-                            py_set_lookup(o, old_table[i], true);
-                        }
-                    }
-                    m_free(old_table);
-                    // restart the search for the new element
-                    pos = hash % o->u_set.alloc;
-                } else {
-                    o->u_set.used += 1;
-                    o->u_set.table[pos] = index;
-                    return index;
-                }
-            } else {
-                return NULL;
-            }
-        } else if (py_obj_equal(elem, index)) {
-            // found it
-            return elem;
-        } else {
-            // not yet found, keep searching in this table
-            pos = (pos + 1) % o->u_set.alloc;
-        }
-    }
-}
-
 py_obj_t rt_build_set(int n_args, py_obj_t *items) {
     py_obj_base_t *o = m_new(py_obj_base_t, 1);
     o->kind = O_SET;
@@ -2021,14 +1216,14 @@ void rt_unpack_sequence(py_obj_t seq_in, uint num, py_obj_t *items) {
     if (IS_O(seq_in, O_TUPLE) || IS_O(seq_in, O_LIST)) {
         py_obj_base_t *seq = seq_in;
         if (seq->u_tuple_list.len < num) {
-            nlr_jump(py_obj_new_exception_2(q_ValueError, "need more than %d values to unpack", (void*)seq->u_tuple_list.len, NULL));
+            nlr_jump(py_obj_new_exception_2(rt_q_ValueError, "need more than %d values to unpack", (void*)seq->u_tuple_list.len, NULL));
         } else if (seq->u_tuple_list.len > num) {
-            nlr_jump(py_obj_new_exception_2(q_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num, NULL));
+            nlr_jump(py_obj_new_exception_2(rt_q_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num, NULL));
         }
         memcpy(items, seq->u_tuple_list.items, num * sizeof(py_obj_t));
     } else {
         // TODO call rt_getiter and extract via rt_iternext
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(seq_in), NULL));
+        nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(seq_in), NULL));
     }
 }
 
@@ -2055,11 +1250,11 @@ py_obj_t build_bound_method(py_obj_t self, py_obj_t meth) {
 
 py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %s\n", qstr_str(attr));
-    if (IS_O(base, O_LIST) && attr == q_append) {
+    if (IS_O(base, O_LIST) && attr == rt_q_append) {
         return build_bound_method(base, fun_list_append);
-    } else if (IS_O(base, O_LIST) && attr == q_pop) {
+    } else if (IS_O(base, O_LIST) && attr == rt_q_pop) {
         return build_bound_method(base, fun_list_pop);
-    } else if (IS_O(base, O_LIST) && attr == q_sort) {
+    } else if (IS_O(base, O_LIST) && attr == rt_q_sort) {
         return build_bound_method(base, fun_list_sort);
     } else if (IS_O(base, O_CLASS)) {
         py_obj_base_t *o = base;
@@ -2090,34 +1285,34 @@ py_obj_t rt_load_attr(py_obj_t base, qstr attr) {
     }
 
 no_attr:
-    nlr_jump(py_obj_new_exception_2(q_AttributeError, "'%s' object has no attribute '%s'", py_obj_get_type_str(base), qstr_str(attr)));
+    nlr_jump(py_obj_new_exception_2(rt_q_AttributeError, "'%s' object has no attribute '%s'", py_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_load_method(py_obj_t base, qstr attr, py_obj_t *dest) {
     DEBUG_OP_printf("load method %s\n", qstr_str(attr));
     if (IS_O(base, O_STR)) {
-        if (attr == q_join) {
+        if (attr == rt_q_join) {
             dest[1] = fun_str_join;
             dest[0] = base;
             return;
-        } else if (attr == q_format) {
+        } else if (attr == rt_q_format) {
             dest[1] = fun_str_format;
             dest[0] = base;
             return;
         }
-    } else if (IS_O(base, O_GEN_INSTANCE) && attr == q___next__) {
+    } else if (IS_O(base, O_GEN_INSTANCE) && attr == rt_q___next__) {
         dest[1] = fun_gen_instance_next;
         dest[0] = base;
         return;
-    } else if (IS_O(base, O_LIST) && attr == q_append) {
+    } else if (IS_O(base, O_LIST) && attr == rt_q_append) {
         dest[1] = fun_list_append;
         dest[0] = base;
         return;
-    } else if (IS_O(base, O_LIST) && attr == q_pop) {
+    } else if (IS_O(base, O_LIST) && attr == rt_q_pop) {
         dest[1] = fun_list_pop;
         dest[0] = base;
         return;
-    } else if (IS_O(base, O_LIST) && attr == q_sort) {
+    } else if (IS_O(base, O_LIST) && attr == rt_q_sort) {
         dest[1] = fun_list_sort;
         dest[0] = base;
         return;
@@ -2215,7 +1410,7 @@ py_obj_t rt_getiter(py_obj_t o_in) {
     } else if (IS_O(o_in, O_LIST)) {
         return py_obj_new_list_iterator(o_in, 0);
     } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
+        nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "'%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }
 }
 
@@ -2257,7 +1452,7 @@ py_obj_t rt_iternext(py_obj_t o_in) {
         }
 
     } else {
-        nlr_jump(py_obj_new_exception_2(q_TypeError, "? '%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
+        nlr_jump(py_obj_new_exception_2(rt_q_TypeError, "? '%s' object is not iterable", py_obj_get_type_str(o_in), NULL));
     }
 }
 
@@ -2329,13 +1524,3 @@ void rt_f_vector(rt_fun_kind_t fun_kind) {
     (rt_f_table[fun_kind])();
 }
 */
-
-// temporary way of making C modules
-// hack: use class to mimic a module
-
-py_obj_t py_module_new(void) {
-    py_obj_base_t *o = m_new(py_obj_base_t, 1);
-    o->kind = O_CLASS;
-    o->u_class.locals = py_map_new(MAP_QSTR, 0);
-    return o;
-}

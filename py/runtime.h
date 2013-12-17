@@ -86,6 +86,21 @@ typedef py_obj_t (*py_fun_2_t)(py_obj_t, py_obj_t);
 typedef py_obj_t (*py_fun_t)(void);
 typedef py_obj_t (*py_fun_var_t)(int n, const py_obj_t *);
 
+extern qstr rt_q_append;
+extern qstr rt_q_pop;
+extern qstr rt_q_sort;
+extern qstr rt_q_join;
+extern qstr rt_q_format;
+extern qstr rt_q___build_class__;
+extern qstr rt_q___next__;
+extern qstr rt_q_AttributeError;
+extern qstr rt_q_IndexError;
+extern qstr rt_q_KeyError;
+extern qstr rt_q_NameError;
+extern qstr rt_q_TypeError;
+extern qstr rt_q_SyntaxError;
+extern qstr rt_q_ValueError;
+
 extern py_obj_t py_const_none;
 extern py_obj_t py_const_false;
 extern py_obj_t py_const_true;
@@ -97,27 +112,16 @@ int rt_get_unique_code_id(bool is_main_module);
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_cells, int n_stack, bool is_generator);
 void rt_assign_native_code(int unique_code_id, py_fun_t f, uint len, int n_args);
 void rt_assign_inline_asm_code(int unique_code_id, py_fun_t f, uint len, int n_args);
-void py_obj_print(py_obj_t o);
-
-py_obj_t py_obj_new_int(machine_int_t value);
-py_obj_t py_obj_new_str(qstr qstr);
-py_obj_t py_obj_new_cell(py_obj_t val);
 
 int rt_is_true(py_obj_t arg);
-machine_int_t py_obj_get_int(py_obj_t arg);
-machine_float_t py_obj_get_float(py_obj_t arg);
-qstr py_obj_get_qstr(py_obj_t arg);
-
-py_obj_t py_obj_get_cell(py_obj_t cell);
-void py_obj_set_cell(py_obj_t cell, py_obj_t val);
-
-py_obj_t *py_obj_get_array_fixed_n(py_obj_t o, machine_int_t n);
 
 py_obj_t rt_load_const_dec(qstr qstr);
 py_obj_t rt_load_const_str(qstr qstr);
 py_obj_t rt_load_name(qstr qstr);
 py_obj_t rt_load_global(qstr qstr);
 py_obj_t rt_load_build_class(void);
+py_obj_t rt_get_cell(py_obj_t cell);
+void rt_set_cell(py_obj_t cell, py_obj_t val);
 void rt_store_name(qstr qstr, py_obj_t obj);
 void rt_store_global(qstr qstr, py_obj_t obj);
 py_obj_t rt_unary_op(int op, py_obj_t arg);
@@ -153,24 +157,3 @@ py_obj_t rt_getiter(py_obj_t o);
 py_obj_t rt_iternext(py_obj_t o);
 py_obj_t rt_import_name(qstr name, py_obj_t fromlist, py_obj_t level);
 py_obj_t rt_import_from(py_obj_t module, qstr name);
-
-// temporary way of making C modules
-py_obj_t py_module_new(void);
-
-// user defined objects
-
-typedef struct _py_user_method_t {
-    const char *name;
-    machine_uint_t kind;
-    void *fun;
-} py_user_method_t;
-
-typedef struct _py_user_info_t {
-    const char *type_name;
-    void (*print)(py_obj_t);
-    const py_user_method_t methods[];
-} py_user_info_t;
-
-py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2);
-void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2);
-void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2);
