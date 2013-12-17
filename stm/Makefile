@@ -54,6 +54,9 @@ PY_O = \
 	emitnthumb.o \
 	emitinlinethumb.o \
 	runtime.o \
+	map.o \
+	obj.o \
+	builtin.o \
 	vm.o \
 	repl.o \
 

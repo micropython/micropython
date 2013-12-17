@@ -122,6 +122,7 @@ void __fatal_error(const char *msg) {
 #include "parse.h"
 #include "compile.h"
 #include "runtime.h"
+#include "obj.h"
 #include "repl.h"
 
 static qstr pyb_config_source_dir = 0;
@@ -153,9 +154,11 @@ py_obj_t pyb_led(py_obj_t state) {
     return state;
 }
 
-py_obj_t py_obj_new_user(const py_user_info_t *info, machine_uint_t data1, machine_uint_t data2);
-void py_user_get_data(py_obj_t o, machine_uint_t *data1, machine_uint_t *data2);
-void py_user_set_data(py_obj_t o, machine_uint_t data1, machine_uint_t data2);
+void led_obj_print(py_obj_t self) {
+    machine_uint_t led_id;
+    py_user_get_data(self, &led_id, NULL);
+    printf("<LED %lu>", led_id);
+}
 
 py_obj_t led_obj_on(py_obj_t self) {
     machine_uint_t led_id;
@@ -179,7 +182,7 @@ py_obj_t led_obj_off(py_obj_t self) {
 
 const py_user_info_t led_obj_info = {
     "Led",
-    NULL, // print
+    led_obj_print,
     {
         {"on", 0, led_obj_on},
         {"off", 0, led_obj_off},
@@ -199,6 +202,12 @@ py_obj_t pyb_sw(void) {
     }
 }
 
+void servo_obj_print(py_obj_t self) {
+    machine_uint_t servo_id;
+    py_user_get_data(self, &servo_id, NULL);
+    printf("<Servo %lu>", servo_id);
+}
+
 py_obj_t servo_obj_angle(py_obj_t self, py_obj_t angle) {
     machine_uint_t servo_id;
     py_user_get_data(self, &servo_id, NULL);
@@ -216,7 +225,7 @@ py_obj_t servo_obj_angle(py_obj_t self, py_obj_t angle) {
 
 const py_user_info_t servo_obj_info = {
     "Servo",
-    NULL, // print
+    servo_obj_print,
     {
         {"angle", 1, servo_obj_angle},
         {NULL, 0, NULL},
@@ -276,8 +285,40 @@ static const char fresh_boot_py[] =
 "#pyb.error_log('error.txt')\n"
 ;
 
+static const char fresh_main_py[] =
+"# main.py -- put your code here!\n"
+;
+
+static const char *help_text =
+"Welcome to Micro Python!\n\n"
+"This is a *very* early version of Micro Python and has minimal functionality.\n\n"
+"Specific commands for the board:\n"
+"    pyb.info()     -- print some general information\n"
+"    pyb.gc()       -- run the garbage collector\n"
+"    pyb.delay(<n>) -- wait for n milliseconds\n"
+"    pyb.Led(<n>)   -- create Led object for LED n (n=1,2)\n"
+"                      Led methods: on(), off()\n"
+"    pyb.Servo(<n>) -- create Servo object for servo n (n=1,2,3,4)\n"
+"                      Servo methods: angle(<x>)\n"
+"    pyb.switch()   -- return True/False if switch pressed or not\n"
+"    pyb.accel()    -- get accelerometer values\n"
+"    pyb.rand()     -- get a 16-bit random number\n"
+;
+
+// get some help about available functions
+static py_obj_t pyb_help(void) {
+    printf("%s", help_text);
+    return py_const_none;
+}
+
 // get lots of info about the board
 static py_obj_t pyb_info(void) {
+    // get and print unique id; 96 bits
+    {
+        byte *id = (byte*)0x1fff7a10;
+        printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
+    }
+
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
@@ -478,8 +519,8 @@ int readline(vstr_t *line, const char *prompt) {
 }
 
 void do_repl(void) {
-    stdout_tx_str("Micro Python 0.5; STM32F405RG; PYBv2\r\n");
-    stdout_tx_str("Type \"help\" for more information.\r\n");
+    stdout_tx_str("Micro Python 0.1; STM32F405RG; PYBv3\r\n");
+    stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
     vstr_init(&line);
@@ -523,8 +564,11 @@ void do_repl(void) {
                     if (nlr_push(&nlr) == 0) {
                         rt_call_function_0(module_fun);
                         nlr_pop();
-                        uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-                        //printf("(took %lu ms)\n", ticks);
+                        // optional timing
+                        if (0) {
+                            uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+                            printf("(took %lu ms)\n", ticks);
+                        }
                     } else {
                         // uncaught exception
                         py_obj_print((py_obj_t)nlr.ret_val);
@@ -592,12 +636,16 @@ void gc_collect(void) {
     gc_collect_root((void**)HEAP_END, (RAM_END - HEAP_END) / 4); // will trace regs since they now live in this function on the stack
     gc_collect_end();
     uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-    gc_info_t info;
-    gc_info(&info);
-    printf("GC@%lu %lums\n", start, ticks);
-    printf(" %lu total\n", info.total);
-    printf(" %lu : %lu\n", info.used, info.free);
-    printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+
+    if (0) {
+        // print GC info
+        gc_info_t info;
+        gc_info(&info);
+        printf("GC@%lu %lums\n", start, ticks);
+        printf(" %lu total\n", info.total);
+        printf(" %lu : %lu\n", info.used, info.free);
+        printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+    }
 }
 
 py_obj_t pyb_gc(void) {
@@ -951,13 +999,15 @@ soft_reset:
     timer_init();
 
     // RNG
-    if (0) {
+    if (1) {
         RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
         RNG_Cmd(ENABLE);
     }
 
     // add some functions to the python namespace
     {
+        rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
+
         py_obj_t m = py_module_new();
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
         rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
@@ -968,16 +1018,16 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
-        rt_store_attr(m, qstr_from_str_static("sw"), rt_make_function_0(pyb_sw));
+        rt_store_attr(m, qstr_from_str_static("switch"), rt_make_function_0(pyb_sw));
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
-        rt_store_attr(m, qstr_from_str_static("mma"), rt_make_function_0(pyb_mma_read));
+        rt_store_attr(m, qstr_from_str_static("accel"), rt_make_function_0(pyb_mma_read));
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
         rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
         rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
         rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
-        rt_store_attr(m, qstr_from_str_static("rng"), rt_make_function_0(pyb_rng_get));
+        rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_0(pyb_rng_get));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));
         rt_store_name(qstr_from_str_static("pyb"), m);
@@ -1021,6 +1071,18 @@ soft_reset:
             } else {
                 __fatal_error("could not create LFS");
             }
+
+            // create src directory
+            res = f_mkdir("0:/src");
+            // ignore result from mkdir
+
+            // create empty main.py
+            FIL fp;
+            f_open(&fp, "0:/src/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+            UINT n;
+            f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
+            // TODO check we could write n bytes
+            f_close(&fp);
 
             // keep LED on for at least 200ms
             sys_tick_wait_at_least(stc, 200);
@@ -1343,9 +1405,9 @@ soft_reset:
     }
 
     // SD card testing
-    if (1) {
+    if (0) {
         extern void sdio_init(void);
-        //sdio_init();
+        sdio_init();
     }
 
     printf("PYB: sync filesystems\n");
