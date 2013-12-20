@@ -1610,7 +1610,7 @@ void compile_try_except(compiler_t *comp, py_parse_node_t pn_body, int n_except,
 
         EMIT(pop_top);
 
-        int l3;
+        int l3 = 0;
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
             EMIT(setup_finally, l3);

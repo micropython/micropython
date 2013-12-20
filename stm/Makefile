@@ -148,7 +148,7 @@ $(BUILD)/%.o: $(CC3KSRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(PYSRC)/%.s
-	$(AS) -c -o $@ $<
+	$(AS) -o $@ $<
 
 $(BUILD)/%.o: $(PYSRC)/%.c mpyconfig.h
 	$(CC) $(CFLAGS) -c -o $@ $<
