@@ -367,6 +367,13 @@ static py_obj_t pyb_info(void) {
     return py_const_none;
 }
 
+// SD card test
+static py_obj_t pyb_sd_test(void) {
+    extern void sdio_init(void);
+    sdio_init();
+    return py_const_none;
+}
+
 static void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
     /* Enable HSE */
@@ -1010,6 +1017,7 @@ soft_reset:
 
         py_obj_t m = py_module_new();
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
+        rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_0(pyb_sd_test));
         rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
         rt_store_attr(m, qstr_from_str_static("standby"), rt_make_function_0(pyb_standby));
         rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));

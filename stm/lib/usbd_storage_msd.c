@@ -309,6 +309,7 @@ int8_t STORAGE_Write (uint8_t lun,
 #endif  
 */
     disk_write(0, buf, blk_addr, blk_len);
+    storage_flush(); // XXX hack for now so that the cache is always flushed
   return (0);
 }
 

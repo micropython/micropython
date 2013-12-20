@@ -152,7 +152,6 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         uint8_t *dest = cache_get_addr_for_write(flash_addr);
         memcpy(dest, src, BLOCK_SIZE);
         sys_tick_counter_last_write = sys_tick_counter;
-        cache_flush(); // XXX hack for now so that the cache is always flushed
         return true;
 
     } else {
