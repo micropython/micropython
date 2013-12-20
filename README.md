@@ -1,6 +1,9 @@
 The Micro Python project
 ========================
 
+This is the Micro Python project, which aims to put an implementation
+of Python 3.x on a microcontroller.
+
 Subdirectories:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
@@ -17,10 +20,12 @@ only for 64-bit machines due to a small piece of x86-64 assembler for
 the exception handling.
 
 To build:
+
     $ cd unix
     $ make
 
 Then to test it:
+
     $ ./py
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
@@ -33,10 +38,12 @@ arm-none-eabi-gcc packages from the AUR.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
+
     $ cd stm
     $ make
 
 Then to flash it via USB DFU to your device:
+
     $ dfu-util -a 0 -D build/flash.dfu
 
 You will need the dfu-util program, on Arch Linux it's dfu-util-git in the AUR.
