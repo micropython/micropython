@@ -772,7 +772,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
 void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     DEBUG_OP_printf("load method %s\n", qstr_str(attr));
     if (MP_OBJ_IS_TYPE(base, &gen_instance_type) && attr == rt_q___next__) {
-        dest[1] = (mp_obj_t)&mp_obj_gen_instance_next_obj;
+        dest[1] = (mp_obj_t)&mp_builtin_next_obj;
         dest[0] = base;
         return;
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {

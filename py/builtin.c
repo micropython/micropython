@@ -11,7 +11,6 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-//#include "bc.h"
 #include "map.h"
 #include "builtin.h"
 
@@ -293,8 +292,13 @@ mp_obj_t mp_builtin_min(int n_args, const mp_obj_t *args) {
     }
 }
 
-static mp_obj_t mp_builtin_next(mp_obj_t o_in) {
-    return mp_obj_gen_instance_next(o_in);
+static mp_obj_t mp_builtin_next(mp_obj_t o) {
+    mp_obj_t ret = rt_iternext(o);
+    if (ret == mp_const_stop_iteration) {
+        nlr_jump(mp_obj_new_exception(qstr_from_str_static("StopIteration")));
+    } else {
+        return ret;
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);

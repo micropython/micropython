@@ -117,14 +117,3 @@ mp_obj_t mp_obj_new_gen_instance(mp_obj_t state, const byte *ip, mp_obj_t *sp) {
     o->sp = sp;
     return o;
 }
-
-mp_obj_t mp_obj_gen_instance_next(mp_obj_t self_in) {
-    mp_obj_t ret = rt_iternext(self_in);
-    if (ret == mp_const_stop_iteration) {
-        nlr_jump(mp_obj_new_exception(qstr_from_str_static("StopIteration")));
-    } else {
-        return ret;
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(mp_obj_gen_instance_next_obj, mp_obj_gen_instance_next);

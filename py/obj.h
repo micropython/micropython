@@ -220,8 +220,6 @@ void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte 
 
 // generator
 extern const mp_obj_type_t gen_instance_type;
-mp_obj_t mp_obj_gen_instance_next(mp_obj_t self_in);
-MP_DECLARE_CONST_FUN_OBJ(mp_obj_gen_instance_next_obj);
 
 // class
 extern const mp_obj_type_t class_type;
