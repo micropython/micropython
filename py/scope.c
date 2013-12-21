@@ -4,11 +4,11 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "parse.h"
 #include "scope.h"
 
-scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id, uint emit_options) {
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, uint unique_code_id, uint emit_options) {
     scope_t *scope = m_new(scope_t, 1);
     scope->kind = kind;
     scope->parent = NULL;
@@ -20,8 +20,8 @@ scope_t *scope_new(scope_kind_t kind, py_parse_node_t pn, uint unique_code_id, u
             break;
         case SCOPE_FUNCTION:
         case SCOPE_CLASS:
-            assert(PY_PARSE_NODE_IS_STRUCT(pn));
-            scope->simple_name = PY_PARSE_NODE_LEAF_ARG(((py_parse_node_struct_t*)pn)->nodes[0]);
+            assert(MP_PARSE_NODE_IS_STRUCT(pn));
+            scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
             break;
         case SCOPE_LAMBDA:
             scope->simple_name = qstr_from_str_static("<lambda>");

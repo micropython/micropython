@@ -6,12 +6,12 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 #include "compile.h"
 #include "scope.h"
-#include "runtime.h"
+#include "runtime0.h"
 #include "emit.h"
 
 struct _emit_t {

@@ -32,7 +32,7 @@ typedef struct _emit_method_table_t {
     void (*import_name)(emit_t *emit, qstr qstr);
     void (*import_from)(emit_t *emit, qstr qstr);
     void (*import_star)(emit_t *emit);
-    void (*load_const_tok)(emit_t *emit, py_token_kind_t tok);
+    void (*load_const_tok)(emit_t *emit, mp_token_kind_t tok);
     void (*load_const_small_int)(emit_t *emit, int arg);
     void (*load_const_int)(emit_t *emit, qstr qstr);
     void (*load_const_dec)(emit_t *emit, qstr qstr);
@@ -129,9 +129,9 @@ typedef struct _emit_inline_asm_t emit_inline_asm_t;
 typedef struct _emit_inline_asm_method_table_t {
     void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_inline_asm_t *emit);
-    int (*count_params)(emit_inline_asm_t *emit, int n_params, py_parse_node_t *pn_params);
+    int (*count_params)(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params);
     void (*label)(emit_inline_asm_t *emit, int label_num, qstr label_id);
-    void (*op)(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_args);
+    void (*op)(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args);
 } emit_inline_asm_method_table_t;
 
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;

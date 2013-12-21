@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "gc.h"
 
 // a machine word is big enough to hold a pointer

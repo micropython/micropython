@@ -11,7 +11,7 @@
 #include "std.h"
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "systick.h"
 
 #include "nlr.h"
@@ -19,6 +19,7 @@
 #include "lexer.h"
 #include "parse.h"
 #include "compile.h"
+#include "obj.h"
 #include "runtime.h"
 
 #include "cc3k/ccspi.h"
@@ -28,27 +29,27 @@
 #include "cc3k/wlan.h"
 #include "cc3k/nvmem.h"
 
-py_obj_t pyb_wlan_connect(int n_args, const py_obj_t *args) {
+mp_obj_t pyb_wlan_connect(int n_args, const mp_obj_t *args) {
   const char *ap;
   const char *key;
     if (n_args == 2) {
-        ap = qstr_str(py_obj_get_qstr(args[0]));
-        key = qstr_str(py_obj_get_qstr(args[1]));
+        ap = qstr_str(mp_obj_get_qstr(args[0]));
+        key = qstr_str(mp_obj_get_qstr(args[1]));
     } else {
-        ap = "Rama3";
-        key = "underthechristmastree";
+        ap = "your-ssid";
+        key = "your-password";
     }
     // might want to set wlan_ioctl_set_connection_policy
     int ret = wlan_connect(WLAN_SEC_WPA2, ap, strlen(ap), NULL, (byte*)key, strlen(key));
-    return py_obj_new_int(ret);
+    return mp_obj_new_int(ret);
 }
 
-py_obj_t pyb_wlan_disconnect(void) {
+mp_obj_t pyb_wlan_disconnect(void) {
     int ret = wlan_disconnect();
-    return py_obj_new_int(ret);
+    return mp_obj_new_int(ret);
 }
 
-py_obj_t decode_addr(unsigned char *ip, int nBytes) {
+mp_obj_t decode_addr(unsigned char *ip, int nBytes) {
     char data[64] = "";
     if (nBytes == 4) {
         snprintf(data, 64, "%u.%u.%u.%u", ip[3], ip[2], ip[1], ip[0]);
@@ -57,21 +58,21 @@ py_obj_t decode_addr(unsigned char *ip, int nBytes) {
     } else if (nBytes == 32) {
         snprintf(data, 64, "%s", ip);
     }
-    return py_obj_new_str(qstr_from_strn_copy(data, strlen(data)));
+    return mp_obj_new_str(qstr_from_strn_copy(data, strlen(data)));
 }
 
-void _wlan_getIP_get_address(py_obj_t object, qstr q_attr, unsigned char *ip, int nBytes) {
+void _wlan_getIP_get_address(mp_obj_t object, qstr q_attr, unsigned char *ip, int nBytes) {
     rt_store_attr(object, q_attr, decode_addr(ip, nBytes));
 }
 
-py_obj_t pyb_wlan_get_ip(void) {
+mp_obj_t pyb_wlan_get_ip(void) {
   tNetappIpconfigRetArgs ipconfig;
   netapp_ipconfig(&ipconfig);
 
   /* If byte 1 is 0 we don't have a valid address */
-  if (ipconfig.aucIP[3] == 0) return py_const_none;
+  if (ipconfig.aucIP[3] == 0) return mp_const_none;
 
-  py_obj_t data = py_module_new(); // TODO should really be a class
+  mp_obj_t data = mp_module_new(); // TODO should really be a class
   _wlan_getIP_get_address(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
   _wlan_getIP_get_address(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
   _wlan_getIP_get_address(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
@@ -84,16 +85,16 @@ py_obj_t pyb_wlan_get_ip(void) {
 }
 
 uint32_t last_ip = 0; // XXX such a hack!
-py_obj_t pyb_wlan_get_host(py_obj_t host_name) {
-    const char *host = qstr_str(py_obj_get_qstr(host_name));
+mp_obj_t pyb_wlan_get_host(mp_obj_t host_name) {
+    const char *host = qstr_str(mp_obj_get_qstr(host_name));
     uint32_t ip;
     if (gethostbyname(host, strlen(host), &ip) < 0) {
         printf("gethostbyname failed\n");
-        return py_const_none;
+        return mp_const_none;
     }
     if (ip == 0) {
         // unknown host
-        return py_const_none;
+        return mp_const_none;
     }
     last_ip = ip;
     byte ip_data[4];
@@ -104,19 +105,17 @@ py_obj_t pyb_wlan_get_host(py_obj_t host_name) {
     return decode_addr(ip_data, 4);
 }
 
-py_obj_t py_obj_new_exception_2(qstr, const char *, void*, void*);
-
-py_obj_t pyb_wlan_http_get(py_obj_t host_name, py_obj_t host_path) {
-    if (host_name == py_const_none) {
+mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
+    if (host_name == mp_const_none) {
         last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (3);
     } else {
-        if (pyb_wlan_get_host(host_name) == py_const_none) {
-            nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "unknown host", NULL, NULL));
+        if (pyb_wlan_get_host(host_name) == mp_const_none) {
+            nlr_jump(mp_obj_new_exception_msg(qstr_from_str_static("WlanError"), "unknown host"));
         }
     }
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd < 0) {
-        nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd, NULL));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd));
     }
     //printf("socket seemed to work\n");
     //sys_tick_delay_ms(200);
@@ -127,13 +126,13 @@ py_obj_t pyb_wlan_http_get(py_obj_t host_name, py_obj_t host_path) {
     remote.sin_addr.s_addr = htonl(last_ip);
     int ret = connect(sd, (sockaddr*)&remote, sizeof(sockaddr));
     if (ret != 0) {
-        nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "connect failed: %d", (void*)ret, NULL));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "connect failed: %d", (void*)ret));
     }
     //printf("connect seemed to work\n");
     //sys_tick_delay_ms(200);
 
     vstr_t *vstr = vstr_new();
-    vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: PYBv2\r\n\r\n", qstr_str(py_obj_get_qstr(host_path)), qstr_str(py_obj_get_qstr(host_name)));
+    vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: PYBv2\r\n\r\n", qstr_str(mp_obj_get_qstr(host_path)), qstr_str(mp_obj_get_qstr(host_name)));
     const char *query = vstr_str(vstr);
 
     // send query
@@ -148,7 +147,7 @@ py_obj_t pyb_wlan_http_get(py_obj_t host_name, py_obj_t host_path) {
             ret = send(sd, query + sent, strlen(query + sent), 0);
             //printf("sent %d bytes\n", ret);
             if (ret < 0) {
-                nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "send failed", NULL, NULL));
+                nlr_jump(mp_obj_new_exception_msg(qstr_from_str_static("WlanError"), "send failed"));
             }
             sent += ret;
             //sys_tick_delay_ms(200);
@@ -159,7 +158,7 @@ py_obj_t pyb_wlan_http_get(py_obj_t host_name, py_obj_t host_path) {
     //sys_tick_delay_ms(5000);
 
     // receive reply
-    py_obj_t py_ret = py_const_none;
+    mp_obj_t mp_ret = mp_const_none;
     {
         //printf("doing receive\n");
         char buf[64];
@@ -185,33 +184,33 @@ py_obj_t pyb_wlan_http_get(py_obj_t host_name, py_obj_t host_path) {
             // read data
             ret = recv(sd, buf, 64, 0);
             if (ret < 0) {
-                nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "recv failed %d", (void*)ret, NULL));
+                nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "recv failed %d", (void*)ret));
             }
             vstr_add_strn(vstr, buf, ret);
         }
 
-        py_ret = py_obj_new_str(qstr_from_str_take(vstr_str(vstr)));
+        mp_ret = mp_obj_new_str(qstr_from_str_take(vstr_str(vstr)));
     }
 
     closesocket(sd);
 
-    return py_ret;
+    return mp_ret;
 }
 
-py_obj_t pyb_wlan_serve(void) {
+mp_obj_t pyb_wlan_serve(void) {
     printf("serve socket\n");
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     printf("serve socket got %d\n", sd);
     sys_tick_delay_ms(500);
     if (sd < 0) {
         printf("socket fail\n");
-        nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd, NULL));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd));
     }
 
     /*
     if (setsockopt(sd, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, SOCK_ON, sizeof(SOCK_ON)) < 0) {
         printf("couldn't set socket as non-blocking\n");
-        return py_const_none;
+        return mp_const_none;
     }
     */
 
@@ -226,7 +225,7 @@ py_obj_t pyb_wlan_serve(void) {
     sys_tick_delay_ms(100);
     if (ret != 0) {
         printf("bind fail\n");
-        nlr_jump(py_obj_new_exception_2(qstr_from_str_static("WlanError"), "bind failed: %d", (void*)ret, NULL));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "bind failed: %d", (void*)ret));
     }
     printf("bind seemed to work\n");
 
@@ -268,7 +267,7 @@ py_obj_t pyb_wlan_serve(void) {
     closesocket(fd);
     closesocket(sd);
 
-    return py_const_none;
+    return mp_const_none;
 }
 
 //*****************************************************************************
@@ -344,7 +343,7 @@ void pyb_wlan_init(void) {
     SpiInit();
     wlan_init(CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
 
-    py_obj_t m = py_module_new();
+    mp_obj_t m = mp_module_new();
     rt_store_attr(m, qstr_from_str_static("connect"), rt_make_function_var(0, pyb_wlan_connect));
     rt_store_attr(m, qstr_from_str_static("disconnect"), rt_make_function_0(pyb_wlan_disconnect));
     rt_store_attr(m, qstr_from_str_static("ip"), rt_make_function_0(pyb_wlan_get_ip));

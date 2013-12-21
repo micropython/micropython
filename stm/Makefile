@@ -23,6 +23,7 @@ SRC_C = \
 	lexerstm.c \
 	led.c \
 	lcd.c \
+	servo.c \
 	flash.c \
 	storage.c \
 	mma.c \
@@ -57,6 +58,25 @@ PY_O = \
 	runtime.o \
 	map.o \
 	obj.o \
+	objbool.o \
+	objboundmeth.o \
+	objcell.o \
+	objclass.o \
+	objclosure.o \
+	objcomplex.o \
+	objdict.o \
+	objexcept.o \
+	objfloat.o \
+	objfun.o \
+	objgenerator.o \
+	objinstance.o \
+	objlist.o \
+	objnone.o \
+	objrange.o \
+	objset.o \
+	objstr.o \
+	objtuple.o \
+	objtype.o \
 	builtin.o \
 	vm.o \
 	repl.o \
@@ -150,7 +170,7 @@ $(BUILD)/%.o: $(CC3KSRC)/%.c
 $(BUILD)/%.o: $(PYSRC)/%.s
 	$(AS) -o $@ $<
 
-$(BUILD)/%.o: $(PYSRC)/%.c mpyconfig.h
+$(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h

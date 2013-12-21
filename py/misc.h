@@ -19,6 +19,8 @@ typedef unsigned int uint;
 #define m_new(type, num) ((type*)(m_malloc(sizeof(type) * (num))))
 #define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num))))
 #define m_renew(type, ptr, num) ((type*)(m_realloc((ptr), sizeof(type) * (num))))
+#define m_new_obj(type) (m_new(type, 1))
+#define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 
 void m_free(void *ptr);
 void *m_malloc(int num_bytes);

@@ -1,1 +1,1 @@
-bool py_repl_is_compound_stmt(const char *line);
+bool mp_repl_is_compound_stmt(const char *line);

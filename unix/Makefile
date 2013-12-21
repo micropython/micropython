@@ -31,6 +31,25 @@ PY_O = \
 	runtime.o \
 	map.o \
 	obj.o \
+	objbool.o \
+	objboundmeth.o \
+	objcell.o \
+	objclass.o \
+	objclosure.o \
+	objcomplex.o \
+	objdict.o \
+	objexcept.o \
+	objfloat.o \
+	objfun.o \
+	objgenerator.o \
+	objinstance.o \
+	objlist.o \
+	objnone.o \
+	objrange.o \
+	objset.o \
+	objstr.o \
+	objtuple.o \
+	objtype.o \
 	builtin.o \
 	vm.o \
 	showbc.o \
@@ -42,6 +61,8 @@ PROG = py
 
 $(PROG): $(BUILD) $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
+	strip $(PROG)
+	size $(PROG)
 
 $(BUILD):
 	mkdir $@
@@ -52,7 +73,7 @@ $(BUILD)/%.o: %.c
 $(BUILD)/%.o: $(PYSRC)/%.s
 	$(AS) -o $@ $<
 
-$(BUILD)/%.o: $(PYSRC)/%.c mpyconfig.h
+$(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/emitnx64.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
@@ -65,7 +86,7 @@ $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
 $(BUILD)/vm.o: $(PYSRC)/vm.c
 	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
-$(BUILD)/main.o: mpyconfig.h
+$(BUILD)/main.o: mpconfig.h
 $(BUILD)/parse.o: $(PYSRC)/grammar.h
 $(BUILD)/compile.o: $(PYSRC)/grammar.h
 $(BUILD)/emitcpy.o: $(PYSRC)/emit.h

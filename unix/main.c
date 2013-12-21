@@ -4,18 +4,19 @@
 
 #include "nlr.h"
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "lexerunix.h"
 #include "parse.h"
 #include "compile.h"
-#include "runtime.h"
 #include "obj.h"
+#include "runtime0.h"
+#include "runtime.h"
 #include "repl.h"
 
 #include <readline/readline.h>
 
-char *str_join(const char *s1, int sep_char, const char *s2) {
+static char *str_join(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
     char *s = m_new(char, l1 + l2 + 2);
@@ -29,14 +30,14 @@ char *str_join(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-void do_repl(void) {
+static void do_repl(void) {
     for (;;) {
         char *line = readline(">>> ");
         if (line == NULL) {
             // EOF
             return;
         }
-        if (py_repl_is_compound_stmt(line)) {
+        if (mp_repl_is_compound_stmt(line)) {
             for (;;) {
                 char *line2 = readline("... ");
                 if (line2 == NULL || strlen(line2) == 0) {
@@ -49,23 +50,23 @@ void do_repl(void) {
             }
         }
 
-        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
-        py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
-        py_lexer_free(lex);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+        mp_lexer_free(lex);
 
-        if (pn != PY_PARSE_NODE_NULL) {
-            //py_parse_node_show(pn, 0);
-            bool comp_ok = py_compile(pn, true);
+        if (pn != MP_PARSE_NODE_NULL) {
+            //mp_parse_node_show(pn, 0);
+            bool comp_ok = mp_compile(pn, true);
             if (comp_ok) {
-                py_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != py_const_none) {
+                mp_obj_t module_fun = rt_make_function_from_id(1);
+                if (module_fun != mp_const_none) {
                     nlr_buf_t nlr;
                     if (nlr_push(&nlr) == 0) {
                         rt_call_function_0(module_fun);
                         nlr_pop();
                     } else {
                         // uncaught exception
-                        py_obj_print((py_obj_t)nlr.ret_val);
+                        mp_obj_print((mp_obj_t)nlr.ret_val);
                         printf("\n");
                     }
                 }
@@ -75,32 +76,32 @@ void do_repl(void) {
 }
 
 void do_file(const char *file) {
-    py_lexer_t *lex = py_lexer_new_from_file(file);
+    mp_lexer_t *lex = mp_lexer_new_from_file(file);
     //const char *pysrc = "def f():\n  x=x+1\n  print(42)\n";
-    //py_lexer_t *lex = py_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
+    //mp_lexer_t *lex = mp_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
     if (lex == NULL) {
         return;
     }
 
     if (0) {
         // just tokenise
-        while (!py_lexer_is_kind(lex, PY_TOKEN_END)) {
-            py_token_show(py_lexer_cur(lex));
-            py_lexer_to_next(lex);
+        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
+            mp_token_show(mp_lexer_cur(lex));
+            mp_lexer_to_next(lex);
         }
-        py_lexer_free(lex);
+        mp_lexer_free(lex);
 
     } else {
         // compile
 
-        py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
-        py_lexer_free(lex);
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        mp_lexer_free(lex);
 
-        if (pn != PY_PARSE_NODE_NULL) {
+        if (pn != MP_PARSE_NODE_NULL) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
-            bool comp_ok = py_compile(pn, false);
+            bool comp_ok = mp_compile(pn, false);
             //printf("----------------\n");
 
 #if MICROPY_EMIT_CPYTHON
@@ -110,19 +111,19 @@ void do_file(const char *file) {
 #else
             if (1 && comp_ok) {
                 // execute it
-                py_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != py_const_none) {
+                mp_obj_t module_fun = rt_make_function_from_id(1);
+                if (module_fun != mp_const_none) {
                     nlr_buf_t nlr;
                     if (nlr_push(&nlr) == 0) {
-                        py_obj_t ret = rt_call_function_0(module_fun);
+                        mp_obj_t ret = rt_call_function_0(module_fun);
                         printf("done! got: ");
-                        py_obj_print(ret);
+                        mp_obj_print(ret);
                         printf("\n");
                         nlr_pop();
                     } else {
                         // uncaught exception
                         printf("exception: ");
-                        py_obj_print((py_obj_t)nlr.ret_val);
+                        mp_obj_print((mp_obj_t)nlr.ret_val);
                         printf("\n");
                     }
                 }
@@ -132,37 +133,58 @@ void do_file(const char *file) {
     }
 }
 
-void test_print(py_obj_t o_in) {
-    printf("<test>");
+typedef struct _test_obj_t {
+    mp_obj_base_t base;
+    bool value;
+} test_obj_t;
+
+static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    test_obj_t *self = self_in;
+    print(env, "<test %d>", self->value);
 }
 
-py_obj_t test_get(py_obj_t o_in) {
-    py_obj_t d1;
-    py_obj_t d2;
-    py_user_get_data(o_in, (machine_uint_t*)&d1, (machine_uint_t*)&d2);
-    return d1;
+static mp_obj_t test_get(mp_obj_t self_in) {
+    test_obj_t *self = self_in;
+    return mp_obj_new_int(self->value);
 }
 
-py_obj_t test_set(py_obj_t o_in, py_obj_t arg) {
-    py_user_set_data(o_in, (machine_uint_t)arg, (machine_uint_t)arg);
-    return py_const_none;
+static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
+    test_obj_t *self = self_in;
+    self->value = mp_obj_get_int(arg);
+    return mp_const_none;
 }
 
-const py_user_info_t test_obj_info = {
+static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
+static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
+
+static const mp_obj_type_t test_type = {
+    { &mp_const_type },
     "Test",
-    test_print,
-    {
-        { "get", 0, test_get },
-        { "set", 1, test_set },
-        { NULL, 0, NULL },
+    test_print, // print
+    NULL, // call_n
+    NULL, // unary_op
+    NULL, // binary_op
+    NULL, // getiter
+    NULL, // iternext
+    { // method list
+        { "get", &test_get_obj },
+        { "set", &test_set_obj },
+        { NULL, NULL },
     }
 };
+
+mp_obj_t test_obj_new(int value) {
+    test_obj_t *o = m_new_obj(test_obj_t);
+    o->base.type = &test_type;
+    o->value = value;
+    return o;
+}
 
 int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
-    rt_store_name(qstr_from_str_static("test"), py_obj_new_user(&test_obj_info, (machine_uint_t)py_obj_new_int(42), 0));
+    rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
 
     if (argc == 1) {
         do_repl();

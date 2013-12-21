@@ -7,37 +7,38 @@
 
 #include "nlr.h"
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "parse.h"
 #include "compile.h"
+#include "obj.h"
 #include "runtime.h"
 
 #include "timer.h"
 
 // TIM6 is used as an internal interrup to schedule something at a specific rate
-py_obj_t timer_py_callback;
+mp_obj_t timer_py_callback;
 
-py_obj_t timer_py_set_callback(py_obj_t f) {
+mp_obj_t timer_py_set_callback(mp_obj_t f) {
     timer_py_callback = f;
-    return py_const_none;
+    return mp_const_none;
 }
 
-py_obj_t timer_py_set_period(py_obj_t period) {
-    TIM6->ARR = py_obj_get_int(period) & 0xffff;
-    return py_const_none;
+mp_obj_t timer_py_set_period(mp_obj_t period) {
+    TIM6->ARR = mp_obj_get_int(period) & 0xffff;
+    return mp_const_none;
 }
 
-py_obj_t timer_py_set_prescaler(py_obj_t prescaler) {
-    TIM6->PSC = py_obj_get_int(prescaler) & 0xffff;
-    return py_const_none;
+mp_obj_t timer_py_set_prescaler(mp_obj_t prescaler) {
+    TIM6->PSC = mp_obj_get_int(prescaler) & 0xffff;
+    return mp_const_none;
 }
 
-py_obj_t timer_py_get_value(void) {
-    return py_obj_new_int(TIM6->CNT & 0xfffff);
+mp_obj_t timer_py_get_value(void) {
+    return mp_obj_new_int(TIM6->CNT & 0xfffff);
 }
 
 void timer_init(void) {
-    timer_py_callback = py_const_none;
+    timer_py_callback = mp_const_none;
 
     // TIM6 clock enable
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
@@ -71,7 +72,7 @@ void timer_init(void) {
     TIM_Cmd(TIM6, ENABLE);
 
     // Python interface
-    py_obj_t m = py_module_new();
+    mp_obj_t m = mp_module_new();
     rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_1(timer_py_set_callback));
     rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_1(timer_py_set_period));
     rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_1(timer_py_set_prescaler));
@@ -80,7 +81,7 @@ void timer_init(void) {
 }
 
 void timer_interrupt(void) {
-    if (timer_py_callback != py_const_none) {
+    if (timer_py_callback != mp_const_none) {
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             // XXX what to do if the GC is in the middle of running??
@@ -89,7 +90,7 @@ void timer_interrupt(void) {
         } else {
             // uncaught exception
             printf("exception in timer interrupt\n");
-            py_obj_print((py_obj_t)nlr.ret_val);
+            mp_obj_print((mp_obj_t)nlr.ret_val);
             printf("\n");
         }
     }

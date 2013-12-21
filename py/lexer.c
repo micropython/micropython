@@ -13,11 +13,11 @@
 // TODO seems that CPython allows NULL byte in the input stream
 // don't know if that's intentional or not, but we don't allow it
 
-struct _py_lexer_t {
+struct _mp_lexer_t {
     const char *name;           // name of source
     void *stream_data;          // data for stream
-    py_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
-    py_lexer_stream_close_t stream_close;           // stream callback to free
+    mp_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
+    mp_lexer_stream_close_t stream_close;           // stream callback to free
 
     unichar chr0, chr1, chr2;   // current cached characters from source
 
@@ -32,7 +32,7 @@ struct _py_lexer_t {
     uint16_t *indent_level;
 
     vstr_t vstr;
-    py_token_t tok_cur;
+    mp_token_t tok_cur;
 };
 
 bool str_strn_equal(const char *str, const char *strn, int len) {
@@ -47,7 +47,7 @@ bool str_strn_equal(const char *str, const char *strn, int len) {
     return i == len && *str == 0;
 }
 
-void py_token_show(const py_token_t *tok) {
+void mp_token_show(const mp_token_t *tok) {
     printf("(%s:%d:%d) kind:%d str:%p len:%d", tok->src_name, tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
     if (tok->str != NULL && tok->len > 0) {
         const char *i = tok->str;
@@ -66,83 +66,83 @@ void py_token_show(const py_token_t *tok) {
     printf("\n");
 }
 
-void py_token_show_error_prefix(const py_token_t *tok) {
+void mp_token_show_error_prefix(const mp_token_t *tok) {
     printf("(%s:%d:%d) ", tok->src_name, tok->src_line, tok->src_column);
 }
 
-bool py_token_show_error(const py_token_t *tok, const char *msg) {
+bool mp_token_show_error(const mp_token_t *tok, const char *msg) {
     printf("(%s:%d:%d) %s\n", tok->src_name, tok->src_line, tok->src_column, msg);
     return false;
 }
 
 #define CUR_CHAR(lex) ((lex)->chr0)
 
-static bool is_end(py_lexer_t *lex) {
-    return lex->chr0 == PY_LEXER_CHAR_EOF;
+static bool is_end(mp_lexer_t *lex) {
+    return lex->chr0 == MP_LEXER_CHAR_EOF;
 }
 
-static bool is_physical_newline(py_lexer_t *lex) {
+static bool is_physical_newline(mp_lexer_t *lex) {
     return lex->chr0 == '\n' || lex->chr0 == '\r';
 }
 
-static bool is_char(py_lexer_t *lex, char c) {
+static bool is_char(mp_lexer_t *lex, char c) {
     return lex->chr0 == c;
 }
 
-static bool is_char_or(py_lexer_t *lex, char c1, char c2) {
+static bool is_char_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 || lex->chr0 == c2;
 }
 
-static bool is_char_or3(py_lexer_t *lex, char c1, char c2, char c3) {
+static bool is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
 /*
-static bool is_char_following(py_lexer_t *lex, char c) {
+static bool is_char_following(mp_lexer_t *lex, char c) {
     return lex->chr1 == c;
 }
 */
 
-static bool is_char_following_or(py_lexer_t *lex, char c1, char c2) {
+static bool is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr1 == c1 || lex->chr1 == c2;
 }
 
-static bool is_char_following_following_or(py_lexer_t *lex, char c1, char c2) {
+static bool is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr2 == c1 || lex->chr2 == c2;
 }
 
-static bool is_char_and(py_lexer_t *lex, char c1, char c2) {
+static bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 && lex->chr1 == c2;
 }
 
-static bool is_whitespace(py_lexer_t *lex) {
+static bool is_whitespace(mp_lexer_t *lex) {
     return g_unichar_isspace(lex->chr0);
 }
 
-static bool is_letter(py_lexer_t *lex) {
+static bool is_letter(mp_lexer_t *lex) {
     return g_unichar_isalpha(lex->chr0);
 }
 
-static bool is_digit(py_lexer_t *lex) {
+static bool is_digit(mp_lexer_t *lex) {
     return g_unichar_isdigit(lex->chr0);
 }
 
-static bool is_following_digit(py_lexer_t *lex) {
+static bool is_following_digit(mp_lexer_t *lex) {
     return g_unichar_isdigit(lex->chr1);
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_head_of_identifier(py_lexer_t *lex) {
+static bool is_head_of_identifier(mp_lexer_t *lex) {
     return is_letter(lex) || lex->chr0 == '_';
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_tail_of_identifier(py_lexer_t *lex) {
+static bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
-static void next_char(py_lexer_t *lex) {
-    if (lex->chr0 == PY_LEXER_CHAR_EOF) {
+static void next_char(mp_lexer_t *lex) {
+    if (lex->chr0 == MP_LEXER_CHAR_EOF) {
         return;
     }
 
@@ -172,16 +172,16 @@ static void next_char(py_lexer_t *lex) {
         lex->chr0 = lex->chr1;
         lex->chr1 = lex->chr2;
         lex->chr2 = lex->stream_next_char(lex->stream_data);
-        if (lex->chr2 == PY_LEXER_CHAR_EOF) {
+        if (lex->chr2 == MP_LEXER_CHAR_EOF) {
             // EOF
-            if (lex->chr1 != PY_LEXER_CHAR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
+            if (lex->chr1 != MP_LEXER_CHAR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
                 lex->chr2 = '\n'; // insert newline at end of file
             }
         }
     }
 }
 
-void indent_push(py_lexer_t *lex, uint indent) {
+void indent_push(mp_lexer_t *lex, uint indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
         lex->alloc_indent_level *= 2;
         lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level);
@@ -189,11 +189,11 @@ void indent_push(py_lexer_t *lex, uint indent) {
     lex->indent_level[lex->num_indent_level++] = indent;
 }
 
-uint indent_top(py_lexer_t *lex) {
+uint indent_top(mp_lexer_t *lex) {
     return lex->indent_level[lex->num_indent_level - 1];
 }
 
-void indent_pop(py_lexer_t *lex) {
+void indent_pop(mp_lexer_t *lex) {
     lex->num_indent_level -= 1;
 }
 
@@ -222,24 +222,24 @@ static const char *tok_enc =
 
 // TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
 static const uint8_t tok_enc_kind[] = {
-    PY_TOKEN_DEL_PAREN_OPEN, PY_TOKEN_DEL_PAREN_CLOSE,
-    PY_TOKEN_DEL_BRACKET_OPEN, PY_TOKEN_DEL_BRACKET_CLOSE,
-    PY_TOKEN_DEL_BRACE_OPEN, PY_TOKEN_DEL_BRACE_CLOSE,
-    PY_TOKEN_DEL_COMMA, PY_TOKEN_DEL_COLON, PY_TOKEN_DEL_SEMICOLON, PY_TOKEN_DEL_AT, PY_TOKEN_OP_TILDE,
+    MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
+    MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
+    MP_TOKEN_DEL_BRACE_OPEN, MP_TOKEN_DEL_BRACE_CLOSE,
+    MP_TOKEN_DEL_COMMA, MP_TOKEN_DEL_COLON, MP_TOKEN_DEL_SEMICOLON, MP_TOKEN_DEL_AT, MP_TOKEN_OP_TILDE,
 
-    PY_TOKEN_OP_LESS, PY_TOKEN_OP_LESS_EQUAL, PY_TOKEN_OP_DBL_LESS, PY_TOKEN_DEL_DBL_LESS_EQUAL,
-    PY_TOKEN_OP_MORE, PY_TOKEN_OP_MORE_EQUAL, PY_TOKEN_OP_DBL_MORE, PY_TOKEN_DEL_DBL_MORE_EQUAL,
-    PY_TOKEN_OP_STAR, PY_TOKEN_DEL_STAR_EQUAL, PY_TOKEN_OP_DBL_STAR, PY_TOKEN_DEL_DBL_STAR_EQUAL,
-    PY_TOKEN_OP_PLUS, PY_TOKEN_DEL_PLUS_EQUAL,
-    PY_TOKEN_OP_MINUS, PY_TOKEN_DEL_MINUS_EQUAL, PY_TOKEN_DEL_MINUS_MORE,
-    PY_TOKEN_OP_AMPERSAND, PY_TOKEN_DEL_AMPERSAND_EQUAL,
-    PY_TOKEN_OP_PIPE, PY_TOKEN_DEL_PIPE_EQUAL,
-    PY_TOKEN_OP_SLASH, PY_TOKEN_DEL_SLASH_EQUAL, PY_TOKEN_OP_DBL_SLASH, PY_TOKEN_DEL_DBL_SLASH_EQUAL,
-    PY_TOKEN_OP_PERCENT, PY_TOKEN_DEL_PERCENT_EQUAL,
-    PY_TOKEN_OP_CARET, PY_TOKEN_DEL_CARET_EQUAL,
-    PY_TOKEN_DEL_EQUAL, PY_TOKEN_OP_DBL_EQUAL,
-    PY_TOKEN_OP_NOT_EQUAL,
-    PY_TOKEN_DEL_PERIOD, PY_TOKEN_ELLIPSES,
+    MP_TOKEN_OP_LESS, MP_TOKEN_OP_LESS_EQUAL, MP_TOKEN_OP_DBL_LESS, MP_TOKEN_DEL_DBL_LESS_EQUAL,
+    MP_TOKEN_OP_MORE, MP_TOKEN_OP_MORE_EQUAL, MP_TOKEN_OP_DBL_MORE, MP_TOKEN_DEL_DBL_MORE_EQUAL,
+    MP_TOKEN_OP_STAR, MP_TOKEN_DEL_STAR_EQUAL, MP_TOKEN_OP_DBL_STAR, MP_TOKEN_DEL_DBL_STAR_EQUAL,
+    MP_TOKEN_OP_PLUS, MP_TOKEN_DEL_PLUS_EQUAL,
+    MP_TOKEN_OP_MINUS, MP_TOKEN_DEL_MINUS_EQUAL, MP_TOKEN_DEL_MINUS_MORE,
+    MP_TOKEN_OP_AMPERSAND, MP_TOKEN_DEL_AMPERSAND_EQUAL,
+    MP_TOKEN_OP_PIPE, MP_TOKEN_DEL_PIPE_EQUAL,
+    MP_TOKEN_OP_SLASH, MP_TOKEN_DEL_SLASH_EQUAL, MP_TOKEN_OP_DBL_SLASH, MP_TOKEN_DEL_DBL_SLASH_EQUAL,
+    MP_TOKEN_OP_PERCENT, MP_TOKEN_DEL_PERCENT_EQUAL,
+    MP_TOKEN_OP_CARET, MP_TOKEN_DEL_CARET_EQUAL,
+    MP_TOKEN_DEL_EQUAL, MP_TOKEN_OP_DBL_EQUAL,
+    MP_TOKEN_OP_NOT_EQUAL,
+    MP_TOKEN_DEL_PERIOD, MP_TOKEN_ELLIPSES,
 };
 
 // must have the same order as enum in lexer.h
@@ -280,7 +280,7 @@ static const char *tok_kw[] = {
     NULL,
 };
 
-static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool first_token) {
+static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool first_token) {
     // skip white space and comments
     bool had_physical_newline = false;
     while (!is_end(lex)) {
@@ -322,18 +322,18 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
         // if first token is not on first line, we get a physical newline and
         // this check is done as part of normal indent/dedent checking below
         // (done to get equivalence with CPython)
-        tok->kind = PY_TOKEN_INDENT;
+        tok->kind = MP_TOKEN_INDENT;
 
     } else if (lex->emit_dent < 0) {
-        tok->kind = PY_TOKEN_DEDENT;
+        tok->kind = MP_TOKEN_DEDENT;
         lex->emit_dent += 1;
 
     } else if (lex->emit_dent > 0) {
-        tok->kind = PY_TOKEN_INDENT;
+        tok->kind = MP_TOKEN_INDENT;
         lex->emit_dent -= 1;
 
     } else if (had_physical_newline && lex->nested_bracket_level == 0) {
-        tok->kind = PY_TOKEN_NEWLINE;
+        tok->kind = MP_TOKEN_NEWLINE;
 
         uint num_spaces = lex->column - 1;
         lex->emit_dent = 0;
@@ -347,20 +347,20 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
                 lex->emit_dent -= 1;
             }
             if (num_spaces != indent_top(lex)) {
-                tok->kind = PY_TOKEN_DEDENT_MISMATCH;
+                tok->kind = MP_TOKEN_DEDENT_MISMATCH;
             }
         }
 
     } else if (is_end(lex)) {
         if (indent_top(lex) > 0) {
-            tok->kind = PY_TOKEN_NEWLINE;
+            tok->kind = MP_TOKEN_NEWLINE;
             lex->emit_dent = 0;
             while (indent_top(lex) > 0) {
                 indent_pop(lex);
                 lex->emit_dent -= 1;
             }
         } else {
-            tok->kind = PY_TOKEN_END;
+            tok->kind = MP_TOKEN_END;
         }
 
     } else if (is_char_or(lex, '\'', '\"')
@@ -391,9 +391,9 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
 
         // set token kind
         if (is_bytes) {
-            tok->kind = PY_TOKEN_BYTES;
+            tok->kind = MP_TOKEN_BYTES;
         } else {
-            tok->kind = PY_TOKEN_STRING;
+            tok->kind = MP_TOKEN_STRING;
         }
 
         // get first quoting character
@@ -427,8 +427,8 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
                     next_char(lex);
                     unichar c = CUR_CHAR(lex);
                     switch (c) {
-                        case PY_LEXER_CHAR_EOF: break; // TODO a proper error message?
-                        case '\n': c = PY_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                        case MP_LEXER_CHAR_EOF: break; // TODO a proper error message?
+                        case '\n': c = MP_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
                         case '\\': break;
                         case '\'': break;
                         case '"': break;
@@ -446,7 +446,7 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
                         case 'U': // TODO \Uxxxxxxxx only in strings
                         default: break; // TODO error message
                     }
-                    if (c != PY_LEXER_CHAR_EOF) {
+                    if (c != MP_LEXER_CHAR_EOF) {
                         vstr_add_char(&lex->vstr, c);
                     }
                 } else {
@@ -458,14 +458,14 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
 
         // check we got the required end quotes
         if (n_closing < num_quotes) {
-            tok->kind = PY_TOKEN_LONELY_STRING_OPEN;
+            tok->kind = MP_TOKEN_LONELY_STRING_OPEN;
         }
 
         // cut off the end quotes from the token text
         vstr_cut_tail(&lex->vstr, n_closing);
 
     } else if (is_head_of_identifier(lex)) {
-        tok->kind = PY_TOKEN_NAME;
+        tok->kind = MP_TOKEN_NAME;
 
         // get first char
         vstr_add_char(&lex->vstr, CUR_CHAR(lex));
@@ -478,7 +478,7 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
         }
 
     } else if (is_digit(lex) || (is_char(lex, '.') && is_following_digit(lex))) {
-        tok->kind = PY_TOKEN_NUMBER;
+        tok->kind = MP_TOKEN_NUMBER;
 
         // get first char
         vstr_add_char(&lex->vstr, CUR_CHAR(lex));
@@ -520,7 +520,7 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
 
         if (*t == 0) {
             // didn't match any delimiter or operator characters
-            tok->kind = PY_TOKEN_INVALID;
+            tok->kind = MP_TOKEN_INVALID;
 
         } else {
             // matched a delimiter or operator character
@@ -545,7 +545,7 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
                         next_char(lex);
                         tok_enc_index = t_index;
                     } else {
-                        tok->kind = PY_TOKEN_INVALID;
+                        tok->kind = MP_TOKEN_INVALID;
                     }
                     break;
                 }
@@ -569,9 +569,9 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
             tok->kind = tok_enc_kind[tok_enc_index];
 
             // compute bracket level for implicit line joining
-            if (tok->kind == PY_TOKEN_DEL_PAREN_OPEN || tok->kind == PY_TOKEN_DEL_BRACKET_OPEN || tok->kind == PY_TOKEN_DEL_BRACE_OPEN) {
+            if (tok->kind == MP_TOKEN_DEL_PAREN_OPEN || tok->kind == MP_TOKEN_DEL_BRACKET_OPEN || tok->kind == MP_TOKEN_DEL_BRACE_OPEN) {
                 lex->nested_bracket_level += 1;
-            } else if (tok->kind == PY_TOKEN_DEL_PAREN_CLOSE || tok->kind == PY_TOKEN_DEL_BRACKET_CLOSE || tok->kind == PY_TOKEN_DEL_BRACE_CLOSE) {
+            } else if (tok->kind == MP_TOKEN_DEL_PAREN_CLOSE || tok->kind == MP_TOKEN_DEL_BRACKET_CLOSE || tok->kind == MP_TOKEN_DEL_BRACE_CLOSE) {
                 lex->nested_bracket_level -= 1;
             }
         }
@@ -582,18 +582,18 @@ static void py_lexer_next_token_into(py_lexer_t *lex, py_token_t *tok, bool firs
     tok->len = vstr_len(&lex->vstr);
 
     // check for keywords
-    if (tok->kind == PY_TOKEN_NAME) {
+    if (tok->kind == MP_TOKEN_NAME) {
         for (int i = 0; tok_kw[i] != NULL; i++) {
             if (str_strn_equal(tok_kw[i], tok->str, tok->len)) {
-                tok->kind = PY_TOKEN_KW_FALSE + i;
+                tok->kind = MP_TOKEN_KW_FALSE + i;
                 break;
             }
         }
     }
 }
 
-py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_stream_next_char_t stream_next_char, py_lexer_stream_close_t stream_close) {
-    py_lexer_t *lex = m_new(py_lexer_t, 1);
+mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close) {
+    mp_lexer_t *lex = m_new(mp_lexer_t, 1);
 
     lex->name = src_name; // TODO do we need to strdup this?
     lex->stream_data = stream_data;
@@ -615,25 +615,25 @@ py_lexer_t *py_lexer_new(const char *src_name, void *stream_data, py_lexer_strea
     lex->chr2 = stream_next_char(stream_data);
 
     // if input stream is 0, 1 or 2 characters long and doesn't end in a newline, then insert a newline at the end
-    if (lex->chr0 == PY_LEXER_CHAR_EOF) {
+    if (lex->chr0 == MP_LEXER_CHAR_EOF) {
         lex->chr0 = '\n';
-    } else if (lex->chr1 == PY_LEXER_CHAR_EOF) {
+    } else if (lex->chr1 == MP_LEXER_CHAR_EOF) {
         if (lex->chr0 != '\n' && lex->chr0 != '\r') {
             lex->chr1 = '\n';
         }
-    } else if (lex->chr2 == PY_LEXER_CHAR_EOF) {
+    } else if (lex->chr2 == MP_LEXER_CHAR_EOF) {
         if (lex->chr1 != '\n' && lex->chr1 != '\r') {
             lex->chr2 = '\n';
         }
     }
 
     // preload first token
-    py_lexer_next_token_into(lex, &lex->tok_cur, true);
+    mp_lexer_next_token_into(lex, &lex->tok_cur, true);
 
     return lex;
 }
 
-void py_lexer_free(py_lexer_t *lex) {
+void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
         if (lex->stream_close) {
             lex->stream_close(lex->stream_data);
@@ -643,45 +643,45 @@ void py_lexer_free(py_lexer_t *lex) {
     }
 }
 
-void py_lexer_to_next(py_lexer_t *lex) {
-    py_lexer_next_token_into(lex, &lex->tok_cur, false);
+void mp_lexer_to_next(mp_lexer_t *lex) {
+    mp_lexer_next_token_into(lex, &lex->tok_cur, false);
 }
 
-const py_token_t *py_lexer_cur(const py_lexer_t *lex) {
+const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex) {
     return &lex->tok_cur;
 }
 
-bool py_lexer_is_kind(py_lexer_t *lex, py_token_kind_t kind) {
+bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
     return lex->tok_cur.kind == kind;
 }
 
 /*
-bool py_lexer_is_str(py_lexer_t *lex, const char *str) {
-    return py_token_is_str(&lex->tok_cur, str);
+bool mp_lexer_is_str(mp_lexer_t *lex, const char *str) {
+    return mp_token_is_str(&lex->tok_cur, str);
 }
 
-bool py_lexer_opt_kind(py_lexer_t *lex, py_token_kind_t kind) {
-    if (py_lexer_is_kind(lex, kind)) {
-        py_lexer_to_next(lex);
+bool mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
+    if (mp_lexer_is_kind(lex, kind)) {
+        mp_lexer_to_next(lex);
         return true;
     }
     return false;
 }
 
-bool py_lexer_opt_str(py_lexer_t *lex, const char *str) {
-    if (py_lexer_is_str(lex, str)) {
-        py_lexer_to_next(lex);
+bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
+    if (mp_lexer_is_str(lex, str)) {
+        mp_lexer_to_next(lex);
         return true;
     }
     return false;
 }
 */
 
-bool py_lexer_show_error(py_lexer_t *lex, const char *msg) {
-    return py_token_show_error(&lex->tok_cur, msg);
+bool mp_lexer_show_error(mp_lexer_t *lex, const char *msg) {
+    return mp_token_show_error(&lex->tok_cur, msg);
 }
 
-bool py_lexer_show_error_pythonic(py_lexer_t *lex, const char *msg) {
+bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {
     printf("  File \"%s\", line %d column %d\n%s\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
     return false;
 }

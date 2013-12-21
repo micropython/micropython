@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "std.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "gc.h"
 
 #if 0

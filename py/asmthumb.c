@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "asmthumb.h"
 
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)

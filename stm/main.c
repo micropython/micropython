@@ -13,16 +13,27 @@
 #include "std.h"
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "ff.h"
+#include "mpconfig.h"
+#include "nlr.h"
+#include "misc.h"
+#include "lexer.h"
+#include "lexerstm.h"
+#include "parse.h"
+#include "compile.h"
+#include "obj.h"
+#include "runtime0.h"
+#include "runtime.h"
+#include "repl.h"
 #include "gc.h"
 #include "systick.h"
 #include "led.h"
+#include "servo.h"
 #include "lcd.h"
 #include "storage.h"
 #include "mma.h"
 #include "usart.h"
 #include "usb.h"
-#include "ff.h"
 #include "timer.h"
 #include "audio.h"
 #include "pybwlan.h"
@@ -114,126 +125,41 @@ void __fatal_error(const char *msg) {
     }
 }
 
-#include "nlr.h"
-#include "misc.h"
-#include "lexer.h"
-#include "lexerstm.h"
-#include "mpyconfig.h"
-#include "parse.h"
-#include "compile.h"
-#include "runtime.h"
-#include "obj.h"
-#include "repl.h"
-
 static qstr pyb_config_source_dir = 0;
 static qstr pyb_config_main = 0;
 
-py_obj_t pyb_source_dir(py_obj_t source_dir) {
-    pyb_config_source_dir = py_obj_get_qstr(source_dir);
-    return py_const_none;
+mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
+    pyb_config_source_dir = mp_obj_get_qstr(source_dir);
+    return mp_const_none;
 }
 
-py_obj_t pyb_main(py_obj_t main) {
-    pyb_config_main = py_obj_get_qstr(main);
-    return py_const_none;
+mp_obj_t pyb_main(mp_obj_t main) {
+    pyb_config_main = mp_obj_get_qstr(main);
+    return mp_const_none;
 }
 
 // sync all file systems
-py_obj_t pyb_sync(void) {
+mp_obj_t pyb_sync(void) {
     storage_flush();
-    return py_const_none;
+    return mp_const_none;
 }
 
-py_obj_t pyb_delay(py_obj_t count) {
-    sys_tick_delay_ms(py_obj_get_int(count));
-    return py_const_none;
+mp_obj_t pyb_delay(mp_obj_t count) {
+    sys_tick_delay_ms(mp_obj_get_int(count));
+    return mp_const_none;
 }
 
-py_obj_t pyb_led(py_obj_t state) {
+mp_obj_t pyb_led(mp_obj_t state) {
     led_state(PYB_LED_G1, rt_is_true(state));
     return state;
 }
 
-void led_obj_print(py_obj_t self) {
-    machine_uint_t led_id;
-    py_user_get_data(self, &led_id, NULL);
-    printf("<LED %lu>", led_id);
-}
-
-py_obj_t led_obj_on(py_obj_t self) {
-    machine_uint_t led_id;
-    py_user_get_data(self, &led_id, NULL);
-    switch (led_id) {
-        case 1: led_state(PYB_LED_G1, 1); break;
-        case 2: led_state(PYB_LED_G2, 1); break;
-    }
-    return py_const_none;
-}
-
-py_obj_t led_obj_off(py_obj_t self) {
-    machine_uint_t led_id;
-    py_user_get_data(self, &led_id, NULL);
-    switch (led_id) {
-        case 1: led_state(PYB_LED_G1, 0); break;
-        case 2: led_state(PYB_LED_G2, 0); break;
-    }
-    return py_const_none;
-}
-
-const py_user_info_t led_obj_info = {
-    "Led",
-    led_obj_print,
-    {
-        {"on", 0, led_obj_on},
-        {"off", 0, led_obj_off},
-        {NULL, 0, NULL},
-    }
-};
-
-py_obj_t pyb_Led(py_obj_t led_id) {
-    return py_obj_new_user(&led_obj_info, (machine_uint_t)py_obj_get_int(led_id), 0);
-}
-
-py_obj_t pyb_sw(void) {
+mp_obj_t pyb_sw(void) {
     if (sw_get()) {
-        return py_const_true;
+        return mp_const_true;
     } else {
-        return py_const_false;
+        return mp_const_false;
     }
-}
-
-void servo_obj_print(py_obj_t self) {
-    machine_uint_t servo_id;
-    py_user_get_data(self, &servo_id, NULL);
-    printf("<Servo %lu>", servo_id);
-}
-
-py_obj_t servo_obj_angle(py_obj_t self, py_obj_t angle) {
-    machine_uint_t servo_id;
-    py_user_get_data(self, &servo_id, NULL);
-    machine_int_t v = 152 + 85.0 * py_obj_get_float(angle) / 90.0;
-    if (v < 65) { v = 65; }
-    if (v > 210) { v = 210; }
-    switch (servo_id) {
-        case 1: TIM2->CCR1 = v; break;
-        case 2: TIM2->CCR2 = v; break;
-        case 3: TIM2->CCR3 = v; break;
-        case 4: TIM2->CCR4 = v; break;
-    }
-    return py_const_none;
-}
-
-const py_user_info_t servo_obj_info = {
-    "Servo",
-    servo_obj_print,
-    {
-        {"angle", 1, servo_obj_angle},
-        {NULL, 0, NULL},
-    }
-};
-
-py_obj_t pyb_Servo(py_obj_t servo_id) {
-    return py_obj_new_user(&servo_obj_info, (machine_uint_t)py_obj_get_int(servo_id), 0);
 }
 
 /*
@@ -306,13 +232,13 @@ static const char *help_text =
 ;
 
 // get some help about available functions
-static py_obj_t pyb_help(void) {
+static mp_obj_t pyb_help(void) {
     printf("%s", help_text);
-    return py_const_none;
+    return mp_const_none;
 }
 
 // get lots of info about the board
-static py_obj_t pyb_info(void) {
+static mp_obj_t pyb_info(void) {
     // get and print unique id; 96 bits
     {
         byte *id = (byte*)0x1fff7a10;
@@ -364,14 +290,14 @@ static py_obj_t pyb_info(void) {
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 
-    return py_const_none;
+    return mp_const_none;
 }
 
 // SD card test
-static py_obj_t pyb_sd_test(void) {
+static mp_obj_t pyb_sd_test(void) {
     extern void sdio_init(void);
     sdio_init();
-    return py_const_none;
+    return mp_const_none;
 }
 
 static void SYSCLKConfig_STOP(void) {
@@ -398,7 +324,7 @@ static void SYSCLKConfig_STOP(void) {
     }
 }
 
-static py_obj_t pyb_stop(void) {
+static mp_obj_t pyb_stop(void) {
     PWR_EnterSTANDBYMode();
     //PWR_FlashPowerDownCmd(ENABLE); don't know what the logic is with this
 
@@ -411,28 +337,28 @@ static py_obj_t pyb_stop(void) {
 
     //PWR_FlashPowerDownCmd(DISABLE);
 
-    return py_const_none;
+    return mp_const_none;
 }
 
-static py_obj_t pyb_standby(void) {
+static mp_obj_t pyb_standby(void) {
     PWR_EnterSTANDBYMode();
-    return py_const_none;
+    return mp_const_none;
 }
 
-py_obj_t pyb_usart_send(py_obj_t data) {
-    usart_tx_char(py_obj_get_int(data));
-    return py_const_none;
+mp_obj_t pyb_usart_send(mp_obj_t data) {
+    usart_tx_char(mp_obj_get_int(data));
+    return mp_const_none;
 }
 
-py_obj_t pyb_usart_receive(void) {
-    return py_obj_new_int(usart_rx_char());
+mp_obj_t pyb_usart_receive(void) {
+    return mp_obj_new_int(usart_rx_char());
 }
 
-py_obj_t pyb_usart_status(void) {
+mp_obj_t pyb_usart_status(void) {
     if (usart_rx_any()) {
-        return py_const_true;
+        return mp_const_true;
     } else {
-        return py_const_false;
+        return mp_const_false;
     }
 }
 
@@ -544,7 +470,7 @@ void do_repl(void) {
             continue;
         }
 
-        if (py_repl_is_compound_stmt(vstr_str(&line))) {
+        if (mp_repl_is_compound_stmt(vstr_str(&line))) {
             for (;;) {
                 vstr_add_char(&line, '\n');
                 int len = vstr_len(&line);
@@ -556,16 +482,16 @@ void do_repl(void) {
             }
         }
 
-        py_lexer_str_buf_t sb;
-        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
-        py_parse_node_t pn = py_parse(lex, PY_PARSE_SINGLE_INPUT);
-        py_lexer_free(lex);
+        mp_lexer_str_buf_t sb;
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
+        mp_lexer_free(lex);
 
-        if (pn != PY_PARSE_NODE_NULL) {
-            bool comp_ok = py_compile(pn, true);
+        if (pn != MP_PARSE_NODE_NULL) {
+            bool comp_ok = mp_compile(pn, true);
             if (comp_ok) {
-                py_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != py_const_none) {
+                mp_obj_t module_fun = rt_make_function_from_id(1);
+                if (module_fun != mp_const_none) {
                     nlr_buf_t nlr;
                     uint32_t start = sys_tick_counter;
                     if (nlr_push(&nlr) == 0) {
@@ -578,7 +504,7 @@ void do_repl(void) {
                         }
                     } else {
                         // uncaught exception
-                        py_obj_print((py_obj_t)nlr.ret_val);
+                        mp_obj_print((mp_obj_t)nlr.ret_val);
                         printf("\n");
                     }
                 }
@@ -590,28 +516,28 @@ void do_repl(void) {
 }
 
 bool do_file(const char *filename) {
-    py_lexer_file_buf_t fb;
-    py_lexer_t *lex = py_lexer_new_from_file(filename, &fb);
+    mp_lexer_file_buf_t fb;
+    mp_lexer_t *lex = mp_lexer_new_from_file(filename, &fb);
 
     if (lex == NULL) {
         printf("could not open file '%s' for reading\n", filename);
         return false;
     }
 
-    py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
-    py_lexer_free(lex);
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    mp_lexer_free(lex);
 
-    if (pn == PY_PARSE_NODE_NULL) {
+    if (pn == MP_PARSE_NODE_NULL) {
         return false;
     }
 
-    bool comp_ok = py_compile(pn, false);
+    bool comp_ok = mp_compile(pn, false);
     if (!comp_ok) {
         return false;
     }
 
-    py_obj_t module_fun = rt_make_function_from_id(1);
-    if (module_fun == py_const_none) {
+    mp_obj_t module_fun = rt_make_function_from_id(1);
+    if (module_fun == mp_const_none) {
         return false;
     }
 
@@ -622,7 +548,7 @@ bool do_file(const char *filename) {
         return true;
     } else {
         // uncaught exception
-        py_obj_print((py_obj_t)nlr.ret_val);
+        mp_obj_print((mp_obj_t)nlr.ret_val);
         printf("\n");
         return false;
     }
@@ -655,115 +581,16 @@ void gc_collect(void) {
     }
 }
 
-py_obj_t pyb_gc(void) {
+mp_obj_t pyb_gc(void) {
     gc_collect();
-    return py_const_none;
-}
-
-// PWM
-// TIM2 and TIM5 have CH1, CH2, CH3, CH4 on PA0-PA3 respectively
-// they are both 32-bit counters
-// 16-bit prescaler
-// TIM2_CH3 also on PB10 (used below)
-void servo_init(void) {
-    // TIM2 clock enable
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-
-    // for PB10
-    /*
-    // GPIOB Configuration: TIM2_CH3 (PB10)
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    // Connect TIM2 pins to AF1
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_TIM2);
-    */
-
-    // for PA0, PA1, PA2, PA3
-    {
-        // GPIOA Configuration: TIM2_CH0, TIM2_CH1 (PA0, PA1)
-        GPIO_InitTypeDef GPIO_InitStructure;
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-        GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-        // Connect TIM2 pins to AF1
-        GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_TIM2);
-        GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM2);
-        GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM2);
-        GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_TIM2);
-    }
-
-    // Compute the prescaler value so TIM2 runs at 100kHz
-    uint16_t PrescalerValue = (uint16_t) ((SystemCoreClock / 2) / 100000) - 1;
-
-    // Time base configuration
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-    TIM_TimeBaseStructure.TIM_Period = 2000; // timer cycles at 50Hz
-    TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
-    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
-
-    // PWM Mode configuration
-    TIM_OCInitTypeDef TIM_OCInitStructure;
-    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
-    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-    TIM_OCInitStructure.TIM_Pulse = 150; // units of 10us
-    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-    TIM_OC1Init(TIM2, &TIM_OCInitStructure); // channel 1
-    TIM_OC2Init(TIM2, &TIM_OCInitStructure); // channel 2
-    TIM_OC3Init(TIM2, &TIM_OCInitStructure); // channel 3
-    TIM_OC4Init(TIM2, &TIM_OCInitStructure); // channel 4
-
-    // ?
-    TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 1
-    TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 2
-    TIM_OC3PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 3
-    TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable); // channel 4
-
-    // ?
-    TIM_ARRPreloadConfig(TIM2, ENABLE);
-
-    // TIM2 enable counter
-    TIM_Cmd(TIM2, ENABLE);
-}
-
-py_obj_t pyb_servo_set(py_obj_t port, py_obj_t value) {
-    int p = py_obj_get_int(port);
-    int v = py_obj_get_int(value);
-    if (v < 50) { v = 50; }
-    if (v > 250) { v = 250; }
-    switch (p) {
-        case 1: TIM2->CCR1 = v; break;
-        case 2: TIM2->CCR2 = v; break;
-        case 3: TIM2->CCR3 = v; break;
-        case 4: TIM2->CCR4 = v; break;
-    }
-    return py_const_none;
-}
-
-py_obj_t pyb_pwm_set(py_obj_t period, py_obj_t pulse) {
-    int pe = py_obj_get_int(period);
-    int pu = py_obj_get_int(pulse);
-    TIM2->ARR = pe;
-    TIM2->CCR3 = pu;
-    return py_const_none;
+    return mp_const_none;
 }
 
 #define MMA_ADDR (0x4c)
 
 int mma_buf[12];
 
-py_obj_t pyb_mma_read(void) {
+mp_obj_t pyb_mma_read(void) {
     for (int i = 0; i <= 6; i += 3) {
         mma_buf[0 + i] = mma_buf[0 + i + 3];
         mma_buf[1 + i] = mma_buf[1 + i + 3];
@@ -782,24 +609,24 @@ py_obj_t pyb_mma_read(void) {
     }
     int jolt_info = mma_read_nack();
 
-    py_obj_t data[4];
-    data[0] = py_obj_new_int(jolt_info);
-    data[1] = py_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
-    data[2] = py_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
-    data[3] = py_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+    mp_obj_t data[4];
+    data[0] = mp_obj_new_int(jolt_info);
+    data[1] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
+    data[2] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
+    data[3] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
 
     return rt_build_tuple(4, data); // items in reverse order in data
 }
 
-py_obj_t pyb_hid_send_report(py_obj_t arg) {
-    py_obj_t *items = py_obj_get_array_fixed_n(arg, 4);
+mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
+    mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
     uint8_t data[4];
-    data[0] = py_obj_get_int(items[0]);
-    data[1] = py_obj_get_int(items[1]);
-    data[2] = py_obj_get_int(items[2]);
-    data[3] = py_obj_get_int(items[3]);
+    data[0] = mp_obj_get_int(items[0]);
+    data[1] = mp_obj_get_int(items[1]);
+    data[2] = mp_obj_get_int(items[2]);
+    data[3] = mp_obj_get_int(items[3]);
     usb_hid_send_report(data);
-    return py_const_none;
+    return mp_const_none;
 }
 
 static void rtc_init(void) {
@@ -855,90 +682,102 @@ static void rtc_init(void) {
     //RTC_WriteBackupRegister(RTC_BKP_DR0, 0x32F2);
 }
 
-py_obj_t pyb_rtc_read(void) {
+mp_obj_t pyb_rtc_read(void) {
     RTC_TimeTypeDef RTC_TimeStructure;
     RTC_GetTime(RTC_Format_BIN, &RTC_TimeStructure);
     printf("%02d:%02d:%02d\n", RTC_TimeStructure.RTC_Hours, RTC_TimeStructure.RTC_Minutes, RTC_TimeStructure.RTC_Seconds);
-    return py_const_none;
+    return mp_const_none;
 }
 
-void file_obj_print(py_obj_t o) {
-    FIL *fp;
-    py_user_get_data(o, (machine_uint_t*)&fp, NULL);
-    printf("<file %p>", fp);
+typedef struct _pyb_file_obj_t {
+    mp_obj_base_t base;
+    FIL fp;
+} pyb_file_obj_t;
+
+void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    printf("<file %p>", self_in);
 }
 
-py_obj_t file_obj_read(py_obj_t self, py_obj_t arg) {
-    FIL *fp;
-    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
-    int n = py_obj_get_int(arg);
+mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
+    pyb_file_obj_t *self = self_in;
+    int n = mp_obj_get_int(arg);
     char *buf = m_new(char, n + 1);
     UINT n_out;
-    f_read(fp, buf, n, &n_out);
+    f_read(&self->fp, buf, n, &n_out);
     buf[n_out] = 0;
-    return py_obj_new_str(qstr_from_str_take(buf));
+    return mp_obj_new_str(qstr_from_str_take(buf));
 }
 
-py_obj_t file_obj_write(py_obj_t self, py_obj_t arg) {
-    FIL *fp;
-    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
-    const char *s = qstr_str(py_obj_get_qstr(arg));
+mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {
+    pyb_file_obj_t *self = self_in;
+    const char *s = qstr_str(mp_obj_get_qstr(arg));
     UINT n_out;
-    FRESULT res = f_write(fp, s, strlen(s), &n_out);
+    FRESULT res = f_write(&self->fp, s, strlen(s), &n_out);
     if (res != FR_OK) {
         printf("File error: could not write to file; error code %d\n", res);
     } else if (n_out != strlen(s)) {
         printf("File error: could not write all data to file; wrote %d / %d bytes\n", n_out, strlen(s));
     }
-    return py_const_none;
+    return mp_const_none;
 }
 
-py_obj_t file_obj_close(py_obj_t self) {
-    FIL *fp;
-    py_user_get_data(self, (machine_uint_t*)&fp, NULL);
-    f_close(fp);
-    return py_const_none;
+mp_obj_t file_obj_close(mp_obj_t self_in) {
+    pyb_file_obj_t *self = self_in;
+    f_close(&self->fp);
+    return mp_const_none;
 }
+
+static MP_DEFINE_CONST_FUN_OBJ_2(file_obj_read_obj, file_obj_read);
+static MP_DEFINE_CONST_FUN_OBJ_2(file_obj_write_obj, file_obj_write);
+static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
 // TODO gc hook to close the file if not already closed
-const py_user_info_t file_obj_info = {
+
+static const mp_obj_type_t file_obj_type = {
+    { &mp_const_type },
     "File",
-    file_obj_print,
-    {
-        {"read", 1, file_obj_read},
-        {"write", 1, file_obj_write},
-        {"close", 0, file_obj_close},
-        {NULL, 0, NULL},
+    file_obj_print, // print
+    NULL, // call_n
+    NULL, // unary_op
+    NULL, // binary_op
+    NULL, // getiter
+    NULL, // iternext
+    { // method list
+        { "read", &file_obj_read_obj },
+        { "write", &file_obj_write_obj },
+        { "close", &file_obj_close_obj },
+        {NULL, NULL},
     }
 };
 
-py_obj_t pyb_io_open(py_obj_t o_filename, py_obj_t o_mode) {
-    const char *filename = qstr_str(py_obj_get_qstr(o_filename));
-    const char *mode = qstr_str(py_obj_get_qstr(o_mode));
-    FIL *fp = m_new(FIL, 1);
+mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
+    const char *filename = qstr_str(mp_obj_get_qstr(o_filename));
+    const char *mode = qstr_str(mp_obj_get_qstr(o_mode));
+    pyb_file_obj_t *self = m_new_obj(pyb_file_obj_t);
+    self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
         // open for reading
-        FRESULT res = f_open(fp, filename, FA_READ);
+        FRESULT res = f_open(&self->fp, filename, FA_READ);
         if (res != FR_OK) {
             printf("FileNotFoundError: [Errno 2] No such file or directory: '%s'\n", filename);
-            return py_const_none;
+            return mp_const_none;
         }
     } else if (mode[0] == 'w') {
         // open for writing, truncate the file first
-        FRESULT res = f_open(fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
+        FRESULT res = f_open(&self->fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
         if (res != FR_OK) {
             printf("?FileError: could not create file: '%s'\n", filename);
-            return py_const_none;
+            return mp_const_none;
         }
     } else {
         printf("ValueError: invalid mode: '%s'\n", mode);
-        return py_const_none;
+        return mp_const_none;
     }
-    return py_obj_new_user(&file_obj_info, (machine_uint_t)fp, 0);
+    return self;
 }
 
-py_obj_t pyb_rng_get(void) {
-    return py_obj_new_int(RNG_GetRandomNumber() >> 16);
+mp_obj_t pyb_rng_get(void) {
+    return mp_obj_new_int(RNG_GetRandomNumber() >> 16);
 }
 
 int main(void) {
@@ -1015,7 +854,7 @@ soft_reset:
     {
         rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
 
-        py_obj_t m = py_module_new();
+        mp_obj_t m = mp_module_new();
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
         rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_0(pyb_sd_test));
         rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
@@ -1312,19 +1151,19 @@ soft_reset:
             "                pass\n"
             "f()\n";
 
-        py_lexer_str_buf_t py_lexer_str_buf;
-        py_lexer_t *lex = py_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &py_lexer_str_buf);
+        mp_lexer_str_buf_t mp_lexer_str_buf;
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &mp_lexer_str_buf);
 
         // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
         printf("lex; al=%u\n", m_get_total_bytes_allocated());
         sys_tick_delay_ms(1000);
-        py_parse_node_t pn = py_parse(lex, PY_PARSE_FILE_INPUT);
-        py_lexer_free(lex);
-        if (pn != PY_PARSE_NODE_NULL) {
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        mp_lexer_free(lex);
+        if (pn != MP_PARSE_NODE_NULL) {
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
             //parse_node_show(pn, 0);
-            bool comp_ok = py_compile(pn, false);
+            bool comp_ok = mp_compile(pn, false);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
 
@@ -1333,7 +1172,7 @@ soft_reset:
             } else {
                 // execute it!
 
-                py_obj_t module_fun = rt_make_function_from_id(1);
+                mp_obj_t module_fun = rt_make_function_from_id(1);
 
                 // flash once
                 led_state(PYB_LED_G1, 1);
@@ -1342,15 +1181,15 @@ soft_reset:
 
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
-                    py_obj_t ret = rt_call_function_0(module_fun);
+                    mp_obj_t ret = rt_call_function_0(module_fun);
                     printf("done! got: ");
-                    py_obj_print(ret);
+                    mp_obj_print(ret);
                     printf("\n");
                     nlr_pop();
                 } else {
                     // uncaught exception
                     printf("exception: ");
-                    py_obj_print((py_obj_t)nlr.ret_val);
+                    mp_obj_print((mp_obj_t)nlr.ret_val);
                     printf("\n");
                 }
 

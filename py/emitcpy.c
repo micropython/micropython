@@ -6,12 +6,12 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 #include "compile.h"
 #include "scope.h"
-#include "runtime.h"
+#include "runtime0.h"
 #include "emit.h"
 
 #if MICROPY_EMIT_CPYTHON
@@ -136,9 +136,9 @@ static void emit_cpy_load_const_tok(emit_t *emit, py_token_kind_t tok) {
     if (emit->pass == PASS_3) {
         printf("LOAD_CONST ");
         switch (tok) {
-            case PY_TOKEN_KW_FALSE: printf("False"); break;
-            case PY_TOKEN_KW_NONE: printf("None"); break;
-            case PY_TOKEN_KW_TRUE: printf("True"); break;
+            case MP_TOKEN_KW_FALSE: printf("False"); break;
+            case MP_TOKEN_KW_NONE: printf("None"); break;
+            case MP_TOKEN_KW_TRUE: printf("True"); break;
             default: printf("?=%d\n", tok); return; assert(0);
         }
         printf("\n");

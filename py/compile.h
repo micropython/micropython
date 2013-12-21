@@ -1,1 +1,1 @@
-bool py_compile(py_parse_node_t pn, bool is_repl);
+bool mp_compile(mp_parse_node_t pn, bool is_repl);

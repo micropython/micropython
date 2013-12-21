@@ -5,11 +5,11 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
-#include "runtime.h"
+#include "runtime0.h"
 #include "emit.h"
 
 #define EMIT(fun, arg...) (emit_method_table->fun(emit, ##arg))

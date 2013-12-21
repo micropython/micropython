@@ -24,12 +24,14 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
-#include "runtime.h"
+#include "runtime0.h"
 #include "emit.h"
+#include "obj.h"
+#include "runtime.h"
 
 // wrapper around everything in this file
 #if N_X64 || N_THUMB
@@ -258,10 +260,10 @@ static void emit_native_end_pass(emit_t *emit) {
 
     if (emit->pass == PASS_3) {
 #if N_X64
-        py_fun_t f = asm_x64_get_code(emit->as);
+        void *f = asm_x64_get_code(emit->as);
         rt_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
 #elif N_THUMB
-        py_fun_t f = asm_thumb_get_code(emit->as);
+        void *f = asm_thumb_get_code(emit->as);
         rt_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
 #endif
     }
@@ -460,9 +462,9 @@ static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, in
                 case VTYPE_BOOL:
                     si->vtype = VTYPE_PYOBJ;
                     if (si->u_imm == 0) {
-                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)py_const_false, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)mp_const_false, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
                     } else {
-                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)py_const_true, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                        ASM_MOV_IMM_TO_LOCAL_USING((machine_uint_t)mp_const_true, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
                     }
                     break;
                 case VTYPE_INT:
@@ -561,23 +563,23 @@ static void emit_native_import_star(emit_t *emit) {
     assert(0);
 }
 
-static void emit_native_load_const_tok(emit_t *emit, py_token_kind_t tok) {
+static void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     emit_pre(emit);
     int vtype;
     machine_uint_t val;
     if (emit->do_viper_types) {
         switch (tok) {
-            case PY_TOKEN_KW_NONE: vtype = VTYPE_PTR_NONE; val = 0; break;
-            case PY_TOKEN_KW_FALSE: vtype = VTYPE_BOOL; val = 0; break;
-            case PY_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
+            case MP_TOKEN_KW_NONE: vtype = VTYPE_PTR_NONE; val = 0; break;
+            case MP_TOKEN_KW_FALSE: vtype = VTYPE_BOOL; val = 0; break;
+            case MP_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
             default: assert(0); vtype = 0; val = 0; // shouldn't happen
         }
     } else {
         vtype = VTYPE_PYOBJ;
         switch (tok) {
-            case PY_TOKEN_KW_NONE: val = (machine_uint_t)py_const_none; break;
-            case PY_TOKEN_KW_FALSE: val = (machine_uint_t)py_const_false; break;
-            case PY_TOKEN_KW_TRUE: val = (machine_uint_t)py_const_true; break;
+            case MP_TOKEN_KW_NONE: val = (machine_uint_t)mp_const_none; break;
+            case MP_TOKEN_KW_FALSE: val = (machine_uint_t)mp_const_false; break;
+            case MP_TOKEN_KW_TRUE: val = (machine_uint_t)mp_const_true; break;
             default: assert(0); vtype = 0; val = 0; // shouldn't happen
         }
     }
@@ -956,7 +958,7 @@ static void emit_native_for_iter(emit_t *emit, int label) {
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
     emit_call(emit, RT_F_ITERNEXT, rt_iternext);
-    ASM_MOV_IMM_TO_REG((machine_uint_t)py_const_stop_iteration, REG_TEMP1);
+    ASM_MOV_IMM_TO_REG((machine_uint_t)mp_const_stop_iteration, REG_TEMP1);
 #if N_X64
     asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
     asm_x64_jcc_label(emit->as, JCC_JE, label);

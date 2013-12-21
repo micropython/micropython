@@ -6,11 +6,11 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
-#include "runtime.h"
+#include "runtime0.h"
 #include "emit.h"
 #include "asmthumb.h"
 
@@ -45,22 +45,22 @@ static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     asm_thumb_end_pass(emit->as);
 
     if (emit->pass == PASS_3) {
-        py_fun_t f = asm_thumb_get_code(emit->as);
+        void *f = asm_thumb_get_code(emit->as);
         rt_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
     }
 }
 
-static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, py_parse_node_t *pn_params) {
+static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
         printf("SyntaxError: can only have up to 4 parameters to inline thumb assembly\n");
         return 0;
     }
     for (int i = 0; i < n_params; i++) {
-        if (!PY_PARSE_NODE_IS_ID(pn_params[i])) {
+        if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
             printf("SyntaxError: parameter to inline assembler must be an identifier\n");
             return 0;
         }
-        const char *p = qstr_str(PY_PARSE_NODE_LEAF_ARG(pn_params[i]));
+        const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
         if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
             printf("SyntaxError: parameter %d to inline assembler must be r%d\n", i + 1, i);
             return 0;
@@ -84,12 +84,12 @@ static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
     }
 }
 
-static uint get_arg_rlo(qstr op, py_parse_node_t *pn_args, int wanted_arg_num) {
-    if (!PY_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
+static uint get_arg_rlo(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+    if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    qstr reg_qstr = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+    qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     const char *reg_str = qstr_str(reg_qstr);
     if (!(strlen(reg_str) == 2 && reg_str[0] == 'r' && ('0' <= reg_str[1] && reg_str[1] <= '7'))) {
         printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
@@ -98,12 +98,12 @@ static uint get_arg_rlo(qstr op, py_parse_node_t *pn_args, int wanted_arg_num) {
     return reg_str[1] - '0';
 }
 
-static int get_arg_i(qstr op, py_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
-    if (!PY_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
+static int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
+    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    int i = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+    int i = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     if ((i & (~fit_mask)) != 0) {
         printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", qstr_str(op), i, fit_mask);
         return 0;
@@ -111,12 +111,12 @@ static int get_arg_i(qstr op, py_parse_node_t *pn_args, int wanted_arg_num, int 
     return i;
 }
 
-static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_args, int wanted_arg_num) {
-    if (!PY_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
+static int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+    if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a label in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    qstr label_qstr = PY_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+    qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     for (int i = 0; i < emit->max_num_labels; i++) {
         if (emit->label_lookup[i] == label_qstr) {
             return i;
@@ -129,7 +129,7 @@ static int get_arg_label(emit_inline_asm_t *emit, qstr op, py_parse_node_t *pn_a
     return 0;
 }
 
-static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, py_parse_node_t *pn_args) {
+static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
     // "b", LAB, asm_thumb_b_n,

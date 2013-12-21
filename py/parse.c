@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
 
@@ -50,9 +50,9 @@ enum {
 #define one_or_more             (RULE_ACT_LIST | 2)
 #define list                    (RULE_ACT_LIST | 1)
 #define list_with_end           (RULE_ACT_LIST | 3)
-#define tok(t)                  (RULE_ARG_TOK | PY_TOKEN_##t)
+#define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
 #define rule(r)                 (RULE_ARG_RULE | RULE_##r)
-#define opt_tok(t)              (RULE_ARG_OPT_TOK | PY_TOKEN_##t)
+#define opt_tok(t)              (RULE_ARG_OPT_TOK | MP_TOKEN_##t)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 #ifdef USE_RULE_NAME
 #define DEF_RULE(rule, comp, kind, arg...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { arg } };
@@ -89,7 +89,7 @@ typedef struct _parser_t {
     rule_stack_t *rule_stack;
 
     uint result_stack_top;
-    py_parse_node_t *result_stack;
+    mp_parse_node_t *result_stack;
 } parser_t;
 
 static void push_rule(parser_t *parser, const rule_t *rule, int arg_i) {
@@ -115,47 +115,47 @@ static void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i) {
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
 }
 
-py_parse_node_t py_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
-    return (py_parse_node_t)(kind | (arg << 4));
+mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
+    return (mp_parse_node_t)(kind | (arg << 4));
 }
 
 int num_parse_nodes_allocated = 0;
-py_parse_node_struct_t *parse_node_new_struct(int rule_id, int num_args) {
-    py_parse_node_struct_t *pn = m_malloc(sizeof(py_parse_node_struct_t) + num_args * sizeof(py_parse_node_t));
+mp_parse_node_struct_t *parse_node_new_struct(int rule_id, int num_args) {
+    mp_parse_node_struct_t *pn = m_malloc(sizeof(mp_parse_node_struct_t) + num_args * sizeof(mp_parse_node_t));
     pn->source = 0; // TODO
     pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
     num_parse_nodes_allocated += 1;
     return pn;
 }
 
-void py_parse_node_show(py_parse_node_t pn, int indent) {
+void mp_parse_node_show(mp_parse_node_t pn, int indent) {
     for (int i = 0; i < indent; i++) {
         printf(" ");
     }
-    if (PY_PARSE_NODE_IS_NULL(pn)) {
+    if (MP_PARSE_NODE_IS_NULL(pn)) {
         printf("NULL\n");
-    } else if (PY_PARSE_NODE_IS_LEAF(pn)) {
-        int arg = PY_PARSE_NODE_LEAF_ARG(pn);
-        switch (PY_PARSE_NODE_LEAF_KIND(pn)) {
-            case PY_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
-            case PY_PARSE_NODE_SMALL_INT: printf("int(%d)\n", arg); break;
-            case PY_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
-            case PY_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
-            case PY_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
-            case PY_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
-            case PY_PARSE_NODE_TOKEN: printf("tok(%d)\n", arg); break;
+    } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
+        int arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
+            case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_SMALL_INT: printf("int(%d)\n", arg); break;
+            case MP_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_TOKEN: printf("tok(%d)\n", arg); break;
             default: assert(0);
         }
     } else {
-        py_parse_node_struct_t *pns2 = (py_parse_node_struct_t*)pn;
+        mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pn;
         int n = pns2->kind_num_nodes >> 8;
 #ifdef USE_RULE_NAME
-        printf("%s(%d) (n=%d)\n", rules[PY_PARSE_NODE_STRUCT_KIND(pns2)]->rule_name, PY_PARSE_NODE_STRUCT_KIND(pns2), n);
+        printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns2)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns2), n);
 #else
-        printf("rule(%u) (n=%d)\n", (uint)PY_PARSE_NODE_STRUCT_KIND(pns2), n);
+        printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns2), n);
 #endif
         for (int i = 0; i < n; i++) {
-            py_parse_node_show(pns2->nodes[i], indent + 2);
+            mp_parse_node_show(pns2->nodes[i], indent + 2);
         }
     }
 }
@@ -164,31 +164,31 @@ void py_parse_node_show(py_parse_node_t pn, int indent) {
 static void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
     for (int i = parser->result_stack_top - 1; i >= 0; i--) {
-        py_parse_node_show(parser->result_stack[i], 0);
+        mp_parse_node_show(parser->result_stack[i], 0);
     }
 }
 */
 
-static py_parse_node_t pop_result(parser_t *parser) {
+static mp_parse_node_t pop_result(parser_t *parser) {
     assert(parser->result_stack_top > 0);
     return parser->result_stack[--parser->result_stack_top];
 }
 
-static py_parse_node_t peek_result(parser_t *parser, int pos) {
+static mp_parse_node_t peek_result(parser_t *parser, int pos) {
     assert(parser->result_stack_top > pos);
     return parser->result_stack[parser->result_stack_top - 1 - pos];
 }
 
-static void push_result_node(parser_t *parser, py_parse_node_t pn) {
+static void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
-static void push_result_token(parser_t *parser, const py_lexer_t *lex) {
-    const py_token_t *tok = py_lexer_cur(lex);
-    py_parse_node_t pn;
-    if (tok->kind == PY_TOKEN_NAME) {
-        pn = py_parse_node_new_leaf(PY_PARSE_NODE_ID, qstr_from_strn_copy(tok->str, tok->len));
-    } else if (tok->kind == PY_TOKEN_NUMBER) {
+static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
+    const mp_token_t *tok = mp_lexer_cur(lex);
+    mp_parse_node_t pn;
+    if (tok->kind == MP_TOKEN_NAME) {
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn_copy(tok->str, tok->len));
+    } else if (tok->kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
         int int_val = 0;
@@ -227,43 +227,43 @@ static void push_result_token(parser_t *parser, const py_lexer_t *lex) {
             }
         }
         if (dec) {
-            pn = py_parse_node_new_leaf(PY_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
-        } else if (small_int && PY_FIT_SMALL_INT(int_val)) {
-            pn = py_parse_node_new_leaf(PY_PARSE_NODE_SMALL_INT, int_val);
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
+        } else if (small_int && MP_FIT_SMALL_INT(int_val)) {
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
-            pn = py_parse_node_new_leaf(PY_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));
         }
-    } else if (tok->kind == PY_TOKEN_STRING) {
-        pn = py_parse_node_new_leaf(PY_PARSE_NODE_STRING, qstr_from_strn_copy(tok->str, tok->len));
-    } else if (tok->kind == PY_TOKEN_BYTES) {
-        pn = py_parse_node_new_leaf(PY_PARSE_NODE_BYTES, qstr_from_strn_copy(tok->str, tok->len));
+    } else if (tok->kind == MP_TOKEN_STRING) {
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn_copy(tok->str, tok->len));
+    } else if (tok->kind == MP_TOKEN_BYTES) {
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn_copy(tok->str, tok->len));
     } else {
-        pn = py_parse_node_new_leaf(PY_PARSE_NODE_TOKEN, tok->kind);
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, tok->kind);
     }
     push_result_node(parser, pn);
 }
 
 static void push_result_rule(parser_t *parser, const rule_t *rule, int num_args) {
-    py_parse_node_struct_t *pn = parse_node_new_struct(rule->rule_id, num_args);
+    mp_parse_node_struct_t *pn = parse_node_new_struct(rule->rule_id, num_args);
     for (int i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
-    push_result_node(parser, (py_parse_node_t)pn);
+    push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
+mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     parser_t *parser = m_new(parser_t, 1);
     parser->rule_stack_alloc = 64;
     parser->rule_stack_top = 0;
     parser->rule_stack = m_new(rule_stack_t, parser->rule_stack_alloc);
 
-    parser->result_stack = m_new(py_parse_node_t, 1000);
+    parser->result_stack = m_new(mp_parse_node_t, 1000);
     parser->result_stack_top = 0;
 
     int top_level_rule;
     switch (input_kind) {
-        case PY_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
-        //case PY_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
+        case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
+        //case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
         default: top_level_rule = RULE_file_input;
     }
     push_rule(parser, rules[top_level_rule], 0);
@@ -271,7 +271,7 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
     uint n, i;
     bool backtrack = false;
     const rule_t *rule;
-    py_token_kind_t tok_kind;
+    mp_token_kind_t tok_kind;
     bool emit_rule;
     bool had_trailing_sep;
 
@@ -303,9 +303,9 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                 for (; i < n - 1; ++i) {
                     switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
                         case RULE_ARG_TOK:
-                            if (py_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
+                            if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
                                 push_result_token(parser, lex);
-                                py_lexer_to_next(lex);
+                                mp_lexer_to_next(lex);
                                 goto next_rule;
                             }
                             break;
@@ -318,9 +318,9 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                     }
                 }
                 if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                    if (py_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
+                    if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
                         push_result_token(parser, lex);
-                        py_lexer_to_next(lex);
+                        mp_lexer_to_next(lex);
                     } else {
                         backtrack = true;
                         goto next_rule;
@@ -337,7 +337,7 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                     assert(i > 0);
                     if ((rule->arg[i - 1] & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE) {
                         // an optional rule that failed, so continue with next arg
-                        push_result_node(parser, PY_PARSE_NODE_NULL);
+                        push_result_node(parser, MP_PARSE_NODE_NULL);
                         backtrack = false;
                     } else {
                         // a mandatory rule that failed, so propagate backtrack
@@ -356,12 +356,12 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                         case RULE_ARG_TOK:
                             // need to match a token
                             tok_kind = rule->arg[i] & RULE_ARG_ARG_MASK;
-                            if (py_lexer_is_kind(lex, tok_kind)) {
+                            if (mp_lexer_is_kind(lex, tok_kind)) {
                                 // matched token
-                                if (tok_kind == PY_TOKEN_NAME) {
+                                if (tok_kind == MP_TOKEN_NAME) {
                                     push_result_token(parser, lex);
                                 }
-                                py_lexer_to_next(lex);
+                                mp_lexer_to_next(lex);
                             } else {
                                 // failed to match token
                                 if (i > 0) {
@@ -399,10 +399,10 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                 for (int x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
-                        if (tok_kind >= PY_TOKEN_NAME) {
+                        if (tok_kind >= MP_TOKEN_NAME) {
                             emit_rule = true;
                         }
-                        if (tok_kind == PY_TOKEN_NAME) {
+                        if (tok_kind == MP_TOKEN_NAME) {
                             // only tokens which were names are pushed to stack
                             i += 1;
                         }
@@ -427,13 +427,13 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                 // always emit these rules, and add an extra blank node at the end (to be used by the compiler to store data)
                 if (rule->rule_id == RULE_funcdef || rule->rule_id == RULE_classdef || rule->rule_id == RULE_comp_for || rule->rule_id == RULE_lambdef || rule->rule_id == RULE_lambdef_nocond) {
                     emit_rule = true;
-                    push_result_node(parser, PY_PARSE_NODE_NULL);
+                    push_result_node(parser, MP_PARSE_NODE_NULL);
                     i += 1;
                 }
 
                 int num_not_nil = 0;
                 for (int x = 0; x < i; ++x) {
-                    if (peek_result(parser, x) != PY_PARSE_NODE_NULL) {
+                    if (peek_result(parser, x) != MP_PARSE_NODE_NULL) {
                         num_not_nil += 1;
                     }
                 }
@@ -446,10 +446,10 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                     //assert(0);
                 } else if (num_not_nil == 1) {
                     // single result, leave it on stack
-                    py_parse_node_t pn = PY_PARSE_NODE_NULL;
+                    mp_parse_node_t pn = MP_PARSE_NODE_NULL;
                     for (int x = 0; x < i; ++x) {
-                        py_parse_node_t pn2 = pop_result(parser);
-                        if (pn2 != PY_PARSE_NODE_NULL) {
+                        mp_parse_node_t pn2 = pop_result(parser);
+                        if (pn2 != MP_PARSE_NODE_NULL) {
                             pn = pn2;
                         }
                     }
@@ -498,13 +498,13 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
                         uint arg = rule->arg[i & 1 & n];
                         switch (arg & RULE_ARG_KIND_MASK) {
                             case RULE_ARG_TOK:
-                                if (py_lexer_is_kind(lex, arg & RULE_ARG_ARG_MASK)) {
+                                if (mp_lexer_is_kind(lex, arg & RULE_ARG_ARG_MASK)) {
                                     if (i & 1 & n) {
                                         // separators which are tokens are not pushed to result stack
                                     } else {
                                         push_result_token(parser, lex);
                                     }
-                                    py_lexer_to_next(lex);
+                                    mp_lexer_to_next(lex);
                                     // got element of list, so continue parsing list
                                     i += 1;
                                 } else {
@@ -552,7 +552,7 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
     }
 
     // check we are at the end of the token stream
-    if (!py_lexer_is_kind(lex, PY_TOKEN_END)) {
+    if (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
         goto syntax_error;
     }
 
@@ -564,16 +564,16 @@ py_parse_node_t py_parse(py_lexer_t *lex, py_parse_input_kind_t input_kind) {
     return parser->result_stack[0];
 
 syntax_error:
-    if (py_lexer_is_kind(lex, PY_TOKEN_INDENT)) {
-        py_lexer_show_error_pythonic(lex, "IndentationError: unexpected indent");
-    } else if (py_lexer_is_kind(lex, PY_TOKEN_DEDENT_MISMATCH)) {
-        py_lexer_show_error_pythonic(lex, "IndentationError: unindent does not match any outer indentation level");
+    if (mp_lexer_is_kind(lex, MP_TOKEN_INDENT)) {
+        mp_lexer_show_error_pythonic(lex, "IndentationError: unexpected indent");
+    } else if (mp_lexer_is_kind(lex, MP_TOKEN_DEDENT_MISMATCH)) {
+        mp_lexer_show_error_pythonic(lex, "IndentationError: unindent does not match any outer indentation level");
     } else {
-        py_lexer_show_error_pythonic(lex, "syntax error:");
+        mp_lexer_show_error_pythonic(lex, "syntax error:");
 #ifdef USE_RULE_NAME
-        py_lexer_show_error(lex, rule->rule_name);
+        mp_lexer_show_error(lex, rule->rule_name);
 #endif
-        py_token_show(py_lexer_cur(lex));
+        mp_token_show(mp_lexer_cur(lex));
     }
-    return PY_PARSE_NODE_NULL;
+    return MP_PARSE_NODE_NULL;
 }

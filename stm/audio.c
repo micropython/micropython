@@ -6,9 +6,10 @@
 
 #include "nlr.h"
 #include "misc.h"
-#include "mpyconfig.h"
+#include "mpconfig.h"
 #include "parse.h"
 #include "compile.h"
+#include "obj.h"
 #include "runtime.h"
 
 #include "audio.h"
@@ -44,22 +45,22 @@ void audio_drain(void) {
 }
 
 // direct access to DAC
-py_obj_t pyb_audio_dac(py_obj_t val) {
-    DAC_SetChannel2Data(DAC_Align_8b_R, py_obj_get_int(val));
-    return py_const_none;
+mp_obj_t pyb_audio_dac(mp_obj_t val) {
+    DAC_SetChannel2Data(DAC_Align_8b_R, mp_obj_get_int(val));
+    return mp_const_none;
 }
 
-py_obj_t pyb_audio_is_full(void) {
+mp_obj_t pyb_audio_is_full(void) {
     if (audio_is_full()) {
-        return py_const_true;
+        return mp_const_true;
     } else {
-        return py_const_false;
+        return mp_const_false;
     }
 }
 
-py_obj_t pyb_audio_fill(py_obj_t val) {
-    audio_fill(py_obj_get_int(val));
-    return py_const_none;
+mp_obj_t pyb_audio_fill(mp_obj_t val) {
+    audio_fill(mp_obj_get_int(val));
+    return mp_const_none;
 }
 
 void audio_init(void) {
@@ -90,7 +91,7 @@ void audio_init(void) {
     // enable interrupt
 
     // Python interface
-    py_obj_t m = py_module_new();
+    mp_obj_t m = mp_module_new();
     rt_store_attr(m, qstr_from_str_static("dac"), rt_make_function_1(pyb_audio_dac));
     rt_store_attr(m, qstr_from_str_static("is_full"), rt_make_function_0(pyb_audio_is_full));
     rt_store_attr(m, qstr_from_str_static("fill"), rt_make_function_1(pyb_audio_fill));
