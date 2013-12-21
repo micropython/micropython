@@ -362,7 +362,7 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 						  STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE_NUM_BYTES_OFFSET,*(unsigned long *)pRetParams);
 						  pRetParams = ((char *)pRetParams) + 4;
 						  STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE__FLAGS__OFFSET,*(unsigned long *)pRetParams);
-						  tBsdReadReturnParams *tread = (tBsdReadReturnParams *)pRetParams;
+						  //tBsdReadReturnParams *tread = (tBsdReadReturnParams *)pRetParams; // unused
 						  if(((tBsdReadReturnParams *)pRetParams)->iNumberOfBytes == ERROR_SOCKET_INACTIVE)
 						    {
 						      set_socket_active_status(((tBsdReadReturnParams *)pRetParams)->iSocketDescriptor,SOCKET_STATUS_INACTIVE);

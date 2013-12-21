@@ -605,7 +605,7 @@ wlan_add_profile(unsigned long ulSecType,
 								 unsigned char* ucPf_OrKey,
 								 unsigned long ulPassPhraseLen)
 {
-	unsigned short arg_len;
+	unsigned short arg_len = 0;
 	long ret;
 	unsigned char *ptr;
 	long i = 0;
@@ -706,8 +706,7 @@ wlan_add_profile(unsigned long ulSecType,
 	}
 
 	// Initiate a HCI command
-	hci_command_send(HCI_CMND_WLAN_IOCTL_ADD_PROFILE,
-									 ptr, arg_len);
+	hci_command_send(HCI_CMND_WLAN_IOCTL_ADD_PROFILE, ptr, arg_len);
 
 	// Wait for command complete event
 	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_ADD_PROFILE, &ret);
