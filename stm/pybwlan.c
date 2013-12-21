@@ -49,39 +49,41 @@ mp_obj_t pyb_wlan_disconnect(void) {
     return mp_obj_new_int(ret);
 }
 
-mp_obj_t decode_addr(unsigned char *ip, int nBytes) {
+mp_obj_t decode_addr(unsigned char *ip, int n_bytes) {
     char data[64] = "";
-    if (nBytes == 4) {
+    if (n_bytes == 4) {
         snprintf(data, 64, "%u.%u.%u.%u", ip[3], ip[2], ip[1], ip[0]);
-    } else if (nBytes == 6) {
+    } else if (n_bytes == 6) {
         snprintf(data, 64, "%02x:%02x:%02x:%02x:%02x:%02x", ip[5], ip[4], ip[3], ip[2], ip[1], ip[0]);
-    } else if (nBytes == 32) {
+    } else if (n_bytes == 32) {
         snprintf(data, 64, "%s", ip);
     }
     return mp_obj_new_str(qstr_from_strn_copy(data, strlen(data)));
 }
 
-void _wlan_getIP_get_address(mp_obj_t object, qstr q_attr, unsigned char *ip, int nBytes) {
-    rt_store_attr(object, q_attr, decode_addr(ip, nBytes));
+void decode_addr_and_store(mp_obj_t object, qstr q_attr, unsigned char *ip, int n_bytes) {
+    rt_store_attr(object, q_attr, decode_addr(ip, n_bytes));
 }
 
 mp_obj_t pyb_wlan_get_ip(void) {
-  tNetappIpconfigRetArgs ipconfig;
-  netapp_ipconfig(&ipconfig);
+    tNetappIpconfigRetArgs ipconfig;
+    netapp_ipconfig(&ipconfig);
 
-  /* If byte 1 is 0 we don't have a valid address */
-  if (ipconfig.aucIP[3] == 0) return mp_const_none;
+    // If byte 1 is 0 we don't have a valid address
+    if (ipconfig.aucIP[3] == 0) {
+        return mp_const_none;
+    }
 
-  mp_obj_t data = mp_module_new(); // TODO should really be a class
-  _wlan_getIP_get_address(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
-  _wlan_getIP_get_address(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
-  _wlan_getIP_get_address(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
-  _wlan_getIP_get_address(data, qstr_from_str_static("dhcp"), &ipconfig.aucDHCPServer[0], 4);
-  _wlan_getIP_get_address(data, qstr_from_str_static("dns"), &ipconfig.aucDNSServer[0], 4);
-  _wlan_getIP_get_address(data, qstr_from_str_static("mac"), &ipconfig.uaMacAddr[0], 6);
-  _wlan_getIP_get_address(data, qstr_from_str_static("ssid"), &ipconfig.uaSSID[0], 32);
+    mp_obj_t data = mp_module_new(); // TODO should really be a class
+    decode_addr_and_store(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
+    decode_addr_and_store(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
+    decode_addr_and_store(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
+    decode_addr_and_store(data, qstr_from_str_static("dhcp"), &ipconfig.aucDHCPServer[0], 4);
+    decode_addr_and_store(data, qstr_from_str_static("dns"), &ipconfig.aucDNSServer[0], 4);
+    decode_addr_and_store(data, qstr_from_str_static("mac"), &ipconfig.uaMacAddr[0], 6);
+    decode_addr_and_store(data, qstr_from_str_static("ssid"), &ipconfig.uaSSID[0], 32);
 
-  return data;
+    return data;
 }
 
 uint32_t last_ip = 0; // XXX such a hack!
