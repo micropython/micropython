@@ -2,17 +2,20 @@ The Micro Python project
 ========================
 
 This is the Micro Python project, which aims to put an implementation
-of Python 3.x on a microcontroller.
+of Python 3.x on a microcontroller.  The project also includes a small
+microcontroller board based around the STM32F405RG.
 
 Subdirectories:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
 - stm/ -- a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG.
+- pybv3/ -- schematics, gerbers and EAGLE files for revision 3 of the
+  Micro Python board.
 
 "make" is used to build the components.
 
-The unix version
+The Unix version
 ----------------
 
 The "unix" part requires a standard Unix environment with gcc.  It works
@@ -29,7 +32,7 @@ Then to test it:
     $ ./py
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
-The stm version
+The STM version
 ---------------
 
 The "stm" part requires an ARM compiler, arm-none-eabi-gcc, and associated
