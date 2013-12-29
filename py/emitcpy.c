@@ -131,7 +131,7 @@ static void emit_cpy_import_star(emit_t *emit) {
     }
 }
 
-static void emit_cpy_load_const_tok(emit_t *emit, py_token_kind_t tok) {
+static void emit_cpy_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_CONST ");

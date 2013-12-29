@@ -22,12 +22,6 @@ PY_O = \
 	emitcommon.o \
 	emitpass1.o \
 	emitcpy.o \
-	emitbc.o \
-	asmx64.o \
-	emitnx64.o \
-	asmthumb.o \
-	emitnthumb.o \
-	emitinlinethumb.o \
 	runtime.o \
 	map.o \
 	obj.o \
@@ -56,13 +50,11 @@ PY_O = \
 	repl.o \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(PY_O))
-LIB = -lreadline
-PROG = py
+LIB =
+PROG = cpy
 
 $(PROG): $(BUILD) $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
-	strip $(PROG)
-	size $(PROG)
 
 $(BUILD):
 	mkdir $@
