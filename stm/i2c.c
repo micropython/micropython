@@ -15,75 +15,78 @@ typedef enum {
 } pyb_i2c_t;
 
 typedef enum {
-	I2C_STATE_IDLE = 0,
-	I2C_STATE_WRITE = 1,
-	I2C_STATE_READ = 2,
+    I2C_STATE_IDLE = 0,
+    I2C_STATE_WRITE = 1,
+    I2C_STATE_READ = 2,
 } i2c_state_t;
 
 // set to true if the port has already been initialized
 bool i2c1_port_initialized = false;
 bool i2c2_port_initialized = false;
 
-static I2C_TypeDef * _i2c_port_addr(pyb_i2c_t i2c_port)
-{
-	if (i2c_port == PYB_I2C_1)
-		return I2C1;
-	if (i2c_port == PYB_I2C_2)
-		return I2C2;
-	return NULL;
+static I2C_TypeDef * _i2c_port_addr(pyb_i2c_t i2c_port) {
+    if (i2c_port == PYB_I2C_1) {
+        return I2C1;
+    }
+    if (i2c_port == PYB_I2C_2) {
+        return I2C2;
+    }
+    return NULL;
 }
 
 // todo - perhaps there should be some global resource management for gpio
 // this function would fail if the i2c pins have already been defined for
 // use by another python object
 // as it is, this always returns true (unless i2c_port is invalid)
-static bool _i2c_init (pyb_i2c_t i2c_port)
-{
+static bool _i2c_init(pyb_i2c_t i2c_port) {
     GPIO_InitTypeDef GPIO_InitStructure;
 
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL)
-		return false;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL)
+        return false;
 
-	if (i2c_port == PYB_I2C_1) {
-		if (i2c1_port_initialized == true) return true;
-		RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
+    if (i2c_port == PYB_I2C_1) {
+        if (i2c1_port_initialized == true) {
+            return true;
+        }
+        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
 
-	    // PB6=SCL, PB7=SDA
-	    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-	    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	    GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-	    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	    GPIO_Init(GPIOB, &GPIO_InitStructure);
+        // PB6=SCL, PB7=SDA
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-	    // alternate functions for SCL and SDA
-	    GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_I2C1);
-	    GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_I2C1);
-
-
-		i2c1_port_initialized = true;
-	}
-
-	if (i2c_port == PYB_I2C_2) {
-		if (i2c2_port_initialized == true) return true;
-		RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // enable I2C2
-
-		// PB10=SCL, PB11=SDA
-	    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
-	    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	    GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-	    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-	    // alternate functions for SCL and SDA
-	    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);
-	    GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);
+        // alternate functions for SCL and SDA
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_I2C1);
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_I2C1);
 
 
-		i2c2_port_initialized = true;
-	}
+        i2c1_port_initialized = true;
+    }
+
+    if (i2c_port == PYB_I2C_2) {
+        if (i2c2_port_initialized == true) {
+            return true;
+        }
+        RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // enable I2C2
+
+        // PB10=SCL, PB11=SDA
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+        // alternate functions for SCL and SDA
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);
+
+        i2c2_port_initialized = true;
+    }
 
     // get clock speeds
     RCC_ClocksTypeDef rcc_clocks;
@@ -105,14 +108,13 @@ static bool _i2c_init (pyb_i2c_t i2c_port)
     // enable the I2C peripheral
     i2c->CR1 |= I2C_CR1_PE;
 
-
-	return true;
+    return true;
 }
 
 static uint32_t _i2c_get_sr(pyb_i2c_t i2c_port) {
     // must read SR1 first, then SR2, as the read can clear some flags
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return 0;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return 0;
 
     uint32_t sr1 = i2c->SR1;
     uint32_t sr2 = i2c->SR2;
@@ -120,8 +122,8 @@ static uint32_t _i2c_get_sr(pyb_i2c_t i2c_port) {
 }
 
 static bool _i2c_restart(pyb_i2c_t i2c_port, uint8_t addr, int write) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return false;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return false;
 
     // send start condition
     i2c->CR1 |= I2C_CR1_START;
@@ -162,8 +164,8 @@ static bool _i2c_restart(pyb_i2c_t i2c_port, uint8_t addr, int write) {
 }
 
 static bool _i2c_send_byte(pyb_i2c_t i2c_port, uint8_t data) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return false;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return false;
 
     // send byte
     i2c->DR = data;
@@ -179,8 +181,8 @@ static bool _i2c_send_byte(pyb_i2c_t i2c_port, uint8_t data) {
 }
 
 static uint8_t _i2c_read_ack(pyb_i2c_t i2c_port) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return 0;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return 0;
 
     // enable ACK of received byte
     i2c->CR1 |= I2C_CR1_ACK;
@@ -198,8 +200,8 @@ static uint8_t _i2c_read_ack(pyb_i2c_t i2c_port) {
 }
 
 static uint8_t _i2c_read_nack(pyb_i2c_t i2c_port) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return 0;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return 0;
 
     // disable ACK of received byte (to indicate end of receiving)
     i2c->CR1 &= (uint16_t)~((uint16_t)I2C_CR1_ACK);
@@ -219,8 +221,8 @@ static uint8_t _i2c_read_nack(pyb_i2c_t i2c_port) {
 }
 
 static bool _i2c_start(pyb_i2c_t i2c_port) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return false;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return false;
 
     // wait until I2C is not busy
     uint32_t timeout = 1000000;
@@ -233,8 +235,8 @@ static bool _i2c_start(pyb_i2c_t i2c_port) {
 }
 
 static void _i2c_stop(pyb_i2c_t i2c_port) {
-	I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
-	if (i2c == NULL) return;
+    I2C_TypeDef *i2c = _i2c_port_addr(i2c_port);
+    if (i2c == NULL) return;
 
     // send stop condition
     i2c->CR1 |= I2C_CR1_STOP;
@@ -259,62 +261,62 @@ void i2c_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
 mp_obj_t i2c_obj_start(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
     if (self->i2c_state != I2C_STATE_IDLE) {
-    	_i2c_stop(self->i2c_port);
-    	self->i2c_state = I2C_STATE_IDLE;
+        _i2c_stop(self->i2c_port);
+        self->i2c_state = I2C_STATE_IDLE;
     }
     if (_i2c_start(self->i2c_port) == true)
-    	return mp_const_true;
+        return mp_const_true;
     return mp_const_false;
 }
 
 mp_obj_t i2c_obj_write(mp_obj_t self_in, mp_obj_t data_in) {
     pyb_i2c_obj_t *self = self_in;
-	if (self->i2c_state != I2C_STATE_WRITE) {
-		if (_i2c_restart(self->i2c_port, self->i2c_addr, 1) == false) {
-			_i2c_stop(self->i2c_port);
-			self->i2c_state = I2C_STATE_IDLE;
-			return mp_const_false;
-		}
-		self->i2c_state = I2C_STATE_WRITE;
-	}
-	uint8_t data = mp_obj_get_int(data_in);
-	if (_i2c_send_byte(self->i2c_port, data) == false)
-		return mp_const_false;
-	return mp_const_true;
+    if (self->i2c_state != I2C_STATE_WRITE) {
+        if (_i2c_restart(self->i2c_port, self->i2c_addr, 1) == false) {
+            _i2c_stop(self->i2c_port);
+            self->i2c_state = I2C_STATE_IDLE;
+            return mp_const_false;
+        }
+        self->i2c_state = I2C_STATE_WRITE;
+    }
+    uint8_t data = mp_obj_get_int(data_in);
+    if (_i2c_send_byte(self->i2c_port, data) == false)
+        return mp_const_false;
+    return mp_const_true;
 }
 
 mp_obj_t i2c_obj_read(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
-	if (self->i2c_state != I2C_STATE_READ) {
-		if (_i2c_restart(self->i2c_port, self->i2c_addr, 0) == false) {
-			_i2c_stop(self->i2c_port);
-			self->i2c_state = I2C_STATE_IDLE;
-			return mp_const_false;
-		}
-		self->i2c_state = I2C_STATE_READ;
-	}
-	uint8_t data = _i2c_read_ack(self->i2c_port);
-	return mp_obj_new_int(data);
+    if (self->i2c_state != I2C_STATE_READ) {
+        if (_i2c_restart(self->i2c_port, self->i2c_addr, 0) == false) {
+            _i2c_stop(self->i2c_port);
+            self->i2c_state = I2C_STATE_IDLE;
+            return mp_const_false;
+        }
+        self->i2c_state = I2C_STATE_READ;
+    }
+    uint8_t data = _i2c_read_ack(self->i2c_port);
+    return mp_obj_new_int(data);
 }
 
 mp_obj_t i2c_obj_readAndStop(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
-	if (self->i2c_state != I2C_STATE_READ) {
-		if (_i2c_restart(self->i2c_port, self->i2c_addr, 0) == false) {
-			_i2c_stop(self->i2c_port);
-			self->i2c_state = I2C_STATE_IDLE;
-			return mp_const_false;
-		}
-	}
-	uint8_t data = _i2c_read_nack(self->i2c_port);
-	self->i2c_state = I2C_STATE_IDLE;
-	return mp_obj_new_int(data);
+    if (self->i2c_state != I2C_STATE_READ) {
+        if (_i2c_restart(self->i2c_port, self->i2c_addr, 0) == false) {
+            _i2c_stop(self->i2c_port);
+            self->i2c_state = I2C_STATE_IDLE;
+            return mp_const_false;
+        }
+    }
+    uint8_t data = _i2c_read_nack(self->i2c_port);
+    self->i2c_state = I2C_STATE_IDLE;
+    return mp_obj_new_int(data);
 }
 
 mp_obj_t i2c_obj_stop(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
-	_i2c_stop(self->i2c_port);
-	self->i2c_state = I2C_STATE_IDLE;
+    _i2c_stop(self->i2c_port);
+    self->i2c_state = I2C_STATE_IDLE;
     return mp_const_none;
 }
 
@@ -335,9 +337,9 @@ static const mp_obj_type_t i2c_obj_type = {
     NULL, // iternext
     { // method list
         { "start", &i2c_obj_start_obj },
-		{ "write", &i2c_obj_write_obj },
-		{ "read", &i2c_obj_read_obj },
-		{ "readAndStop", &i2c_obj_readAndStop_obj },
+        { "write", &i2c_obj_write_obj },
+        { "read", &i2c_obj_read_obj },
+        { "readAndStop", &i2c_obj_readAndStop_obj },
         { "stop", &i2c_obj_stop_obj },
         { NULL, NULL },
     }
@@ -347,14 +349,15 @@ static const mp_obj_type_t i2c_obj_type = {
 // currently support either I2C1 (i2c_id = 0) or I2C2 (i2c_id = 1)
 
 mp_obj_t pyb_I2C(mp_obj_t i2c_id, mp_obj_t i2c_addr) {
-	pyb_i2c_t i2c_port;
-	switch(mp_obj_get_int(i2c_id)) {
-		case 0: i2c_port = PYB_I2C_1; break;
-		case 1: i2c_port = PYB_I2C_2; break;
-		default: return mp_const_none;
-	}
-	if (_i2c_init(i2c_port) == false)
-		return mp_const_none;
+    pyb_i2c_t i2c_port;
+    switch(mp_obj_get_int(i2c_id)) {
+        case 0: i2c_port = PYB_I2C_1; break;
+        case 1: i2c_port = PYB_I2C_2; break;
+        default: return mp_const_none;
+    }
+    if (_i2c_init(i2c_port) == false) {
+        return mp_const_none;
+    }
     pyb_i2c_obj_t *o = m_new_obj(pyb_i2c_obj_t);
     o->base.type = &i2c_obj_type;
     o->i2c_port = i2c_port;
