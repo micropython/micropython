@@ -491,7 +491,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
-                PUSH(mp_const_none);
+                PUSH(nlr.ret_val); // TODO should be type(nlr.ret_val), I think...
 
             } else {
                 // re-raise exception to higher level

@@ -176,6 +176,10 @@ extern const mp_obj_type_t bool_type;
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 
+// exception
+extern const mp_obj_type_t exception_type;
+qstr mp_obj_exception_get_type(mp_obj_t self_in);
+
 // str
 extern const mp_obj_type_t str_type;
 qstr mp_obj_str_get(mp_obj_t self_in);

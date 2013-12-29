@@ -103,9 +103,23 @@ void rt_init(void) {
     map_locals = map_globals = mp_map_new(MP_MAP_QSTR, 1);
     mp_qstr_map_lookup(map_globals, qstr_from_str_static("__name__"), true)->value = mp_obj_new_str(qstr_from_str_static("__main__"));
 
+    // init built-in hash table
     mp_map_init(&map_builtins, MP_MAP_QSTR, 3);
+
+    // built-in exceptions (TODO, make these proper classes)
+    mp_qstr_map_lookup(&map_builtins, rt_q_AttributeError, true)->value = mp_obj_new_exception(rt_q_AttributeError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_IndexError, true)->value = mp_obj_new_exception(rt_q_IndexError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_KeyError, true)->value = mp_obj_new_exception(rt_q_KeyError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_NameError, true)->value = mp_obj_new_exception(rt_q_NameError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_TypeError, true)->value = mp_obj_new_exception(rt_q_TypeError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_SyntaxError, true)->value = mp_obj_new_exception(rt_q_SyntaxError);
+    mp_qstr_map_lookup(&map_builtins, rt_q_ValueError, true)->value = mp_obj_new_exception(rt_q_ValueError);
+
+    // built-in core functions
     mp_qstr_map_lookup(&map_builtins, rt_q___build_class__, true)->value = rt_make_function_2(mp_builtin___build_class__);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(mp_builtin___repl_print__);
+
+    // built-in user functions
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(mp_builtin_abs);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("all"), true)->value = rt_make_function_1(mp_builtin_all);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("any"), true)->value = rt_make_function_1(mp_builtin_any);
@@ -546,6 +560,18 @@ mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 return mp_const_false;
             } else {
                 return mp_const_true;
+            }
+        }
+    }
+
+    // deal with exception_match
+    if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
+        // TODO properly! at the moment it just compares the exception identifier for equality
+        if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
+            if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
+                return mp_const_true;
+            } else {
+                return mp_const_false;
             }
         }
     }

@@ -84,3 +84,9 @@ mp_obj_t mp_obj_new_exception_msg_2_args(qstr id, const char *fmt, const char *a
     o->args[2] = a2;
     return o;
 }
+
+qstr mp_obj_exception_get_type(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
+    mp_obj_exception_t *self = self_in;
+    return self->id;
+}

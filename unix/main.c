@@ -115,14 +115,10 @@ void do_file(const char *file) {
                 if (module_fun != mp_const_none) {
                     nlr_buf_t nlr;
                     if (nlr_push(&nlr) == 0) {
-                        mp_obj_t ret = rt_call_function_0(module_fun);
-                        printf("done! got: ");
-                        mp_obj_print(ret);
-                        printf("\n");
+                        rt_call_function_0(module_fun);
                         nlr_pop();
                     } else {
                         // uncaught exception
-                        printf("exception: ");
                         mp_obj_print((mp_obj_t)nlr.ret_val);
                         printf("\n");
                     }
