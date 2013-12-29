@@ -44,7 +44,7 @@ asm_thumb_t *asm_thumb_new(uint max_num_labels) {
 
 void asm_thumb_free(asm_thumb_t *as, bool free_code) {
     if (free_code) {
-        m_free(as->code_base);
+        m_del(byte, as->code_base, as->code_size);
     }
     /*
     if (as->label != NULL) {
@@ -58,7 +58,7 @@ void asm_thumb_free(asm_thumb_t *as, bool free_code) {
         g_array_free(as->label, true);
     }
     */
-    m_free(as);
+    m_del_obj(asm_thumb_t, as);
 }
 
 void asm_thumb_start_pass(asm_thumb_t *as, int pass) {

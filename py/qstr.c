@@ -16,8 +16,8 @@ void qstr_init(void) {
 
 static qstr qstr_add(const char *str) {
     if (qstrs_len >= qstrs_alloc) {
+        qstrs = m_renew(const char*, qstrs, qstrs_alloc, qstrs_alloc * 2);
         qstrs_alloc *= 2;
-        qstrs = m_renew(const char*, qstrs, qstrs_alloc);
     }
     qstrs[qstrs_len++] = str;
     return qstrs_len - 1;
@@ -32,10 +32,10 @@ qstr qstr_from_str_static(const char *str) {
     return qstr_add(str);
 }
 
-qstr qstr_from_str_take(char *str) {
+qstr qstr_from_str_take(char *str, int alloc_len) {
     for (int i = 0; i < qstrs_len; i++) {
         if (strcmp(qstrs[i], str) == 0) {
-            m_free(str);
+            m_del(char, str, alloc_len);
             return i;
         }
     }

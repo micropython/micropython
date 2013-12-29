@@ -706,7 +706,7 @@ mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
     UINT n_out;
     f_read(&self->fp, buf, n, &n_out);
     buf[n_out] = 0;
-    return mp_obj_new_str(qstr_from_str_take(buf));
+    return mp_obj_new_str(qstr_from_str_take(buf, n + 1));
 }
 
 mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {

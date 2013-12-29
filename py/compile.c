@@ -1184,7 +1184,7 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
                 }
                 strcat(str, qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])));
             }
-            *q2 = qstr_from_str_take(str);
+            *q2 = qstr_from_str_take(str, len + 1);
             EMIT(import_name, *q2);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
@@ -2127,7 +2127,7 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
         strcat(cat_str, str);
     }
 
-    EMIT(load_const_str, qstr_from_str_take(cat_str), string_kind == MP_PARSE_NODE_BYTES);
+    EMIT(load_const_str, qstr_from_str_take(cat_str, n_bytes + 1), string_kind == MP_PARSE_NODE_BYTES);
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
@@ -3105,7 +3105,7 @@ bool mp_compile(mp_parse_node_t pn, bool is_repl) {
         }
     }
 
-    m_free(comp);
+    m_del_obj(compiler_t, comp);
 
     return !comp->had_error;
 }

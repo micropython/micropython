@@ -183,8 +183,8 @@ static void next_char(mp_lexer_t *lex) {
 
 void indent_push(mp_lexer_t *lex, uint indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
+        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level * 2);
         lex->alloc_indent_level *= 2;
-        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level);
     }
     lex->indent_level[lex->num_indent_level++] = indent;
 }
@@ -639,7 +639,7 @@ void mp_lexer_free(mp_lexer_t *lex) {
             lex->stream_close(lex->stream_data);
         }
         vstr_clear(&lex->vstr);
-        m_free(lex);
+        m_del_obj(mp_lexer_t, lex);
     }
 }
 

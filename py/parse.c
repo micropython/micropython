@@ -94,8 +94,8 @@ typedef struct _parser_t {
 
 static void push_rule(parser_t *parser, const rule_t *rule, int arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
+        parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
         parser->rule_stack_alloc *= 2;
-        parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc);
     }
     parser->rule_stack[parser->rule_stack_top].rule_id = rule->rule_id;
     parser->rule_stack[parser->rule_stack_top].arg_i = arg_i;

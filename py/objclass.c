@@ -37,7 +37,7 @@ mp_obj_t class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
             memcpy(args2, args, n_args * sizeof(mp_obj_t));
             args2[n_args] = o;
             init_ret = rt_call_function_n(init_fn->value, n_args + 1, args2);
-            m_free(args2);
+            m_del(mp_obj_t, args2, n_args + 1);
         }
         if (init_ret != mp_const_none) {
             nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));

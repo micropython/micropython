@@ -24,9 +24,9 @@ unichar str_buf_next_char(str_buf_t *sb) {
 void str_buf_free(str_buf_t *sb) {
     if (sb) {
         if (sb->free) {
-            m_free((char*)sb->src_beg);
+            m_del(char, (char*)sb->src_beg, 0 /* unknown size of src_beg */);
         }
-        m_free(sb);
+        m_del_obj(str_buf_t, sb);
     }
 }
 
@@ -52,7 +52,7 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     close(fd);
     if (read_size != size) {
         printf("error reading file %s\n", filename);
-        m_free(data);
+        m_del(char, data, size);
         return NULL;
     }
 

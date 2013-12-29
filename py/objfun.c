@@ -58,7 +58,7 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
         }
 
         mp_obj_t res = ((mp_fun_var_t)self->fun)(n_args, args_ordered);
-        m_free(args_ordered);
+        m_del(mp_obj_t, args_ordered, n_args);
 
         return res;
     }

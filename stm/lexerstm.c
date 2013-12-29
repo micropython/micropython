@@ -17,7 +17,7 @@ unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
 
 void str_buf_free(mp_lexer_str_buf_t *sb) {
     if (sb->free) {
-        m_free((char*)sb->src_beg);
+        m_del(char, (char*)sb->src_beg, 0 /* don't know allocated size of src */);
     }
 }
 

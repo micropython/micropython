@@ -26,7 +26,7 @@ emit_t *emit_pass1_new(qstr qstr___class__) {
 }
 
 void emit_pass1_free(emit_t *emit) {
-    m_free(emit);
+    m_del_obj(emit_t, emit);
 }
 
 static void emit_pass1_dummy(emit_t *emit) {

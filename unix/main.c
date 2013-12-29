@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -44,8 +45,8 @@ static void do_repl(void) {
                     break;
                 }
                 char *line3 = str_join(line, '\n', line2);
-                m_free(line);
-                m_free(line2);
+                free(line);
+                free(line2);
                 line = line3;
             }
         }

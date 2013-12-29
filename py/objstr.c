@@ -36,9 +36,10 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_OBJ_IS_TYPE(rhs_in, &str_type)) {
                 // add 2 strings
                 const char *rhs_str = qstr_str(((mp_obj_str_t*)rhs_in)->qstr);
-                char *val = m_new(char, strlen(lhs_str) + strlen(rhs_str) + 1);
+                int alloc_len = strlen(lhs_str) + strlen(rhs_str) + 1;
+                char *val = m_new(char, alloc_len);
                 stpcpy(stpcpy(val, lhs_str), rhs_str);
-                return mp_obj_new_str(qstr_from_str_take(val));
+                return mp_obj_new_str(qstr_from_str_take(val, alloc_len));
             }
             break;
     }
@@ -78,7 +79,7 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
         }
         strcat(joined_str, s2);
     }
-    return mp_obj_new_str(qstr_from_str_take(joined_str));
+    return mp_obj_new_str(qstr_from_str_take(joined_str, required_len + 1));
 
 bad_arg:
     nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "?str.join expecting a list of str's"));
@@ -115,7 +116,7 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
         }
     }
 
-    return mp_obj_new_str(qstr_from_str_take(vstr->buf));
+    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);

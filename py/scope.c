@@ -69,8 +69,8 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
 
     // make sure we have enough memory
     if (scope->id_info_len >= scope->id_info_alloc) {
+        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc * 2);
         scope->id_info_alloc *= 2;
-        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc);
     }
 
     id_info_t *id_info;

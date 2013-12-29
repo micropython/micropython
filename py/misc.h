@@ -16,16 +16,20 @@ typedef unsigned int uint;
 
 /** memomry allocation ******************************************/
 
+// TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
+
 #define m_new(type, num) ((type*)(m_malloc(sizeof(type) * (num))))
 #define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num))))
-#define m_renew(type, ptr, num) ((type*)(m_realloc((ptr), sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
+#define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
+#define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void m_free(void *ptr);
 void *m_malloc(int num_bytes);
 void *m_malloc0(int num_bytes);
-void *m_realloc(void *ptr, int num_bytes);
+void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes);
+void m_free(void *ptr, int num_bytes);
 
 int m_get_total_bytes_allocated(void);
 
@@ -96,7 +100,7 @@ typedef unsigned int qstr;
 
 void qstr_init(void);
 qstr qstr_from_str_static(const char *str);
-qstr qstr_from_str_take(char *str);
+qstr qstr_from_str_take(char *str, int alloc_len);
 qstr qstr_from_strn_copy(const char *str, int len);
 const char* qstr_str(qstr qstr);
 

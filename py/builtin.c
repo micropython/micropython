@@ -158,7 +158,7 @@ mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         char *str = m_new(char, 2);
         str[0] = ord;
         str[1] = '\0';
-        return mp_obj_new_str(qstr_from_str_take(str));
+        return mp_obj_new_str(qstr_from_str_take(str, 2));
     } else {
         nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "chr() arg not in range(0x110000)"));
     }

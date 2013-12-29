@@ -128,7 +128,7 @@ void asm_x64_free(asm_x64_t* as, bool free_code) {
         g_array_free(as->label, true);
     }
     */
-    m_free(as);
+    m_del_obj(asm_x64_t, as);
 }
 
 void asm_x64_start_pass(asm_x64_t *as, int pass) {

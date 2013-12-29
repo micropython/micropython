@@ -57,8 +57,8 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &list_type));
     mp_obj_list_t *self = self_in;
     if (self->len >= self->alloc) {
+        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
         self->alloc *= 2;
-        self->items = m_renew(mp_obj_t, self->items, self->alloc);
     }
     self->items[self->len++] = arg;
     return mp_const_none; // return None, as per CPython

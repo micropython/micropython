@@ -64,7 +64,7 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_n
                             mp_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
                         }
                     }
-                    m_free(old_table);
+                    m_del(mp_map_elem_t, old_table, old_alloc);
                     // restart the search for the new element
                     pos = hash % map->alloc;
                 } else {
@@ -124,7 +124,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
                             mp_set_lookup(set, old_table[i], true);
                         }
                     }
-                    m_free(old_table);
+                    m_del(mp_obj_t, old_table, old_alloc);
                     // restart the search for the new element
                     pos = hash % set->alloc;
                 } else {

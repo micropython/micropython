@@ -11,7 +11,6 @@ void vstr_init(vstr_t *vstr) {
     vstr->len = 0;
     vstr->buf = m_new(char, vstr->alloc);
     if (vstr->buf == NULL) {
-        m_free(vstr);
         vstr->had_error = true;
         return;
     }
@@ -20,7 +19,7 @@ void vstr_init(vstr_t *vstr) {
 }
 
 void vstr_clear(vstr_t *vstr) {
-    m_free(vstr->buf);
+    m_del(char, vstr->buf, vstr->alloc);
     vstr->buf = NULL;
 }
 
@@ -35,8 +34,8 @@ vstr_t *vstr_new(void) {
 
 void vstr_free(vstr_t *vstr) {
     if (vstr != NULL) {
-        m_free(vstr->buf);
-        m_free(vstr);
+        m_del(char, vstr->buf, vstr->alloc);
+        m_del_obj(vstr_t, vstr);
     }
 }
 
@@ -67,7 +66,7 @@ int vstr_len(vstr_t *vstr) {
 bool vstr_ensure_extra(vstr_t *vstr, int size) {
     if (vstr->len + size + 1 > vstr->alloc) {
         int new_alloc = ROUND_ALLOC((vstr->len + size + 1) * 2);
-        char *new_buf = m_renew(char, vstr->buf, new_alloc);
+        char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         if (new_buf == NULL) {
             vstr->had_error = true;
             return false;

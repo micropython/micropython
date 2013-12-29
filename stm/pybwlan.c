@@ -191,7 +191,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             vstr_add_strn(vstr, buf, ret);
         }
 
-        mp_ret = mp_obj_new_str(qstr_from_str_take(vstr_str(vstr)));
+        mp_ret = mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
     }
 
     closesocket(sd);
