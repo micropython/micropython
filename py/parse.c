@@ -216,7 +216,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 int_val = base * int_val + str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
                 int_val = base * int_val + str[i] - 'a' + 10;
-            } else if (base == 16 && 'F' <= str[i] && str[i] <= 'F') {
+            } else if (base == 16 && 'A' <= str[i] && str[i] <= 'F') {
                 int_val = base * int_val + str[i] - 'A' + 10;
             } else if (str[i] == '.' || str[i] == 'e' || str[i] == 'E' || str[i] == 'j' || str[i] == 'J') {
                 dec = true;
