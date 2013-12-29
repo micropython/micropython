@@ -1,0 +1,1 @@
+f = lambda *args: args
