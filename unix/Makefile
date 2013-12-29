@@ -65,7 +65,7 @@ $(PROG): $(BUILD) $(OBJ)
 	size $(PROG)
 
 $(BUILD):
-	mkdir $@
+	mkdir -p $@
 
 $(BUILD)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
