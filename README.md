@@ -5,13 +5,18 @@ This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.  The project also includes a small
 microcontroller board based around the STM32F405RG.
 
-Subdirectories:
+Major components:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
 - stm/ -- a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG.
 - pybv3/ -- schematics, gerbers and EAGLE files for revision 3 of the
   Micro Python board.
+
+Additional components:
+- unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
+- tests/ -- test framework and test scripts.
+- tools/ -- various tools.
 
 "make" is used to build the components.
 
