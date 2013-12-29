@@ -272,6 +272,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         break;
                         */
 
+                    // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                     case MP_BC_SETUP_EXCEPT:
                         DECODE_ULABEL; // except labels are always forward
                         *++exc_sp = (machine_uint_t)ip + unum;
@@ -303,11 +304,15 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         }
                         break;
 
+                    // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
                     case MP_BC_POP_BLOCK:
-                        // pops block and restores the stack
-                        assert(0);
+                        // we are exiting an exception handler, so pop the last one of the exception-stack
+                        assert(exc_sp >= &exc_stack[0]);
+                        currently_in_except_block = (exc_sp[0] & 1); // restore previous state
+                        exc_sp -= 2; // pop back to previous exception handler
                         break;
 
+                    // matched againts: SETUP_EXCEPT
                     case MP_BC_POP_EXCEPT:
                         // TODO need to work out how blocks work etc
                         // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
