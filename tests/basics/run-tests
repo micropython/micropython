@@ -25,19 +25,19 @@ do
         echo "pass  $infile"
         $RM $outfile
         $RM $expfile
-        numpassed=`expr $numpassed + 1`
+        ((numpassed=numpassed + 1))
     else
         echo "FAIL  $infile"
-        numfailed=`expr $numfailed + 1`
+        ((numfailed=numfailed + 1))
         namefailed="$namefailed $basename"
     fi
 
-    numtests=`expr $numtests + 1`
+    ((numtests=numtests + 1))
 done
 
 echo "$numtests tests performed"
 echo "$numpassed tests passed"
-if [ $numfailed -ne 0 ]
+if [[ $numfailed != 0 ]]
 then
     echo "$numfailed tests failed -$namefailed"
 fi
