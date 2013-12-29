@@ -1,0 +1,43 @@
+#!/bin/bash
+
+RM="/bin/rm -f"
+CPYTHON3=python3
+MP_PY=../../unix/py
+
+numtests=0
+numpassed=0
+numfailed=0
+namefailed=
+
+for infile in tests/*.py
+do
+    basename=`basename $infile .c`
+    outfile=${basename}.out
+    expfile=${basename}.exp
+
+    $CPYTHON3 -B $infile > $expfile
+    $MP_PY $infile > $outfile
+
+    diff --brief $expfile $outfile > /dev/null
+
+    if [ $? -eq 0 ]
+    then
+        echo "pass  $infile"
+        $RM $outfile
+        $RM $expfile
+        numpassed=`expr $numpassed + 1`
+    else
+        echo "FAIL  $infile"
+        numfailed=`expr $numfailed + 1`
+        namefailed="$namefailed $basename"
+    fi
+
+    numtests=`expr $numtests + 1`
+done
+
+echo "$numtests tests performed"
+echo "$numpassed tests passed"
+if [ $numfailed -ne 0 ]
+then
+    echo "$numfailed tests failed -$namefailed"
+fi
