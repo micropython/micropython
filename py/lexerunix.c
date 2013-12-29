@@ -48,8 +48,13 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     uint size = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
     char *data = m_new(char, size);
-    read(fd, data, size);
+    int read_size = read(fd, data, size);
     close(fd);
+    if (read_size != size) {
+        printf("error reading file %s\n", filename);
+        m_free(data);
+        return NULL;
+    }
 
     return mp_lexer_new_from_str_len(filename, data, size, true);
 }
