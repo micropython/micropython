@@ -61,8 +61,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
     mp_obj_t fast0 = fastn[0], fast1 = fastn[1], fast2 = fastn[2];
     nlr_buf_t nlr;
 
-    // on the exception stack we store (ip, sp) for each block
-    machine_uint_t exc_stack[8];
+    volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
+    machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
     machine_uint_t *volatile exc_sp = &exc_stack[-1]; // stack grows up, exc_sp points to top of stack
 
     // outer exception handling loop
@@ -275,7 +275,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                     case MP_BC_SETUP_EXCEPT:
                         DECODE_ULABEL; // except labels are always forward
                         *++exc_sp = (machine_uint_t)ip + unum;
-                        *++exc_sp = (machine_uint_t)sp;
+                        *++exc_sp = (((machine_uint_t)sp) | currently_in_except_block);
+                        currently_in_except_block = 0; // in a try block now
                         break;
 
                     case MP_BC_END_FINALLY:
@@ -313,7 +314,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         assert(exc_sp >= &exc_stack[0]);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
-                        exc_sp -= 2;
+                        currently_in_except_block = (exc_sp[0] & 1); // restore previous state
+                        exc_sp -= 2; // pop back to previous exception handler
                         //sp += 3; // pop 3 exception values
                         break;
 
@@ -466,16 +468,33 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
         } else {
             // exception occurred
 
+            while (currently_in_except_block) {
+                // nested exception
+
+                assert(exc_sp >= &exc_stack[0]);
+
+                // TODO make a proper message for nested exception
+                // at the moment we are just raising the very last exception (the one that caused the nested exception)
+
+                // move up to previous exception handler
+                currently_in_except_block = (exc_sp[0] & 1); // restore previous state
+                exc_sp -= 2; // pop back to previous exception handler
+            }
+
             if (exc_sp >= &exc_stack[0]) {
+                // set flag to indicate that we are now handling an exception
+                currently_in_except_block = 1;
+
                 // catch exception and pass to byte code
-                sp = (mp_obj_t*)(exc_sp[0]);
+                sp = (mp_obj_t*)(exc_sp[0] & (~((machine_uint_t)1)));
                 ip = (const byte*)(exc_sp[-1]);
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
                 PUSH(mp_const_none);
+
             } else {
-                // re-raise exception
+                // re-raise exception to higher level
                 // TODO what to do if this is a generator??
                 nlr_jump(nlr.ret_val);
             }

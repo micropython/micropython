@@ -135,12 +135,9 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("STORE_SUBSCR");
                 break;
 
-                /*
             case MP_BC_DUP_TOP:
-                obj1 = *sp;
-                PUSH(obj1);
+                printf("DUP_TOP");
                 break;
-                */
 
             case MP_BC_DUP_TOP_TWO:
                 printf("DUP_TOP_TWO");
@@ -195,22 +192,20 @@ void mp_show_byte_code(const byte *ip, int len) {
                     ip += unum;
                 }
                 break;
+                */
 
             case MP_BC_SETUP_EXCEPT:
                 DECODE_ULABEL; // except labels are always forward
-                *++exc_sp = (machine_uint_t)ip + unum;
-                *++exc_sp = (machine_uint_t)sp;
+                printf("SETUP_EXCEPT %lu", ip + unum - ip_start);
                 break;
 
             case MP_BC_END_FINALLY:
-                // not implemented
                 // if TOS is an exception, reraises the exception (3 values on TOS)
                 // if TOS is an integer, does something else
                 // if TOS is None, just pops it and continues
                 // else error
-                assert(0);
+                printf("END_FINALLY");
                 break;
-                */
 
             case MP_BC_GET_ITER:
                 printf("GET_ITER");
@@ -221,22 +216,17 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("FOR_ITER %lu", ip + unum - ip_start);
                 break;
 
-                /*
             case MP_BC_POP_BLOCK:
                 // pops block and restores the stack
-                assert(0);
+                printf("POP_BLOCK");
                 break;
 
             case MP_BC_POP_EXCEPT:
-                // TODO need to work out how blocks work etc
                 // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
-                assert(exc_sp >= &exc_stack[0]);
-                //sp = (mp_obj_t*)(*exc_sp--);
-                //exc_sp--; // discard ip
-                exc_sp -= 2;
-                //sp += 3; // pop 3 exception values
+                printf("POP_EXCEPT");
                 break;
 
+                /*
             case MP_BC_UNARY_OP:
                 unum = *ip++;
                 *sp = rt_unary_op(unum, *sp);
@@ -270,12 +260,14 @@ void mp_show_byte_code(const byte *ip, int len) {
                 rt_list_append(sp[unum], sp[0]);
                 sp++;
                 break;
+                */
 
             case MP_BC_BUILD_MAP:
                 DECODE_UINT;
-                PUSH(rt_build_map(unum));
+                printf("BUILD_MAP %lu", unum);
                 break;
 
+                /*
             case MP_BC_STORE_MAP:
                 sp += 2;
                 rt_store_map(sp[0], sp[-2], sp[-1]);
