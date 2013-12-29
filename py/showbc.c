@@ -279,21 +279,17 @@ void mp_show_byte_code(const byte *ip, int len) {
                 rt_store_map(sp[unum + 1], sp[0], sp[1]);
                 sp += 2;
                 break;
+                */
 
             case MP_BC_BUILD_SET:
                 DECODE_UINT;
-                obj1 = rt_build_set(unum, sp);
-                sp += unum - 1;
-                *sp = obj1;
+                printf("BUILD_SET %lu", unum);
                 break;
 
             case MP_BC_SET_ADD:
                 DECODE_UINT;
-                // I think it's guaranteed by the compiler that sp[unum] is a set
-                rt_store_set(sp[unum], sp[0]);
-                sp++;
+                printf("SET_ADD %lu", unum);
                 break;
-                */
 
             case MP_BC_UNPACK_SEQUENCE:
                 DECODE_UINT;

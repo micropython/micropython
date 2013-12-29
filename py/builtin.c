@@ -209,11 +209,8 @@ mp_obj_t mp_builtin_len(mp_obj_t o_in) {
         mp_obj_t *seq_items;
         mp_obj_list_get(o_in, &seq_len, &seq_items);
         len = seq_len;
-        /* TODO
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
-        mp_obj_base_t *o = o_in;
-        len = o->u_map.used;
-        */
+        len = mp_obj_dict_len(o_in);
     } else {
         nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     }

@@ -206,6 +206,7 @@ void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 
 // dict
 extern const mp_obj_type_t dict_type;
+uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 
 // set

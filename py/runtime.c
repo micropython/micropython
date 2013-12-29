@@ -737,7 +737,7 @@ mp_obj_t rt_build_set(int n_args, mp_obj_t *items) {
 }
 
 mp_obj_t rt_store_set(mp_obj_t set, mp_obj_t item) {
-    mp_set_lookup(set, item, true);
+    mp_obj_set_store(set, item);
     return set;
 }
 

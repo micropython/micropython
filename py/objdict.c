@@ -53,13 +53,6 @@ mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
-mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
-    mp_obj_dict_t *self = self_in;
-    mp_map_lookup_helper(&self->map, key, true)->value = value;
-    return self_in;
-}
-
 const mp_obj_type_t dict_type = {
     { &mp_const_type },
     "dict",
@@ -77,4 +70,22 @@ mp_obj_t mp_obj_new_dict(int n_args) {
     o->base.type = &dict_type;
     mp_map_init(&o->map, MP_MAP_OBJ, n_args);
     return o;
+}
+
+uint mp_obj_dict_len(mp_obj_t self_in) {
+    mp_obj_dict_t *self = self_in;
+    uint len = 0;
+    for (int i = 0; i < self->map.alloc; i++) {
+        if (self->map.table[i].key != NULL) {
+            len += 1;
+        }
+    }
+    return len;
+}
+
+mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    mp_map_lookup_helper(&self->map, key, true)->value = value;
+    return self_in;
 }
