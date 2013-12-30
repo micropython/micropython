@@ -1,9 +1,10 @@
-# x86 callee save: bx, di, si, bp, sp
+#ifdef __i386__
+/* x86 callee save: bx, di, si, bp, sp */
 
     .file   "nlr.s"
     .text
 
-# uint nlr_push(4(%esp)=nlr_buf_t *nlr)
+/* uint nlr_push(4(%esp)=nlr_buf_t *nlr) */
     .globl  nlr_push
     .type   nlr_push, @function
 nlr_push:
@@ -22,7 +23,7 @@ nlr_push:
     ret                             # return
     .size   nlr_push, .-nlr_push
 
-# void nlr_pop()
+/* void nlr_pop() */
     .globl  nlr_pop
     .type   nlr_pop, @function
 nlr_pop:
@@ -32,7 +33,7 @@ nlr_pop:
     ret                             # return
     .size   nlr_pop, .-nlr_pop
 
-# void nlr_jump(4(%esp)=uint val)
+/* void nlr_jump(4(%esp)=uint val) */
     .globl  nlr_jump
     .type   nlr_jump, @function
 nlr_jump:
@@ -55,3 +56,4 @@ nlr_jump:
 
     .local  nlr_top
     .comm   nlr_top,4,4
+#endif

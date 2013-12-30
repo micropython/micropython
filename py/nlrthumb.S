@@ -1,4 +1,5 @@
-@ thumb callee save: bx, bp, sp, r12, r14, r14, r15
+#ifdef __thumb2__
+/* thumb callee save: bx, bp, sp, r12, r14, r14, r15 */
 
     .syntax unified
     .cpu cortex-m4
@@ -6,7 +7,7 @@
     .text
     .align  2
 
-@ uint nlr_push(r0=nlr_buf_t *nlr)
+/* uint nlr_push(r0=nlr_buf_t *nlr) */
     .global nlr_push
     .thumb
     .thumb_func
@@ -51,7 +52,7 @@ nlr_pop:
     .word    .LANCHOR0
     .size   nlr_pop, .-nlr_pop
 
-@ void nlr_jump(r0=uint val)
+/* void nlr_jump(r0=uint val) */
     .global nlr_jump
     .thumb
     .thumb_func
@@ -81,7 +82,7 @@ nlr_jump:
     .word    .LANCHOR0
     .size   nlr_jump, .-nlr_jump
 
-@ local variable nlr_top
+/* local variable nlr_top */
     .bss
     .align  2
     .set    .LANCHOR0,. + 0
@@ -89,3 +90,4 @@ nlr_jump:
     .size   nlr_top, 4
 nlr_top:
     .space  4
+#endif
