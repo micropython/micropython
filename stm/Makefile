@@ -193,6 +193,6 @@ $(BUILD)/compile.o: $(PYSRC)/grammar.h
 $(BUILD)/emitbc.o: $(PYSRC)/emit.h
 
 clean:
-	/bin/rm -r $(BUILD)
+	/bin/rm -rf $(BUILD)
 
 .PHONY: all clean

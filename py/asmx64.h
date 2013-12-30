@@ -11,7 +11,7 @@
 #define REG_RSI (6)
 #define REG_RDI (7)
 
-// condition codes, used for jcc and setcc (desipite their j-name!)
+// condition codes, used for jcc and setcc (despite their j-name!)
 #define JCC_JB  (0x2) // below, unsigned
 #define JCC_JZ  (0x4)
 #define JCC_JE  (0x4)
