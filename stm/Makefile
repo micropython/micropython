@@ -171,6 +171,9 @@ $(BUILD)/%.o: $(CC3KSRC)/%.c
 $(BUILD)/%.o: $(PYSRC)/%.s
 	$(AS) -o $@ $<
 
+$(BUILD)/%.o: $(PYSRC)/%.S
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 $(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 

@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "misc.h"
-#include "mpconfig.h"
 #include "asmx64.h"
 
 /* all offsets are measured in multiples of 8 bytes */
@@ -603,7 +602,12 @@ void asm_x64_call_i1(asm_x64_t* as, void* func, int i1)
 */
 
 void asm_x64_call_ind(asm_x64_t* as, void *ptr, int temp_r64) {
-    asm_x64_mov_i64_to_r64_optimised(as, (machine_int_t)ptr, temp_r64);
+#ifdef __LP64__
+    asm_x64_mov_i64_to_r64_optimised(as, (int64_t)ptr, temp_r64);
+#else
+    // If we get here, sizeof(int) == sizeof(void*).
+    asm_x64_mov_i64_to_r64_optimised(as, (int64_t)(unsigned int)ptr, temp_r64);
+#endif
     asm_x64_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R64(2) | MODRM_RM_REG | MODRM_RM_R64(temp_r64));
     // this reduces code size by 2 bytes per call, but doesn't seem to speed it up at all
     // doesn't work anymore because calls are 64 bits away

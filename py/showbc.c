@@ -283,12 +283,12 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_BUILD_SET:
                 DECODE_UINT;
-                printf("BUILD_SET %lu", unum);
+                printf("BUILD_SET " UINT_FMT, unum);
                 break;
 
             case MP_BC_SET_ADD:
                 DECODE_UINT;
-                printf("SET_ADD %lu", unum);
+                printf("SET_ADD " UINT_FMT, unum);
                 break;
 
             case MP_BC_UNPACK_SEQUENCE:

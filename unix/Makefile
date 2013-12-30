@@ -72,9 +72,6 @@ $(BUILD):
 $(BUILD)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILD)/%.o: $(PYSRC)/%.s
-	$(AS) -o $@ $<
-
 $(BUILD)/%.o: $(PYSRC)/%.S
 	$(CC) $(CFLAGS) -c -o $@ $<
 
