@@ -49,36 +49,6 @@ void* emit_bc_get_code(emit_t* emit) {
     return emit->code_base;
 }
 
-static void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
-}
-
-static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
-    emit->pass = pass;
-    emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
-    emit->scope = scope;
-    if (pass == PASS_2) {
-        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
-    }
-    emit->code_offset = 0;
-}
-
-static void emit_bc_end_pass(emit_t *emit) {
-    // check stack is back to zero size
-    if (emit->stack_size != 0) {
-        printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
-    }
-
-    if (emit->pass == PASS_2) {
-        // calculate size of code in bytes
-        emit->code_size = emit->code_offset;
-        emit->code_base = m_new(byte, emit->code_size);
-
-    } else if (emit->pass == PASS_3) {
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->num_cells, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
-    }
-}
-
 // all functions must go through this one to emit bytes
 static byte* emit_get_cur_to_write_bytes(emit_t* emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
@@ -164,6 +134,53 @@ static void emit_write_byte_1_signed_label(emit_t* emit, byte b1, int label) {
     c[0] = b1;
     c[1] = code_offset;
     c[2] = code_offset >> 8;
+}
+
+static void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
+}
+
+static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
+    emit->pass = pass;
+    emit->stack_size = 0;
+    emit->last_emit_was_return_value = false;
+    emit->scope = scope;
+    if (pass == PASS_2) {
+        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
+    }
+    emit->code_offset = 0;
+
+    // prelude for initialising closed over variables
+    int num_cell = 0;
+    for (int i = 0; i < scope->id_info_len; i++) {
+        id_info_t *id = &scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
+            num_cell += 1;
+        }
+    }
+    assert(num_cell <= 255);
+    emit_write_byte_1(emit, num_cell); // write number of locals that are cells
+    for (int i = 0; i < scope->id_info_len; i++) {
+        id_info_t *id = &scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
+            emit_write_byte_1(emit, id->local_num); // write the local which should be converted to a cell
+        }
+    }
+}
+
+static void emit_bc_end_pass(emit_t *emit) {
+    // check stack is back to zero size
+    if (emit->stack_size != 0) {
+        printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
+    }
+
+    if (emit->pass == PASS_2) {
+        // calculate size of code in bytes
+        emit->code_size = emit->code_offset;
+        emit->code_base = m_new(byte, emit->code_size);
+
+    } else if (emit->pass == PASS_3) {
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
+    }
 }
 
 bool emit_bc_last_emit_was_return_value(emit_t *emit) {
@@ -288,8 +305,8 @@ static void emit_bc_load_deref(emit_t *emit, qstr qstr, int local_num) {
 }
 
 static void emit_bc_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 1);
-    emit_write_byte_1_uint(emit, MP_BC_LOAD_CLOSURE, local_num);
+    // not needed/supported for BC
+    assert(0);
 }
 
 static void emit_bc_load_name(emit_t *emit, qstr qstr) {

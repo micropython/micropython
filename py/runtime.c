@@ -59,7 +59,6 @@ typedef struct _mp_code_t {
     mp_code_kind_t kind;
     int n_args;
     int n_locals;
-    int n_cells;
     int n_stack;
     bool is_generator;
     union {
@@ -178,14 +177,13 @@ static void alloc_unique_codes(void) {
     }
 }
 
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_cells, int n_stack, bool is_generator) {
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
     assert(unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = n_locals;
-    unique_codes[unique_code_id].n_cells = n_cells;
     unique_codes[unique_code_id].n_stack = n_stack;
     unique_codes[unique_code_id].is_generator = is_generator;
     unique_codes[unique_code_id].u_byte.code = code;
@@ -221,7 +219,6 @@ void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) 
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
-    unique_codes[unique_code_id].n_cells = 0;
     unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_native.fun = fun;
@@ -255,7 +252,6 @@ void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_ar
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
-    unique_codes[unique_code_id].n_cells = 0;
     unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
@@ -632,7 +628,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
     mp_obj_t fun;
     switch (c->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->n_args, c->n_locals + c->n_cells + c->n_stack, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(c->n_args, c->n_locals + c->n_stack, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
             switch (c->n_args) {
@@ -652,13 +648,14 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
 
     // check for generator functions and if so wrap in generator object
     if (c->is_generator) {
-        fun = mp_obj_new_gen_wrap(c->n_locals, c->n_cells, c->n_stack, fun);
+        fun = mp_obj_new_gen_wrap(c->n_locals, c->n_stack, fun);
     }
 
     return fun;
 }
 
 mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple) {
+    DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
     mp_obj_t ffun = rt_make_function_from_id(unique_code_id);
     // wrap function in closure object

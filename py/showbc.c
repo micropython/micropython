@@ -15,6 +15,19 @@
 
 void mp_show_byte_code(const byte *ip, int len) {
     const byte *ip_start = ip;
+
+    // decode prelude
+    {
+        uint n_local = *ip++;
+        printf("(NUM_LOCAL %u)\n", n_local);
+        for (; n_local > 0; n_local--) {
+            uint local_num = *ip++;
+            printf("(INIT_CELL %u)\n", local_num);
+        }
+        len -= ip - ip_start;
+        ip_start = ip;
+    }
+
     machine_uint_t unum;
     qstr qstr;
     while (ip - ip_start < len) {
@@ -73,6 +86,11 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_FAST_N " UINT_FMT, unum);
                 break;
 
+            case MP_BC_LOAD_DEREF:
+                DECODE_UINT;
+                printf("LOAD_DEREF " UINT_FMT, unum);
+                break;
+
             case MP_BC_LOAD_NAME:
                 DECODE_QSTR;
                 printf("LOAD_NAME %s", qstr_str(qstr));
@@ -112,6 +130,11 @@ void mp_show_byte_code(const byte *ip, int len) {
             case MP_BC_STORE_FAST_N:
                 DECODE_UINT;
                 printf("STORE_FAST_N " UINT_FMT, unum);
+                break;
+
+            case MP_BC_STORE_DEREF:
+                DECODE_UINT;
+                printf("STORE_DEREF " UINT_FMT, unum);
                 break;
 
             case MP_BC_STORE_NAME:
@@ -299,6 +322,11 @@ void mp_show_byte_code(const byte *ip, int len) {
             case MP_BC_MAKE_FUNCTION:
                 DECODE_UINT;
                 printf("MAKE_FUNCTION " UINT_FMT, unum);
+                break;
+
+            case MP_BC_MAKE_CLOSURE:
+                DECODE_UINT;
+                printf("MAKE_CLOSURE " UINT_FMT, unum);
                 break;
 
             case MP_BC_CALL_FUNCTION:

@@ -38,6 +38,14 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     for (int i = 0; i < n_args; i++) {
         state[1 + i] = args[n_args - 1 - i];
     }
+
+    // TODO
+    // prelude for making cells (closed over variables)
+    // for now we just make sure there are no cells variables
+    // need to work out how to implement closed over variables in generators
+    assert(bc_code[0] == 0);
+    bc_code += 1;
+
     return mp_obj_new_gen_instance(state, bc_code, state + self->n_state);
 }
 
@@ -53,11 +61,11 @@ const mp_obj_type_t gen_wrap_type = {
     {{NULL, NULL},}, // method list
 };
 
-mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_cells, uint n_stack, mp_obj_t fun) {
+mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
     mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
     o->base.type = &gen_wrap_type;
     // we have at least 3 locals so the bc can write back fast[0,1,2] safely; should improve how this is done
-    o->n_state = ((n_locals + n_cells) < 3 ? 3 : (n_locals + n_cells)) + n_stack;
+    o->n_state = (n_locals < 3 ? 3 : n_locals) + n_stack;
     o->fun = fun;
     return o;
 }

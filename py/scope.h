@@ -49,7 +49,6 @@ typedef struct _scope_t {
     int num_dict_params;
     */
     int num_locals;
-    int num_cells;
     int stack_size;
     uint unique_code_id;
     uint emit_options;

@@ -39,10 +39,25 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
         state[i] = args[n_args - 1 - i];
     }
     const byte *ip = code;
+
+    // execute prelude to make any cells (closed over variables)
+    {
+        for (uint n_local = *ip++; n_local > 0; n_local--) {
+            uint local_num = *ip++;
+            if (local_num < n_args) {
+                state[local_num] = mp_obj_new_cell(state[local_num]);
+            } else {
+                state[local_num] = mp_obj_new_cell(MP_OBJ_NULL);
+            }
+        }
+    }
+
+    // execute the byte code
     if (mp_execute_byte_code_2(&ip, &state[0], &sp)) {
         // it shouldn't yield
         assert(0);
     }
+
     // TODO check fails if, eg, return from within for loop
     //assert(sp == &state[17]);
     return *sp;
@@ -125,11 +140,6 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
                         PUSH(rt_get_cell(fastn[unum]));
-                        break;
-
-                    case MP_BC_LOAD_CLOSURE:
-                        DECODE_UINT;
-                        PUSH(fastn[unum]);
                         break;
 
                     case MP_BC_LOAD_NAME:

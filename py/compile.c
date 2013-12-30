@@ -767,7 +767,12 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
                 for (int j = 0; j < this_scope->id_info_len; j++) {
                     id_info_t *id2 = &this_scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
+#if MICROPY_EMIT_CPYTHON
                         EMIT(load_closure, id->qstr, id->local_num);
+#else
+                        // in Micro Python we load closures using LOAD_FAST
+                        EMIT(load_fast, id->qstr, id->local_num);
+#endif
                         nfree += 1;
                     }
                 }
@@ -2806,7 +2811,11 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (id->kind == ID_INFO_KIND_LOCAL) {
             EMIT(load_const_tok, MP_TOKEN_KW_NONE);
         } else {
+#if MICROPY_EMIT_CPYTHON
             EMIT(load_closure, comp->qstr___class__, 0); // XXX check this is the correct local num
+#else
+            EMIT(load_fast, comp->qstr___class__, 0); // XXX check this is the correct local num
+#endif
         }
         EMIT(return_value);
     }
@@ -2894,7 +2903,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
 
 void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals
-    // compute num_locals, and the index of each local
+    // compute the index of each local
     scope->num_locals = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
@@ -2913,19 +2922,27 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 
     // compute the index of cell vars (freevars[idx] in CPython)
-    int num_closed = 0;
+#if MICROPY_EMIT_CPYTHON
+    int num_cell = 0;
+#endif
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
+#if MICROPY_EMIT_CPYTHON
+        // in CPython the cells are numbered starting from 0
         if (id->kind == ID_INFO_KIND_CELL) {
-            id->local_num = num_closed;
-#if !MICROPY_EMIT_CPYTHON
-            // the cells come right after the fast locals (CPython doesn't add this offset)
-            id->local_num += scope->num_locals;
-#endif
-            num_closed += 1;
+            id->local_num = num_cell;
+            num_cell += 1;
         }
+#else
+        // in Micro Python the cells come right after the fast locals
+        // parameters are not counted here, since they remain at the start
+        // of the locals, even if they are cell vars
+        if (!id->param && id->kind == ID_INFO_KIND_CELL) {
+            id->local_num = scope->num_locals;
+            scope->num_locals += 1;
+        }
+#endif
     }
-    scope->num_cells = num_closed;
 
     // compute the index of free vars (freevars[idx] in CPython)
     // make sure they are in the order of the parent scope
@@ -2937,16 +2954,32 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
                 for (int j = 0; j < scope->id_info_len; j++) {
                     id_info_t *id2 = &scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
-                        id2->local_num = num_closed + num_free;
-#if !MICROPY_EMIT_CPYTHON
-                        // the frees come right after the cells (CPython doesn't add this offset)
-                        id2->local_num += scope->num_locals;
+                        assert(!id2->param); // free vars should not be params
+#if MICROPY_EMIT_CPYTHON
+                        // in CPython the frees are numbered after the cells
+                        id2->local_num = num_cell + num_free;
+#else
+                        // in Micro Python the frees come first, before the params
+                        id2->local_num = num_free;
 #endif
                         num_free += 1;
                     }
                 }
             }
         }
+#if !MICROPY_EMIT_CPYTHON
+        // in Micro Python shift all other locals after the free locals
+        if (num_free > 0) {
+            for (int i = 0; i < scope->id_info_len; i++) {
+                id_info_t *id = &scope->id_info[i];
+                if (id->param || id->kind != ID_INFO_KIND_FREE) {
+                    id->local_num += num_free;
+                }
+            }
+            scope->num_params += num_free; // free vars are counted as params for passing them into the function
+            scope->num_locals += num_free;
+        }
+#endif
     }
 
     // compute flags
