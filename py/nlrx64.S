@@ -1,9 +1,10 @@
-# x64 callee save: bx, bp, sp, r12, r14, r14, r15
+#ifdef __x86_64__
+/* x64 callee save: bx, bp, sp, r12, r14, r14, r15 */
 
     .file   "nlr.s"
     .text
 
-# uint nlr_push(rdi=nlr_buf_t *nlr)
+/* uint nlr_push(rdi=nlr_buf_t *nlr) */
     .globl  nlr_push
     .type   nlr_push, @function
 nlr_push:
@@ -23,7 +24,7 @@ nlr_push:
     ret                             # return
     .size   nlr_push, .-nlr_push
 
-# void nlr_pop()
+/* void nlr_pop() */
     .globl  nlr_pop
     .type   nlr_pop, @function
 nlr_pop:
@@ -33,7 +34,7 @@ nlr_pop:
     ret                             # return
     .size   nlr_pop, .-nlr_pop
 
-# void nlr_jump(rdi=uint val)
+/* void nlr_jump(rdi=uint val) */
     .globl  nlr_jump
     .type   nlr_jump, @function
 nlr_jump:
@@ -58,3 +59,4 @@ nlr_jump:
 
     .local  nlr_top
     .comm   nlr_top,8,8
+#endif

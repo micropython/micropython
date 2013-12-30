@@ -9,7 +9,9 @@ SRC_C = \
 	main.c \
 
 PY_O = \
+	nlrx86.o \
 	nlrx64.o \
+	nlrthumb.o \
 	malloc.o \
 	qstr.o \
 	vstr.o \
@@ -72,6 +74,9 @@ $(BUILD)/%.o: %.c
 
 $(BUILD)/%.o: $(PYSRC)/%.s
 	$(AS) -o $@ $<
+
+$(BUILD)/%.o: $(PYSRC)/%.S
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
 	$(CC) $(CFLAGS) -c -o $@ $<

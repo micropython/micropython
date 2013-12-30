@@ -70,7 +70,7 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_LOAD_FAST_N:
                 DECODE_UINT;
-                printf("LOAD_FAST_N %lu", unum);
+                printf("LOAD_FAST_N " UINT_FMT, unum);
                 break;
 
             case MP_BC_LOAD_NAME:
@@ -111,7 +111,7 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_STORE_FAST_N:
                 DECODE_UINT;
-                printf("STORE_FAST_N %lu", unum);
+                printf("STORE_FAST_N " UINT_FMT, unum);
                 break;
 
             case MP_BC_STORE_NAME:
@@ -161,17 +161,17 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_JUMP:
                 DECODE_SLABEL;
-                printf("JUMP %lu", ip + unum - ip_start);
+                printf("JUMP " UINT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_POP_JUMP_IF_TRUE:
                 DECODE_SLABEL;
-                printf("POP_JUMP_IF_TRUE %lu", ip + unum - ip_start);
+                printf("POP_JUMP_IF_TRUE " UINT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_POP_JUMP_IF_FALSE:
                 DECODE_SLABEL;
-                printf("POP_JUMP_IF_FALSE %lu", ip + unum - ip_start);
+                printf("POP_JUMP_IF_FALSE " UINT_FMT, ip + unum - ip_start);
                 break;
 
                 /*
@@ -196,7 +196,7 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_SETUP_EXCEPT:
                 DECODE_ULABEL; // except labels are always forward
-                printf("SETUP_EXCEPT %lu", ip + unum - ip_start);
+                printf("SETUP_EXCEPT " UINT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_END_FINALLY:
@@ -213,7 +213,7 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_FOR_ITER:
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                printf("FOR_ITER %lu", ip + unum - ip_start);
+                printf("FOR_ITER " UINT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_POP_BLOCK:
@@ -235,22 +235,22 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_BINARY_OP:
                 unum = *ip++;
-                printf("BINARY_OP %lu", unum);
+                printf("BINARY_OP " UINT_FMT, unum);
                 break;
 
             case MP_BC_COMPARE_OP:
                 unum = *ip++;
-                printf("COMPARE_OP %lu", unum);
+                printf("COMPARE_OP " UINT_FMT, unum);
                 break;
 
             case MP_BC_BUILD_TUPLE:
                 DECODE_UINT;
-                printf("BUILD_TUPLE %lu", unum);
+                printf("BUILD_TUPLE " UINT_FMT, unum);
                 break;
 
             case MP_BC_BUILD_LIST:
                 DECODE_UINT;
-                printf("BUILD_LIST %lu", unum);
+                printf("BUILD_LIST " UINT_FMT, unum);
                 break;
 
                 /*
@@ -264,7 +264,7 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_BUILD_MAP:
                 DECODE_UINT;
-                printf("BUILD_MAP %lu", unum);
+                printf("BUILD_MAP " UINT_FMT, unum);
                 break;
 
                 /*
@@ -293,22 +293,22 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_UNPACK_SEQUENCE:
                 DECODE_UINT;
-                printf("UNPACK_SEQUENCE %lu", unum);
+                printf("UNPACK_SEQUENCE " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_FUNCTION:
                 DECODE_UINT;
-                printf("MAKE_FUNCTION %lu", unum);
+                printf("MAKE_FUNCTION " UINT_FMT, unum);
                 break;
 
             case MP_BC_CALL_FUNCTION:
                 DECODE_UINT;
-                printf("CALL_FUNCTION n=%lu nkw=%lu", unum & 0xff, (unum >> 8) & 0xff);
+                printf("CALL_FUNCTION n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
             case MP_BC_CALL_METHOD:
                 DECODE_UINT;
-                printf("CALL_METHOD n=%lu nkw=%lu", unum & 0xff, (unum >> 8) & 0xff);
+                printf("CALL_METHOD n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
             case MP_BC_RETURN_VALUE:
