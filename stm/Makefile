@@ -45,7 +45,7 @@ PY_O = \
 	malloc.o \
 	qstr.o \
 	vstr.o \
-	misc.o \
+	unicode.o \
 	lexer.o \
 	parse.o \
 	scope.o \

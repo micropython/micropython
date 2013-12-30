@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 
 #include "misc.h"
 
@@ -39,27 +38,27 @@ static const uint8_t attr[] = {
     AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
 };
 
-unichar g_utf8_get_char(const char *s) {
+unichar utf8_get_char(const char *s) {
     return *s;
 }
 
-char *g_utf8_next_char(const char *s) {
+char *utf8_next_char(const char *s) {
     return (char*)(s + 1);
 }
 
-bool g_unichar_isspace(unichar c) {
+bool unichar_isspace(unichar c) {
     return c < 128 && (attr[c] & FL_SPACE) != 0;
 }
 
-bool g_unichar_isalpha(unichar c) {
+bool unichar_isalpha(unichar c) {
     return c < 128 && (attr[c] & FL_ALPHA) != 0;
 }
 
-bool g_unichar_isprint(unichar c) {
+bool unichar_isprint(unichar c) {
     return c < 128 && (attr[c] & FL_PRINT) != 0;
 }
 
-bool g_unichar_isdigit(unichar c) {
+bool unichar_isdigit(unichar c) {
     return c < 128 && (attr[c] & FL_DIGIT) != 0;
 }
 
@@ -74,11 +73,5 @@ bool char_is_upper(unichar c) {
 
 bool char_is_lower(unichar c) {
     return c < 128 && (attr[c] & FL_LOWER) != 0;
-}
-*/
-
-/*
-char *g_strdup(const char *s) {
-    return strdup(s);
 }
 */

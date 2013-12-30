@@ -8,7 +8,7 @@ bool str_startswith_word(const char *str, const char *head) {
             return false;
         }
     }
-    return head[i] == '\0' && (str[i] == '\0' || !g_unichar_isalpha(str[i]));
+    return head[i] == '\0' && (str[i] == '\0' || !unichar_isalpha(str[i]));
 }
 
 bool mp_repl_is_compound_stmt(const char *line) {

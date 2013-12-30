@@ -54,9 +54,9 @@ void mp_token_show(const mp_token_t *tok) {
         const char *j = i + tok->len;
         printf(" ");
         while (i < j) {
-            unichar c = g_utf8_get_char(i);
-            i = g_utf8_next_char(i);
-            if (g_unichar_isprint(c)) {
+            unichar c = utf8_get_char(i);
+            i = utf8_next_char(i);
+            if (unichar_isprint(c)) {
                 printf("%c", c);
             } else {
                 printf("?");
@@ -116,19 +116,19 @@ static bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
 }
 
 static bool is_whitespace(mp_lexer_t *lex) {
-    return g_unichar_isspace(lex->chr0);
+    return unichar_isspace(lex->chr0);
 }
 
 static bool is_letter(mp_lexer_t *lex) {
-    return g_unichar_isalpha(lex->chr0);
+    return unichar_isalpha(lex->chr0);
 }
 
 static bool is_digit(mp_lexer_t *lex) {
-    return g_unichar_isdigit(lex->chr0);
+    return unichar_isdigit(lex->chr0);
 }
 
 static bool is_following_digit(mp_lexer_t *lex) {
-    return g_unichar_isdigit(lex->chr1);
+    return unichar_isdigit(lex->chr1);
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers

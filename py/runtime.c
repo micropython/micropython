@@ -226,7 +226,7 @@ void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) 
     unique_codes[unique_code_id].is_generator = false;
     unique_codes[unique_code_id].u_native.fun = fun;
 
-    printf("native code: %d bytes\n", len);
+    //printf("native code: %d bytes\n", len);
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign native code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
@@ -421,8 +421,7 @@ mp_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     mp_map_elem_t *elem = mp_qstr_map_lookup(&map_builtins, rt_q___build_class__, false);
     if (elem == NULL) {
-        printf("name doesn't exist: __build_class__\n");
-        assert(0);
+        nlr_jump(mp_obj_new_exception_msg(rt_q_NameError, "name '__build_class__' is not defined"));
     }
     return elem->value;
 }
@@ -525,7 +524,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 break;
             }
 
-            default: printf("%d\n", op); assert(0);
+            default: assert(0);
         }
         if (fit_small_int(lhs_val)) {
             return MP_OBJ_NEW_SMALL_INT(lhs_val);
@@ -831,8 +830,7 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         mp_obj_instance_store_attr(base, attr, value);
     } else {
-        printf("?AttributeError: '%s' object has no attribute '%s'\n", mp_obj_get_type_str(base), qstr_str(attr));
-        assert(0);
+        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
     }
 }
 

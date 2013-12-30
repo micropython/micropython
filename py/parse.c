@@ -212,7 +212,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             }
         }
         for (; i < len; i++) {
-            if (g_unichar_isdigit(str[i]) && str[i] - '0' < base) {
+            if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
                 int_val = base * int_val + str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
                 int_val = base * int_val + str[i] - 'a' + 10;

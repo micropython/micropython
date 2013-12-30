@@ -37,24 +37,13 @@ int m_get_total_bytes_allocated(void);
 
 typedef int unichar; // TODO
 
-unichar g_utf8_get_char(const char *s);
-char *g_utf8_next_char(const char *s);
+unichar utf8_get_char(const char *s);
+char *utf8_next_char(const char *s);
 
-bool g_unichar_isspace(unichar c);
-bool g_unichar_isalpha(unichar c);
-bool g_unichar_isprint(unichar c);
-bool g_unichar_isdigit(unichar c);
-
-//char *g_strdup(const char *s);
-
-/** blob ********************************************************/
-
-/*
-unsigned short decode_le16(byte *buf);
-unsigned int decode_le32(byte *buf);
-void encode_le16(byte *buf, unsigned short i);
-void encode_le32(byte *buf, unsigned int i);
-*/
+bool unichar_isspace(unichar c);
+bool unichar_isalpha(unichar c);
+bool unichar_isprint(unichar c);
+bool unichar_isdigit(unichar c);
 
 /** string ******************************************************/
 

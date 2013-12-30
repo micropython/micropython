@@ -15,7 +15,7 @@ PY_O = \
 	malloc.o \
 	qstr.o \
 	vstr.o \
-	misc.o \
+	unicode.o \
 	lexer.o \
 	lexerunix.o \
 	parse.o \
