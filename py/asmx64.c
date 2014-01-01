@@ -7,6 +7,10 @@
 #include "misc.h"
 #include "asmx64.h"
 
+#if defined(__OpenBSD__)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 /* all offsets are measured in multiples of 8 bytes */
 #define WORD_SIZE                (8)
 
