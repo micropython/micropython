@@ -37,6 +37,9 @@ Then to test it:
     $ ./py
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
+Ubuntu and Mint derivatives will require build-essentials and libreadline-dev
+packages installed.
+
 The STM version
 ---------------
 
