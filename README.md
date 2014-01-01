@@ -5,6 +5,11 @@ This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.  The project also includes a small
 microcontroller board based around the STM32F405RG.
 
+WARNING: this project is in its early stages and is subject to large
+changes of the code-base, including project-wide name changes and API
+changes.  The software will not start to mature until March 2014 at the
+earliest.  For the moment the priority is the hardware.
+
 Major components:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
@@ -18,7 +23,7 @@ Additional components:
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools.
 
-"make" is used to build the components.
+"make" is used to build the components, or "gmake" on BSD-based systems.
 
 The Unix version
 ----------------
