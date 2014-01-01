@@ -33,6 +33,7 @@ void m_free(void *ptr, int num_bytes);
 
 int m_get_total_bytes_allocated(void);
 int m_get_current_bytes_allocated(void);
+int m_get_peak_bytes_allocated(void);
 
 /** unichar / UTF-8 *********************************************/
 

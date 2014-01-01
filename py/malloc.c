@@ -5,6 +5,9 @@
 
 static int total_bytes_allocated = 0;
 static int current_bytes_allocated = 0;
+static int peak_bytes_allocated = 0;
+
+#define UPDATE_PEAK() { if (current_bytes_allocated > peak_bytes_allocated) peak_bytes_allocated = current_bytes_allocated; }
 
 void *m_malloc(int num_bytes) {
     if (num_bytes == 0) {
@@ -17,6 +20,7 @@ void *m_malloc(int num_bytes) {
     }
     total_bytes_allocated += num_bytes;
     current_bytes_allocated += num_bytes;
+    UPDATE_PEAK();
     return ptr;
 }
 
@@ -31,6 +35,7 @@ void *m_malloc0(int num_bytes) {
     }
     total_bytes_allocated += num_bytes;
     current_bytes_allocated += num_bytes;
+    UPDATE_PEAK();
     return ptr;
 }
 
@@ -52,6 +57,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     int diff = new_num_bytes - old_num_bytes;
     total_bytes_allocated += diff;
     current_bytes_allocated += diff;
+    UPDATE_PEAK();
     return ptr;
 }
 
@@ -68,4 +74,8 @@ int m_get_total_bytes_allocated(void) {
 
 int m_get_current_bytes_allocated(void) {
     return current_bytes_allocated;
+}
+
+int m_get_peak_bytes_allocated(void) {
+    return peak_bytes_allocated;
 }
