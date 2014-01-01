@@ -3,7 +3,7 @@ BUILD=build
 
 CC = gcc
 CFLAGS = -I. -I$(PYSRC) -Wall -Werror -ansi -std=gnu99 -Os -DUSE_READLINE #-DNDEBUG
-LDFLAGS = -lm
+LDFLAGS = -lm -ltermcap
 
 SRC_C = \
 	main.c \
