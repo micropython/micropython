@@ -114,7 +114,7 @@ extern const mp_obj_t mp_const_stop_iteration; // special object indicating end 
 
 // Need to declare this here so we are not dependent on map.h
 
-typedef struct _mp_map_t mp_map_t;
+struct _mp_map_t;
 
 // General API for objects
 
@@ -145,7 +145,7 @@ mp_obj_t mp_obj_new_list_reverse(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
-mp_obj_t mp_obj_new_class(mp_map_t *class_locals);
+mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
 mp_obj_t mp_obj_new_instance(mp_obj_t clas);
 
 const char *mp_obj_get_type_str(mp_obj_t o_in);
@@ -230,7 +230,7 @@ extern const mp_obj_type_t gen_instance_type;
 // class
 extern const mp_obj_type_t class_type;
 extern const mp_obj_t gen_instance_next_obj;
-mp_map_t *mp_obj_class_get_locals(mp_obj_t self_in);
+struct _mp_map_t *mp_obj_class_get_locals(mp_obj_t self_in);
 
 // instance
 extern const mp_obj_type_t instance_type;
