@@ -4,6 +4,7 @@
 #include "misc.h"
 
 static int total_bytes_allocated = 0;
+static int current_bytes_allocated = 0;
 
 void *m_malloc(int num_bytes) {
     if (num_bytes == 0) {
@@ -15,6 +16,7 @@ void *m_malloc(int num_bytes) {
         return NULL;
     }
     total_bytes_allocated += num_bytes;
+    current_bytes_allocated += num_bytes;
     return ptr;
 }
 
@@ -28,6 +30,7 @@ void *m_malloc0(int num_bytes) {
         return NULL;
     }
     total_bytes_allocated += num_bytes;
+    current_bytes_allocated += num_bytes;
     return ptr;
 }
 
@@ -46,7 +49,9 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     // shrunk to 1K and then grown to 2K again. It's still 2K
     // allocated total. If we process only positive increments,
     // we'll count 3K.
-    total_bytes_allocated += new_num_bytes - old_num_bytes;
+    int diff = new_num_bytes - old_num_bytes;
+    total_bytes_allocated += diff;
+    current_bytes_allocated += diff;
     return ptr;
 }
 
@@ -54,8 +59,13 @@ void m_free(void *ptr, int num_bytes) {
     if (ptr != NULL) {
         free(ptr);
     }
+    current_bytes_allocated -= num_bytes;
 }
 
 int m_get_total_bytes_allocated(void) {
     return total_bytes_allocated;
+}
+
+int m_get_current_bytes_allocated(void) {
+    return current_bytes_allocated;
 }
