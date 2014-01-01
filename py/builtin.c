@@ -115,41 +115,38 @@ mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_builtin_complex(int n_args, const mp_obj_t *args) {
-    switch (n_args) {
-        case 0:
-            return mp_obj_new_complex(0, 0);
+    assert(0 <= n_args && n_args <= 2);
 
-        case 1:
-            // TODO allow string as first arg
-            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
-                return args[0];
-            } else {
-                return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
-            }
-
-        case 2:
-        {
-            mp_float_t real, imag;
-            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
-                mp_obj_get_complex(args[0], &real, &imag);
-            } else {
-                real = mp_obj_get_float(args[0]);
-                imag = 0;
-            }
-            if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
-                mp_float_t real2, imag2;
-                mp_obj_get_complex(args[1], &real2, &imag2);
-                real -= imag2;
-                imag += real2;
-            } else {
-                imag += mp_obj_get_float(args[1]);
-            }
-            return mp_obj_new_complex(real, imag);
+    if (n_args == 0) {
+        return mp_obj_new_complex(0, 0);
+    } else if (n_args == 1) {
+        // TODO allow string as first arg and parse it
+        if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+            return args[0];
+        } else {
+            return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
         }
-
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "comlpex() takes at most 2 arguments (%d given)", (void*)(machine_int_t)n_args));
+    } else {
+        mp_float_t real, imag;
+        if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+            mp_obj_get_complex(args[0], &real, &imag);
+        } else {
+            real = mp_obj_get_float(args[0]);
+            imag = 0;
+        }
+        if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
+            mp_float_t real2, imag2;
+            mp_obj_get_complex(args[1], &real2, &imag2);
+            real -= imag2;
+            imag += real2;
+        } else {
+            imag += mp_obj_get_float(args[1]);
+        }
+        return mp_obj_new_complex(real, imag);
     }
 }
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_complex_obj, 0, 2, mp_builtin_complex);
 #endif
 
 mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
@@ -182,12 +179,48 @@ mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     }
 }
 
+#if MICROPY_ENABLE_FLOAT
+static mp_obj_t mp_builtin_float(int n_args, const mp_obj_t *args) {
+    assert(0 <= n_args && n_args <= 1);
+
+    if (n_args == 0) {
+        return mp_obj_new_float(0);
+    } else {
+        // TODO allow string as arg and parse it
+        if (MP_OBJ_IS_TYPE(args[0], &float_type)) {
+            return args[0];
+        } else {
+            return mp_obj_new_float(mp_obj_get_float(args[0]));
+        }
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_float_obj, 0, 1, mp_builtin_float);
+#endif
+
 static mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
     // TODO hash will generally overflow small integer; can we safely truncate it?
     return mp_obj_new_int(mp_obj_hash(o_in));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
+
+static mp_obj_t mp_builtin_int(int n_args, const mp_obj_t *args) {
+    assert(0 <= n_args && n_args <= 2);
+
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    } else if (n_args == 1) {
+        // TODO if arg is a string then parse it
+        return mp_obj_new_int(mp_obj_get_int(args[0]));
+    } else { // n_args == 2
+        // TODO, parse with given base
+        assert(0);
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_int_obj, 0, 2, mp_builtin_int);
 
 static mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
     return rt_getiter(o_in);

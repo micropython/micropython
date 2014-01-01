@@ -144,8 +144,7 @@ machine_float_t mp_obj_get_float(mp_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
         return mp_obj_float_get(arg);
     } else {
-        assert(0);
-        return 0;
+        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -165,9 +164,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_TYPE(arg, &complex_type)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        assert(0);
-        *real = 0;
-        *imag = 0;
+        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
     }
 }
 #endif

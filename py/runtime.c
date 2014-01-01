@@ -124,13 +124,17 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("any"), true)->value = rt_make_function_1(mp_builtin_any);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("bool"), true)->value = rt_make_function_var(0, mp_builtin_bool);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("callable"), true)->value = rt_make_function_1(mp_builtin_callable);
-#if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("complex"), true)->value = rt_make_function_var(0, mp_builtin_complex);
-#endif
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("chr"), true)->value = rt_make_function_1(mp_builtin_chr);
+#if MICROPY_ENABLE_FLOAT
+    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("complex"), true)->value = (mp_obj_t)&mp_builtin_complex_obj;
+#endif
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("dict"), true)->value = rt_make_function_0(mp_builtin_dict);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("divmod"), true)->value = rt_make_function_2(mp_builtin_divmod);
+#if MICROPY_ENABLE_FLOAT
+    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("float"), true)->value = (mp_obj_t)&mp_builtin_float_obj;
+#endif
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("hash"), true)->value = (mp_obj_t)&mp_builtin_hash_obj;
+    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("int"), true)->value = (mp_obj_t)&mp_builtin_int_obj;
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("iter"), true)->value = (mp_obj_t)&mp_builtin_iter_obj;
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(mp_builtin_len);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("list"), true)->value = rt_make_function_var(0, mp_builtin_list);
@@ -143,6 +147,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, mp_builtin_range);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("set"), true)->value = (mp_obj_t)&mp_builtin_set_obj;
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("sum"), true)->value = rt_make_function_var(1, mp_builtin_sum);
+
 
     next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
     unique_codes = NULL;
