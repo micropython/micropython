@@ -41,7 +41,12 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
         printf("could not allocate memory, reallocating %d bytes\n", new_num_bytes);
         return NULL;
     }
-    total_bytes_allocated += new_num_bytes;
+    // At first thought, "Total bytes allocated" should only grow,
+    // after all, it's *total*. But consider for example 2K block
+    // shrunk to 1K and then grown to 2K again. It's still 2K
+    // allocated total. If we process only positive increments,
+    // we'll count 3K.
+    total_bytes_allocated += new_num_bytes - old_num_bytes;
     return ptr;
 }
 
