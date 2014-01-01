@@ -15,8 +15,10 @@
 #include "runtime.h"
 #include "repl.h"
 
+#ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 
 static char *str_join(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
@@ -32,17 +34,41 @@ static char *str_join(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
+static char *prompt(char *p) {
+#ifdef USE_READLINE
+    char *line = readline(p);
+    if (line) {
+        add_history(line);
+    }
+#else
+    static char buf[256];
+    fputs(p, stdout);
+    char *s = fgets(buf, sizeof(buf), stdin);
+    if (!s) {
+        return NULL;
+    }
+    int l = strlen(buf);
+    if (buf[l - 1] == '\n') {
+        buf[l - 1] = 0;
+    } else {
+        l++;
+    }
+    char *line = m_new(char, l);
+    memcpy(line, buf, l);
+#endif
+    return line;
+}
+
 static void do_repl(void) {
     for (;;) {
-        char *line = readline(">>> ");
+        char *line = prompt(">>> ");
         if (line == NULL) {
             // EOF
             return;
         }
-        add_history(line);
         if (mp_repl_is_compound_stmt(line)) {
             for (;;) {
-                char *line2 = readline("... ");
+                char *line2 = prompt("... ");
                 if (line2 == NULL || strlen(line2) == 0) {
                     break;
                 }
