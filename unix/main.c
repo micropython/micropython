@@ -16,6 +16,7 @@
 #include "repl.h"
 
 #include <readline/readline.h>
+#include <readline/history.h>
 
 static char *str_join(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
@@ -38,6 +39,7 @@ static void do_repl(void) {
             // EOF
             return;
         }
+        add_history(line);
         if (mp_repl_is_compound_stmt(line)) {
             for (;;) {
                 char *line2 = readline("... ");
