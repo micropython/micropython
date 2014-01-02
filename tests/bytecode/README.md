@@ -10,3 +10,6 @@ The output of Micro Python is checked against CPython 3.3.
 To run the tests use:
 
     ./run-tests
+
+Note that the tests in pylib-test/ are from the Python 3.3 library, and are licensed
+under the relevant license, as per pylib-test/LICENSE.txt.

@@ -32,7 +32,7 @@ maintains the heap invariant!
 
 __about__ = """Heap queues
 
-[explanation by François Pinard]
+[explanation by Francois Pinard]
 
 Heaps are arrays for which a[k] <= a[2*k+1] and a[k] <= a[2*k+2] for
 all k, counting elements from 0.  For the sake of comparison,
