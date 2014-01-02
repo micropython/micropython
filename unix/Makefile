@@ -3,7 +3,7 @@ BUILD=build
 
 CC = gcc
 CFLAGS = -I. -I$(PYSRC) -Wall -Werror -ansi -std=gnu99 -Os -DUSE_READLINE #-DNDEBUG
-LDFLAGS = -lm -ltermcap
+LDFLAGS = -lm
 
 SRC_C = \
 	main.c \
@@ -59,6 +59,8 @@ PY_O = \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(PY_O))
 LIB = -lreadline
+# the following is needed for BSD
+#LIB += -ltermcap
 PROG = py
 
 $(PROG): $(BUILD) $(OBJ)
