@@ -147,6 +147,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, mp_builtin_range);
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("set"), true)->value = (mp_obj_t)&mp_builtin_set_obj;
     mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("sum"), true)->value = rt_make_function_var(1, mp_builtin_sum);
+    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("type"), true)->value = (mp_obj_t)&mp_builtin_type_obj;
 
 
     next_unique_code_id = 2; // 1 is reserved for the __main__ module scope

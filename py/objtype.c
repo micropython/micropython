@@ -7,12 +7,12 @@
 #include "obj.h"
 
 void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
-    print(env, "type?");
+    print(env, "<a type>");
 }
 
 const mp_obj_type_t mp_const_type = {
     { &mp_const_type },
-    "type?",
+    "<a type>",
     type_print, // print
     NULL, // call_n
     NULL, // unary_op
