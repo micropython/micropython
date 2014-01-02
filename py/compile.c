@@ -1182,13 +1182,18 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
                 len += strlen(qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])));
             }
             char *str = m_new(char, len + 1);
+            char *str_dest = str;
             str[0] = 0;
             for (int i = 0; i < n; i++) {
                 if (i > 0) {
-                    strcat(str, ".");
+                    *str_dest++ = '.';
                 }
-                strcat(str, qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])));
+                const char *str_src = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+                size_t str_src_len = strlen(str_src);
+                memcpy(str_dest, str_src, str_src_len);
+                str_dest += str_src_len;
             }
+            *str_dest = '\0';
             *q2 = qstr_from_str_take(str, len + 1);
             EMIT(import_name, *q2);
             if (is_as) {
@@ -2124,13 +2129,16 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // allocate memory for concatenated string/bytes
     char *cat_str = m_new(char, n_bytes + 1);
-    cat_str[0] = '\0';
 
     // concatenate string/bytes
+    char *s_dest = cat_str;
     for (int i = 0; i < n; i++) {
-        const char *str = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-        strcat(cat_str, str);
+        const char *s = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+        size_t s_len = strlen(s);
+        memcpy(s_dest, s, s_len);
+        s_dest += s_len;
     }
+    *s_dest = '\0';
 
     EMIT(load_const_str, qstr_from_str_take(cat_str, n_bytes + 1), string_kind == MP_PARSE_NODE_BYTES);
 }

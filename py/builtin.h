@@ -31,3 +31,4 @@ mp_obj_t mp_builtin_print(int n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_set_obj);
 mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_type_obj);

@@ -410,3 +410,16 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     }
     return value;
 }
+
+static mp_obj_t mp_builtin_type(mp_obj_t o_in) {
+    // TODO implement the 3 argument version of type()
+    if (MP_OBJ_IS_SMALL_INT(o_in)) {
+        // TODO implement int-type
+        return mp_const_none;
+    } else {
+        mp_obj_base_t *o = o_in;
+        return (mp_obj_t)o->type;
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_type_obj, mp_builtin_type);

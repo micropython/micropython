@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 RM="/bin/rm -f"
 CPYTHON3=python3

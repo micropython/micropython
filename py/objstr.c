@@ -36,9 +36,13 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_OBJ_IS_TYPE(rhs_in, &str_type)) {
                 // add 2 strings
                 const char *rhs_str = qstr_str(((mp_obj_str_t*)rhs_in)->qstr);
-                int alloc_len = strlen(lhs_str) + strlen(rhs_str) + 1;
+                size_t lhs_len = strlen(lhs_str);
+                size_t rhs_len = strlen(rhs_str);
+                int alloc_len = lhs_len + rhs_len + 1;
                 char *val = m_new(char, alloc_len);
-                stpcpy(stpcpy(val, lhs_str), rhs_str);
+                memcpy(val, lhs_str, lhs_len);
+                memcpy(val + lhs_len, rhs_str, rhs_len);
+                val[lhs_len + rhs_len] = '\0';
                 return mp_obj_new_str(qstr_from_str_take(val, alloc_len));
             }
             break;
@@ -50,9 +54,12 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &str_type));
     mp_obj_str_t *self = self_in;
-    int required_len = strlen(qstr_str(self->qstr));
 
-    // process arg, count required chars
+    // get separation string
+    const char *sep_str = qstr_str(self->qstr);
+    size_t sep_len = strlen(sep_str);
+
+    // process args
     uint seq_len;
     mp_obj_t *seq_items;
     if (MP_OBJ_IS_TYPE(arg, &tuple_type)) {
@@ -62,23 +69,35 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     } else {
         goto bad_arg;
     }
+
+    // count required length
+    int required_len = 0;
     for (int i = 0; i < seq_len; i++) {
         if (!MP_OBJ_IS_TYPE(seq_items[i], &str_type)) {
             goto bad_arg;
+        }
+        if (i > 0) {
+            required_len += sep_len;
         }
         required_len += strlen(qstr_str(mp_obj_str_get(seq_items[i])));
     }
 
     // make joined string
     char *joined_str = m_new(char, required_len + 1);
-    joined_str[0] = 0;
+    char *s_dest = joined_str;
     for (int i = 0; i < seq_len; i++) {
-        const char *s2 = qstr_str(mp_obj_str_get(seq_items[i]));
         if (i > 0) {
-            strcat(joined_str, qstr_str(self->qstr));
+            memcpy(s_dest, sep_str, sep_len);
+            s_dest += sep_len;
         }
-        strcat(joined_str, s2);
+        const char *s2 = qstr_str(mp_obj_str_get(seq_items[i]));
+        size_t s2_len = strlen(s2);
+        memcpy(s_dest, s2, s2_len);
+        s_dest += s2_len;
     }
+    *s_dest = '\0';
+
+    // return joined string
     return mp_obj_new_str(qstr_from_str_take(joined_str, required_len + 1));
 
 bad_arg:

@@ -59,6 +59,8 @@ PY_O = \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(PY_O))
 LIB = -lreadline
+# the following is needed for BSD
+#LIB += -ltermcap
 PROG = py
 
 $(PROG): $(BUILD) $(OBJ)

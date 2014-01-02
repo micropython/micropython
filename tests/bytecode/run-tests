@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 CPYTHON3=python3.3
 MP_CPY=../../unix-cpy/cpy
