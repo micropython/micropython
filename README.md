@@ -2,21 +2,22 @@ The Micro Python project
 ========================
 
 This is the Micro Python project, which aims to put an implementation
-of Python 3.x on a microcontroller.  The project also includes a small
-microcontroller board based around the STM32F405RG.
+of Python 3.x on a microcontroller.
 
 WARNING: this project is in its early stages and is subject to large
 changes of the code-base, including project-wide name changes and API
 changes.  The software will not start to mature until March 2014 at the
-earliest.  For the moment the priority is the hardware.
+earliest.
 
-Major components:
+See the repository www.github.com/micropython/pyboard for the Micro
+Python board.  At the moment, finalising the design of the board is
+the top priority.
+
+Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
 - stm/ -- a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG.
-- pybv3/ -- schematics, gerbers and EAGLE files for revision 3 of the
-  Micro Python board.
 
 Additional components:
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
@@ -24,6 +25,7 @@ Additional components:
 - tools/ -- various tools.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
+You will also need bash and python3, and python2 for the stm port.
 
 The Unix version
 ----------------
