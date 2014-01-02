@@ -87,9 +87,9 @@ struct _mp_obj_type_t {
     dynamic_type    instance
 
     compare_op
-    load_attr       instance class list
+    load_attr       module instance class list
     load_method     instance str gen list user
-    store_attr      instance class
+    store_attr      module instance class
     store_subscr    list dict
 
     len             str tuple list map
@@ -147,6 +147,7 @@ mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
 mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
 mp_obj_t mp_obj_new_instance(mp_obj_t clas);
+mp_obj_t mp_obj_new_module(qstr module_name);
 
 const char *mp_obj_get_type_str(mp_obj_t o_in);
 
@@ -238,5 +239,7 @@ mp_obj_t mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr);
 void mp_obj_instance_load_method(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 void mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value);
 
-// temporary way of making C modules
-mp_obj_t mp_module_new(void);
+// module
+extern const mp_obj_type_t module_type;
+mp_obj_t mp_obj_new_module(qstr module_name);
+struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);

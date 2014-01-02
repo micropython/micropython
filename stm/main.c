@@ -453,7 +453,7 @@ int readline(vstr_t *line, const char *prompt) {
 }
 
 void do_repl(void) {
-    stdout_tx_str("Micro Python 0.1; STM32F405RG; PYBv3\r\n");
+    stdout_tx_str("Micro Python build <git hash> on 2/1/2014; PYBv3 with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
@@ -587,37 +587,52 @@ mp_obj_t pyb_gc(void) {
     return mp_const_none;
 }
 
-#define MMA_ADDR (0x4c)
+mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
+    //assert(1 <= n_args && n_args <= 2);
 
-int mma_buf[12];
-
-mp_obj_t pyb_mma_read(void) {
-    for (int i = 0; i <= 6; i += 3) {
-        mma_buf[0 + i] = mma_buf[0 + i + 3];
-        mma_buf[1 + i] = mma_buf[1 + i + 3];
-        mma_buf[2 + i] = mma_buf[2 + i + 3];
+    const char *pin_name = qstr_str(mp_obj_get_qstr(args[0]));
+    GPIO_TypeDef *port;
+    switch (pin_name[0]) {
+        case 'A': case 'a': port = GPIOA; break;
+        case 'B': case 'b': port = GPIOB; break;
+        case 'C': case 'c': port = GPIOC; break;
+        default: goto pin_error;
     }
-
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(0);
-    mma_restart(MMA_ADDR, 0);
-    for (int i = 0; i <= 2; i++) {
-        int v = mma_read_ack() & 0x3f;
-        if (v & 0x20) {
-            v |= ~0x1f;
+    uint pin_num = 0;
+    for (const char *s = pin_name + 1; *s; s++) {
+        if (!('0' <= *s && *s <= '9')) {
+            goto pin_error;
         }
-        mma_buf[9 + i] = v;
+        pin_num = 10 * pin_num + *s - '0';
     }
-    int jolt_info = mma_read_nack();
+    if (!(0 <= pin_num && pin_num <= 15)) {
+        goto pin_error;
+    }
 
-    mp_obj_t data[4];
-    data[0] = mp_obj_new_int(jolt_info);
-    data[1] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
-    data[2] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
-    data[3] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+    if (n_args == 1) {
+        // get pin
+        if ((port->IDR & (1 << pin_num)) != (uint32_t)Bit_RESET) {
+            return MP_OBJ_NEW_SMALL_INT(1);
+        } else {
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+    } else {
+        // set pin
+        if (rt_is_true(args[1])) {
+            // set pin high
+            port->BSRRL = 1 << pin_num;
+        } else {
+            // set pin low
+            port->BSRRH = 1 << pin_num;
+        }
+        return mp_const_none;
+    }
 
-    return rt_build_tuple(4, data); // items in reverse order in data
+pin_error:
+    nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_ValueError, "pin %s does not exist", pin_name));
 }
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
 
 mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
@@ -855,7 +870,7 @@ soft_reset:
     {
         rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
 
-        mp_obj_t m = mp_module_new();
+        mp_obj_t m = mp_obj_new_module(qstr_from_str_static("pyb"));
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
         rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_0(pyb_sd_test));
         rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
@@ -869,7 +884,9 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("switch"), rt_make_function_0(pyb_sw));
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
-        rt_store_attr(m, qstr_from_str_static("accel"), rt_make_function_0(pyb_mma_read));
+        rt_store_attr(m, qstr_from_str_static("accel"), (mp_obj_t)&pyb_mma_read_obj);
+        rt_store_attr(m, qstr_from_str_static("mma_read"), (mp_obj_t)&pyb_mma_read_all_obj);
+        rt_store_attr(m, qstr_from_str_static("mma_mode"), (mp_obj_t)&pyb_mma_write_mode_obj);
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
         rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
@@ -879,6 +896,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));
 	rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_2(pyb_I2C));
+        rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
@@ -985,56 +1003,6 @@ soft_reset:
     if (first_soft_reset) {
         // init and reset address to zero
         mma_init();
-        mma_start(MMA_ADDR, 1);
-        mma_send_byte(0);
-        mma_stop();
-
-        /*
-        // read and print all 11 registers
-        mma_start(MMA_ADDR, 1);
-        mma_send_byte(0);
-        mma_restart(MMA_ADDR, 0);
-        for (int i = 0; i <= 0xa; i++) {
-            int data;
-            if (i == 0xa) {
-                data = mma_read_nack();
-            } else {
-                data = mma_read_ack();
-            }
-            printf(" %02x", data);
-        }
-        printf("\n");
-        */
-
-        // put into active mode
-        mma_start(MMA_ADDR, 1);
-        mma_send_byte(7); // mode
-        mma_send_byte(1); // active mode
-        mma_stop();
-
-        /*
-        // infinite loop to read values
-        for (;;) {
-            sys_tick_delay_ms(500);
-
-            mma_start(MMA_ADDR, 1);
-            mma_send_byte(0);
-            mma_restart(MMA_ADDR, 0);
-            for (int i = 0; i <= 3; i++) {
-                int data;
-                if (i == 3) {
-                    data = mma_read_nack();
-                    printf(" %02x\n", data);
-                } else {
-                    data = mma_read_ack() & 0x3f;
-                    if (data & 0x20) {
-                        data |= ~0x1f;
-                    }
-                    printf(" % 2d", data);
-                }
-            }
-        }
-        */
     }
 
     // turn boot-up LED off
@@ -1220,9 +1188,9 @@ soft_reset:
             } else {
                 data[0] = 0x00;
             }
-            mma_start(MMA_ADDR, 1);
+            mma_start(0x4c /* MMA_ADDR */, 1);
             mma_send_byte(0);
-            mma_restart(MMA_ADDR, 0);
+            mma_restart(0x4c /* MMA_ADDR */, 0);
             for (int i = 0; i <= 1; i++) {
                 int v = mma_read_ack() & 0x3f;
                 if (v & 0x20) {
