@@ -7,7 +7,7 @@
 #include "misc.h"
 #include "asmx64.h"
 
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
