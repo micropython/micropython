@@ -15,7 +15,7 @@
 
 typedef struct _mp_obj_gen_wrap_t {
     mp_obj_base_t base;
-    int n_state;
+    uint n_state;
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
@@ -31,22 +31,8 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     if (n_args != bc_n_args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)bc_n_args, (const char*)(machine_int_t)n_args));
     }
-    mp_obj_t *state = m_new(mp_obj_t, 1 + self->n_state);
-    // put function object at first slot in state (to keep u_gen_instance small)
-    state[0] = self_fun;
-    // init args
-    for (int i = 0; i < n_args; i++) {
-        state[1 + i] = args[n_args - 1 - i];
-    }
 
-    // TODO
-    // prelude for making cells (closed over variables)
-    // for now we just make sure there are no cells variables
-    // need to work out how to implement closed over variables in generators
-    assert(bc_code[0] == 0);
-    bc_code += 1;
-
-    return mp_obj_new_gen_instance(state, bc_code, state + self->n_state);
+    return mp_obj_new_gen_instance(bc_code, self->n_state, n_args, args);
 }
 
 const mp_obj_type_t gen_wrap_type = {
@@ -75,9 +61,9 @@ mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
-    mp_obj_t *state;
     const byte *ip;
     mp_obj_t *sp;
+    mp_obj_t state[];
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
@@ -90,9 +76,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     mp_obj_gen_instance_t *self = self_in;
-    //mp_obj_base_t *fun = self->u_gen_instance.state[0];
-    //assert(fun->kind == O_FUN_BC);
-    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[1], &self->sp);
+    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[0], &self->sp);
     if (yield) {
         return *self->sp;
     } else {
@@ -117,11 +101,24 @@ const mp_obj_type_t gen_instance_type = {
     {{NULL, NULL},}, // method list
 };
 
-mp_obj_t mp_obj_new_gen_instance(mp_obj_t state, const byte *ip, mp_obj_t *sp) {
-    mp_obj_gen_instance_t *o = m_new_obj(mp_obj_gen_instance_t);
+// args are in reverse order in the array
+mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, mp_obj_t, n_state);
     o->base.type = &gen_instance_type;
-    o->state = state;
-    o->ip = ip;
-    o->sp = sp;
+    o->ip = bytecode;
+    o->sp = o->state + n_state;
+
+    // copy args (which are in reverse order) to start of state array
+    for (int i = 0; i < n_args; i++) {
+        o->state[i] = args[n_args - 1 - i];
+    }
+
+    // TODO
+    // prelude for making cells (closed over variables)
+    // for now we just make sure there are no cells variables
+    // need to work out how to implement closed over variables in generators
+    assert(o->ip[0] == 0);
+    o->ip += 1;
+
     return o;
 }

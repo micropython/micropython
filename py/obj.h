@@ -136,7 +136,7 @@ mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step);
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code);
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
 mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun);
-mp_obj_t mp_obj_new_gen_instance(mp_obj_t state, const byte *ip, mp_obj_t *sp);
+mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple);
 mp_obj_t mp_obj_new_tuple(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_tuple_reverse(uint n, mp_obj_t *items);
