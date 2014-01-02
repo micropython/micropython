@@ -28,9 +28,9 @@ Additional components:
 The Unix version
 ----------------
 
-The "unix" part requires a standard Unix environment with gcc.  It works
-only for 64-bit machines due to a small piece of x86-64 assembler for
-the exception handling.
+The "unix" part requires a standard Unix environment with gcc and GNU make.
+It works only for 64-bit machines due to a small piece of x86-64 assembler
+for the exception handling.
 
 To build:
 
