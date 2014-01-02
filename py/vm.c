@@ -115,6 +115,11 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         PUSH(rt_load_const_str(qstr)); // TODO
                         break;
 
+                    case MP_BC_LOAD_CONST_BYTES:
+                        DECODE_QSTR;
+                        PUSH(rt_load_const_str(qstr)); // TODO
+                        break;
+
                     case MP_BC_LOAD_CONST_STRING:
                         DECODE_QSTR;
                         PUSH(rt_load_const_str(qstr));
