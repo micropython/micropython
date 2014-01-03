@@ -471,6 +471,16 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
 
 mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary %d %p %p\n", op, lhs, rhs);
+
+    // TODO correctly distinguish inplace operators for mutable objects
+    // lookup logic that CPython uses for +=:
+    //   check for implemented +=
+    //   then check for implemented +
+    //   then check for implemented seq.inplace_concat
+    //   then check for implemented seq.concat
+    //   then fail
+    // note that list does not implement + or +=, so that inplace_concat is reached first for +=
+
     if (MP_OBJ_IS_SMALL_INT(lhs) && MP_OBJ_IS_SMALL_INT(rhs)) {
         mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
         mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
