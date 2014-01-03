@@ -51,12 +51,8 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
-            for (int i = 0; i < o->len; i++) {
-                s->items[i] = o->items[i];
-            }
-            for (int i = 0; i < p->len; i++) {
-                s->items[i + o->len] = p->items[i];
-            }
+            memcpy(s->items, o->items, sizeof(mp_obj_t) * o->len);
+            memcpy(s->items + o->len, p->items, sizeof(mp_obj_t) * p->len);
             return s;
         }
         default:
