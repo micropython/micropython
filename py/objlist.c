@@ -76,13 +76,21 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     return mp_const_none; // return None, as per CPython
 }
 
-static mp_obj_t list_pop(mp_obj_t self_in, mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
-    mp_obj_list_t *self = self_in;
-    uint index = mp_get_index(self->base.type, self->len, arg);
+static mp_obj_t list_pop(int n_args, const mp_obj_t *args) {
+    assert(1 <= n_args && n_args <= 2);
+    assert(MP_OBJ_IS_TYPE(args[0], &list_type));
+    mp_obj_list_t *self = args[0];
+    if (self->len == 0) {
+        nlr_jump(mp_obj_new_exception_msg(rt_q_IndexError, "pop from empty list"));
+    }
+    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1]);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
+    if (self->alloc > 2 * self->len) {
+        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
+        self->alloc /= 2;
+    }
     return ret;
 }
 
@@ -118,7 +126,7 @@ static mp_obj_t list_sort(mp_obj_t self_in, mp_obj_t key_fn) {
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
-static MP_DEFINE_CONST_FUN_OBJ_2(list_pop_obj, list_pop);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
 const mp_obj_type_t list_type = {
