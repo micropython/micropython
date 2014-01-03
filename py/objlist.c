@@ -43,6 +43,16 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
         }
+        case RT_BINARY_OP_ADD:
+        {
+            if (MP_OBJ_IS_TYPE(rhs, &list_type)) {
+                mp_obj_list_t *l = rhs;
+                for (int i = 0; i < l->len; i++) {
+                    mp_obj_list_append(o, l->items[i]);
+                }
+                return o;
+            }
+        }
         default:
             // op not supported
             return NULL;
