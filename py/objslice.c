@@ -39,8 +39,23 @@ const mp_obj_type_t slice_type = {
 // TODO: Make sure to handle "empty" values, which are signified by None in CPython
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     assert(ostep == NULL);
-    machine_int_t start = mp_obj_get_int(ostart);
-    machine_int_t stop = mp_obj_get_int(ostop);
+    machine_int_t start = 0, stop = 0;
+    if (ostart != mp_const_none) {
+        start = mp_obj_get_int(ostart);
+    }
+    if (ostop != mp_const_none) {
+        stop = mp_obj_get_int(ostop);
+        if (stop == 0) {
+            // [x:0] is a special case - in our slice object, stop = 0 means
+            // "end of sequence". Fortunately, [x:0] is an empty seqence for
+            // any x (including negative). [x:x] is also always empty sequence.
+            // but x also can be 0. But note that b""[x:x] is b"" for any x (i.e.
+            // no IndexError, at least in Python 3.3.3). So, we just use -1's to
+            // signify that. -1 is catchy "special" number in case someone will
+            // try to print [x:0] slice ever.
+            start = stop = -1;
+        }
+    }
     mp_obj_slice_t *o = m_new(mp_obj_slice_t, 1);
     o->base.type = &slice_type;
     o->start = start;
