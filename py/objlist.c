@@ -18,6 +18,7 @@ typedef struct _mp_obj_list_t {
 } mp_obj_list_t;
 
 static mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
+static mp_obj_list_t *list_new(uint n);
 
 /******************************************************************************/
 /* list                                                                       */
@@ -42,6 +43,21 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             // list load
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
+        }
+        case RT_BINARY_OP_ADD:
+        {
+	    if (!MP_OBJ_IS_TYPE(rhs, &list_type)) {
+		return NULL;
+	    }
+	    mp_obj_list_t *p = rhs;
+	    mp_obj_list_t *s = list_new(o->len + p->len);
+	    for (int i = 0; i < o->len; i++) {
+		s->items[i] = o->items[i];
+	    }
+	    for (int i = 0; i < p->len; i++) {
+		s->items[i+o->len] = p->items[i];
+	    }
+	    return s;
         }
         default:
             // op not supported
