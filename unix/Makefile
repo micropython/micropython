@@ -50,6 +50,7 @@ PY_O = \
 	objnone.o \
 	objrange.o \
 	objset.o \
+	objslice.o \
 	objstr.o \
 	objtuple.o \
 	objtype.o \
