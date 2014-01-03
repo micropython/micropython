@@ -55,7 +55,7 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 s->items[i] = o->items[i];
             }
             for (int i = 0; i < p->len; i++) {
-                s->items[i+o->len] = p->items[i];
+                s->items[i + o->len] = p->items[i];
             }
             return s;
         }
