@@ -1,4 +1,5 @@
 STMSRC=lib
+#STMOTGSRC=lib-otg
 FATFSSRC=fatfs
 CC3KSRC=cc3k
 PYSRC=../py
@@ -10,6 +11,7 @@ CC = arm-none-eabi-gcc
 LD = arm-none-eabi-ld
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40XX -DHSE_VALUE=8000000
 CFLAGS = -I. -I$(PYSRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 -Os -DNDEBUG $(CFLAGS_CORTEX_M4)
+#CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
 LDFLAGS = --nostdlib -T stm32f405.ld
 
 SRC_C = \
@@ -122,6 +124,11 @@ SRC_STM = \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
 
+#SRC_STM_OTG = \
+#	usb_hcd.c \
+#	usb_hcd_int.c \
+#	usb_otg.c \
+
 SRC_CC3K = \
 	cc3000_common.c \
 	evnt_handler.c \
@@ -135,6 +142,7 @@ SRC_CC3K = \
 	pybcc3k.c \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o) $(SRC_CC3K:.c=.o))
+#OBJ += $(addprefix $(BUILD)/, $(SRC_STM_OTG:.c=.o))
 
 all: $(BUILD) $(BUILD)/flash.dfu
 
@@ -165,6 +173,9 @@ $(BUILD)/%.o: $(FATFSSRC)/%.c
 
 $(BUILD)/%.o: $(STMSRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+#$(BUILD)/%.o: $(STMOTGSRC)/%.c
+#	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(CC3KSRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<

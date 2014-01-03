@@ -77,9 +77,3 @@ mp_obj_t mp_obj_new_class(mp_map_t *class_locals) {
     o->locals = class_locals;
     return o;
 }
-
-// temporary way of making C modules
-// hack: use class to mimic a module
-mp_obj_t mp_module_new(void) {
-    return mp_obj_new_class(mp_map_new(MP_MAP_QSTR, 0));
-}

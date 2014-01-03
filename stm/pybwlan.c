@@ -20,6 +20,7 @@
 #include "parse.h"
 #include "compile.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 
 #include "cc3k/ccspi.h"
@@ -74,7 +75,7 @@ mp_obj_t pyb_wlan_get_ip(void) {
         return mp_const_none;
     }
 
-    mp_obj_t data = mp_module_new(); // TODO should really be a class
+    mp_obj_t data = mp_obj_new_class(mp_map_new(MP_MAP_QSTR, 0)); // TODO should this be an instance of a class?
     decode_addr_and_store(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
     decode_addr_and_store(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
     decode_addr_and_store(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
@@ -345,7 +346,7 @@ void pyb_wlan_init(void) {
     SpiInit();
     wlan_init(CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
 
-    mp_obj_t m = mp_module_new();
+    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("wlan"));
     rt_store_attr(m, qstr_from_str_static("connect"), rt_make_function_var(0, pyb_wlan_connect));
     rt_store_attr(m, qstr_from_str_static("disconnect"), rt_make_function_0(pyb_wlan_disconnect));
     rt_store_attr(m, qstr_from_str_static("ip"), rt_make_function_0(pyb_wlan_get_ip));

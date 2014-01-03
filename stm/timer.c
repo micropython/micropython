@@ -72,7 +72,7 @@ void timer_init(void) {
     TIM_Cmd(TIM6, ENABLE);
 
     // Python interface
-    mp_obj_t m = mp_module_new();
+    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("timer"));
     rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_1(timer_py_set_callback));
     rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_1(timer_py_set_period));
     rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_1(timer_py_set_prescaler));

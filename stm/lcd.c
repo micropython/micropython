@@ -220,7 +220,7 @@ void lcd_init(void) {
     lcd_next_line = 0;
 
     // Python interface
-    mp_obj_t m = mp_module_new();
+    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("lcd"));
     rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(lcd_draw_pixel_8));
     rt_store_attr(m, qstr_from_str_static("clear"), rt_make_function_0(lcd_pix_clear));
     rt_store_attr(m, qstr_from_str_static("get"), rt_make_function_2(lcd_pix_get));
