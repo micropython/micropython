@@ -187,7 +187,7 @@ $(BUILD)/%.o: $(PYSRC)/%.s
 $(BUILD)/%.o: $(PYSRC)/%.S
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
+$(BUILD)/%.o: $(PYSRC)/%.c mpconfigport.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
