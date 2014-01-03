@@ -3,7 +3,6 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "defaultconfig.h"
 
 #if MICROPY_MEM_STATS
 static int total_bytes_allocated = 0;
