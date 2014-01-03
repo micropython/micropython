@@ -410,6 +410,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         sp++;
                         break;
 
+#if MICROPY_ENABLE_SLICE
                     case MP_BC_BUILD_SLICE:
                         DECODE_UINT;
                         if (unum == 2) {
@@ -421,6 +422,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                             assert(0);
                         }
                         break;
+#endif
 
                     case MP_BC_UNPACK_SEQUENCE:
                         DECODE_UINT;

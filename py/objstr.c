@@ -35,6 +35,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 // TODO: This implements byte string access for single index so far
                 return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
+#if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 int start, stop, step;
                 mp_obj_slice_get(rhs_in, &start, &stop, &step);
@@ -47,6 +48,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                     stop = len + stop;
                 }
                 return mp_obj_new_str(qstr_from_strn_copy(lhs_str + start, stop - start));
+#endif
             } else {
                 // Throw TypeError here
                 assert(0);
