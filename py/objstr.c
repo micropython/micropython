@@ -39,6 +39,13 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 int start, stop, step;
                 mp_obj_slice_get(rhs_in, &start, &stop, &step);
                 assert(step == 1);
+                int len = strlen(lhs_str);
+                if (start < 0) {
+                    start = len + start;
+                }
+                if (stop <= 0) {
+                    stop = len + stop;
+                }
                 return mp_obj_new_str(qstr_from_strn_copy(lhs_str + start, stop - start));
             } else {
                 // Throw TypeError here
