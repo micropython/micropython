@@ -32,6 +32,8 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes);
 void m_free(void *ptr, int num_bytes);
 
 int m_get_total_bytes_allocated(void);
+int m_get_current_bytes_allocated(void);
+int m_get_peak_bytes_allocated(void);
 
 /** unichar / UTF-8 *********************************************/
 

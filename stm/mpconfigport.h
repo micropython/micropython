@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 // options to control how Micro Python is built
 
 #define MICROPY_ENABLE_FLOAT        (1)

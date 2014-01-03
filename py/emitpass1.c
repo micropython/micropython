@@ -9,7 +9,6 @@
 #include "mpconfig.h"
 #include "lexer.h"
 #include "parse.h"
-#include "compile.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"

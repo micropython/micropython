@@ -20,8 +20,8 @@
 #include "lexer.h"
 #include "lexerstm.h"
 #include "parse.h"
-#include "compile.h"
 #include "obj.h"
+#include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "repl.h"
@@ -489,25 +489,22 @@ void do_repl(void) {
         mp_lexer_free(lex);
 
         if (pn != MP_PARSE_NODE_NULL) {
-            bool comp_ok = mp_compile(pn, true);
-            if (comp_ok) {
-                mp_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != mp_const_none) {
-                    nlr_buf_t nlr;
-                    uint32_t start = sys_tick_counter;
-                    if (nlr_push(&nlr) == 0) {
-                        rt_call_function_0(module_fun);
-                        nlr_pop();
-                        // optional timing
-                        if (0) {
-                            uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-                            printf("(took %lu ms)\n", ticks);
-                        }
-                    } else {
-                        // uncaught exception
-                        mp_obj_print((mp_obj_t)nlr.ret_val);
-                        printf("\n");
+            mp_obj_t module_fun = mp_compile(pn, true);
+            if (module_fun != mp_const_none) {
+                nlr_buf_t nlr;
+                uint32_t start = sys_tick_counter;
+                if (nlr_push(&nlr) == 0) {
+                    rt_call_function_0(module_fun);
+                    nlr_pop();
+                    // optional timing
+                    if (0) {
+                        uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+                        printf("(took %lu ms)\n", ticks);
                     }
+                } else {
+                    // uncaught exception
+                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    printf("\n");
                 }
             }
         }
@@ -532,12 +529,7 @@ bool do_file(const char *filename) {
         return false;
     }
 
-    bool comp_ok = mp_compile(pn, false);
-    if (!comp_ok) {
-        return false;
-    }
-
-    mp_obj_t module_fun = rt_make_function_from_id(1);
+    mp_obj_t module_fun = mp_compile(pn, false);
     if (module_fun == mp_const_none) {
         return false;
     }
@@ -1133,16 +1125,14 @@ soft_reset:
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
             //parse_node_show(pn, 0);
-            bool comp_ok = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, false);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
 
-            if (!comp_ok) {
+            if (module_fun == mp_const_none) {
                 printf("compile error\n");
             } else {
                 // execute it!
-
-                mp_obj_t module_fun = rt_make_function_from_id(1);
 
                 // flash once
                 led_state(PYB_LED_G1, 1);

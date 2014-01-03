@@ -281,14 +281,6 @@ void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_ar
 #endif
 }
 
-mp_map_t *rt_get_map_locals(void) {
-    return map_locals;
-}
-
-void rt_set_map_locals(mp_map_t *m) {
-    map_locals = m;
-}
-
 static bool fit_small_int(mp_small_int_t o) {
     return true;
 }
@@ -479,6 +471,16 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
 
 mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary %d %p %p\n", op, lhs, rhs);
+
+    // TODO correctly distinguish inplace operators for mutable objects
+    // lookup logic that CPython uses for +=:
+    //   check for implemented +=
+    //   then check for implemented +
+    //   then check for implemented seq.inplace_concat
+    //   then check for implemented seq.concat
+    //   then fail
+    // note that list does not implement + or +=, so that inplace_concat is reached first for +=
+
     if (MP_OBJ_IS_SMALL_INT(lhs) && MP_OBJ_IS_SMALL_INT(rhs)) {
         mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
         mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
@@ -786,6 +788,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         return mp_obj_instance_load_attr(base, attr);
     } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
+        DEBUG_OP_printf("lookup module map %p\n", mp_obj_module_get_globals(base));
         mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_module_get_globals(base), attr, false);
         if (elem == NULL) {
             // TODO what about generic method lookup?
@@ -911,6 +914,24 @@ mp_obj_t rt_import_from(mp_obj_t module, qstr name) {
     }
     */
     return x;
+}
+
+mp_map_t *rt_locals_get(void) {
+    return map_locals;
+}
+
+void rt_locals_set(mp_map_t *m) {
+    DEBUG_OP_printf("rt_locals_set(%p)\n", m);
+    map_locals = m;
+}
+
+mp_map_t *rt_globals_get(void) {
+    return map_globals;
+}
+
+void rt_globals_set(mp_map_t *m) {
+    DEBUG_OP_printf("rt_globals_set(%p)\n", m);
+    map_globals = m;
 }
 
 // these must correspond to the respective enum

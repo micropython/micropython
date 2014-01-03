@@ -5,7 +5,6 @@
 #include "misc.h"
 #include "mpconfig.h"
 #include "parse.h"
-#include "compile.h"
 #include "obj.h"
 #include "runtime.h"
 

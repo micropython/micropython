@@ -8,8 +8,8 @@
 #include "lexer.h"
 #include "lexerunix.h"
 #include "parse.h"
-#include "compile.h"
 #include "obj.h"
+#include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -37,10 +37,10 @@ void do_file(const char *file) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
-            bool comp_ok = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, false);
             //printf("----------------\n");
 
-            if (!comp_ok) {
+            if (module_fun == mp_const_none) {
                 printf("compile error\n");
             }
         }

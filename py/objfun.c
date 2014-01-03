@@ -7,6 +7,7 @@
 #include "misc.h"
 #include "mpconfig.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "bc.h"
 
@@ -129,9 +130,10 @@ mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
-    int n_args;
-    uint n_state;
-    const byte *code;
+    mp_map_t *globals;      // the context within which this function was defined
+    int n_args;             // number of arguments this function takes
+    uint n_state;           // total state size for the executing function (incl args, locals, stack)
+    const byte *bytecode;   // bytecode for the function
 } mp_obj_fun_bc_t;
 
 // args are in reverse order in the array
@@ -142,15 +144,17 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
     }
 
-    return mp_execute_byte_code(self->code, args, n_args, self->n_state);
-}
-
-void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code) {
-    assert(MP_OBJ_IS_TYPE(self_in, &fun_bc_type));
-    mp_obj_fun_bc_t *self = self_in;
-    *n_args = self->n_args;
-    *n_state = self->n_state;
-    *code = self->code;
+    // optimisation: allow the compiler to optimise this tail call for
+    // the common case when the globals don't need to be changed
+    mp_map_t *old_globals = rt_globals_get();
+    if (self->globals == old_globals) {
+        return mp_execute_byte_code(self->bytecode, args, n_args, self->n_state);
+    } else {
+        rt_globals_set(self->globals);
+        mp_obj_t result = mp_execute_byte_code(self->bytecode, args, n_args, self->n_state);
+        rt_globals_set(old_globals);
+        return result;
+    }
 }
 
 const mp_obj_type_t fun_bc_type = {
@@ -170,10 +174,19 @@ const mp_obj_type_t fun_bc_type = {
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
     mp_obj_fun_bc_t *o = m_new_obj(mp_obj_fun_bc_t);
     o->base.type = &fun_bc_type;
+    o->globals = rt_globals_get();
     o->n_args = n_args;
     o->n_state = n_state;
-    o->code = code;
+    o->bytecode = code;
     return o;
+}
+
+void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code) {
+    assert(MP_OBJ_IS_TYPE(self_in, &fun_bc_type));
+    mp_obj_fun_bc_t *self = self_in;
+    *n_args = self->n_args;
+    *n_state = self->n_state;
+    *code = self->bytecode;
 }
 
 /******************************************************************************/

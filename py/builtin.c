@@ -16,28 +16,18 @@
 
 mp_obj_t mp_builtin___build_class__(mp_obj_t o_class_fun, mp_obj_t o_class_name) {
     // we differ from CPython: we set the new __locals__ object here
-    mp_map_t *old_locals = rt_get_map_locals();
+    mp_map_t *old_locals = rt_locals_get();
     mp_map_t *class_locals = mp_map_new(MP_MAP_QSTR, 0);
-    rt_set_map_locals(class_locals);
+    rt_locals_set(class_locals);
 
     // call the class code
     rt_call_function_1(o_class_fun, (mp_obj_t)0xdeadbeef);
 
     // restore old __locals__ object
-    rt_set_map_locals(old_locals);
+    rt_locals_set(old_locals);
 
     // create and return the new class
     return mp_obj_new_class(class_locals);
-}
-
-mp_obj_t mp_builtin___import__(int n, mp_obj_t *args) {
-    printf("import:\n");
-    for (int i = 0; i < n; i++) {
-    printf("  ");
-    mp_obj_print(args[i]);
-    printf("\n");
-    }
-    return mp_const_none;
 }
 
 mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {

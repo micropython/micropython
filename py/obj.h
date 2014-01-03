@@ -215,11 +215,14 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // functions
-typedef struct _mp_obj_fun_native_t { // need this so we can define static objects
+typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)
     mp_obj_base_t base;
     machine_uint_t n_args_min; // inclusive
     machine_uint_t n_args_max; // inclusive
     void *fun;
+    // TODO add mp_map_t *globals
+    // for const function objects, make an empty, const map
+    // such functions won't be able to access the global scope, but that's probably okay
 } mp_obj_fun_native_t;
 extern const mp_obj_type_t fun_native_type;
 extern const mp_obj_type_t fun_bc_type;

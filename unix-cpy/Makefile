@@ -47,6 +47,7 @@ PY_O = \
 	objtuple.o \
 	objtype.o \
 	builtin.o \
+	builtinimport.o \
 	vm.o \
 	showbc.o \
 	repl.o \
@@ -67,7 +68,7 @@ $(BUILD)/%.o: %.c
 $(BUILD)/%.o: $(PYSRC)/%.S
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILD)/%.o: $(PYSRC)/%.c mpconfig.h
+$(BUILD)/%.o: $(PYSRC)/%.c mpconfigport.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/emitnx64.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
@@ -80,7 +81,7 @@ $(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
 $(BUILD)/vm.o: $(PYSRC)/vm.c
 	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
-$(BUILD)/main.o: mpconfig.h
+$(BUILD)/main.o: mpconfigport.h
 $(BUILD)/parse.o: $(PYSRC)/grammar.h
 $(BUILD)/compile.o: $(PYSRC)/grammar.h
 $(BUILD)/emitcpy.o: $(PYSRC)/emit.h
