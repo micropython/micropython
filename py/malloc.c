@@ -2,12 +2,16 @@
 #include <stdlib.h>
 
 #include "misc.h"
+#include "mpconfig.h"
+#include "defaultconfig.h"
 
+#if MICROPY_MEM_STATS
 static int total_bytes_allocated = 0;
 static int current_bytes_allocated = 0;
 static int peak_bytes_allocated = 0;
 
 #define UPDATE_PEAK() { if (current_bytes_allocated > peak_bytes_allocated) peak_bytes_allocated = current_bytes_allocated; }
+#endif
 
 void *m_malloc(int num_bytes) {
     if (num_bytes == 0) {
@@ -18,9 +22,11 @@ void *m_malloc(int num_bytes) {
         printf("could not allocate memory, allocating %d bytes\n", num_bytes);
         return NULL;
     }
+#if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
     current_bytes_allocated += num_bytes;
     UPDATE_PEAK();
+#endif
     return ptr;
 }
 
@@ -33,9 +39,11 @@ void *m_malloc0(int num_bytes) {
         printf("could not allocate memory, allocating %d bytes\n", num_bytes);
         return NULL;
     }
+#if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
     current_bytes_allocated += num_bytes;
     UPDATE_PEAK();
+#endif
     return ptr;
 }
 
@@ -49,6 +57,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
         printf("could not allocate memory, reallocating %d bytes\n", new_num_bytes);
         return NULL;
     }
+#if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
     // after all, it's *total*. But consider for example 2K block
     // shrunk to 1K and then grown to 2K again. It's still 2K
@@ -58,6 +67,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     total_bytes_allocated += diff;
     current_bytes_allocated += diff;
     UPDATE_PEAK();
+#endif
     return ptr;
 }
 
@@ -65,17 +75,31 @@ void m_free(void *ptr, int num_bytes) {
     if (ptr != NULL) {
         free(ptr);
     }
+#if MICROPY_MEM_STATS
     current_bytes_allocated -= num_bytes;
+#endif
 }
 
 int m_get_total_bytes_allocated(void) {
+#if MICROPY_MEM_STATS
     return total_bytes_allocated;
+#else
+    return -1;
+#endif
 }
 
 int m_get_current_bytes_allocated(void) {
+#if MICROPY_MEM_STATS
     return current_bytes_allocated;
+#else
+    return -1;
+#endif
 }
 
 int m_get_peak_bytes_allocated(void) {
+#if MICROPY_MEM_STATS
     return peak_bytes_allocated;
+#else
+    return -1;
+#endif
 }
