@@ -779,11 +779,19 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     if (MP_OBJ_IS_TYPE(base, &class_type)) {
         mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_class_get_locals(base), attr, false);
         if (elem == NULL) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+            // TODO what about generic method lookup?
+            goto no_attr;
         }
         return elem->value;
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         return mp_obj_instance_load_attr(base, attr);
+    } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
+        mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_module_get_globals(base), attr, false);
+        if (elem == NULL) {
+            // TODO what about generic method lookup?
+            goto no_attr;
+        }
+        return elem->value;
     } else if (MP_OBJ_IS_OBJ(base)) {
         // generic method lookup
         mp_obj_base_t *o = base;
@@ -794,6 +802,8 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
             }
         }
     }
+
+no_attr:
     nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
@@ -832,6 +842,10 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         mp_qstr_map_lookup(locals, attr, true)->value = value;
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         mp_obj_instance_store_attr(base, attr, value);
+    } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
+        // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
+        mp_map_t *globals = mp_obj_module_get_globals(base);
+        mp_qstr_map_lookup(globals, attr, true)->value = value;
     } else {
         nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
     }

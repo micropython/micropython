@@ -72,6 +72,7 @@ PY_O = \
 	objgenerator.o \
 	objinstance.o \
 	objlist.o \
+	objmodule.o \
 	objnone.o \
 	objrange.o \
 	objset.o \

@@ -78,7 +78,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
     volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
     machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
-    machine_uint_t *volatile exc_sp = &exc_stack[-1]; // stack grows up, exc_sp points to top of stack
+    machine_uint_t *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
 
     // outer exception handling loop
     for (;;) {
@@ -453,7 +453,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                     case MP_BC_RETURN_VALUE:
                         nlr_pop();
                         *sp_in_out = sp;
-                        assert(exc_sp == &exc_stack[-1]);
+                        assert(exc_sp == &exc_stack[0] - 1);
                         return false;
 
                     case MP_BC_YIELD_VALUE:

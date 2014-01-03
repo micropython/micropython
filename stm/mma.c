@@ -5,8 +5,13 @@
 #include <stm32f4xx_gpio.h>
 
 #include "misc.h"
+#include "mpconfig.h"
 #include "systick.h"
+#include "obj.h"
+#include "runtime.h"
 #include "mma.h"
+
+#define MMA_ADDR (0x4c)
 
 void mma_init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
@@ -67,6 +72,58 @@ void mma_init(void) {
     sys_tick_delay_ms(20);
 
     // set START bit in CR1 to generate a start cond!
+
+    // init the chip via I2C commands
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(0);
+    mma_stop();
+
+    /*
+    // read and print all 11 registers
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(0);
+    mma_restart(MMA_ADDR, 0);
+    for (int i = 0; i <= 0xa; i++) {
+        int data;
+        if (i == 0xa) {
+            data = mma_read_nack();
+        } else {
+            data = mma_read_ack();
+        }
+        printf(" %02x", data);
+    }
+    printf("\n");
+    */
+
+    // put into active mode
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(7); // mode
+    mma_send_byte(1); // active mode
+    mma_stop();
+
+    /*
+    // infinite loop to read values
+    for (;;) {
+        sys_tick_delay_ms(500);
+
+        mma_start(MMA_ADDR, 1);
+        mma_send_byte(0);
+        mma_restart(MMA_ADDR, 0);
+        for (int i = 0; i <= 3; i++) {
+            int data;
+            if (i == 3) {
+                data = mma_read_nack();
+                printf(" %02x\n", data);
+            } else {
+                data = mma_read_ack() & 0x3f;
+                if (data & 0x20) {
+                    data |= ~0x1f;
+                }
+                printf(" % 2d", data);
+            }
+        }
+    }
+    */
 }
 
 static uint32_t i2c_get_sr(void) {
@@ -179,3 +236,65 @@ void mma_stop(void) {
     // send stop condition
     I2C1->CR1 |= I2C_CR1_STOP;
 }
+
+/******************************************************************************/
+/* Micro Python bindings                                                      */
+
+int mma_buf[12];
+
+mp_obj_t pyb_mma_read(void) {
+    for (int i = 0; i <= 6; i += 3) {
+        mma_buf[0 + i] = mma_buf[0 + i + 3];
+        mma_buf[1 + i] = mma_buf[1 + i + 3];
+        mma_buf[2 + i] = mma_buf[2 + i + 3];
+    }
+
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(0);
+    mma_restart(MMA_ADDR, 0);
+    for (int i = 0; i <= 2; i++) {
+        int v = mma_read_ack() & 0x3f;
+        if (v & 0x20) {
+            v |= ~0x1f;
+        }
+        mma_buf[9 + i] = v;
+    }
+    int jolt_info = mma_read_nack();
+
+    mp_obj_t data[4];
+    data[0] = mp_obj_new_int(jolt_info);
+    data[1] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
+    data[2] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
+    data[3] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+
+    return rt_build_tuple(4, data); // items in reverse order in data
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_obj, pyb_mma_read);
+
+mp_obj_t pyb_mma_read_all(void) {
+    mp_obj_t data[11];
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(0);
+    mma_restart(MMA_ADDR, 0);
+    for (int i = 0; i <= 9; i++) {
+        data[10 - i] = mp_obj_new_int(mma_read_ack());
+    }
+    data[0] = mp_obj_new_int(mma_read_nack());
+
+    return rt_build_tuple(11, data); // items in reverse order in data
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_all_obj, pyb_mma_read_all);
+
+mp_obj_t pyb_mma_write_mode(mp_obj_t o_int, mp_obj_t o_mode) {
+    mma_start(MMA_ADDR, 1);
+    mma_send_byte(6); // start at int
+    mma_send_byte(mp_obj_get_int(o_int));
+    mma_send_byte(mp_obj_get_int(o_mode));
+    mma_stop();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_mma_write_mode_obj, pyb_mma_write_mode);
+

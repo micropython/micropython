@@ -276,14 +276,10 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("BUILD_LIST " UINT_FMT, unum);
                 break;
 
-                /*
             case MP_BC_LIST_APPEND:
                 DECODE_UINT;
-                // I think it's guaranteed by the compiler that sp[unum] is a list
-                rt_list_append(sp[unum], sp[0]);
-                sp++;
+                printf("LIST_APPEND " UINT_FMT, unum);
                 break;
-                */
 
             case MP_BC_BUILD_MAP:
                 DECODE_UINT;
@@ -343,16 +339,9 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("RETURN_VALUE");
                 break;
 
-                /*
             case MP_BC_YIELD_VALUE:
-                nlr_pop();
-                *ip_in_out = ip;
-                fastn[0] = fast0;
-                fastn[1] = fast1;
-                fastn[2] = fast2;
-                *sp_in_out = sp;
-                return true;
-                */
+                printf("YIELD_VALUE");
+                break;
 
             default:
                 printf("code %p, byte code 0x%02x not implemented\n", ip, op);
