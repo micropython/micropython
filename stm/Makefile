@@ -148,7 +148,7 @@ OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_FATFS:.
 all: $(BUILD) $(BUILD)/flash.dfu
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
-	python2 $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
+	python $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
 
 $(BUILD)/flash0.bin: $(BUILD)/flash.elf
 	arm-none-eabi-objcopy -O binary -j .isr_vector $^ $@
