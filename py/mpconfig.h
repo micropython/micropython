@@ -25,3 +25,9 @@
 #ifndef MICROPY_MEM_STATS
 #define MICROPY_MEM_STATS (1)
 #endif
+
+// Whether to support slice object and correspondingly
+// slice subscript operators
+#ifndef MICROPY_ENABLE_SLICE
+#define MICROPY_ENABLE_SLICE (1)
+#endif
