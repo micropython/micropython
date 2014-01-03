@@ -10,9 +10,11 @@
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
-#include "compile.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "obj.h"
+#include "compile.h"
+#include "runtime.h"
 
 // TODO need to mangle __attr names
 
@@ -3016,7 +3018,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 }
 
-bool mp_compile(mp_parse_node_t pn, bool is_repl) {
+mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
     comp->qstr___class__ = qstr_from_str_static("__class__");
@@ -3146,7 +3148,19 @@ bool mp_compile(mp_parse_node_t pn, bool is_repl) {
         }
     }
 
+    bool had_error = comp->had_error;
     m_del_obj(compiler_t, comp);
 
-    return !comp->had_error;
+    if (had_error) {
+        // TODO return a proper error message
+        return mp_const_none;
+    } else {
+#if MICROPY_EMIT_CPYTHON
+        // can't create code, so just return true
+        return mp_const_true;
+#else
+        // return function that executes the outer module
+        return rt_make_function_from_id(1);
+#endif
+    }
 }

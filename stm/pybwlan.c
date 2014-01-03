@@ -18,7 +18,6 @@
 #include "misc.h"
 #include "lexer.h"
 #include "parse.h"
-#include "compile.h"
 #include "obj.h"
 #include "map.h"
 #include "runtime.h"

@@ -9,8 +9,8 @@
 #include "lexer.h"
 #include "lexerunix.h"
 #include "parse.h"
-#include "compile.h"
 #include "obj.h"
+#include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "repl.h"
@@ -85,19 +85,16 @@ static void do_repl(void) {
 
         if (pn != MP_PARSE_NODE_NULL) {
             //mp_parse_node_show(pn, 0);
-            bool comp_ok = mp_compile(pn, true);
-            if (comp_ok) {
-                mp_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != mp_const_none) {
-                    nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) {
-                        rt_call_function_0(module_fun);
-                        nlr_pop();
-                    } else {
-                        // uncaught exception
-                        mp_obj_print((mp_obj_t)nlr.ret_val);
-                        printf("\n");
-                    }
+            mp_obj_t module_fun = mp_compile(pn, true);
+            if (module_fun != mp_const_none) {
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    rt_call_function_0(module_fun);
+                    nlr_pop();
+                } else {
+                    // uncaught exception
+                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    printf("\n");
                 }
             }
         }
@@ -142,7 +139,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
-            bool comp_ok = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, false);
             //printf("----------------\n");
 
 #if MICROPY_EMIT_CPYTHON
@@ -150,19 +147,16 @@ void do_file(const char *file) {
                 printf("compile error\n");
             }
 #else
-            if (1 && comp_ok) {
+            if (1 && module_fun != mp_const_none) {
                 // execute it
-                mp_obj_t module_fun = rt_make_function_from_id(1);
-                if (module_fun != mp_const_none) {
-                    nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) {
-                        rt_call_function_0(module_fun);
-                        nlr_pop();
-                    } else {
-                        // uncaught exception
-                        mp_obj_print((mp_obj_t)nlr.ret_val);
-                        printf("\n");
-                    }
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    rt_call_function_0(module_fun);
+                    nlr_pop();
+                } else {
+                    // uncaught exception
+                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    printf("\n");
                 }
             }
 #endif
