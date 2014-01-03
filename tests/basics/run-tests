@@ -11,7 +11,7 @@ namefailed=
 
 for infile in tests/*.py
 do
-    basename=`basename $infile .c`
+    basename=`basename $infile .py`
     outfile=${basename}.out
     expfile=${basename}.exp
 

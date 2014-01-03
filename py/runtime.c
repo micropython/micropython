@@ -281,14 +281,6 @@ void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_ar
 #endif
 }
 
-mp_map_t *rt_get_map_locals(void) {
-    return map_locals;
-}
-
-void rt_set_map_locals(mp_map_t *m) {
-    map_locals = m;
-}
-
 static bool fit_small_int(mp_small_int_t o) {
     return true;
 }
@@ -786,6 +778,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         return mp_obj_instance_load_attr(base, attr);
     } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
+        DEBUG_OP_printf("lookup module map %p\n", mp_obj_module_get_globals(base));
         mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_module_get_globals(base), attr, false);
         if (elem == NULL) {
             // TODO what about generic method lookup?
@@ -911,6 +904,24 @@ mp_obj_t rt_import_from(mp_obj_t module, qstr name) {
     }
     */
     return x;
+}
+
+mp_map_t *rt_locals_get(void) {
+    return map_locals;
+}
+
+void rt_locals_set(mp_map_t *m) {
+    DEBUG_OP_printf("rt_locals_set(%p)\n", m);
+    map_locals = m;
+}
+
+mp_map_t *rt_globals_get(void) {
+    return map_globals;
+}
+
+void rt_globals_set(mp_map_t *m) {
+    DEBUG_OP_printf("rt_globals_set(%p)\n", m);
+    map_globals = m;
 }
 
 // these must correspond to the respective enum

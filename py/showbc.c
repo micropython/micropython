@@ -142,12 +142,10 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("STORE_NAME %s", qstr_str(qstr));
                 break;
 
-                /*
             case MP_BC_STORE_GLOBAL:
                 DECODE_QSTR;
-                rt_store_global(qstr, POP());
+                printf("STORE_GLOBAL %s", qstr_str(qstr));
                 break;
-                */
 
             case MP_BC_STORE_ATTR:
                 DECODE_QSTR;
@@ -341,6 +339,16 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_YIELD_VALUE:
                 printf("YIELD_VALUE");
+                break;
+
+            case MP_BC_IMPORT_NAME:
+                DECODE_QSTR;
+                printf("IMPORT NAME %s", qstr_str(qstr));
+                break;
+
+            case MP_BC_IMPORT_FROM:
+                DECODE_QSTR;
+                printf("IMPORT NAME %s", qstr_str(qstr));
                 break;
 
             default:

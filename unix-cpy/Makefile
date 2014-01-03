@@ -47,6 +47,7 @@ PY_O = \
 	objtuple.o \
 	objtype.o \
 	builtin.o \
+	builtinimport.o \
 	vm.o \
 	showbc.o \
 	repl.o \

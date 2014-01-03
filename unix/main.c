@@ -105,6 +105,18 @@ static void do_repl(void) {
 }
 
 void do_file(const char *file) {
+    // hack: set dir for import based on where this file is
+    {
+        const char * s = strrchr(file, '/');
+        if (s != NULL) {
+            int len = s - file;
+            char *dir = m_new(char, len + 1);
+            memcpy(dir, file, len);
+            dir[len] = '\0';
+            mp_import_set_directory(dir);
+        }
+    }
+
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     //const char *pysrc = "def f():\n  x=x+1\n  print(42)\n";
     //mp_lexer_t *lex = mp_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);

@@ -167,8 +167,12 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
 
     while (1) {
         // try to print in the allocated space
+        // need to make a copy of the va_list because we may call vsnprintf multiple times
         int size = vstr->alloc - vstr->len;
-        int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap);
+        va_list ap2;
+        va_copy(ap2, ap);
+        int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap2);
+        va_end(ap2);
 
         // if that worked, return
         if (n > -1 && n < size) {

@@ -23,10 +23,6 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
-// these are defined in runtime.c
-mp_map_t *rt_get_map_locals(void);
-void rt_set_map_locals(mp_map_t *m);
-
 int get_doubling_prime_greater_or_equal_to(int x);
 void mp_map_init(mp_map_t *map, mp_map_kind_t kind, int n);
 mp_map_t *mp_map_new(mp_map_kind_t kind, int n);

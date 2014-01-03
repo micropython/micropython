@@ -138,3 +138,6 @@ bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str);
 */
 bool mp_lexer_show_error(mp_lexer_t *lex, const char *msg);
 bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg);
+
+// used to import a module; must be implemented for a specific port
+mp_lexer_t *mp_import_open_file(qstr mod_name);
