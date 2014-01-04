@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 RM="/bin/rm -f"
-CPYTHON3=python3
+CPYTHON3=python3.3
 MP_PY=../../unix/py
 
 numtests=0
