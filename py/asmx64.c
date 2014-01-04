@@ -6,6 +6,10 @@
 
 #include "misc.h"
 #include "asmx64.h"
+#include "mpconfig.h"
+
+// wrapper around everything in this file
+#if MICROPY_EMIT_X64
 
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
@@ -620,3 +624,5 @@ void asm_x64_call_ind(asm_x64_t* as, void *ptr, int temp_r64) {
     asm_x64_write_word32(as, ptr - (void*)(as->code_base + as->code_offset + 4));
     */
 }
+
+#endif // MICROPY_EMIT_X64

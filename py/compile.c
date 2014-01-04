@@ -3083,11 +3083,13 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
     // compile pass 2 and 3
 #if !MICROPY_EMIT_CPYTHON
     emit_t *emit_bc = NULL;
+#if MICROPY_EMIT_NATIVE
     emit_t *emit_native = NULL;
 #endif
 #if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
+#endif // !MICROPY_EMIT_CPYTHON
     for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
             // dummy
@@ -3115,6 +3117,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
             comp->emit_method_table = &emit_cpython_method_table;
 #else
             switch (s->emit_options) {
+
+#if MICROPY_EMIT_NATIVE
                 case EMIT_OPT_NATIVE_PYTHON:
                 case EMIT_OPT_VIPER:
 #if MICROPY_EMIT_X64
@@ -3131,6 +3135,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
                     comp->emit = emit_native;
                     comp->emit_method_table->set_native_types(comp->emit, s->emit_options == EMIT_OPT_VIPER);
                     break;
+#endif // MICROPY_EMIT_NATIVE
 
                 default:
                     if (emit_bc == NULL) {
@@ -3140,7 +3145,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
                     comp->emit_method_table = &emit_bc_method_table;
                     break;
             }
-#endif
+#endif // !MICROPY_EMIT_CPYTHON
 
             // compile pass 2 and pass 3
             compile_scope(comp, s, PASS_2);
