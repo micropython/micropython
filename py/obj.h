@@ -146,6 +146,7 @@ mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_list_reverse(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
+mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
 mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
 mp_obj_t mp_obj_new_instance(mp_obj_t clas);
@@ -215,6 +216,10 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
+
+// slice
+extern const mp_obj_type_t slice_type;
+void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)

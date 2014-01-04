@@ -11,15 +11,11 @@
 #ifdef __LP64__
 typedef long machine_int_t; // must be pointer size
 typedef unsigned long machine_uint_t; // must be pointer size
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
 // regardless for actual size.
 typedef int machine_int_t; // must be pointer size
 typedef unsigned int machine_uint_t; // must be pointer size
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
 #endif
 
 #define BYTES_PER_WORD sizeof(machine_int_t)
