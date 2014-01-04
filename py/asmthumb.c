@@ -7,6 +7,9 @@
 #include "mpconfig.h"
 #include "asmthumb.h"
 
+// wrapper around everything in this file
+#if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
@@ -447,3 +450,5 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
         asm_thumb_write_op16(as, OP_SVC(fun_id));
     }
 }
+
+#endif // MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB

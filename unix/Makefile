@@ -83,10 +83,10 @@ $(BUILD)/%.o: $(PYSRC)/%.S
 $(BUILD)/%.o: $(PYSRC)/%.c mpconfigport.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILD)/emitnx64.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
+$(BUILD)/emitnx64.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h mpconfigport.h
 	$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
 
-$(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h
+$(BUILD)/emitnthumb.o: $(PYSRC)/emitnative.c $(PYSRC)/emit.h mpconfigport.h
 	$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
