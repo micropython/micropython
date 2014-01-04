@@ -141,9 +141,23 @@ static mp_obj_t list_copy(mp_obj_t self_in) {
     return mp_obj_new_list(self->len, self->items);
 }
 
+static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    mp_obj_list_t *self = self_in;
+    int count = 0;
+    for (int i = 0; i < self->len; i++) {
+         if (mp_obj_equal(self->items[i], value)) {
+              count++;
+         }
+    }
+
+    return mp_obj_new_int(count);
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
@@ -160,6 +174,7 @@ const mp_obj_type_t list_type = {
         { "append", &list_append_obj },
         { "clear", &list_clear_obj },
         { "copy", &list_copy_obj },
+        { "count", &list_count_obj },
         { "pop", &list_pop_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
