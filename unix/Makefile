@@ -2,7 +2,7 @@ PYSRC=../py
 BUILD=build
 
 CC = gcc
-CFLAGS = -I. -I$(PYSRC) -Wall -Werror -ansi -std=gnu99 -Os -DUSE_READLINE #-DNDEBUG
+CFLAGS = -I. -I$(PYSRC) -Wall -Werror -ansi -std=gnu99 -Os #-DNDEBUG
 LDFLAGS = -lm
 
 SRC_C = \

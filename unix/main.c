@@ -15,7 +15,7 @@
 #include "runtime.h"
 #include "repl.h"
 
-#ifdef USE_READLINE
+#if MICROPY_USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -35,7 +35,7 @@ static char *str_join(const char *s1, int sep_char, const char *s2) {
 }
 
 static char *prompt(char *p) {
-#ifdef USE_READLINE
+#if MICROPY_USE_READLINE
     char *line = readline(p);
     if (line) {
         add_history(line);
