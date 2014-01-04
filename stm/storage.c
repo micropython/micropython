@@ -53,8 +53,10 @@ static uint8_t *cache_get_addr_for_read(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
-    if (cache_flash_sector_id == flash_sector_id)
+    if (cache_flash_sector_id == flash_sector_id) {
+        // in cache, copy from there
         return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
+    }
     // not in cache, copy straight from flash
     return (uint8_t*)flash_addr;
 }
@@ -141,6 +143,7 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
         return true;
 
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
+        // non-MBR block, get data from flash memory, possibly via cache
         uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * BLOCK_SIZE;
         uint8_t *src = cache_get_addr_for_read(flash_addr);
         memcpy(dest, src, BLOCK_SIZE);
