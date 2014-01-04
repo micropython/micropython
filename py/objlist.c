@@ -125,7 +125,17 @@ static mp_obj_t list_sort(mp_obj_t self_in, mp_obj_t key_fn) {
     return mp_const_none; // return None, as per CPython
 }
 
+static mp_obj_t list_clear(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    mp_obj_list_t *self = self_in;
+    self->len = 0;
+    self->items = m_renew(mp_obj_t, self->items, self->alloc, 4);
+    self->alloc = 4;
+    return mp_const_none;
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
+static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
@@ -140,6 +150,7 @@ const mp_obj_type_t list_type = {
     NULL, // iternext
     { // method list
         { "append", &list_append_obj },
+        { "clear", &list_clear_obj },
         { "pop", &list_pop_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
