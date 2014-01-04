@@ -27,7 +27,9 @@ _nlr_push:
     movq    %rdi, nlr_top(%rip)     # stor new nlr_buf (to make linked list)
     xorq    %rax, %rax              # return 0, normal return
     ret                             # return
-//    .size   nlr_push, .-nlr_push
+#ifndef __llvm__
+    .size   nlr_push, .-nlr_push
+#endif
 
 /* void nlr_pop() */
 #ifndef __llvm__
@@ -42,7 +44,9 @@ _nlr_pop:
     movq    (%rax), %rax            # load prev nlr_buf
     movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
     ret                             # return
-//    .size   nlr_pop, .-nlr_pop
+#ifndef __llvm__
+    .size   nlr_pop, .-nlr_pop
+#endif
 
 /* void nlr_jump(rdi=uint val) */
 #ifndef __llvm__
