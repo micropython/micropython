@@ -9,6 +9,35 @@
 #include "obj.h"
 #include "runtime0.h"
 
+/******************************************************************************/
+/* ellipsis object, a singleton                                               */
+
+typedef struct _mp_obj_ellipsis_t {
+    mp_obj_base_t base;
+} mp_obj_ellipsis_t;
+
+void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    print(env, "Ellipsis");
+}
+
+const mp_obj_type_t ellipsis_type = {
+    { &mp_const_type },
+    "ellipsis",
+    ellipsis_print, // print
+    NULL, // call_n
+    NULL, // unary_op
+    NULL, // binary_op
+    NULL, // getiter
+    NULL, // iternext
+    {{NULL, NULL},}, // method list
+};
+
+static const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
+const mp_obj_t mp_const_ellipsis = (mp_obj_t)&ellipsis_obj;
+
+/******************************************************************************/
+/* slice object                                                               */
+
 #if MICROPY_ENABLE_SLICE
 
 // TODO: This implements only variant of slice with 2 integer args only.

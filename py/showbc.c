@@ -46,6 +46,10 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_CONST_TRUE");
                 break;
 
+            case MP_BC_LOAD_CONST_ELLIPSIS:
+                printf("LOAD_CONST_ELLIPSIS");
+                break;
+
             case MP_BC_LOAD_CONST_SMALL_INT:
                 unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
                 ip += 3;

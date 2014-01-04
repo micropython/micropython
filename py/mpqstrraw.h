@@ -20,6 +20,7 @@ Q(native)
 Q(viper)
 Q(asm_thumb)
 
+Q(Ellipsis)
 Q(StopIteration)
 
 Q(AttributeError)

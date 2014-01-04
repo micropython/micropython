@@ -110,6 +110,7 @@ extern const mp_obj_type_t mp_const_type;
 extern const mp_obj_t mp_const_none;
 extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
+extern const mp_obj_t mp_const_ellipsis;
 extern const mp_obj_t mp_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
 // Need to declare this here so we are not dependent on map.h
