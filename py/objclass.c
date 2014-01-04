@@ -64,6 +64,7 @@ const mp_obj_type_t class_type = {
     { &mp_const_type },
     "class",
     NULL, // print
+    NULL, // make_new
     class_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op

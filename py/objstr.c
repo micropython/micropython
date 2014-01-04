@@ -179,6 +179,7 @@ const mp_obj_type_t str_type = {
     { &mp_const_type },
     "str",
     str_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     str_binary_op, // binary_op

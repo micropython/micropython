@@ -17,7 +17,7 @@ typedef struct _mp_obj_dict_t {
     mp_map_t map;
 } mp_obj_dict_t;
 
-void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     bool first = true;
     print(env, "{");
@@ -35,7 +35,13 @@ void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_ob
     print(env, "}");
 }
 
-mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+// args are reverse in the array
+static mp_obj_t dict_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+    // TODO create from an iterable!
+    return rt_build_map(0);
+}
+
+static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -58,6 +64,7 @@ const mp_obj_type_t dict_type = {
     { &mp_const_type },
     "dict",
     dict_print, // print
+    dict_make_new, // make_new
     NULL, // call_n
     NULL, // unary_op
     dict_binary_op, // binary_op

@@ -91,26 +91,31 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR___build_class__, true)->value = rt_make_function_2(mp_builtin___build_class__);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR___repl_print__, true)->value = rt_make_function_1(mp_builtin___repl_print__);
 
-    // built-in user functions
+    // built-in types
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_bool, true)->value = (mp_obj_t)&bool_type;
+#if MICROPY_ENABLE_FLOAT
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_complex, true)->value = (mp_obj_t)&complex_type;
+#endif
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_dict, true)->value = (mp_obj_t)&dict_type;
+#if MICROPY_ENABLE_FLOAT
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_float, true)->value = (mp_obj_t)&float_type;
+#endif
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_int, true)->value = (mp_obj_t)&int_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_list, true)->value = (mp_obj_t)&list_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_set, true)->value = (mp_obj_t)&set_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_tuple, true)->value = (mp_obj_t)&tuple_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_type, true)->value = (mp_obj_t)&mp_builtin_type_obj; // TODO
+
+    // built-in user functions; TODO covert all to &mp_builtin_xxx's
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_abs, true)->value = rt_make_function_1(mp_builtin_abs);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_all, true)->value = rt_make_function_1(mp_builtin_all);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_any, true)->value = rt_make_function_1(mp_builtin_any);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_bool, true)->value = rt_make_function_var(0, mp_builtin_bool);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_callable, true)->value = rt_make_function_1(mp_builtin_callable);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_chr, true)->value = rt_make_function_1(mp_builtin_chr);
-#if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_complex, true)->value = (mp_obj_t)&mp_builtin_complex_obj;
-#endif
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_dict, true)->value = rt_make_function_0(mp_builtin_dict);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_divmod, true)->value = rt_make_function_2(mp_builtin_divmod);
-#if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_float, true)->value = (mp_obj_t)&mp_builtin_float_obj;
-#endif
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_hash, true)->value = (mp_obj_t)&mp_builtin_hash_obj;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_int, true)->value = (mp_obj_t)&mp_builtin_int_obj;
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_iter, true)->value = (mp_obj_t)&mp_builtin_iter_obj;
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_len, true)->value = rt_make_function_1(mp_builtin_len);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_list, true)->value = rt_make_function_var(0, mp_builtin_list);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_max, true)->value = rt_make_function_var(1, mp_builtin_max);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_min, true)->value = rt_make_function_var(1, mp_builtin_min);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_next, true)->value = (mp_obj_t)&mp_builtin_next_obj;
@@ -118,9 +123,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_pow, true)->value = rt_make_function_var(2, mp_builtin_pow);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_print, true)->value = rt_make_function_var(0, mp_builtin_print);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_range, true)->value = rt_make_function_var(1, mp_builtin_range);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_set, true)->value = (mp_obj_t)&mp_builtin_set_obj;
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_sum, true)->value = rt_make_function_var(1, mp_builtin_sum);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_type, true)->value = (mp_obj_t)&mp_builtin_type_obj;
 
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes = NULL;

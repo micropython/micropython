@@ -24,6 +24,7 @@ const mp_obj_type_t ellipsis_type = {
     { &mp_const_type },
     "ellipsis",
     ellipsis_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -58,6 +59,7 @@ const mp_obj_type_t slice_type = {
     "slice",
     slice_print,
     NULL, // call_n
+    NULL, // make_new
     NULL, // unary_op
     NULL, // binary_op
     NULL, // getiter

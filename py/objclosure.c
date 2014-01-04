@@ -36,6 +36,7 @@ const mp_obj_type_t closure_type = {
     { &mp_const_type },
     "closure",
     NULL, // print
+    NULL, // make_new
     closure_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op

@@ -70,6 +70,7 @@ const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_native_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -162,6 +163,7 @@ const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_bc_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -275,6 +277,7 @@ static const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_asm_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op

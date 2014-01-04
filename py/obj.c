@@ -13,10 +13,6 @@
 #include "runtime.h"
 #include "map.h"
 
-mp_obj_t mp_obj_new_int(machine_int_t value) {
-    return MP_OBJ_NEW_SMALL_INT(value);
-}
-
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return "int";
@@ -128,9 +124,13 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
+#if MICROPY_ENABLE_FLOAT
+    } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
+        // TODO work out if this should be floor, ceil or trunc
+        return (machine_int_t)mp_obj_float_get(arg);
+#endif
     } else {
-        assert(0);
-        return 0;
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }
 }
 

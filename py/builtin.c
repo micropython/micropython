@@ -88,14 +88,6 @@ mp_obj_t mp_builtin_any(mp_obj_t o_in) {
     return mp_const_false;
 }
 
-mp_obj_t mp_builtin_bool(int n_args, const mp_obj_t *args) {
-    switch (n_args) {
-        case 0: return mp_const_false;
-        case 1: if (rt_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "bool() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
-    }
-}
-
 mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
     if (mp_obj_is_callable(o_in)) {
         return mp_const_true;
@@ -103,42 +95,6 @@ mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
         return mp_const_false;
     }
 }
-
-#if MICROPY_ENABLE_FLOAT
-mp_obj_t mp_builtin_complex(int n_args, const mp_obj_t *args) {
-    assert(0 <= n_args && n_args <= 2);
-
-    if (n_args == 0) {
-        return mp_obj_new_complex(0, 0);
-    } else if (n_args == 1) {
-        // TODO allow string as first arg and parse it
-        if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
-            return args[0];
-        } else {
-            return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
-        }
-    } else {
-        mp_float_t real, imag;
-        if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
-            mp_obj_get_complex(args[0], &real, &imag);
-        } else {
-            real = mp_obj_get_float(args[0]);
-            imag = 0;
-        }
-        if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
-            mp_float_t real2, imag2;
-            mp_obj_get_complex(args[1], &real2, &imag2);
-            real -= imag2;
-            imag += real2;
-        } else {
-            imag += mp_obj_get_float(args[1]);
-        }
-        return mp_obj_new_complex(real, imag);
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_complex_obj, 0, 2, mp_builtin_complex);
-#endif
 
 mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     int ord = mp_obj_get_int(o_in);
@@ -150,11 +106,6 @@ mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     } else {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "chr() arg not in range(0x110000)"));
     }
-}
-
-mp_obj_t mp_builtin_dict(void) {
-    // TODO create from an iterable!
-    return rt_build_map(0);
 }
 
 mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
@@ -170,48 +121,12 @@ mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     }
 }
 
-#if MICROPY_ENABLE_FLOAT
-static mp_obj_t mp_builtin_float(int n_args, const mp_obj_t *args) {
-    assert(0 <= n_args && n_args <= 1);
-
-    if (n_args == 0) {
-        return mp_obj_new_float(0);
-    } else {
-        // TODO allow string as arg and parse it
-        if (MP_OBJ_IS_TYPE(args[0], &float_type)) {
-            return args[0];
-        } else {
-            return mp_obj_new_float(mp_obj_get_float(args[0]));
-        }
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_float_obj, 0, 1, mp_builtin_float);
-#endif
-
 static mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
     // TODO hash will generally overflow small integer; can we safely truncate it?
     return mp_obj_new_int(mp_obj_hash(o_in));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
-
-static mp_obj_t mp_builtin_int(int n_args, const mp_obj_t *args) {
-    assert(0 <= n_args && n_args <= 2);
-
-    if (n_args == 0) {
-        return MP_OBJ_NEW_SMALL_INT(0);
-    } else if (n_args == 1) {
-        // TODO if arg is a string then parse it
-        return mp_obj_new_int(mp_obj_get_int(args[0]));
-    } else { // n_args == 2
-        // TODO, parse with given base
-        assert(0);
-        return MP_OBJ_NEW_SMALL_INT(0);
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_int_obj, 0, 2, mp_builtin_int);
 
 static mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
     return rt_getiter(o_in);
@@ -239,24 +154,6 @@ mp_obj_t mp_builtin_len(mp_obj_t o_in) {
         nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     }
     return MP_OBJ_NEW_SMALL_INT(len);
-}
-
-mp_obj_t mp_builtin_list(int n_args, const mp_obj_t *args) {
-    switch (n_args) {
-        case 0: return rt_build_list(0, NULL);
-        case 1:
-        {
-            // make list from iterable
-            mp_obj_t iterable = rt_getiter(args[0]);
-            mp_obj_t list = rt_build_list(0, NULL);
-            mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-                rt_list_append(list, item);
-            }
-            return list;
-        }
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "list() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
-    }
 }
 
 mp_obj_t mp_builtin_max(int n_args, const mp_obj_t *args) {
@@ -367,26 +264,6 @@ mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args) {
     }
 }
 
-static mp_obj_t mp_builtin_set(int n_args, const mp_obj_t *args) {
-    assert(0 <= n_args && n_args <= 1);
-
-    if (n_args == 0) {
-        // return a new, empty set
-        return mp_obj_new_set(0, NULL);
-    } else {
-        // 1 argument, an iterable from which we make a new set
-        mp_obj_t set = mp_obj_new_set(0, NULL);
-        mp_obj_t iterable = rt_getiter(args[0]);
-        mp_obj_t item;
-        while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-            mp_obj_set_store(set, item);
-        }
-        return set;
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_set_obj, 0, 1, mp_builtin_set);
-
 mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     mp_obj_t value;
     switch (n_args) {
@@ -405,8 +282,7 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
 static mp_obj_t mp_builtin_type(mp_obj_t o_in) {
     // TODO implement the 3 argument version of type()
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        // TODO implement int-type
-        return mp_const_none;
+        return (mp_obj_t)&int_type;
     } else {
         mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;

@@ -93,6 +93,7 @@ const mp_obj_type_t instance_type = {
     { &mp_const_type },
     "instance",
     NULL, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op
