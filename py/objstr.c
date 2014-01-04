@@ -35,7 +35,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
-                int start, stop, step;
+                machine_int_t start, stop, step;
                 mp_obj_slice_get(rhs_in, &start, &stop, &step);
                 assert(step == 1);
                 int len = strlen(lhs_str);
