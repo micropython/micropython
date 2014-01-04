@@ -41,9 +41,20 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 int len = strlen(lhs_str);
                 if (start < 0) {
                     start = len + start;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                } else if (start > len) {
+                    start = len;
                 }
                 if (stop <= 0) {
                     stop = len + stop;
+                    // CPython returns empty string in such case
+                    if (stop < 0) {
+                        stop = start;
+                    }
+                } else if (stop > len) {
+                    stop = len;
                 }
                 return mp_obj_new_str(qstr_from_strn_copy(lhs_str + start, stop - start));
 #endif
