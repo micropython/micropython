@@ -207,6 +207,20 @@ static mp_obj_t list_remove(mp_obj_t self_in, mp_obj_t value) {
     return mp_const_none;
 }
 
+static mp_obj_t list_reverse(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    mp_obj_list_t *self = self_in;
+
+    int len = self->len;
+    for (int i = 0; i < len/2; i++) {
+         mp_obj_t *a = self->items[i];
+         self->items[i] = self->items[len-i-1];
+         self->items[len-i-1] = a;
+    }
+
+    return mp_const_none;
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
@@ -215,6 +229,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
 static MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
+static MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
 const mp_obj_type_t list_type = {
@@ -235,6 +250,7 @@ const mp_obj_type_t list_type = {
         { "insert", &list_insert_obj },
         { "pop", &list_pop_obj },
         { "remove", &list_remove_obj },
+        { "reverse", &list_reverse_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
