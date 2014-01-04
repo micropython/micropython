@@ -217,6 +217,13 @@ int main(int argc, char **argv) {
 
     rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
 
+    /*
+    printf("bytes:\n");
+    printf("    total %d\n", m_get_total_bytes_allocated());
+    printf("    cur   %d\n", m_get_current_bytes_allocated());
+    printf("    peak  %d\n", m_get_peak_bytes_allocated());
+    */
+
     if (argc == 1) {
         do_repl();
     } else if (argc == 2) {

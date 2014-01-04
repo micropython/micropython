@@ -15,6 +15,7 @@
 #include "misc.h"
 #include "ff.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
@@ -621,7 +622,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     }
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_ValueError, "pin %s does not exist", pin_name));
+    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);

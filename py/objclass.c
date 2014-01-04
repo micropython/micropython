@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "map.h"
@@ -25,7 +26,7 @@ mp_obj_t class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_t o = mp_obj_new_instance(self_in);
 
     // look for __init__ function
-    mp_map_elem_t *init_fn = mp_qstr_map_lookup(self->locals, qstr_from_str_static("__init__"), false);
+    mp_map_elem_t *init_fn = mp_qstr_map_lookup(self->locals, MP_QSTR___init__, false);
 
     if (init_fn != NULL) {
         // call __init__ function
@@ -40,13 +41,13 @@ mp_obj_t class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
             m_del(mp_obj_t, args2, n_args + 1);
         }
         if (init_ret != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
         }
 
     } else {
         // TODO
         if (n_args != 0) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "function takes 0 positional arguments but %d were given", (void*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "function takes 0 positional arguments but %d were given", (void*)(machine_int_t)n_args));
         }
     }
 

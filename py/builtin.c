@@ -8,6 +8,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -91,7 +92,7 @@ mp_obj_t mp_builtin_bool(int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 0: return mp_const_false;
         case 1: if (rt_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "bool() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "bool() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
     }
 }
 
@@ -147,7 +148,7 @@ mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         str[1] = '\0';
         return mp_obj_new_str(qstr_from_str_take(str, 2));
     } else {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "chr() arg not in range(0x110000)"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "chr() arg not in range(0x110000)"));
     }
 }
 
@@ -165,7 +166,7 @@ mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         revs_args[0] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
         return rt_build_tuple(2, revs_args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
+        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
 }
 
@@ -235,7 +236,7 @@ mp_obj_t mp_builtin_len(mp_obj_t o_in) {
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
         len = mp_obj_dict_len(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     }
     return MP_OBJ_NEW_SMALL_INT(len);
 }
@@ -254,7 +255,7 @@ mp_obj_t mp_builtin_list(int n_args, const mp_obj_t *args) {
             }
             return list;
         }
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "list() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "list() takes at most 1 argument (%d given)", (void*)(machine_int_t)n_args));
     }
 }
 
@@ -270,7 +271,7 @@ mp_obj_t mp_builtin_max(int n_args, const mp_obj_t *args) {
             }
         }
         if (max_obj == NULL) {
-            nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "max() arg is an empty sequence"));
+            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "max() arg is an empty sequence"));
         }
         return max_obj;
     } else {
@@ -297,7 +298,7 @@ mp_obj_t mp_builtin_min(int n_args, const mp_obj_t *args) {
             }
         }
         if (min_obj == NULL) {
-            nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "min() arg is an empty sequence"));
+            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "min() arg is an empty sequence"));
         }
         return min_obj;
     } else {
@@ -315,7 +316,7 @@ mp_obj_t mp_builtin_min(int n_args, const mp_obj_t *args) {
 static mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = rt_iternext(o);
     if (ret == mp_const_stop_iteration) {
-        nlr_jump(mp_obj_new_exception(qstr_from_str_static("StopIteration")));
+        nlr_jump(mp_obj_new_exception(MP_QSTR_StopIteration));
     } else {
         return ret;
     }
@@ -328,7 +329,7 @@ mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (strlen(str) == 1) {
         return mp_obj_new_int(str[0]);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "ord() expected a character, but string of length %d found", (void*)(machine_int_t)strlen(str)));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "ord() expected a character, but string of length %d found", (void*)(machine_int_t)strlen(str)));
     }
 }
 
@@ -336,7 +337,7 @@ mp_obj_t mp_builtin_pow(int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 2: return rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]);
         case 3: return rt_binary_op(RT_BINARY_OP_MODULO, rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "pow expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "pow expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
     }
 }
 
@@ -362,7 +363,7 @@ mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args) {
         case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
         case 2: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), 1);
         case 3: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]));
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "range expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "range expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
     }
 }
 
@@ -391,7 +392,7 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 1: value = mp_obj_new_int(0); break;
         case 2: value = args[1]; break;
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "sum expected at most 2 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "sum expected at most 2 arguments, got %d", (void*)(machine_int_t)n_args));
     }
     mp_obj_t iterable = rt_getiter(args[0]);
     mp_obj_t item;

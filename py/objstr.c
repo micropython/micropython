@@ -7,6 +7,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -61,7 +62,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             } else {
                 // Message doesn't match CPython, but we don't have so much bytes as they
                 // to spend them on verbose wording
-                nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "index must be int"));
+                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "index must be int"));
             }
 
         case RT_BINARY_OP_ADD:
@@ -134,7 +135,7 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_new_str(qstr_from_str_take(joined_str, required_len + 1));
 
 bad_arg:
-    nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "?str.join expecting a list of str's"));
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
 }
 
 void vstr_printf_wrapper(void *env, const char *fmt, ...) {
@@ -158,7 +159,7 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
                 vstr_add_char(vstr, '{');
             } else if (*str == '}') {
                 if (arg_i >= n_args) {
-                    nlr_jump(mp_obj_new_exception_msg(rt_q_IndexError, "tuple index out of range"));
+                    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "tuple index out of range"));
                 }
                 mp_obj_print_helper(vstr_printf_wrapper, vstr, args[arg_i]);
                 arg_i++;

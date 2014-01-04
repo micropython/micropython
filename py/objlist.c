@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -81,7 +82,7 @@ static mp_obj_t list_pop(int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
     if (self->len == 0) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_IndexError, "pop from empty list"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "pop from empty list"));
     }
     uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1]);
     mp_obj_t ret = self->items[index];

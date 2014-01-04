@@ -7,6 +7,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
@@ -38,20 +39,6 @@ typedef enum {
 #define EMIT_OPT_ASM_THUMB      (4)
 
 typedef struct _compiler_t {
-    qstr qstr___class__;
-    qstr qstr___locals__;
-    qstr qstr___name__;
-    qstr qstr___module__;
-    qstr qstr___qualname__;
-    qstr qstr___doc__;
-    qstr qstr_assertion_error;
-    qstr qstr_micropython;
-    qstr qstr_byte_code;
-    qstr qstr_native;
-    qstr qstr_viper;
-    qstr qstr_asm_thumb;
-    qstr qstr_range;
-
     bool is_repl;
     pass_kind_t pass;
     bool had_error; // try to keep compiler clean from nlr
@@ -202,7 +189,7 @@ static int comp_next_label(compiler_t *comp) {
 }
 
 static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, rt_get_unique_code_id(kind == SCOPE_MODULE), emit_options);
+    scope_t *scope = scope_new(kind, pn, rt_get_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -903,7 +890,7 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
 
 // returns true if it was a built-in decorator (even if the built-in had an error)
 static bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_node_t *name_nodes, uint *emit_options) {
-    if (MP_PARSE_NODE_LEAF_ARG(name_nodes[0]) != comp->qstr_micropython) {
+    if (MP_PARSE_NODE_LEAF_ARG(name_nodes[0]) != MP_QSTR_micropython) {
         return false;
     }
 
@@ -913,16 +900,16 @@ static bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     }
 
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
-    if (attr == comp->qstr_byte_code) {
+    if (attr == MP_QSTR_byte_code) {
         *emit_options = EMIT_OPT_BYTE_CODE;
 #if MICROPY_EMIT_NATIVE
-    } else if (attr == comp->qstr_native) {
+    } else if (attr == MP_QSTR_native) {
         *emit_options = EMIT_OPT_NATIVE_PYTHON;
-    } else if (attr == comp->qstr_viper) {
+    } else if (attr == MP_QSTR_viper) {
         *emit_options = EMIT_OPT_VIPER;
 #endif
 #if MICROPY_EMIT_INLINE_THUMB
-    } else if (attr == comp->qstr_asm_thumb) {
+    } else if (attr == MP_QSTR_asm_thumb) {
         *emit_options = EMIT_OPT_ASM_THUMB;
 #endif
     } else {
@@ -1329,7 +1316,7 @@ void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);
-    EMIT(load_id, comp->qstr_assertion_error);
+    EMIT(load_id, MP_QSTR_assertion_error);
     if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
         // assertion message
         compile_node(comp, pns->nodes[1]);
@@ -1495,7 +1482,7 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // for viper it will be much, much faster
     if (/*comp->scope_cur->emit_options == EMIT_OPT_VIPER &&*/ MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
         mp_parse_node_struct_t *pns_it = (mp_parse_node_struct_t*)pns->nodes[1];
-        if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == comp->qstr_range && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren) && MP_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
+        if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren) && MP_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
             mp_parse_node_t pn_range_args = ((mp_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
             mp_parse_node_t *args;
             int n_args = list_get(&pn_range_args, PN_arglist, &args);
@@ -1743,7 +1730,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
         if (comp->is_repl && comp->scope_cur->kind == SCOPE_MODULE) {
             // for REPL, evaluate then print the expression
-            EMIT(load_id, qstr_from_str_static("__repl_print__"));
+            EMIT(load_id, MP_QSTR___repl_print__);
             compile_node(comp, pns->nodes[0]);
             EMIT(call_function, 1, 0, false, false);
             EMIT(pop_top);
@@ -2683,7 +2670,7 @@ void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
             if (kind == MP_PARSE_NODE_STRING) {
                 compile_node(comp, pns->nodes[0]); // a doc string
                 // store doc string
-                EMIT(store_id, comp->qstr___doc__);
+                EMIT(store_id, MP_QSTR___doc__);
             }
         }
     }
@@ -2796,35 +2783,35 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
         if (comp->pass == PASS_1) {
             bool added;
-            id_info_t *id_info = scope_find_or_add_id(scope, comp->qstr___class__, &added);
+            id_info_t *id_info = scope_find_or_add_id(scope, MP_QSTR___class__, &added);
             assert(added);
             id_info->kind = ID_INFO_KIND_LOCAL;
-            id_info = scope_find_or_add_id(scope, comp->qstr___locals__, &added);
+            id_info = scope_find_or_add_id(scope, MP_QSTR___locals__, &added);
             assert(added);
             id_info->kind = ID_INFO_KIND_LOCAL;
             id_info->param = true;
             scope->num_params = 1; // __locals__ is the parameter
         }
 
-        EMIT(load_id, comp->qstr___locals__);
+        EMIT(load_id, MP_QSTR___locals__);
         EMIT(store_locals);
-        EMIT(load_id, comp->qstr___name__);
-        EMIT(store_id, comp->qstr___module__);
+        EMIT(load_id, MP_QSTR___name__);
+        EMIT(store_id, MP_QSTR___module__);
         EMIT(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
-        EMIT(store_id, comp->qstr___qualname__);
+        EMIT(store_id, MP_QSTR___qualname__);
 
         check_for_doc_string(comp, pns->nodes[2]);
         compile_node(comp, pns->nodes[2]); // 2 is class body
 
-        id_info_t *id = scope_find(scope, comp->qstr___class__);
+        id_info_t *id = scope_find(scope, MP_QSTR___class__);
         assert(id != NULL);
         if (id->kind == ID_INFO_KIND_LOCAL) {
             EMIT(load_const_tok, MP_TOKEN_KW_NONE);
         } else {
 #if MICROPY_EMIT_CPYTHON
-            EMIT(load_closure, comp->qstr___class__, 0); // XXX check this is the correct local num
+            EMIT(load_closure, MP_QSTR___class__, 0); // XXX check this is the correct local num
 #else
-            EMIT(load_fast, comp->qstr___class__, 0); // XXX check this is the correct local num
+            EMIT(load_fast, MP_QSTR___class__, 0); // XXX check this is the correct local num
 #endif
         }
         EMIT(return_value);
@@ -2917,7 +2904,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     scope->num_locals = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
-        if (scope->kind == SCOPE_CLASS && id->qstr == comp->qstr___class__) {
+        if (scope->kind == SCOPE_CLASS && id->qstr == MP_QSTR___class__) {
             // __class__ is not counted as a local; if it's used then it becomes a ID_INFO_KIND_CELL
             continue;
         }
@@ -3021,20 +3008,6 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
-    comp->qstr___class__ = qstr_from_str_static("__class__");
-    comp->qstr___locals__ = qstr_from_str_static("__locals__");
-    comp->qstr___name__ = qstr_from_str_static("__name__");
-    comp->qstr___module__ = qstr_from_str_static("__module__");
-    comp->qstr___qualname__ = qstr_from_str_static("__qualname__");
-    comp->qstr___doc__ = qstr_from_str_static("__doc__");
-    comp->qstr_assertion_error = qstr_from_str_static("AssertionError");
-    comp->qstr_micropython = qstr_from_str_static("micropython");
-    comp->qstr_byte_code = qstr_from_str_static("byte_code");
-    comp->qstr_native = qstr_from_str_static("native");
-    comp->qstr_viper = qstr_from_str_static("viper");
-    comp->qstr_asm_thumb = qstr_from_str_static("asm_thumb");
-    comp->qstr_range = qstr_from_str_static("range");
-
     comp->is_repl = is_repl;
     comp->had_error = false;
 
@@ -3048,10 +3021,10 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
     pn = fold_constants(pn);
 
     // set the outer scope
-    scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
+    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
 
     // compile pass 1
-    comp->emit = emit_pass1_new(comp->qstr___class__);
+    comp->emit = emit_pass1_new(MP_QSTR___class__);
     comp->emit_method_table = &emit_pass1_method_table;
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
@@ -3162,10 +3135,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
     } else {
 #if MICROPY_EMIT_CPYTHON
         // can't create code, so just return true
+        (void)module_scope; // to suppress warning that module_scope is unused
         return mp_const_true;
 #else
         // return function that executes the outer module
-        return rt_make_function_from_id(1);
+        return rt_make_function_from_id(module_scope->unique_code_id);
 #endif
     }
 }

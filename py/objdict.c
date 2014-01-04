@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -42,7 +43,7 @@ mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // dict load
             mp_map_elem_t *elem = mp_map_lookup_helper(&o->map, rhs_in, false);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg(rt_q_KeyError, "<value>"));
+                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
             } else {
                 return elem->value;
             }
