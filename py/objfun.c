@@ -38,6 +38,9 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
             case 2:
                 return ((mp_fun_2_t)self->fun)(args[1], args[0]);
 
+            case 3:
+                return ((mp_fun_3_t)self->fun)(args[2], args[1], args[0]);
+
             default:
                 assert(0);
                 return mp_const_none;
@@ -102,6 +105,15 @@ mp_obj_t rt_make_function_2(mp_fun_2_t fun) {
     o->base.type = &fun_native_type;
     o->n_args_min = 2;
     o->n_args_max = 2;
+    o->fun = fun;
+    return o;
+}
+
+mp_obj_t rt_make_function_3(mp_fun_3_t fun) {
+    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
+    o->base.type = &fun_native_type;
+    o->n_args_min = 3;
+    o->n_args_max = 3;
     o->fun = fun;
     return o;
 }

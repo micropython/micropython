@@ -46,6 +46,7 @@ struct _mp_obj_base_t {
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 0, 0, fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 1, 1, fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 2, 2, fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 3, 3, fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, n_args_min, (~((machine_uint_t)0)), fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, n_args_min, n_args_max, fun_name}
 
@@ -54,6 +55,7 @@ struct _mp_obj_base_t {
 typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
+typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
 
