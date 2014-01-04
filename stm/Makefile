@@ -162,7 +162,7 @@ $(BUILD)/flash.elf: $(OBJ)
 	arm-none-eabi-size $@
 
 $(BUILD):
-	mkdir $@
+	mkdir -p $@
 
 $(BUILD)/%.o: %.s
 	$(AS) -o $@ $<
