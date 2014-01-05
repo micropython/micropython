@@ -226,6 +226,15 @@ static mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     return mp_const_none;
 }
 
+static mp_obj_t list_remove(mp_obj_t self_in, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    mp_obj_t args[] = {self_in, value};
+    args[1] = list_index(2, args);
+    list_pop(2, args);
+
+    return mp_const_none;
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
@@ -233,6 +242,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
 static MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
 const mp_obj_type_t list_type = {
@@ -251,6 +261,7 @@ const mp_obj_type_t list_type = {
         { "index", &list_index_obj },
         { "insert", &list_insert_obj },
         { "pop", &list_pop_obj },
+        { "remove", &list_remove_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
