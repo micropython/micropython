@@ -12,7 +12,7 @@
 #define PYB_USRSW_PORT (GPIOA)
 #define PYB_USRSW_PIN (GPIO_Pin_13)
 
-void sw_init(void) {
+void switch_init(void) {
     // make it an input with pull-up
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = PYB_USRSW_PIN;
@@ -45,7 +45,7 @@ void sw_init(void) {
     NVIC_Init(&NVIC_InitStructure);
 }
 
-int sw_get(void) {
+int switch_get(void) {
     if (PYB_USRSW_PORT->IDR & PYB_USRSW_PIN) {
         // pulled high, so switch is not pressed
         return 0;
@@ -58,12 +58,12 @@ int sw_get(void) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-mp_obj_t pyb_sw(void) {
-    if (sw_get()) {
+static mp_obj_t pyb_switch(void) {
+    if (switch_get()) {
         return mp_const_true;
     } else {
         return mp_const_false;
     }
 }
 
-
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_switch_obj, pyb_switch);

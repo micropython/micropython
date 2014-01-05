@@ -773,7 +773,7 @@ int main(void) {
     led_state(PYB_LED_G1, 1);
 
     // more sub-system init
-    sw_init();
+    switch_init();
     storage_init();
 
     //usart_init(); disabled while wi-fi is enabled
@@ -822,7 +822,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
-        rt_store_attr(m, qstr_from_str_static("switch"), rt_make_function_0(pyb_sw));
+        rt_store_attr(m, qstr_from_str_static("switch"), (mp_obj_t)&pyb_switch_obj);
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
         rt_store_attr(m, qstr_from_str_static("accel"), (mp_obj_t)&pyb_mma_read_obj);
@@ -848,10 +848,10 @@ soft_reset:
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
-    if (sw_get()) {
+    if (switch_get()) {
         reset_filesystem = true;
         for (int i = 0; i < 50; i++) {
-            if (!sw_get()) {
+            if (!switch_get()) {
                 reset_filesystem = false;
                 break;
             }
@@ -1122,7 +1122,7 @@ soft_reset:
         data[2] = -2;
         data[3] = 0;
         for (;;) {
-            if (sw_get()) {
+            if (switch_get()) {
                 data[0] = 0x01; // 0x04 is middle, 0x02 is right
             } else {
                 data[0] = 0x00;
