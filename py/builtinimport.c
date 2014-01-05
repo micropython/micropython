@@ -58,7 +58,9 @@ mp_obj_t mp_builtin___import__(int n, mp_obj_t *args) {
         return mp_const_none;
     }
 
-    if (!mp_compile(pn, false)) {
+    mp_obj_t module_fun = mp_compile(pn, false);
+
+    if (module_fun == mp_const_none) {
         // TODO handle compile error correctly
         rt_locals_set(old_locals);
         rt_globals_set(old_globals);
@@ -66,7 +68,6 @@ mp_obj_t mp_builtin___import__(int n, mp_obj_t *args) {
     }
 
     // complied successfully, execute it
-    mp_obj_t module_fun = rt_make_function_from_id(1); // TODO we should return from mp_compile the unique_code_id for the module
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         rt_call_function_0(module_fun);

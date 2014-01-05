@@ -141,6 +141,7 @@ static const mp_obj_type_t servo_obj_type = {
     { &mp_const_type },
     "Servo",
     servo_obj_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op

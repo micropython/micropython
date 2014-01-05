@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "map.h"
@@ -29,7 +30,46 @@ void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
     }
 }
 
-mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
+// args are reverse in the array
+static mp_obj_t complex_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+    switch (n_args) {
+        case 0:
+            return mp_obj_new_complex(0, 0);
+
+        case 1:
+            // TODO allow string as first arg and parse it
+            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+                return args[0];
+            } else {
+                return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
+            }
+
+        case 2:
+        {
+            mp_float_t real, imag;
+            if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
+                mp_obj_get_complex(args[1], &real, &imag);
+            } else {
+                real = mp_obj_get_float(args[1]);
+                imag = 0;
+            }
+            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+                mp_float_t real2, imag2;
+                mp_obj_get_complex(args[0], &real2, &imag2);
+                real -= imag2;
+                imag += real2;
+            } else {
+                imag += mp_obj_get_float(args[0]);
+            }
+            return mp_obj_new_complex(real, imag);
+        }
+
+        default:
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "complex takes at most 2 arguments, %d given", (void*)(machine_int_t)n_args));
+    }
+}
+
+static mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
     mp_obj_complex_t *o = o_in;
     switch (op) {
         case RT_UNARY_OP_NOT: if (o->real != 0 || o->imag != 0) { return mp_const_true;} else { return mp_const_false; }
@@ -39,7 +79,7 @@ mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_real, lhs_imag, rhs_real, rhs_imag;
     mp_obj_complex_get(lhs_in, &lhs_real, &lhs_imag);
     mp_obj_complex_get(rhs_in, &rhs_real, &rhs_imag);
@@ -79,6 +119,7 @@ const mp_obj_type_t complex_type = {
     { &mp_const_type },
     "complex",
     complex_print, // print
+    complex_make_new, // make_new
     NULL, // call_n
     complex_unary_op, // unary_op
     complex_binary_op, // binary_op

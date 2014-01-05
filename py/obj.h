@@ -60,6 +60,7 @@ typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o);
+typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
@@ -73,6 +74,7 @@ struct _mp_obj_type_t {
     mp_obj_base_t base;
     const char *name;
     mp_print_fun_t print;
+    mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_n_fun_t call_n;
     mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
@@ -112,6 +114,8 @@ extern const mp_obj_type_t mp_const_type;
 extern const mp_obj_t mp_const_none;
 extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
+extern const mp_obj_t mp_const_empty_tuple;
+extern const mp_obj_t mp_const_ellipsis;
 extern const mp_obj_t mp_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
 // Need to declare this here so we are not dependent on map.h
@@ -181,6 +185,9 @@ extern const mp_obj_type_t bool_type;
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 
+// int
+extern const mp_obj_type_t int_type;
+
 // exception
 extern const mp_obj_type_t exception_type;
 qstr mp_obj_exception_get_type(mp_obj_t self_in);
@@ -215,6 +222,7 @@ uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 
 // set
+extern const mp_obj_type_t set_type;
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice

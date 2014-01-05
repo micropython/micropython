@@ -20,7 +20,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_STRING,
     MP_TOKEN_BYTES,
 
-    MP_TOKEN_ELLIPSES,
+    MP_TOKEN_ELLIPSIS,
 
     MP_TOKEN_KW_FALSE,              // 12
     MP_TOKEN_KW_NONE,

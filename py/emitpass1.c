@@ -7,6 +7,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
@@ -44,9 +45,9 @@ static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     bool added;
     id_info_t *id = scope_find_or_add_id(emit->scope, qstr, &added);
     if (added) {
-        if (strcmp(qstr_str(qstr), "AssertionError") == 0) {
-            id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+        if (qstr == MP_QSTR_AssertionError) {
             // TODO how much of a hack is this?
+            id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         } else if (strcmp(qstr_str(qstr), "super") == 0 && emit->scope->kind == SCOPE_FUNCTION) {
             // special case, super is a global, and also counts as use of __class__
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
