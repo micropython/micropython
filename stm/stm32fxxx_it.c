@@ -298,4 +298,10 @@ void EXTI15_10_IRQHandler(void) {
     }
 }
 
+#if defined(STM32F4DISC)
+void EXTI0_IRQHandler(void) {
+    // clear pending interrupt bit
+    EXTI_ClearITPendingBit(EXTI_Line0);
+}
+#endif
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

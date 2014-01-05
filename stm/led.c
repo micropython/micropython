@@ -7,66 +7,144 @@
 #include "obj.h"
 #include "led.h"
 
-#define PYB_LED_R_PORT (GPIOA)
-#define PYB_LED_R1_PIN (GPIO_Pin_8)
-#define PYB_LED_R2_PIN (GPIO_Pin_10)
-#define PYB_LED_G_PORT   (GPIOC)
-#define PYB_LED_G1_PIN (GPIO_Pin_4)
-#define PYB_LED_G2_PIN (GPIO_Pin_5)
+/* LED numbers, used internally */
+#define PYB_LED_1   (1)
+#define PYB_LED_2   (2)
+#define PYB_LED_3   (3)
+#define PYB_LED_4   (4)
+
+#if defined(PYBOARD)
+    #define PYB_LED1_PORT   (GPIOA)
+    #define PYB_LED1_PIN    (GPIO_Pin_8)
+
+    #define PYB_LED2_PORT   (GPIOA)
+    #define PYB_LED2_PIN    (GPIO_Pin_10)
+
+    #define PYB_LED3_PORT   (GPIOC)
+    #define PYB_LED3_PIN    (GPIO_Pin_4)
+
+    #define PYB_LED4_PORT   (GPIOC)
+    #define PYB_LED4_PIN    (GPIO_Pin_5)
+
+    #define PYB_OTYPE       (GPIO_OType_OD)
+
+    #define PYB_LED_ON(port, pin)  (port->BSRRH = pin)
+    #define PYB_LED_OFF(port, pin) (port->BSRRL = pin)
+
+#elif defined(STM32F4DISC)
+    #define PYB_LED1_PORT   (GPIOD)
+    #define PYB_LED1_PIN    (GPIO_Pin_14)
+
+    #define PYB_LED2_PORT   (GPIOD)
+    #define PYB_LED2_PIN    (GPIO_Pin_12)
+
+    #define PYB_LED3_PORT   (GPIOD)
+    #define PYB_LED3_PIN    (GPIO_Pin_15)
+
+    #define PYB_LED4_PORT   (GPIOD)
+    #define PYB_LED4_PIN    (GPIO_Pin_13)
+
+    #define PYB_OTYPE       (GPIO_OType_PP)
+
+    #define PYB_LED_ON(port, pin)  (port->BSRRL = pin)
+    #define PYB_LED_OFF(port, pin) (port->BSRRH = pin)
+#endif
 
 void led_init(void) {
-    // set the output high (so LED is off)
-    PYB_LED_R_PORT->BSRRL = PYB_LED_R1_PIN;
-    PYB_LED_R_PORT->BSRRL = PYB_LED_R2_PIN;
-    PYB_LED_G_PORT->BSRRL = PYB_LED_G1_PIN;
-    PYB_LED_G_PORT->BSRRL = PYB_LED_G2_PIN;
-    // make them open drain outputs
+    /* GPIO structure */
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = PYB_LED_R1_PIN | PYB_LED_R2_PIN;
+
+    /* Configure I/O speed, mode, output type and pull */
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(PYB_LED_R_PORT, &GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin = PYB_LED_G1_PIN | PYB_LED_G2_PIN;
-    GPIO_Init(PYB_LED_G_PORT, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_OType = PYB_OTYPE;
+
+    /* Turn off LEDs */
+    PYB_LED_OFF(PYB_LED1_PORT, PYB_LED1_PIN);
+    PYB_LED_OFF(PYB_LED2_PORT, PYB_LED2_PIN);
+    PYB_LED_OFF(PYB_LED3_PORT, PYB_LED1_PIN);
+    PYB_LED_OFF(PYB_LED4_PORT, PYB_LED2_PIN);
+
+    /* Initialize LEDs */
+    GPIO_InitStructure.GPIO_Pin = PYB_LED1_PIN;
+    GPIO_Init(PYB_LED1_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = PYB_LED2_PIN;
+    GPIO_Init(PYB_LED2_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = PYB_LED3_PIN;
+    GPIO_Init(PYB_LED3_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = PYB_LED4_PIN;
+    GPIO_Init(PYB_LED4_PORT, &GPIO_InitStructure);
 }
 
 void led_state(pyb_led_t led, int state) {
     GPIO_TypeDef *port;
     uint32_t pin;
+
     switch (led) {
-        case PYB_LED_R1: port = PYB_LED_R_PORT; pin = PYB_LED_R1_PIN; break;
-        case PYB_LED_R2: port = PYB_LED_R_PORT; pin = PYB_LED_R2_PIN; break;
-        case PYB_LED_G1: port = PYB_LED_G_PORT; pin = PYB_LED_G1_PIN; break;
-        case PYB_LED_G2: port = PYB_LED_G_PORT; pin = PYB_LED_G2_PIN; break;
-        default: return;
+        case PYB_LED_1:
+            pin  = PYB_LED1_PIN; 
+            port = PYB_LED1_PORT; 
+            break;
+        case PYB_LED_2:
+            pin  = PYB_LED2_PIN; 
+            port = PYB_LED2_PORT; 
+            break;
+        case PYB_LED_3:
+            pin  = PYB_LED3_PIN; 
+            port = PYB_LED3_PORT; 
+            break;
+        case PYB_LED_4:
+            pin  = PYB_LED4_PIN; 
+            port = PYB_LED4_PORT; 
+            break;
+        default: 
+            return;
     }
+
     if (state == 0) {
-        // turn LED off (output is high)
-        port->BSRRL = pin;
+        // turn LED off
+        PYB_LED_OFF(port, pin);
     } else {
-        // turn LED on (output is low)
-        port->BSRRH = pin;
+        // turn LED on
+        PYB_LED_ON(port, pin);
     }
 }
 
 void led_toggle(pyb_led_t led) {
     GPIO_TypeDef *port;
     uint32_t pin;
+
     switch (led) {
-        case PYB_LED_R1: port = PYB_LED_R_PORT; pin = PYB_LED_R1_PIN; break;
-        case PYB_LED_R2: port = PYB_LED_R_PORT; pin = PYB_LED_R2_PIN; break;
-        case PYB_LED_G1: port = PYB_LED_G_PORT; pin = PYB_LED_G1_PIN; break;
-        case PYB_LED_G2: port = PYB_LED_G_PORT; pin = PYB_LED_G2_PIN; break;
-        default: return;
+        case PYB_LED_1:
+            pin  = PYB_LED1_PIN; 
+            port = PYB_LED1_PORT; 
+            break;
+        case PYB_LED_2:
+            pin  = PYB_LED2_PIN; 
+            port = PYB_LED2_PORT; 
+            break;
+        case PYB_LED_3:
+            pin  = PYB_LED3_PIN; 
+            port = PYB_LED3_PORT; 
+            break;
+        case PYB_LED_4:
+            pin  = PYB_LED4_PIN; 
+            port = PYB_LED4_PORT; 
+            break;
+        default: 
+            return;
     }
+
     if (!(port->ODR & pin)) {
-        // turn LED off (output high)
-        port->BSRRL = pin;
+        // turn LED off 
+        PYB_LED_OFF(port, pin);
     } else {
         // turn LED on (output low)
-        port->BSRRH = pin;
+        PYB_LED_ON(port, pin);
     }
 }
 
@@ -85,19 +163,13 @@ void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
 
 mp_obj_t led_obj_on(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-    switch (self->led_id) {
-        case 1: led_state(PYB_LED_G1, 1); break;
-        case 2: led_state(PYB_LED_G2, 1); break;
-    }
+    led_state(self->led_id, 1);
     return mp_const_none;
 }
 
 mp_obj_t led_obj_off(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-    switch (self->led_id) {
-        case 1: led_state(PYB_LED_G1, 0); break;
-        case 2: led_state(PYB_LED_G2, 0); break;
-    }
+    led_state(self->led_id, 0);
     return mp_const_none;
 }
 
