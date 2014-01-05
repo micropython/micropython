@@ -17,6 +17,11 @@ typedef struct _mp_obj_str_t {
     qstr qstr;
 } mp_obj_str_t;
 
+static mp_obj_t mp_obj_new_str_iterator(mp_obj_str_t *str, int cur);
+
+/******************************************************************************/
+/* str                                                                        */
+
 void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     mp_obj_str_t *self = self_in;
     // TODO need to escape chars etc
@@ -83,6 +88,10 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 
     return MP_OBJ_NULL; // op not supported
+}
+
+static mp_obj_t str_getiter(mp_obj_t o_in) {
+    return mp_obj_new_str_iterator(o_in, 0);
 }
 
 mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
@@ -183,7 +192,7 @@ const mp_obj_type_t str_type = {
     NULL, // call_n
     NULL, // unary_op
     str_binary_op, // binary_op
-    NULL, // getiter
+    str_getiter, // getiter
     NULL, // iternext
     { // method list
         { "join", &str_join_obj },
@@ -203,4 +212,46 @@ qstr mp_obj_str_get(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &str_type));
     mp_obj_str_t *self = self_in;
     return self->qstr;
+}
+
+/******************************************************************************/
+/* str iterator                                                               */
+
+typedef struct _mp_obj_str_it_t {
+    mp_obj_base_t base;
+    mp_obj_str_t *str;
+    machine_uint_t cur;
+} mp_obj_str_it_t;
+
+mp_obj_t str_it_iternext(mp_obj_t self_in) {
+    mp_obj_str_it_t *self = self_in;
+    const char *str = qstr_str(self->str->qstr);
+    if (self->cur < strlen(str)) {
+        mp_obj_t o_out = mp_obj_new_str(qstr_from_strn_copy(str + self->cur, 1));
+        self->cur += 1;
+        return o_out;
+    } else {
+        return mp_const_stop_iteration;
+    }
+}
+
+static const mp_obj_type_t str_it_type = {
+    { &mp_const_type },
+    "str_iterator",
+    NULL, // print
+    NULL, // make_new
+    NULL, // call_n
+    NULL, // unary_op
+    NULL, // binary_op
+    NULL, // getiter
+    str_it_iternext, // iternext
+    { { NULL, NULL }, }, // method str
+};
+
+mp_obj_t mp_obj_new_str_iterator(mp_obj_str_t *str, int cur) {
+    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+    o->base.type = &str_it_type;
+    o->str = str;
+    o->cur = cur;
+    return o;
 }
