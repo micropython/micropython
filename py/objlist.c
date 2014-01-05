@@ -182,13 +182,17 @@ static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
     mp_obj_t *value = args[1];
+    uint start = 0;
+    uint stop = self->len;
 
-    uint start = mp_get_index(self->base.type, self->len,
-                              n_args >= 3 ? args[2] : mp_obj_new_int(0));
-    uint stop = mp_get_index(self->base.type, self->len,
-                             n_args >= 4 ? args[3] : mp_obj_new_int(-1));
+    if (n_args >= 3) {
+        start = mp_get_index(self->base.type, self->len, args[2]);
+        if (n_args >= 4) {
+            stop = mp_get_index(self->base.type, self->len, args[3]);
+        }
+    }
 
-    for (uint i = start; i <= stop; i++) {
+    for (uint i = start; i < stop; i++) {
          if (mp_obj_equal(self->items[i], value)) {
               return mp_obj_new_int(i);
          }
