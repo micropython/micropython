@@ -699,7 +699,7 @@ static const mp_obj_type_t file_obj_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    { // method list
+    .methods = {
         { "read", &file_obj_read_obj },
         { "write", &file_obj_write_obj },
         { "close", &file_obj_close_obj },

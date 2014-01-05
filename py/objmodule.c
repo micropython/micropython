@@ -31,7 +31,7 @@ const mp_obj_type_t module_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {

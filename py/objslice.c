@@ -30,7 +30,7 @@ const mp_obj_type_t ellipsis_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .methods = {{NULL, NULL},},
 };
 
 static const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
@@ -57,14 +57,8 @@ void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
 const mp_obj_type_t slice_type = {
     { &mp_const_type },
     "slice",
-    slice_print,
-    NULL, // call_n
-    NULL, // make_new
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { { NULL, NULL }, }, // method list
+    .print = slice_print,
+    .methods = { { NULL, NULL }, },
 };
 
 // TODO: Make sure to handle "empty" values, which are signified by None in CPython

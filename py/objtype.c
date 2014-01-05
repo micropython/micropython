@@ -25,12 +25,7 @@ static mp_obj_t type_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) 
 const mp_obj_type_t mp_const_type = {
     { &mp_const_type },
     "type",
-    type_print, // print
-    NULL, // make_new
-    type_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .print = type_print,
+    .call_n = type_call_n,
+    .methods = {{NULL, NULL},},
 };
