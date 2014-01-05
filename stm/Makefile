@@ -36,6 +36,7 @@ SRC_C = \
 	sdio.c \
 	pybwlan.c \
 	i2c.c \
+	usrsw.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
