@@ -107,14 +107,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
 static const mp_obj_type_t led_obj_type = {
     { &mp_const_type },
     "Led",
-    led_obj_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { // method list
+    .print = led_obj_print,
+    .methods = {
         { "on", &led_obj_on_obj },
         { "off", &led_obj_off_obj },
         { NULL, NULL },

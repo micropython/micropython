@@ -99,14 +99,11 @@ static mp_obj_t tuple_getiter(mp_obj_t o_in) {
 const mp_obj_type_t tuple_type = {
     { &mp_const_type },
     "tuple",
-    tuple_print, // print
-    tuple_make_new, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    tuple_binary_op, // binary_op
-    tuple_getiter, // getiter
-    NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .print = tuple_print,
+    .make_new = tuple_make_new,
+    .binary_op = tuple_binary_op,
+    .getiter = tuple_getiter,
+    .methods = {{NULL, NULL},},
 };
 
 // the zero-length tuple
@@ -168,14 +165,8 @@ static mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 static const mp_obj_type_t tuple_it_type = {
     { &mp_const_type },
     "tuple_iterator",
-    NULL, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    tuple_it_iternext,
-    {{NULL, NULL},}, // method list
+    .iternext = tuple_it_iternext,
+    .methods = {{NULL, NULL},},
 };
 
 static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur) {

@@ -42,7 +42,7 @@ const mp_obj_type_t closure_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple) {

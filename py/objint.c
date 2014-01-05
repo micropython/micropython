@@ -33,14 +33,8 @@ static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
 const mp_obj_type_t int_type = {
     { &mp_const_type },
     "int",
-    NULL,
-    int_make_new, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { { NULL, NULL }, }, // method list
+    .make_new = int_make_new,
+    .methods = { { NULL, NULL }, },
 };
 
 mp_obj_t mp_obj_new_int(machine_int_t value) {

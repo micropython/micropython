@@ -46,7 +46,7 @@ const mp_obj_type_t gen_wrap_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
@@ -101,7 +101,7 @@ const mp_obj_type_t gen_instance_type = {
     NULL, // binary_op
     gen_instance_getiter, // getiter
     gen_instance_iternext, // iternext
-    {{NULL, NULL},}, // method list
+    .methods = {{NULL, NULL},},
 };
 
 // args are in reverse order in the array
