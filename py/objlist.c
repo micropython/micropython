@@ -194,7 +194,7 @@ static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
          }
     }
 
-    nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "Object not in list."));
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in list"));
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
