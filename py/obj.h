@@ -58,6 +58,7 @@ typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o);
+typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
@@ -71,6 +72,7 @@ struct _mp_obj_type_t {
     mp_obj_base_t base;
     const char *name;
     mp_print_fun_t print;
+    mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_n_fun_t call_n;
     mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
@@ -110,6 +112,8 @@ extern const mp_obj_type_t mp_const_type;
 extern const mp_obj_t mp_const_none;
 extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
+extern const mp_obj_t mp_const_empty_tuple;
+extern const mp_obj_t mp_const_ellipsis;
 extern const mp_obj_t mp_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
 // Need to declare this here so we are not dependent on map.h
@@ -144,6 +148,7 @@ mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_list_reverse(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
+mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
 mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
 mp_obj_t mp_obj_new_instance(mp_obj_t clas);
@@ -177,6 +182,9 @@ extern const mp_obj_type_t bool_type;
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
+
+// int
+extern const mp_obj_type_t int_type;
 
 // exception
 extern const mp_obj_type_t exception_type;
@@ -212,7 +220,12 @@ uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 
 // set
+extern const mp_obj_type_t set_type;
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
+
+// slice
+extern const mp_obj_type_t slice_type;
+void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)

@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -33,6 +34,29 @@ static void list_print(void (*print)(void *env, const char *fmt, ...), void *env
         mp_obj_print_helper(print, env, o->items[i]);
     }
     print(env, "]");
+}
+
+static mp_obj_t list_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+    switch (n_args) {
+        case 0:
+            // return a new, empty list
+            return rt_build_list(0, NULL);
+
+        case 1:
+        {
+            // make list from iterable
+            mp_obj_t iterable = rt_getiter(args[0]);
+            mp_obj_t list = rt_build_list(0, NULL);
+            mp_obj_t item;
+            while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+                rt_list_append(list, item);
+            }
+            return list;
+        }
+
+        default:
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "list takes at most 1 argument, %d given", (void*)(machine_int_t)n_args));
+    }
 }
 
 static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
@@ -81,7 +105,7 @@ static mp_obj_t list_pop(int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
     if (self->len == 0) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_IndexError, "pop from empty list"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "pop from empty list"));
     }
     uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1]);
     mp_obj_t ret = self->items[index];
@@ -185,6 +209,7 @@ const mp_obj_type_t list_type = {
     { &mp_const_type },
     "list",
     list_print, // print
+    list_make_new, // make_new
     NULL, // call_n
     NULL, // unary_op
     list_binary_op, // binary_op
@@ -263,6 +288,7 @@ static const mp_obj_type_t list_it_type = {
     { &mp_const_type },
     "list_iterator",
     NULL, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op

@@ -7,6 +7,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -27,9 +28,42 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const char *lhs_str = qstr_str(lhs->qstr);
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
-            // string access
-            // XXX a massive hack!
-            return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
+            // TODO: need predicate to check for int-like type (bools are such for example)
+            // ["no", "yes"][1 == 2] is common idiom
+            if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
+                // TODO: This implements byte string access for single index so far
+                // TODO: Handle negative indexes.
+                return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
+#if MICROPY_ENABLE_SLICE
+            } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
+                machine_int_t start, stop, step;
+                mp_obj_slice_get(rhs_in, &start, &stop, &step);
+                assert(step == 1);
+                int len = strlen(lhs_str);
+                if (start < 0) {
+                    start = len + start;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                } else if (start > len) {
+                    start = len;
+                }
+                if (stop <= 0) {
+                    stop = len + stop;
+                    // CPython returns empty string in such case
+                    if (stop < 0) {
+                        stop = start;
+                    }
+                } else if (stop > len) {
+                    stop = len;
+                }
+                return mp_obj_new_str(qstr_from_strn_copy(lhs_str + start, stop - start));
+#endif
+            } else {
+                // Message doesn't match CPython, but we don't have so much bytes as they
+                // to spend them on verbose wording
+                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "index must be int"));
+            }
 
         case RT_BINARY_OP_ADD:
         case RT_BINARY_OP_INPLACE_ADD:
@@ -101,7 +135,7 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_new_str(qstr_from_str_take(joined_str, required_len + 1));
 
 bad_arg:
-    nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "?str.join expecting a list of str's"));
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
 }
 
 void vstr_printf_wrapper(void *env, const char *fmt, ...) {
@@ -125,7 +159,7 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
                 vstr_add_char(vstr, '{');
             } else if (*str == '}') {
                 if (arg_i >= n_args) {
-                    nlr_jump(mp_obj_new_exception_msg(rt_q_IndexError, "tuple index out of range"));
+                    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "tuple index out of range"));
                 }
                 mp_obj_print_helper(vstr_printf_wrapper, vstr, args[arg_i]);
                 arg_i++;
@@ -145,6 +179,7 @@ const mp_obj_type_t str_type = {
     { &mp_const_type },
     "str",
     str_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     str_binary_op, // binary_op

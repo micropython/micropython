@@ -38,11 +38,13 @@ PY_O = \
 	objfun.o \
 	objgenerator.o \
 	objinstance.o \
+	objint.o \
 	objlist.o \
 	objmodule.o \
 	objnone.o \
 	objrange.o \
 	objset.o \
+	objslice.o \
 	objstr.o \
 	objtuple.o \
 	objtype.o \

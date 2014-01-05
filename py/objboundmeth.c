@@ -37,6 +37,7 @@ const mp_obj_type_t bound_meth_type = {
     { &mp_const_type },
     "bound_method",
     NULL, // print
+    NULL, // make_new
     bound_meth_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op

@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "bc.h"
@@ -29,7 +30,7 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     const byte *bc_code;
     mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_n_state, &bc_code);
     if (n_args != bc_n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)bc_n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)bc_n_args, (const char*)(machine_int_t)n_args));
     }
 
     return mp_obj_new_gen_instance(bc_code, self->n_state, n_args, args);
@@ -39,6 +40,7 @@ const mp_obj_type_t gen_wrap_type = {
     { &mp_const_type },
     "generator",
     NULL, // print
+    NULL, // make_new
     gen_wrap_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -93,6 +95,7 @@ const mp_obj_type_t gen_instance_type = {
     { &mp_const_type },
     "generator",
     gen_instance_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op

@@ -99,6 +99,10 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         PUSH(mp_const_true);
                         break;
 
+                    case MP_BC_LOAD_CONST_ELLIPSIS:
+                        PUSH(mp_const_ellipsis);
+                        break;
+
                     case MP_BC_LOAD_CONST_SMALL_INT:
                         unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
                         ip += 3;
@@ -409,6 +413,20 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         rt_store_set(sp[unum], sp[0]);
                         sp++;
                         break;
+
+#if MICROPY_ENABLE_SLICE
+                    case MP_BC_BUILD_SLICE:
+                        DECODE_UINT;
+                        if (unum == 2) {
+                            obj2 = POP();
+                            obj1 = TOP();
+                            SET_TOP(mp_obj_new_slice(obj1, obj2, NULL));
+                        } else {
+                            printf("3-argument slice is not supported\n");
+                            assert(0);
+                        }
+                        break;
+#endif
 
                     case MP_BC_UNPACK_SEQUENCE:
                         DECODE_UINT;
