@@ -12,6 +12,7 @@
 #if defined (PYBOARD)
     #define USRSW_PORT          (GPIOA)
     #define USRSW_PIN           (GPIO_Pin_13)
+    #define USRSW_PUPD          (GPIO_PuPd_UP)
     #define USRSW_EXTI_PIN      (EXTI_PinSource13)
     #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOA)
     #define USRSW_EXTI_LINE     (EXTI_Line13)
@@ -20,18 +21,20 @@
 #elif defined (STM32F4DISC)
     #define USRSW_PORT          (GPIOA)
     #define USRSW_PIN           (GPIO_Pin_0)
+    #define USRSW_PUPD          (GPIO_PuPd_NOPULL)
     #define USRSW_EXTI_PIN      (EXTI_PinSource0)
     #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOA)
     #define USRSW_EXTI_LINE     (EXTI_Line0)
     #define USRSW_EXTI_IRQN     (EXTI0_IRQn)
     #define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
-#endif 
+#endif
+
 void switch_init(void) {
     // make it an input with pull-up
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin  = USRSW_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL; /* allow external pull up/down */
+    GPIO_InitStructure.GPIO_PuPd = USRSW_PUPD;
     GPIO_Init(USRSW_PORT, &GPIO_InitStructure);
 
     // the rest does the EXTI interrupt

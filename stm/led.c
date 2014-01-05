@@ -8,10 +8,10 @@
 #include "led.h"
 
 /* LED numbers, used internally */
-#define PYB_LED_1   (1)
-#define PYB_LED_2   (2)
-#define PYB_LED_3   (3)
-#define PYB_LED_4   (4)
+#define PYB_LED_1   (0)
+#define PYB_LED_2   (1)
+#define PYB_LED_3   (2)
+#define PYB_LED_4   (3)
 
 #if defined(PYBOARD)
     #define PYB_LED1_PORT   (GPIOA)
@@ -86,22 +86,22 @@ void led_state(pyb_led_t led, int state) {
 
     switch (led) {
         case PYB_LED_1:
-            pin  = PYB_LED1_PIN; 
-            port = PYB_LED1_PORT; 
+            pin  = PYB_LED1_PIN;
+            port = PYB_LED1_PORT;
             break;
         case PYB_LED_2:
-            pin  = PYB_LED2_PIN; 
-            port = PYB_LED2_PORT; 
+            pin  = PYB_LED2_PIN;
+            port = PYB_LED2_PORT;
             break;
         case PYB_LED_3:
-            pin  = PYB_LED3_PIN; 
-            port = PYB_LED3_PORT; 
+            pin  = PYB_LED3_PIN;
+            port = PYB_LED3_PORT;
             break;
         case PYB_LED_4:
-            pin  = PYB_LED4_PIN; 
-            port = PYB_LED4_PORT; 
+            pin  = PYB_LED4_PIN;
+            port = PYB_LED4_PORT;
             break;
-        default: 
+        default:
             return;
     }
 
@@ -120,27 +120,27 @@ void led_toggle(pyb_led_t led) {
 
     switch (led) {
         case PYB_LED_1:
-            pin  = PYB_LED1_PIN; 
-            port = PYB_LED1_PORT; 
+            pin  = PYB_LED1_PIN;
+            port = PYB_LED1_PORT;
             break;
         case PYB_LED_2:
-            pin  = PYB_LED2_PIN; 
-            port = PYB_LED2_PORT; 
+            pin  = PYB_LED2_PIN;
+            port = PYB_LED2_PORT;
             break;
         case PYB_LED_3:
-            pin  = PYB_LED3_PIN; 
-            port = PYB_LED3_PORT; 
+            pin  = PYB_LED3_PIN;
+            port = PYB_LED3_PORT;
             break;
         case PYB_LED_4:
-            pin  = PYB_LED4_PIN; 
-            port = PYB_LED4_PORT; 
+            pin  = PYB_LED4_PIN;
+            port = PYB_LED4_PORT;
             break;
-        default: 
+        default:
             return;
     }
 
     if (!(port->ODR & pin)) {
-        // turn LED off 
+        // turn LED off
         PYB_LED_OFF(port, pin);
     } else {
         // turn LED on (output low)
