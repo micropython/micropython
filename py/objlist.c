@@ -177,10 +177,31 @@ static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     return mp_obj_new_int(count);
 }
 
+static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 4);
+    assert(MP_OBJ_IS_TYPE(args[0], &list_type));
+    mp_obj_list_t *self = args[0];
+    mp_obj_t *value = args[1];
+
+    uint start = mp_get_index(self->base.type, self->len,
+                              n_args >= 3 ? args[2] : mp_obj_new_int(0));
+    uint stop = mp_get_index(self->base.type, self->len,
+                             n_args >= 4 ? args[3] : mp_obj_new_int(-1));
+
+    for (uint i = start; i <= stop; i++) {
+         if (mp_obj_equal(self->items[i], value)) {
+              return mp_obj_new_int(i);
+         }
+    }
+
+    nlr_jump(mp_obj_new_exception_msg(rt_q_ValueError, "Object not in list."));
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
@@ -199,6 +220,7 @@ const mp_obj_type_t list_type = {
         { "clear", &list_clear_obj },
         { "copy", &list_copy_obj },
         { "count", &list_count_obj },
+        { "index", &list_index_obj },
         { "pop", &list_pop_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
