@@ -3,6 +3,11 @@ typedef enum {
     PYB_LED_R2 = 1,
     PYB_LED_G1 = 2,
     PYB_LED_G2 = 3,
+    //STM32F4DISC
+    PYB_LED_R = 0,
+    PYB_LED_G = 1,
+    PYB_LED_B = 2,
+    PYB_LED_O = 3,
 } pyb_led_t;
 
 void led_init(void);
