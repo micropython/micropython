@@ -13,6 +13,7 @@
 #include "runtime0.h"
 #include "emit.h"
 
+// wrapper around everything in this file
 #if MICROPY_EMIT_CPYTHON
 
 struct _emit_t {

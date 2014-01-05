@@ -36,6 +36,7 @@ SRC_C = \
 	sdio.c \
 	pybwlan.c \
 	i2c.c \
+	usrsw.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -73,6 +74,7 @@ PY_O = \
 	objfun.o \
 	objgenerator.o \
 	objinstance.o \
+	objint.o \
 	objlist.o \
 	objmodule.o \
 	objnone.o \
@@ -162,7 +164,7 @@ $(BUILD)/flash.elf: $(OBJ)
 	arm-none-eabi-size $@
 
 $(BUILD):
-	mkdir $@
+	mkdir -p $@
 
 $(BUILD)/%.o: %.s
 	$(AS) -o $@ $<

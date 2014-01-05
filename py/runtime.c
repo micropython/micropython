@@ -11,6 +11,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -26,22 +27,6 @@
 #define DEBUG_printf(args...) (void)0
 #define DEBUG_OP_printf(args...) (void)0
 #endif
-
-// TODO make these predefined so they don't take up RAM
-qstr rt_q_append;
-qstr rt_q_pop;
-qstr rt_q_sort;
-qstr rt_q_join;
-qstr rt_q_format;
-qstr rt_q___build_class__;
-qstr rt_q___next__;
-qstr rt_q_AttributeError;
-qstr rt_q_IndexError;
-qstr rt_q_KeyError;
-qstr rt_q_NameError;
-qstr rt_q_TypeError;
-qstr rt_q_SyntaxError;
-qstr rt_q_ValueError;
 
 // locals and globals need to be pointers because they can be the same in outer module scope
 static mp_map_t *map_locals;
@@ -83,74 +68,64 @@ FILE *fp_write_code = NULL;
 #endif
 
 void rt_init(void) {
-    rt_q_append = qstr_from_str_static("append");
-    rt_q_pop = qstr_from_str_static("pop");
-    rt_q_sort = qstr_from_str_static("sort");
-    rt_q_join = qstr_from_str_static("join");
-    rt_q_format = qstr_from_str_static("format");
-    rt_q___build_class__ = qstr_from_str_static("__build_class__");
-    rt_q___next__ = qstr_from_str_static("__next__");
-    rt_q_AttributeError = qstr_from_str_static("AttributeError");
-    rt_q_IndexError = qstr_from_str_static("IndexError");
-    rt_q_KeyError = qstr_from_str_static("KeyError");
-    rt_q_NameError = qstr_from_str_static("NameError");
-    rt_q_TypeError = qstr_from_str_static("TypeError");
-    rt_q_SyntaxError = qstr_from_str_static("SyntaxError");
-    rt_q_ValueError = qstr_from_str_static("ValueError");
-
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     map_locals = map_globals = mp_map_new(MP_MAP_QSTR, 1);
-    mp_qstr_map_lookup(map_globals, qstr_from_str_static("__name__"), true)->value = mp_obj_new_str(qstr_from_str_static("__main__"));
+    mp_qstr_map_lookup(map_globals, MP_QSTR___name__, true)->value = mp_obj_new_str(MP_QSTR___main__);
 
     // init built-in hash table
     mp_map_init(&map_builtins, MP_MAP_QSTR, 3);
 
     // built-in exceptions (TODO, make these proper classes)
-    mp_qstr_map_lookup(&map_builtins, rt_q_AttributeError, true)->value = mp_obj_new_exception(rt_q_AttributeError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_IndexError, true)->value = mp_obj_new_exception(rt_q_IndexError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_KeyError, true)->value = mp_obj_new_exception(rt_q_KeyError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_NameError, true)->value = mp_obj_new_exception(rt_q_NameError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_TypeError, true)->value = mp_obj_new_exception(rt_q_TypeError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_SyntaxError, true)->value = mp_obj_new_exception(rt_q_SyntaxError);
-    mp_qstr_map_lookup(&map_builtins, rt_q_ValueError, true)->value = mp_obj_new_exception(rt_q_ValueError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_AttributeError, true)->value = mp_obj_new_exception(MP_QSTR_AttributeError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_IndexError, true)->value = mp_obj_new_exception(MP_QSTR_IndexError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_KeyError, true)->value = mp_obj_new_exception(MP_QSTR_KeyError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_NameError, true)->value = mp_obj_new_exception(MP_QSTR_NameError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_TypeError, true)->value = mp_obj_new_exception(MP_QSTR_TypeError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_SyntaxError, true)->value = mp_obj_new_exception(MP_QSTR_SyntaxError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_ValueError, true)->value = mp_obj_new_exception(MP_QSTR_ValueError);
+
+    // built-in objects
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_Ellipsis, true)->value = mp_const_ellipsis;
 
     // built-in core functions
-    mp_qstr_map_lookup(&map_builtins, rt_q___build_class__, true)->value = rt_make_function_2(mp_builtin___build_class__);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("__repl_print__"), true)->value = rt_make_function_1(mp_builtin___repl_print__);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR___build_class__, true)->value = rt_make_function_2(mp_builtin___build_class__);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR___repl_print__, true)->value = rt_make_function_1(mp_builtin___repl_print__);
 
-    // built-in user functions
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("abs"), true)->value = rt_make_function_1(mp_builtin_abs);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("all"), true)->value = rt_make_function_1(mp_builtin_all);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("any"), true)->value = rt_make_function_1(mp_builtin_any);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("bool"), true)->value = rt_make_function_var(0, mp_builtin_bool);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("callable"), true)->value = rt_make_function_1(mp_builtin_callable);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("chr"), true)->value = rt_make_function_1(mp_builtin_chr);
+    // built-in types
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_bool, true)->value = (mp_obj_t)&bool_type;
 #if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("complex"), true)->value = (mp_obj_t)&mp_builtin_complex_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_complex, true)->value = (mp_obj_t)&complex_type;
 #endif
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("dict"), true)->value = rt_make_function_0(mp_builtin_dict);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("divmod"), true)->value = rt_make_function_2(mp_builtin_divmod);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_dict, true)->value = (mp_obj_t)&dict_type;
 #if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("float"), true)->value = (mp_obj_t)&mp_builtin_float_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_float, true)->value = (mp_obj_t)&float_type;
 #endif
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("hash"), true)->value = (mp_obj_t)&mp_builtin_hash_obj;
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("int"), true)->value = (mp_obj_t)&mp_builtin_int_obj;
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("iter"), true)->value = (mp_obj_t)&mp_builtin_iter_obj;
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("len"), true)->value = rt_make_function_1(mp_builtin_len);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("list"), true)->value = rt_make_function_var(0, mp_builtin_list);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("max"), true)->value = rt_make_function_var(1, mp_builtin_max);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("min"), true)->value = rt_make_function_var(1, mp_builtin_min);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("next"), true)->value = (mp_obj_t)&mp_builtin_next_obj;
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("ord"), true)->value = rt_make_function_1(mp_builtin_ord);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("pow"), true)->value = rt_make_function_var(2, mp_builtin_pow);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("print"), true)->value = rt_make_function_var(0, mp_builtin_print);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("range"), true)->value = rt_make_function_var(1, mp_builtin_range);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("set"), true)->value = (mp_obj_t)&mp_builtin_set_obj;
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("sum"), true)->value = rt_make_function_var(1, mp_builtin_sum);
-    mp_qstr_map_lookup(&map_builtins, qstr_from_str_static("type"), true)->value = (mp_obj_t)&mp_builtin_type_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_int, true)->value = (mp_obj_t)&int_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_list, true)->value = (mp_obj_t)&list_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_set, true)->value = (mp_obj_t)&set_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_tuple, true)->value = (mp_obj_t)&tuple_type;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_type, true)->value = (mp_obj_t)&mp_builtin_type_obj; // TODO
 
+    // built-in user functions; TODO covert all to &mp_builtin_xxx's
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_abs, true)->value = rt_make_function_1(mp_builtin_abs);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_all, true)->value = rt_make_function_1(mp_builtin_all);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_any, true)->value = rt_make_function_1(mp_builtin_any);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_callable, true)->value = rt_make_function_1(mp_builtin_callable);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_chr, true)->value = rt_make_function_1(mp_builtin_chr);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_divmod, true)->value = rt_make_function_2(mp_builtin_divmod);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_hash, true)->value = (mp_obj_t)&mp_builtin_hash_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_iter, true)->value = (mp_obj_t)&mp_builtin_iter_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_len, true)->value = rt_make_function_1(mp_builtin_len);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_max, true)->value = rt_make_function_var(1, mp_builtin_max);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_min, true)->value = rt_make_function_var(1, mp_builtin_min);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_next, true)->value = (mp_obj_t)&mp_builtin_next_obj;
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_ord, true)->value = rt_make_function_1(mp_builtin_ord);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_pow, true)->value = rt_make_function_var(2, mp_builtin_pow);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_print, true)->value = rt_make_function_var(0, mp_builtin_print);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_range, true)->value = rt_make_function_var(1, mp_builtin_range);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_sum, true)->value = rt_make_function_var(1, mp_builtin_sum);
 
-    next_unique_code_id = 2; // 1 is reserved for the __main__ module scope
+    next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes = NULL;
 
 #ifdef WRITE_CODE
@@ -166,12 +141,8 @@ void rt_deinit(void) {
 #endif
 }
 
-int rt_get_unique_code_id(bool is_main_module) {
-    if (is_main_module) {
-        return 1;
-    } else {
-        return next_unique_code_id++;
-    }
+int rt_get_unique_code_id(void) {
+    return next_unique_code_id++;
 }
 
 static void alloc_unique_codes(void) {
@@ -186,7 +157,7 @@ static void alloc_unique_codes(void) {
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
-    assert(unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = n_locals;
@@ -355,7 +326,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
         }
     }
     if (*s != 0) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_SyntaxError, "invalid syntax for number"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_SyntaxError, "invalid syntax for number"));
     }
     if (exp_neg) {
         exp_val = -exp_val;
@@ -373,7 +344,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
         return mp_obj_new_float(dec_val);
     }
 #else
-    nlr_jump(mp_obj_new_exception_msg(rt_q_SyntaxError, "decimal numbers not supported"));
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_SyntaxError, "decimal numbers not supported"));
 #endif
 }
 
@@ -391,7 +362,7 @@ mp_obj_t rt_load_name(qstr qstr) {
         if (elem == NULL) {
             elem = mp_qstr_map_lookup(&map_builtins, qstr, false);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_NameError, "name '%s' is not defined", qstr_str(qstr)));
+                nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
             }
         }
     }
@@ -405,7 +376,7 @@ mp_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = mp_qstr_map_lookup(&map_builtins, qstr, false);
         if (elem == NULL) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_NameError, "name '%s' is not defined", qstr_str(qstr)));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
     return elem->value;
@@ -413,9 +384,9 @@ mp_obj_t rt_load_global(qstr qstr) {
 
 mp_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
-    mp_map_elem_t *elem = mp_qstr_map_lookup(&map_builtins, rt_q___build_class__, false);
+    mp_map_elem_t *elem = mp_qstr_map_lookup(&map_builtins, MP_QSTR___build_class__, false);
     if (elem == NULL) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_NameError, "name '__build_class__' is not defined"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_NameError, "name '__build_class__' is not defined"));
     }
     return elem->value;
 }
@@ -465,7 +436,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "bad operand type for unary operator: '%s'", o->type->name));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", o->type->name));
     }
 }
 
@@ -544,7 +515,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     // TODO specify in error message what the operator is
-    nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "unsupported operand type for binary operator: '%s'", mp_obj_get_type_str(lhs)));
+    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "unsupported operand type for binary operator: '%s'", mp_obj_get_type_str(lhs)));
 }
 
 mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
@@ -693,13 +664,13 @@ mp_obj_t rt_call_function_n(mp_obj_t fun_in, int n_args, const mp_obj_t *args) {
     DEBUG_OP_printf("calling function %p(n_args=%d, args=%p)\n", fun_in, n_args, args);
 
     if (MP_OBJ_IS_SMALL_INT(fun_in)) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "'int' object is not callable"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
     } else {
         mp_obj_base_t *fun = fun_in;
         if (fun->type->call_n != NULL) {
             return fun->type->call_n(fun_in, n_args, args);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "'%s' object is not callable", fun->type->name));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
         }
     }
 }
@@ -756,14 +727,14 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
             mp_obj_list_get(seq_in, &seq_len, &seq_items);
         }
         if (seq_len < num) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_ValueError, "need more than %d values to unpack", (void*)(machine_uint_t)seq_len));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "need more than %d values to unpack", (void*)(machine_uint_t)seq_len));
         } else if (seq_len > num) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
         }
         memcpy(items, seq_items, num * sizeof(mp_obj_t));
     } else {
         // TODO call rt_getiter and extract via rt_iternext
-        nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));
     }
 }
 
@@ -807,12 +778,12 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     }
 
 no_attr:
-    nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     DEBUG_OP_printf("load method %s\n", qstr_str(attr));
-    if (MP_OBJ_IS_TYPE(base, &gen_instance_type) && attr == rt_q___next__) {
+    if (MP_OBJ_IS_TYPE(base, &gen_instance_type) && attr == MP_QSTR___next__) {
         dest[1] = (mp_obj_t)&mp_builtin_next_obj;
         dest[0] = base;
         return;
@@ -850,7 +821,7 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         mp_map_t *globals = mp_obj_module_get_globals(base);
         mp_qstr_map_lookup(globals, attr, true)->value = value;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
     }
 }
 
@@ -869,26 +840,26 @@ void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
 
 mp_obj_t rt_getiter(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "'int' object is not iterable"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not iterable"));
     } else {
         mp_obj_base_t *o = o_in;
         if (o->type->getiter != NULL) {
             return o->type->getiter(o_in);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "'%s' object is not iterable", o->type->name));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not iterable", o->type->name));
         }
     }
 }
 
 mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        nlr_jump(mp_obj_new_exception_msg(rt_q_TypeError, "? 'int' object is not iterable"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "? 'int' object is not iterable"));
     } else {
         mp_obj_base_t *o = o_in;
         if (o->type->iternext != NULL) {
             return o->type->iternext(o_in);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "? '%s' object is not iterable", o->type->name));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "? '%s' object is not iterable", o->type->name));
         }
     }
 }

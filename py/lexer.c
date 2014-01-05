@@ -239,7 +239,7 @@ static const uint8_t tok_enc_kind[] = {
     MP_TOKEN_OP_CARET, MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_EQUAL, MP_TOKEN_OP_DBL_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
-    MP_TOKEN_DEL_PERIOD, MP_TOKEN_ELLIPSES,
+    MP_TOKEN_DEL_PERIOD, MP_TOKEN_ELLIPSIS,
 };
 
 // must have the same order as enum in lexer.h

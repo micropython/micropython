@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "map.h"
@@ -44,7 +45,7 @@ mp_obj_t mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr) {
             return elem->value;
         }
     }
-    nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(self_in), qstr_str(attr)));
+    nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(self_in), qstr_str(attr)));
 }
 
 void mp_obj_instance_load_method(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -92,6 +93,7 @@ const mp_obj_type_t instance_type = {
     { &mp_const_type },
     "instance",
     NULL, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op

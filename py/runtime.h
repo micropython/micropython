@@ -1,18 +1,3 @@
-extern qstr rt_q_append;
-extern qstr rt_q_pop;
-extern qstr rt_q_sort;
-extern qstr rt_q_join;
-extern qstr rt_q_format;
-extern qstr rt_q___build_class__;
-extern qstr rt_q___next__;
-extern qstr rt_q_AttributeError;
-extern qstr rt_q_IndexError;
-extern qstr rt_q_KeyError;
-extern qstr rt_q_NameError;
-extern qstr rt_q_TypeError;
-extern qstr rt_q_SyntaxError;
-extern qstr rt_q_ValueError;
-
 int rt_is_true(mp_obj_t arg);
 
 mp_obj_t rt_load_const_dec(qstr qstr);

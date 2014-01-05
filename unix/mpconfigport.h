@@ -1,5 +1,10 @@
 // options to control how Micro Python is built
 
+// Linking with GNU readline causes binary to be licensed under GPL
+#ifndef MICROPY_USE_READLINE
+#define MICROPY_USE_READLINE        (1)
+#endif
+
 #define MICROPY_ENABLE_FLOAT        (1)
 #define MICROPY_EMIT_CPYTHON        (0)
 #define MICROPY_EMIT_X64            (1)

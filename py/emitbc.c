@@ -249,6 +249,7 @@ static void emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
         case MP_TOKEN_KW_FALSE: emit_write_byte_1(emit, MP_BC_LOAD_CONST_FALSE); break;
         case MP_TOKEN_KW_NONE: emit_write_byte_1(emit, MP_BC_LOAD_CONST_NONE); break;
         case MP_TOKEN_KW_TRUE: emit_write_byte_1(emit, MP_BC_LOAD_CONST_TRUE); break;
+        case MP_TOKEN_ELLIPSIS: emit_write_byte_1(emit, MP_BC_LOAD_CONST_ELLIPSIS); break;
         default: assert(0);
     }
 }
