@@ -201,11 +201,37 @@ static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in list"));
 }
 
+static mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    mp_obj_list_t *self = self_in;
+    // insert has its own strange index logic
+    int index = MP_OBJ_SMALL_INT_VALUE(idx);
+    if (index < 0) {
+         index += self->len;
+    }
+    if (index < 0) {
+         index = 0;
+    }
+    if (index > self->len) {
+         index = self->len;
+    }
+
+    mp_obj_list_append(self_in, mp_const_none);
+
+    for (int i = self->len-1; i > index; i--) {
+         self->items[i] = self->items[i-1];
+    }
+    self->items[index] = obj;
+
+    return mp_const_none;
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
+static MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
@@ -223,6 +249,7 @@ const mp_obj_type_t list_type = {
         { "copy", &list_copy_obj },
         { "count", &list_count_obj },
         { "index", &list_index_obj },
+        { "insert", &list_insert_obj },
         { "pop", &list_pop_obj },
         { "sort", &list_sort_obj },
         { NULL, NULL }, // end-of-list sentinel
