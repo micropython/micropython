@@ -15,7 +15,7 @@
 #include "runtime.h"
 #include "repl.h"
 
-#ifdef USE_READLINE
+#if MICROPY_USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -35,7 +35,7 @@ static char *str_join(const char *s1, int sep_char, const char *s2) {
 }
 
 static char *prompt(char *p) {
-#ifdef USE_READLINE
+#if MICROPY_USE_READLINE
     char *line = readline(p);
     if (line) {
         add_history(line);
@@ -192,6 +192,7 @@ static const mp_obj_type_t test_type = {
     { &mp_const_type },
     "Test",
     test_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -216,6 +217,13 @@ int main(int argc, char **argv) {
     rt_init();
 
     rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
+
+    /*
+    printf("bytes:\n");
+    printf("    total %d\n", m_get_total_bytes_allocated());
+    printf("    cur   %d\n", m_get_current_bytes_allocated());
+    printf("    peak  %d\n", m_get_peak_bytes_allocated());
+    */
 
     if (argc == 1) {
         do_repl();

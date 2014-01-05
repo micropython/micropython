@@ -34,7 +34,7 @@
 #include "runtime.h"
 
 // wrapper around everything in this file
-#if N_X64 || N_THUMB
+#if (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)
 
 #if N_X64
 
@@ -1319,4 +1319,4 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_yield_from,
 };
 
-#endif // N_X64 || N_THUMB
+#endif // (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)

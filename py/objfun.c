@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "map.h"
 #include "runtime.h"
@@ -24,7 +25,7 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 
         // check number of arguments
         if (n_args != self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args_min, (const char*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args_min, (const char*)(machine_int_t)n_args));
         }
 
         // dispatch function call
@@ -50,9 +51,9 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
         // function takes a variable number of arguments
 
         if (n_args < self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(self->n_args_min - n_args)));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(self->n_args_min - n_args)));
         } else if (n_args > self->n_args_max) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "<fun name> expected at most %d arguments, got %d", (void*)(machine_int_t)self->n_args_max, (void*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "<fun name> expected at most %d arguments, got %d", (void*)(machine_int_t)self->n_args_max, (void*)(machine_int_t)n_args));
         }
 
         // TODO really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
@@ -72,6 +73,7 @@ const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_native_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -153,7 +155,7 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
     if (n_args != self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
     }
 
     // optimisation: allow the compiler to optimise this tail call for
@@ -173,6 +175,7 @@ const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_bc_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -262,7 +265,7 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
     if (n_args != self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(rt_q_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
     }
 
     machine_uint_t ret;
@@ -286,6 +289,7 @@ static const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
     NULL, // print
+    NULL, // make_new
     fun_asm_call_n, // call_n
     NULL, // unary_op
     NULL, // binary_op

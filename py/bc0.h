@@ -1,12 +1,16 @@
+// Micro Python byte-codes.
+// The comment at the end of the line (if it exists) tells the arguments to the byte-code.
+
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
 #define MP_BC_LOAD_CONST_NONE    (0x11)
 #define MP_BC_LOAD_CONST_TRUE    (0x12)
-#define MP_BC_LOAD_CONST_SMALL_INT   (0x13) // 24-bit, in excess
-#define MP_BC_LOAD_CONST_INT     (0x14) // qstr
-#define MP_BC_LOAD_CONST_DEC     (0x15) // qstr
-#define MP_BC_LOAD_CONST_ID      (0x16) // qstr
-#define MP_BC_LOAD_CONST_BYTES   (0x17) // qstr
-#define MP_BC_LOAD_CONST_STRING  (0x18) // qstr
+#define MP_BC_LOAD_CONST_ELLIPSIS    (0x13)
+#define MP_BC_LOAD_CONST_SMALL_INT   (0x14) // 24-bit, in excess
+#define MP_BC_LOAD_CONST_INT     (0x15) // qstr
+#define MP_BC_LOAD_CONST_DEC     (0x16) // qstr
+#define MP_BC_LOAD_CONST_ID      (0x17) // qstr
+#define MP_BC_LOAD_CONST_BYTES   (0x18) // qstr
+#define MP_BC_LOAD_CONST_STRING  (0x19) // qstr
 
 #define MP_BC_LOAD_FAST_0        (0x20)
 #define MP_BC_LOAD_FAST_1        (0x21)

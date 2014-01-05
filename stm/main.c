@@ -15,6 +15,7 @@
 #include "misc.h"
 #include "ff.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
@@ -38,6 +39,7 @@
 #include "audio.h"
 #include "pybwlan.h"
 #include "i2c.h"
+#include "usrsw.h"
 
 int errno;
 
@@ -69,52 +71,6 @@ static void impl02_c_version(void) {
             y = y + 1;
         }
         x = x + 1;
-    }
-}
-
-#define PYB_USRSW_PORT (GPIOA)
-#define PYB_USRSW_PIN (GPIO_Pin_13)
-
-void sw_init(void) {
-    // make it an input with pull-up
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = PYB_USRSW_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init(PYB_USRSW_PORT, &GPIO_InitStructure);
-
-    // the rest does the EXTI interrupt
-
-    /* Enable SYSCFG clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-
-    /* Connect EXTI Line13 to PA13 pin */
-    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource13);
-
-    /* Configure EXTI Line13, rising edge */
-    EXTI_InitTypeDef EXTI_InitStructure;
-    EXTI_InitStructure.EXTI_Line = EXTI_Line13;
-    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-
-    /* Enable and set EXTI15_10 Interrupt to the lowest priority */
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-}
-
-int sw_get(void) {
-    if (PYB_USRSW_PORT->IDR & PYB_USRSW_PIN) {
-        // pulled high, so switch is not pressed
-        return 0;
-    } else {
-        // pulled low, so switch is pressed
-        return 1;
     }
 }
 
@@ -153,14 +109,6 @@ mp_obj_t pyb_delay(mp_obj_t count) {
 mp_obj_t pyb_led(mp_obj_t state) {
     led_state(PYB_LED_G1, rt_is_true(state));
     return state;
-}
-
-mp_obj_t pyb_sw(void) {
-    if (sw_get()) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
 }
 
 /*
@@ -621,7 +569,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     }
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_1_arg(rt_q_ValueError, "pin %s does not exist", pin_name));
+    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
@@ -745,6 +693,7 @@ static const mp_obj_type_t file_obj_type = {
     { &mp_const_type },
     "File",
     file_obj_print, // print
+    NULL, // make_new
     NULL, // call_n
     NULL, // unary_op
     NULL, // binary_op
@@ -824,7 +773,7 @@ int main(void) {
     led_state(PYB_LED_G1, 1);
 
     // more sub-system init
-    sw_init();
+    switch_init();
     storage_init();
 
     //usart_init(); disabled while wi-fi is enabled
@@ -873,7 +822,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
-        rt_store_attr(m, qstr_from_str_static("switch"), rt_make_function_0(pyb_sw));
+        rt_store_attr(m, qstr_from_str_static("switch"), (mp_obj_t)&pyb_switch_obj);
         rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
         rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
         rt_store_attr(m, qstr_from_str_static("accel"), (mp_obj_t)&pyb_mma_read_obj);
@@ -899,10 +848,10 @@ soft_reset:
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
-    if (sw_get()) {
+    if (switch_get()) {
         reset_filesystem = true;
         for (int i = 0; i < 50; i++) {
-            if (!sw_get()) {
+            if (!switch_get()) {
                 reset_filesystem = false;
                 break;
             }
@@ -1173,7 +1122,7 @@ soft_reset:
         data[2] = -2;
         data[3] = 0;
         for (;;) {
-            if (sw_get()) {
+            if (switch_get()) {
                 data[0] = 0x01; // 0x04 is middle, 0x02 is right
             } else {
                 data[0] = 0x00;
