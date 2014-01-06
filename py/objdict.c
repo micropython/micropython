@@ -157,7 +157,7 @@ static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bo
         value = elem->value;
         if (pop) {
             /* catch the leak (from mp_map_lookup_helper) */
-            m_free(elem, 2 * sizeof(mp_obj_t));
+            m_free(elem, sizeof(mp_map_elem_t));
         }
     }
     if (set) {
@@ -220,6 +220,32 @@ static mp_obj_t dict_popitem(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
+static mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    /* TODO: check for the "keys" method */
+    mp_obj_t iter = rt_getiter(iterable);
+    mp_obj_t next = NULL;
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        mp_obj_t inneriter = rt_getiter(next);
+        mp_obj_t key = rt_iternext(inneriter);
+        mp_obj_t value = rt_iternext(inneriter);
+        mp_obj_t stop = rt_iternext(inneriter);
+        if (key == mp_const_stop_iteration
+            || value == mp_const_stop_iteration
+            || stop != mp_const_stop_iteration) {
+            nlr_jump(mp_obj_new_exception_msg(
+                         MP_QSTR_ValueError,
+                         "dictionary update sequence has the wrong length"));
+        } else {
+            mp_map_lookup_helper(&self->map, key, true, false)->value = value;
+        }
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(dict_update_obj, dict_update);
+
 
 /******************************************************************************/
 /* dict constructors & etc                                                    */
@@ -238,6 +264,7 @@ const mp_obj_type_t dict_type = {
         { "pop", &dict_pop_obj },
         { "popitem", &dict_popitem_obj },
         { "setdefault", &dict_setdefault_obj },
+        { "update", &dict_update_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };
