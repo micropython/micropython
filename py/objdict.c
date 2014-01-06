@@ -128,11 +128,11 @@ static mp_obj_t dict_clear(mp_obj_t self_in) {
 
     return mp_const_none;
 }
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
+
 
 /******************************************************************************/
 /* dict constructors & etc                                                    */
-
-static MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 const mp_obj_type_t dict_type = {
     { &mp_const_type },
@@ -156,13 +156,7 @@ mp_obj_t mp_obj_new_dict(int n_args) {
 
 uint mp_obj_dict_len(mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
-    uint len = 0;
-    for (int i = 0; i < self->map.alloc; i++) {
-        if (self->map.table[i].key != NULL) {
-            len += 1;
-        }
-    }
-    return len;
+    return self->map.used;
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
