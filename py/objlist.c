@@ -261,7 +261,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
-const mp_method_t list_type_methods[] = {
+static const mp_method_t list_type_methods[] = {
     { "append", &list_append_obj },
     { "clear", &list_clear_obj },
     { "copy", &list_copy_obj },

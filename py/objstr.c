@@ -184,7 +184,7 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
-const mp_method_t str_type_methods[] = {
+static const mp_method_t str_type_methods[] = {
     { "join", &str_join_obj },
     { "format", &str_format_obj },
     { NULL, NULL }, // end-of-list sentinel
