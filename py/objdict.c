@@ -140,6 +140,20 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
+static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 3);
+    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+
+    mp_map_elem_t *elem = mp_map_lookup_helper(&((mp_obj_dict_t *)args[0])->map,
+                                               args[1], false);
+    if (elem == NULL) {
+        return n_args >= 3 ? args[2] : mp_const_none;
+    } else {
+        return elem->value;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
+
 /******************************************************************************/
 /* dict constructors & etc                                                    */
 
@@ -153,6 +167,7 @@ const mp_obj_type_t dict_type = {
     .methods = {
         { "clear", &dict_clear_obj },
         { "copy", &dict_copy_obj },
+        { "get", &dict_get_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };
@@ -165,8 +180,7 @@ mp_obj_t mp_obj_new_dict(int n_args) {
 }
 
 uint mp_obj_dict_len(mp_obj_t self_in) {
-    mp_obj_dict_t *self = self_in;
-    return self->map.used;
+    return ((mp_obj_dict_t *)self_in)->map.used;
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
