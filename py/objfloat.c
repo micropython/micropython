@@ -79,14 +79,11 @@ static mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 const mp_obj_type_t float_type = {
     { &mp_const_type },
     "float",
-    float_print,
-    float_make_new, // make_new
-    NULL, // call_n
-    float_unary_op,
-    float_binary_op,
-    NULL, // getiter
-    NULL, // iternext
-    { { NULL, NULL }, }, // method list
+    .print = float_print,
+    .make_new = float_make_new,
+    .unary_op = float_unary_op,
+    .binary_op = float_binary_op,
+    .methods = { { NULL, NULL }, },
 };
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {

@@ -17,14 +17,8 @@ void none_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_ob
 const mp_obj_type_t none_type = {
     { &mp_const_type },
     "NoneType",
-    none_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    {{NULL, NULL},}, // method list
+    .print = none_print,
+    .methods = {{NULL, NULL},},
 };
 
 static const mp_obj_none_t none_obj = {{&none_type}};

@@ -79,7 +79,7 @@ const mp_obj_type_t fun_native_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    { // method list
+    .methods = {
         {NULL, NULL}, // end-of-list sentinel
     },
 };
@@ -181,7 +181,7 @@ const mp_obj_type_t fun_bc_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    { // method list
+    .methods = {
         {NULL, NULL}, // end-of-list sentinel
     },
 };
@@ -295,7 +295,7 @@ static const mp_obj_type_t fun_asm_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    { // method list
+    .methods = {
         {NULL, NULL}, // end-of-list sentinel
     },
 };

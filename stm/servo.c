@@ -140,14 +140,8 @@ static MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
 static const mp_obj_type_t servo_obj_type = {
     { &mp_const_type },
     "Servo",
-    servo_obj_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { // method list
+    .print = servo_obj_print,
+    .methods = {
         { "angle", &servo_obj_angle_obj },
         { NULL, NULL },
     }

@@ -329,14 +329,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_stop_obj, i2c_obj_stop);
 static const mp_obj_type_t i2c_obj_type = {
     { &mp_const_type },
     "I2C",
-    i2c_obj_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { // method list
+    .print = i2c_obj_print,
+    .methods = {
         { "start", &i2c_obj_start_obj },
         { "write", &i2c_obj_write_obj },
         { "read", &i2c_obj_read_obj },
