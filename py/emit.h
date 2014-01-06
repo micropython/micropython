@@ -5,7 +5,7 @@
  * is not known until the end of pass 1.
  * As a consequence, we don't know the maximum stack size until the end of pass 2.
  * This is problematic for some emitters (x64) since they need to know the maximum
- * stack size to compile the entry to the function, and this effects code size.
+ * stack size to compile the entry to the function, and this affects code size.
  */
 
 typedef enum {
