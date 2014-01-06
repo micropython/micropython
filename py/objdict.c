@@ -186,6 +186,26 @@ static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
 
+
+static mp_obj_t dict_popitem(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    if (self->map.used == 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "popitem(): dictionary is empty"));
+    }
+    mp_obj_dict_it_t *iter = mp_obj_new_dict_iterator(self, 0);
+
+    mp_map_elem_t *next = dict_it_iternext_elem(iter);
+    self->map.used--;
+    mp_obj_t items[] = {next->key, next->value};
+    next->key = NULL;
+    mp_obj_t tuple = mp_obj_new_tuple(2, items);
+
+    return tuple;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
+
+
 /******************************************************************************/
 /* dict constructors & etc                                                    */
 
@@ -201,6 +221,7 @@ const mp_obj_type_t dict_type = {
         { "copy", &dict_copy_obj },
         { "get", &dict_get_obj },
         { "pop", &dict_pop_obj },
+        { "popitem", &dict_popitem_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };
