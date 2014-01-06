@@ -52,7 +52,7 @@
 #define REG_TEMP2 (REG_RSI)
 #define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_x64_mov_r64_to_local(emit->as, (reg), (local_num))
 #define ASM_MOV_IMM_TO_REG(imm, reg) asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg))
-#define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg_temp)); asm_x64_mov_r64_to_local(emit->as, (reg_temp), (local_num)); } while (MP_FALSE)
+#define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg_temp)); asm_x64_mov_r64_to_local(emit->as, (reg_temp), (local_num)); } while (false)
 #define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_x64_mov_local_to_r64(emit->as, (local_num), (reg))
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_x64_mov_r64_to_r64(emit->as, (reg_src), (reg_dest))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_x64_mov_local_addr_to_r64(emit->as, (local_num), (reg))
@@ -75,7 +75,7 @@
 #define REG_TEMP2 (REG_R2)
 #define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_thumb_mov_local_reg(emit->as, (local_num), (reg))
 #define ASM_MOV_IMM_TO_REG(imm, reg) asm_thumb_mov_reg_i32_optimised(emit->as, (reg), (imm))
-#define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_thumb_mov_reg_i32_optimised(emit->as, (reg_temp), (imm)); asm_thumb_mov_local_reg(emit->as, (local_num), (reg_temp)); } while (MP_FALSE)
+#define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_thumb_mov_reg_i32_optimised(emit->as, (reg_temp), (imm)); asm_thumb_mov_local_reg(emit->as, (local_num), (reg_temp)); } while (false)
 #define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_thumb_mov_reg_local(emit->as, (reg), (local_num))
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_thumb_mov_reg_reg(emit->as, (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_thumb_mov_reg_local_addr(emit->as, (reg), (local_num))
@@ -110,7 +110,7 @@ typedef struct _stack_info_t {
 struct _emit_t {
     int pass;
 
-    MP_BOOL do_viper_types;
+    bool do_viper_types;
 
     int local_vtype_alloc;
     vtype_kind_t *local_vtype;
@@ -121,7 +121,7 @@ struct _emit_t {
     int stack_start;
     int stack_size;
 
-    MP_BOOL last_emit_was_return_value;
+    bool last_emit_was_return_value;
 
     scope_t *scope;
 
@@ -134,7 +134,7 @@ struct _emit_t {
 
 emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
-    emit->do_viper_types = MP_FALSE;
+    emit->do_viper_types = false;
     emit->local_vtype = NULL;
     emit->stack_info = NULL;
 #if N_X64
@@ -145,7 +145,7 @@ emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     return emit;
 }
 
-static void emit_native_set_viper_types(emit_t *emit, MP_BOOL do_viper_types) {
+static void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
     emit->do_viper_types = do_viper_types;
 }
 
@@ -153,7 +153,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->stack_start = 0;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = MP_FALSE;
+    emit->last_emit_was_return_value = false;
     emit->scope = scope;
 
     if (emit->local_vtype == NULL) {
@@ -269,7 +269,7 @@ static void emit_native_end_pass(emit_t *emit) {
     }
 }
 
-static MP_BOOL emit_native_last_emit_was_return_value(emit_t *emit) {
+static bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
@@ -292,13 +292,13 @@ static void adjust_stack(emit_t *emit, int stack_size_delta) {
 /*
 static void emit_pre_raw(emit_t *emit, int stack_size_delta) {
     adjust_stack(emit, stack_size_delta);
-    emit->last_emit_was_return_value = MP_FALSE;
+    emit->last_emit_was_return_value = false;
 }
 */
 
 // this must be called at start of emit functions
 static void emit_pre(emit_t *emit) {
-    emit->last_emit_was_return_value = MP_FALSE;
+    emit->last_emit_was_return_value = false;
     // settle the stack
     /*
     if (regs_needed != 0) {
@@ -391,7 +391,7 @@ static void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
 }
 
 static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
-    emit->last_emit_was_return_value = MP_FALSE;
+    emit->last_emit_was_return_value = false;
     emit_access_stack(emit, 1, vtype, reg_dest);
     adjust_stack(emit, -1);
 }
@@ -618,7 +618,7 @@ static void emit_native_load_const_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_native_load_const_str(emit_t *emit, qstr qstr, MP_BOOL bytes) {
+static void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         // not implemented properly
@@ -1134,7 +1134,7 @@ static void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_pa
     assert(0);
 }
 
-static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
+static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     // call special viper runtime routine with type info for args, and wanted type info for return
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     /*
@@ -1170,7 +1170,7 @@ static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
+static void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
     /*
     if (n_positional == 0) {
@@ -1205,7 +1205,7 @@ static void emit_native_return_value(emit_t *emit) {
     } else {
         assert(vtype == VTYPE_PYOBJ);
     }
-    emit->last_emit_was_return_value = MP_TRUE;
+    emit->last_emit_was_return_value = true;
 #if N_X64
     //asm_x64_call_ind(emit->as, 0, REG_RAX); to seg fault for debugging with gdb
     asm_x64_exit(emit->as);

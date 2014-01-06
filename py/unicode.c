@@ -46,32 +46,32 @@ char *utf8_next_char(const char *s) {
     return (char*)(s + 1);
 }
 
-MP_BOOL unichar_isspace(unichar c) {
+bool unichar_isspace(unichar c) {
     return c < 128 && (attr[c] & FL_SPACE) != 0;
 }
 
-MP_BOOL unichar_isalpha(unichar c) {
+bool unichar_isalpha(unichar c) {
     return c < 128 && (attr[c] & FL_ALPHA) != 0;
 }
 
-MP_BOOL unichar_isprint(unichar c) {
+bool unichar_isprint(unichar c) {
     return c < 128 && (attr[c] & FL_PRINT) != 0;
 }
 
-MP_BOOL unichar_isdigit(unichar c) {
+bool unichar_isdigit(unichar c) {
     return c < 128 && (attr[c] & FL_DIGIT) != 0;
 }
 
 /*
-MP_BOOL char_is_alpha_or_digit(unichar c) {
+bool char_is_alpha_or_digit(unichar c) {
     return c < 128 && (attr[c] & (FL_ALPHA | FL_DIGIT)) != 0;
 }
 
-MP_BOOL char_is_upper(unichar c) {
+bool char_is_upper(unichar c) {
     return c < 128 && (attr[c] & FL_UPPER) != 0;
 }
 
-MP_BOOL char_is_lower(unichar c) {
+bool char_is_lower(unichar c) {
     return c < 128 && (attr[c] & FL_LOWER) != 0;
 }
 */

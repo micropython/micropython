@@ -126,7 +126,7 @@ struct _mp_map_t;
 // General API for objects
 
 mp_obj_t mp_obj_new_none(void);
-mp_obj_t mp_obj_new_bool(MP_BOOL value);
+mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_str(qstr qstr);
@@ -162,10 +162,10 @@ const char *mp_obj_get_type_str(mp_obj_t o_in);
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in);
 void mp_obj_print(mp_obj_t o);
 
-MP_BOOL mp_obj_is_callable(mp_obj_t o_in);
+bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
-MP_BOOL mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
-MP_BOOL mp_obj_less(mp_obj_t o1, mp_obj_t o2);
+bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
+bool mp_obj_less(mp_obj_t o1, mp_obj_t o2);
 
 machine_int_t mp_obj_get_int(mp_obj_t arg);
 #if MICROPY_ENABLE_FLOAT

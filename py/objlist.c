@@ -57,6 +57,7 @@ static mp_obj_t list_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args
         default:
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "list takes at most 1 argument, %d given", (void*)(machine_int_t)n_args));
     }
+    return NULL;
 }
 
 static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
@@ -266,6 +267,7 @@ const mp_method_t list_type_methods[] = {
     { "copy", &list_copy_obj },
     { "count", &list_count_obj },
     { "index", &list_index_obj },
+    { "insert", &list_insert_obj },
     { "pop", &list_pop_obj },
     { "remove", &list_remove_obj },
     { "reverse", &list_reverse_obj },

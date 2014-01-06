@@ -1,6 +1,6 @@
 void usart_init(void);
-MP_BOOL usart_is_enabled(void);
-MP_BOOL usart_rx_any(void);
+bool usart_is_enabled(void);
+bool usart_rx_any(void);
 int usart_rx_char(void);
 void usart_tx_char(int c);
 void usart_tx_str(const char *str);

@@ -165,11 +165,11 @@ void pyb_cc3000_spi_init(void) {
 
   /*
   // WLAN CS, EN and WALN IRQ Configuration
-  jshSetPinStateIsManual(WLAN_CS_PIN, MP_FALSE);
+  jshSetPinStateIsManual(WLAN_CS_PIN, false);
   jshPinOutput(WLAN_CS_PIN, 1); // de-assert CS
-  jshSetPinStateIsManual(WLAN_EN_PIN, MP_FALSE);
+  jshSetPinStateIsManual(WLAN_EN_PIN, false);
   jshPinOutput(WLAN_EN_PIN, 0); // disable WLAN
-  jshSetPinStateIsManual(WLAN_IRQ_PIN, MP_TRUE);
+  jshSetPinStateIsManual(WLAN_IRQ_PIN, true);
   jshPinSetState(WLAN_IRQ_PIN, JSHPINSTATE_GPIO_IN_PULLUP); // flip into read mode with pullup
   */
     // configure wlan CS and EN pins

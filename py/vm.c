@@ -65,7 +65,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
 
 // fastn has items in normal order
 // sp points to top of stack which grows down
-MP_BOOL mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
+bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
     const byte *ip = *ip_in_out;
@@ -472,7 +472,7 @@ MP_BOOL mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t
                         nlr_pop();
                         *sp_in_out = sp;
                         assert(exc_sp == &exc_stack[0] - 1);
-                        return MP_FALSE;
+                        return false;
 
                     case MP_BC_YIELD_VALUE:
                         nlr_pop();
@@ -481,7 +481,7 @@ MP_BOOL mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t
                         fastn[1] = fast1;
                         fastn[2] = fast2;
                         *sp_in_out = sp;
-                        return MP_TRUE;
+                        return true;
 
                     case MP_BC_IMPORT_NAME:
                         DECODE_QSTR;
@@ -499,7 +499,7 @@ MP_BOOL mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                         assert(0);
                         nlr_pop();
-                        return MP_FALSE;
+                        return false;
                 }
             }
 

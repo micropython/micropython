@@ -1,5 +1,5 @@
 void usb_init(void);
-MP_BOOL usb_vcp_is_enabled(void);
+bool usb_vcp_is_enabled(void);
 int usb_vcp_rx_any(void);
 char usb_vcp_rx_get(void);
 void usb_vcp_send_str(const char* str);

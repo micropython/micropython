@@ -37,7 +37,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
-            mp_obj_t module_fun = mp_compile(pn, MP_FALSE);
+            mp_obj_t module_fun = mp_compile(pn, false);
             //printf("----------------\n");
 
             if (module_fun == mp_const_none) {

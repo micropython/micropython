@@ -5,7 +5,7 @@
 #include "misc.h"
 #include "usart.h"
 
-static MP_BOOL is_enabled;
+static bool is_enabled;
 
 // USART6 on PC6 (TX), PC7 (RX)
 void usart_init(void) {
@@ -33,14 +33,14 @@ void usart_init(void) {
 
     USART_Cmd(USART6, ENABLE);
 
-    is_enabled = MP_TRUE;
+    is_enabled = true;
 }
 
-MP_BOOL usart_is_enabled(void) {
+bool usart_is_enabled(void) {
     return is_enabled;
 }
 
-MP_BOOL usart_rx_any(void) {
+bool usart_rx_any(void) {
     return USART_GetFlagStatus(USART6, USART_FLAG_RXNE) == SET;
 }
 

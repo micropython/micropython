@@ -78,7 +78,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     mp_obj_gen_instance_t *self = self_in;
-    MP_BOOL yield = mp_execute_byte_code_2(&self->ip, &self->state[0], &self->sp);
+    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[0], &self->sp);
     if (yield) {
         return *self->sp;
     } else {

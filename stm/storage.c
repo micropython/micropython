@@ -15,18 +15,18 @@
 #define FLASH_PART1_NUM_BLOCKS (224) // 16k+16k+16k+64k=112k
 #define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 
-static MP_BOOL is_initialised = MP_FALSE;
+static bool is_initialised = false;
 static uint32_t cache_flash_sector_id;
 static uint32_t cache_flash_sector_start;
 static uint32_t cache_flash_sector_size;
-static MP_BOOL cache_dirty;
+static bool cache_dirty;
 static uint32_t sys_tick_counter_last_write;
 
 static void cache_flush(void) {
     if (cache_dirty) {
         // sync the cache RAM buffer by writing it to the flash page
         flash_write(cache_flash_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, cache_flash_sector_size / 4);
-        cache_dirty = MP_FALSE;
+        cache_dirty = false;
         // indicate a clean cache with LED off
         led_state(PYB_LED_R1, 0);
     }
@@ -43,7 +43,7 @@ static uint8_t *cache_get_addr_for_write(uint32_t flash_addr) {
         cache_flash_sector_start = flash_sector_start;
         cache_flash_sector_size = flash_sector_size;
     }
-    cache_dirty = MP_TRUE;
+    cache_dirty = true;
     // indicate a dirty cache with LED on
     led_state(PYB_LED_R1, 1);
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
@@ -64,8 +64,8 @@ static uint8_t *cache_get_addr_for_read(uint32_t flash_addr) {
 void storage_init(void) {
     if (!is_initialised) {
         cache_flash_sector_id = 0;
-        cache_dirty = MP_FALSE;
-        is_initialised = MP_TRUE;
+        cache_dirty = false;
+        is_initialised = true;
         sys_tick_counter_last_write = 0;
     }
 }
@@ -78,7 +78,7 @@ uint32_t storage_get_block_count(void) {
     return FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS;
 }
 
-MP_BOOL storage_needs_flush(void) {
+bool storage_needs_flush(void) {
     // wait 2 seconds after last write to flush
     return cache_dirty && sys_tick_has_passed(sys_tick_counter_last_write, 2000);
 }
@@ -123,7 +123,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
-MP_BOOL storage_read_block(uint8_t *dest, uint32_t block) {
+bool storage_read_block(uint8_t *dest, uint32_t block) {
     //printf("RD %u\n", block);
     if (block == 0) {
         // fake the MBR so we can decide on our own partition table
@@ -140,26 +140,26 @@ MP_BOOL storage_read_block(uint8_t *dest, uint32_t block) {
         dest[510] = 0x55;
         dest[511] = 0xaa;
 
-        return MP_TRUE;
+        return true;
 
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
         // non-MBR block, get data from flash memory, possibly via cache
         uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * BLOCK_SIZE;
         uint8_t *src = cache_get_addr_for_read(flash_addr);
         memcpy(dest, src, BLOCK_SIZE);
-        return MP_TRUE;
+        return true;
 
     } else {
         // bad block number
-        return MP_FALSE;
+        return false;
     }
 }
 
-MP_BOOL storage_write_block(const uint8_t *src, uint32_t block) {
+bool storage_write_block(const uint8_t *src, uint32_t block) {
     //printf("WR %u\n", block);
     if (block == 0) {
         // can't write MBR, but pretend we did
-        return MP_TRUE;
+        return true;
 
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
         // non-MBR block, copy to cache
@@ -167,10 +167,10 @@ MP_BOOL storage_write_block(const uint8_t *src, uint32_t block) {
         uint8_t *dest = cache_get_addr_for_write(flash_addr);
         memcpy(dest, src, BLOCK_SIZE);
         sys_tick_counter_last_write = sys_tick_counter;
-        return MP_TRUE;
+        return true;
 
     } else {
         // bad block number
-        return MP_FALSE;
+        return false;
     }
 }

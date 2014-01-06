@@ -176,16 +176,15 @@ mp_obj_t led_obj_off(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
 static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
 
-static const mp_method_t led_obj_type_methods[] = {
-	{ "on", &led_obj_on_obj },
-	{ "off", &led_obj_off_obj },
-	{ NULL, NULL },
-};
 static const mp_obj_type_t led_obj_type = {
     { &mp_const_type },
     "Led",
     .print = led_obj_print,
-    .methods = led_obj_type_methods,
+    .methods = {
+        { "on", &led_obj_on_obj },
+        { "off", &led_obj_off_obj },
+        { NULL, NULL },
+    }
 };
 
 mp_obj_t pyb_Led(mp_obj_t led_id) {

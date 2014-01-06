@@ -124,20 +124,20 @@ typedef struct _mp_lexer_t mp_lexer_t;
 
 void mp_token_show(const mp_token_t *tok);
 void mp_token_show_error_prefix(const mp_token_t *tok);
-MP_BOOL mp_token_show_error(const mp_token_t *tok, const char *msg);
+bool mp_token_show_error(const mp_token_t *tok, const char *msg);
 
 mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close);
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
 const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex);
-MP_BOOL mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind);
+bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind);
 /* unused
-MP_BOOL mp_lexer_is_str(mp_lexer_t *lex, const char *str);
-MP_BOOL mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind);
-MP_BOOL mp_lexer_opt_str(mp_lexer_t *lex, const char *str);
+bool mp_lexer_is_str(mp_lexer_t *lex, const char *str);
+bool mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind);
+bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str);
 */
-MP_BOOL mp_lexer_show_error(mp_lexer_t *lex, const char *msg);
-MP_BOOL mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg);
+bool mp_lexer_show_error(mp_lexer_t *lex, const char *msg);
+bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg);
 
 // used to import a module; must be implemented for a specific port
 mp_lexer_t *mp_import_open_file(qstr mod_name);

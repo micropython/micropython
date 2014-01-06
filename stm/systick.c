@@ -43,7 +43,7 @@ void sys_tick_wait_at_least(uint32_t stc, uint32_t delay_ms) {
     }
 }
 
-MP_BOOL sys_tick_has_passed(uint32_t stc, uint32_t delay_ms) {
+bool sys_tick_has_passed(uint32_t stc, uint32_t delay_ms) {
     // stc_wait is the value of sys_tick_counter that we wait for
     uint32_t stc_wait = stc + delay_ms;
     if (stc_wait < stc) {

@@ -58,7 +58,7 @@ mp_obj_t mp_builtin___import__(int n, mp_obj_t *args) {
         return mp_const_none;
     }
 
-    mp_obj_t module_fun = mp_compile(pn, MP_FALSE);
+    mp_obj_t module_fun = mp_compile(pn, false);
 
     if (module_fun == mp_const_none) {
         // TODO handle compile error correctly

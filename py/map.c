@@ -38,8 +38,8 @@ mp_map_t *mp_map_new(mp_map_kind_t kind, int n) {
     return map;
 }
 
-mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, MP_BOOL add_if_not_found) {
-    MP_BOOL is_map_mp_obj = (map->kind == MP_MAP_OBJ);
+mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_not_found) {
+    bool is_map_mp_obj = (map->kind == MP_MAP_OBJ);
     machine_uint_t hash;
     if (is_map_mp_obj) {
         hash = mp_obj_hash(index);
@@ -61,7 +61,7 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, MP_BOOL add_i
                     map->table = m_new0(mp_map_elem_t, map->alloc);
                     for (int i = 0; i < old_alloc; i++) {
                         if (old_table[i].key != NULL) {
-                            mp_map_lookup_helper(map, old_table[i].key, MP_TRUE)->value = old_table[i].value;
+                            mp_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
                         }
                     }
                     m_del(mp_map_elem_t, old_table, old_alloc);
@@ -90,7 +90,7 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, MP_BOOL add_i
     }
 }
 
-mp_map_elem_t* mp_qstr_map_lookup(mp_map_t *map, qstr index, MP_BOOL add_if_not_found) {
+mp_map_elem_t* mp_qstr_map_lookup(mp_map_t *map, qstr index, bool add_if_not_found) {
     mp_obj_t o = (mp_obj_t)(machine_uint_t)index;
     return mp_map_lookup_helper(map, o, add_if_not_found);
 }
@@ -104,7 +104,7 @@ void mp_set_init(mp_set_t *set, int n) {
     set->table = m_new0(mp_obj_t, set->alloc);
 }
 
-mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, MP_BOOL add_if_not_found) {
+mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
     int hash = mp_obj_hash(index);
     int pos = hash % set->alloc;
     for (;;) {
@@ -121,7 +121,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, MP_BOOL add_if_not_found) 
                     set->table = m_new(mp_obj_t, set->alloc);
                     for (int i = 0; i < old_alloc; i++) {
                         if (old_table[i] != NULL) {
-                            mp_set_lookup(set, old_table[i], MP_TRUE);
+                            mp_set_lookup(set, old_table[i], true);
                         }
                     }
                     m_del(mp_obj_t, old_table, old_alloc);

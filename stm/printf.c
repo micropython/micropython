@@ -152,10 +152,10 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
         }
 
         // parse long specifiers (current not used)
-        //MP_BOOL long_arg = MP_FALSE;
+        //bool long_arg = false;
         if (*fmt == 'l') {
             ++fmt;
-            //long_arg = MP_TRUE;
+            //long_arg = true;
         }
 
         if (*fmt == '\0') {
@@ -215,14 +215,14 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // send stdout to USART, USB CDC VCP, and LCD if nothing else
-    MP_BOOL any = MP_FALSE;
+    bool any = false;
     if (usart_is_enabled()) {
         usart_tx_strn_cooked(str, len);
-        any = MP_TRUE;
+        any = true;
     }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
-        any = MP_TRUE;
+        any = true;
     }
     if (!any) {
         lcd_print_strn(str, len);

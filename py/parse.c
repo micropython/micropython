@@ -189,8 +189,8 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     if (tok->kind == MP_TOKEN_NAME) {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn_copy(tok->str, tok->len));
     } else if (tok->kind == MP_TOKEN_NUMBER) {
-        MP_BOOL dec = MP_FALSE;
-        MP_BOOL small_int = MP_TRUE;
+        bool dec = false;
+        bool small_int = true;
         int int_val = 0;
         int len = tok->len;
         const char *str = tok->str;
@@ -219,10 +219,10 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             } else if (base == 16 && 'A' <= str[i] && str[i] <= 'F') {
                 int_val = base * int_val + str[i] - 'A' + 10;
             } else if (str[i] == '.' || str[i] == 'e' || str[i] == 'E' || str[i] == 'j' || str[i] == 'J') {
-                dec = MP_TRUE;
+                dec = true;
                 break;
             } else {
-                small_int = MP_FALSE;
+                small_int = false;
                 break;
             }
         }
@@ -269,11 +269,11 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     push_rule(parser, rules[top_level_rule], 0);
 
     uint n, i;
-    MP_BOOL backtrack = MP_FALSE;
+    bool backtrack = false;
     const rule_t *rule;
     mp_token_kind_t tok_kind;
-    MP_BOOL emit_rule;
-    MP_BOOL had_trailing_sep;
+    bool emit_rule;
+    bool had_trailing_sep;
 
     for (;;) {
         next_rule:
@@ -298,7 +298,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 if (i > 0 && !backtrack) {
                     goto next_rule;
                 } else {
-                    backtrack = MP_FALSE;
+                    backtrack = false;
                 }
                 for (; i < n - 1; ++i) {
                     switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
@@ -322,7 +322,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         push_result_token(parser, lex);
                         mp_lexer_to_next(lex);
                     } else {
-                        backtrack = MP_TRUE;
+                        backtrack = true;
                         goto next_rule;
                     }
                 } else {
@@ -338,7 +338,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     if ((rule->arg[i - 1] & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE) {
                         // an optional rule that failed, so continue with next arg
                         push_result_node(parser, MP_PARSE_NODE_NULL);
-                        backtrack = MP_FALSE;
+                        backtrack = false;
                     } else {
                         // a mandatory rule that failed, so propagate backtrack
                         if (i > 1) {
@@ -369,7 +369,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                                     goto syntax_error;
                                 } else {
                                     // this rule failed, so backtrack
-                                    backtrack = MP_TRUE;
+                                    backtrack = true;
                                     goto next_rule;
                                 }
                             }
@@ -395,12 +395,12 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // count number of arguments for the parse_node
                 i = 0;
-                emit_rule = MP_FALSE;
+                emit_rule = false;
                 for (int x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
-                            emit_rule = MP_TRUE;
+                            emit_rule = true;
                         }
                         if (tok_kind == MP_TOKEN_NAME) {
                             // only tokens which were names are pushed to stack
@@ -414,19 +414,19 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // always emit these rules, even if they have only 1 argument
                 if (rule->rule_id == RULE_expr_stmt || rule->rule_id == RULE_yield_stmt) {
-                    emit_rule = MP_TRUE;
+                    emit_rule = true;
                 }
 
                 // never emit these rules if they have only 1 argument
                 // NOTE: can't put atom_paren here because we need it to distinguisg, for example, [a,b] from [(a,b)]
                 // TODO possibly put varargslist_name, varargslist_equal here as well
                 if (rule->rule_id == RULE_else_stmt || rule->rule_id == RULE_testlist_comp_3b || rule->rule_id == RULE_import_as_names_paren || rule->rule_id == RULE_typedargslist_name || rule->rule_id == RULE_typedargslist_colon || rule->rule_id == RULE_typedargslist_equal || rule->rule_id == RULE_dictorsetmaker_colon || rule->rule_id == RULE_classdef_2 || rule->rule_id == RULE_with_item_as || rule->rule_id == RULE_assert_stmt_extra || rule->rule_id == RULE_as_name || rule->rule_id == RULE_raise_stmt_from || rule->rule_id == RULE_vfpdef) {
-                    emit_rule = MP_FALSE;
+                    emit_rule = false;
                 }
 
                 // always emit these rules, and add an extra blank node at the end (to be used by the compiler to store data)
                 if (rule->rule_id == RULE_funcdef || rule->rule_id == RULE_classdef || rule->rule_id == RULE_comp_for || rule->rule_id == RULE_lambdef || rule->rule_id == RULE_lambdef_nocond) {
-                    emit_rule = MP_TRUE;
+                    emit_rule = true;
                     push_result_node(parser, MP_PARSE_NODE_NULL);
                     i += 1;
                 }
@@ -465,14 +465,14 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 // n=3 is: item (sep item)* [sep]
                 if (backtrack) {
                     list_backtrack:
-                    had_trailing_sep = MP_FALSE;
+                    had_trailing_sep = false;
                     if (n == 2) {
                         if (i == 1) {
                             // fail on item, first time round; propagate backtrack
                             goto next_rule;
                         } else {
                             // fail on item, in later rounds; finish with this rule
-                            backtrack = MP_FALSE;
+                            backtrack = false;
                         }
                     } else {
                         if (i == 1) {
@@ -482,15 +482,15 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             // fail on item, in later rounds; have eaten tokens so can't backtrack
                             if (n == 3) {
                                 // list allows trailing separator; finish parsing list
-                                had_trailing_sep = MP_TRUE;
-                                backtrack = MP_FALSE;
+                                had_trailing_sep = true;
+                                backtrack = false;
                             } else {
                                 // list doesn't allowing trailing separator; fail
                                 goto syntax_error;
                             }
                         } else {
                             // fail on separator; finish parsing list
-                            backtrack = MP_FALSE;
+                            backtrack = false;
                         }
                     }
                 } else {
@@ -510,7 +510,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                                 } else {
                                     // couldn't get element of list
                                     i += 1;
-                                    backtrack = MP_TRUE;
+                                    backtrack = true;
                                     goto list_backtrack;
                                 }
                                 break;

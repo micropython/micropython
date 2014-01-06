@@ -11,11 +11,11 @@ void vstr_init(vstr_t *vstr) {
     vstr->len = 0;
     vstr->buf = m_new(char, vstr->alloc);
     if (vstr->buf == NULL) {
-        vstr->had_error = MP_TRUE;
+        vstr->had_error = true;
         return;
     }
     vstr->buf[0] = 0;
-    vstr->had_error = MP_FALSE;
+    vstr->had_error = false;
 }
 
 void vstr_clear(vstr_t *vstr) {
@@ -42,10 +42,10 @@ void vstr_free(vstr_t *vstr) {
 void vstr_reset(vstr_t *vstr) {
     vstr->len = 0;
     vstr->buf[0] = 0;
-    vstr->had_error = MP_FALSE;
+    vstr->had_error = false;
 }
 
-MP_BOOL vstr_had_error(vstr_t *vstr) {
+bool vstr_had_error(vstr_t *vstr) {
     return vstr->had_error;
 }
 
@@ -63,23 +63,23 @@ int vstr_len(vstr_t *vstr) {
     return vstr->len;
 }
 
-MP_BOOL vstr_ensure_extra(vstr_t *vstr, int size) {
+bool vstr_ensure_extra(vstr_t *vstr, int size) {
     if (vstr->len + size + 1 > vstr->alloc) {
         int new_alloc = ROUND_ALLOC((vstr->len + size + 1) * 2);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         if (new_buf == NULL) {
-            vstr->had_error = MP_TRUE;
-            return MP_FALSE;
+            vstr->had_error = true;
+            return false;
         }
         vstr->alloc = new_alloc;
         vstr->buf = new_buf;
     }
-    return MP_TRUE;
+    return true;
 }
 
 void vstr_hint_size(vstr_t *vstr, int size) {
     // it's not an error if we fail to allocate for the size hint
-    MP_BOOL er = vstr->had_error;
+    bool er = vstr->had_error;
     vstr_ensure_extra(vstr, size);
     vstr->had_error = er;
 }
