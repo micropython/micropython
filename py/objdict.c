@@ -130,6 +130,15 @@ static mp_obj_t dict_clear(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
+static mp_obj_t dict_copy(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    mp_obj_dict_t *other = mp_obj_new_dict(self->map.alloc);
+    other->map.used = self->map.used;
+    memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
+    return other;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 /******************************************************************************/
 /* dict constructors & etc                                                    */
@@ -143,6 +152,7 @@ const mp_obj_type_t dict_type = {
     .getiter = dict_getiter,
     .methods = {
         { "clear", &dict_clear_obj },
+        { "copy", &dict_copy_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };
