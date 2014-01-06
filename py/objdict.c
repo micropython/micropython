@@ -140,27 +140,30 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
-static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bool pop) {
-    mp_map_elem_t *elem = mp_map_lookup_helper(self, key, false, pop);
-    if (elem == NULL) {
+static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bool pop, bool set) {
+    mp_map_elem_t *elem = mp_map_lookup_helper(self, key, set, pop);
+    mp_obj_t value;
+    if (elem == NULL || elem->value == NULL) {
         if (deflt == NULL) {
             if (pop) {
                 nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
             } else {
-                return mp_const_none;
+                value = mp_const_none;
             }
         } else {
-            return deflt;
+            value = deflt;
         }
     } else {
-        mp_obj_t value = elem->value;
+        value = elem->value;
         if (pop) {
             /* catch the leak (from mp_map_lookup_helper) */
             m_free(elem, 2 * sizeof(mp_obj_t));
         }
-        return value;
     }
-
+    if (set) {
+        elem->value = value;
+    }
+    return value;
 }
 
 static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
@@ -170,7 +173,7 @@ static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
                            n_args == 3 ? args[2] : NULL,
-                           false);
+                           false, false);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
@@ -181,10 +184,21 @@ static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
                            n_args == 3 ? args[2] : NULL,
-                           true);
+                           true, false);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
+
+static mp_obj_t dict_setdefault(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 3);
+    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+
+    return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
+                           args[1],
+                           n_args == 3 ? args[2] : NULL,
+                           false, true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setdefault);
 
 
 static mp_obj_t dict_popitem(mp_obj_t self_in) {
@@ -199,6 +213,7 @@ static mp_obj_t dict_popitem(mp_obj_t self_in) {
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};
     next->key = NULL;
+    next->value = NULL;
     mp_obj_t tuple = mp_obj_new_tuple(2, items);
 
     return tuple;
@@ -222,6 +237,7 @@ const mp_obj_type_t dict_type = {
         { "get", &dict_get_obj },
         { "pop", &dict_pop_obj },
         { "popitem", &dict_popitem_obj },
+        { "setdefault", &dict_setdefault_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };

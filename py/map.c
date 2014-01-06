@@ -112,6 +112,7 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_n
                 retval->key = elem->key;
                 retval->value = elem->value;
                 elem->key = NULL;
+                elem->value = NULL;
                 return retval;
             }
             return elem;
