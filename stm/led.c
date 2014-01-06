@@ -8,10 +8,10 @@
 #include "led.h"
 
 /* LED numbers, used internally */
-#define PYB_LED_1   (0)
-#define PYB_LED_2   (1)
-#define PYB_LED_3   (2)
-#define PYB_LED_4   (3)
+#define PYB_LED_1   (1)
+#define PYB_LED_2   (2)
+#define PYB_LED_3   (3)
+#define PYB_LED_4   (4)
 
 #if defined(PYBOARD)
     #define PYB_LED1_PORT   (GPIOA)
