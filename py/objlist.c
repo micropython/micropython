@@ -182,13 +182,17 @@ static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
     mp_obj_t *value = args[1];
+    uint start = 0;
+    uint stop = self->len;
 
-    uint start = mp_get_index(self->base.type, self->len,
-                              n_args >= 3 ? args[2] : mp_obj_new_int(0));
-    uint stop = mp_get_index(self->base.type, self->len,
-                             n_args >= 4 ? args[3] : mp_obj_new_int(-1));
+    if (n_args >= 3) {
+        start = mp_get_index(self->base.type, self->len, args[2]);
+        if (n_args >= 4) {
+            stop = mp_get_index(self->base.type, self->len, args[3]);
+        }
+    }
 
-    for (uint i = start; i <= stop; i++) {
+    for (uint i = start; i < stop; i++) {
          if (mp_obj_equal(self->items[i], value)) {
               return mp_obj_new_int(i);
          }
@@ -259,14 +263,12 @@ static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 const mp_obj_type_t list_type = {
     { &mp_const_type },
     "list",
-    list_print, // print
-    list_make_new, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    list_binary_op, // binary_op
-    list_getiter, // getiter
-    NULL, // iternext
-    { // method list
+    .print = list_print,
+    .make_new = list_make_new,
+    .unary_op = NULL,
+    .binary_op = list_binary_op,
+    .getiter = list_getiter,
+    .methods = {
         { "append", &list_append_obj },
         { "clear", &list_clear_obj },
         { "copy", &list_copy_obj },
@@ -341,14 +343,8 @@ mp_obj_t list_it_iternext(mp_obj_t self_in) {
 static const mp_obj_type_t list_it_type = {
     { &mp_const_type },
     "list_iterator",
-    NULL, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    list_it_iternext, // iternext
-    { { NULL, NULL }, }, // method list
+    .iternext = list_it_iternext,
+    .methods = { { NULL, NULL }, },
 };
 
 mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur) {

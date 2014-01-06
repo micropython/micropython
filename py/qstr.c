@@ -36,10 +36,10 @@ const static qstr_pool_t const_pool = {
     },
 };
 
-static qstr_pool_t *last_pool = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
+static qstr_pool_t *last_pool;
 
 void qstr_init(void) {
-    // nothing to do!
+    last_pool = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
 }
 
 static qstr qstr_add(const char *str) {

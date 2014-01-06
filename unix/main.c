@@ -191,14 +191,14 @@ static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 static const mp_obj_type_t test_type = {
     { &mp_const_type },
     "Test",
-    test_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    { // method list
+    .print = test_print,
+    .make_new = NULL,
+    .call_n = NULL,
+    .unary_op = NULL,
+    .binary_op = NULL,
+    .getiter = NULL,
+    .iternext = NULL,
+    .methods = {
         { "get", &test_get_obj },
         { "set", &test_set_obj },
         { NULL, NULL },
