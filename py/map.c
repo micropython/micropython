@@ -9,7 +9,8 @@
 #include "map.h"
 
 // approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
-static int doubling_primes[] = {7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
+// prefixed with zero for the empty case.
+static int doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
 
 int get_doubling_prime_greater_or_equal_to(int x) {
     for (int i = 0; i < sizeof(doubling_primes) / sizeof(int); i++) {
@@ -38,6 +39,31 @@ mp_map_t *mp_map_new(mp_map_kind_t kind, int n) {
     return map;
 }
 
+void mp_map_clear(mp_map_t *map) {
+    map->used = 0;
+    machine_uint_t a = map->alloc;
+    map->alloc = 0;
+    map->table = m_renew(mp_map_elem_t, map->table, a, map->alloc);
+    mp_map_elem_t nul = {NULL, NULL};
+    for (uint i=0; i<map->alloc; i++) {
+        map->table[i] = nul;
+    }
+}
+
+static void mp_map_rehash (mp_map_t *map) {
+    int old_alloc = map->alloc;
+    mp_map_elem_t *old_table = map->table;
+    map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
+    map->used = 0;
+    map->table = m_new0(mp_map_elem_t, map->alloc);
+    for (int i = 0; i < old_alloc; i++) {
+        if (old_table[i].key != NULL) {
+            mp_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
+        }
+    }
+    m_del(mp_map_elem_t, old_table, old_alloc);
+}
+
 mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_not_found) {
     bool is_map_mp_obj = (map->kind == MP_MAP_OBJ);
     machine_uint_t hash;
@@ -45,6 +71,13 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_n
         hash = mp_obj_hash(index);
     } else {
         hash = (machine_uint_t)index;
+    }
+    if (map->alloc == 0) {
+        if (add_if_not_found) {
+            mp_map_rehash(map);
+        } else {
+            return NULL;
+        }
     }
     uint pos = hash % map->alloc;
     for (;;) {
@@ -54,17 +87,7 @@ mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_n
             if (add_if_not_found) {
                 if (map->used + 1 >= map->alloc) {
                     // not enough room in table, rehash it
-                    int old_alloc = map->alloc;
-                    mp_map_elem_t *old_table = map->table;
-                    map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
-                    map->used = 0;
-                    map->table = m_new0(mp_map_elem_t, map->alloc);
-                    for (int i = 0; i < old_alloc; i++) {
-                        if (old_table[i].key != NULL) {
-                            mp_map_lookup_helper(map, old_table[i].key, true)->value = old_table[i].value;
-                        }
-                    }
-                    m_del(mp_map_elem_t, old_table, old_alloc);
+                    mp_map_rehash(map);
                     // restart the search for the new element
                     pos = hash % map->alloc;
                 } else {
@@ -106,6 +129,7 @@ void mp_set_init(mp_set_t *set, int n) {
 
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
     int hash = mp_obj_hash(index);
+    assert(set->alloc); /* FIXME: if alloc is ever 0 when doing a lookup, this'll fail: */
     int pos = hash % set->alloc;
     for (;;) {
         mp_obj_t elem = set->table[pos];

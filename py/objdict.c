@@ -120,8 +120,19 @@ static mp_obj_t dict_getiter(mp_obj_t o_in) {
 /******************************************************************************/
 /* dict methods                                                               */
 
+static mp_obj_t dict_clear(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+
+    mp_map_clear(&self->map);
+
+    return mp_const_none;
+}
+
 /******************************************************************************/
 /* dict constructors & etc                                                    */
+
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 const mp_obj_type_t dict_type = {
     { &mp_const_type },
@@ -130,7 +141,10 @@ const mp_obj_type_t dict_type = {
     .make_new = dict_make_new,
     .binary_op = dict_binary_op,
     .getiter = dict_getiter,
-    .methods = {{NULL, NULL},},
+    .methods = {
+        { "clear", &dict_clear_obj },
+        { NULL, NULL }, // end-of-list sentinel
+    },
 };
 
 mp_obj_t mp_obj_new_dict(int n_args) {
