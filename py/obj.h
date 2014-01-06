@@ -200,10 +200,12 @@ qstr mp_obj_str_get(mp_obj_t self_in);
 // float
 extern const mp_obj_type_t float_type;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
+mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs);
 
 // complex
 extern const mp_obj_type_t complex_type;
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
+mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in);
 #endif
 
 // tuple

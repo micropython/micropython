@@ -48,14 +48,14 @@ static mp_obj_t complex_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *a
         {
             mp_float_t real, imag;
             if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
-                mp_obj_get_complex(args[1], &real, &imag);
+                mp_obj_complex_get(args[1], &real, &imag);
             } else {
                 real = mp_obj_get_float(args[1]);
                 imag = 0;
             }
             if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
                 mp_float_t real2, imag2;
-                mp_obj_get_complex(args[0], &real2, &imag2);
+                mp_obj_complex_get(args[0], &real2, &imag2);
                 real -= imag2;
                 imag += real2;
             } else {
@@ -80,9 +80,41 @@ static mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
 }
 
 static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_float_t lhs_real, lhs_imag, rhs_real, rhs_imag;
-    mp_obj_complex_get(lhs_in, &lhs_real, &lhs_imag);
-    mp_obj_complex_get(rhs_in, &rhs_real, &rhs_imag);
+    mp_obj_complex_t *lhs = lhs_in;
+    return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
+}
+
+const mp_obj_type_t complex_type = {
+    { &mp_const_type },
+    "complex",
+    complex_print, // print
+    complex_make_new, // make_new
+    NULL, // call_n
+    complex_unary_op, // unary_op
+    complex_binary_op, // binary_op
+    NULL, // getiter
+    NULL, // iternext
+    .methods = { { NULL, NULL }, },
+};
+
+mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
+    mp_obj_complex_t *o = m_new_obj(mp_obj_complex_t);
+    o->base.type = &complex_type;
+    o->real = real;
+    o->imag = imag;
+    return o;
+}
+
+void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
+    assert(MP_OBJ_IS_TYPE(self_in, &complex_type));
+    mp_obj_complex_t *self = self_in;
+    *real = self->real;
+    *imag = self->imag;
+}
+
+mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in) {
+    mp_float_t rhs_real, rhs_imag;
+    mp_obj_get_complex(rhs_in, &rhs_real, &rhs_imag); // can be any type, this function will convert to float (if possible)
     switch (op) {
         case RT_BINARY_OP_ADD:
         case RT_BINARY_OP_INPLACE_ADD:
@@ -113,34 +145,6 @@ static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return NULL; // op not supported
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
-}
-
-const mp_obj_type_t complex_type = {
-    { &mp_const_type },
-    "complex",
-    complex_print, // print
-    complex_make_new, // make_new
-    NULL, // call_n
-    complex_unary_op, // unary_op
-    complex_binary_op, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = { { NULL, NULL }, },
-};
-
-mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
-    mp_obj_complex_t *o = m_new_obj(mp_obj_complex_t);
-    o->base.type = &complex_type;
-    o->real = real;
-    o->imag = imag;
-    return o;
-}
-
-void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
-    assert(MP_OBJ_IS_TYPE(self_in, &complex_type));
-    mp_obj_complex_t *self = self_in;
-    *real = self->real;
-    *imag = self->imag;
 }
 
 #endif

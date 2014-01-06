@@ -155,7 +155,7 @@ void asm_x64_end_pass(asm_x64_t *as) {
         //as->code_base = m_new(byte, as->code_size); need to allocale executable memory
         uint actual_alloc;
         as->code_base = alloc_mem(as->code_size, &actual_alloc, true);
-        printf("code_size: %u\n", as->code_size);
+        //printf("code_size: %u\n", as->code_size);
     }
 
     /*
