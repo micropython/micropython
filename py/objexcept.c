@@ -45,7 +45,7 @@ const mp_obj_type_t exception_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_exception(qstr id) {

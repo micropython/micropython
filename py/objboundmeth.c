@@ -43,7 +43,7 @@ const mp_obj_type_t bound_meth_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth) {

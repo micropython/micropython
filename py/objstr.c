@@ -184,17 +184,18 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
+static const mp_method_t str_type_methods[] = {
+    { "join", &str_join_obj },
+    { "format", &str_format_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
 const mp_obj_type_t str_type = {
     { &mp_const_type },
     "str",
     .print = str_print,
     .binary_op = str_binary_op,
     .getiter = str_getiter,
-    .methods = {
-        { "join", &str_join_obj },
-        { "format", &str_format_obj },
-        { NULL, NULL }, // end-of-list sentinel
-    },
+    .methods = str_type_methods,
 };
 
 mp_obj_t mp_obj_new_str(qstr qstr) {
@@ -235,7 +236,7 @@ static const mp_obj_type_t str_it_type = {
     { &mp_const_type },
     "str_iterator",
     .iternext = str_it_iternext,
-    .methods = { { NULL, NULL }, },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_str_iterator(mp_obj_str_t *str, int cur) {

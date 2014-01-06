@@ -32,7 +32,7 @@ static const mp_obj_type_t range_type = {
     NULL, // binary_op
     range_getiter,
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 // range is a class and instances are immutable sequence objects
@@ -77,7 +77,7 @@ static const mp_obj_type_t range_it_type = {
     NULL, // binary_op
     NULL, // getiter
     range_it_iternext,
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step) {

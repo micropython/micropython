@@ -769,10 +769,12 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     } else if (MP_OBJ_IS_OBJ(base)) {
         // generic method lookup
         mp_obj_base_t *o = base;
-        const mp_method_t *meth = &o->type->methods[0];
-        for (; meth->name != NULL; meth++) {
-            if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                return mp_obj_new_bound_meth(base, (mp_obj_t)meth->fun);
+        const mp_method_t *meth = o->type->methods;
+        if (meth != NULL) {
+            for (; meth->name != NULL; meth++) {
+                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                    return mp_obj_new_bound_meth(base, (mp_obj_t)meth->fun);
+                }
             }
         }
     }
@@ -793,12 +795,14 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     } else if (MP_OBJ_IS_OBJ(base)) {
         // generic method lookup
         mp_obj_base_t *o = base;
-        const mp_method_t *meth = &o->type->methods[0];
-        for (; meth->name != NULL; meth++) {
-            if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                dest[1] = (mp_obj_t)meth->fun;
-                dest[0] = base;
-                return;
+        const mp_method_t *meth = o->type->methods;
+        if (meth != NULL) {
+            for (; meth->name != NULL; meth++) {
+                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                    dest[1] = (mp_obj_t)meth->fun;
+                    dest[0] = base;
+                    return;
+                }
             }
         }
     }

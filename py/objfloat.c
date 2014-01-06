@@ -83,7 +83,7 @@ const mp_obj_type_t float_type = {
     .make_new = float_make_new,
     .unary_op = float_unary_op,
     .binary_op = float_binary_op,
-    .methods = { { NULL, NULL }, },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {

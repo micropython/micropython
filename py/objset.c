@@ -64,7 +64,7 @@ const mp_obj_type_t set_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = { { NULL, NULL }, },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {

@@ -79,9 +79,7 @@ const mp_obj_type_t fun_native_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .methods = NULL,
 };
 
 mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
@@ -181,9 +179,7 @@ const mp_obj_type_t fun_bc_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
@@ -295,9 +291,7 @@ static const mp_obj_type_t fun_asm_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {

@@ -125,7 +125,7 @@ const mp_obj_type_t complex_type = {
     complex_binary_op, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = { { NULL, NULL }, },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {

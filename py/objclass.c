@@ -70,7 +70,7 @@ const mp_obj_type_t class_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_class(mp_map_t *class_locals) {

@@ -41,7 +41,7 @@ const mp_obj_type_t bool_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 static const mp_obj_bool_t false_obj = {{&bool_type}, false};
