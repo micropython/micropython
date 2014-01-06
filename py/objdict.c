@@ -50,7 +50,7 @@ static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case RT_BINARY_OP_SUBSCR:
         {
             // dict load
-            mp_map_elem_t *elem = mp_map_lookup_helper(&o->map, rhs_in, false);
+            mp_map_elem_t *elem = mp_map_lookup_helper(&o->map, rhs_in, false, false);
             if (elem == NULL) {
                 nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
             } else {
@@ -140,19 +140,51 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
+static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bool pop) {
+    mp_map_elem_t *elem = mp_map_lookup_helper(self, key, false, pop);
+    if (elem == NULL) {
+        if (deflt == NULL) {
+            if (pop) {
+                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
+            } else {
+                return mp_const_none;
+            }
+        } else {
+            return deflt;
+        }
+    } else {
+        mp_obj_t value = elem->value;
+        if (pop) {
+            /* catch the leak (from mp_map_lookup_helper) */
+            m_free(elem, 2 * sizeof(mp_obj_t));
+        }
+        return value;
+    }
+
+}
+
 static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
 
-    mp_map_elem_t *elem = mp_map_lookup_helper(&((mp_obj_dict_t *)args[0])->map,
-                                               args[1], false);
-    if (elem == NULL) {
-        return n_args >= 3 ? args[2] : mp_const_none;
-    } else {
-        return elem->value;
-    }
+    return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
+                           args[1],
+                           n_args == 3 ? args[2] : NULL,
+                           false);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
+
+static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 3);
+    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+
+    return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
+                           args[1],
+                           n_args == 3 ? args[2] : NULL,
+                           true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
+
 
 /******************************************************************************/
 /* dict constructors & etc                                                    */
@@ -168,6 +200,7 @@ const mp_obj_type_t dict_type = {
         { "clear", &dict_clear_obj },
         { "copy", &dict_copy_obj },
         { "get", &dict_get_obj },
+        { "pop", &dict_pop_obj },
         { NULL, NULL }, // end-of-list sentinel
     },
 };
@@ -186,6 +219,6 @@ uint mp_obj_dict_len(mp_obj_t self_in) {
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
     mp_obj_dict_t *self = self_in;
-    mp_map_lookup_helper(&self->map, key, true)->value = value;
+    mp_map_lookup_helper(&self->map, key, true, false)->value = value;
     return self_in;
 }
