@@ -75,12 +75,12 @@ static void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr
     asm_thumb_label_assign(emit->as, label_num);
 }
 
-static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
+static MP_BOOL check_n_arg(qstr op, int n_args, int wanted_n_args) {
     if (wanted_n_args == n_args) {
-        return true;
+        return MP_TRUE;
     } else {
         printf("SyntaxError: '%s' expects %d arguments'\n", qstr_str(op), wanted_n_args);
-        return false;
+        return MP_FALSE;
     }
 }
 

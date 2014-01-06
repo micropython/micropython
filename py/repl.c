@@ -1,17 +1,17 @@
 #include "misc.h"
 #include "repl.h"
 
-bool str_startswith_word(const char *str, const char *head) {
+MP_BOOL str_startswith_word(const char *str, const char *head) {
     int i;
     for (i = 0; str[i] && head[i]; i++) {
         if (str[i] != head[i]) {
-            return false;
+            return MP_FALSE;
         }
     }
     return head[i] == '\0' && (str[i] == '\0' || !unichar_isalpha(str[i]));
 }
 
-bool mp_repl_is_compound_stmt(const char *line) {
+MP_BOOL mp_repl_is_compound_stmt(const char *line) {
     // compound if line starts with a certain keyword
     if (
            str_startswith_word(line, "if")
@@ -23,7 +23,7 @@ bool mp_repl_is_compound_stmt(const char *line) {
         || str_startswith_word(line, "class")
         || str_startswith_word(line, "@")
        ) {
-        return true;
+        return MP_TRUE;
     }
 
     // also "compound" if unmatched open bracket

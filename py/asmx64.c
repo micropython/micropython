@@ -94,7 +94,7 @@ struct _asm_x64_t {
 };
 
 // for allocating memory, see src/v8/src/platform-linux.cc
-void *alloc_mem(uint req_size, uint *alloc_size, bool is_exec) {
+void *alloc_mem(uint req_size, uint *alloc_size, MP_BOOL is_exec) {
     req_size = (req_size + 0xfff) & (~0xfff);
     int prot = PROT_READ | PROT_WRITE | (is_exec ? PROT_EXEC : 0);
     void *ptr = mmap(NULL, req_size, prot, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -119,7 +119,7 @@ asm_x64_t* asm_x64_new(uint max_num_labels) {
     return as;
 }
 
-void asm_x64_free(asm_x64_t* as, bool free_code) {
+void asm_x64_free(asm_x64_t* as, MP_BOOL free_code) {
     if (free_code) {
         // need to un-mmap
         //m_free(as->code_base);
@@ -131,9 +131,9 @@ void asm_x64_free(asm_x64_t* as, bool free_code) {
         {
             Label* lab = &g_array_index(as->label, Label, i);
             if (lab->unresolved != NULL)
-                g_array_free(lab->unresolved, true);
+                g_array_free(lab->unresolved, MP_TRUE);
         }
-        g_array_free(as->label, true);
+        g_array_free(as->label, MP_TRUE);
     }
     */
     m_del_obj(asm_x64_t, as);
@@ -154,7 +154,7 @@ void asm_x64_end_pass(asm_x64_t *as) {
         as->code_size = as->code_offset;
         //as->code_base = m_new(byte, as->code_size); need to allocale executable memory
         uint actual_alloc;
-        as->code_base = alloc_mem(as->code_size, &actual_alloc, true);
+        as->code_base = alloc_mem(as->code_size, &actual_alloc, MP_TRUE);
         printf("code_size: %u\n", as->code_size);
     }
 
@@ -165,7 +165,7 @@ void asm_x64_end_pass(asm_x64_t *as) {
         int i;
         for (i = 0; i < as->label->len; ++i)
             if (g_array_index(as->label, Label, i).unresolved != NULL)
-                return false;
+                return MP_FALSE;
     }
     */
 }

@@ -26,7 +26,7 @@ mp_obj_t class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_t o = mp_obj_new_instance(self_in);
 
     // look for __init__ function
-    mp_map_elem_t *init_fn = mp_qstr_map_lookup(self->locals, MP_QSTR___init__, false);
+    mp_map_elem_t *init_fn = mp_qstr_map_lookup(self->locals, MP_QSTR___init__, MP_FALSE);
 
     if (init_fn != NULL) {
         // call __init__ function
@@ -70,7 +70,7 @@ const mp_obj_type_t class_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_class(mp_map_t *class_locals) {

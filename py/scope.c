@@ -58,10 +58,10 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, uint unique_code_id, u
     return scope;
 }
 
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, MP_BOOL *added) {
     for (int i = 0; i < scope->id_info_len; i++) {
         if (scope->id_info[i].qstr == qstr) {
-            *added = false;
+            *added = MP_FALSE;
             return &scope->id_info[i];
         }
     }
@@ -100,11 +100,11 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
         id_info = &scope->id_info[scope->id_info_len++];
     }
 
-    id_info->param = false;
+    id_info->param = MP_FALSE;
     id_info->kind = 0;
     id_info->qstr = qstr;
     id_info->local_num = 0;
-    *added = true;
+    *added = MP_TRUE;
     return id_info;
 }
 
@@ -155,7 +155,7 @@ void scope_close_over_in_parents(scope_t *scope, qstr qstr) {
         }
         if (id == NULL) {
             // variable not declared in this scope, so declare it as free and keep searching parents
-            bool added;
+            MP_BOOL added;
             id = scope_find_or_add_id(s, qstr, &added);
             assert(added);
             id->kind = ID_INFO_KIND_FREE;
@@ -178,7 +178,7 @@ void scope_declare_global(scope_t *scope, qstr qstr) {
         printf("SyntaxError?: can't declare global in outer code\n");
         return;
     }
-    bool added;
+    MP_BOOL added;
     id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
     if (!added) {
         printf("SyntaxError?: identifier already declared something\n");
@@ -198,7 +198,7 @@ void scope_declare_nonlocal(scope_t *scope, qstr qstr) {
         printf("SyntaxError?: can't declare nonlocal in outer code\n");
         return;
     }
-    bool added;
+    MP_BOOL added;
     id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
     if (!added) {
         printf("SyntaxError?: identifier already declared something\n");

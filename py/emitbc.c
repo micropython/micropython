@@ -17,7 +17,7 @@
 struct _emit_t {
     pass_kind_t pass;
     int stack_size;
-    bool last_emit_was_return_value;
+    MP_BOOL last_emit_was_return_value;
 
     scope_t *scope;
 
@@ -135,13 +135,13 @@ static void emit_write_byte_1_signed_label(emit_t* emit, byte b1, int label) {
     c[2] = code_offset >> 8;
 }
 
-static void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
+static void emit_bc_set_native_types(emit_t *emit, MP_BOOL do_native_types) {
 }
 
 static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
+    emit->last_emit_was_return_value = MP_FALSE;
     emit->scope = scope;
     if (pass == PASS_2) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
@@ -182,7 +182,7 @@ static void emit_bc_end_pass(emit_t *emit) {
     }
 }
 
-bool emit_bc_last_emit_was_return_value(emit_t *emit) {
+MP_BOOL emit_bc_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
@@ -211,7 +211,7 @@ static void emit_pre(emit_t *emit, int stack_size_delta) {
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-    emit->last_emit_was_return_value = false;
+    emit->last_emit_was_return_value = MP_FALSE;
 }
 
 static void emit_bc_label_assign(emit_t *emit, int l) {
@@ -274,7 +274,7 @@ static void emit_bc_load_const_id(emit_t *emit, qstr qstr) {
     emit_write_byte_1_qstr(emit, MP_BC_LOAD_CONST_ID, qstr);
 }
 
-static void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
+static void emit_bc_load_const_str(emit_t *emit, qstr qstr, MP_BOOL bytes) {
     emit_pre(emit, 1);
     if (bytes) {
         emit_write_byte_1_qstr(emit, MP_BC_LOAD_CONST_BYTES, qstr);
@@ -613,7 +613,7 @@ static void emit_bc_make_closure(emit_t *emit, scope_t *scope, int n_dict_params
     emit_write_byte_1_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
 }
 
-static void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
     int s = 0;
     if (have_star_arg) {
         s += 1;
@@ -639,7 +639,7 @@ static void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword,
     emit_write_byte_1_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
 }
 
-static void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
     int s = 0;
     if (have_star_arg) {
         s += 1;
@@ -667,7 +667,7 @@ static void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, b
 
 static void emit_bc_return_value(emit_t *emit) {
     emit_pre(emit, -1);
-    emit->last_emit_was_return_value = true;
+    emit->last_emit_was_return_value = MP_TRUE;
     emit_write_byte_1(emit, MP_BC_RETURN_VALUE);
 }
 

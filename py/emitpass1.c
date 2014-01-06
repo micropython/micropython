@@ -42,7 +42,7 @@ static void emit_pass1_end_pass(emit_t *emit) {
 
 static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     // name adding/lookup
-    bool added;
+    MP_BOOL added;
     id_info_t *id = scope_find_or_add_id(emit->scope, qstr, &added);
     if (added) {
         if (qstr == MP_QSTR_AssertionError) {
@@ -73,7 +73,7 @@ static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
 
 static id_info_t *get_id_for_modification(scope_t *scope, qstr qstr) {
     // name adding/lookup
-    bool added;
+    MP_BOOL added;
     id_info_t *id = scope_find_or_add_id(scope, qstr, &added);
     if (added) {
         if (scope->kind == SCOPE_MODULE || scope->kind == SCOPE_CLASS) {

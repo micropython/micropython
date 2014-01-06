@@ -35,7 +35,7 @@ struct _mp_lexer_t {
     mp_token_t tok_cur;
 };
 
-bool str_strn_equal(const char *str, const char *strn, int len) {
+MP_BOOL str_strn_equal(const char *str, const char *strn, int len) {
     uint i = 0;
 
     while (i < len && *str == *strn) {
@@ -70,74 +70,74 @@ void mp_token_show_error_prefix(const mp_token_t *tok) {
     printf("(%s:%d:%d) ", tok->src_name, tok->src_line, tok->src_column);
 }
 
-bool mp_token_show_error(const mp_token_t *tok, const char *msg) {
+MP_BOOL mp_token_show_error(const mp_token_t *tok, const char *msg) {
     printf("(%s:%d:%d) %s\n", tok->src_name, tok->src_line, tok->src_column, msg);
-    return false;
+    return MP_FALSE;
 }
 
 #define CUR_CHAR(lex) ((lex)->chr0)
 
-static bool is_end(mp_lexer_t *lex) {
+static MP_BOOL is_end(mp_lexer_t *lex) {
     return lex->chr0 == MP_LEXER_CHAR_EOF;
 }
 
-static bool is_physical_newline(mp_lexer_t *lex) {
+static MP_BOOL is_physical_newline(mp_lexer_t *lex) {
     return lex->chr0 == '\n' || lex->chr0 == '\r';
 }
 
-static bool is_char(mp_lexer_t *lex, char c) {
+static MP_BOOL is_char(mp_lexer_t *lex, char c) {
     return lex->chr0 == c;
 }
 
-static bool is_char_or(mp_lexer_t *lex, char c1, char c2) {
+static MP_BOOL is_char_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 || lex->chr0 == c2;
 }
 
-static bool is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
+static MP_BOOL is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
 /*
-static bool is_char_following(mp_lexer_t *lex, char c) {
+static MP_BOOL is_char_following(mp_lexer_t *lex, char c) {
     return lex->chr1 == c;
 }
 */
 
-static bool is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
+static MP_BOOL is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr1 == c1 || lex->chr1 == c2;
 }
 
-static bool is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
+static MP_BOOL is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr2 == c1 || lex->chr2 == c2;
 }
 
-static bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
+static MP_BOOL is_char_and(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 && lex->chr1 == c2;
 }
 
-static bool is_whitespace(mp_lexer_t *lex) {
+static MP_BOOL is_whitespace(mp_lexer_t *lex) {
     return unichar_isspace(lex->chr0);
 }
 
-static bool is_letter(mp_lexer_t *lex) {
+static MP_BOOL is_letter(mp_lexer_t *lex) {
     return unichar_isalpha(lex->chr0);
 }
 
-static bool is_digit(mp_lexer_t *lex) {
+static MP_BOOL is_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr0);
 }
 
-static bool is_following_digit(mp_lexer_t *lex) {
+static MP_BOOL is_following_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr1);
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_head_of_identifier(mp_lexer_t *lex) {
+static MP_BOOL is_head_of_identifier(mp_lexer_t *lex) {
     return is_letter(lex) || lex->chr0 == '_';
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_tail_of_identifier(mp_lexer_t *lex) {
+static MP_BOOL is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
@@ -280,12 +280,12 @@ static const char *tok_kw[] = {
     NULL,
 };
 
-static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool first_token) {
+static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, MP_BOOL first_token) {
     // skip white space and comments
-    bool had_physical_newline = false;
+    MP_BOOL had_physical_newline = MP_FALSE;
     while (!is_end(lex)) {
         if (is_physical_newline(lex)) {
-            had_physical_newline = true;
+            had_physical_newline = MP_TRUE;
             next_char(lex);
         } else if (is_whitespace(lex)) {
             next_char(lex);
@@ -369,22 +369,22 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
         // a string or bytes literal
 
         // parse type codes
-        bool is_raw = false;
-        bool is_bytes = false;
+        MP_BOOL is_raw = MP_FALSE;
+        MP_BOOL is_bytes = MP_FALSE;
         if (is_char(lex, 'u')) {
             next_char(lex);
         } else if (is_char(lex, 'b')) {
-            is_bytes = true;
+            is_bytes = MP_TRUE;
             next_char(lex);
             if (is_char(lex, 'r')) {
-                is_raw = true;
+                is_raw = MP_TRUE;
                 next_char(lex);
             }
         } else if (is_char(lex, 'r')) {
-            is_raw = true;
+            is_raw = MP_TRUE;
             next_char(lex);
             if (is_char(lex, 'b')) {
-                is_bytes = true;
+                is_bytes = MP_TRUE;
                 next_char(lex);
             }
         }
@@ -628,7 +628,7 @@ mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_strea
     }
 
     // preload first token
-    mp_lexer_next_token_into(lex, &lex->tok_cur, true);
+    mp_lexer_next_token_into(lex, &lex->tok_cur, MP_TRUE);
 
     return lex;
 }
@@ -644,44 +644,44 @@ void mp_lexer_free(mp_lexer_t *lex) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
-    mp_lexer_next_token_into(lex, &lex->tok_cur, false);
+    mp_lexer_next_token_into(lex, &lex->tok_cur, MP_FALSE);
 }
 
 const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex) {
     return &lex->tok_cur;
 }
 
-bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
+MP_BOOL mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
     return lex->tok_cur.kind == kind;
 }
 
 /*
-bool mp_lexer_is_str(mp_lexer_t *lex, const char *str) {
+MP_BOOL mp_lexer_is_str(mp_lexer_t *lex, const char *str) {
     return mp_token_is_str(&lex->tok_cur, str);
 }
 
-bool mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
+MP_BOOL mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
     if (mp_lexer_is_kind(lex, kind)) {
         mp_lexer_to_next(lex);
-        return true;
+        return MP_TRUE;
     }
-    return false;
+    return MP_FALSE;
 }
 
-bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
+MP_BOOL mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
     if (mp_lexer_is_str(lex, str)) {
         mp_lexer_to_next(lex);
-        return true;
+        return MP_TRUE;
     }
-    return false;
+    return MP_FALSE;
 }
 */
 
-bool mp_lexer_show_error(mp_lexer_t *lex, const char *msg) {
+MP_BOOL mp_lexer_show_error(mp_lexer_t *lex, const char *msg) {
     return mp_token_show_error(&lex->tok_cur, msg);
 }
 
-bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {
+MP_BOOL mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {
     printf("  File \"%s\", line %d column %d\n%s\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
-    return false;
+    return MP_FALSE;
 }

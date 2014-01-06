@@ -46,9 +46,9 @@ void mp_obj_print(mp_obj_t o_in) {
     mp_obj_print_helper(printf_wrapper, NULL, o_in);
 }
 
-bool mp_obj_is_callable(mp_obj_t o_in) {
+MP_BOOL mp_obj_is_callable(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return false;
+        return MP_FALSE;
     } else {
         mp_obj_base_t *o = o_in;
         return o->type->call_n != NULL;
@@ -77,13 +77,13 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
 // "The objects need not have the same type. If both are numbers, they are converted
 // to a common type. Otherwise, the == and != operators always consider objects of
 // different types to be unequal."
-// note also that False==0 and True==1 are true expressions
-bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
+// note also that False==0 and True==1 are MP_TRUE expressions
+MP_BOOL mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (o1 == o2) {
-        return true;
+        return MP_TRUE;
     } else if (MP_OBJ_IS_SMALL_INT(o1) || MP_OBJ_IS_SMALL_INT(o2)) {
         if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
-            return false;
+            return MP_FALSE;
         } else {
             if (MP_OBJ_IS_SMALL_INT(o2)) {
                 mp_obj_t temp = o1; o1 = o2; o2 = temp;
@@ -95,25 +95,25 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             } else if (o2 == mp_const_true) {
                 return val == 1;
             } else {
-                return false;
+                return MP_FALSE;
             }
         }
     } else if (MP_OBJ_IS_TYPE(o1, &str_type) && MP_OBJ_IS_TYPE(o2, &str_type)) {
         return mp_obj_str_get(o1) == mp_obj_str_get(o2);
     } else {
         assert(0);
-        return false;
+        return MP_FALSE;
     }
 }
 
-bool mp_obj_less(mp_obj_t o1, mp_obj_t o2) {
+MP_BOOL mp_obj_less(mp_obj_t o1, mp_obj_t o2) {
     if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
         mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1);
         mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2);
         return i1 < i2;
     } else {
         assert(0);
-        return false;
+        return MP_FALSE;
     }
 }
 

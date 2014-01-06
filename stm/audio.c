@@ -22,7 +22,7 @@ int sample_buf_in;
 int sample_buf_out;
 byte sample_buf[SAMPLE_BUF_SIZE];
 
-bool audio_is_full(void) {
+MP_BOOL audio_is_full(void) {
     return ((sample_buf_in + 1) % SAMPLE_BUF_SIZE) == sample_buf_out;
 }
 

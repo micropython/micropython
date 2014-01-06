@@ -10,7 +10,7 @@
 
 typedef struct _mp_obj_bool_t {
     mp_obj_base_t base;
-    bool value;
+    MP_BOOL value;
 } mp_obj_bool_t;
 
 static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
@@ -41,11 +41,11 @@ const mp_obj_type_t bool_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
-static const mp_obj_bool_t false_obj = {{&bool_type}, false};
-static const mp_obj_bool_t true_obj = {{&bool_type}, true};
+static const mp_obj_bool_t false_obj = {{&bool_type}, MP_FALSE};
+static const mp_obj_bool_t true_obj = {{&bool_type}, MP_TRUE};
 
 const mp_obj_t mp_const_false = (mp_obj_t)&false_obj;
 const mp_obj_t mp_const_true = (mp_obj_t)&true_obj;

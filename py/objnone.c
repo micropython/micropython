@@ -18,7 +18,7 @@ const mp_obj_type_t none_type = {
     { &mp_const_type },
     "NoneType",
     .print = none_print,
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 static const mp_obj_none_t none_obj = {{&none_type}};

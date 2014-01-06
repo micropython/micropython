@@ -45,7 +45,7 @@ asm_thumb_t *asm_thumb_new(uint max_num_labels) {
     return as;
 }
 
-void asm_thumb_free(asm_thumb_t *as, bool free_code) {
+void asm_thumb_free(asm_thumb_t *as, MP_BOOL free_code) {
     if (free_code) {
         m_del(byte, as->code_base, as->code_size);
     }
@@ -56,9 +56,9 @@ void asm_thumb_free(asm_thumb_t *as, bool free_code) {
         {
             Label *lab = &g_array_index(as->label, Label, i);
             if (lab->unresolved != NULL)
-                g_array_free(lab->unresolved, true);
+                g_array_free(lab->unresolved, MP_TRUE);
         }
-        g_array_free(as->label, true);
+        g_array_free(as->label, MP_TRUE);
     }
     */
     m_del_obj(asm_thumb_t, as);
@@ -87,7 +87,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
         int i;
         for (i = 0; i < as->label->len; ++i)
             if (g_array_index(as->label, Label, i).unresolved != NULL)
-                return false;
+                return MP_FALSE;
     }
     */
 }

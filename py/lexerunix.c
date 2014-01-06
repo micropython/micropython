@@ -7,7 +7,7 @@
 #include "lexer.h"
 
 typedef struct _str_buf_t {
-    bool free;                  // free src_beg when done
+    MP_BOOL free;                  // free src_beg when done
     const char *src_beg;        // beginning of source
     const char *src_cur;        // current location in source
     const char *src_end;        // end (exclusive) of source
@@ -30,7 +30,7 @@ void str_buf_free(str_buf_t *sb) {
     }
 }
 
-mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, bool free_str) {
+mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, MP_BOOL free_str) {
     str_buf_t *sb = m_new(str_buf_t, 1);
     sb->free = free_str;
     sb->src_beg = str;
@@ -56,7 +56,7 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
         return NULL;
     }
 
-    return mp_lexer_new_from_str_len(filename, data, size, true);
+    return mp_lexer_new_from_str_len(filename, data, size, MP_TRUE);
 }
 
 /******************************************************************************/

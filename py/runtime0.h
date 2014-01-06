@@ -82,6 +82,6 @@ extern void *const rt_fun_table[RT_F_NUMBER_OF];
 void rt_init(void);
 void rt_deinit(void);
 int rt_get_unique_code_id(void);
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
+void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, MP_BOOL is_generator);
 void rt_assign_native_code(int unique_code_id, void *f, uint len, int n_args);
 void rt_assign_inline_asm_code(int unique_code_id, void *f, uint len, int n_args);

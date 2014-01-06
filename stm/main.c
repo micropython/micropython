@@ -359,7 +359,7 @@ int readline(vstr_t *line, const char *prompt) {
                 readline_hist[0] = strdup(vstr_str(line));
                 return 1;
             } else if (c == 27) {
-                escape = true;
+                escape = MP_TRUE;
             } else if (c == 127) {
                 if (vstr_len(line) > len) {
                     vstr_cut_tail(line, 1);
@@ -432,12 +432,12 @@ void do_repl(void) {
         }
 
         mp_lexer_str_buf_t sb;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), MP_FALSE, &sb);
         mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
         mp_lexer_free(lex);
 
         if (pn != MP_PARSE_NODE_NULL) {
-            mp_obj_t module_fun = mp_compile(pn, true);
+            mp_obj_t module_fun = mp_compile(pn, MP_TRUE);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 uint32_t start = sys_tick_counter;
@@ -461,37 +461,37 @@ void do_repl(void) {
     stdout_tx_str("\r\n");
 }
 
-bool do_file(const char *filename) {
+MP_BOOL do_file(const char *filename) {
     mp_lexer_file_buf_t fb;
     mp_lexer_t *lex = mp_lexer_new_from_file(filename, &fb);
 
     if (lex == NULL) {
         printf("could not open file '%s' for reading\n", filename);
-        return false;
+        return MP_FALSE;
     }
 
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
-        return false;
+        return MP_FALSE;
     }
 
-    mp_obj_t module_fun = mp_compile(pn, false);
+    mp_obj_t module_fun = mp_compile(pn, MP_FALSE);
     if (module_fun == mp_const_none) {
-        return false;
+        return MP_FALSE;
     }
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         rt_call_function_0(module_fun);
         nlr_pop();
-        return true;
+        return MP_TRUE;
     } else {
         // uncaught exception
         mp_obj_print((mp_obj_t)nlr.ret_val);
         printf("\n");
-        return false;
+        return MP_FALSE;
     }
 }
 
@@ -689,6 +689,12 @@ static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
 // TODO gc hook to close the file if not already closed
 
+static const mp_method_t file_obj_type_methods[] = {
+	{ "read", &file_obj_read_obj },
+	{ "write", &file_obj_write_obj },
+	{ "close", &file_obj_close_obj },
+	{ NULL, NULL },
+};
 static const mp_obj_type_t file_obj_type = {
     { &mp_const_type },
     "File",
@@ -699,12 +705,7 @@ static const mp_obj_type_t file_obj_type = {
     NULL, // binary_op
     NULL, // getiter
     NULL, // iternext
-    .methods = {
-        { "read", &file_obj_read_obj },
-        { "write", &file_obj_write_obj },
-        { "close", &file_obj_close_obj },
-        {NULL, NULL},
-    }
+    .methods = file_obj_type_methods,
 };
 
 mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
@@ -778,7 +779,7 @@ int main(void) {
 
     //usart_init(); disabled while wi-fi is enabled
 
-    int first_soft_reset = true;
+    int first_soft_reset = MP_TRUE;
 
 soft_reset:
 
@@ -847,12 +848,12 @@ soft_reset:
     lcd_print_str(" micro py board\n");
 
     // check if user switch held (initiates reset of filesystem)
-    bool reset_filesystem = false;
+    MP_BOOL reset_filesystem = MP_FALSE;
     if (switch_get()) {
-        reset_filesystem = true;
+        reset_filesystem = MP_TRUE;
         for (int i = 0; i < 50; i++) {
             if (!switch_get()) {
-                reset_filesystem = false;
+                reset_filesystem = MP_FALSE;
                 break;
             }
             sys_tick_delay_ms(10);
@@ -1063,7 +1064,7 @@ soft_reset:
             "f()\n";
 
         mp_lexer_str_buf_t mp_lexer_str_buf;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &mp_lexer_str_buf);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), MP_FALSE, &mp_lexer_str_buf);
 
         // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
         printf("lex; al=%u\n", m_get_total_bytes_allocated());
@@ -1074,7 +1075,7 @@ soft_reset:
             printf("pars;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
             //parse_node_show(pn, 0);
-            mp_obj_t module_fun = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, MP_FALSE);
             printf("comp;al=%u\n", m_get_total_bytes_allocated());
             sys_tick_delay_ms(1000);
 
@@ -1171,7 +1172,7 @@ soft_reset:
 
     printf("PYB: soft reboot\n");
 
-    first_soft_reset = false;
+    first_soft_reset = MP_FALSE;
     goto soft_reset;
 }
 

@@ -30,7 +30,7 @@ void usb_init(void) {
     is_enabled = 1;
 }
 
-bool usb_vcp_is_enabled(void) {
+MP_BOOL usb_vcp_is_enabled(void) {
     return is_enabled;
 }
 

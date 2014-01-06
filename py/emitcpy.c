@@ -20,7 +20,7 @@ struct _emit_t {
     int pass;
     int byte_code_offset;
     int stack_size;
-    bool last_emit_was_return_value;
+    MP_BOOL last_emit_was_return_value;
 
     scope_t *scope;
 
@@ -35,14 +35,14 @@ emit_t *emit_cpython_new(uint max_num_labels) {
     return emit;
 }
 
-static void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
+static void emit_cpy_set_native_types(emit_t *emit, MP_BOOL do_native_types) {
 }
 
 static void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->byte_code_offset = 0;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
+    emit->last_emit_was_return_value = MP_FALSE;
     emit->scope = scope;
     if (pass == PASS_2) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(int));
@@ -56,7 +56,7 @@ static void emit_cpy_end_pass(emit_t *emit) {
     }
 }
 
-static bool emit_cpy_last_emit_was_return_value(emit_t *emit) {
+static MP_BOOL emit_cpy_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
@@ -85,7 +85,7 @@ static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-    emit->last_emit_was_return_value = false;
+    emit->last_emit_was_return_value = MP_FALSE;
     if (emit->pass == PASS_3 && byte_code_size > 0) {
         if (emit->byte_code_offset >= 1000) {
             printf("%d ", emit->byte_code_offset);
@@ -173,26 +173,26 @@ static void emit_cpy_load_const_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static void print_quoted_str(qstr qstr, bool bytes) {
+static void print_quoted_str(qstr qstr, MP_BOOL bytes) {
     const char *str = qstr_str(qstr);
     int len = strlen(str);
-    bool has_single_quote = false;
-    bool has_double_quote = false;
+    MP_BOOL has_single_quote = MP_FALSE;
+    MP_BOOL has_double_quote = MP_FALSE;
     for (int i = 0; i < len; i++) {
         if (str[i] == '\'') {
-            has_single_quote = true;
+            has_single_quote = MP_TRUE;
         } else if (str[i] == '"') {
-            has_double_quote = true;
+            has_double_quote = MP_TRUE;
         }
     }
     if (bytes) {
         printf("b");
     }
-    bool quote_single = false;
+    MP_BOOL quote_single = MP_FALSE;
     if (has_single_quote && !has_double_quote) {
         printf("\"");
     } else {
-        quote_single = true;
+        quote_single = MP_TRUE;
         printf("'");
     }
     for (int i = 0; i < len; i++) {
@@ -213,7 +213,7 @@ static void print_quoted_str(qstr qstr, bool bytes) {
     }
 }
 
-static void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
+static void emit_cpy_load_const_str(emit_t *emit, qstr qstr, MP_BOOL bytes) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_CONST ");
@@ -681,7 +681,7 @@ static void emit_cpy_unpack_ex(emit_t *emit, int n_left, int n_right) {
     }
 }
 
-static void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
     int s = 0;
     if (have_star_arg) {
         s += 1;
@@ -708,13 +708,13 @@ static void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword
     }
 }
 
-static void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+static void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg) {
     emit_cpy_call_function(emit, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
 }
 
 static void emit_cpy_return_value(emit_t *emit) {
     emit_pre(emit, -1, 1);
-    emit->last_emit_was_return_value = true;
+    emit->last_emit_was_return_value = MP_TRUE;
     if (emit->pass == PASS_3) {
         printf("RETURN_VALUE\n");
     }

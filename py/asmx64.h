@@ -27,7 +27,7 @@
 typedef struct _asm_x64_t asm_x64_t;
 
 asm_x64_t* asm_x64_new(uint max_num_labels);
-void asm_x64_free(asm_x64_t* as, bool free_code);
+void asm_x64_free(asm_x64_t* as, MP_BOOL free_code);
 void asm_x64_start_pass(asm_x64_t *as, int pass);
 void asm_x64_end_pass(asm_x64_t *as);
 uint asm_x64_get_code_size(asm_x64_t* as);

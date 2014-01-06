@@ -17,10 +17,10 @@ typedef enum {
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
-    void (*set_native_types)(emit_t *emit, bool do_native_types);
+    void (*set_native_types)(emit_t *emit, MP_BOOL do_native_types);
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
-    bool (*last_emit_was_return_value)(emit_t *emit);
+    MP_BOOL (*last_emit_was_return_value)(emit_t *emit);
     int (*get_stack_size)(emit_t *emit);
     void (*set_stack_size)(emit_t *emit, int size);
 
@@ -37,7 +37,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_int)(emit_t *emit, qstr qstr);
     void (*load_const_dec)(emit_t *emit, qstr qstr);
     void (*load_const_id)(emit_t *emit, qstr qstr);
-    void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
+    void (*load_const_str)(emit_t *emit, qstr qstr, MP_BOOL bytes);
     void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
     void (*load_fast)(emit_t *emit, qstr qstr, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
@@ -99,8 +99,8 @@ typedef struct _emit_method_table_t {
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
     void (*make_function)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
     void (*make_closure)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
-    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
+    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg);
+    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, MP_BOOL have_star_arg, MP_BOOL have_dbl_star_arg);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, int n_args);
     void (*yield_value)(emit_t *emit);

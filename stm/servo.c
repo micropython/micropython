@@ -137,14 +137,15 @@ static mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
 
 static MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
 
+static const mp_method_t servo_obj_type_methods[] = {
+	{ "angle", &servo_obj_angle_obj },
+	{ NULL, NULL },
+};
 static const mp_obj_type_t servo_obj_type = {
     { &mp_const_type },
     "Servo",
     .print = servo_obj_print,
-    .methods = {
-        { "angle", &servo_obj_angle_obj },
-        { NULL, NULL },
-    }
+    .methods = servo_obj_type_methods,
 };
 
 mp_obj_t pyb_Servo(mp_obj_t servo_id) {

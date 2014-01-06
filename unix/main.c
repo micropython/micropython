@@ -79,13 +79,13 @@ static void do_repl(void) {
             }
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), MP_FALSE);
         mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
         mp_lexer_free(lex);
 
         if (pn != MP_PARSE_NODE_NULL) {
             //mp_parse_node_show(pn, 0);
-            mp_obj_t module_fun = mp_compile(pn, true);
+            mp_obj_t module_fun = mp_compile(pn, MP_TRUE);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
@@ -139,7 +139,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
-            mp_obj_t module_fun = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, MP_FALSE);
             //printf("----------------\n");
 
 #if MICROPY_EMIT_CPYTHON
@@ -166,7 +166,7 @@ void do_file(const char *file) {
 
 typedef struct _test_obj_t {
     mp_obj_base_t base;
-    bool value;
+    MP_BOOL value;
 } test_obj_t;
 
 static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {

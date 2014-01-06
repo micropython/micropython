@@ -336,7 +336,7 @@ void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
     socketnum = data[0];
     //PRINT_F("TCP Close wait #"); printDec(socketnum);
     if (socketnum < MAX_SOCKETS)
-      closed_sockets[socketnum] = true;
+      closed_sockets[socketnum] = MP_TRUE;
       */
   }
 }

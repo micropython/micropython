@@ -260,6 +260,18 @@ static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_sort_obj, list_sort);
 
+const mp_method_t list_type_methods[] = {
+    { "append", &list_append_obj },
+    { "clear", &list_clear_obj },
+    { "copy", &list_copy_obj },
+    { "count", &list_count_obj },
+    { "index", &list_index_obj },
+    { "pop", &list_pop_obj },
+    { "remove", &list_remove_obj },
+    { "reverse", &list_reverse_obj },
+    { "sort", &list_sort_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
 const mp_obj_type_t list_type = {
     { &mp_const_type },
     "list",
@@ -268,19 +280,7 @@ const mp_obj_type_t list_type = {
     .unary_op = NULL,
     .binary_op = list_binary_op,
     .getiter = list_getiter,
-    .methods = {
-        { "append", &list_append_obj },
-        { "clear", &list_clear_obj },
-        { "copy", &list_copy_obj },
-        { "count", &list_count_obj },
-        { "index", &list_index_obj },
-        { "insert", &list_insert_obj },
-        { "pop", &list_pop_obj },
-        { "remove", &list_remove_obj },
-        { "reverse", &list_reverse_obj },
-        { "sort", &list_sort_obj },
-        { NULL, NULL }, // end-of-list sentinel
-    },
+    .methods = list_type_methods,
 };
 
 static mp_obj_list_t *list_new(uint n) {
@@ -344,7 +344,7 @@ static const mp_obj_type_t list_it_type = {
     { &mp_const_type },
     "list_iterator",
     .iternext = list_it_iternext,
-    .methods = { { NULL, NULL }, },
+    .methods = NULL,
 };
 
 mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur) {

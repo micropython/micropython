@@ -5,10 +5,10 @@
 
 /** types *******************************************************/
 
-typedef int bool;
+typedef int MP_BOOL;
 enum {
-    false = 0,
-    true = 1
+    MP_FALSE = 0,
+    MP_TRUE = 1
 };
 
 typedef unsigned char byte;
@@ -42,10 +42,10 @@ typedef int unichar; // TODO
 unichar utf8_get_char(const char *s);
 char *utf8_next_char(const char *s);
 
-bool unichar_isspace(unichar c);
-bool unichar_isalpha(unichar c);
-bool unichar_isprint(unichar c);
-bool unichar_isdigit(unichar c);
+MP_BOOL unichar_isspace(unichar c);
+MP_BOOL unichar_isalpha(unichar c);
+MP_BOOL unichar_isprint(unichar c);
+MP_BOOL unichar_isdigit(unichar c);
 
 /** string ******************************************************/
 
@@ -59,7 +59,7 @@ typedef struct _vstr_t {
     int alloc;
     int len;
     char *buf;
-    bool had_error;
+    MP_BOOL had_error;
 } vstr_t;
 
 void vstr_init(vstr_t *vstr);
@@ -67,7 +67,7 @@ void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(void);
 void vstr_free(vstr_t *vstr);
 void vstr_reset(vstr_t *vstr);
-bool vstr_had_error(vstr_t *vstr);
+MP_BOOL vstr_had_error(vstr_t *vstr);
 char *vstr_str(vstr_t *vstr);
 int vstr_len(vstr_t *vstr);
 void vstr_hint_size(vstr_t *vstr, int size);

@@ -103,7 +103,7 @@ const mp_obj_type_t tuple_type = {
     .make_new = tuple_make_new,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,
-    .methods = {{NULL, NULL},},
+    .methods = NULL,
 };
 
 // the zero-length tuple
@@ -165,8 +165,14 @@ static mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 static const mp_obj_type_t tuple_it_type = {
     { &mp_const_type },
     "tuple_iterator",
-    .iternext = tuple_it_iternext,
-    .methods = {{NULL, NULL},},
+    NULL, // print
+    NULL, // make_new
+    NULL, // call_n
+    NULL, // unary_op
+    NULL, // binary_op
+    NULL, // getiter
+    tuple_it_iternext,
+    NULL, // method list
 };
 
 static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur) {
