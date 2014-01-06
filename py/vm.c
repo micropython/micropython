@@ -106,7 +106,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                     case MP_BC_LOAD_CONST_SMALL_INT:
                         unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
                         ip += 3;
-                        PUSH((mp_obj_t)(unum << 1 | 1));
+                        PUSH(MP_OBJ_NEW_SMALL_INT(unum));
                         break;
 
                     case MP_BC_LOAD_CONST_DEC:
