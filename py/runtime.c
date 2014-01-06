@@ -452,57 +452,63 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     //   then fail
     // note that list does not implement + or +=, so that inplace_concat is reached first for +=
 
-    if (MP_OBJ_IS_SMALL_INT(lhs) && MP_OBJ_IS_SMALL_INT(rhs)) {
+    if (MP_OBJ_IS_SMALL_INT(lhs)) {
         mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
-        mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
-        switch (op) {
-            case RT_BINARY_OP_OR:
-            case RT_BINARY_OP_INPLACE_OR: lhs_val |= rhs_val; break;
-            case RT_BINARY_OP_XOR:
-            case RT_BINARY_OP_INPLACE_XOR: lhs_val ^= rhs_val; break;
-            case RT_BINARY_OP_AND:
-            case RT_BINARY_OP_INPLACE_AND: lhs_val &= rhs_val; break;
-            case RT_BINARY_OP_LSHIFT:
-            case RT_BINARY_OP_INPLACE_LSHIFT: lhs_val <<= rhs_val; break;
-            case RT_BINARY_OP_RSHIFT:
-            case RT_BINARY_OP_INPLACE_RSHIFT: lhs_val >>= rhs_val; break;
-            case RT_BINARY_OP_ADD:
-            case RT_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
-            case RT_BINARY_OP_SUBTRACT:
-            case RT_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
-            case RT_BINARY_OP_MULTIPLY:
-            case RT_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
-            case RT_BINARY_OP_FLOOR_DIVIDE:
-            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: lhs_val /= rhs_val; break;
-#if MICROPY_ENABLE_FLOAT
-            case RT_BINARY_OP_TRUE_DIVIDE:
-            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
-#endif
+        if (MP_OBJ_IS_SMALL_INT(rhs)) {
+            mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
+            switch (op) {
+                case RT_BINARY_OP_OR:
+                case RT_BINARY_OP_INPLACE_OR: lhs_val |= rhs_val; break;
+                case RT_BINARY_OP_XOR:
+                case RT_BINARY_OP_INPLACE_XOR: lhs_val ^= rhs_val; break;
+                case RT_BINARY_OP_AND:
+                case RT_BINARY_OP_INPLACE_AND: lhs_val &= rhs_val; break;
+                case RT_BINARY_OP_LSHIFT:
+                case RT_BINARY_OP_INPLACE_LSHIFT: lhs_val <<= rhs_val; break;
+                case RT_BINARY_OP_RSHIFT:
+                case RT_BINARY_OP_INPLACE_RSHIFT: lhs_val >>= rhs_val; break;
+                case RT_BINARY_OP_ADD:
+                case RT_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+                case RT_BINARY_OP_SUBTRACT:
+                case RT_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+                case RT_BINARY_OP_MULTIPLY:
+                case RT_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
+                case RT_BINARY_OP_FLOOR_DIVIDE:
+                case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: lhs_val /= rhs_val; break;
+    #if MICROPY_ENABLE_FLOAT
+                case RT_BINARY_OP_TRUE_DIVIDE:
+                case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
+    #endif
 
-            // TODO implement modulo as specified by Python
-            case RT_BINARY_OP_MODULO:
-            case RT_BINARY_OP_INPLACE_MODULO: lhs_val %= rhs_val; break;
+                // TODO implement modulo as specified by Python
+                case RT_BINARY_OP_MODULO:
+                case RT_BINARY_OP_INPLACE_MODULO: lhs_val %= rhs_val; break;
 
-            // TODO check for negative power, and overflow
-            case RT_BINARY_OP_POWER:
-            case RT_BINARY_OP_INPLACE_POWER:
-            {
-                int ans = 1;
-                while (rhs_val > 0) {
-                    if (rhs_val & 1) {
-                        ans *= lhs_val;
+                // TODO check for negative power, and overflow
+                case RT_BINARY_OP_POWER:
+                case RT_BINARY_OP_INPLACE_POWER:
+                {
+                    int ans = 1;
+                    while (rhs_val > 0) {
+                        if (rhs_val & 1) {
+                            ans *= lhs_val;
+                        }
+                        lhs_val *= lhs_val;
+                        rhs_val /= 2;
                     }
-                    lhs_val *= lhs_val;
-                    rhs_val /= 2;
+                    lhs_val = ans;
+                    break;
                 }
-                lhs_val = ans;
-                break;
-            }
 
-            default: assert(0);
-        }
-        if (fit_small_int(lhs_val)) {
-            return MP_OBJ_NEW_SMALL_INT(lhs_val);
+                default: assert(0);
+            }
+            if (fit_small_int(lhs_val)) {
+                return MP_OBJ_NEW_SMALL_INT(lhs_val);
+            }
+        } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
+            return mp_obj_float_binary_op(op, lhs_val, rhs);
+        } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
+            return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
         }
     } else if (MP_OBJ_IS_OBJ(lhs)) {
         mp_obj_base_t *o = lhs;
