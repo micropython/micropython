@@ -26,8 +26,9 @@ typedef struct _mp_set_t {
 int get_doubling_prime_greater_or_equal_to(int x);
 void mp_map_init(mp_map_t *map, mp_map_kind_t kind, int n);
 mp_map_t *mp_map_new(mp_map_kind_t kind, int n);
-mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_not_found);
+mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_not_found, bool remove_if_found);
 mp_map_elem_t* mp_qstr_map_lookup(mp_map_t *map, qstr index, bool add_if_not_found);
+void mp_map_clear(mp_map_t *map);
 
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found);

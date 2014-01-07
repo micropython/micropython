@@ -1,0 +1,10 @@
+d = {1:2, 3:4}
+print(d)
+d.update(["ab"])
+print(d[1])
+print(d[3])
+print(d["a"])
+print(len(d))
+d.update([(1,4)])
+print(d[1])
+print(len(d))

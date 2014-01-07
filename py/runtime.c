@@ -879,13 +879,13 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
 
 mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "? 'int' object is not iterable"));
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not an iterator"));
     } else {
         mp_obj_base_t *o = o_in;
         if (o->type->iternext != NULL) {
             return o->type->iternext(o_in);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "? '%s' object is not iterable", o->type->name));
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not an iterator", o->type->name));
         }
     }
 }
