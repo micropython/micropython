@@ -102,7 +102,6 @@ static const mp_obj_type_t dict_it_type = {
     { &mp_const_type },
     "dict_iterator",
     .iternext = dict_it_iternext,
-    .methods = { { NULL, NULL }, },
 };
 
 static mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur) {
@@ -250,6 +249,17 @@ static MP_DEFINE_CONST_FUN_OBJ_2(dict_update_obj, dict_update);
 /******************************************************************************/
 /* dict constructors & etc                                                    */
 
+static const mp_method_t dict_type_methods[] = {
+    { "clear", &dict_clear_obj },
+    { "copy", &dict_copy_obj },
+    { "get", &dict_get_obj },
+    { "pop", &dict_pop_obj },
+    { "popitem", &dict_popitem_obj },
+    { "setdefault", &dict_setdefault_obj },
+    { "update", &dict_update_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
+
 const mp_obj_type_t dict_type = {
     { &mp_const_type },
     "dict",
@@ -257,16 +267,7 @@ const mp_obj_type_t dict_type = {
     .make_new = dict_make_new,
     .binary_op = dict_binary_op,
     .getiter = dict_getiter,
-    .methods = {
-        { "clear", &dict_clear_obj },
-        { "copy", &dict_copy_obj },
-        { "get", &dict_get_obj },
-        { "pop", &dict_pop_obj },
-        { "popitem", &dict_popitem_obj },
-        { "setdefault", &dict_setdefault_obj },
-        { "update", &dict_update_obj },
-        { NULL, NULL }, // end-of-list sentinel
-    },
+    .methods = dict_type_methods,
 };
 
 mp_obj_t mp_obj_new_dict(int n_args) {
