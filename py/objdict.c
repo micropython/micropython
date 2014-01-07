@@ -66,8 +66,6 @@ const mp_obj_type_t dict_type = {
     .print = dict_print,
     .make_new = dict_make_new,
     .binary_op = dict_binary_op,
-    .getiter = NULL,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_dict(int n_args) {

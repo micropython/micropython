@@ -72,16 +72,7 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_native_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_native_call_n,
 };
 
 mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
@@ -174,16 +165,7 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_bc_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_bc_call_n,
 };
 
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
@@ -288,16 +270,7 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 static const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_asm_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_asm_call_n,
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {

@@ -34,7 +34,6 @@ const mp_obj_type_t int_type = {
     { &mp_const_type },
     "int",
     .make_new = int_make_new,
-    .methods = { { NULL, NULL }, },
 };
 
 mp_obj_t mp_obj_new_int(machine_int_t value) {

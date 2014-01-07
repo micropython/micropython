@@ -154,7 +154,7 @@ static void do_str(const char *str) {
 
 typedef struct _test_obj_t {
     mp_obj_base_t base;
-    bool value;
+    int value;
 } test_obj_t;
 
 static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
@@ -176,15 +176,17 @@ static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
 static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
+static const mp_method_t test_methods[] = {
+    { "get", &test_get_obj },
+    { "set", &test_set_obj },
+    { NULL, NULL },
+};
+
 static const mp_obj_type_t test_type = {
     { &mp_const_type },
     "Test",
     .print = test_print,
-    .methods = {
-        { "get", &test_get_obj },
-        { "set", &test_set_obj },
-        { NULL, NULL },
-    }
+    .methods = test_methods,
 };
 
 mp_obj_t test_obj_new(int value) {

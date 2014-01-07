@@ -15,15 +15,14 @@ typedef machine_int_t mp_small_int_t;
 typedef machine_float_t mp_float_t;
 #endif
 
-// Anything that wants to be a Micro Python object must
-// have mp_obj_base_t as its first member (except NULL and small ints)
+// Anything that wants to be a Micro Python object must have
+// mp_obj_base_t as its first member (except NULL and small ints)
 
-typedef struct _mp_obj_base_t mp_obj_base_t;
-typedef struct _mp_obj_type_t mp_obj_type_t;
-
+struct _mp_obj_type_t;
 struct _mp_obj_base_t {
-    const mp_obj_type_t *type;
+    const struct _mp_obj_type_t *type;
 };
+typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // The NULL object is used to indicate the absence of an object
 // It *cannot* be used when an mp_obj_t is expected, except where explicitly allowed
@@ -43,12 +42,13 @@ struct _mp_obj_base_t {
 
 #define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_native_t obj_name
 
-#define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 0, 0, fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 1, 1, fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 2, 2, fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, 3, 3, fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, n_args_min, (~((machine_uint_t)0)), fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, n_args_min, n_args_max, fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, n_args_min, n_args_max, (void *)fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, 0, 0, (mp_fun_0_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, 1, 1, (mp_fun_1_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, 2, 2, (mp_fun_2_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, 3, 3, (mp_fun_3_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, n_args_min, (~((machine_uint_t)0)), (mp_fun_var_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
 
 // Type definitions for methods
 
@@ -83,7 +83,7 @@ struct _mp_obj_type_t {
     mp_fun_1_t getiter;
     mp_fun_1_t iternext;
 
-    const mp_method_t methods[];
+    const mp_method_t *methods;
 
     /*
     What we might need to add here:
@@ -107,6 +107,8 @@ struct _mp_obj_type_t {
     __next__        gen-instance
     */
 };
+
+typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant objects, globally accessible
 
@@ -241,6 +243,7 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
     // for const function objects, make an empty, const map
     // such functions won't be able to access the global scope, but that's probably okay
 } mp_obj_fun_native_t;
+
 extern const mp_obj_type_t fun_native_type;
 extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code);
