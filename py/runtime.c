@@ -84,6 +84,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_TypeError, true)->value = mp_obj_new_exception(MP_QSTR_TypeError);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_SyntaxError, true)->value = mp_obj_new_exception(MP_QSTR_SyntaxError);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_ValueError, true)->value = mp_obj_new_exception(MP_QSTR_ValueError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_OSError, true)->value = mp_obj_new_exception(MP_QSTR_OSError);
 
     // built-in objects
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_Ellipsis, true)->value = mp_const_ellipsis;
