@@ -61,7 +61,8 @@ typedef struct _mp_code_t {
 } mp_code_t;
 
 static int next_unique_code_id;
-static mp_code_t *unique_codes;
+static machine_uint_t unique_codes_alloc = 0;
+static mp_code_t *unique_codes = NULL;
 
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
@@ -126,6 +127,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_sum, true)->value = rt_make_function_var(1, mp_builtin_sum);
 
     next_unique_code_id = 1; // 0 indicates "no code"
+    unique_codes_alloc = 0;
     unique_codes = NULL;
 
 #ifdef WRITE_CODE
@@ -134,6 +136,7 @@ void rt_init(void) {
 }
 
 void rt_deinit(void) {
+    m_del(mp_code_t, unique_codes, unique_codes_alloc);
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fclose(fp_write_code);
@@ -146,18 +149,20 @@ int rt_get_unique_code_id(void) {
 }
 
 static void alloc_unique_codes(void) {
-    if (unique_codes == NULL) {
-        unique_codes = m_new(mp_code_t, next_unique_code_id + 10); // XXX hack until we fix the REPL allocation problem
-        for (int i = 0; i < next_unique_code_id; i++) {
+    if (next_unique_code_id > unique_codes_alloc) {
+        // increase size of unique_codes table
+        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, next_unique_code_id);
+        for (int i = unique_codes_alloc; i < next_unique_code_id; i++) {
             unique_codes[i].kind = MP_CODE_NONE;
         }
+        unique_codes_alloc = next_unique_code_id;
     }
 }
 
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = n_locals;
@@ -192,7 +197,7 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
 void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
@@ -225,7 +230,7 @@ void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) 
 void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
