@@ -76,6 +76,41 @@ typedef struct _mp_method_t {
     mp_const_obj_t fun;
 } mp_method_t;
 
+// Buffer protocol
+typedef struct _buffer_info_t {
+    // if we'd bother to support various versions of structure
+    // (with different number of fields), we can distinguish
+    // them with ver = sizeof(struct). Cons: overkill for *micro*?
+    //int ver; // ?
+
+    void *buf;
+    machine_int_t len;
+
+    // Rationale: have array.array and have SIMD operations on them
+    // Cons: users can pass item size to processing functions themselves,
+    // though that's not "plug&play"
+    // int itemsize;
+
+    // Rationale: to load arbitrary-sized sprites directly to LCD
+    // Cons: a bit adhoc usecase
+    // int stride;
+} buffer_info_t;
+#define BUFFER_READ  (1)
+#define BUFFER_WRITE (2)
+#define BUFFER_RW (BUFFER_READ | BUFFER_WRITE)
+typedef struct _mp_buffer_p_t {
+    machine_int_t (*get_buffer)(mp_obj_t obj, buffer_info_t *bufinfo, int flags);
+} mp_buffer_p_t;
+
+// Stream protocol
+typedef struct _mp_stream_p_t {
+    // On error, functions should return -1 and fill in *errcode (values are
+    // implementation-dependent, but will be exposed to user, e.g. via exception).
+    machine_int_t (*read)(mp_obj_t obj, void *buf, machine_uint_t size, int *errcode);
+    machine_int_t (*write)(mp_obj_t obj, const void *buf, machine_uint_t size, int *errcode);
+    // add seek() ?
+} mp_stream_p_t;
+
 struct _mp_obj_type_t {
     mp_obj_base_t base;
     const char *name;
@@ -89,6 +124,12 @@ struct _mp_obj_type_t {
 
     mp_fun_1_t getiter;
     mp_fun_1_t iternext;
+
+    // Alternatively, pointer(s) to interfaces to save space
+    // in mp_obj_type_t at the expense of extra pointer and extra dereference
+    // when actually used.
+    mp_buffer_p_t buffer_p;
+    mp_stream_p_t stream_p;
 
     const mp_method_t *methods;
 
