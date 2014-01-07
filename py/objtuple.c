@@ -109,7 +109,7 @@ const mp_obj_type_t tuple_type = {
 static const mp_obj_tuple_t empty_tuple_obj = {{&tuple_type}, 0};
 const mp_obj_t mp_const_empty_tuple = (mp_obj_t)&empty_tuple_obj;
 
-mp_obj_t mp_obj_new_tuple(uint n, mp_obj_t *items) {
+mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
     if (n == 0) {
         return mp_const_empty_tuple;
     }
@@ -122,7 +122,7 @@ mp_obj_t mp_obj_new_tuple(uint n, mp_obj_t *items) {
     return o;
 }
 
-mp_obj_t mp_obj_new_tuple_reverse(uint n, mp_obj_t *items) {
+mp_obj_t mp_obj_new_tuple_reverse(uint n, const mp_obj_t *items) {
     if (n == 0) {
         return mp_const_empty_tuple;
     }

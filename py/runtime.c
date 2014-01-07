@@ -689,10 +689,20 @@ mp_obj_t rt_call_function_n(mp_obj_t fun_in, int n_args, const mp_obj_t *args) {
 
 // args are in reverse order in the array; keyword arguments come first, value then key
 // eg: (value1, key1, value0, key0, arg1, arg0)
-mp_obj_t rt_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO
-    assert(0);
-    return mp_const_none;
+mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO merge this and _n into a single, smarter thing
+    DEBUG_OP_printf("calling function %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
+
+    if (MP_OBJ_IS_SMALL_INT(fun_in)) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
+    } else {
+        mp_obj_base_t *fun = fun_in;
+        if (fun->type->call_n_kw != NULL) {
+            return fun->type->call_n_kw(fun_in, n_args, n_kw, args);
+        } else {
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
+        }
+    }
 }
 
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
