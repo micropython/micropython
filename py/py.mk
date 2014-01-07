@@ -24,6 +24,7 @@ PY_O_BASENAME = \
 	nlrx64.o \
 	nlrthumb.o \
 	malloc.o \
+	gc.o \
 	qstr.o \
 	vstr.o \
 	unicode.o \
@@ -87,6 +88,10 @@ $(PY_BUILD)%.o: $(PY_SRC)/%.S
 
 $(PY_BUILD)%.o: $(PY_SRC)/%.c mpconfigport.h
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+# optimising gc for speed; 5ms down to 4ms on pybv2
+$(PY_BUILD)gc.o: $(PY_SRC)/gc.c
+	$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(PY_BUILD)vm.o: $(PY_SRC)/vm.c

@@ -10,6 +10,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
+#define MICROPY_ENABLE_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_FLOAT        (1)
 
 // type definitions for the specific machine

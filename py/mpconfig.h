@@ -39,12 +39,27 @@
 #define MICROPY_MEM_STATS (0)
 #endif
 
+// Whether to build code to show byte code
+#ifndef MICROPY_SHOW_BC
+#define MICROPY_SHOW_BC (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python features                                         */
+
+// Whether to include the garbage collector
+#ifndef MICROPY_ENABLE_GC
+#define MICROPY_ENABLE_GC (0)
+#endif
 
 // Whether to include REPL helper function
 #ifndef MICROPY_ENABLE_REPL_HELPERS
 #define MICROPY_ENABLE_REPL_HELPERS (0)
+#endif
+
+// Whether to include lexer helper function for unix
+#ifndef MICROPY_ENABLE_LEXER_UNIX
+#define MICROPY_ENABLE_LEXER_UNIX (0)
 #endif
 
 // Whether to support float and complex types
