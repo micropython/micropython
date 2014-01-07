@@ -2,11 +2,10 @@
 
 // options to control how Micro Python is built
 
-#define MICROPY_ENABLE_FLOAT        (1)
-#define MICROPY_EMIT_CPYTHON        (0)
-#define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
+#define MICROPY_ENABLE_REPL_HELPERS (1)
+#define MICROPY_ENABLE_FLOAT        (1)
 
 // type definitions for the specific machine
 

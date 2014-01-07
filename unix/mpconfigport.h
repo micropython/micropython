@@ -5,11 +5,12 @@
 #define MICROPY_USE_READLINE        (1)
 #endif
 
-#define MICROPY_ENABLE_FLOAT        (1)
-#define MICROPY_EMIT_CPYTHON        (0)
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_MEM_STATS           (1)
+#define MICROPY_ENABLE_REPL_HELPERS (1)
+#define MICROPY_ENABLE_FLOAT        (1)
 
 // type definitions for the specific machine
 
