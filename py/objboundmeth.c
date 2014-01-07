@@ -36,14 +36,7 @@ mp_obj_t bound_meth_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t bound_meth_type = {
     { &mp_const_type },
     "bound_method",
-    NULL, // print
-    NULL, // make_new
-    bound_meth_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {{NULL, NULL},},
+    .call_n = bound_meth_call_n,
 };
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth) {

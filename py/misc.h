@@ -5,11 +5,7 @@
 
 /** types *******************************************************/
 
-typedef int bool;
-enum {
-    false = 0,
-    true = 1
-};
+#include <stdbool.h>
 
 typedef unsigned char byte;
 typedef unsigned int uint;

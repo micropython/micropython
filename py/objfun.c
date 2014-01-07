@@ -17,9 +17,13 @@
 
 // mp_obj_fun_native_t defined in obj.h
 
+mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args);
 // args are in reverse order in the array
 mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_fun_native_t *self = self_in;
+    if (self->is_kw) {
+        return fun_native_call_n_kw(self_in, n_args, 0, args);
+    }
     if (self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
 
@@ -69,19 +73,29 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     }
 }
 
+mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args) {
+    mp_obj_fun_native_t *self = self_in;
+
+    if (!self->is_kw) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+    }
+
+    mp_obj_t *vargs = mp_obj_new_tuple_reverse(n_args, args + 2*n_kw);
+    mp_map_t *kw_args = mp_map_new(MP_MAP_QSTR, n_kw);
+    for (int i = 0; i < 2*n_kw; i+=2) {
+        qstr name = mp_obj_str_get(args[i+1]);
+        mp_qstr_map_lookup(kw_args, name, true)->value = args[i];
+    }
+    mp_obj_t res = ((mp_fun_kw_t)self->fun)(vargs, kw_args);
+    /* TODO clean up vargs and kw_args */
+    return res;
+}
+
 const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_native_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_native_call_n,
+    .call_n_kw = fun_native_call_n_kw,
 };
 
 mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
@@ -174,16 +188,7 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_bc_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_bc_call_n,
 };
 
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
@@ -288,16 +293,7 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 static const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
-    NULL, // print
-    NULL, // make_new
-    fun_asm_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
+    .call_n = fun_asm_call_n,
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {

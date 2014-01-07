@@ -1,5 +1,8 @@
 #include "misc.h"
+#include "mpconfig.h"
 #include "repl.h"
+
+#if MICROPY_ENABLE_REPL_HELPERS
 
 bool str_startswith_word(const char *str, const char *head) {
     int i;
@@ -42,3 +45,5 @@ bool mp_repl_is_compound_stmt(const char *line) {
     }
     return n_paren > 0 || n_brack > 0 || n_brace > 0;
 }
+
+#endif // MICROPY_ENABLE_REPL_HELPERS

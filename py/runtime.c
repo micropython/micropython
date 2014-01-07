@@ -61,7 +61,8 @@ typedef struct _mp_code_t {
 } mp_code_t;
 
 static int next_unique_code_id;
-static mp_code_t *unique_codes;
+static machine_uint_t unique_codes_alloc = 0;
+static mp_code_t *unique_codes = NULL;
 
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
@@ -83,6 +84,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_TypeError, true)->value = mp_obj_new_exception(MP_QSTR_TypeError);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_SyntaxError, true)->value = mp_obj_new_exception(MP_QSTR_SyntaxError);
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_ValueError, true)->value = mp_obj_new_exception(MP_QSTR_ValueError);
+    mp_qstr_map_lookup(&map_builtins, MP_QSTR_OSError, true)->value = mp_obj_new_exception(MP_QSTR_OSError);
 
     // built-in objects
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_Ellipsis, true)->value = mp_const_ellipsis;
@@ -126,6 +128,7 @@ void rt_init(void) {
     mp_qstr_map_lookup(&map_builtins, MP_QSTR_sum, true)->value = rt_make_function_var(1, mp_builtin_sum);
 
     next_unique_code_id = 1; // 0 indicates "no code"
+    unique_codes_alloc = 0;
     unique_codes = NULL;
 
 #ifdef WRITE_CODE
@@ -134,6 +137,7 @@ void rt_init(void) {
 }
 
 void rt_deinit(void) {
+    m_del(mp_code_t, unique_codes, unique_codes_alloc);
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fclose(fp_write_code);
@@ -146,18 +150,20 @@ int rt_get_unique_code_id(void) {
 }
 
 static void alloc_unique_codes(void) {
-    if (unique_codes == NULL) {
-        unique_codes = m_new(mp_code_t, next_unique_code_id + 10); // XXX hack until we fix the REPL allocation problem
-        for (int i = 0; i < next_unique_code_id; i++) {
+    if (next_unique_code_id > unique_codes_alloc) {
+        // increase size of unique_codes table
+        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, next_unique_code_id);
+        for (int i = unique_codes_alloc; i < next_unique_code_id; i++) {
             unique_codes[i].kind = MP_CODE_NONE;
         }
+        unique_codes_alloc = next_unique_code_id;
     }
 }
 
 void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = n_locals;
@@ -192,7 +198,7 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
 void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
@@ -225,7 +231,7 @@ void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) 
 void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id);
+    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_locals = 0;
@@ -683,10 +689,20 @@ mp_obj_t rt_call_function_n(mp_obj_t fun_in, int n_args, const mp_obj_t *args) {
 
 // args are in reverse order in the array; keyword arguments come first, value then key
 // eg: (value1, key1, value0, key0, arg1, arg0)
-mp_obj_t rt_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO
-    assert(0);
-    return mp_const_none;
+mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO merge this and _n into a single, smarter thing
+    DEBUG_OP_printf("calling function %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
+
+    if (MP_OBJ_IS_SMALL_INT(fun_in)) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
+    } else {
+        mp_obj_base_t *fun = fun_in;
+        if (fun->type->call_n_kw != NULL) {
+            return fun->type->call_n_kw(fun_in, n_args, n_kw, args);
+        } else {
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
+        }
+    }
 }
 
 // args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
@@ -775,10 +791,12 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     } else if (MP_OBJ_IS_OBJ(base)) {
         // generic method lookup
         mp_obj_base_t *o = base;
-        const mp_method_t *meth = &o->type->methods[0];
-        for (; meth->name != NULL; meth++) {
-            if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                return mp_obj_new_bound_meth(base, (mp_obj_t)meth->fun);
+        const mp_method_t *meth = o->type->methods;
+        if (meth != NULL) {
+            for (; meth->name != NULL; meth++) {
+                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                    return mp_obj_new_bound_meth(base, (mp_obj_t)meth->fun);
+                }
             }
         }
     }
@@ -799,12 +817,14 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     } else if (MP_OBJ_IS_OBJ(base)) {
         // generic method lookup
         mp_obj_base_t *o = base;
-        const mp_method_t *meth = &o->type->methods[0];
-        for (; meth->name != NULL; meth++) {
-            if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                dest[1] = (mp_obj_t)meth->fun;
-                dest[0] = base;
-                return;
+        const mp_method_t *meth = o->type->methods;
+        if (meth != NULL) {
+            for (; meth->name != NULL; meth++) {
+                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                    dest[1] = (mp_obj_t)meth->fun;
+                    dest[0] = base;
+                    return;
+                }
             }
         }
     }

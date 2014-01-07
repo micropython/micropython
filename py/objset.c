@@ -57,14 +57,8 @@ static mp_obj_t set_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
 const mp_obj_type_t set_type = {
     { &mp_const_type },
     "set",
-    set_print, // print
-    set_make_new, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = { { NULL, NULL }, },
+    .print = set_print,
+    .make_new = set_make_new,
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {

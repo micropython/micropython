@@ -27,5 +27,4 @@ const mp_obj_type_t mp_const_type = {
     "type",
     .print = type_print,
     .call_n = type_call_n,
-    .methods = {{NULL, NULL},},
 };

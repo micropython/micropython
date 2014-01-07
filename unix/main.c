@@ -20,6 +20,52 @@
 #include <readline/history.h>
 #endif
 
+static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+    if (lex == NULL) {
+        return;
+    }
+
+    if (0) {
+        // just tokenise
+        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
+            mp_token_show(mp_lexer_cur(lex));
+            mp_lexer_to_next(lex);
+        }
+        mp_lexer_free(lex);
+        return;
+    }
+
+    mp_parse_node_t pn = mp_parse(lex, input_kind);
+    mp_lexer_free(lex);
+
+    if (pn == MP_PARSE_NODE_NULL) {
+        // parse error
+        return;
+    }
+
+    //printf("----------------\n");
+    //parse_node_show(pn, 0);
+    //printf("----------------\n");
+
+    mp_obj_t module_fun = mp_compile(pn, is_repl);
+
+    if (module_fun == mp_const_none) {
+        // compile error
+        return;
+    }
+
+    // execute it
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        rt_call_function_0(module_fun);
+        nlr_pop();
+    } else {
+        // uncaught exception
+        mp_obj_print((mp_obj_t)nlr.ret_val);
+        printf("\n");
+    }
+}
+
 static char *str_join(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
@@ -80,28 +126,11 @@ static void do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
-        mp_lexer_free(lex);
-
-        if (pn != MP_PARSE_NODE_NULL) {
-            //mp_parse_node_show(pn, 0);
-            mp_obj_t module_fun = mp_compile(pn, true);
-            if (module_fun != mp_const_none) {
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    rt_call_function_0(module_fun);
-                    nlr_pop();
-                } else {
-                    // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val);
-                    printf("\n");
-                }
-            }
-        }
+        execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
     }
 }
 
-void do_file(const char *file) {
+static void do_file(const char *file) {
     // hack: set dir for import based on where this file is
     {
         const char * s = strrchr(file, '/');
@@ -115,58 +144,17 @@ void do_file(const char *file) {
     }
 
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    //const char *pysrc = "def f():\n  x=x+1\n  print(42)\n";
-    //mp_lexer_t *lex = mp_lexer_from_str_len("<>", pysrc, strlen(pysrc), false);
-    if (lex == NULL) {
-        return;
-    }
+    execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+}
 
-    if (0) {
-        // just tokenise
-        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
-            mp_token_show(mp_lexer_cur(lex));
-            mp_lexer_to_next(lex);
-        }
-        mp_lexer_free(lex);
-
-    } else {
-        // compile
-
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_lexer_free(lex);
-
-        if (pn != MP_PARSE_NODE_NULL) {
-            //printf("----------------\n");
-            //parse_node_show(pn, 0);
-            //printf("----------------\n");
-            mp_obj_t module_fun = mp_compile(pn, false);
-            //printf("----------------\n");
-
-#if MICROPY_EMIT_CPYTHON
-            if (!comp_ok) {
-                printf("compile error\n");
-            }
-#else
-            if (1 && module_fun != mp_const_none) {
-                // execute it
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    rt_call_function_0(module_fun);
-                    nlr_pop();
-                } else {
-                    // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val);
-                    printf("\n");
-                }
-            }
-#endif
-        }
-    }
+static void do_str(const char *str) {
+    mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", str, strlen(str), false);
+    execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
 
 typedef struct _test_obj_t {
     mp_obj_base_t base;
-    bool value;
+    int value;
 } test_obj_t;
 
 static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
@@ -188,21 +176,17 @@ static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
 static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
+static const mp_method_t test_methods[] = {
+    { "get", &test_get_obj },
+    { "set", &test_set_obj },
+    { NULL, NULL },
+};
+
 static const mp_obj_type_t test_type = {
     { &mp_const_type },
     "Test",
     .print = test_print,
-    .make_new = NULL,
-    .call_n = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .getiter = NULL,
-    .iternext = NULL,
-    .methods = {
-        { "get", &test_get_obj },
-        { "set", &test_set_obj },
-        { NULL, NULL },
-    }
+    .methods = test_methods,
 };
 
 mp_obj_t test_obj_new(int value) {
@@ -210,6 +194,11 @@ mp_obj_t test_obj_new(int value) {
     o->base.type = &test_type;
     o->value = value;
     return o;
+}
+
+int usage(void) {
+    printf("usage: py [-c <command>] [<filename>]\n");
+    return 1;
 }
 
 int main(int argc, char **argv) {
@@ -227,12 +216,24 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         do_repl();
-    } else if (argc == 2) {
-        do_file(argv[1]);
     } else {
-        printf("usage: py [<file>]\n");
-        return 1;
+        for (int a = 1; a < argc; a++) {
+            if (argv[a][0] == '-') {
+                if (strcmp(argv[a], "-c") == 0) {
+                    if (a + 1 >= argc) {
+                        return usage();
+                    }
+                    do_str(argv[a + 1]);
+                    a += 1;
+                } else {
+                    return usage();
+                }
+            } else {
+                do_file(argv[a]);
+            }
+        }
     }
+
     rt_deinit();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());

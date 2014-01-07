@@ -30,6 +30,7 @@ Q(NameError)
 Q(SyntaxError)
 Q(TypeError)
 Q(ValueError)
+Q(OSError)
 
 Q(abs)
 Q(all)
