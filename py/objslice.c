@@ -48,8 +48,8 @@ void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
 }
 
 const mp_obj_type_t slice_type = {
-    .base = { &mp_const_type },
-    .name = "slice",
+    { &mp_const_type },
+    "slice",
     .print = slice_print,
 };
 

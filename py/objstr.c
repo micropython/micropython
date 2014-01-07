@@ -191,8 +191,8 @@ static const mp_method_t str_type_methods[] = {
 };
 
 const mp_obj_type_t str_type = {
-    .base = { &mp_const_type },
-    .name = "str",
+    { &mp_const_type },
+    "str",
     .print = str_print,
     .binary_op = str_binary_op,
     .getiter = str_getiter,
@@ -234,8 +234,8 @@ mp_obj_t str_it_iternext(mp_obj_t self_in) {
 }
 
 static const mp_obj_type_t str_it_type = {
-    .base = { &mp_const_type },
-    .name = "str_iterator",
+    { &mp_const_type },
+    "str_iterator",
     .iternext = str_it_iternext,
 };
 

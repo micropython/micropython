@@ -97,8 +97,8 @@ static mp_obj_t tuple_getiter(mp_obj_t o_in) {
 }
 
 const mp_obj_type_t tuple_type = {
-    .base = { &mp_const_type },
-    .name = "tuple",
+    { &mp_const_type },
+    "tuple",
     .print = tuple_print,
     .make_new = tuple_make_new,
     .binary_op = tuple_binary_op,
@@ -162,8 +162,8 @@ static mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 }
 
 static const mp_obj_type_t tuple_it_type = {
-    .base = { &mp_const_type },
-    .name = "tuple_iterator",
+    { &mp_const_type },
+    "tuple_iterator",
     .iternext = tuple_it_iternext,
 };
 

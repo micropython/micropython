@@ -62,8 +62,8 @@ static mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 const mp_obj_type_t float_type = {
-    .base = { &mp_const_type },
-    .name = "float",
+    { &mp_const_type },
+    "float",
     .print = float_print,
     .make_new = float_make_new,
     .unary_op = float_unary_op,

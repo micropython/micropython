@@ -293,8 +293,8 @@ static const mp_method_t list_type_methods[] = {
 };
 
 const mp_obj_type_t list_type = {
-    .base = { &mp_const_type },
-    .name = "list",
+    { &mp_const_type },
+    "list",
     .print = list_print,
     .make_new = list_make_new,
     .binary_op = list_binary_op,
@@ -360,8 +360,8 @@ mp_obj_t list_it_iternext(mp_obj_t self_in) {
 }
 
 static const mp_obj_type_t list_it_type = {
-    .base = { &mp_const_type },
-    .name = "list_iterator",
+    { &mp_const_type },
+    "list_iterator",
     .iternext = list_it_iternext,
 };
 

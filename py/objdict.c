@@ -61,8 +61,8 @@ static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 const mp_obj_type_t dict_type = {
-    .base = { &mp_const_type },
-    .name = "dict",
+    { &mp_const_type },
+    "dict",
     .print = dict_print,
     .make_new = dict_make_new,
     .binary_op = dict_binary_op,

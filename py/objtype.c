@@ -23,8 +23,8 @@ static mp_obj_t type_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) 
 }
 
 const mp_obj_type_t mp_const_type = {
-    .base = { &mp_const_type },
-    .name = "type",
+    { &mp_const_type },
+    "type",
     .print = type_print,
     .call_n = type_call_n,
 };
