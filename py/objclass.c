@@ -61,15 +61,9 @@ mp_map_t *mp_obj_class_get_locals(mp_obj_t self_in) {
 }
 
 const mp_obj_type_t class_type = {
-    { &mp_const_type },
-    "class",
-    NULL, // print
-    NULL, // make_new
-    class_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "class",
+    .call_n = class_call_n,
     .methods = {{NULL, NULL},},
 };
 

@@ -37,15 +37,11 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t gen_wrap_type = {
-    { &mp_const_type },
-    "generator",
-    NULL, // print
-    NULL, // make_new
-    gen_wrap_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "generator",
+    .call_n = gen_wrap_call_n,
+    .unary_op = NULL,
+    .binary_op = NULL,
     .methods = {{NULL, NULL},},
 };
 
@@ -92,15 +88,11 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 }
 
 const mp_obj_type_t gen_instance_type = {
-    { &mp_const_type },
-    "generator",
-    gen_instance_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    gen_instance_getiter, // getiter
-    gen_instance_iternext, // iternext
+    .base = { &mp_const_type },
+    .name = "generator",
+    .print = gen_instance_print,
+    .getiter = gen_instance_getiter,
+    .iternext = gen_instance_iternext,
     .methods = {{NULL, NULL},},
 };
 

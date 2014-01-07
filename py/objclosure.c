@@ -33,15 +33,9 @@ mp_obj_t closure_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t closure_type = {
-    { &mp_const_type },
-    "closure",
-    NULL, // print
-    NULL, // make_new
-    closure_call_n, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "closure",
+    .call_n = closure_call_n,
     .methods = {{NULL, NULL},},
 };
 

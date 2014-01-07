@@ -36,15 +36,9 @@ void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, 
 }
 
 const mp_obj_type_t exception_type = {
-    { &mp_const_type },
-    "exception",
-    exception_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "exception",
+    .print = exception_print,
     .methods = {{NULL, NULL},},
 };
 

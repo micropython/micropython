@@ -21,15 +21,9 @@ void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, m
 }
 
 const mp_obj_type_t ellipsis_type = {
-    { &mp_const_type },
-    "ellipsis",
-    ellipsis_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "ellipsis",
+    .print = ellipsis_print,
     .methods = {{NULL, NULL},},
 };
 
@@ -55,8 +49,8 @@ void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
 }
 
 const mp_obj_type_t slice_type = {
-    { &mp_const_type },
-    "slice",
+    .base = { &mp_const_type },
+    .name = "slice",
     .print = slice_print,
     .methods = { { NULL, NULL }, },
 };

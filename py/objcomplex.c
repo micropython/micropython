@@ -85,15 +85,12 @@ static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 const mp_obj_type_t complex_type = {
-    { &mp_const_type },
-    "complex",
-    complex_print, // print
-    complex_make_new, // make_new
-    NULL, // call_n
-    complex_unary_op, // unary_op
-    complex_binary_op, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "complex",
+    .print = complex_print,
+    .make_new = complex_make_new,
+    .unary_op = complex_unary_op,
+    .binary_op = complex_binary_op,
     .methods = { { NULL, NULL }, },
 };
 

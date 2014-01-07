@@ -24,15 +24,8 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
 }
 
 const mp_obj_type_t cell_type = {
-    { &mp_const_type },
-    "cell",
-    NULL, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "cell",
     .methods = {{NULL, NULL},},
 };
 

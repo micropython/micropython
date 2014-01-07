@@ -32,15 +32,10 @@ static mp_obj_t bool_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args
 }
 
 const mp_obj_type_t bool_type = {
-    { &mp_const_type },
-    "bool",
-    bool_print, // print
-    bool_make_new, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "bool",
+    .print = bool_print,
+    .make_new = bool_make_new,
     .methods = {{NULL, NULL},},
 };
 

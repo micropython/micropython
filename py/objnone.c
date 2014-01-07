@@ -15,8 +15,8 @@ void none_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_ob
 }
 
 const mp_obj_type_t none_type = {
-    { &mp_const_type },
-    "NoneType",
+    .base = { &mp_const_type },
+    .name = "NoneType",
     .print = none_print,
     .methods = {{NULL, NULL},},
 };

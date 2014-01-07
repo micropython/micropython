@@ -23,15 +23,9 @@ mp_obj_t range_getiter(mp_obj_t o_in) {
 }
 
 static const mp_obj_type_t range_type = {
-    { &mp_const_type} ,
-    "range",
-    NULL, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    range_getiter,
-    NULL, // iternext
+    .base = { &mp_const_type} ,
+    .name = "range",
+    .getiter = range_getiter,
     .methods = {{NULL, NULL},},
 };
 
@@ -68,15 +62,9 @@ mp_obj_t range_it_iternext(mp_obj_t o_in) {
 }
 
 static const mp_obj_type_t range_it_type = {
-    { &mp_const_type },
-    "range_iterator",
-    NULL, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    range_it_iternext,
+    .base = { &mp_const_type },
+    .name = "range_iterator",
+    .iternext = range_it_iternext,
     .methods = {{NULL, NULL},},
 };
 

@@ -31,8 +31,8 @@ static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
 }
 
 const mp_obj_type_t int_type = {
-    { &mp_const_type },
-    "int",
+    .base = { &mp_const_type },
+    .name = "int",
     .make_new = int_make_new,
     .methods = { { NULL, NULL }, },
 };

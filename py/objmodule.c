@@ -22,15 +22,9 @@ void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_
 }
 
 const mp_obj_type_t module_type = {
-    { &mp_const_type },
-    "module",
-    module_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
+    .base = { &mp_const_type },
+    .name = "module",
+    .print = module_print,
     .methods = {{NULL, NULL},},
 };
 
