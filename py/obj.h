@@ -49,7 +49,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 3, 3, (mp_fun_3_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, (~((machine_uint_t)0)), (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, 0, (~((machine_uint_t)0)), (mp_fun_var_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, 0, (~((machine_uint_t)0)), (mp_fun_kw_t)fun_name)
 
 // Need to declare this here so we are not dependent on map.h
 struct _mp_map_t;
@@ -62,7 +62,7 @@ typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
-typedef mp_obj_t (*mp_fun_kw_t)(mp_obj_t*, struct _mp_map_t*);
+typedef mp_obj_t (*mp_fun_kw_t)(mp_obj_t, struct _mp_map_t*);
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o);
 typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj_t *args); // args are in reverse order in the array

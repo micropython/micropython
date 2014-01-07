@@ -143,9 +143,9 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     }
 }
 
-static mp_obj_t list_sort(mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
     mp_obj_t *args_items = NULL;
-    machine_uint_t args_len = 0;
+    uint args_len = 0;
     qstr key_idx = qstr_from_str_static("key");
     qstr reverse_idx = qstr_from_str_static("reverse");
 
