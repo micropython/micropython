@@ -689,22 +689,18 @@ static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
 // TODO gc hook to close the file if not already closed
 
+static const mp_method_t file_methods[] = {
+    { "read", &file_obj_read_obj },
+    { "write", &file_obj_write_obj },
+    { "close", &file_obj_close_obj },
+    {NULL, NULL},
+};
+
 static const mp_obj_type_t file_obj_type = {
     { &mp_const_type },
     "File",
-    file_obj_print, // print
-    NULL, // make_new
-    NULL, // call_n
-    NULL, // unary_op
-    NULL, // binary_op
-    NULL, // getiter
-    NULL, // iternext
-    .methods = {
-        { "read", &file_obj_read_obj },
-        { "write", &file_obj_write_obj },
-        { "close", &file_obj_close_obj },
-        {NULL, NULL},
-    }
+    .print = file_obj_print,
+    .methods = file_methods,
 };
 
 mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {

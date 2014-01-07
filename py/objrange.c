@@ -23,10 +23,9 @@ mp_obj_t range_getiter(mp_obj_t o_in) {
 }
 
 static const mp_obj_type_t range_type = {
-    .base = { &mp_const_type} ,
-    .name = "range",
+    { &mp_const_type} ,
+    "range",
     .getiter = range_getiter,
-    .methods = {{NULL, NULL},},
 };
 
 // range is a class and instances are immutable sequence objects
@@ -62,10 +61,9 @@ mp_obj_t range_it_iternext(mp_obj_t o_in) {
 }
 
 static const mp_obj_type_t range_it_type = {
-    .base = { &mp_const_type },
-    .name = "range_iterator",
+    { &mp_const_type },
+    "range_iterator",
     .iternext = range_it_iternext,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step) {

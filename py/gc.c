@@ -6,6 +6,8 @@
 #include "mpconfig.h"
 #include "gc.h"
 
+#if MICROPY_ENABLE_GC
+
 // a machine word is big enough to hold a pointer
 /*
 #define BYTES_PER_WORD (8)
@@ -380,3 +382,5 @@ int main(void) {
     gc_dump_at();
 }
 */
+
+#endif // MICROPY_ENABLE_GC

@@ -55,11 +55,10 @@ static mp_obj_t set_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
 }
 
 const mp_obj_type_t set_type = {
-    .base = { &mp_const_type },
-    .name = "set",
+    { &mp_const_type },
+    "set",
     .print = set_print,
     .make_new = set_make_new,
-    .methods = { { NULL, NULL }, },
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {

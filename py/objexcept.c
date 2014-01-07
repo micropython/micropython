@@ -36,10 +36,9 @@ void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, 
 }
 
 const mp_obj_type_t exception_type = {
-    .base = { &mp_const_type },
-    .name = "exception",
+    { &mp_const_type },
+    "exception",
     .print = exception_print,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_exception(qstr id) {

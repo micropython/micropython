@@ -92,13 +92,10 @@ mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_o
 }
 
 const mp_obj_type_t fun_native_type = {
-    .base = { &mp_const_type },
-    .name = "function",
+    { &mp_const_type },
+    "function",
     .call_n = fun_native_call_n,
     .call_n_kw = fun_native_call_n_kw,
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
 };
 
 mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
@@ -189,12 +186,9 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t fun_bc_type = {
-    .base = { &mp_const_type },
-    .name = "function",
+    { &mp_const_type },
+    "function",
     .call_n = fun_bc_call_n,
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
 };
 
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
@@ -297,12 +291,9 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 static const mp_obj_type_t fun_asm_type = {
-    .base = { &mp_const_type },
-    .name = "function",
+    { &mp_const_type },
+    "function",
     .call_n = fun_asm_call_n,
-    .methods = {
-        {NULL, NULL}, // end-of-list sentinel
-    },
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {

@@ -34,10 +34,9 @@ mp_obj_t bound_meth_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t bound_meth_type = {
-    .base = { &mp_const_type },
-    .name = "bound_method",
+    { &mp_const_type },
+    "bound_method",
     .call_n = bound_meth_call_n,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth) {

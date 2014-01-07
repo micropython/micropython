@@ -11,7 +11,6 @@
 #include "obj.h"
 #include "compile.h"
 #include "runtime0.h"
-#include "runtime.h"
 
 void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);

@@ -37,12 +37,9 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t gen_wrap_type = {
-    .base = { &mp_const_type },
-    .name = "generator",
+    { &mp_const_type },
+    "generator",
     .call_n = gen_wrap_call_n,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
@@ -88,12 +85,11 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 }
 
 const mp_obj_type_t gen_instance_type = {
-    .base = { &mp_const_type },
-    .name = "generator",
+    { &mp_const_type },
+    "generator",
     .print = gen_instance_print,
     .getiter = gen_instance_getiter,
     .iternext = gen_instance_iternext,
-    .methods = {{NULL, NULL},},
 };
 
 // args are in reverse order in the array

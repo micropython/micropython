@@ -326,18 +326,20 @@ static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_read_obj, i2c_obj_read);
 static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_readAndStop_obj, i2c_obj_readAndStop);
 static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_stop_obj, i2c_obj_stop);
 
+static const mp_method_t i2c_methods[] = {
+    { "start", &i2c_obj_start_obj },
+    { "write", &i2c_obj_write_obj },
+    { "read", &i2c_obj_read_obj },
+    { "readAndStop", &i2c_obj_readAndStop_obj },
+    { "stop", &i2c_obj_stop_obj },
+    { NULL, NULL },
+};
+
 static const mp_obj_type_t i2c_obj_type = {
     { &mp_const_type },
     "I2C",
     .print = i2c_obj_print,
-    .methods = {
-        { "start", &i2c_obj_start_obj },
-        { "write", &i2c_obj_write_obj },
-        { "read", &i2c_obj_read_obj },
-        { "readAndStop", &i2c_obj_readAndStop_obj },
-        { "stop", &i2c_obj_stop_obj },
-        { NULL, NULL },
-    }
+    .methods = i2c_methods,
 };
 
 // create the I2C object

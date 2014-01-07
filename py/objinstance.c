@@ -90,9 +90,8 @@ void mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 }
 
 const mp_obj_type_t instance_type = {
-    .base = { &mp_const_type },
-    .name = "instance",
-    .methods = {{NULL, NULL},},
+    { &mp_const_type },
+    "instance",
 };
 
 mp_obj_t mp_obj_new_instance(mp_obj_t class) {

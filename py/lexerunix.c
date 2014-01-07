@@ -4,7 +4,10 @@
 #include <fcntl.h>
 
 #include "misc.h"
+#include "mpconfig.h"
 #include "lexer.h"
+
+#if MICROPY_ENABLE_LEXER_UNIX
 
 typedef struct _str_buf_t {
     bool free;                  // free src_beg when done
@@ -78,3 +81,5 @@ mp_lexer_t *mp_import_open_file(qstr mod_name) {
     vstr_printf(vstr, "%s.py", qstr_str(mod_name));
     return mp_lexer_new_from_file(vstr_str(vstr)); // TODO does lexer need to copy the string? can we free it here?
 }
+
+#endif // MICROPY_ENABLE_LEXER_UNIX

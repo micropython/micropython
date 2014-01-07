@@ -21,10 +21,9 @@ void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, m
 }
 
 const mp_obj_type_t ellipsis_type = {
-    .base = { &mp_const_type },
-    .name = "ellipsis",
+    { &mp_const_type },
+    "ellipsis",
     .print = ellipsis_print,
-    .methods = {{NULL, NULL},},
 };
 
 static const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
@@ -52,7 +51,6 @@ const mp_obj_type_t slice_type = {
     .base = { &mp_const_type },
     .name = "slice",
     .print = slice_print,
-    .methods = { { NULL, NULL }, },
 };
 
 // TODO: Make sure to handle "empty" values, which are signified by None in CPython

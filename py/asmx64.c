@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/mman.h>
 #include <string.h>
 
 #include "misc.h"
-#include "asmx64.h"
 #include "mpconfig.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_X64
+
+#include <sys/types.h>
+#include <sys/mman.h>
+
+#include "asmx64.h"
 
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON

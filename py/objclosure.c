@@ -33,10 +33,9 @@ mp_obj_t closure_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 }
 
 const mp_obj_type_t closure_type = {
-    .base = { &mp_const_type },
-    .name = "closure",
+    { &mp_const_type },
+    "closure",
     .call_n = closure_call_n,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple) {

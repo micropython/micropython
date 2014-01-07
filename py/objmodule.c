@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "map.h"
@@ -22,17 +23,17 @@ void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_
 }
 
 const mp_obj_type_t module_type = {
-    .base = { &mp_const_type },
-    .name = "module",
+    { &mp_const_type },
+    "module",
     .print = module_print,
-    .methods = {{NULL, NULL},},
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &module_type;
     o->name = module_name;
-    o->globals = mp_map_new(MP_MAP_QSTR, 0);
+    o->globals = mp_map_new(MP_MAP_QSTR, 1);
+    mp_qstr_map_lookup(o->globals, MP_QSTR___name__, true)->value = mp_obj_new_str(module_name);
     return o;
 }
 
