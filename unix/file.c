@@ -83,7 +83,7 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *ar
 
     o->fd = open(fname, mode, 0644);
     if (o->fd == -1) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_OSError, "[Errno %d]", (const char *)errno));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_OSError, "[Errno %d]", (const char *)(machine_int_t)errno));
     }
     return o;
 }

@@ -154,7 +154,7 @@ mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         revs_args[0] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
         return rt_build_tuple(2, revs_args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
 }
 
@@ -188,7 +188,7 @@ mp_obj_t mp_builtin_len(mp_obj_t o_in) {
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
         len = mp_obj_dict_len(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     }
     return MP_OBJ_NEW_SMALL_INT(len);
 }
@@ -263,7 +263,7 @@ mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (strlen(str) == 1) {
         return mp_obj_new_int(str[0]);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "ord() expected a character, but string of length %d found", (void*)(machine_int_t)strlen(str)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "ord() expected a character, but string of length %d found", strlen(str)));
     }
 }
 
@@ -271,7 +271,7 @@ mp_obj_t mp_builtin_pow(int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 2: return rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]);
         case 3: return rt_binary_op(RT_BINARY_OP_MODULO, rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "pow expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "pow expected at most 3 arguments, got %d", n_args));
     }
 }
 
@@ -297,7 +297,7 @@ mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args) {
         case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
         case 2: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), 1);
         case 3: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]));
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "range expected at most 3 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "range expected at most 3 arguments, got %d", n_args));
     }
 }
 
@@ -306,7 +306,7 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 1: value = mp_obj_new_int(0); break;
         case 2: value = args[1]; break;
-        default: nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "sum expected at most 2 arguments, got %d", (void*)(machine_int_t)n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "sum expected at most 2 arguments, got %d", n_args));
     }
     mp_obj_t iterable = rt_getiter(args[0]);
     mp_obj_t item;

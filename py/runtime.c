@@ -373,7 +373,7 @@ mp_obj_t rt_load_name(qstr qstr) {
         if (elem == NULL) {
             elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
+                nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
             }
         }
     }
@@ -387,7 +387,7 @@ mp_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
     return elem->value;
@@ -447,7 +447,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", o->type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", o->type->name));
     }
 }
 
@@ -532,7 +532,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     // TODO specify in error message what the operator is
-    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "unsupported operand type for binary operator: '%s'", mp_obj_get_type_str(lhs)));
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unsupported operand type for binary operator: '%s'", mp_obj_get_type_str(lhs)));
 }
 
 mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
@@ -687,7 +687,7 @@ mp_obj_t rt_call_function_n(mp_obj_t fun_in, int n_args, const mp_obj_t *args) {
         if (fun->type->call_n != NULL) {
             return fun->type->call_n(fun_in, n_args, args);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
         }
     }
 }
@@ -705,7 +705,7 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
         if (fun->type->call_n_kw != NULL) {
             return fun->type->call_n_kw(fun_in, n_args, n_kw, args);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
         }
     }
 }
@@ -754,14 +754,14 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
             mp_obj_list_get(seq_in, &seq_len, &seq_items);
         }
         if (seq_len < num) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "need more than %d values to unpack", (void*)(machine_uint_t)seq_len));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "need more than %d values to unpack", (void*)(machine_uint_t)seq_len));
         } else if (seq_len > num) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
         }
         memcpy(items, seq_items, num * sizeof(mp_obj_t));
     } else {
         // TODO call rt_getiter and extract via rt_iternext
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));
     }
 }
 
@@ -807,7 +807,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     }
 
 no_attr:
-    nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
@@ -852,7 +852,7 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         mp_map_t *globals = mp_obj_module_get_globals(base);
         mp_map_lookup(globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
     }
 }
 
@@ -877,7 +877,7 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
         if (o->type->getiter != NULL) {
             return o->type->getiter(o_in);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not iterable", o->type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", o->type->name));
         }
     }
 }
@@ -890,7 +890,7 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
         if (o->type->iternext != NULL) {
             return o->type->iternext(o_in);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "'%s' object is not an iterator", o->type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not an iterator", o->type->name));
         }
     }
 }

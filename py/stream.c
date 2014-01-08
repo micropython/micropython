@@ -23,7 +23,7 @@ static mp_obj_t stream_read(mp_obj_t self_in, mp_obj_t arg) {
     int error;
     machine_int_t out_sz = o->type->stream_p.read(self_in, buf, sz, &error);
     if (out_sz == -1) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_OSError, "[Errno %d]", (const char *)error));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
         buf[out_sz] = 0;
         return mp_obj_new_str(qstr_from_str_take(buf, /*out_sz,*/ sz + 1));
@@ -42,7 +42,7 @@ static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     int error;
     machine_int_t out_sz = o->type->stream_p.write(self_in, buf, sz, &error);
     if (out_sz == -1) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_OSError, "[Errno %d]", (const char *)error));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
         // http://docs.python.org/3/library/io.html#io.RawIOBase.write
         // "None is returned if the raw stream is set not to block and no single byte could be readily written to it."
