@@ -68,6 +68,7 @@ PY_O_BASENAME = \
 	objstr.o \
 	objtuple.o \
 	objtype.o \
+	stream.o \
 	builtin.o \
 	builtinimport.o \
 	vm.o \

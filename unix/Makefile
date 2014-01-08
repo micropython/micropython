@@ -16,6 +16,7 @@ LDFLAGS = -lm
 # source files
 SRC_C = \
 	main.c \
+	file.c \
 
 OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(PY_O)
 LIB = -lreadline
