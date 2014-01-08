@@ -22,14 +22,19 @@ LIBS = -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
 
 SRC_C = \
 	main.c \
-	lexerteensy.c \
+	lcd.c \
 	led.c \
+	lexerfatfs.c \
+	usart.c \
+	usb.c \
+
+STM_SRC_C = \
+	lexerstr.c \
 	malloc0.c \
 	printf.c \
 	string0.c \
-	usb.c \
 
-SRC_S = \
+STM_SRC_S = \
 	gchelper.s \
 
 PY_O = \
@@ -90,7 +95,10 @@ SRC_TEENSY = \
 	usb_serial.c \
 	yield.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(PY_O) $(SRC_TEENSY:.c=.o))
+STM_SRC_C_OBJ = $(STM_SRC_C:.c=.o)
+STM_SRC_S_OBJ = $(STM_SRC_S:.s=.o)
+
+OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C_OBJ) $(STM_SRC_S_OBJ) $(PY_O) $(SRC_TEENSY:.c=.o))
 #LIB = -lreadline
 # the following is needed for BSD
 #LIB += -ltermcap
@@ -117,10 +125,13 @@ $(PROG).elf: $(BUILD) $(OBJ)
 $(BUILD):
 	mkdir -p $@
 
-$(BUILD)/%.o: %.s
+$(BUILD)/%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/%.o: ../stm/%.s
 	$(AS) -o $@ $<
 
-$(BUILD)/%.o: %.c
+$(BUILD)/%.o: ../stm/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(PYSRC)/%.S
