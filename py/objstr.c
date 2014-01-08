@@ -147,6 +147,64 @@ bad_arg:
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
 }
 
+static bool chr_in_str(const char* const str, const size_t str_len, const char c) {
+    for (size_t i = 0; i < str_len; i++) {
+        if (str[i] == c) {
+            return true;
+        }
+    }
+    return false;
+}
+
+mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
+    assert(1 <= n_args && n_args <= 2);
+    assert(MP_OBJ_IS_TYPE(args[0], &str_type));
+    const char *chars_to_del;
+    static const char whitespace[] = " \t\n\r\v\f";
+
+    if (n_args == 1) {
+        chars_to_del = whitespace;
+    } else {
+        assert(MP_OBJ_IS_TYPE(args[1], &str_type));
+        mp_obj_str_t *chars_to_del_obj = args[1];
+        chars_to_del = qstr_str(chars_to_del_obj->qstr);
+    }
+
+    const size_t chars_to_del_len = strlen(chars_to_del);
+    mp_obj_str_t *self = args[0];
+    const char *orig_str = qstr_str(self->qstr);
+    const size_t orig_str_len = strlen(orig_str);
+
+    size_t first_good_char_pos = 0;
+    bool first_good_char_pos_set = false;
+    size_t last_good_char_pos = 0;
+    for (size_t i = 0; i < orig_str_len; i++) {
+        if (!chr_in_str(chars_to_del, chars_to_del_len, orig_str[i])) {
+            last_good_char_pos = i;
+            if (!first_good_char_pos_set) {
+                first_good_char_pos = i;
+                first_good_char_pos_set = true;
+            }
+        }
+    }
+
+    if (first_good_char_pos == 0 && last_good_char_pos == 0) {
+        //string is all whitespace, return '\0'
+        char *empty = m_new(char, 1);
+        empty[0] = '\0';
+        return mp_obj_new_str(qstr_from_str_take(empty, 1));
+    }
+
+    assert(last_good_char_pos >= first_good_char_pos);
+    //+1 to accomodate the last character
+    size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
+    //+1 to accomodate '\0'
+    char *stripped_str = m_new(char, stripped_len + 1);
+    strncpy(stripped_str, orig_str + first_good_char_pos, stripped_len);
+    stripped_str[stripped_len] = '\0';
+    return mp_obj_new_str(qstr_from_str_take(stripped_str, stripped_len + 1));
+}
+
 void vstr_printf_wrapper(void *env, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -182,10 +240,12 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
 static const mp_method_t str_type_methods[] = {
     { "join", &str_join_obj },
+    { "strip", &str_strip_obj },
     { "format", &str_format_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
