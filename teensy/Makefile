@@ -33,7 +33,8 @@ SRC_C = \
 	lcd.c \
 	led.c \
 	lexerfatfs.c \
-	usart.c \
+	lexermemzip.c \
+	memzip.c \
 	usb.c \
 
 STM_SRC_C = \
@@ -60,9 +61,9 @@ OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o
 #LIB += -ltermcap
 
 all2: $(BUILD) hex
-hex: $(BUILD)/flash.hex
+hex: $(BUILD)/micropython-mz.hex
 
-post_compile: $(BUILD)/flash.hex
+post_compile: $(BUILD)/micropython-mz.hex
 	$(ECHO) "Preparing $@ for upload"
 	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(<D)" -tools="$(TOOLS_PATH)"
 
@@ -72,10 +73,18 @@ reboot:
 
 upload: post_compile reboot
 
-$(BUILD)/flash.elf: $(OBJ)
+$(BUILD)/micropython.elf: $(OBJ)
 	$(ECHO) "LINK $<"
 	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
+
+ifeq ($(MEMZIP_DIR),)
+MEMZIP_DIR = memzip_files
+endif
+
+$(BUILD)/micropython-mz.hex: $(BUILD)/micropython.hex $(shell find ${MEMZIP_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)./add-memzip.sh $< $@ ${MEMZIP_DIR}
 
 $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"

@@ -221,10 +221,12 @@ void stdout_print_strn(void *data, const char *str, unsigned int len) {
     bool any = false;
 
     // TODO should have a setting for which USART port to send to
+#if 0 // if 0'd out so that we're not calling functions with the wrong arguments
     if (usart_is_enabled()) {
         usart_tx_strn_cooked(str, len);
         any = true;
     }
+#endif
 
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);

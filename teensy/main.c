@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "mpqstr.h"
 #include "lexer.h"
+#include "lexermemzip.h"
 #include "parse.h"
 #include "obj.h"
 #include "compile.h"
@@ -22,51 +23,16 @@
 
 extern uint32_t _heap_start;
 
-#ifdef USE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
+bool do_file(const char *filename);
 
-#if 0
-static char *str_join(const char *s1, int sep_char, const char *s2) {
-    int l1 = strlen(s1);
-    int l2 = strlen(s2);
-    char *s = m_new(char, l1 + l2 + 2);
-    memcpy(s, s1, l1);
-    if (sep_char != 0) {
-        s[l1] = sep_char;
-        l1 += 1;
+void flash_error(int n) {
+    for (int i = 0; i < n; i++) {
+        led_state(PYB_LED_BUILTIN, 1);
+        delay(250);
+        led_state(PYB_LED_BUILTIN, 0);
+        delay(250);
     }
-    memcpy(s + l1, s2, l2);
-    s[l1 + l2] = 0;
-    return s;
 }
-
-static char *prompt(char *p) {
-#ifdef USE_READLINE
-    char *line = readline(p);
-    if (line) {
-        add_history(line);
-    }
-#else
-    static char buf[256];
-    fputs(p, stdout);
-    char *s = fgets(buf, sizeof(buf), stdin);
-    if (!s) {
-        return NULL;
-    }
-    int l = strlen(buf);
-    if (buf[l - 1] == '\n') {
-        buf[l - 1] = 0;
-    } else {
-        l++;
-    }
-    char *line = m_new(char, l);
-    memcpy(line, buf, l);
-#endif
-    return line;
-}
-#endif
 
 static const char *help_text =
 "Welcome to Micro Python!\n\n"
@@ -215,6 +181,19 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 #endif
 
+static qstr pyb_config_source_dir = 0;
+static qstr pyb_config_main = 0;
+
+mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
+    pyb_config_source_dir = mp_obj_get_qstr(source_dir);
+    return mp_const_none;
+}
+
+mp_obj_t pyb_main(mp_obj_t main) {
+    pyb_config_main = mp_obj_get_qstr(main);
+    return mp_const_none;
+}
+
 mp_obj_t pyb_delay(mp_obj_t count) {
     delay(mp_obj_get_int(count));
     return mp_const_none;
@@ -223,6 +202,12 @@ mp_obj_t pyb_delay(mp_obj_t count) {
 mp_obj_t pyb_led(mp_obj_t state) {
     led_state(PYB_LED_BUILTIN, rt_is_true(state));
     return state;
+}
+
+mp_obj_t pyb_run(mp_obj_t filename_obj) {
+    const char *filename = qstr_str(mp_obj_get_qstr(filename_obj));
+    do_file(filename);
+    return mp_const_none;
 }
 
 char *strdup(const char *str) {
@@ -316,6 +301,39 @@ int readline(vstr_t *line, const char *prompt) {
     }
 }
 
+bool do_file(const char *filename) {
+    mp_lexer_t *lex = mp_lexer_new_from_memzip_file(filename);
+
+    if (lex == NULL) {
+        printf("could not open file '%s' for reading\n", filename);
+        return false;
+    }
+
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    mp_lexer_free(lex);
+
+    if (pn == MP_PARSE_NODE_NULL) {
+        return false;
+    }
+
+    mp_obj_t module_fun = mp_compile(pn, false);
+    if (module_fun == mp_const_none) {
+        return false;
+    }
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        rt_call_function_0(module_fun);
+        nlr_pop();
+        return true;
+    } else {
+        // uncaught exception
+        mp_obj_print((mp_obj_t)nlr.ret_val);
+        printf("\n");
+        return false;
+    }
+}
+
 void do_repl(void) {
     stdout_tx_str("Micro Python for Teensy 3.1\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
@@ -397,23 +415,52 @@ soft_reset:
     rt_init();
 
 #if 1
-    printf("About to add functions()\n");
     // add some functions to the python namespace
     {
         rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
         mp_obj_t m = mp_obj_new_module(qstr_from_str_static("pyb"));
         rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
+        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
+        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
         rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
         rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
         rt_store_name(qstr_from_str_static("pyb"), m);
+        rt_store_name(qstr_from_str_static("run"), rt_make_function_1(pyb_run));
     }
 #endif
 
+    if (!do_file("/boot.py")) {
+        printf("Unable to open '/boot.py'\n");
+        flash_error(4);
+    }
+
     // Turn bootup LED off
     led_state(PYB_LED_BUILTIN, 0);
+
+    // run main script
+    {
+        vstr_t *vstr = vstr_new();
+        vstr_add_str(vstr, "/");
+        if (pyb_config_source_dir == 0) {
+            vstr_add_str(vstr, "src");
+        } else {
+            vstr_add_str(vstr, qstr_str(pyb_config_source_dir));
+        }
+        vstr_add_char(vstr, '/');
+        if (pyb_config_main == 0) {
+            vstr_add_str(vstr, "main.py");
+        } else {
+            vstr_add_str(vstr, qstr_str(pyb_config_main));
+        }
+        if (!do_file(vstr_str(vstr))) {
+            printf("Unable to open '%s'\n", vstr_str(vstr));
+            flash_error(3);
+        }
+        vstr_free(vstr);
+    }
 
     do_repl();
 
