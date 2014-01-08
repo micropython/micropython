@@ -586,6 +586,9 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 
 static void rtc_init(void) {
+    uint32_t rtc_clksrc;
+    uint32_t timeout =10000;
+
     /* Enable the PWR clock */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
 
@@ -596,11 +599,29 @@ static void rtc_init(void) {
     RCC_LSEConfig(RCC_LSE_ON);
 
     /* Wait till LSE is ready */
-    while(RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) {
+    while((RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) && (--timeout > 0)) {
+    }
+
+    /* If LSE timed out, use LSI instead */
+    if (timeout == 0) {
+        /* Enable the LSI OSC */
+        RCC_LSICmd(ENABLE);
+
+        /* Wait till LSI is ready */
+        while(RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET) {
+        }
+
+        /* Use LSI as the RTC Clock Source */
+        rtc_clksrc = RCC_RTCCLKSource_LSI;
+    } else {
+        /* Use LSE as the RTC Clock Source */
+        rtc_clksrc = RCC_RTCCLKSource_LSE;
     }
 
     /* Select the RTC Clock Source */
-    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
+    RCC_RTCCLKConfig(rtc_clksrc);
+
+    /* Note: LSI is around (32KHz), these dividers should work either way */
     /* ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)*/
     uint32_t uwSynchPrediv = 0xFF;
     uint32_t uwAsynchPrediv = 0x7F;
