@@ -30,7 +30,6 @@ SRC_C = \
 	string0.c \
 	malloc0.c \
 	systick.c  \
-	lexerstr.c \
 	lexerfatfs.c \
 	led.c \
 	lcd.c \

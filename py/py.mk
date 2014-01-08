@@ -29,6 +29,7 @@ PY_O_BASENAME = \
 	vstr.o \
 	unicode.o \
 	lexer.o \
+	lexerstr.o \
 	lexerunix.o \
 	parse.o \
 	scope.o \

@@ -8,7 +8,6 @@
 #include "mpconfig.h"
 #include "mpqstr.h"
 #include "lexer.h"
-#include "../stm/lexerstr.h"
 #include "parse.h"
 #include "obj.h"
 #include "compile.h"

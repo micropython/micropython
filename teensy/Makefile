@@ -29,7 +29,6 @@ SRC_C = \
 	usb.c \
 
 STM_SRC_C = \
-	lexerstr.c \
 	malloc0.c \
 	printf.c \
 	string0.c \
@@ -45,6 +44,7 @@ PY_O = \
 	vstr.o \
 	unicode.o \
 	lexer.o \
+	lexerstr.o \
 	parse.o \
 	scope.o \
 	compile.o \

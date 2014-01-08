@@ -127,6 +127,8 @@ void mp_token_show_error_prefix(const mp_token_t *tok);
 bool mp_token_show_error(const mp_token_t *tok, const char *msg);
 
 mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close);
+mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, uint free_len);
+
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
 const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex);

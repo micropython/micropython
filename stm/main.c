@@ -19,7 +19,6 @@
 #include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
-#include "lexerstr.h"
 #include "lexerfatfs.h"
 #include "parse.h"
 #include "obj.h"
@@ -432,8 +431,7 @@ void do_repl(void) {
             }
         }
 
-        mp_lexer_str_buf_t sb;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), 0);
         mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
         mp_lexer_free(lex);
 
@@ -1059,8 +1057,7 @@ soft_reset:
             "                pass\n"
             "f()\n";
 
-        mp_lexer_str_buf_t mp_lexer_str_buf;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), false, &mp_lexer_str_buf);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), 0);
 
         // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
         printf("lex; al=%u\n", m_get_total_bytes_allocated());

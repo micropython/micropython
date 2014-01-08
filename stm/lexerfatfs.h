@@ -1,4 +1,4 @@
-typedef struct _py_lexer_file_buf_t {
+typedef struct _mp_lexer_file_buf_t {
     FIL fp;
     char buf[20];
     uint16_t len;
