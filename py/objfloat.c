@@ -24,6 +24,7 @@ static void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, "%.8g", o->value);
 }
 
+// args are reverse in the array
 static mp_obj_t float_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 0:

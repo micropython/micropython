@@ -315,10 +315,3 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     }
     return value;
 }
-
-static mp_obj_t mp_builtin_type(mp_obj_t o_in) {
-    // TODO implement the 3 argument version of type()
-    return mp_obj_get_type(o_in);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_type_obj, mp_builtin_type);
