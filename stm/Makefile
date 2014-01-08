@@ -6,6 +6,7 @@ include ../py/py.mk
 
 # program for deletion
 RM = /bin/rm
+ECHO = @echo
 
 STMSRC=lib
 #STMOTGSRC=lib-otg
@@ -115,35 +116,43 @@ OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(
 all2: $(BUILD) $(BUILD)/flash.dfu
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
-	python $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
+	$(ECHO) "Create $@"
+	$(Q)python $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
 
 $(BUILD)/flash0.bin: $(BUILD)/flash.elf
-	$(OBJCOPY) -O binary -j .isr_vector $^ $@
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $@
 
 $(BUILD)/flash1.bin: $(BUILD)/flash.elf
-	$(OBJCOPY) -O binary -j .text -j .data $^ $@
+	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $@
 
 $(BUILD)/flash.elf: $(OBJ)
-	$(LD) $(LDFLAGS) -o $@ $(OBJ)
-	$(SIZE) $@
+	$(ECHO) "LINK $@"
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ)
+	$(Q)$(SIZE) $@
 
 $(BUILD)/%.o: %.s
-	$(AS) -o $@ $<
+	$(ECHO) "AS $<"
+	$(Q)$(AS) -o $@ $<
 
 $(BUILD)/%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(FATFSSRC)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(STMSRC)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 #$(BUILD)/%.o: $(STMOTGSRC)/%.c
-#	$(CC) $(CFLAGS) -c -o $@ $<
+#	$(ECHO) "CC $<"
+#	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(CC3KSRC)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	$(RM) -rf $(BUILD)

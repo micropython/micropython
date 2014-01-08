@@ -1,3 +1,28 @@
+##########
+# The following should eventually go into a more central location
+# when a reorg is done.
+#
+# Turn on increased build verbosity by defining BUILD_VERBOSE in your main
+# Makefile or in your environment. You can also use V=1 on the make command
+# line.
+ifeq ("$(origin V)", "command line")
+BUILD_VERBOSE=$(V)
+endif
+ifndef BUILD_VERBOSE
+BUILD_VERBOSE = 0
+endif
+ifeq ($(BUILD_VERBOSE),0)
+Q = @
+else
+Q =
+endif
+# Since this is a new feature, advertise it
+ifeq ($(BUILD_VERBOSE),0)
+$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
+endif
+#
+#########
+
 # default settings; can be overriden in main Makefile
 
 ifndef PY_SRC
@@ -11,7 +36,7 @@ endif
 # to create the build directory
 
 $(BUILD):
-	mkdir -p $@
+	$(Q)mkdir -p $@
 
 # where py object files go (they have a name prefix to prevent filename clashes)
 
@@ -80,24 +105,30 @@ PY_O_BASENAME = \
 PY_O = $(addprefix $(PY_BUILD), $(PY_O_BASENAME))
 
 $(PY_BUILD)emitnx64.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
-	$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
 
 $(PY_BUILD)emitnthumb.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
-	$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
 
 $(PY_BUILD)%.o: $(PY_SRC)/%.S
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(PY_BUILD)%.o: $(PY_SRC)/%.c mpconfigport.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
 $(PY_BUILD)gc.o: $(PY_SRC)/gc.c
-	$(CC) $(CFLAGS) -O3 -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(PY_BUILD)vm.o: $(PY_SRC)/vm.c
-	$(CC) $(CFLAGS) -O3 -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -O3 -c -o $@ $<
 
 # header dependencies
 

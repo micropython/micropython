@@ -6,6 +6,7 @@ include ../py/py.mk
 
 # program for deletion
 RM = /bin/rm
+ECHO = @echo
 
 ifeq ($(ARDUINO),)
 $(error Please define ARDUINO (where TeensyDuino is installed))
@@ -62,35 +63,43 @@ all2: $(BUILD) hex
 hex: $(BUILD)/flash.hex
 
 post_compile: $(BUILD)/flash.hex
-	$(TOOLS_PATH)/teensy_post_compile -file="$(basename $<)" -path="$(BUILD)" -tools="$(TOOLS_PATH)"
+	$(ECHO) "Preparing $@ for upload"
+	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(<D)" -tools="$(TOOLS_PATH)"
 
 reboot:
-	-$(TOOLS_PATH)/teensy_reboot
+	$(ECHO) "REBOOT"
+	-$(Q)$(TOOLS_PATH)/teensy_reboot
 
 upload: post_compile reboot
 
 $(BUILD)/flash.elf: $(OBJ)
-	$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $(OBJ) $(LIBS)
-	$(SIZE) $@
+	$(ECHO) "LINK $<"
+	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $(OBJ) $(LIBS)
+	$(Q)$(SIZE) $@
 
 $(BUILD)/%.hex: $(BUILD)/%.elf
-	$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
+	$(ECHO) "HEX $<"
+	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
 $(BUILD)/%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: ../stm/%.s
-	$(AS) -o $@ $<
+	$(ECHO) "AS $<"
+	$(Q)$(AS) -o $@ $<
 
 $(BUILD)/%.o: ../stm/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(CORE_PATH)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/main.o: mpconfigport.h
 
 clean:
-	/bin/rm -rf $(BUILD)
+	$(RM) -rf $(BUILD)
 
 .PHONY: all all2 clean

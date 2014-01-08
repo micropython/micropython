@@ -7,6 +7,7 @@ include ../py/py.mk
 
 # program for deletion
 RM = /bin/rm
+ECHO = @echo
 
 # compiler settings
 CC = gcc
@@ -24,12 +25,14 @@ LIB = -lreadline
 #LIB += -ltermcap
 
 $(PROG): $(BUILD) $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
-	strip $(PROG)
-	size $(PROG)
+	$(ECHO) "LINK $<"
+	$(Q)$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
+	$(Q)strip $(PROG)
+	$(Q)size $(PROG)
 
 $(BUILD)/%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(ECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/main.o: mpconfigport.h
 
