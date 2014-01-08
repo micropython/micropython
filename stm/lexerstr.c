@@ -3,7 +3,7 @@
 
 #include "misc.h"
 #include "lexer.h"
-#include "lexerteensy.h"
+#include "lexerstr.h"
 
 unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
     if (sb->src_cur < sb->src_end) {
@@ -25,9 +25,4 @@ mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uin
     sb->src_cur = str;
     sb->src_end = str + len;
     return mp_lexer_new(src_name, sb, (mp_lexer_stream_next_char_t)str_buf_next_char, (mp_lexer_stream_close_t)str_buf_free);
-}
-
-mp_lexer_t *mp_import_open_file(qstr mod_name) {
-    printf("import not implemented\n");
-    return NULL;
 }

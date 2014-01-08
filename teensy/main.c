@@ -8,7 +8,7 @@
 #include "mpconfig.h"
 #include "mpqstr.h"
 #include "lexer.h"
-#include "lexerteensy.h"
+#include "../stm/lexerstr.h"
 #include "parse.h"
 #include "obj.h"
 #include "compile.h"
@@ -378,7 +378,7 @@ void do_repl(void) {
     stdout_tx_str("\r\n");
 }
 
-void main(void) {
+int main(void) {
     pinMode(LED_BUILTIN, OUTPUT);    
     // Wait for host side to get connected
     while (!usb_vcp_is_connected()) {
