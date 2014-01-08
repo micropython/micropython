@@ -1,8 +1,3 @@
-typedef enum {
-    MP_MAP_QSTR,
-    MP_MAP_OBJ,
-} mp_map_kind_t;
-
 typedef struct _mp_map_elem_t {
     mp_obj_t key;
     mp_obj_t value;
@@ -10,8 +5,8 @@ typedef struct _mp_map_elem_t {
 
 typedef struct _mp_map_t {
     struct {
-        mp_map_kind_t kind : 1;
-        machine_uint_t used : (8 * BYTES_PER_WORD - 1);
+        machine_uint_t all_keys_are_qstrs : 1;
+        machine_uint_t used : (8 * sizeof(machine_uint_t) - 1);
     };
     machine_uint_t alloc;
     mp_map_elem_t *table;
@@ -23,11 +18,16 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
+typedef enum {
+    MP_MAP_LOOKUP,
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,
+    MP_MAP_LOOKUP_REMOVE_IF_FOUND,
+} mp_map_lookup_kind_t;
+
 int get_doubling_prime_greater_or_equal_to(int x);
-void mp_map_init(mp_map_t *map, mp_map_kind_t kind, int n);
-mp_map_t *mp_map_new(mp_map_kind_t kind, int n);
-mp_map_elem_t* mp_map_lookup_helper(mp_map_t *map, mp_obj_t index, bool add_if_not_found, bool remove_if_found);
-mp_map_elem_t* mp_qstr_map_lookup(mp_map_t *map, qstr index, bool add_if_not_found);
+void mp_map_init(mp_map_t *map, int n);
+mp_map_t *mp_map_new(int n);
+mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 
 void mp_set_init(mp_set_t *set, int n);

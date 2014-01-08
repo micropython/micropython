@@ -16,6 +16,8 @@
 mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return (mp_obj_t)&int_type;
+    } else if (MP_OBJ_IS_QSTR(o_in)) {
+        return (mp_obj_t)&str_type;
     } else {
         mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;
@@ -71,6 +73,8 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return 1; // needs to hash to same as the integer 1, since True==1
     } else if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
+    } else if (MP_OBJ_IS_QSTR(o_in)) {
+        return MP_OBJ_QSTR_VALUE(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &none_type)) {
         return (machine_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
@@ -107,6 +111,8 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
                 return false;
             }
         }
+    } else if (MP_OBJ_IS_QSTR(o1) || MP_OBJ_IS_QSTR(o2)) {
+        return false;
     } else if (MP_OBJ_IS_TYPE(o1, &str_type) && MP_OBJ_IS_TYPE(o2, &str_type)) {
         return mp_obj_str_get(o1) == mp_obj_str_get(o2);
     } else {

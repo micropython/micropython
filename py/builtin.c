@@ -23,7 +23,7 @@ mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
 
     // we differ from CPython: we set the new __locals__ object here
     mp_map_t *old_locals = rt_locals_get();
-    mp_map_t *class_locals = mp_map_new(MP_MAP_QSTR, 0);
+    mp_map_t *class_locals = mp_map_new(0);
     rt_locals_set(class_locals);
 
     // call the class code

@@ -81,13 +81,13 @@ mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_o
     }
 
     mp_obj_t *vargs = mp_obj_new_tuple_reverse(n_args, args + 2*n_kw);
-    mp_map_t *kw_args = mp_map_new(MP_MAP_QSTR, n_kw);
+    mp_map_t *kw_args = mp_map_new(n_kw);
     for (int i = 0; i < 2*n_kw; i+=2) {
         qstr name = mp_obj_str_get(args[i+1]);
-        mp_qstr_map_lookup(kw_args, name, true)->value = args[i];
+        mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[i];
     }
     mp_obj_t res = ((mp_fun_kw_t)self->fun)(vargs, kw_args);
-    /* TODO clean up vargs and kw_args */
+    // TODO clean up vargs and kw_args
     return res;
 }
 

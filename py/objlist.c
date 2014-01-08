@@ -146,8 +146,6 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
 static mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
     mp_obj_t *args_items = NULL;
     uint args_len = 0;
-    qstr key_idx = qstr_from_str_static("key");
-    qstr reverse_idx = qstr_from_str_static("reverse");
 
     assert(MP_OBJ_IS_TYPE(args, &tuple_type));
     mp_obj_tuple_get(args, &args_len, &args_items);
@@ -158,8 +156,8 @@ static mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
     }
     mp_obj_list_t *self = args_items[0];
     if (self->len > 1) {
-        mp_map_elem_t *keyfun = mp_qstr_map_lookup(kwargs, key_idx, false);
-        mp_map_elem_t *reverse = mp_qstr_map_lookup(kwargs, reverse_idx, false);
+        mp_map_elem_t *keyfun = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("key")), MP_MAP_LOOKUP);
+        mp_map_elem_t *reverse = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("reverse")), MP_MAP_LOOKUP);
         mp_quicksort(self->items, self->items + self->len - 1,
                      keyfun ? keyfun->value : NULL,
                      reverse && reverse->value ? rt_is_true(reverse->value) : false);

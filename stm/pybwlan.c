@@ -74,7 +74,7 @@ mp_obj_t pyb_wlan_get_ip(void) {
         return mp_const_none;
     }
 
-    mp_obj_t data = mp_obj_new_class(mp_map_new(MP_MAP_QSTR, 0)); // TODO should this be an instance of a class?
+    mp_obj_t data = mp_obj_new_class(mp_map_new(0)); // TODO should this be an instance of a class?
     decode_addr_and_store(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
     decode_addr_and_store(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
     decode_addr_and_store(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);

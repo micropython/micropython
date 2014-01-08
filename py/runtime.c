@@ -68,64 +68,69 @@ static mp_code_t *unique_codes = NULL;
 FILE *fp_write_code = NULL;
 #endif
 
+// a good optimising compiler will inline this if necessary
+static void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
+    mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+}
+
 void rt_init(void) {
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    map_locals = map_globals = mp_map_new(MP_MAP_QSTR, 1);
-    mp_qstr_map_lookup(map_globals, MP_QSTR___name__, true)->value = mp_obj_new_str(MP_QSTR___main__);
+    map_locals = map_globals = mp_map_new(1);
+    mp_map_add_qstr(map_globals, MP_QSTR___name__, mp_obj_new_str(MP_QSTR___main__));
 
     // init built-in hash table
-    mp_map_init(&map_builtins, MP_MAP_QSTR, 3);
+    mp_map_init(&map_builtins, 3);
 
     // built-in exceptions (TODO, make these proper classes)
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_AttributeError, true)->value = mp_obj_new_exception(MP_QSTR_AttributeError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_IndexError, true)->value = mp_obj_new_exception(MP_QSTR_IndexError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_KeyError, true)->value = mp_obj_new_exception(MP_QSTR_KeyError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_NameError, true)->value = mp_obj_new_exception(MP_QSTR_NameError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_TypeError, true)->value = mp_obj_new_exception(MP_QSTR_TypeError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_SyntaxError, true)->value = mp_obj_new_exception(MP_QSTR_SyntaxError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_ValueError, true)->value = mp_obj_new_exception(MP_QSTR_ValueError);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_OSError, true)->value = mp_obj_new_exception(MP_QSTR_OSError);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_AttributeError, mp_obj_new_exception(MP_QSTR_AttributeError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_IndexError, mp_obj_new_exception(MP_QSTR_IndexError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_KeyError, mp_obj_new_exception(MP_QSTR_KeyError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_NameError, mp_obj_new_exception(MP_QSTR_NameError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_TypeError, mp_obj_new_exception(MP_QSTR_TypeError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_SyntaxError, mp_obj_new_exception(MP_QSTR_SyntaxError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_ValueError, mp_obj_new_exception(MP_QSTR_ValueError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_OSError, mp_obj_new_exception(MP_QSTR_OSError));
 
     // built-in objects
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_Ellipsis, true)->value = mp_const_ellipsis;
+    mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
 
     // built-in core functions
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR___build_class__, true)->value = (mp_obj_t)&mp_builtin___build_class___obj;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR___repl_print__, true)->value = rt_make_function_1(mp_builtin___repl_print__);
+    mp_map_add_qstr(&map_builtins, MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR___repl_print__, rt_make_function_1(mp_builtin___repl_print__));
 
     // built-in types
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_bool, true)->value = (mp_obj_t)&bool_type;
+    mp_map_add_qstr(&map_builtins, MP_QSTR_bool, (mp_obj_t)&bool_type);
 #if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_complex, true)->value = (mp_obj_t)&complex_type;
+    mp_map_add_qstr(&map_builtins, MP_QSTR_complex, (mp_obj_t)&complex_type);
 #endif
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_dict, true)->value = (mp_obj_t)&dict_type;
+    mp_map_add_qstr(&map_builtins, MP_QSTR_dict, (mp_obj_t)&dict_type);
 #if MICROPY_ENABLE_FLOAT
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_float, true)->value = (mp_obj_t)&float_type;
+    mp_map_add_qstr(&map_builtins, MP_QSTR_float, (mp_obj_t)&float_type);
 #endif
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_int, true)->value = (mp_obj_t)&int_type;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_list, true)->value = (mp_obj_t)&list_type;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_set, true)->value = (mp_obj_t)&set_type;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_tuple, true)->value = (mp_obj_t)&tuple_type;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_type, true)->value = (mp_obj_t)&mp_builtin_type_obj; // TODO
+    mp_map_add_qstr(&map_builtins, MP_QSTR_int, (mp_obj_t)&int_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_list, (mp_obj_t)&list_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_builtin_type_obj); // TODO
 
     // built-in user functions; TODO covert all to &mp_builtin_xxx's
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_abs, true)->value = rt_make_function_1(mp_builtin_abs);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_all, true)->value = rt_make_function_1(mp_builtin_all);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_any, true)->value = rt_make_function_1(mp_builtin_any);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_callable, true)->value = rt_make_function_1(mp_builtin_callable);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_chr, true)->value = rt_make_function_1(mp_builtin_chr);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_divmod, true)->value = rt_make_function_2(mp_builtin_divmod);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_hash, true)->value = (mp_obj_t)&mp_builtin_hash_obj;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_iter, true)->value = (mp_obj_t)&mp_builtin_iter_obj;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_len, true)->value = rt_make_function_1(mp_builtin_len);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_max, true)->value = rt_make_function_var(1, mp_builtin_max);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_min, true)->value = rt_make_function_var(1, mp_builtin_min);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_next, true)->value = (mp_obj_t)&mp_builtin_next_obj;
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_ord, true)->value = rt_make_function_1(mp_builtin_ord);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_pow, true)->value = rt_make_function_var(2, mp_builtin_pow);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_print, true)->value = rt_make_function_var(0, mp_builtin_print);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_range, true)->value = rt_make_function_var(1, mp_builtin_range);
-    mp_qstr_map_lookup(&map_builtins, MP_QSTR_sum, true)->value = rt_make_function_var(1, mp_builtin_sum);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_abs, rt_make_function_1(mp_builtin_abs));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_all, rt_make_function_1(mp_builtin_all));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_any, rt_make_function_1(mp_builtin_any));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_callable, rt_make_function_1(mp_builtin_callable));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_chr, rt_make_function_1(mp_builtin_chr));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, rt_make_function_2(mp_builtin_divmod));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_len, rt_make_function_1(mp_builtin_len));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_max, rt_make_function_var(1, mp_builtin_max));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_min, rt_make_function_var(1, mp_builtin_min));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_next, (mp_obj_t)&mp_builtin_next_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_ord, rt_make_function_1(mp_builtin_ord));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_pow, rt_make_function_var(2, mp_builtin_pow));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_print, rt_make_function_var(0, mp_builtin_print));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_range, rt_make_function_var(1, mp_builtin_range));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_sum, rt_make_function_var(1, mp_builtin_sum));
 
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;
@@ -362,11 +367,11 @@ mp_obj_t rt_load_const_str(qstr qstr) {
 mp_obj_t rt_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
-    mp_map_elem_t *elem = mp_qstr_map_lookup(map_locals, qstr, false);
+    mp_map_elem_t *elem = mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
     if (elem == NULL) {
-        elem = mp_qstr_map_lookup(map_globals, qstr, false);
+        elem = mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            elem = mp_qstr_map_lookup(&map_builtins, qstr, false);
+            elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
             if (elem == NULL) {
                 nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
             }
@@ -378,9 +383,9 @@ mp_obj_t rt_load_name(qstr qstr) {
 mp_obj_t rt_load_global(qstr qstr) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
-    mp_map_elem_t *elem = mp_qstr_map_lookup(map_globals, qstr, false);
+    mp_map_elem_t *elem = mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
     if (elem == NULL) {
-        elem = mp_qstr_map_lookup(&map_builtins, qstr, false);
+        elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
@@ -390,7 +395,7 @@ mp_obj_t rt_load_global(qstr qstr) {
 
 mp_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
-    mp_map_elem_t *elem = mp_qstr_map_lookup(&map_builtins, MP_QSTR___build_class__, false);
+    mp_map_elem_t *elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
     if (elem == NULL) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_NameError, "name '__build_class__' is not defined"));
     }
@@ -407,12 +412,12 @@ void rt_set_cell(mp_obj_t cell, mp_obj_t val) {
 
 void rt_store_name(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qstr), obj);
-    mp_qstr_map_lookup(map_locals, qstr, true)->value = obj;
+    mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
 }
 
 void rt_store_global(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
-    mp_qstr_map_lookup(map_globals, qstr, true)->value = obj;
+    mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
 }
 
 mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
@@ -772,7 +777,7 @@ mp_obj_t rt_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value) {
 mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %s\n", qstr_str(attr));
     if (MP_OBJ_IS_TYPE(base, &class_type)) {
-        mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_class_get_locals(base), attr, false);
+        mp_map_elem_t *elem = mp_map_lookup(mp_obj_class_get_locals(base), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem == NULL) {
             // TODO what about generic method lookup?
             goto no_attr;
@@ -782,7 +787,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
         return mp_obj_instance_load_attr(base, attr);
     } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
         DEBUG_OP_printf("lookup module map %p\n", mp_obj_module_get_globals(base));
-        mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_module_get_globals(base), attr, false);
+        mp_map_elem_t *elem = mp_map_lookup(mp_obj_module_get_globals(base), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem == NULL) {
             // TODO what about generic method lookup?
             goto no_attr;
@@ -839,13 +844,13 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     if (MP_OBJ_IS_TYPE(base, &class_type)) {
         // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
         mp_map_t *locals = mp_obj_class_get_locals(base);
-        mp_qstr_map_lookup(locals, attr, true)->value = value;
+        mp_map_lookup(locals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
         mp_obj_instance_store_attr(base, attr, value);
     } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
         // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
         mp_map_t *globals = mp_obj_module_get_globals(base);
-        mp_qstr_map_lookup(globals, attr, true)->value = value;
+        mp_map_lookup(globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     } else {
         nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
     }

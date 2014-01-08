@@ -30,12 +30,12 @@ type needs to be specified dynamically
 mp_obj_t mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_instance_t *self = self_in;
-    mp_map_elem_t *elem = mp_qstr_map_lookup(self->members, attr, false);
+    mp_map_elem_t *elem = mp_map_lookup(self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
         return elem->value;
     }
-    elem = mp_qstr_map_lookup(mp_obj_class_get_locals(self->class), attr, false);
+    elem = mp_map_lookup(mp_obj_class_get_locals(self->class), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         if (mp_obj_is_callable(elem->value)) {
             // class member is callable so build a bound method
@@ -51,14 +51,14 @@ mp_obj_t mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr) {
 void mp_obj_instance_load_method(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_instance_t *self = self_in;
-    mp_map_elem_t *elem = mp_qstr_map_lookup(self->members, attr, false);
+    mp_map_elem_t *elem = mp_map_lookup(self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
         dest[1] = elem->value;
         dest[0] = NULL;
         return;
     }
-    elem = mp_qstr_map_lookup(mp_obj_class_get_locals(self->class), attr, false);
+    elem = mp_map_lookup(mp_obj_class_get_locals(self->class), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         if (mp_obj_is_callable(elem->value)) {
             // class member is callable so build a bound method
@@ -81,11 +81,11 @@ void mp_obj_instance_load_method(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 void mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
     mp_obj_instance_t *self = self_in;
-    mp_map_elem_t *elem = mp_qstr_map_lookup(mp_obj_class_get_locals(self->class), attr, false);
+    mp_map_elem_t *elem = mp_map_lookup(mp_obj_class_get_locals(self->class), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         elem->value = value;
     } else {
-        mp_qstr_map_lookup(self->members, attr, true)->value = value;
+        mp_map_lookup(self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
 }
 
@@ -98,6 +98,6 @@ mp_obj_t mp_obj_new_instance(mp_obj_t class) {
     mp_obj_instance_t *o = m_new_obj(mp_obj_instance_t);
     o->base.type = &instance_type;
     o->class = class;
-    o->members = mp_map_new(MP_MAP_QSTR, 0);
+    o->members = mp_map_new(0);
     return o;
 }

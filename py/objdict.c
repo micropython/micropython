@@ -50,7 +50,7 @@ static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case RT_BINARY_OP_SUBSCR:
         {
             // dict load
-            mp_map_elem_t *elem = mp_map_lookup_helper(&o->map, rhs_in, false, false);
+            mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             if (elem == NULL) {
                 nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
             } else {
@@ -139,12 +139,12 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
-static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bool pop, bool set) {
-    mp_map_elem_t *elem = mp_map_lookup_helper(self, key, set, pop);
+static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp_map_lookup_kind_t lookup_kind) {
+    mp_map_elem_t *elem = mp_map_lookup(self, key, lookup_kind);
     mp_obj_t value;
     if (elem == NULL || elem->value == NULL) {
         if (deflt == NULL) {
-            if (pop) {
+            if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
             } else {
                 value = mp_const_none;
@@ -154,12 +154,12 @@ static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, bo
         }
     } else {
         value = elem->value;
-        if (pop) {
-            /* catch the leak (from mp_map_lookup_helper) */
+        if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
+            // catch the leak (from mp_map_lookup)
             m_free(elem, sizeof(mp_map_elem_t));
         }
     }
-    if (set) {
+    if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
         elem->value = value;
     }
     return value;
@@ -172,7 +172,7 @@ static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
                            n_args == 3 ? args[2] : NULL,
-                           false, false);
+                           MP_MAP_LOOKUP);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
@@ -183,7 +183,7 @@ static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
                            n_args == 3 ? args[2] : NULL,
-                           true, false);
+                           MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
@@ -195,7 +195,7 @@ static mp_obj_t dict_setdefault(int n_args, const mp_obj_t *args) {
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
                            n_args == 3 ? args[2] : NULL,
-                           false, true);
+                           MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setdefault);
 
@@ -237,7 +237,7 @@ static mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
                          MP_QSTR_ValueError,
                          "dictionary update sequence has the wrong length"));
         } else {
-            mp_map_lookup_helper(&self->map, key, true, false)->value = value;
+            mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         }
     }
 
@@ -273,7 +273,7 @@ const mp_obj_type_t dict_type = {
 mp_obj_t mp_obj_new_dict(int n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
     o->base.type = &dict_type;
-    mp_map_init(&o->map, MP_MAP_OBJ, n_args);
+    mp_map_init(&o->map, n_args);
     return o;
 }
 
@@ -284,6 +284,6 @@ uint mp_obj_dict_len(mp_obj_t self_in) {
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
     mp_obj_dict_t *self = self_in;
-    mp_map_lookup_helper(&self->map, key, true, false)->value = value;
+    mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;
 }

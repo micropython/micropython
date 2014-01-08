@@ -32,8 +32,8 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &module_type;
     o->name = module_name;
-    o->globals = mp_map_new(MP_MAP_QSTR, 1);
-    mp_qstr_map_lookup(o->globals, MP_QSTR___name__, true)->value = mp_obj_new_str(module_name);
+    o->globals = mp_map_new(1);
+    mp_map_lookup(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = mp_obj_new_str(module_name);
     return o;
 }
 

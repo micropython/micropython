@@ -29,13 +29,21 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_OBJ_NULL ((mp_obj_t)NULL)
 
-// These macros check for small int or object, and access small int values
+// These macros check for small int, qstr or object, and access small int and qstr values
+//  - xxxx...xxx1: a small int, bits 1 and above are the value
+//  - xxxx...xx10: a qstr, bits 2 and above are the value
+//  - xxxx...xx00: a pointer to an mp_obj_base_t
 
-#define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 1) == 0)
 #define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
-#define MP_OBJ_IS_TYPE(o, t) (((((mp_small_int_t)(o)) & 1) == 0) && (((mp_obj_base_t*)(o))->type == (t)))
+#define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
+#define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
+#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t)))
+
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(o) ((mp_obj_t)(((o) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
+
+#define MP_OBJ_QSTR_VALUE(o) (((mp_small_int_t)(o)) >> 2)
+#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((machine_uint_t)qstr) << 2) | 2))
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
