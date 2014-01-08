@@ -347,8 +347,7 @@ void do_repl(void) {
             }
         }
 
-        mp_lexer_str_buf_t sb;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), false, &sb);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), 0);
         mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
         mp_lexer_free(lex);
 
