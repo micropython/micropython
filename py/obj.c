@@ -13,6 +13,15 @@
 #include "runtime.h"
 #include "map.h"
 
+mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
+    if (MP_OBJ_IS_SMALL_INT(o_in)) {
+        return (mp_obj_t)&int_type;
+    } else {
+        mp_obj_base_t *o = o_in;
+        return (mp_obj_t)o->type;
+    }
+}
+
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return "int";

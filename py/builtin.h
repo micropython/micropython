@@ -1,6 +1,6 @@
 // TODO convert all these to objects using MP_DECLARE and MP_DEFINE
 
-mp_obj_t mp_builtin___build_class__(mp_obj_t o_class_fun, mp_obj_t o_class_name);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
 mp_obj_t mp_builtin___import__(int n, mp_obj_t *args);
 mp_obj_t mp_builtin___repl_print__(mp_obj_t o);
 mp_obj_t mp_builtin_abs(mp_obj_t o_in);

@@ -15,21 +15,58 @@
 #include "map.h"
 #include "builtin.h"
 
-mp_obj_t mp_builtin___build_class__(mp_obj_t o_class_fun, mp_obj_t o_class_name) {
+// args[0] is function from class body
+// args[1] is class name
+// args[2:] are base objects
+mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args);
+
     // we differ from CPython: we set the new __locals__ object here
     mp_map_t *old_locals = rt_locals_get();
     mp_map_t *class_locals = mp_map_new(MP_MAP_QSTR, 0);
     rt_locals_set(class_locals);
 
     // call the class code
-    rt_call_function_1(o_class_fun, (mp_obj_t)0xdeadbeef);
+    mp_obj_t cell = rt_call_function_1(args[0], (mp_obj_t)0xdeadbeef);
 
     // restore old __locals__ object
     rt_locals_set(old_locals);
 
-    // create and return the new class
-    return mp_obj_new_class(class_locals);
+    /*
+    // get the class type (meta object) from the base objects
+    mp_obj_t meta;
+    if (n_args == 2) {
+        // no explicit bases, so use 'type'
+        meta = (mp_obj_t)&mp_const_type;
+    } else {
+        // use type of first base object
+        meta = mp_obj_get_type(args[2]);
+    }
+    */
+
+    // TODO do proper metaclass resolution for multiple base objects
+
+    /*
+    // create the new class using a call to the meta object
+    // (arguments must be backwards in the array)
+    mp_obj_t meta_args[3];
+    meta_args[2] = args[1]; // class name
+    meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
+    meta_args[0] = class_locals; // dict of members TODO, currently is a map
+    mp_obj_t new_class = rt_call_function_n(meta, 3, meta_args);
+    */
+    // create the new class
+    mp_obj_t new_class = mp_obj_new_class(class_locals);
+
+    // store into cell if neede
+    if (cell != mp_const_none) {
+        mp_obj_cell_set(cell, new_class);
+    }
+
+    return new_class;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
@@ -281,12 +318,7 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
 
 static mp_obj_t mp_builtin_type(mp_obj_t o_in) {
     // TODO implement the 3 argument version of type()
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return (mp_obj_t)&int_type;
-    } else {
-        mp_obj_base_t *o = o_in;
-        return (mp_obj_t)o->type;
-    }
+    return mp_obj_get_type(o_in);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_type_obj, mp_builtin_type);

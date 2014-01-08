@@ -161,6 +161,7 @@ mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
 mp_obj_t mp_obj_new_instance(mp_obj_t clas);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
+mp_obj_t mp_obj_get_type(mp_obj_t o_in);
 const char *mp_obj_get_type_str(mp_obj_t o_in);
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in);
