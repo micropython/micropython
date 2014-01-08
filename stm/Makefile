@@ -17,6 +17,9 @@ TARGET=PYBOARD
 AS = arm-none-eabi-as
 CC = arm-none-eabi-gcc
 LD = arm-none-eabi-ld
+OBJCOPY = arm-none-eabi-objcopy
+SIZE = arm-none-eabi-size
+
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40XX -DHSE_VALUE=8000000
 CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 -Os -DNDEBUG $(CFLAGS_CORTEX_M4) -D$(TARGET)
 #CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
@@ -115,14 +118,14 @@ $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
 	python $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
 
 $(BUILD)/flash0.bin: $(BUILD)/flash.elf
-	arm-none-eabi-objcopy -O binary -j .isr_vector $^ $@
+	$(OBJCOPY) -O binary -j .isr_vector $^ $@
 
 $(BUILD)/flash1.bin: $(BUILD)/flash.elf
-	arm-none-eabi-objcopy -O binary -j .text -j .data $^ $@
+	$(OBJCOPY) -O binary -j .text -j .data $^ $@
 
 $(BUILD)/flash.elf: $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ)
-	arm-none-eabi-size $@
+	$(SIZE) $@
 
 $(BUILD)/%.o: %.s
 	$(AS) -o $@ $<
