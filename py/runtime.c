@@ -121,6 +121,8 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_chr, rt_make_function_1(mp_builtin_chr));
     mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, rt_make_function_2(mp_builtin_divmod));
     mp_map_add_qstr(&map_builtins, MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_issubclass, (mp_obj_t)&mp_builtin_issubclass_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_len, rt_make_function_1(mp_builtin_len));
     mp_map_add_qstr(&map_builtins, MP_QSTR_max, rt_make_function_var(1, mp_builtin_max));

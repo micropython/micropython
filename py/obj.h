@@ -147,7 +147,10 @@ struct _mp_obj_type_t {
 
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr;
-    mp_obj_t locals;
+
+    // these are for dynamically created types (classes)
+    mp_obj_t bases_tuple;
+    mp_obj_t locals_dict;
 
     /*
     What we might need to add here:
@@ -180,7 +183,7 @@ extern const mp_obj_t mp_const_stop_iteration; // special object indicating end 
 
 // General API for objects
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t local_dict);
+mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
@@ -307,9 +310,6 @@ void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte 
 
 // generator
 extern const mp_obj_type_t gen_instance_type;
-
-// class
-struct _mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, enum _mp_map_lookup_kind_t lookup_kind);
 
 // module
 extern const mp_obj_type_t module_type;

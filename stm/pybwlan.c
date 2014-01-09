@@ -78,7 +78,7 @@ mp_obj_t pyb_wlan_get_ip(void) {
 
     // if it doesn't already exist, make a new empty class for NetAddress objects
     if (net_address_type == MP_OBJ_NULL) {
-        net_address_type = mp_obj_new_type(qstr_from_str_static("NetAddress"), mp_obj_new_dict(0));
+        net_address_type = mp_obj_new_type(qstr_from_str_static("NetAddress"), mp_const_empty_tuple, mp_obj_new_dict(0));
     }
 
     // make a new NetAddress object

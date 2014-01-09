@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
     // test_obj = TestClass()
     // test_obj.attr = 42
     mp_obj_t test_class_type, test_class_instance;
-    test_class_type = mp_obj_new_type(qstr_from_str_static("TestClass"), mp_obj_new_dict(0));
+    test_class_type = mp_obj_new_type(qstr_from_str_static("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
     rt_store_name(qstr_from_str_static("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
     rt_store_attr(test_class_instance, qstr_from_str_static("attr"), mp_obj_new_int(42));
 

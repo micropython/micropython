@@ -27,6 +27,45 @@ static mp_obj_t mp_obj_new_class(mp_obj_t class) {
     return o;
 }
 
+static mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, mp_map_lookup_kind_t lookup_kind) {
+    for (;;) {
+        assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+        mp_obj_type_t *self = self_in;
+        if (self->locals_dict == NULL) {
+            return NULL;
+        }
+        assert(MP_OBJ_IS_TYPE(self->locals_dict, &dict_type)); // Micro Python restriction, for now
+        mp_map_t *locals_map = ((void*)self->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), lookup_kind);
+        if (elem != NULL) {
+            return elem;
+        }
+
+        // attribute not found, keep searching base classes
+
+        // for a const struct, this entry might be NULL
+        if (self->bases_tuple == MP_OBJ_NULL) {
+            return NULL;
+        }
+
+        uint len;
+        mp_obj_t *items;
+        mp_obj_tuple_get(self->bases_tuple, &len, &items);
+        if (len == 0) {
+            return NULL;
+        }
+        for (uint i = 0; i < len - 1; i++) {
+            elem = mp_obj_class_lookup(items[i], attr, lookup_kind);
+            if (elem != NULL) {
+                return elem;
+            }
+        }
+
+        // search last base (simple tail recursion elimination)
+        self_in = items[len - 1];
+    }
+}
+
 static void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
@@ -102,17 +141,6 @@ static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     return true;
 }
 
-mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, mp_map_lookup_kind_t lookup_kind) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
-    mp_obj_type_t *self = self_in;
-    if (self->locals == NULL) {
-        return NULL;
-    }
-    assert(MP_OBJ_IS_TYPE(self->locals, &dict_type)); // Micro Python restriction, for now
-    mp_map_t *locals_map = ((void*)self->locals + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
-    return mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), lookup_kind);
-}
-
 /******************************************************************************/
 // type object
 //  - the struct is mp_obj_type_t and is defined in obj.h so const types can be made
@@ -131,13 +159,10 @@ static mp_obj_t type_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args
             return mp_obj_get_type(args[0]);
 
         case 3:
-        {
             // args[2] = name
             // args[1] = bases tuple
             // args[0] = locals dict
-
-            return mp_obj_new_type(mp_obj_get_qstr(args[2]), args[0]);
-        }
+            return mp_obj_new_type(mp_obj_get_qstr(args[2]), args[1], args[0]);
 
         default:
             nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes at 1 or 3 arguments"));
@@ -192,7 +217,9 @@ const mp_obj_type_t mp_const_type = {
     .store_attr = type_store_attr,
 };
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t local_dict) {
+mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
+    assert(MP_OBJ_IS_TYPE(bases_tuple, &tuple_type)); // Micro Python restriction, for now
+    assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
     o->base.type = &mp_const_type;
     o->name = qstr_str(name);
@@ -200,7 +227,60 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t local_dict) {
     o->make_new = class_make_new;
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
-    o->locals = local_dict;
-    assert(MP_OBJ_IS_TYPE(o->locals, &dict_type)); // Micro Python restriction, for now
+    o->bases_tuple = bases_tuple;
+    o->locals_dict = locals_dict;
     return o;
 }
+
+/******************************************************************************/
+// built-ins specific to types
+
+static mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
+    if (!MP_OBJ_IS_TYPE(object, &mp_const_type)) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "issubclass() arg 1 must be a class"));
+    }
+
+    // TODO support a tuple of classes for second argument
+    if (!MP_OBJ_IS_TYPE(classinfo, &mp_const_type)) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "issubclass() arg 2 must be a class"));
+    }
+
+    for (;;) {
+        if (object == classinfo) {
+            return mp_const_true;
+        }
+
+        // not equivalent classes, keep searching base classes
+
+        assert(MP_OBJ_IS_TYPE(object, &mp_const_type));
+        mp_obj_type_t *self = object;
+
+        // for a const struct, this entry might be NULL
+        if (self->bases_tuple == MP_OBJ_NULL) {
+            return mp_const_false;
+        }
+
+        uint len;
+        mp_obj_t *items;
+        mp_obj_tuple_get(self->bases_tuple, &len, &items);
+        if (len == 0) {
+            return mp_const_false;
+        }
+        for (uint i = 0; i < len - 1; i++) {
+            if (mp_builtin_issubclass(items[i], classinfo) == mp_const_true) {
+                return mp_const_true;
+            }
+        }
+
+        // search last base (simple tail recursion elimination)
+        object = items[len - 1];
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_builtin_issubclass);
+
+static mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
+    return mp_builtin_issubclass(mp_obj_get_type(object), classinfo);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);

@@ -136,6 +136,7 @@ mp_obj_t mp_obj_new_tuple_reverse(uint n, const mp_obj_t *items) {
 }
 
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
     mp_obj_tuple_t *self = self_in;
     *len = self->len;
     *items = &self->items[0];
