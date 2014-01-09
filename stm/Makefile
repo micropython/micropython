@@ -27,9 +27,9 @@ CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLA
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS = -O0 -ggdb
+CFLAGS += -O0 -ggdb
 else
-CFLAGS = -Os -DNDEBUG
+CFLAGS += -Os -DNDEBUG
 endif
 
 LDFLAGS = --nostdlib -T stm32f405.ld
