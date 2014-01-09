@@ -852,8 +852,9 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_0(pyb_rng_get));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));
-	rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_2(pyb_I2C));
+        rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_2(pyb_I2C));
         rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
+        rt_store_attr(m, qstr_from_str_static("Usart"), rt_make_function_2(pyb_Usart));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
