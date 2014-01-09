@@ -287,3 +287,9 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;
 }
+
+mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    return &self->map;
+}

@@ -18,7 +18,7 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
-typedef enum {
+typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP,
     MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,

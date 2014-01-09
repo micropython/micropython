@@ -61,6 +61,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // Need to declare this here so we are not dependent on map.h
 struct _mp_map_t;
+struct _mp_map_elem_t;
+enum _mp_map_lookup_kind_t;
 
 // Type definitions for methods
 
@@ -78,6 +80,8 @@ typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *ar
 typedef mp_obj_t (*mp_call_n_kw_fun_t)(mp_obj_t fun, int n_args, int n_kw, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
+typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[1] = value; for method, dest[0] = self, dest[1] = method
+typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded
 
 typedef struct _mp_method_t {
     const char *name;
@@ -141,15 +145,14 @@ struct _mp_obj_type_t {
 
     const mp_method_t *methods;
 
+    mp_load_attr_fun_t load_attr;
+    mp_store_attr_fun_t store_attr;
+    mp_obj_t locals;
+
     /*
     What we might need to add here:
 
-    dynamic_type    instance
-
     compare_op
-    load_attr       module instance class list
-    load_method     instance str gen list user
-    store_attr      module instance class
     store_subscr    list dict
 
     len             str tuple list map
@@ -160,7 +163,6 @@ struct _mp_obj_type_t {
     get_array_n     tuple list
 
     unpack seq      list tuple
-    __next__        gen-instance
     */
 };
 
@@ -178,6 +180,7 @@ extern const mp_obj_t mp_const_stop_iteration; // special object indicating end 
 
 // General API for objects
 
+mp_obj_t mp_obj_new_type(qstr name, mp_obj_t local_dict);
 mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
@@ -207,8 +210,6 @@ mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
-mp_obj_t mp_obj_new_class(struct _mp_map_t *class_locals);
-mp_obj_t mp_obj_new_instance(mp_obj_t clas);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
 mp_obj_t mp_obj_get_type(mp_obj_t o_in);
@@ -278,6 +279,7 @@ void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 extern const mp_obj_type_t dict_type;
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
+struct _mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 
 // set
 extern const mp_obj_type_t set_type;
@@ -307,15 +309,7 @@ void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte 
 extern const mp_obj_type_t gen_instance_type;
 
 // class
-extern const mp_obj_type_t class_type;
-extern const mp_obj_t gen_instance_next_obj;
-struct _mp_map_t *mp_obj_class_get_locals(mp_obj_t self_in);
-
-// instance
-extern const mp_obj_type_t instance_type;
-mp_obj_t mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr);
-void mp_obj_instance_load_method(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-void mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value);
+struct _mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, enum _mp_map_lookup_kind_t lookup_kind);
 
 // module
 extern const mp_obj_type_t module_type;

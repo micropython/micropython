@@ -188,8 +188,10 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
         DEBUG_printf(" %02x", code[i]);
     }
     DEBUG_printf("\n");
+#if MICROPY_SHOW_BC
     extern void mp_show_byte_code(const byte *code, int len);
     mp_show_byte_code(code, len);
+#endif
 
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
@@ -775,85 +777,74 @@ mp_obj_t rt_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value) {
 }
 
 mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
-    DEBUG_OP_printf("load attr %s\n", qstr_str(attr));
-    if (MP_OBJ_IS_TYPE(base, &class_type)) {
-        mp_map_elem_t *elem = mp_map_lookup(mp_obj_class_get_locals(base), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem == NULL) {
-            // TODO what about generic method lookup?
-            goto no_attr;
-        }
-        return elem->value;
-    } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
-        return mp_obj_instance_load_attr(base, attr);
-    } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
-        DEBUG_OP_printf("lookup module map %p\n", mp_obj_module_get_globals(base));
-        mp_map_elem_t *elem = mp_map_lookup(mp_obj_module_get_globals(base), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem == NULL) {
-            // TODO what about generic method lookup?
-            goto no_attr;
-        }
-        return elem->value;
-    } else if (MP_OBJ_IS_OBJ(base)) {
-        // generic method lookup
-        mp_obj_base_t *o = base;
-        const mp_method_t *meth = o->type->methods;
-        if (meth != NULL) {
-            for (; meth->name != NULL; meth++) {
-                if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                    return mp_obj_new_bound_meth(base, (mp_obj_t)meth->fun);
-                }
-            }
-        }
+    DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
+    // use load_method
+    mp_obj_t dest[2];
+    rt_load_method(base, attr, dest);
+    if (dest[0] == NULL) {
+        // load_method returned just a normal attribute
+        return dest[1];
+    } else {
+        // load_method returned a method, so build a bound method object
+        return mp_obj_new_bound_meth(dest[0], dest[1]);
     }
-
-no_attr:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
-    DEBUG_OP_printf("load method %s\n", qstr_str(attr));
-    if (MP_OBJ_IS_TYPE(base, &gen_instance_type) && attr == MP_QSTR___next__) {
-        dest[1] = (mp_obj_t)&mp_builtin_next_obj;
-        dest[0] = base;
-        return;
-    } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
-        mp_obj_instance_load_method(base, attr, dest);
-        return;
-    } else if (MP_OBJ_IS_OBJ(base)) {
-        // generic method lookup
-        mp_obj_base_t *o = base;
-        const mp_method_t *meth = o->type->methods;
-        if (meth != NULL) {
-            for (; meth->name != NULL; meth++) {
-                if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                    dest[1] = (mp_obj_t)meth->fun;
-                    dest[0] = base;
-                    return;
+    DEBUG_OP_printf("load method %p.%s\n", base, qstr_str(attr));
+
+    // clear output to indicate no attribute/method found yet
+    dest[0] = MP_OBJ_NULL;
+    dest[1] = MP_OBJ_NULL;
+
+    // get the type
+    mp_obj_type_t *type = mp_obj_get_type(base);
+
+    // if this type can do its own load, then call it
+    if (type->load_attr != NULL) {
+        type->load_attr(base, attr, dest);
+    }
+
+    // if nothing found yet, look for built-in and generic names
+    if (dest[1] == NULL) {
+        if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+            dest[1] = (mp_obj_t)&mp_builtin_next_obj;
+            dest[0] = base;
+        } else {
+            // generic method lookup
+            const mp_method_t *meth = type->methods;
+            if (meth != NULL) {
+                for (; meth->name != NULL; meth++) {
+                    if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                        dest[1] = (mp_obj_t)meth->fun;
+                        dest[0] = base;
+                        break;
+                    }
                 }
             }
         }
     }
 
-    // no method; fallback to load_attr
-    dest[1] = rt_load_attr(base, attr);
-    dest[0] = NULL;
+    if (dest[1] == NULL) {
+        // no attribute/method called attr
+        // following CPython, we give a more detailed error message for type objects
+        if (MP_OBJ_IS_TYPE(base, &mp_const_type)) {
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "type object '%s' has no attribute '%s'", ((mp_obj_type_t*)base)->name, qstr_str(attr)));
+        } else {
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+        }
+    }
 }
 
 void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
-    if (MP_OBJ_IS_TYPE(base, &class_type)) {
-        // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
-        mp_map_t *locals = mp_obj_class_get_locals(base);
-        mp_map_lookup(locals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    } else if (MP_OBJ_IS_TYPE(base, &instance_type)) {
-        mp_obj_instance_store_attr(base, attr, value);
-    } else if (MP_OBJ_IS_TYPE(base, &module_type)) {
-        // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-        mp_map_t *globals = mp_obj_module_get_globals(base);
-        mp_map_lookup(globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    mp_obj_type_t *type = mp_obj_get_type(base);
+    if (type->store_attr != NULL) {
+        if (type->store_attr(base, attr, value)) {
+            return;
+        }
     }
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {

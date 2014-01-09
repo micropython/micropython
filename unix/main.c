@@ -210,6 +210,18 @@ int main(int argc, char **argv) {
     rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
     rt_store_name(qstr_from_str_static("open"), (mp_obj_t)&mp_builtin_open_obj);
 
+    // Here is some example code to create a class and instance of that class.
+    // First is the Python, then the C code.
+    //
+    // class TestClass:
+    //     pass
+    // test_obj = TestClass()
+    // test_obj.attr = 42
+    mp_obj_t test_class_type, test_class_instance;
+    test_class_type = mp_obj_new_type(qstr_from_str_static("TestClass"), mp_obj_new_dict(0));
+    rt_store_name(qstr_from_str_static("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
+    rt_store_attr(test_class_instance, qstr_from_str_static("attr"), mp_obj_new_int(42));
+
     /*
     printf("bytes:\n");
     printf("    total %d\n", m_get_total_bytes_allocated());

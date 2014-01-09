@@ -17,15 +17,32 @@ typedef struct _mp_obj_module_t {
     mp_map_t *globals;
 } mp_obj_module_t;
 
-void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     mp_obj_module_t *self = self_in;
     print(env, "<module '%s' from '-unknown-file-'>", qstr_str(self->name));
+}
+
+static void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_module_t *self = self_in;
+    mp_map_elem_t *elem = mp_map_lookup(self->globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        dest[1] = elem->value;
+    }
+}
+
+static bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+    mp_obj_module_t *self = self_in;
+    // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
+    mp_map_lookup(self->globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+    return true;
 }
 
 const mp_obj_type_t module_type = {
     { &mp_const_type },
     "module",
     .print = module_print,
+    .load_attr = module_load_attr,
+    .store_attr = module_store_attr,
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {

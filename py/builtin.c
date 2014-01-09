@@ -23,8 +23,8 @@ mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
 
     // we differ from CPython: we set the new __locals__ object here
     mp_map_t *old_locals = rt_locals_get();
-    mp_map_t *class_locals = mp_map_new(0);
-    rt_locals_set(class_locals);
+    mp_obj_t class_locals = mp_obj_new_dict(0);
+    rt_locals_set(mp_obj_dict_get_map(class_locals));
 
     // call the class code
     mp_obj_t cell = rt_call_function_1(args[0], (mp_obj_t)0xdeadbeef);
@@ -32,7 +32,6 @@ mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
     // restore old __locals__ object
     rt_locals_set(old_locals);
 
-    /*
     // get the class type (meta object) from the base objects
     mp_obj_t meta;
     if (n_args == 2) {
@@ -42,21 +41,16 @@ mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
         // use type of first base object
         meta = mp_obj_get_type(args[2]);
     }
-    */
 
     // TODO do proper metaclass resolution for multiple base objects
 
-    /*
     // create the new class using a call to the meta object
     // (arguments must be backwards in the array)
     mp_obj_t meta_args[3];
     meta_args[2] = args[1]; // class name
     meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
-    meta_args[0] = class_locals; // dict of members TODO, currently is a map
+    meta_args[0] = class_locals; // dict of members
     mp_obj_t new_class = rt_call_function_n(meta, 3, meta_args);
-    */
-    // create the new class
-    mp_obj_t new_class = mp_obj_new_class(class_locals);
 
     // store into cell if neede
     if (cell != mp_const_none) {

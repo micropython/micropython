@@ -74,7 +74,6 @@ PY_O_BASENAME = \
 	objbool.o \
 	objboundmeth.o \
 	objcell.o \
-	objclass.o \
 	objclosure.o \
 	objcomplex.o \
 	objdict.o \
@@ -82,7 +81,6 @@ PY_O_BASENAME = \
 	objfloat.o \
 	objfun.o \
 	objgenerator.o \
-	objinstance.o \
 	objint.o \
 	objlist.o \
 	objmodule.o \

@@ -65,6 +65,8 @@ void decode_addr_and_store(mp_obj_t object, qstr q_attr, unsigned char *ip, int 
     rt_store_attr(object, q_attr, decode_addr(ip, n_bytes));
 }
 
+static mp_obj_t net_address_type = MP_OBJ_NULL;
+
 mp_obj_t pyb_wlan_get_ip(void) {
     tNetappIpconfigRetArgs ipconfig;
     netapp_ipconfig(&ipconfig);
@@ -74,16 +76,24 @@ mp_obj_t pyb_wlan_get_ip(void) {
         return mp_const_none;
     }
 
-    mp_obj_t data = mp_obj_new_class(mp_map_new(0)); // TODO should this be an instance of a class?
-    decode_addr_and_store(data, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
-    decode_addr_and_store(data, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
-    decode_addr_and_store(data, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
-    decode_addr_and_store(data, qstr_from_str_static("dhcp"), &ipconfig.aucDHCPServer[0], 4);
-    decode_addr_and_store(data, qstr_from_str_static("dns"), &ipconfig.aucDNSServer[0], 4);
-    decode_addr_and_store(data, qstr_from_str_static("mac"), &ipconfig.uaMacAddr[0], 6);
-    decode_addr_and_store(data, qstr_from_str_static("ssid"), &ipconfig.uaSSID[0], 32);
+    // if it doesn't already exist, make a new empty class for NetAddress objects
+    if (net_address_type == MP_OBJ_NULL) {
+        net_address_type = mp_obj_new_type(qstr_from_str_static("NetAddress"), mp_obj_new_dict(0));
+    }
 
-    return data;
+    // make a new NetAddress object
+    mp_obj_t net_addr = rt_call_function_0(net_address_type);
+
+    // fill the NetAddress object with data
+    decode_addr_and_store(net_addr, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
+    decode_addr_and_store(net_addr, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
+    decode_addr_and_store(net_addr, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
+    decode_addr_and_store(net_addr, qstr_from_str_static("dhcp"), &ipconfig.aucDHCPServer[0], 4);
+    decode_addr_and_store(net_addr, qstr_from_str_static("dns"), &ipconfig.aucDNSServer[0], 4);
+    decode_addr_and_store(net_addr, qstr_from_str_static("mac"), &ipconfig.uaMacAddr[0], 6);
+    decode_addr_and_store(net_addr, qstr_from_str_static("ssid"), &ipconfig.uaSSID[0], 32);
+
+    return net_addr;
 }
 
 uint32_t last_ip = 0; // XXX such a hack!
