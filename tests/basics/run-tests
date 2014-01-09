@@ -5,6 +5,7 @@ CPYTHON3=python3.3
 MP_PY=../../unix/py
 
 numtests=0
+numtestcases=0
 numpassed=0
 numfailed=0
 namefailed=
@@ -17,6 +18,7 @@ do
 
     $CPYTHON3 -B $infile > $expfile
     $MP_PY $infile > $outfile
+    ((numtestcases = numtestcases + $(cat $expfile | wc -l)))
 
     diff --brief $expfile $outfile > /dev/null
 
@@ -35,7 +37,7 @@ do
     ((numtests=numtests + 1))
 done
 
-echo "$numtests tests performed"
+echo "$numtests tests performed ($numtestcases individual testcases)"
 echo "$numpassed tests passed"
 if [[ $numfailed != 0 ]]
 then
