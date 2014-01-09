@@ -2,6 +2,9 @@
 #include <stdarg.h>
 #include "std.h"
 #include "misc.h"
+#include "systick.h"
+#include "mpconfig.h"
+#include "obj.h"
 #include "lcd.h"
 #include "usart.h"
 #include "usb.h"

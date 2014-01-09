@@ -1,39 +1,131 @@
+#include <stdio.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_usart.h>
 
 #include "misc.h"
+#include "mpconfig.h"
+#include "obj.h"
 #include "usart.h"
 
 static bool is_enabled;
 
-// USART6 on PC6 (TX), PC7 (RX)
-void usart_init(void) {
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE);
+typedef enum {
+    PYB_USART_1 = 1,
+    PYB_USART_2 = 2,
+    PYB_USART_3 = 3,
+    PYB_USART_6 = 4,
+    PYB_USART_MAX = 4,
+} pyb_usart_t;
 
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
+static USART_TypeDef *usart_get_base(pyb_usart_t usart_id) {
+    USART_TypeDef *USARTx=NULL;
+
+    switch (usart_id) {
+        case PYB_USART_1:
+            USARTx = USART1;
+            break;
+        case PYB_USART_2:
+            USARTx = USART2;
+            break;
+        case PYB_USART_3:
+            USARTx = USART3;
+            break;
+        case PYB_USART_6:
+            USARTx = USART6;
+            break;
+    }
+
+    return USARTx;
+}
+
+void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
+    USART_TypeDef *USARTx=NULL;
+
+    uint32_t GPIO_Pin=0;
+    uint8_t  GPIO_AF_USARTx=0;
+    GPIO_TypeDef* GPIO_Port=NULL;
+    uint16_t GPIO_PinSource_TX=0;
+    uint16_t GPIO_PinSource_RX=0;
+
+    uint32_t RCC_APBxPeriph=0;
+    void (*RCC_APBxPeriphClockCmd)(uint32_t, FunctionalState)=NULL;
+
+    switch (usart_id) {
+        case PYB_USART_1:
+            USARTx = USART1;
+
+            GPIO_Port = GPIOA;
+            GPIO_AF_USARTx = GPIO_AF_USART1;
+            GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
+            GPIO_PinSource_TX = GPIO_PinSource9;
+            GPIO_PinSource_RX = GPIO_PinSource10;
+
+            RCC_APBxPeriph = RCC_APB2Periph_USART1;
+            RCC_APBxPeriphClockCmd =RCC_APB2PeriphClockCmd;
+            break;
+        case PYB_USART_2:
+            USARTx = USART2;
+
+            GPIO_Port = GPIOD;
+            GPIO_AF_USARTx = GPIO_AF_USART2;
+            GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
+            GPIO_PinSource_TX = GPIO_PinSource5;
+            GPIO_PinSource_RX = GPIO_PinSource6;
+
+            RCC_APBxPeriph = RCC_APB1Periph_USART2;
+            RCC_APBxPeriphClockCmd =RCC_APB1PeriphClockCmd;
+            break;
+        case PYB_USART_3:
+            USARTx = USART3;
+
+            GPIO_Port = GPIOD;
+            GPIO_AF_USARTx = GPIO_AF_USART3;
+            GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+            GPIO_PinSource_TX = GPIO_PinSource8;
+            GPIO_PinSource_RX = GPIO_PinSource9;
+
+            RCC_APBxPeriph = RCC_APB1Periph_USART3;
+            RCC_APBxPeriphClockCmd =RCC_APB1PeriphClockCmd;
+            break;
+        case PYB_USART_6:
+            USARTx = USART6;
+
+            GPIO_Port = GPIOC;
+            GPIO_AF_USARTx = GPIO_AF_USART6;
+            GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+            GPIO_PinSource_TX = GPIO_PinSource6;
+            GPIO_PinSource_RX = GPIO_PinSource7;
+
+            RCC_APBxPeriph = RCC_APB2Periph_USART6;
+            RCC_APBxPeriphClockCmd =RCC_APB2PeriphClockCmd;
+            break;
+    }
+
+    /* Initialize USARTx */
+    RCC_APBxPeriphClockCmd(RCC_APBxPeriph, ENABLE);
+
+    GPIO_PinAFConfig(GPIO_Port, GPIO_PinSource_TX, GPIO_AF_USARTx);
+    GPIO_PinAFConfig(GPIO_Port, GPIO_PinSource_RX, GPIO_AF_USARTx);
 
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    GPIO_Init(GPIO_Port, &GPIO_InitStructure);
 
     USART_InitTypeDef USART_InitStructure;
-    USART_InitStructure.USART_BaudRate = 115200;
+    USART_InitStructure.USART_BaudRate = baudrate;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(USART6, &USART_InitStructure);
+    USART_Init(USARTx, &USART_InitStructure);
 
-    USART_Cmd(USART6, ENABLE);
-
-    is_enabled = true;
+    USART_Cmd(USARTx, ENABLE);
 }
 
 bool usart_is_enabled(void) {
@@ -44,31 +136,106 @@ bool usart_rx_any(void) {
     return USART_GetFlagStatus(USART6, USART_FLAG_RXNE) == SET;
 }
 
-int usart_rx_char(void) {
-    return USART_ReceiveData(USART6);
+int usart_rx_char(pyb_usart_t usart_id) {
+    USART_TypeDef *USARTx= usart_get_base(usart_id);
+    return USART_ReceiveData(USARTx);
 }
 
-void usart_tx_char(int c) {
-    if (is_enabled) {
-        // wait until the end of any previous transmission
-        uint32_t timeout = 100000;
-        while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET && --timeout > 0) {
-        }
-        USART_SendData(USART6, c);
+void usart_tx_char(pyb_usart_t usart_id, int c) {
+    USART_TypeDef *USARTx = usart_get_base(usart_id);
+    // wait until the end of any previous transmission
+    uint32_t timeout = 100000;
+    while (USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET && --timeout > 0) {
     }
+    USART_SendData(USARTx, c);
 }
 
-void usart_tx_str(const char *str) {
+void usart_tx_str(pyb_usart_t usart_id, const char *str) {
     for (; *str; str++) {
-        usart_tx_char(*str);
+        usart_tx_char(usart_id, *str);
     }
 }
 
-void usart_tx_strn_cooked(const char *str, int len) {
+void usart_tx_strn_cooked(pyb_usart_t usart_id, const char *str, int len) {
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
-            usart_tx_char('\r');
+            usart_tx_char(usart_id, '\r');
         }
-        usart_tx_char(*str);
+        usart_tx_char(usart_id, *str);
     }
+}
+
+
+/******************************************************************************/
+/* Micro Python bindings                                                      */
+
+typedef struct _pyb_usart_obj_t {
+    mp_obj_base_t base;
+    pyb_usart_t usart_id;
+    bool is_enabled;
+} pyb_usart_obj_t;
+
+static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
+    mp_obj_t ret = mp_const_none;
+    pyb_usart_obj_t *self = self_in;
+
+    if (self->is_enabled) {
+        ret =  mp_obj_new_int(usart_rx_char(self->usart_id));
+    }
+    return ret;
+}
+
+static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
+    pyb_usart_obj_t *self = self_in;
+    if (self->is_enabled) {
+        usart_tx_char(self->usart_id, mp_obj_get_int(c));
+    }
+    return mp_const_none;
+}
+
+static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
+    pyb_usart_obj_t *self = self_in;
+    if (self->is_enabled) {
+        //usart_tx_str(self->usart_id, mp_obj_get_str(s));
+        usart_tx_str(self->usart_id, "test");
+    }
+    return mp_const_none;
+}
+
+static void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    pyb_usart_obj_t *self = self_in;
+    print(env, "<Usart %lu>", self->usart_id);
+}
+
+static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
+static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
+static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
+
+static const mp_method_t usart_methods[] = {
+    { "recv_chr", &usart_obj_rx_char_obj },
+    { "send_chr", &usart_obj_tx_char_obj },
+    { "send", &usart_obj_tx_str_obj },
+    { NULL, NULL },
+};
+
+static const mp_obj_type_t usart_obj_type = {
+    { &mp_const_type },
+    "Usart",
+    .print = usart_obj_print,
+    .methods = usart_methods,
+};
+
+mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate) {
+    if (mp_obj_get_int(usart_id)>PYB_USART_MAX) {
+        return mp_const_none;
+    }
+
+    /* init USART */
+    usart_init(mp_obj_get_int(usart_id), mp_obj_get_int(baudrate));
+
+    pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
+    o->base.type = &usart_obj_type;
+    o->usart_id = mp_obj_get_int(usart_id);
+    o->is_enabled = true;
+    return o;
 }
