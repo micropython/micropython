@@ -219,10 +219,13 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // send stdout to USART, USB CDC VCP, and LCD if nothing else
     bool any = false;
+
+    // TODO should have a setting for which USART port to send to
     if (usart_is_enabled()) {
         usart_tx_strn_cooked(str, len);
         any = true;
     }
+
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
         any = true;

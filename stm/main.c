@@ -294,23 +294,6 @@ static mp_obj_t pyb_standby(void) {
     return mp_const_none;
 }
 
-mp_obj_t pyb_usart_send(mp_obj_t data) {
-    usart_tx_char(mp_obj_get_int(data));
-    return mp_const_none;
-}
-
-mp_obj_t pyb_usart_receive(void) {
-    return mp_obj_new_int(usart_rx_char());
-}
-
-mp_obj_t pyb_usart_status(void) {
-    if (usart_rx_any()) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
-}
-
 char *strdup(const char *str) {
     uint32_t len = strlen(str);
     char *s2 = m_new(char, len + 1);
@@ -846,9 +829,6 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("mma_mode"), (mp_obj_t)&pyb_mma_write_mode_obj);
         rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
         rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
-        rt_store_attr(m, qstr_from_str_static("uout"), rt_make_function_1(pyb_usart_send));
-        rt_store_attr(m, qstr_from_str_static("uin"), rt_make_function_0(pyb_usart_receive));
-        rt_store_attr(m, qstr_from_str_static("ustat"), rt_make_function_0(pyb_usart_status));
         rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_0(pyb_rng_get));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));

@@ -175,6 +175,15 @@ typedef struct _pyb_usart_obj_t {
     bool is_enabled;
 } pyb_usart_obj_t;
 
+static mp_obj_t usart_obj_status(mp_obj_t self_in) {
+    // TODO make it check the correct USART port!
+    if (usart_rx_any()) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+
 static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
     mp_obj_t ret = mp_const_none;
     pyb_usart_obj_t *self = self_in;
@@ -207,11 +216,13 @@ static void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "<Usart %lu>", self->usart_id);
 }
 
+static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_status_obj, usart_obj_status);
 static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
 static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
 static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
 
 static const mp_method_t usart_methods[] = {
+    { "status", &usart_obj_status_obj },
     { "recv_chr", &usart_obj_rx_char_obj },
     { "send_chr", &usart_obj_tx_char_obj },
     { "send", &usart_obj_tx_str_obj },

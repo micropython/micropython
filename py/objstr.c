@@ -200,7 +200,7 @@ mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
     size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     //+1 to accomodate '\0'
     char *stripped_str = m_new(char, stripped_len + 1);
-    strncpy(stripped_str, orig_str + first_good_char_pos, stripped_len);
+    memcpy(stripped_str, orig_str + first_good_char_pos, stripped_len);
     stripped_str[stripped_len] = '\0';
     return mp_obj_new_str(qstr_from_str_take(stripped_str, stripped_len + 1));
 }
