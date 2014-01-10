@@ -58,6 +58,11 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("LOAD_CONST_SMALL_INT %d", (int)unum);
                 break;
 
+            case MP_BC_LOAD_CONST_INT:
+                DECODE_QSTR;
+                printf("LOAD_CONST_INT %s", qstr_str(qstr));
+                break;
+
                 /*
             case MP_BC_LOAD_CONST_DEC:
                 DECODE_QSTR;
@@ -174,13 +179,9 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("POP_TOP");
                 break;
 
-                /*
             case MP_BC_ROT_TWO:
-                obj1 = sp[0];
-                sp[0] = sp[1];
-                sp[1] = obj1;
+                printf("ROT_TWO");
                 break;
-                */
 
             case MP_BC_ROT_THREE:
                 printf("ROT_THREE");
@@ -341,6 +342,11 @@ void mp_show_byte_code(const byte *ip, int len) {
 
             case MP_BC_RETURN_VALUE:
                 printf("RETURN_VALUE");
+                break;
+
+            case MP_BC_RAISE_VARARGS:
+                unum = *ip++;
+                printf("RAISE_VARARGS " UINT_FMT, unum);
                 break;
 
             case MP_BC_YIELD_VALUE:
