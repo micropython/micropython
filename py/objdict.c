@@ -247,16 +247,149 @@ static MP_DEFINE_CONST_FUN_OBJ_2(dict_update_obj, dict_update);
 
 
 /******************************************************************************/
+/* dict views                                                                 */
+
+static const mp_obj_type_t dict_view_type;
+static const mp_obj_type_t dict_view_it_type;
+
+typedef enum _mp_dict_view_kind_t {
+    MP_DICT_VIEW_ITEMS,
+    MP_DICT_VIEW_KEYS,
+    MP_DICT_VIEW_VALUES,
+} mp_dict_view_kind_t;
+
+static char *mp_dict_view_names[] = {"dict_items", "dict_keys", "dict_values"};
+
+typedef struct _mp_obj_dict_view_it_t {
+    mp_obj_base_t base;
+    mp_dict_view_kind_t kind;
+    mp_obj_dict_it_t *iter;
+    machine_uint_t cur;
+} mp_obj_dict_view_it_t;
+
+typedef struct _mp_obj_dict_view_t {
+    mp_obj_base_t base;
+    mp_obj_dict_t *dict;
+    mp_dict_view_kind_t kind;
+} mp_obj_dict_view_t;
+
+static mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_view_it_type));
+    mp_obj_dict_view_it_t *self = self_in;
+    mp_map_elem_t *next = dict_it_iternext_elem(self->iter);
+
+    if (next != NULL) {
+        switch (self->kind) {
+        case MP_DICT_VIEW_ITEMS:
+        {
+            mp_obj_t items[] = {next->key, next->value};
+            return mp_obj_new_tuple(2, items);
+        }
+        case MP_DICT_VIEW_KEYS:
+        {
+            return next->key;
+        }
+        case MP_DICT_VIEW_VALUES:
+        {
+            return next->value;
+        }
+        default:
+        {
+            assert(0);          /* can't happen */
+        }
+        }
+    } else {
+        return mp_const_stop_iteration;
+    }
+}
+
+static const mp_obj_type_t dict_view_it_type = {
+    { &mp_const_type },
+    "dict_view_iterator",
+    .iternext = dict_view_it_iternext,
+    .methods = NULL,            /* set operations still to come */
+};
+
+static mp_obj_t dict_view_getiter(mp_obj_t view_in) {
+    assert(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
+    mp_obj_dict_view_t *view = view_in;
+    mp_obj_dict_view_it_t *o = m_new_obj(mp_obj_dict_view_it_t);
+    o->base.type = &dict_view_it_type;
+    o->kind = view->kind;
+    o->iter = mp_obj_new_dict_iterator(view->dict, 0);
+    return o;
+}
+
+
+static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
+    mp_obj_dict_view_t *self = self_in;
+    bool first = true;
+    print(env, mp_dict_view_names[self->kind]);
+    print(env, "([");
+    mp_obj_t *self_iter = dict_view_getiter(self);
+    mp_obj_t *next = NULL;
+    while ((next = dict_view_it_iternext(self_iter)) != mp_const_stop_iteration) {
+        if (!first) {
+            print(env, ", ");
+        }
+        first = false;
+        mp_obj_print_helper(print, env, next);
+    }
+    print(env, "])");
+}
+
+static const mp_obj_type_t dict_view_type = {
+    { &mp_const_type },
+    "dict_view",
+    .print = dict_view_print,
+    .getiter = dict_view_getiter,
+};
+
+mp_obj_t mp_obj_new_dict_view(mp_obj_dict_t *dict, mp_dict_view_kind_t kind) {
+    mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
+    o->base.type = &dict_view_type;
+    o->dict = dict;
+    o->kind = kind;
+    return o;
+}
+
+
+static mp_obj_t dict_view(mp_obj_t self_in, mp_dict_view_kind_t kind) {
+    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    mp_obj_dict_t *self = self_in;
+    return mp_obj_new_dict_view(self, kind);
+}
+
+static mp_obj_t dict_items(mp_obj_t self_in) {
+    return dict_view(self_in, MP_DICT_VIEW_ITEMS);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_items_obj, dict_items);
+
+static mp_obj_t dict_keys(mp_obj_t self_in) {
+    return dict_view(self_in, MP_DICT_VIEW_KEYS);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_keys_obj, dict_keys);
+
+static mp_obj_t dict_values(mp_obj_t self_in) {
+    return dict_view(self_in, MP_DICT_VIEW_VALUES);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
+
+/******************************************************************************/
 /* dict constructors & etc                                                    */
 
 static const mp_method_t dict_type_methods[] = {
     { "clear", &dict_clear_obj },
     { "copy", &dict_copy_obj },
     { "get", &dict_get_obj },
+    { "items", &dict_items_obj },
+    { "keys", &dict_keys_obj },
     { "pop", &dict_pop_obj },
     { "popitem", &dict_popitem_obj },
     { "setdefault", &dict_setdefault_obj },
     { "update", &dict_update_obj },
+    { "values", &dict_values_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
