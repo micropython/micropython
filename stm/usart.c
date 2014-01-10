@@ -205,8 +205,10 @@ static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
 static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     pyb_usart_obj_t *self = self_in;
     if (self->is_enabled) {
-        //usart_tx_str(self->usart_id, mp_obj_get_str(s));
-        usart_tx_str(self->usart_id, "test");
+        if (MP_OBJ_IS_TYPE(s, &str_type)) {
+            const char *str = qstr_str(mp_obj_get_qstr(s));
+            usart_tx_str(self->usart_id, str);
+        }
     }
     return mp_const_none;
 }
