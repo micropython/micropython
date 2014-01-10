@@ -1460,10 +1460,14 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
 
     EMIT(label_assign, continue_label);
 
-    // compile: if var < end: goto top
+    // compile: if var <cond> end: goto top
     compile_node(comp, pn_var);
     compile_node(comp, pn_end);
-    EMIT(compare_op, RT_COMPARE_OP_LESS);
+    if (MP_PARSE_NODE_LEAF_ARG(pn_step) >= 0) {
+        EMIT(compare_op, RT_COMPARE_OP_LESS);
+    } else {
+        EMIT(compare_op, RT_COMPARE_OP_MORE);
+    }
     EMIT(pop_jump_if_true, top_label);
 
     // break/continue apply to outer loop (if any) in the else block
@@ -1482,14 +1486,19 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // for viper it will be much, much faster
     if (/*comp->scope_cur->emit_options == EMIT_OPT_VIPER &&*/ MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
         mp_parse_node_struct_t *pns_it = (mp_parse_node_struct_t*)pns->nodes[1];
-        if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren) && MP_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
+        if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0]) 
+            && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range
+            && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren)
+            && MP_PARSE_NODE_IS_NULL(pns_it->nodes[2])) {
             mp_parse_node_t pn_range_args = ((mp_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
             mp_parse_node_t *args;
             int n_args = list_get(&pn_range_args, PN_arglist, &args);
+            mp_parse_node_t pn_range_start;
+            mp_parse_node_t pn_range_end;
+            mp_parse_node_t pn_range_step;
+            bool optimize = false;
             if (1 <= n_args && n_args <= 3) {
-                mp_parse_node_t pn_range_start;
-                mp_parse_node_t pn_range_end;
-                mp_parse_node_t pn_range_step;
+                optimize = true;
                 if (n_args == 1) {
                     pn_range_start = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 0);
                     pn_range_end = args[0];
@@ -1502,7 +1511,13 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     pn_range_start = args[0];
                     pn_range_end = args[1];
                     pn_range_step = args[2];
+                    // We need to know sign of step. This is possible only if it's constant
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_range_step)) {
+                        optimize = false;
+                    }
                 }
+            }
+            if (optimize) {
                 compile_for_stmt_optimised_range(comp, pns->nodes[0], pn_range_start, pn_range_end, pn_range_step, pns->nodes[2], pns->nodes[3]);
                 return;
             }
