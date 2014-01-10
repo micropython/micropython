@@ -20,7 +20,7 @@ bool mp_repl_is_compound_stmt(const char *line) {
            str_startswith_word(line, "if")
         || str_startswith_word(line, "while")
         || str_startswith_word(line, "for")
-        || str_startswith_word(line, "true")
+        || str_startswith_word(line, "try")
         || str_startswith_word(line, "with")
         || str_startswith_word(line, "def")
         || str_startswith_word(line, "class")
