@@ -474,6 +474,13 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         assert(exc_sp == &exc_stack[0] - 1);
                         return false;
 
+                    case MP_BC_RAISE_VARARGS:
+                        unum = *ip++;
+                        assert(unum == 1);
+                        obj1 = POP();
+                        nlr_jump(obj1);
+                        return false;
+
                     case MP_BC_YIELD_VALUE:
                         nlr_pop();
                         *ip_in_out = ip;
