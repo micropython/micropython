@@ -7,3 +7,13 @@ def f():
                 print(x, y, z)
 
 f()
+
+# range with negative step
+for i in range(3, -1, -1):
+    print(i)
+
+a = -1
+# range with non-constant step - we optimize constant steps, so this
+# will be executed differently
+for i in range(3, -1, a):
+    print(i)
