@@ -536,7 +536,9 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     // TODO specify in error message what the operator is
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unsupported operand type for binary operator: '%s'", mp_obj_get_type_str(lhs)));
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
+        "unsupported operand types for binary operator: '%s', '%s'",
+        mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
 }
 
 mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
