@@ -166,25 +166,12 @@ static mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
 mp_obj_t mp_builtin_len(mp_obj_t o_in) {
-    mp_small_int_t len = 0;
-    if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
-        len = strlen(qstr_str(mp_obj_str_get(o_in)));
-    } else if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
-        uint seq_len;
-        mp_obj_t *seq_items;
-        mp_obj_tuple_get(o_in, &seq_len, &seq_items);
-        len = seq_len;
-    } else if (MP_OBJ_IS_TYPE(o_in, &list_type)) {
-        uint seq_len;
-        mp_obj_t *seq_items;
-        mp_obj_list_get(o_in, &seq_len, &seq_items);
-        len = seq_len;
-    } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
-        len = mp_obj_dict_len(o_in);
-    } else {
+    mp_obj_t len = mp_obj_len_maybe(o_in);
+    if (len == NULL) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+    } else {
+        return len;
     }
-    return MP_OBJ_NEW_SMALL_INT(len);
 }
 
 mp_obj_t mp_builtin_max(int n_args, const mp_obj_t *args) {

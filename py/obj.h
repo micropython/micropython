@@ -234,6 +234,7 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 qstr mp_obj_get_qstr(mp_obj_t arg);
 mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o, machine_int_t n);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index);
+mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 
 // none
 extern const mp_obj_type_t none_type;

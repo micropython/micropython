@@ -376,6 +376,61 @@ static mp_obj_t dict_values(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 
+
+/******************************************************************************/
+/* dict metaclass                                                             */
+
+static mp_obj_t dict_fromkeys(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 3);
+    mp_obj_t iter = rt_getiter(args[1]);
+    mp_obj_t len = mp_obj_len_maybe(iter);
+    mp_obj_t value = mp_const_none;
+    mp_obj_t next = NULL;
+    mp_obj_dict_t *self = NULL;
+
+    if (n_args > 2) {
+        value = args[2];
+    }
+
+    if (len == NULL) {
+        /* object's type doesn't have a __len__ slot */
+        self = mp_obj_new_dict(0);
+    } else {
+        self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
+    }
+
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+    }
+
+    return self;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_fromkeys_obj, 2, 3, dict_fromkeys);
+
+static const mp_method_t dict_class_methods[] = {
+    { "fromkeys", &dict_fromkeys_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
+
+/* this should be unnecessary when inheritance works */
+static void dict_class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+    print(env, "<class 'dict'>");
+}
+
+/* this should be unnecessary when inheritance works */
+static mp_obj_t dict_class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+    return rt_build_map(0);
+}
+
+static const mp_obj_type_t dict_class = {
+    { &mp_const_type },
+    "dict_class",
+    .print = dict_class_print,
+    .methods = dict_class_methods,
+    .call_n = dict_class_call_n,
+};
+
+
 /******************************************************************************/
 /* dict constructors & etc                                                    */
 
@@ -394,7 +449,7 @@ static const mp_method_t dict_type_methods[] = {
 };
 
 const mp_obj_type_t dict_type = {
-    { &mp_const_type },
+    { &dict_class },
     "dict",
     .print = dict_print,
     .make_new = dict_make_new,
