@@ -81,6 +81,21 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             memcpy(s->items + o->len, p->items, sizeof(mp_obj_t) * p->len);
             return s;
         }
+        case RT_BINARY_OP_MULTIPLY:
+        {
+            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+                return NULL;
+            }
+            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
+            int len = o->len;
+            mp_obj_list_t *s = list_new(len * n);
+            mp_obj_t *dest = s->items;
+            for (int i = 0; i < n; i++) {
+                memcpy(dest, o->items, sizeof(mp_obj_t) * len);
+                dest += len;
+            }
+            return s;
+        }
         default:
             // op not supported
             return NULL;
