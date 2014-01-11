@@ -553,6 +553,8 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             if (fit_small_int(lhs_val)) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             }
+            // TODO: return long int
+            assert(0);
         } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
