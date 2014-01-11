@@ -81,7 +81,7 @@
 #define MP_BC_UNPACK_EX          (0x7a) // uint
 
 #define MP_BC_RETURN_VALUE       (0x80)
-#define MP_BC_RAISE_VARARGS      (0x81) // uint
+#define MP_BC_RAISE_VARARGS      (0x81) // byte
 #define MP_BC_YIELD_VALUE        (0x82)
 #define MP_BC_YIELD_FROM         (0x83)
 

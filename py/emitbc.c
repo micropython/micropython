@@ -672,9 +672,9 @@ static void emit_bc_return_value(emit_t *emit) {
 }
 
 static void emit_bc_raise_varargs(emit_t *emit, int n_args) {
-    assert(n_args >= 0);
+    assert(0 <= n_args && n_args <= 2);
     emit_pre(emit, -n_args);
-    emit_write_byte_1_uint(emit, MP_BC_RAISE_VARARGS, n_args);
+    emit_write_byte_1_byte(emit, MP_BC_RAISE_VARARGS, n_args);
 }
 
 static void emit_bc_yield_value(emit_t *emit) {

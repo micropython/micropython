@@ -479,7 +479,6 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         assert(unum == 1);
                         obj1 = POP();
                         nlr_jump(obj1);
-                        return false;
 
                     case MP_BC_YIELD_VALUE:
                         nlr_pop();
