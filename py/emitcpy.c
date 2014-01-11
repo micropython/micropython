@@ -551,7 +551,13 @@ static void emit_cpy_unary_op(emit_t *emit, rt_unary_op_t op) {
 }
 
 static void emit_cpy_binary_op(emit_t *emit, rt_binary_op_t op) {
-    emit_pre(emit, -1, 1);
+    if (op <= RT_BINARY_OP_INPLACE_POWER) {
+        // CPython uses a byte code for each binary op
+        emit_pre(emit, -1, 1);
+    } else {
+        // CPython uses a byte code plus an argument for compare ops
+        emit_pre(emit, -1, 3);
+    }
     if (emit->pass == PASS_3) {
         switch (op) {
             case RT_BINARY_OP_SUBSCR: printf("BINARY_SUBSCR\n"); break;

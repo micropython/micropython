@@ -997,13 +997,29 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        assert(op == RT_BINARY_OP_ADD || op == RT_BINARY_OP_INPLACE_ADD);
+        if (op == RT_BINARY_OP_ADD || op == RT_BINARY_OP_INPLACE_ADD) {
 #if N_X64
-        asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
+            asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
 #elif N_THUMB
-        asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
+            asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
-        emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else if (op == RT_COMPARE_OP_LESS) {
+#if N_X64
+            asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
+            asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
+            asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
+#elif N_THUMB
+            asm_thumb_cmp_reg_reg(emit->as, REG_ARG_2, REG_ARG_3);
+            asm_thumb_ite_ge(emit->as);
+            asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
+            asm_thumb_movs_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
+#endif
+            emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
+        } else {
+            // TODO other ops not yet implemented
+            assert(0);
+        }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
         emit_call_with_imm_arg(emit, RT_F_BINARY_OP, rt_binary_op, op, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
