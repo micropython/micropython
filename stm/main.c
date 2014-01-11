@@ -307,7 +307,7 @@ char *strdup(const char *str) {
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 void stdout_tx_str(const char *str) {
-    usart_tx_str(str);
+    //usart_tx_str(str); // disabled because usart is a Python object and we now need specify which USART port
     usb_vcp_send_str(str);
 }
 
@@ -322,10 +322,10 @@ int readline(vstr_t *line, const char *prompt) {
             if (usb_vcp_rx_any() != 0) {
                 c = usb_vcp_rx_get();
                 break;
-            } else if (usart_rx_any()) {
+            } /*else if (usart_rx_any()) { // disabled because usart is a Python object and we now need specify which USART port
                 c = usart_rx_char();
                 break;
-            }
+            }*/
             sys_tick_delay_ms(1);
             if (storage_needs_flush()) {
                 storage_flush();
@@ -775,7 +775,7 @@ int main(void) {
     switch_init();
     storage_init();
 
-    //usart_init(); disabled while wi-fi is enabled
+    //usart_init(); disabled while wi-fi is enabled; also disabled because now usart is a proper Python object
 
     int first_soft_reset = true;
 
