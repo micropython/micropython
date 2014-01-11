@@ -155,7 +155,6 @@ struct _mp_obj_type_t {
     /*
     What we might need to add here:
 
-    compare_op
     store_subscr    list dict
 
     len             str tuple list map
@@ -241,6 +240,7 @@ extern const mp_obj_type_t none_type;
 
 // bool
 extern const mp_obj_type_t bool_type;
+#define MP_BOOL(x) (x ? mp_const_true : mp_const_false)
 
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);

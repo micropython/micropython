@@ -11,7 +11,6 @@ void rt_store_name(qstr qstr, mp_obj_t obj);
 void rt_store_global(qstr qstr, mp_obj_t obj);
 mp_obj_t rt_unary_op(int op, mp_obj_t arg);
 mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs);
-mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t rt_make_function_from_id(int unique_code_id);
 mp_obj_t rt_make_function_0(mp_fun_0_t f);
 mp_obj_t rt_make_function_1(mp_fun_1_t f);

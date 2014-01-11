@@ -143,8 +143,8 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
         mp_obj_t *t = tail;
         mp_obj_t v = key_fn == NULL ? tail[0] : rt_call_function_1(key_fn, tail[0]); // get pivot using key_fn
         for (;;) {
-            do ++h; while (rt_compare_op(op, key_fn == NULL ? h[0] : rt_call_function_1(key_fn, h[0]), v) == mp_const_true);
-            do --t; while (h < t && rt_compare_op(op, v, key_fn == NULL ? t[0] : rt_call_function_1(key_fn, t[0])) == mp_const_true);
+            do ++h; while (rt_binary_op(op, key_fn == NULL ? h[0] : rt_call_function_1(key_fn, h[0]), v) == mp_const_true);
+            do --t; while (h < t && rt_binary_op(op, v, key_fn == NULL ? t[0] : rt_call_function_1(key_fn, t[0])) == mp_const_true);
             if (h >= t) break;
             mp_obj_t x = h[0];
             h[0] = t[0];

@@ -1013,31 +1013,6 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     }
 }
 
-static void emit_native_compare_op(emit_t *emit, rt_compare_op_t op) {
-    vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
-    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        assert(op == RT_COMPARE_OP_LESS);
-#if N_X64
-        asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
-        asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
-        asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
-#elif N_THUMB
-        asm_thumb_cmp_reg_reg(emit->as, REG_ARG_2, REG_ARG_3);
-        asm_thumb_ite_ge(emit->as);
-        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
-        asm_thumb_movs_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
-#endif
-        emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
-    } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
-        emit_call_with_imm_arg(emit, RT_F_COMPARE_OP, rt_compare_op, op, REG_ARG_1);
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-    } else {
-        printf("ViperTypeError: can't do comparison between types %d and %d\n", vtype_lhs, vtype_rhs);
-        assert(0);
-    }
-}
-
 static void emit_native_build_tuple(emit_t *emit, int n_args) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
@@ -1297,7 +1272,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_pop_except,
     emit_native_unary_op,
     emit_native_binary_op,
-    emit_native_compare_op,
     emit_native_build_tuple,
     emit_native_build_list,
     emit_native_list_append,
