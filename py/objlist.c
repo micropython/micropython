@@ -21,6 +21,7 @@ typedef struct _mp_obj_list_t {
 
 static mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 static mp_obj_list_t *list_new(uint n);
+static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
 
 /******************************************************************************/
 /* list                                                                       */
@@ -81,6 +82,14 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             memcpy(s->items + o->len, p->items, sizeof(mp_obj_t) * p->len);
             return s;
         }
+        case RT_BINARY_OP_INPLACE_ADD:
+        {
+            if (!MP_OBJ_IS_TYPE(rhs, &list_type)) {
+                return NULL;
+            }
+            list_extend(lhs, rhs);
+            return o;
+        }
         case RT_BINARY_OP_MULTIPLY:
         {
             if (!MP_OBJ_IS_SMALL_INT(rhs)) {
@@ -114,6 +123,23 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
         self->alloc *= 2;
     }
     self->items[self->len++] = arg;
+    return mp_const_none; // return None, as per CPython
+}
+
+static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &list_type));
+    assert(MP_OBJ_IS_TYPE(arg_in, &list_type));
+    mp_obj_list_t *self = self_in;
+    mp_obj_list_t *arg = arg_in;
+
+    if (self->len + arg->len > self->alloc) {
+        // TODO: use alloc policy for "4"
+        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + arg->len + 4);
+        self->alloc = self->len + arg->len + 4;
+    }
+
+    memcpy(self->items + self->len, arg->items, sizeof(mp_obj_t) * arg->len);
+    self->len += arg->len;
     return mp_const_none; // return None, as per CPython
 }
 
@@ -281,6 +307,7 @@ static mp_obj_t list_reverse(mp_obj_t self_in) {
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_extend_obj, list_extend);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
@@ -296,6 +323,7 @@ static const mp_method_t list_type_methods[] = {
     { "clear", &list_clear_obj },
     { "copy", &list_copy_obj },
     { "count", &list_count_obj },
+    { "extend", &list_extend_obj },
     { "index", &list_index_obj },
     { "insert", &list_insert_obj },
     { "pop", &list_pop_obj },

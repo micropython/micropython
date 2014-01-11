@@ -10,3 +10,9 @@ print(x)
 f = x.append
 f(4)
 print(x)
+
+x.extend([100, 200])
+print(x)
+
+x += [2, 1]
+print(x)
