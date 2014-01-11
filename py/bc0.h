@@ -66,7 +66,6 @@
 
 #define MP_BC_UNARY_OP           (0x60) // byte
 #define MP_BC_BINARY_OP          (0x61) // byte
-#define MP_BC_COMPARE_OP         (0x62) // byte
 
 #define MP_BC_BUILD_TUPLE        (0x70) // uint
 #define MP_BC_BUILD_LIST         (0x71) // uint

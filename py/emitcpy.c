@@ -579,15 +579,6 @@ static void emit_cpy_binary_op(emit_t *emit, rt_binary_op_t op) {
             case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: printf("INPLACE_TRUE_DIVIDE\n"); break;
             case RT_BINARY_OP_INPLACE_MODULO: printf("INPLACE_MODULO\n"); break;
             case RT_BINARY_OP_INPLACE_POWER: printf("INPLACE_POWER\n"); break;
-            default: assert(0);
-        }
-    }
-}
-
-static void emit_cpy_compare_op(emit_t *emit, rt_compare_op_t op) {
-    emit_pre(emit, -1, 3);
-    if (emit->pass == PASS_3) {
-        switch (op) {
             case RT_COMPARE_OP_LESS: printf("COMPARE_OP <\n"); break;
             case RT_COMPARE_OP_MORE: printf("COMPARE_OP >\n"); break;
             case RT_COMPARE_OP_EQUAL: printf("COMPARE_OP ==\n"); break;
@@ -863,7 +854,6 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_pop_except,
     emit_cpy_unary_op,
     emit_cpy_binary_op,
-    emit_cpy_compare_op,
     emit_cpy_build_tuple,
     emit_cpy_build_list,
     emit_cpy_list_append,

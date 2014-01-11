@@ -99,6 +99,12 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         */
         case RT_BINARY_OP_TRUE_DIVIDE:
         case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: lhs_val /= rhs_val; break;
+
+        case RT_COMPARE_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
+        case RT_COMPARE_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
+        case RT_COMPARE_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
+        case RT_COMPARE_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
+
         return NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);

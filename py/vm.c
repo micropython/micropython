@@ -355,13 +355,6 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         SET_TOP(rt_binary_op(unum, obj1, obj2));
                         break;
 
-                    case MP_BC_COMPARE_OP:
-                        unum = *ip++;
-                        obj2 = POP();
-                        obj1 = TOP();
-                        SET_TOP(rt_compare_op(unum, obj1, obj2));
-                        break;
-
                     case MP_BC_BUILD_TUPLE:
                         DECODE_UINT;
                         obj1 = rt_build_tuple(unum, sp);

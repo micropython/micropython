@@ -531,11 +531,6 @@ static void emit_bc_binary_op(emit_t *emit, rt_binary_op_t op) {
     emit_write_byte_1_byte(emit, MP_BC_BINARY_OP, op);
 }
 
-static void emit_bc_compare_op(emit_t *emit, rt_compare_op_t op) {
-    emit_pre(emit, -1);
-    emit_write_byte_1_byte(emit, MP_BC_COMPARE_OP, op);
-}
-
 static void emit_bc_build_tuple(emit_t *emit, int n_args) {
     assert(n_args >= 0);
     emit_pre(emit, 1 - n_args);
@@ -762,7 +757,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_pop_except,
     emit_bc_unary_op,
     emit_bc_binary_op,
-    emit_bc_compare_op,
     emit_bc_build_tuple,
     emit_bc_build_list,
     emit_bc_list_append,
