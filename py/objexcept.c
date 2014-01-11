@@ -18,21 +18,11 @@ typedef struct mp_obj_exception_t {
 
 void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
     mp_obj_exception_t *o = o_in;
-    switch (o->n_args) {
-        case 0:
-            print(env, "%s", qstr_str(o->id));
-            break;
-        case 1:
-            print(env, "%s: %s", qstr_str(o->id), (const char*)o->args[0]);
-            break;
-        case 2:
-            print(env, "%s: ", qstr_str(o->id));
-            print(env, (const char*)o->args[0], o->args[1]);
-            break;
-        default: // here we just assume at least 3 args, but only use first 3
-            print(env, "%s: ", qstr_str(o->id));
-            print(env, (const char*)o->args[0], o->args[1], o->args[2]);
-            break;
+    if (o->n_args == 0) {
+        print(env, "%s", qstr_str(o->id));
+    } else {
+        print(env, "%s: ", qstr_str(o->id));
+        print(env, "%V", &o->args);
     }
 }
 

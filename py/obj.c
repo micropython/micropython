@@ -35,6 +35,18 @@ const char *mp_obj_get_type_str(mp_obj_t o_in) {
 }
 
 void printf_wrapper(void *env, const char *fmt, ...) {
+    // Special format spec to emulate vprintf():
+    // If format spec exactly matches "%V", then next argument is
+    // interpreted as va_list (whose first arg is fmt, and rest are
+    // subst values).
+    if (fmt[0] == '%' && fmt[1] == 'V') {
+        va_list args;
+        va_start(args, fmt);
+        void **subargs = va_arg(args, void**);
+        vprintf(subargs[0], (va_list)&subargs[1]);
+        va_end(args);
+        return;
+    }
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);
