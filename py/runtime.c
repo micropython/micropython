@@ -467,6 +467,35 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     //   then fail
     // note that list does not implement + or +=, so that inplace_concat is reached first for +=
 
+    // deal with == and != for all types
+    if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
+        if (mp_obj_equal(lhs, rhs)) {
+            if (op == RT_COMPARE_OP_EQUAL) {
+                return mp_const_true;
+            } else {
+                return mp_const_false;
+            }
+        } else {
+            if (op == RT_COMPARE_OP_EQUAL) {
+                return mp_const_false;
+            } else {
+                return mp_const_true;
+            }
+        }
+    }
+
+    // deal with exception_match for all types
+    if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
+        // TODO properly! at the moment it just compares the exception identifier for equality
+        if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
+            if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
+                return mp_const_true;
+            } else {
+                return mp_const_false;
+            }
+        }
+    }
+
     if (MP_OBJ_IS_SMALL_INT(lhs)) {
         mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
         if (MP_OBJ_IS_SMALL_INT(rhs)) {
@@ -528,35 +557,6 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
             return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
-        }
-    } else {
-        // deal with == and !=
-        if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
-            if (mp_obj_equal(lhs, rhs)) {
-                if (op == RT_COMPARE_OP_EQUAL) {
-                    return mp_const_true;
-                } else {
-                    return mp_const_false;
-                }
-            } else {
-                if (op == RT_COMPARE_OP_EQUAL) {
-                    return mp_const_false;
-                } else {
-                    return mp_const_true;
-                }
-            }
-        }
-
-        // deal with exception_match
-        if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
-            // TODO properly! at the moment it just compares the exception identifier for equality
-            if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
-                if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
-                    return mp_const_true;
-                } else {
-                    return mp_const_false;
-                }
-            }
         }
     }
 
