@@ -774,12 +774,25 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             dest[0] = base;
         } else {
             // generic method lookup
+            // this is a lookup in the object (ie not class or type)
             const mp_method_t *meth = type->methods;
             if (meth != NULL) {
                 for (; meth->name != NULL; meth++) {
                     if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                        dest[1] = (mp_obj_t)meth->fun;
-                        dest[0] = base;
+                        // check if the methods are functions, static or class methods
+                        // see http://docs.python.org/3.3/howto/descriptor.html
+                        if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
+                            // return just the function
+                            dest[1] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                        } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
+                            // return a bound method, with self being the type of this object
+                            dest[1] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                            dest[0] = mp_obj_get_type(base);
+                        } else {
+                            // return a bound method, with self being this object
+                            dest[1] = (mp_obj_t)meth->fun;
+                            dest[0] = base;
+                        }
                         break;
                     }
                 }

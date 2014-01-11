@@ -231,7 +231,7 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index)
     }
 }
 
-// may return NULL
+// may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     mp_small_int_t len = 0;
     if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
@@ -249,7 +249,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
         len = mp_obj_dict_len(o_in);
     } else {
-        return NULL;
+        return MP_OBJ_NULL;
     }
     return MP_OBJ_NEW_SMALL_INT(len);
 }

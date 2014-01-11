@@ -27,15 +27,13 @@ static mp_obj_t mp_obj_new_class(mp_obj_t class) {
     return o;
 }
 
-static mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, mp_map_lookup_kind_t lookup_kind) {
+static mp_map_elem_t *mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr, mp_map_lookup_kind_t lookup_kind) {
     for (;;) {
-        assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
-        mp_obj_type_t *self = self_in;
-        if (self->locals_dict == NULL) {
+        if (type->locals_dict == NULL) {
             return NULL;
         }
-        assert(MP_OBJ_IS_TYPE(self->locals_dict, &dict_type)); // Micro Python restriction, for now
-        mp_map_t *locals_map = ((void*)self->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
+        assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
+        mp_map_t *locals_map = ((void*)type->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), lookup_kind);
         if (elem != NULL) {
             return elem;
@@ -44,25 +42,27 @@ static mp_map_elem_t *mp_obj_class_lookup(mp_obj_t self_in, qstr attr, mp_map_lo
         // attribute not found, keep searching base classes
 
         // for a const struct, this entry might be NULL
-        if (self->bases_tuple == MP_OBJ_NULL) {
+        if (type->bases_tuple == MP_OBJ_NULL) {
             return NULL;
         }
 
         uint len;
         mp_obj_t *items;
-        mp_obj_tuple_get(self->bases_tuple, &len, &items);
+        mp_obj_tuple_get(type->bases_tuple, &len, &items);
         if (len == 0) {
             return NULL;
         }
         for (uint i = 0; i < len - 1; i++) {
-            elem = mp_obj_class_lookup(items[i], attr, lookup_kind);
+            assert(MP_OBJ_IS_TYPE(items[i], &mp_const_type));
+            elem = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr, lookup_kind);
             if (elem != NULL) {
                 return elem;
             }
         }
 
         // search last base (simple tail recursion elimination)
-        self_in = items[len - 1];
+        assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_const_type));
+        type = (mp_obj_type_t*)items[len - 1];
     }
 }
 
@@ -73,11 +73,12 @@ static void class_print(void (*print)(void *env, const char *fmt, ...), void *en
 // args are reverse in the array
 static mp_obj_t class_make_new(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    mp_obj_type_t *self = self_in;
 
     mp_obj_t o = mp_obj_new_class(self_in);
 
     // look for __init__ function
-    mp_map_elem_t *init_fn = mp_obj_class_lookup(self_in, MP_QSTR___init__, MP_MAP_LOOKUP);
+    mp_map_elem_t *init_fn = mp_obj_class_lookup(self, MP_QSTR___init__, MP_MAP_LOOKUP);
 
     if (init_fn != NULL) {
         // call __init__ function
@@ -114,7 +115,7 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[1] = elem->value;
         return;
     }
-    elem = mp_obj_class_lookup((mp_obj_t)self->base.type, attr, MP_MAP_LOOKUP);
+    elem = mp_obj_class_lookup(self->base.type, attr, MP_MAP_LOOKUP);
     if (elem != NULL) {
         if (mp_obj_is_callable(elem->value)) {
             // class member is callable so build a bound method
@@ -132,7 +133,7 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
-    mp_map_elem_t *elem = mp_obj_class_lookup((mp_obj_t)self->base.type, attr, MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_obj_class_lookup(self->base.type, attr, MP_MAP_LOOKUP);
     if (elem != NULL) {
         elem->value = value;
     } else {
@@ -188,17 +189,47 @@ static mp_obj_t type_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) 
 
 // for fail, do nothing; for attr, dest[1] = value; for method, dest[0] = self, dest[1] = method
 static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_map_elem_t *elem = mp_obj_class_lookup(self_in, attr, MP_MAP_LOOKUP);
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    mp_obj_type_t *self = self_in;
+    mp_map_elem_t *elem = mp_obj_class_lookup(self, attr, MP_MAP_LOOKUP);
     if (elem != NULL) {
         dest[1] = elem->value;
         return;
     }
+
+    // generic method lookup
+    // this is a lookup in the class itself (ie not the classes type or instance)
+    const mp_method_t *meth = self->methods;
+    if (meth != NULL) {
+        for (; meth->name != NULL; meth++) {
+            if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                // check if the methods are functions, static or class methods
+                // see http://docs.python.org/3.3/howto/descriptor.html
+                if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
+                    // return just the function
+                    dest[1] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
+                    // return a bound method, with self being this class
+                    dest[1] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                    dest[0] = self_in;
+                } else {
+                    // return just the function
+                    // TODO need to wrap in a type check for the first argument; eg list.append(1,1) needs to throw an exception
+                    dest[1] = (mp_obj_t)meth->fun;
+                }
+                return;
+            }
+        }
+    }
 }
 
 static bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    mp_obj_type_t *self = self_in;
+
     // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
 
-    mp_map_elem_t *elem = mp_obj_class_lookup(self_in, attr, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    mp_map_elem_t *elem = mp_obj_class_lookup(self, attr, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     if (elem != NULL) {
         elem->value = value;
         return true;
@@ -284,3 +315,16 @@ static mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
+
+/******************************************************************************/
+// staticmethod and classmethod types (probably should go in a different file)
+
+const mp_obj_type_t mp_type_staticmethod = {
+    { &mp_const_type },
+    "staticmethod",
+};
+
+const mp_obj_type_t mp_type_classmethod = {
+    { &mp_const_type },
+    "classmethod",
+};

@@ -139,6 +139,35 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
+// this is a classmethod
+static mp_obj_t dict_fromkeys(int n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 3);
+    mp_obj_t iter = rt_getiter(args[1]);
+    mp_obj_t len = mp_obj_len_maybe(iter);
+    mp_obj_t value = mp_const_none;
+    mp_obj_t next = NULL;
+    mp_obj_dict_t *self = NULL;
+
+    if (n_args > 2) {
+        value = args[2];
+    }
+
+    if (len == MP_OBJ_NULL) {
+        /* object's type doesn't have a __len__ slot */
+        self = mp_obj_new_dict(0);
+    } else {
+        self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
+    }
+
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+    }
+
+    return self;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_fromkeys_fun_obj, 2, 3, dict_fromkeys);
+static MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, (const mp_obj_t)&dict_fromkeys_fun_obj);
+
 static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp_map_lookup_kind_t lookup_kind) {
     mp_map_elem_t *elem = mp_map_lookup(self, key, lookup_kind);
     mp_obj_t value;
@@ -280,23 +309,18 @@ static mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 
     if (next != NULL) {
         switch (self->kind) {
-        case MP_DICT_VIEW_ITEMS:
-        {
-            mp_obj_t items[] = {next->key, next->value};
-            return mp_obj_new_tuple(2, items);
-        }
-        case MP_DICT_VIEW_KEYS:
-        {
-            return next->key;
-        }
-        case MP_DICT_VIEW_VALUES:
-        {
-            return next->value;
-        }
-        default:
-        {
-            assert(0);          /* can't happen */
-        }
+            case MP_DICT_VIEW_ITEMS:
+            {
+                mp_obj_t items[] = {next->key, next->value};
+                return mp_obj_new_tuple(2, items);
+            }
+            case MP_DICT_VIEW_KEYS:
+                return next->key;
+            case MP_DICT_VIEW_VALUES:
+                return next->value;
+            default:
+                assert(0);          /* can't happen */
+                return mp_const_none;
         }
     } else {
         return mp_const_stop_iteration;
@@ -319,7 +343,6 @@ static mp_obj_t dict_view_getiter(mp_obj_t view_in) {
     o->iter = mp_obj_new_dict_iterator(view->dict, 0);
     return o;
 }
-
 
 static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
@@ -354,7 +377,6 @@ mp_obj_t mp_obj_new_dict_view(mp_obj_dict_t *dict, mp_dict_view_kind_t kind) {
     return o;
 }
 
-
 static mp_obj_t dict_view(mp_obj_t self_in, mp_dict_view_kind_t kind) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
     mp_obj_dict_t *self = self_in;
@@ -376,67 +398,13 @@ static mp_obj_t dict_values(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 
-
 /******************************************************************************/
-/* dict metaclass                                                             */
-
-static mp_obj_t dict_fromkeys(int n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
-    mp_obj_t iter = rt_getiter(args[1]);
-    mp_obj_t len = mp_obj_len_maybe(iter);
-    mp_obj_t value = mp_const_none;
-    mp_obj_t next = NULL;
-    mp_obj_dict_t *self = NULL;
-
-    if (n_args > 2) {
-        value = args[2];
-    }
-
-    if (len == NULL) {
-        /* object's type doesn't have a __len__ slot */
-        self = mp_obj_new_dict(0);
-    } else {
-        self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
-    }
-
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
-        mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    }
-
-    return self;
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_fromkeys_obj, 2, 3, dict_fromkeys);
-
-static const mp_method_t dict_class_methods[] = {
-    { "fromkeys", &dict_fromkeys_obj },
-    { NULL, NULL }, // end-of-list sentinel
-};
-
-/* this should be unnecessary when inheritance works */
-static void dict_class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
-    print(env, "<class 'dict'>");
-}
-
-/* this should be unnecessary when inheritance works */
-static mp_obj_t dict_class_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
-    return rt_build_map(0);
-}
-
-static const mp_obj_type_t dict_class = {
-    { &mp_const_type },
-    "dict_class",
-    .print = dict_class_print,
-    .methods = dict_class_methods,
-    .call_n = dict_class_call_n,
-};
-
-
-/******************************************************************************/
-/* dict constructors & etc                                                    */
+/* dict constructors & public C API                                           */
 
 static const mp_method_t dict_type_methods[] = {
     { "clear", &dict_clear_obj },
     { "copy", &dict_copy_obj },
+    { "fromkeys", &dict_fromkeys_obj },
     { "get", &dict_get_obj },
     { "items", &dict_items_obj },
     { "keys", &dict_keys_obj },
@@ -449,7 +417,7 @@ static const mp_method_t dict_type_methods[] = {
 };
 
 const mp_obj_type_t dict_type = {
-    { &dict_class },
+    { &mp_const_type },
     "dict",
     .print = dict_print,
     .make_new = dict_make_new,
