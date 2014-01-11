@@ -117,6 +117,13 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     } else if (MP_OBJ_IS_TYPE(o1, &str_type) && MP_OBJ_IS_TYPE(o2, &str_type)) {
         return mp_obj_str_get(o1) == mp_obj_str_get(o2);
     } else {
+        mp_obj_base_t *o = o1;
+        if (o->type->binary_op != NULL) {
+            mp_obj_t r = o->type->binary_op(RT_COMPARE_OP_EQUAL, o1, o2);
+            if (r != MP_OBJ_NULL) {
+                return r == mp_const_true ? true : false;
+            }
+        }
         // TODO: Debugging helper
         printf("Equality for '%s' and '%s' types not yet implemented\n", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2));
         assert(0);
