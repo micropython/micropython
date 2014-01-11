@@ -514,6 +514,10 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     lhs_val = ans;
                     break;
                 }
+                case RT_COMPARE_OP_LESS: return MP_BOOL(lhs_val < rhs_val); break;
+                case RT_COMPARE_OP_MORE: return MP_BOOL(lhs_val > rhs_val); break;
+                case RT_COMPARE_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;
+                case RT_COMPARE_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val); break;
 
                 default: assert(0);
             }
@@ -525,12 +529,43 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
             return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
         }
-    } else if (MP_OBJ_IS_OBJ(lhs)) {
-        mp_obj_base_t *o = lhs;
-        if (o->type->binary_op != NULL) {
-            mp_obj_t result = o->type->binary_op(op, lhs, rhs);
-            if (result != NULL) {
-                return result;
+    } else {
+        // deal with == and !=
+        if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
+            if (mp_obj_equal(lhs, rhs)) {
+                if (op == RT_COMPARE_OP_EQUAL) {
+                    return mp_const_true;
+                } else {
+                    return mp_const_false;
+                }
+            } else {
+                if (op == RT_COMPARE_OP_EQUAL) {
+                    return mp_const_false;
+                } else {
+                    return mp_const_true;
+                }
+            }
+        }
+
+        // deal with exception_match
+        if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
+            // TODO properly! at the moment it just compares the exception identifier for equality
+            if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
+                if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
+                    return mp_const_true;
+                } else {
+                    return mp_const_false;
+                }
+            }
+        }
+
+        if (MP_OBJ_IS_OBJ(lhs)) {
+            mp_obj_base_t *o = lhs;
+            if (o->type->binary_op != NULL) {
+                mp_obj_t result = o->type->binary_op(op, lhs, rhs);
+                if (result != NULL) {
+                    return result;
+                }
             }
         }
     }
@@ -539,83 +574,6 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
-}
-
-mp_obj_t rt_compare_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
-    DEBUG_OP_printf("compare %d %p %p\n", op, lhs, rhs);
-
-    // deal with == and !=
-    if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
-        if (mp_obj_equal(lhs, rhs)) {
-            if (op == RT_COMPARE_OP_EQUAL) {
-                return mp_const_true;
-            } else {
-                return mp_const_false;
-            }
-        } else {
-            if (op == RT_COMPARE_OP_EQUAL) {
-                return mp_const_false;
-            } else {
-                return mp_const_true;
-            }
-        }
-    }
-
-    // deal with exception_match
-    if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
-        // TODO properly! at the moment it just compares the exception identifier for equality
-        if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
-            if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
-                return mp_const_true;
-            } else {
-                return mp_const_false;
-            }
-        }
-    }
-
-    // deal with small ints
-    if (MP_OBJ_IS_SMALL_INT(lhs) && MP_OBJ_IS_SMALL_INT(rhs)) {
-        mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
-        mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
-        int cmp;
-        switch (op) {
-            case RT_COMPARE_OP_LESS: cmp = lhs_val < rhs_val; break;
-            case RT_COMPARE_OP_MORE: cmp = lhs_val > rhs_val; break;
-            case RT_COMPARE_OP_LESS_EQUAL: cmp = lhs_val <= rhs_val; break;
-            case RT_COMPARE_OP_MORE_EQUAL: cmp = lhs_val >= rhs_val; break;
-            default: assert(0); cmp = 0;
-        }
-        if (cmp) {
-            return mp_const_true;
-        } else {
-            return mp_const_false;
-        }
-    }
-
-#if MICROPY_ENABLE_FLOAT
-    // deal with floats
-    if (MP_OBJ_IS_TYPE(lhs, &float_type) || MP_OBJ_IS_TYPE(rhs, &float_type)) {
-        mp_float_t lhs_val = mp_obj_get_float(lhs);
-        mp_float_t rhs_val = mp_obj_get_float(rhs);
-        int cmp;
-        switch (op) {
-            case RT_COMPARE_OP_LESS: cmp = lhs_val < rhs_val; break;
-            case RT_COMPARE_OP_MORE: cmp = lhs_val > rhs_val; break;
-            case RT_COMPARE_OP_LESS_EQUAL: cmp = lhs_val <= rhs_val; break;
-            case RT_COMPARE_OP_MORE_EQUAL: cmp = lhs_val >= rhs_val; break;
-            default: assert(0); cmp = 0;
-        }
-        if (cmp) {
-            return mp_const_true;
-        } else {
-            return mp_const_false;
-        }
-    }
-#endif
-
-    // not implemented
-    assert(0);
-    return mp_const_none;
 }
 
 mp_obj_t rt_make_function_from_id(int unique_code_id) {
@@ -956,7 +914,6 @@ void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_call_function_n,
     rt_call_method_n,
     rt_binary_op,
-    rt_compare_op,
     rt_getiter,
     rt_iternext,
 };

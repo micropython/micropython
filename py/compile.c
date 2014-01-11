@@ -1464,9 +1464,9 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     compile_node(comp, pn_var);
     compile_node(comp, pn_end);
     if (MP_PARSE_NODE_LEAF_ARG(pn_step) >= 0) {
-        EMIT(compare_op, RT_COMPARE_OP_LESS);
+        EMIT(binary_op, RT_COMPARE_OP_LESS);
     } else {
-        EMIT(compare_op, RT_COMPARE_OP_MORE);
+        EMIT(binary_op, RT_COMPARE_OP_MORE);
     }
     EMIT(pop_jump_if_true, top_label);
 
@@ -1610,7 +1610,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             }
             EMIT(dup_top);
             compile_node(comp, pns_exception_expr);
-            EMIT(compare_op, RT_COMPARE_OP_EXCEPTION_MATCH);
+            EMIT(binary_op, RT_COMPARE_OP_EXCEPTION_MATCH);
             EMIT(pop_jump_if_false, end_finally_label);
         }
 
@@ -1925,29 +1925,29 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
             EMIT(rot_three);
         }
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_LESS)) {
-            EMIT(compare_op, RT_COMPARE_OP_LESS);
+            EMIT(binary_op, RT_COMPARE_OP_LESS);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MORE)) {
-            EMIT(compare_op, RT_COMPARE_OP_MORE);
+            EMIT(binary_op, RT_COMPARE_OP_MORE);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_EQUAL)) {
-            EMIT(compare_op, RT_COMPARE_OP_EQUAL);
+            EMIT(binary_op, RT_COMPARE_OP_EQUAL);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_LESS_EQUAL)) {
-            EMIT(compare_op, RT_COMPARE_OP_LESS_EQUAL);
+            EMIT(binary_op, RT_COMPARE_OP_LESS_EQUAL);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MORE_EQUAL)) {
-            EMIT(compare_op, RT_COMPARE_OP_MORE_EQUAL);
+            EMIT(binary_op, RT_COMPARE_OP_MORE_EQUAL);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_NOT_EQUAL)) {
-            EMIT(compare_op, RT_COMPARE_OP_NOT_EQUAL);
+            EMIT(binary_op, RT_COMPARE_OP_NOT_EQUAL);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_KW_IN)) {
-            EMIT(compare_op, RT_COMPARE_OP_IN);
+            EMIT(binary_op, RT_COMPARE_OP_IN);
         } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])) {
             mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[i];
             int kind = MP_PARSE_NODE_STRUCT_KIND(pns2);
             if (kind == PN_comp_op_not_in) {
-                EMIT(compare_op, RT_COMPARE_OP_NOT_IN);
+                EMIT(binary_op, RT_COMPARE_OP_NOT_IN);
             } else if (kind == PN_comp_op_is) {
                 if (MP_PARSE_NODE_IS_NULL(pns2->nodes[0])) {
-                    EMIT(compare_op, RT_COMPARE_OP_IS);
+                    EMIT(binary_op, RT_COMPARE_OP_IS);
                 } else {
-                    EMIT(compare_op, RT_COMPARE_OP_IS_NOT);
+                    EMIT(binary_op, RT_COMPARE_OP_IS_NOT);
                 }
             } else {
                 // shouldn't happen

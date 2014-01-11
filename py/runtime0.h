@@ -31,9 +31,6 @@ typedef enum {
     RT_BINARY_OP_INPLACE_TRUE_DIVIDE,
     RT_BINARY_OP_INPLACE_MODULO,
     RT_BINARY_OP_INPLACE_POWER,
-} rt_binary_op_t;
-
-typedef enum {
     RT_COMPARE_OP_LESS,
     RT_COMPARE_OP_MORE,
     RT_COMPARE_OP_EQUAL,
@@ -45,7 +42,7 @@ typedef enum {
     RT_COMPARE_OP_IS,
     RT_COMPARE_OP_IS_NOT,
     RT_COMPARE_OP_EXCEPTION_MATCH,
-} rt_compare_op_t;
+} rt_binary_op_t;
 
 typedef enum {
     RT_F_LOAD_CONST_DEC = 0,
@@ -71,7 +68,6 @@ typedef enum {
     RT_F_CALL_FUNCTION_N,
     RT_F_CALL_METHOD_N,
     RT_F_BINARY_OP,
-    RT_F_COMPARE_OP,
     RT_F_GETITER,
     RT_F_ITERNEXT,
     RT_F_NUMBER_OF,

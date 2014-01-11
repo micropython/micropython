@@ -266,11 +266,6 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("BINARY_OP " UINT_FMT, unum);
                 break;
 
-            case MP_BC_COMPARE_OP:
-                unum = *ip++;
-                printf("COMPARE_OP " UINT_FMT, unum);
-                break;
-
             case MP_BC_BUILD_TUPLE:
                 DECODE_UINT;
                 printf("BUILD_TUPLE " UINT_FMT, unum);
