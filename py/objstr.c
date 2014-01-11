@@ -206,6 +206,18 @@ mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
 }
 
 void vstr_printf_wrapper(void *env, const char *fmt, ...) {
+    // Special format spec to emulate vprintf():
+    // If format spec exactly matches "%V", then next argument is
+    // interpreted as va_list (whose first arg is fmt, and rest are
+    // subst values).
+    if (fmt[0] == '%' && fmt[1] == 'V') {
+        va_list args;
+        va_start(args, fmt);
+        void **subargs = va_arg(args, void**);
+        vstr_vprintf(env, subargs[0], (va_list)&subargs[1]);
+        va_end(args);
+        return;
+    }
     va_list args;
     va_start(args, fmt);
     vstr_vprintf(env, fmt, args);
