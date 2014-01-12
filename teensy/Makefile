@@ -35,6 +35,7 @@ SRC_C = \
 	lexerfatfs.c \
 	lexermemzip.c \
 	memzip.c \
+	servo.c \
 	usb.c \
 
 STM_SRC_C = \
