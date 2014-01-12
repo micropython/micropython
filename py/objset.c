@@ -27,6 +27,10 @@ static mp_obj_t set_it_iternext(mp_obj_t self_in);
 
 void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
+    if (self->set.used == 0) {
+        print(env, "set()");
+        return;
+    }
     bool first = true;
     print(env, "{");
     for (int i = 0; i < self->set.alloc; i++) {
@@ -122,7 +126,7 @@ static mp_obj_t set_copy(mp_obj_t self_in) {
 
     mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
     other->base.type = &set_type;
-    mp_set_init(&other->set, self->set.alloc);
+    mp_set_init(&other->set, self->set.alloc - 1);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
 
