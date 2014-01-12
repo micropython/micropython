@@ -10,19 +10,20 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_INVALID,
     MP_TOKEN_DEDENT_MISMATCH,
     MP_TOKEN_LONELY_STRING_OPEN,
+    MP_TOKEN_BAD_LINE_CONTINUATION,
 
-    MP_TOKEN_NEWLINE,               // 4
-    MP_TOKEN_INDENT,                // 5
-    MP_TOKEN_DEDENT,                // 6
+    MP_TOKEN_NEWLINE,               // 5
+    MP_TOKEN_INDENT,                // 6
+    MP_TOKEN_DEDENT,                // 7
 
-    MP_TOKEN_NAME,                  // 7
+    MP_TOKEN_NAME,                  // 8
     MP_TOKEN_NUMBER,
     MP_TOKEN_STRING,
     MP_TOKEN_BYTES,
 
     MP_TOKEN_ELLIPSIS,
 
-    MP_TOKEN_KW_FALSE,              // 12
+    MP_TOKEN_KW_FALSE,              // 13
     MP_TOKEN_KW_NONE,
     MP_TOKEN_KW_TRUE,
     MP_TOKEN_KW_AND,
@@ -31,7 +32,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_BREAK,
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
-    MP_TOKEN_KW_DEF,                // 21
+    MP_TOKEN_KW_DEF,                // 22
     MP_TOKEN_KW_DEL,
     MP_TOKEN_KW_ELIF,
     MP_TOKEN_KW_ELSE,
@@ -41,7 +42,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_FROM,
     MP_TOKEN_KW_GLOBAL,
     MP_TOKEN_KW_IF,
-    MP_TOKEN_KW_IMPORT,             // 31
+    MP_TOKEN_KW_IMPORT,             // 32
     MP_TOKEN_KW_IN,
     MP_TOKEN_KW_IS,
     MP_TOKEN_KW_LAMBDA,
@@ -51,12 +52,12 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_PASS,
     MP_TOKEN_KW_RAISE,
     MP_TOKEN_KW_RETURN,
-    MP_TOKEN_KW_TRY,                // 41
+    MP_TOKEN_KW_TRY,                // 42
     MP_TOKEN_KW_WHILE,
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
 
-    MP_TOKEN_OP_PLUS,               // 45
+    MP_TOKEN_OP_PLUS,               // 46
     MP_TOKEN_OP_MINUS,
     MP_TOKEN_OP_STAR,
     MP_TOKEN_OP_DBL_STAR,
@@ -66,7 +67,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_LESS,
     MP_TOKEN_OP_DBL_LESS,
     MP_TOKEN_OP_MORE,
-    MP_TOKEN_OP_DBL_MORE,           // 55
+    MP_TOKEN_OP_DBL_MORE,           // 56
     MP_TOKEN_OP_AMPERSAND,
     MP_TOKEN_OP_PIPE,
     MP_TOKEN_OP_CARET,
@@ -76,7 +77,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_DBL_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
 
-    MP_TOKEN_DEL_PAREN_OPEN,        // 64
+    MP_TOKEN_DEL_PAREN_OPEN,        // 65
     MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN,
     MP_TOKEN_DEL_BRACKET_CLOSE,
@@ -86,7 +87,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_COLON,
     MP_TOKEN_DEL_PERIOD,
     MP_TOKEN_DEL_SEMICOLON,
-    MP_TOKEN_DEL_AT,                // 74
+    MP_TOKEN_DEL_AT,                // 75
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_PLUS_EQUAL,
     MP_TOKEN_DEL_MINUS_EQUAL,
@@ -96,7 +97,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_PERCENT_EQUAL,
     MP_TOKEN_DEL_AMPERSAND_EQUAL,
     MP_TOKEN_DEL_PIPE_EQUAL,
-    MP_TOKEN_DEL_CARET_EQUAL,       // 84
+    MP_TOKEN_DEL_CARET_EQUAL,       // 85
     MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_DEL_DBL_STAR_EQUAL,

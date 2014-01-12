@@ -299,8 +299,15 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
             // backslash (outside string literals) must appear just before a physical newline
             next_char(lex);
             if (!is_physical_newline(lex)) {
-                // TODO SyntaxError
-                assert(0);
+                // SyntaxError: unexpected character after line continuation character
+                tok->src_name = lex->name;
+                tok->src_line = lex->line;
+                tok->src_column = lex->column;
+                tok->kind = MP_TOKEN_BAD_LINE_CONTINUATION;
+                vstr_reset(&lex->vstr);
+                tok->str = vstr_str(&lex->vstr);
+                tok->len = 0;
+                return;
             } else {
                 next_char(lex);
             }
