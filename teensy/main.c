@@ -15,6 +15,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "repl.h"
+#include "servo.h"
 #include "usb.h"
 #include "gc.h"
 #include "led.h"
@@ -427,6 +428,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
         rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
         rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
+        rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_0(pyb_Servo));
         rt_store_name(qstr_from_str_static("pyb"), m);
         rt_store_name(qstr_from_str_static("run"), rt_make_function_1(pyb_run));
     }
@@ -468,16 +470,6 @@ soft_reset:
 
 //    first_soft_reset = false;
     goto soft_reset;
-}
-
-double __aeabi_f2d(float x) {
-    // TODO
-    return 0.0;
-}
-
-float __aeabi_d2f(double x) {
-    // TODO
-    return 0.0;
 }
 
 double sqrt(double x) {
