@@ -292,6 +292,56 @@ static mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 
+static mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+    mp_obj_t iter = rt_getiter(other_in);
+    mp_obj_t next;
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_update_obj, set_symmetric_difference_update);
+
+static mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    self_in = set_copy(self_in);
+    set_symmetric_difference_update(self_in, other_in);
+    return self_in;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
+
+static void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
+    mp_obj_t iter = rt_getiter(other_in);
+    mp_obj_t next;
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    }
+}
+
+static mp_obj_t set_update(int n_args, const mp_obj_t *args) {
+    assert(n_args > 0);
+    assert(MP_OBJ_IS_TYPE(args[0], &set_type));
+
+    for (int i = 1; i < n_args; i++) {
+        set_update_int(args[0], args[i]);
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR(set_update_obj, 1, set_update);
+
+static mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = set_copy(self_in);
+    set_update_int(self, other_in);
+    return self;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
+
+
+
 /******************************************************************************/
 /* set constructors & public C API                                            */
 
@@ -310,6 +360,10 @@ static const mp_method_t set_type_methods[] = {
     { "issuperset", &set_issuperset_obj },
     { "pop", &set_pop_obj },
     { "remove", &set_remove_obj },
+    { "symmetric_difference", &set_symmetric_difference_obj },
+    { "symmetric_difference_update", &set_symmetric_difference_update_obj },
+    { "union", &set_union_obj },
+    { "update", &set_update_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
