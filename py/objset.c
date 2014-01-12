@@ -15,6 +15,14 @@ typedef struct _mp_obj_set_t {
     mp_set_t set;
 } mp_obj_set_t;
 
+typedef struct _mp_obj_set_it_t {
+    mp_obj_base_t base;
+    mp_obj_set_t *set;
+    machine_uint_t cur;
+} mp_obj_set_it_t;
+
+static mp_obj_t set_it_iternext(mp_obj_t self_in);
+
 void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
     bool first = true;
@@ -54,11 +62,42 @@ static mp_obj_t set_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
     }
 }
 
+const mp_obj_type_t set_it_type = {
+    { &mp_const_type },
+    "set_iterator",
+    .iternext = set_it_iternext,
+};
+
+static mp_obj_t set_it_iternext(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_it_type));
+    mp_obj_set_it_t *self = self_in;
+    machine_uint_t max = self->set->set.alloc;
+    mp_obj_t *table = self->set->set.table;
+
+    for (machine_uint_t i = self->cur; i < max; i++) {
+        if (table[i] != NULL) {
+            self->cur = i + 1;
+            return table[i];
+        }
+    }
+
+    return mp_const_stop_iteration;
+}
+
+static mp_obj_t set_getiter(mp_obj_t set_in) {
+    mp_obj_set_it_t *o = m_new_obj(mp_obj_set_it_t);
+    o->base.type = &set_it_type;
+    o->set = (mp_obj_set_t *)set_in;
+    o->cur = 0;
+    return o;
+}
+
 const mp_obj_type_t set_type = {
     { &mp_const_type },
     "set",
     .print = set_print,
     .make_new = set_make_new,
+    .getiter = set_getiter,
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {
