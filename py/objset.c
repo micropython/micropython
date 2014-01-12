@@ -104,6 +104,16 @@ static mp_obj_t set_add(mp_obj_t self_in, mp_obj_t item) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
 
+static mp_obj_t set_clear(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+
+    mp_set_clear(&self->set);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
+
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -111,6 +121,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
 
 static const mp_method_t set_type_methods[] = {
     { "add", &set_add_obj },
+    { "clear", &set_clear_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
