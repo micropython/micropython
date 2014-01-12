@@ -212,6 +212,21 @@ static mp_obj_t set_intersect_update(mp_obj_t self_in, mp_obj_t other) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_update_obj, set_intersect_update);
 
+static mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+
+    mp_obj_t iter = rt_getiter(other);
+    mp_obj_t next;
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
+            return mp_const_false;
+        }
+    }
+    return mp_const_true;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_isdisjoint_obj, set_isdisjoint);
+
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -226,6 +241,7 @@ static const mp_method_t set_type_methods[] = {
     { "difference_update", &set_diff_update_obj },
     { "intersection", &set_intersect_obj },
     { "intersection_update", &set_intersect_update_obj },
+    { "isdisjoint", &set_isdisjoint_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
