@@ -175,6 +175,43 @@ static mp_obj_t set_diff_update(int n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_update_obj, 1, set_diff_update);
 
+static mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    if (self_in == other) {
+        return update ? mp_const_none : set_copy(self_in);
+    }
+
+    mp_obj_set_t *self = self_in;
+    mp_obj_set_t *out = mp_obj_new_set(0, NULL);
+
+    mp_obj_t iter = rt_getiter(other);
+    mp_obj_t next;
+    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+        if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
+            set_add(out, next);
+        }
+    }
+
+    if (update) {
+        m_del(mp_obj_t, self->set.table, self->set.alloc);
+        self->set.alloc = out->set.alloc;
+        self->set.used = out->set.used;
+        self->set.table = out->set.table;
+    }
+
+    return update ? mp_const_none : out;
+}
+
+static mp_obj_t set_intersect(mp_obj_t self_in, mp_obj_t other) {
+    return set_intersect_int(self_in, other, false);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_obj, set_intersect);
+
+static mp_obj_t set_intersect_update(mp_obj_t self_in, mp_obj_t other) {
+    return set_intersect_int(self_in, other, true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_update_obj, set_intersect_update);
+
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -187,6 +224,8 @@ static const mp_method_t set_type_methods[] = {
     { "discard", &set_discard_obj },
     { "difference", &set_diff_obj },
     { "difference_update", &set_diff_update_obj },
+    { "intersection", &set_intersect_obj },
+    { "intersection_update", &set_intersect_update_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
