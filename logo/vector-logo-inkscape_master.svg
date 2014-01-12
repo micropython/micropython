@@ -32,13 +32,13 @@
      inkscape:window-height="1086"
      id="namedview127"
      showgrid="false"
-     inkscape:zoom="1.1668212"
-     inkscape:cx="347.36024"
-     inkscape:cy="357.11268"
+     inkscape:zoom="5.4082024"
+     inkscape:cx="367.53099"
+     inkscape:cy="675.33912"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer6" />
+     inkscape:current-layer="layer4" />
   <defs
      id="defs4">
     <linearGradient
@@ -693,6 +693,12 @@
        d="m 197.35296,637.05028 26.22631,-36.06117 193.41902,1.96697 -36.06117,45.24038 -89.82511,-9.83486 7.21224,-15.08013 -43.27341,3.93395 z"
        id="path5039"
        inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 344.52579,102.27483 15.42653,-40.280383 23.99682,-15.426528 17.14059,9.427323 3.42812,11.998411 28.28197,-6.856235 14.56949,21.425734 0.85703,38.566318 -13.71247,30.85306 -21.42573,9.42732 -20.5687,-12.85544 -20.56871,8.57029 -24.98883,-23.71207 z"
+       id="path3253"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccccccccccc" />
   </g>
   <g
      inkscape:groupmode="layer"
