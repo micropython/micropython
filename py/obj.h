@@ -34,6 +34,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 //  - xxxx...xx10: a qstr, bits 2 and above are the value
 //  - xxxx...xx00: a pointer to an mp_obj_base_t
 
+// In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
+#define MP_OBJ_FITS_SMALL_INT(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
 #define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
