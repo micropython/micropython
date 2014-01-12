@@ -9,19 +9,14 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-
-typedef struct _mp_obj_tuple_t {
-    mp_obj_base_t base;
-    machine_uint_t len;
-    mp_obj_t items[];
-} mp_obj_tuple_t;
+#include "objtuple.h"
 
 static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur);
 
 /******************************************************************************/
 /* tuple                                                                      */
 
-static void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
+void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
     mp_obj_tuple_t *o = o_in;
     print(env, "(");
     for (int i = 0; i < o->len; i++) {
