@@ -206,6 +206,21 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
             case 'P': // ?
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, width);
                 break;
+            case 'g':
+            {
+                // This is a very hacky approach to printing floats. Micropython
+                // uses %g when using print, and I just wanted to see somthing
+                // usable. I expect that this will be replaced with something
+                // more appropriate.
+                char dot = '.';
+                double d = va_arg(args, double);
+                int left = (int)d;
+                int right = (int)((d - (double)(int)d) * 1000000.0);
+                chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width);
+                chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
+                chrs += pfenv_print_int(pfenv, right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
+                break;
+            }
             default:
                 pfenv->print_strn(pfenv->data, fmt, 1);
                 chrs += 1;
