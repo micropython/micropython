@@ -92,12 +92,35 @@ static mp_obj_t set_getiter(mp_obj_t set_in) {
     return o;
 }
 
+
+/******************************************************************************/
+/* set methods                                                                */
+
+static mp_obj_t set_add(mp_obj_t self_in, mp_obj_t item) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+    mp_set_lookup(&self->set, item, true);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
+
+
+/******************************************************************************/
+/* set constructors & public C API                                            */
+
+
+static const mp_method_t set_type_methods[] = {
+    { "add", &set_add_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
+
 const mp_obj_type_t set_type = {
     { &mp_const_type },
     "set",
     .print = set_print,
     .make_new = set_make_new,
     .getiter = set_getiter,
+    .methods = set_type_methods,
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {
