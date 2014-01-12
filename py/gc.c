@@ -8,15 +8,8 @@
 
 #if MICROPY_ENABLE_GC
 
-// a machine word is big enough to hold a pointer
-/*
-#define BYTES_PER_WORD (8)
-typedef unsigned long machine_uint_t;
-*/
 typedef unsigned char byte;
 
-#define BITS_PER_BYTE (8)
-#define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 #define WORDS_PER_BLOCK (4)
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
 #define STACK_SIZE (64) // tunable; minimum is 1

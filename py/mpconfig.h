@@ -76,6 +76,9 @@
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
+#define BITS_PER_BYTE (8)
+#define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
+
 // printf format spec to use for machine_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__
