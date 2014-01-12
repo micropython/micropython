@@ -62,6 +62,18 @@
 #define MICROPY_ENABLE_LEXER_UNIX (0)
 #endif
 
+// Long int implementation
+#define MICROPY_LONGINT_IMPL_NONE (0)
+#define MICROPY_LONGINT_IMPL_LONGLONG (1)
+
+#ifndef MICROPY_LONGINT_IMPL
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
+#endif
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+typedef long long mp_longint_impl_t;
+#endif
+
 // Whether to support float and complex types
 #ifndef MICROPY_ENABLE_FLOAT
 #define MICROPY_ENABLE_FLOAT (0)
