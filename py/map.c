@@ -146,10 +146,10 @@ static void mp_set_rehash(mp_set_t *set) {
     m_del(mp_obj_t, old_table, old_alloc);
 }
 
-mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
+mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
     int hash = mp_obj_hash(index);
     if (set->alloc == 0) {
-        if (add_if_not_found) {
+        if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             mp_set_rehash(set);
         } else {
             return NULL;
@@ -160,7 +160,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
         mp_obj_t elem = set->table[pos];
         if (elem == MP_OBJ_NULL) {
             // not in table
-            if (add_if_not_found) {
+            if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 if (set->used + 1 >= set->alloc) {
                     // not enough room in table, rehash it
                     mp_set_rehash(set);
@@ -176,6 +176,11 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
             }
         } else if (mp_obj_equal(elem, index)) {
             // found it
+            if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
+                set->used--;
+                set->table[pos] = NULL;
+                return elem;
+            }
             return elem;
         } else {
             // not yet found, keep searching in this table

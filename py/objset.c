@@ -100,7 +100,7 @@ static mp_obj_t set_getiter(mp_obj_t set_in) {
 static mp_obj_t set_add(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
-    mp_set_lookup(&self->set, item, true);
+    mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
@@ -129,6 +129,13 @@ static mp_obj_t set_copy(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);
 
+static mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+    mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -138,6 +145,7 @@ static const mp_method_t set_type_methods[] = {
     { "add", &set_add_obj },
     { "clear", &set_clear_obj },
     { "copy", &set_copy_obj },
+    { "discard", &set_discard_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
@@ -155,7 +163,7 @@ mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {
     o->base.type = &set_type;
     mp_set_init(&o->set, n_args);
     for (int i = 0; i < n_args; i++) {
-        mp_set_lookup(&o->set, items[i], true);
+        mp_set_lookup(&o->set, items[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return o;
 }
@@ -163,5 +171,5 @@ mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
-    mp_set_lookup(&self->set, item, true);
+    mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }
