@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -114,6 +115,20 @@ static mp_obj_t set_clear(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 
+static mp_obj_t set_copy(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+
+    mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
+    other->base.type = &set_type;
+    mp_set_init(&other->set, self->set.alloc);
+    other->set.used = self->set.used;
+    memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
+
+    return other;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);
+
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -122,6 +137,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 static const mp_method_t set_type_methods[] = {
     { "add", &set_add_obj },
     { "clear", &set_clear_obj },
+    { "copy", &set_copy_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
