@@ -19,9 +19,10 @@ typedef struct _mp_set_t {
 } mp_set_t;
 
 typedef enum _mp_map_lookup_kind_t {
-    MP_MAP_LOOKUP,
-    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,
-    MP_MAP_LOOKUP_REMOVE_IF_FOUND,
+    MP_MAP_LOOKUP,                    // 0
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
+    MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
+    MP_MAP_LOOKUP_FIRST = 4,
 } mp_map_lookup_kind_t;
 
 int get_doubling_prime_greater_or_equal_to(int x);

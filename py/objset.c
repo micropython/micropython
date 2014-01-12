@@ -227,6 +227,70 @@ static mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(set_isdisjoint_obj, set_isdisjoint);
 
+static mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
+    mp_obj_set_t *self;
+    bool cleanup_self = false;
+    if (MP_OBJ_IS_TYPE(self_in, &set_type)) {
+        self = self_in;
+    } else {
+        self = set_make_new(NULL, 1, &self_in);
+        cleanup_self = true;
+    }
+
+    mp_obj_set_t *other;
+    bool cleanup_other = false;
+    if (MP_OBJ_IS_TYPE(other_in, &set_type)) {
+        other = other_in;
+    } else {
+        other = set_make_new(NULL, 1, &other_in);
+        cleanup_other = true;
+    }
+    mp_obj_t iter = set_getiter(self);
+    mp_obj_t next;
+    mp_obj_t out = mp_const_true;
+    while ((next = set_it_iternext(iter)) != mp_const_stop_iteration) {
+        if (!mp_set_lookup(&other->set, next, MP_MAP_LOOKUP)) {
+            out = mp_const_false;
+            break;
+        }
+    }
+    if (cleanup_self) {
+        set_clear(self);
+    }
+    if (cleanup_other) {
+        set_clear(other);
+    }
+    return out;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_issubset_obj, set_issubset);
+
+static mp_obj_t set_issuperset(mp_obj_t self_in, mp_obj_t other_in) {
+    return set_issubset(other_in, self_in);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_issuperset_obj, set_issuperset);
+
+static mp_obj_t set_pop(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+
+    if (self->set.used == 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "pop from an empty set"));
+    }
+    mp_obj_t obj = mp_set_lookup(&self->set, NULL,
+                         MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_FIRST);
+    return obj;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(set_pop_obj, set_pop);
+
+static mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
+    assert(MP_OBJ_IS_TYPE(self_in, &set_type));
+    mp_obj_set_t *self = self_in;
+    if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
+        nlr_jump(mp_obj_new_exception(MP_QSTR_KeyError));
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 
 /******************************************************************************/
 /* set constructors & public C API                                            */
@@ -242,6 +306,10 @@ static const mp_method_t set_type_methods[] = {
     { "intersection", &set_intersect_obj },
     { "intersection_update", &set_intersect_update_obj },
     { "isdisjoint", &set_isdisjoint_obj },
+    { "issubset", &set_issubset_obj },
+    { "issuperset", &set_issuperset_obj },
+    { "pop", &set_pop_obj },
+    { "remove", &set_remove_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
