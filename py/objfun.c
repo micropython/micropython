@@ -101,6 +101,7 @@ const mp_obj_type_t fun_native_type = {
 mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = 0;
     o->n_args_max = 0;
     o->fun = fun;
@@ -110,6 +111,7 @@ mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
 mp_obj_t rt_make_function_1(mp_fun_1_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = 1;
     o->n_args_max = 1;
     o->fun = fun;
@@ -119,6 +121,7 @@ mp_obj_t rt_make_function_1(mp_fun_1_t fun) {
 mp_obj_t rt_make_function_2(mp_fun_2_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = 2;
     o->n_args_max = 2;
     o->fun = fun;
@@ -128,6 +131,7 @@ mp_obj_t rt_make_function_2(mp_fun_2_t fun) {
 mp_obj_t rt_make_function_3(mp_fun_3_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = 3;
     o->n_args_max = 3;
     o->fun = fun;
@@ -137,6 +141,7 @@ mp_obj_t rt_make_function_3(mp_fun_3_t fun) {
 mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = ~((machine_uint_t)0);
     o->fun = fun;
@@ -147,6 +152,7 @@ mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
 mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
+    o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = n_args_max;
     o->fun = fun;
