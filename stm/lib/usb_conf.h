@@ -181,10 +181,65 @@
 /****************** USB OTG MISC CONFIGURATION ********************************/
 #define VBUS_SENSING_ENABLED
 
+/* BEGIN host specific stuff */
+
+/*******************************************************************************
+*                     FIFO Size Configuration in Host mode
+*  
+*  (i) Receive data FIFO size = (Largest Packet Size / 4) + 1 or 
+*                             2x (Largest Packet Size / 4) + 1,  If a 
+*                             high-bandwidth channel or multiple isochronous 
+*                             channels are enabled
+*
+*  (ii) For the host nonperiodic Transmit FIFO is the largest maximum packet size 
+*      for all supported nonperiodic OUT channels. Typically, a space 
+*      corresponding to two Largest Packet Size is recommended.
+*
+*  (iii) The minimum amount of RAM required for Host periodic Transmit FIFO is 
+*        the largest maximum packet size for all supported periodic OUT channels.
+*        If there is at least one High Bandwidth Isochronous OUT endpoint, 
+*        then the space must be at least two times the maximum packet size for 
+*        that channel.
+*******************************************************************************/
+
+/****************** USB OTG HS CONFIGURATION (for host) ***********************/
+#ifdef USB_OTG_HS_CORE
+ #define RX_FIFO_HS_SIZE                          512
+ #define TXH_NP_HS_FIFOSIZ                        256
+ #define TXH_P_HS_FIFOSIZ                         256
+
+// #define USB_OTG_HS_LOW_PWR_MGMT_SUPPORT
+// #define USB_OTG_HS_SOF_OUTPUT_ENABLED
+
+// #define USB_OTG_INTERNAL_VBUS_ENABLED
+#define USB_OTG_EXTERNAL_VBUS_ENABLED
+
+ #ifdef USE_ULPI_PHY
+  #define USB_OTG_ULPI_PHY_ENABLED
+ #endif
+ #ifdef USE_EMBEDDED_PHY
+   #define USB_OTG_EMBEDDED_PHY_ENABLED
+ #endif
+ #define USB_OTG_HS_INTERNAL_DMA_ENABLED
+// #define USB_OTG_HS_DEDICATED_EP1_ENABLED
+#endif
+
+/****************** USB OTG FS CONFIGURATION (for host) ***********************/
+#ifdef USB_OTG_FS_CORE
+ //#define RX_FIFO_FS_SIZE                          128 // already defined for device (and it's the same)
+ #define TXH_NP_FS_FIFOSIZ                         96
+ #define TXH_P_FS_FIFOSIZ                          96
+
+// #define USB_OTG_FS_LOW_PWR_MGMT_SUPPORT
+// #define USB_OTG_FS_SOF_OUTPUT_ENABLED
+#endif
+
+/* END host specific stuff */
+
 /****************** USB OTG MODE CONFIGURATION ********************************/
-//#define USE_HOST_MODE
+//#define USE_HOST_MODE // set in Makefile
 #define USE_DEVICE_MODE
-//#define USE_OTG_MODE
+//#define USE_OTG_MODE // set in Makefile
 
 #ifndef USB_OTG_FS_CORE
  #ifndef USB_OTG_HS_CORE

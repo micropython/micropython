@@ -8,20 +8,14 @@
 #include "obj.h"
 #include "usart.h"
 
-static bool is_enabled;
-
-typedef enum {
-    PYB_USART_1 = 1,
-    PYB_USART_2 = 2,
-    PYB_USART_3 = 3,
-    PYB_USART_6 = 4,
-    PYB_USART_MAX = 4,
-} pyb_usart_t;
+pyb_usart_t pyb_usart_global_debug = PYB_USART_NONE;
 
 static USART_TypeDef *usart_get_base(pyb_usart_t usart_id) {
     USART_TypeDef *USARTx=NULL;
 
     switch (usart_id) {
+        case PYB_USART_NONE:
+            break;
         case PYB_USART_1:
             USARTx = USART1;
             break;
@@ -52,6 +46,9 @@ void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
     void (*RCC_APBxPeriphClockCmd)(uint32_t, FunctionalState)=NULL;
 
     switch (usart_id) {
+        case PYB_USART_NONE:
+            return;
+
         case PYB_USART_1:
             USARTx = USART1;
 
@@ -128,16 +125,13 @@ void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
     USART_Cmd(USARTx, ENABLE);
 }
 
-bool usart_is_enabled(void) {
-    return is_enabled;
-}
-
-bool usart_rx_any(void) {
-    return USART_GetFlagStatus(USART6, USART_FLAG_RXNE) == SET;
+bool usart_rx_any(pyb_usart_t usart_id) {
+    USART_TypeDef *USARTx = usart_get_base(usart_id);
+    return USART_GetFlagStatus(USARTx, USART_FLAG_RXNE) == SET;
 }
 
 int usart_rx_char(pyb_usart_t usart_id) {
-    USART_TypeDef *USARTx= usart_get_base(usart_id);
+    USART_TypeDef *USARTx = usart_get_base(usart_id);
     return USART_ReceiveData(USARTx);
 }
 
@@ -176,8 +170,8 @@ typedef struct _pyb_usart_obj_t {
 } pyb_usart_obj_t;
 
 static mp_obj_t usart_obj_status(mp_obj_t self_in) {
-    // TODO make it check the correct USART port!
-    if (usart_rx_any()) {
+    pyb_usart_obj_t *self = self_in;
+    if (usart_rx_any(self->usart_id)) {
         return mp_const_true;
     } else {
         return mp_const_false;

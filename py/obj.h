@@ -34,6 +34,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 //  - xxxx...xx10: a qstr, bits 2 and above are the value
 //  - xxxx...xx00: a pointer to an mp_obj_base_t
 
+// In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
+#define MP_OBJ_FITS_SMALL_INT(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
 #define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
@@ -58,6 +60,15 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, (~((machine_uint_t)0)), (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, 0, (~((machine_uint_t)0)), (mp_fun_kw_t)fun_name)
+
+// These macros are used to declare and define constant staticmethond and classmethod objects
+// You can put "static" in front of the definitions to make them local
+
+#define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_obj_staticmethod_t obj_name
+#define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_obj_classmethod_t obj_name
+
+#define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_obj_staticmethod_t obj_name = {{&mp_type_staticmethod}, fun_name}
+#define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_classmethod_t obj_name = {{&mp_type_classmethod}, fun_name}
 
 // Need to declare this here so we are not dependent on map.h
 struct _mp_map_t;
@@ -187,6 +198,8 @@ mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
+mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
+mp_obj_t mp_obj_new_int_from_long_str(const char *s);
 mp_obj_t mp_obj_new_str(qstr qstr);
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
@@ -316,3 +329,18 @@ extern const mp_obj_type_t gen_instance_type;
 extern const mp_obj_type_t module_type;
 mp_obj_t mp_obj_new_module(qstr module_name);
 struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
+
+// staticmethod and classmethod types; defined here so we can make const versions
+
+extern const mp_obj_type_t mp_type_staticmethod;
+extern const mp_obj_type_t mp_type_classmethod;
+
+typedef struct _mp_obj_staticmethod_t {
+    mp_obj_base_t base;
+    mp_obj_t fun;
+} mp_obj_staticmethod_t;
+
+typedef struct _mp_obj_classmethod_t {
+    mp_obj_base_t base;
+    mp_obj_t fun;
+} mp_obj_classmethod_t;

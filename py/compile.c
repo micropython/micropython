@@ -1316,7 +1316,7 @@ void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);
-    EMIT(load_id, MP_QSTR_AssertionError);
+    EMIT(load_global, MP_QSTR_AssertionError); // we load_global instead of load_id, to be consistent with CPython
     if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
         // assertion message
         compile_node(comp, pns->nodes[1]);

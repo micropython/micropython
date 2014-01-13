@@ -19,9 +19,10 @@ typedef struct _mp_set_t {
 } mp_set_t;
 
 typedef enum _mp_map_lookup_kind_t {
-    MP_MAP_LOOKUP,
-    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,
-    MP_MAP_LOOKUP_REMOVE_IF_FOUND,
+    MP_MAP_LOOKUP,                    // 0
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
+    MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
+    MP_MAP_LOOKUP_FIRST = 4,
 } mp_map_lookup_kind_t;
 
 int get_doubling_prime_greater_or_equal_to(int x);
@@ -31,4 +32,5 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 void mp_map_clear(mp_map_t *map);
 
 void mp_set_init(mp_set_t *set, int n);
-mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found);
+mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+void mp_set_clear(mp_set_t *set);

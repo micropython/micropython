@@ -105,6 +105,14 @@ SRC_STM = \
 #	usb_hcd.c \
 #	usb_hcd_int.c \
 #	usb_otg.c \
+#	usbh_core.c \
+#	usbh_hcs.c \
+#	usbh_stdreq.c \
+#	usbh_ioreq.c \
+#	usbh_usr.c \
+#	usbh_hid_core.c \
+#	usbh_hid_mouse.c \
+#	usbh_hid_keybd.c \
 
 SRC_CC3K = \
 	cc3000_common.c \

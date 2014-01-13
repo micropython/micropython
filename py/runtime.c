@@ -90,6 +90,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_SyntaxError, mp_obj_new_exception(MP_QSTR_SyntaxError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_ValueError, mp_obj_new_exception(MP_QSTR_ValueError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_OSError, mp_obj_new_exception(MP_QSTR_OSError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_AssertionError, mp_obj_new_exception(MP_QSTR_AssertionError));
 
     // built-in objects
     mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
@@ -267,10 +268,6 @@ void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_ar
 #endif
 }
 
-static bool fit_small_int(mp_small_int_t o) {
-    return true;
-}
-
 int rt_is_true(mp_obj_t arg) {
     DEBUG_OP_printf("is true %p\n", arg);
     if (MP_OBJ_IS_SMALL_INT(arg)) {
@@ -435,13 +432,10 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             case RT_UNARY_OP_INVERT: val = ~val; break;
             default: assert(0); val = 0;
         }
-        if (fit_small_int(val)) {
+        if (MP_OBJ_FITS_SMALL_INT(val)) {
             return MP_OBJ_NEW_SMALL_INT(val);
-        } else {
-            // TODO make a bignum
-            assert(0);
-            return mp_const_none;
         }
+        return mp_obj_new_int(val);
     } else { // will be an object (small ints are caught in previous if)
         mp_obj_base_t *o = arg;
         if (o->type->unary_op != NULL) {
@@ -550,9 +544,11 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
                 default: assert(0);
             }
-            if (fit_small_int(lhs_val)) {
+            // TODO: We just should make mp_obj_new_int() inline and use that
+            if (MP_OBJ_FITS_SMALL_INT(lhs_val)) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             }
+            return mp_obj_new_int(lhs_val);
         } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
@@ -809,12 +805,25 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             dest[0] = base;
         } else {
             // generic method lookup
+            // this is a lookup in the object (ie not class or type)
             const mp_method_t *meth = type->methods;
             if (meth != NULL) {
                 for (; meth->name != NULL; meth++) {
                     if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                        dest[1] = (mp_obj_t)meth->fun;
-                        dest[0] = base;
+                        // check if the methods are functions, static or class methods
+                        // see http://docs.python.org/3.3/howto/descriptor.html
+                        if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
+                            // return just the function
+                            dest[1] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                        } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
+                            // return a bound method, with self being the type of this object
+                            dest[1] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                            dest[0] = mp_obj_get_type(base);
+                        } else {
+                            // return a bound method, with self being this object
+                            dest[1] = (mp_obj_t)meth->fun;
+                            dest[0] = base;
+                        }
                         break;
                     }
                 }

@@ -88,6 +88,7 @@ typedef struct _parser_t {
     uint rule_stack_top;
     rule_stack_t *rule_stack;
 
+    uint result_stack_alloc;
     uint result_stack_top;
     mp_parse_node_t *result_stack;
 } parser_t;
@@ -121,7 +122,7 @@ mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
 
 int num_parse_nodes_allocated = 0;
 mp_parse_node_struct_t *parse_node_new_struct(int rule_id, int num_args) {
-    mp_parse_node_struct_t *pn = m_malloc(sizeof(mp_parse_node_struct_t) + num_args * sizeof(mp_parse_node_t));
+    mp_parse_node_struct_t *pn = m_new_obj_var(mp_parse_node_struct_t, mp_parse_node_t, num_args);
     pn->source = 0; // TODO
     pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
     num_parse_nodes_allocated += 1;
@@ -180,6 +181,10 @@ static mp_parse_node_t peek_result(parser_t *parser, int pos) {
 }
 
 static void push_result_node(parser_t *parser, mp_parse_node_t pn) {
+    if (parser->result_stack_top >= parser->result_stack_alloc) {
+        parser->result_stack = m_renew(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc * 2);
+        parser->result_stack_alloc *= 2;
+    }
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
@@ -191,7 +196,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     } else if (tok->kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
-        int int_val = 0;
+        machine_int_t int_val = 0;
         int len = tok->len;
         const char *str = tok->str;
         int base = 10;
@@ -211,7 +216,9 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 i = 2;
             }
         }
+        bool overflow = false;
         for (; i < len; i++) {
+            machine_int_t old_val = int_val;
             if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
                 int_val = base * int_val + str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
@@ -225,10 +232,17 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 small_int = false;
                 break;
             }
+            if (int_val < old_val) {
+                // If new value became less than previous, it's overflow
+                overflow = true;
+            } else if ((old_val ^ int_val) & WORD_MSBIT_HIGH) {
+                // If signed number changed sign - it's overflow
+                overflow = true;
+            }
         }
         if (dec) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
-        } else if (small_int && MP_FIT_SMALL_INT(int_val)) {
+        } else if (small_int && !overflow && MP_FIT_SMALL_INT(int_val)) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));
@@ -252,14 +266,20 @@ static void push_result_rule(parser_t *parser, const rule_t *rule, int num_args)
 }
 
 mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
-    parser_t *parser = m_new(parser_t, 1);
+
+    // allocate memory for the parser and its stacks
+
+    parser_t *parser = m_new_obj(parser_t);
+
     parser->rule_stack_alloc = 64;
     parser->rule_stack_top = 0;
     parser->rule_stack = m_new(rule_stack_t, parser->rule_stack_alloc);
 
-    parser->result_stack = m_new(mp_parse_node_t, 1000);
+    parser->result_stack_alloc = 64;
     parser->result_stack_top = 0;
+    parser->result_stack = m_new(mp_parse_node_t, parser->result_stack_alloc);
 
+    // work out the top-level rule to use, and push it on the stack
     int top_level_rule;
     switch (input_kind) {
         case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
@@ -267,6 +287,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         default: top_level_rule = RULE_file_input;
     }
     push_rule(parser, rules[top_level_rule], 0);
+
+    // parse!
 
     uint n, i;
     bool backtrack = false;
@@ -558,12 +580,25 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     //printf("--------------\n");
     //result_stack_show(parser);
-    assert(parser->result_stack_top == 1);
-    //printf("maximum depth: %d\n", parser->rule_stack_alloc);
+    //printf("rule stack alloc: %d\n", parser->rule_stack_alloc);
+    //printf("result stack alloc: %d\n", parser->result_stack_alloc);
     //printf("number of parse nodes allocated: %d\n", num_parse_nodes_allocated);
-    return parser->result_stack[0];
+
+    // get the root parse node that we created
+    assert(parser->result_stack_top == 1);
+    mp_parse_node_t result = parser->result_stack[0];
+
+finished:
+    // free the memory that we don't need anymore
+    m_del(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc);
+    m_del(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc);
+    m_del_obj(parser_t, parser);
+
+    // return the result
+    return result;
 
 syntax_error:
+    // TODO these should raise a proper exception
     if (mp_lexer_is_kind(lex, MP_TOKEN_INDENT)) {
         mp_lexer_show_error_pythonic(lex, "IndentationError: unexpected indent");
     } else if (mp_lexer_is_kind(lex, MP_TOKEN_DEDENT_MISMATCH)) {
@@ -575,5 +610,6 @@ syntax_error:
 #endif
         mp_token_show(mp_lexer_cur(lex));
     }
-    return MP_PARSE_NODE_NULL;
+    result = MP_PARSE_NODE_NULL;
+    goto finished;
 }

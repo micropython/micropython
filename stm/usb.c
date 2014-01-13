@@ -80,7 +80,7 @@ void usb_vcp_send_strn(const char *str, int len) {
     }
 }
 
-#include "lib/usbd_conf.h"
+#include "usbd_conf.h"
 
 /* These are external variables imported from CDC core to be used for IN 
    transfer management. */
@@ -105,3 +105,30 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 void usb_hid_send_report(uint8_t *buf) {
     USBD_HID_SendReport(&USB_OTG_dev, buf, 4);
 }
+
+/******************************************************************************/
+// code for experimental USB OTG support
+
+#ifdef USE_HOST_MODE
+
+#include "lib-otg/usbh_core.h"
+#include "lib-otg/usbh_usr.h"
+#include "lib-otg/usbh_hid_core.h"
+
+__ALIGN_BEGIN USBH_HOST USB_Host __ALIGN_END ;
+
+static int host_is_enabled = 0;
+void pyb_usbh_init(void) {
+    if (!host_is_enabled) {
+        // only init USBH once in the device's power-lifetime
+        /* Init Host Library */
+        USBH_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USB_Host, &HID_cb, &USR_Callbacks);
+    }
+    host_is_enabled = 1;
+}
+
+void pyb_usbh_process(void) {
+    USBH_Process(&USB_OTG_dev, &USB_Host);
+}
+
+#endif // USE_HOST_MODE

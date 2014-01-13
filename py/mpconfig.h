@@ -62,6 +62,18 @@
 #define MICROPY_ENABLE_LEXER_UNIX (0)
 #endif
 
+// Long int implementation
+#define MICROPY_LONGINT_IMPL_NONE (0)
+#define MICROPY_LONGINT_IMPL_LONGLONG (1)
+
+#ifndef MICROPY_LONGINT_IMPL
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
+#endif
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+typedef long long mp_longint_impl_t;
+#endif
+
 // Whether to support float and complex types
 #ifndef MICROPY_ENABLE_FLOAT
 #define MICROPY_ENABLE_FLOAT (0)
@@ -75,6 +87,11 @@
 
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
+
+#define BITS_PER_BYTE (8)
+#define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
+// machine_int_t value with most significant bit set
+#define WORD_MSBIT_HIGH (1 << (BYTES_PER_WORD * 8 - 1))
 
 // printf format spec to use for machine_int_t and friends
 #ifndef INT_FMT

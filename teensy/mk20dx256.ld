@@ -126,6 +126,12 @@ SECTIONS
 		_edata = .; 
 	} > RAM
 
+	/*
+	 * _staticfs is the place in flash where the static filesystem which
+	 * is concatenated to the .hex file will wind up.
+	 */
+	_staticfs = LOADADDR(.data) + SIZEOF(.data);
+
 	.noinit (NOLOAD) : {
 		*(.noinit*)
 	} > RAM

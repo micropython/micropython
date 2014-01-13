@@ -617,7 +617,7 @@ USB_OTG_STS USB_OTG_CoreInitHost(USB_OTG_CORE_HANDLE *pdev)
   USB_OTG_HCFG_TypeDef            hcfg;
   
 #ifdef USE_OTG_MODE
-  USB_OTG_OTGCTL_TypeDef          gotgctl;
+  USB_OTG_GOTGCTL_TypeDef          gotgctl;
 #endif
   
   uint32_t                        i = 0;

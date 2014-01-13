@@ -307,7 +307,9 @@ char *strdup(const char *str) {
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 void stdout_tx_str(const char *str) {
-    //usart_tx_str(str); // disabled because usart is a Python object and we now need specify which USART port
+    if (pyb_usart_global_debug != PYB_USART_NONE) {
+        usart_tx_str(pyb_usart_global_debug, str);
+    }
     usb_vcp_send_str(str);
 }
 
@@ -322,10 +324,10 @@ int readline(vstr_t *line, const char *prompt) {
             if (usb_vcp_rx_any() != 0) {
                 c = usb_vcp_rx_get();
                 break;
-            } /*else if (usart_rx_any()) { // disabled because usart is a Python object and we now need specify which USART port
-                c = usart_rx_char();
+            } else if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
+                c = usart_rx_char(pyb_usart_global_debug);
                 break;
-            }*/
+            }
             sys_tick_delay_ms(1);
             if (storage_needs_flush()) {
                 storage_flush();
@@ -775,7 +777,9 @@ int main(void) {
     switch_init();
     storage_init();
 
-    //usart_init(); disabled while wi-fi is enabled; also disabled because now usart is a proper Python object
+    // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
+    //pyb_usart_global_debug = PYB_USART_6;
+    //usart_init(pyb_usart_global_debug, 115200);
 
     int first_soft_reset = true;
 
@@ -936,6 +940,9 @@ soft_reset:
 
     // USB
     usb_init();
+
+    // USB host; not working!
+    //pyb_usbh_init();
 
     // MMA
     if (first_soft_reset) {
