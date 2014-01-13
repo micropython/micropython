@@ -24,9 +24,19 @@ SIZE = $(COMPILER_PATH)/arm-none-eabi-size
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
-CFLAGS = -I. -I$(PY_SRC) -I$(CORE_PATH) -Wall -ansi -std=gnu99 -Os -DNDEBUG $(CFLAGS_CORTEX_M4) -D$(TARGET)
+CFLAGS = -I. -I$(PY_SRC) -I$(CORE_PATH) -Wall -ansi -std=gnu99
 LDFLAGS = -nostdlib -T mk20dx256.ld
 LIBS = -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
+
+#Debugging/Optimization
+ifdef DEBUG
+CFLAGS += -Og -ggdb
+else
+CFLAGS += -Os #-DNDEBUG
+endif
+
+# if order is not important for these, move them up
+CFLAGS += $(CFLAGS_CORTEX_M4) -D$(TARGET)
 
 SRC_C = \
 	main.c \
