@@ -132,28 +132,45 @@ void mp_set_init(mp_set_t *set, int n) {
     set->table = m_new0(mp_obj_t, set->alloc);
 }
 
-mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
-    int hash = mp_obj_hash(index);
-    assert(set->alloc); /* FIXME: if alloc is ever 0 when doing a lookup, this'll fail: */
-    int pos = hash % set->alloc;
+static void mp_set_rehash(mp_set_t *set) {
+    int old_alloc = set->alloc;
+    mp_obj_t *old_table = set->table;
+    set->alloc = get_doubling_prime_greater_or_equal_to(set->alloc + 1);
+    set->used = 0;
+    set->table = m_new0(mp_obj_t, set->alloc);
+    for (int i = 0; i < old_alloc; i++) {
+        if (old_table[i] != NULL) {
+            mp_set_lookup(set, old_table[i], true);
+        }
+    }
+    m_del(mp_obj_t, old_table, old_alloc);
+}
+
+mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
+    int hash;
+    int pos;
+    if (set->alloc == 0) {
+        if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+            mp_set_rehash(set);
+        } else {
+            return NULL;
+        }
+    }
+    if (lookup_kind & MP_MAP_LOOKUP_FIRST) {
+        hash = 0;
+        pos = 0;
+    } else {
+        hash = mp_obj_hash(index);;
+        pos = hash % set->alloc;
+    }
     for (;;) {
         mp_obj_t elem = set->table[pos];
         if (elem == MP_OBJ_NULL) {
             // not in table
-            if (add_if_not_found) {
+            if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 if (set->used + 1 >= set->alloc) {
                     // not enough room in table, rehash it
-                    int old_alloc = set->alloc;
-                    mp_obj_t *old_table = set->table;
-                    set->alloc = get_doubling_prime_greater_or_equal_to(set->alloc + 1);
-                    set->used = 0;
-                    set->table = m_new(mp_obj_t, set->alloc);
-                    for (int i = 0; i < old_alloc; i++) {
-                        if (old_table[i] != NULL) {
-                            mp_set_lookup(set, old_table[i], true);
-                        }
-                    }
-                    m_del(mp_obj_t, old_table, old_alloc);
+                    mp_set_rehash(set);
                     // restart the search for the new element
                     pos = hash % set->alloc;
                 } else {
@@ -161,15 +178,31 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, bool add_if_not_found) {
                     set->table[pos] = index;
                     return index;
                 }
+            } else if (lookup_kind & MP_MAP_LOOKUP_FIRST) {
+                pos++;
             } else {
                 return MP_OBJ_NULL;
             }
-        } else if (mp_obj_equal(elem, index)) {
+        } else if (lookup_kind & MP_MAP_LOOKUP_FIRST || mp_obj_equal(elem, index)) {
             // found it
+            if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
+                set->used--;
+                set->table[pos] = NULL;
+            }
             return elem;
         } else {
             // not yet found, keep searching in this table
             pos = (pos + 1) % set->alloc;
         }
+    }
+}
+
+void mp_set_clear(mp_set_t *set) {
+    set->used = 0;
+    machine_uint_t a = set->alloc;
+    set->alloc = 0;
+    set->table = m_renew(mp_obj_t, set->table, a, set->alloc);
+    for (uint i=0; i<set->alloc; i++) {
+        set->table[i] = NULL;
     }
 }
