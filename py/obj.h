@@ -285,6 +285,7 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
 // tuple
 extern const mp_obj_type_t tuple_type;
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
+void mp_obj_tuple_del(mp_obj_t self_in);
 
 // list
 extern const mp_obj_type_t list_type;
@@ -305,6 +306,10 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 // slice
 extern const mp_obj_type_t slice_type;
 void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
+
+// zip
+extern const mp_obj_type_t zip_type;
+
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)

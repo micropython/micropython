@@ -113,6 +113,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
 
     // built-in user functions; TODO covert all to &mp_builtin_xxx's
     mp_map_add_qstr(&map_builtins, MP_QSTR_abs, rt_make_function_1(mp_builtin_abs));

@@ -60,6 +60,7 @@ Q(set)
 Q(sum)
 Q(tuple)
 Q(type)
+Q(zip)
 
 Q(append)
 Q(pop)
