@@ -297,7 +297,6 @@ mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     return value;
 }
 
-extern mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs);
 static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
     mp_obj_t *args_items = NULL;
     uint args_len = 0;
@@ -309,13 +308,7 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
                                           "must use keyword argument for key function"));
     }
-    mp_obj_t iterable = rt_getiter(args_items[0]);
-    mp_obj_t self = rt_build_list(0, NULL);
-    mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-        rt_list_append(self, item);
-    }
-
+    mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, args_items);
     mp_obj_t new_args = rt_build_tuple(1, &self);
     list_sort(new_args, kwargs);
 
