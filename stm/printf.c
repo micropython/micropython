@@ -215,7 +215,7 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 char dot = '.';
                 double d = va_arg(args, double);
                 int left = (int)d;
-                int right = (int)((d - (double)(int)d) * 1000000.0);
+                int right = (int)((d - (double)(int)d) * (double)1000000.0);
                 chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width);
                 chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
                 chrs += pfenv_print_int(pfenv, right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
