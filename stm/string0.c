@@ -108,3 +108,31 @@ char *strcat(char *dest, const char *src) {
     *d = '\0';
     return dest;
 }
+
+// Public Domain implementation of strchr from:
+// http://en.wikibooks.org/wiki/C_Programming/Strings#The_strchr_function
+char *strchr(const char *s, int c)
+{
+    /* Scan s for the character.  When this loop is finished,
+       s will either point to the end of the string or the
+       character we were looking for.  */
+    while (*s != '\0' && *s != (char)c)
+        s++;
+    return ((*s == c) ? (char *) s : 0);
+}
+
+
+// Public Domain implementation of strstr from:
+// http://en.wikibooks.org/wiki/C_Programming/Strings#The_strstr_function
+char *strstr(const char *haystack, const char *needle)
+{
+    size_t needlelen;
+    /* Check for the null needle case.  */
+    if (*needle == '\0')
+        return (char *) haystack;
+    needlelen = strlen(needle);
+    for (; (haystack = strchr(haystack, *needle)) != 0; haystack++)
+        if (strncmp(haystack, needle, needlelen) == 0)
+            return (char *) haystack;
+    return 0;
+}
