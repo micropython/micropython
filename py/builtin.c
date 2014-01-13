@@ -314,4 +314,4 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
 
     return self;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, mp_builtin_sorted);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
