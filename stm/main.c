@@ -812,36 +812,36 @@ soft_reset:
 
     // add some functions to the python namespace
     {
-        rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
+        rt_store_name(qstr_from_str_static("help"), rt_make_function_n(0, pyb_help));
 
         mp_obj_t m = mp_obj_new_module(qstr_from_str_static("pyb"));
-        rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
-        rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_0(pyb_sd_test));
-        rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_0(pyb_stop));
-        rt_store_attr(m, qstr_from_str_static("standby"), rt_make_function_0(pyb_standby));
-        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
-        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
-        rt_store_attr(m, qstr_from_str_static("sync"), rt_make_function_0(pyb_sync));
-        rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
-        rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
-        rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
+        rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_n(0, pyb_info));
+        rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_n(0, pyb_sd_test));
+        rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_n(0, pyb_stop));
+        rt_store_attr(m, qstr_from_str_static("standby"), rt_make_function_n(0, pyb_standby));
+        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_n(1, pyb_source_dir));
+        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_n(1, pyb_main));
+        rt_store_attr(m, qstr_from_str_static("sync"), rt_make_function_n(0, pyb_sync));
+        rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_n(0, pyb_gc));
+        rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_n(1, pyb_delay));
+        rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_n(1, pyb_led));
         rt_store_attr(m, qstr_from_str_static("switch"), (mp_obj_t)&pyb_switch_obj);
-        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_2(pyb_servo_set));
-        rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_2(pyb_pwm_set));
+        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_n(2, pyb_servo_set));
+        rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_n(2, pyb_pwm_set));
         rt_store_attr(m, qstr_from_str_static("accel"), (mp_obj_t)&pyb_mma_read_obj);
         rt_store_attr(m, qstr_from_str_static("mma_read"), (mp_obj_t)&pyb_mma_read_all_obj);
         rt_store_attr(m, qstr_from_str_static("mma_mode"), (mp_obj_t)&pyb_mma_write_mode_obj);
-        rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_1(pyb_hid_send_report));
-        rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_0(pyb_rtc_read));
-        rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_0(pyb_rng_get));
-        rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
-        rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_1(pyb_Servo));
-        rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_2(pyb_I2C));
+        rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_n(1, pyb_hid_send_report));
+        rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_n(0, pyb_rtc_read));
+        rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_n(0, pyb_rng_get));
+        rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_n(1, pyb_Led));
+        rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_n(1, pyb_Servo));
+        rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_n(2, pyb_I2C));
         rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
-        rt_store_attr(m, qstr_from_str_static("Usart"), rt_make_function_2(pyb_Usart));
+        rt_store_attr(m, qstr_from_str_static("Usart"), rt_make_function_n(2, pyb_Usart));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
-        rt_store_name(qstr_from_str_static("open"), rt_make_function_2(pyb_io_open));
+        rt_store_name(qstr_from_str_static("open"), rt_make_function_n(2, pyb_io_open));
     }
 
     // print a message to the LCD
