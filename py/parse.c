@@ -196,7 +196,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     } else if (tok->kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
-        int int_val = 0;
+        machine_int_t int_val = 0;
         int len = tok->len;
         const char *str = tok->str;
         int base = 10;
@@ -216,7 +216,9 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 i = 2;
             }
         }
+        bool overflow = false;
         for (; i < len; i++) {
+            machine_int_t old_val = int_val;
             if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
                 int_val = base * int_val + str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
@@ -230,10 +232,17 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 small_int = false;
                 break;
             }
+            if (int_val < old_val) {
+                // If new value became less than previous, it's overflow
+                overflow = true;
+            } else if ((old_val ^ int_val) & WORD_MSBIT_HIGH) {
+                // If signed number changed sign - it's overflow
+                overflow = true;
+            }
         }
         if (dec) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
-        } else if (small_int && MP_FIT_SMALL_INT(int_val)) {
+        } else if (small_int && !overflow && MP_FIT_SMALL_INT(int_val)) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));

@@ -268,10 +268,6 @@ void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_ar
 #endif
 }
 
-static bool fit_small_int(mp_small_int_t o) {
-    return true;
-}
-
 int rt_is_true(mp_obj_t arg) {
     DEBUG_OP_printf("is true %p\n", arg);
     if (MP_OBJ_IS_SMALL_INT(arg)) {
@@ -436,13 +432,10 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             case RT_UNARY_OP_INVERT: val = ~val; break;
             default: assert(0); val = 0;
         }
-        if (fit_small_int(val)) {
+        if (MP_OBJ_FITS_SMALL_INT(val)) {
             return MP_OBJ_NEW_SMALL_INT(val);
-        } else {
-            // TODO make a bignum
-            assert(0);
-            return mp_const_none;
         }
+        return mp_obj_new_int(val);
     } else { // will be an object (small ints are caught in previous if)
         mp_obj_base_t *o = arg;
         if (o->type->unary_op != NULL) {
@@ -551,11 +544,11 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
                 default: assert(0);
             }
-            if (fit_small_int(lhs_val)) {
+            // TODO: We just should make mp_obj_new_int() inline and use that
+            if (MP_OBJ_FITS_SMALL_INT(lhs_val)) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             }
-            // TODO: return long int
-            assert(0);
+            return mp_obj_new_int(lhs_val);
         } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
