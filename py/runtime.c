@@ -97,7 +97,7 @@ void rt_init(void) {
 
     // built-in core functions
     mp_map_add_qstr(&map_builtins, MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR___repl_print__, rt_make_function_1(mp_builtin___repl_print__));
+    mp_map_add_qstr(&map_builtins, MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj);
 
     // built-in types
     mp_map_add_qstr(&map_builtins, MP_QSTR_bool, (mp_obj_t)&bool_type);
@@ -114,26 +114,26 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
 
-    // built-in user functions; TODO covert all to &mp_builtin_xxx's
-    mp_map_add_qstr(&map_builtins, MP_QSTR_abs, rt_make_function_1(mp_builtin_abs));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_all, rt_make_function_1(mp_builtin_all));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_any, rt_make_function_1(mp_builtin_any));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_callable, rt_make_function_1(mp_builtin_callable));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_chr, rt_make_function_1(mp_builtin_chr));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, rt_make_function_2(mp_builtin_divmod));
+    // built-in user functions
+    mp_map_add_qstr(&map_builtins, MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_issubclass, (mp_obj_t)&mp_builtin_issubclass_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_len, rt_make_function_1(mp_builtin_len));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_max, rt_make_function_var(1, mp_builtin_max));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_min, rt_make_function_var(1, mp_builtin_min));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_len, (mp_obj_t)&mp_builtin_len_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_max, (mp_obj_t)&mp_builtin_max_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_min, (mp_obj_t)&mp_builtin_min_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_next, (mp_obj_t)&mp_builtin_next_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_ord, rt_make_function_1(mp_builtin_ord));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_pow, rt_make_function_var(2, mp_builtin_pow));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_print, rt_make_function_var(0, mp_builtin_print));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_range, rt_make_function_var(1, mp_builtin_range));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_sum, rt_make_function_var(1, mp_builtin_sum));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_ord, (mp_obj_t)&mp_builtin_ord_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_pow, (mp_obj_t)&mp_builtin_pow_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_print, (mp_obj_t)&mp_builtin_print_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_range, (mp_obj_t)&mp_builtin_range_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
 
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;
@@ -622,12 +622,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
             fun = mp_obj_new_fun_bc(c->n_args, c->n_locals + c->n_stack, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
-            switch (c->n_args) {
-                case 0: fun = rt_make_function_0(c->u_native.fun); break;
-                case 1: fun = rt_make_function_1((mp_fun_1_t)c->u_native.fun); break;
-                case 2: fun = rt_make_function_2((mp_fun_2_t)c->u_native.fun); break;
-                default: assert(0); fun = mp_const_none;
-            }
+            fun = rt_make_function_n(c->n_args, c->u_native.fun);
             break;
         case MP_CODE_INLINE_ASM:
             fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);

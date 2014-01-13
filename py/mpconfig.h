@@ -91,7 +91,7 @@ typedef long long mp_longint_impl_t;
 #define BITS_PER_BYTE (8)
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // machine_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (1 << (BYTES_PER_WORD * 8 - 1))
+#define WORD_MSBIT_HIGH (((machine_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
 
 // printf format spec to use for machine_int_t and friends
 #ifndef INT_FMT

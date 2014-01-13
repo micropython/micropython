@@ -220,13 +220,13 @@ void lcd_init(void) {
 
     // Python interface
     mp_obj_t m = mp_obj_new_module(qstr_from_str_static("lcd"));
-    rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_2(lcd_draw_pixel_8));
-    rt_store_attr(m, qstr_from_str_static("clear"), rt_make_function_0(lcd_pix_clear));
-    rt_store_attr(m, qstr_from_str_static("get"), rt_make_function_2(lcd_pix_get));
-    rt_store_attr(m, qstr_from_str_static("set"), rt_make_function_2(lcd_pix_set));
-    rt_store_attr(m, qstr_from_str_static("reset"), rt_make_function_2(lcd_pix_reset));
-    rt_store_attr(m, qstr_from_str_static("show"), rt_make_function_0(lcd_pix_show));
-    rt_store_attr(m, qstr_from_str_static("text"), rt_make_function_1(lcd_print));
+    rt_store_attr(m, qstr_from_str_static("lcd8"), rt_make_function_n(2, lcd_draw_pixel_8));
+    rt_store_attr(m, qstr_from_str_static("clear"), rt_make_function_n(0, lcd_pix_clear));
+    rt_store_attr(m, qstr_from_str_static("get"), rt_make_function_n(2, lcd_pix_get));
+    rt_store_attr(m, qstr_from_str_static("set"), rt_make_function_n(2, lcd_pix_set));
+    rt_store_attr(m, qstr_from_str_static("reset"), rt_make_function_n(2, lcd_pix_reset));
+    rt_store_attr(m, qstr_from_str_static("show"), rt_make_function_n(0, lcd_pix_show));
+    rt_store_attr(m, qstr_from_str_static("text"), rt_make_function_n(1, lcd_print));
     rt_store_name(qstr_from_str_static("lcd"), m);
 }
 

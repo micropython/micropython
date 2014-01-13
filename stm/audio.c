@@ -91,8 +91,8 @@ void audio_init(void) {
 
     // Python interface
     mp_obj_t m = mp_obj_new_module(qstr_from_str_static("audio"));
-    rt_store_attr(m, qstr_from_str_static("dac"), rt_make_function_1(pyb_audio_dac));
-    rt_store_attr(m, qstr_from_str_static("is_full"), rt_make_function_0(pyb_audio_is_full));
-    rt_store_attr(m, qstr_from_str_static("fill"), rt_make_function_1(pyb_audio_fill));
+    rt_store_attr(m, qstr_from_str_static("dac"), rt_make_function_n(1, pyb_audio_dac));
+    rt_store_attr(m, qstr_from_str_static("is_full"), rt_make_function_n(0, pyb_audio_is_full));
+    rt_store_attr(m, qstr_from_str_static("fill"), rt_make_function_n(1, pyb_audio_fill));
     rt_store_name(qstr_from_str_static("audio"), m);
 }

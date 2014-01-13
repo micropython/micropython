@@ -178,8 +178,8 @@ static mp_obj_t str_find(int n_args, const mp_obj_t *args) {
     const char* haystack = qstr_str(((mp_obj_str_t*)args[0])->qstr);
     const char* needle = qstr_str(((mp_obj_str_t*)args[1])->qstr);
 
-    ssize_t haystack_len = strlen(haystack);
-    ssize_t needle_len = strlen(needle);
+    size_t haystack_len = strlen(haystack);
+    size_t needle_len = strlen(needle);
 
     size_t start = 0;
     size_t end = haystack_len;
@@ -192,14 +192,17 @@ static mp_obj_t str_find(int n_args, const mp_obj_t *args) {
     }
 
     char *p = strstr(haystack + start, needle);
-    ssize_t pos = -1;
-    if (p) {
-        pos = p - haystack;
+    if (p == NULL) {
+        // not found
+        return MP_OBJ_NEW_SMALL_INT(-1);
+    } else {
+        // found
+        machine_int_t pos = p - haystack;
         if (pos + needle_len > end) {
             pos = -1;
         }
+        return MP_OBJ_NEW_SMALL_INT(pos);
     }
-    return MP_OBJ_NEW_SMALL_INT(pos);
 }
 
 mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
