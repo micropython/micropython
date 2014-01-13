@@ -248,13 +248,14 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     }
 }
 
-static mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
+mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
     mp_obj_t *args_items = NULL;
     uint args_len = 0;
 
     assert(MP_OBJ_IS_TYPE(args, &tuple_type));
     mp_obj_tuple_get(args, &args_len, &args_items);
     assert(args_len >= 1);
+    assert(MP_OBJ_IS_TYPE(args_items[0], &list_type));
     if (args_len > 1) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
                                           "list.sort takes no positional arguments"));

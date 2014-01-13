@@ -134,6 +134,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_pow, rt_make_function_var(2, mp_builtin_pow));
     mp_map_add_qstr(&map_builtins, MP_QSTR_print, rt_make_function_var(0, mp_builtin_print));
     mp_map_add_qstr(&map_builtins, MP_QSTR_range, rt_make_function_var(1, mp_builtin_range));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_sum, rt_make_function_var(1, mp_builtin_sum));
 
     next_unique_code_id = 1; // 0 indicates "no code"
