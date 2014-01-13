@@ -31,6 +31,7 @@
 #include "stm32fxxx_it.h"
 #include "stm32f4xx_exti.h"
 #include "usb_core.h"
+//#include "usb_hcd_int.h" // for usb host mode only
 //#include "usbd_core.h"
 
 //#include "usbd_cdc_core.h"
@@ -197,7 +198,8 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
-  USBD_OTG_ISR_Handler (&USB_OTG_dev);
+  USBD_OTG_ISR_Handler (&USB_OTG_dev); // device mode
+  //USBH_OTG_ISR_Handler (&USB_OTG_dev); // host mode FIXME
 }
 
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED 
