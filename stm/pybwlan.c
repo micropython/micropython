@@ -357,11 +357,11 @@ void pyb_wlan_init(void) {
 
     mp_obj_t m = mp_obj_new_module(qstr_from_str_static("wlan"));
     rt_store_attr(m, qstr_from_str_static("connect"), rt_make_function_var(0, pyb_wlan_connect));
-    rt_store_attr(m, qstr_from_str_static("disconnect"), rt_make_function_0(pyb_wlan_disconnect));
-    rt_store_attr(m, qstr_from_str_static("ip"), rt_make_function_0(pyb_wlan_get_ip));
-    rt_store_attr(m, qstr_from_str_static("get_host"), rt_make_function_1(pyb_wlan_get_host));
-    rt_store_attr(m, qstr_from_str_static("http_get"), rt_make_function_2(pyb_wlan_http_get));
-    rt_store_attr(m, qstr_from_str_static("serve"), rt_make_function_0(pyb_wlan_serve));
+    rt_store_attr(m, qstr_from_str_static("disconnect"), rt_make_function_n(0, pyb_wlan_disconnect));
+    rt_store_attr(m, qstr_from_str_static("ip"), rt_make_function_n(0, pyb_wlan_get_ip));
+    rt_store_attr(m, qstr_from_str_static("get_host"), rt_make_function_n(1, pyb_wlan_get_host));
+    rt_store_attr(m, qstr_from_str_static("http_get"), rt_make_function_n(2, pyb_wlan_http_get));
+    rt_store_attr(m, qstr_from_str_static("serve"), rt_make_function_n(0, pyb_wlan_serve));
     rt_store_name(qstr_from_str_static("wlan"), m);
 }
 

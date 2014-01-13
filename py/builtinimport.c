@@ -18,7 +18,7 @@
 #include "map.h"
 #include "builtin.h"
 
-mp_obj_t mp_builtin___import__(int n, mp_obj_t *args) {
+mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     /*
     printf("import:\n");
     for (int i = 0; i < n; i++) {

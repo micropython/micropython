@@ -72,10 +72,10 @@ void timer_init(void) {
 
     // Python interface
     mp_obj_t m = mp_obj_new_module(qstr_from_str_static("timer"));
-    rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_1(timer_py_set_callback));
-    rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_1(timer_py_set_period));
-    rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_1(timer_py_set_prescaler));
-    rt_store_attr(m, qstr_from_str_static("value"), rt_make_function_0(timer_py_get_value));
+    rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_n(1, timer_py_set_callback));
+    rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_n(1, timer_py_set_period));
+    rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_n(1, timer_py_set_prescaler));
+    rt_store_attr(m, qstr_from_str_static("value"), rt_make_function_n(0, timer_py_get_value));
     rt_store_name(qstr_from_str_static("timer"), m);
 }
 
