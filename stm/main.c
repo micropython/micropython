@@ -390,7 +390,7 @@ void do_repl(void) {
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
-    vstr_init(&line);
+    vstr_init(&line, 32);
 
     for (;;) {
         vstr_reset(&line);

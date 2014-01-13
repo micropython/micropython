@@ -6,8 +6,8 @@
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
 
-void vstr_init(vstr_t *vstr) {
-    vstr->alloc = 32;
+void vstr_init(vstr_t *vstr, int alloc) {
+    vstr->alloc = alloc;
     vstr->len = 0;
     vstr->buf = m_new(char, vstr->alloc);
     if (vstr->buf == NULL) {
@@ -28,7 +28,16 @@ vstr_t *vstr_new(void) {
     if (vstr == NULL) {
         return NULL;
     }
-    vstr_init(vstr);
+    vstr_init(vstr, 32);
+    return vstr;
+}
+
+vstr_t *vstr_new_size(int alloc) {
+    vstr_t *vstr = m_new(vstr_t, 1);
+    if (vstr == NULL) {
+        return NULL;
+    }
+    vstr_init(vstr, alloc);
     return vstr;
 }
 
@@ -61,6 +70,36 @@ int vstr_len(vstr_t *vstr) {
         return 0;
     }
     return vstr->len;
+}
+
+// Extend vstr strictly to by requested size, return pointer to newly added chunk
+char  *vstr_extend(vstr_t *vstr, int size) {
+    char *new_buf = m_renew(char, vstr->buf, vstr->alloc, vstr->alloc + size);
+    if (new_buf == NULL) {
+        vstr->had_error = true;
+        return NULL;
+    }
+    char *p = new_buf + vstr->alloc;
+    vstr->alloc += size;
+    vstr->buf = new_buf;
+    return p;
+}
+
+// Shrink vstr to be given size
+bool vstr_set_size(vstr_t *vstr, int size) {
+    char *new_buf = m_renew(char, vstr->buf, vstr->alloc, size);
+    if (new_buf == NULL) {
+        vstr->had_error = true;
+        return false;
+    }
+    vstr->buf = new_buf;
+    vstr->alloc = vstr->len = size;
+    return true;
+}
+
+// Shrink vstr allocation to its actual length
+bool vstr_shrink(vstr_t *vstr) {
+    return vstr_set_size(vstr, vstr->len);
 }
 
 bool vstr_ensure_extra(vstr_t *vstr, int size) {
