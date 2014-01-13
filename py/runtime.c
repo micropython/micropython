@@ -587,12 +587,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
             fun = mp_obj_new_fun_bc(c->n_args, c->n_locals + c->n_stack, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
-            switch (c->n_args) {
-                case 0: fun = rt_make_function_0(c->u_native.fun); break;
-                case 1: fun = rt_make_function_1((mp_fun_1_t)c->u_native.fun); break;
-                case 2: fun = rt_make_function_2((mp_fun_2_t)c->u_native.fun); break;
-                default: assert(0); fun = mp_const_none;
-            }
+            fun = rt_make_function_n(c->n_args, c->u_native.fun);
             break;
         case MP_CODE_INLINE_ASM:
             fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);

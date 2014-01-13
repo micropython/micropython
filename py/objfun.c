@@ -98,42 +98,13 @@ const mp_obj_type_t fun_native_type = {
     .call_n_kw = fun_native_call_n_kw,
 };
 
-mp_obj_t rt_make_function_0(mp_fun_0_t fun) {
+// fun must have the correct signature for n_args fixed arguments
+mp_obj_t rt_make_function_n(int n_args, void *fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &fun_native_type;
     o->is_kw = false;
-    o->n_args_min = 0;
-    o->n_args_max = 0;
-    o->fun = fun;
-    return o;
-}
-
-mp_obj_t rt_make_function_1(mp_fun_1_t fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
-    o->is_kw = false;
-    o->n_args_min = 1;
-    o->n_args_max = 1;
-    o->fun = fun;
-    return o;
-}
-
-mp_obj_t rt_make_function_2(mp_fun_2_t fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
-    o->is_kw = false;
-    o->n_args_min = 2;
-    o->n_args_max = 2;
-    o->fun = fun;
-    return o;
-}
-
-mp_obj_t rt_make_function_3(mp_fun_3_t fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
-    o->is_kw = false;
-    o->n_args_min = 3;
-    o->n_args_max = 3;
+    o->n_args_min = n_args;
+    o->n_args_max = n_args;
     o->fun = fun;
     return o;
 }
