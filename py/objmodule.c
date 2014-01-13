@@ -17,7 +17,7 @@ typedef struct _mp_obj_module_t {
     mp_map_t *globals;
 } mp_obj_module_t;
 
-static void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_module_t *self = self_in;
     print(env, "<module '%s' from '-unknown-file-'>", qstr_str(self->name));
 }

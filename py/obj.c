@@ -41,21 +41,21 @@ void printf_wrapper(void *env, const char *fmt, ...) {
     va_end(args);
 }
 
-void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
+void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(o_in));
     } else {
         mp_obj_base_t *o = o_in;
         if (o->type->print != NULL) {
-            o->type->print(print, env, o_in);
+            o->type->print(print, env, o_in, kind);
         } else {
             print(env, "<%s>", o->type->name);
         }
     }
 }
 
-void mp_obj_print(mp_obj_t o_in) {
-    mp_obj_print_helper(printf_wrapper, NULL, o_in);
+void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_obj_print_helper(printf_wrapper, NULL, o_in, kind);
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {

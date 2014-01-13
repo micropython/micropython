@@ -16,7 +16,7 @@ typedef struct _mp_obj_ellipsis_t {
     mp_obj_base_t base;
 } mp_obj_ellipsis_t;
 
-void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "Ellipsis");
 }
 
@@ -42,7 +42,7 @@ typedef struct _mp_obj_slice_t {
     machine_int_t stop;
 } mp_obj_slice_t;
 
-void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
+void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_slice_t *o = o_in;
     print(env, "slice(" INT_FMT ", " INT_FMT ")", o->start, o->stop);
 }

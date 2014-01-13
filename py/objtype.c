@@ -66,7 +66,7 @@ static mp_map_elem_t *mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr, 
     }
 }
 
-static void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
@@ -148,7 +148,7 @@ static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 //  - there is a constant mp_obj_type_t (called mp_const_type) for the 'type' object
 //  - creating a new class (a new type) creates a new mp_obj_type_t
 
-static void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_type_t *self = self_in;
     print(env, "<class '%s'>", self->name);
 }

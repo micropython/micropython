@@ -25,7 +25,7 @@ typedef struct _mp_obj_set_it_t {
 
 static mp_obj_t set_it_iternext(mp_obj_t self_in);
 
-void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_set_t *self = self_in;
     if (self->set.used == 0) {
         print(env, "set()");
@@ -39,7 +39,7 @@ void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
                 print(env, ", ");
             }
             first = false;
-            mp_obj_print_helper(print, env, self->set.table[i]);
+            mp_obj_print_helper(print, env, self->set.table[i], PRINT_REPR);
         }
     }
     print(env, "}");

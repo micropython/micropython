@@ -89,7 +89,7 @@ void timer_interrupt(void) {
         } else {
             // uncaught exception
             printf("exception in timer interrupt\n");
-            mp_obj_print((mp_obj_t)nlr.ret_val);
+            mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
             printf("\n");
         }
     }
