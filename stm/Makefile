@@ -33,6 +33,7 @@ CFLAGS += -Os -DNDEBUG
 endif
 
 LDFLAGS = --nostdlib -T stm32f405.ld
+LIBS = $(shell $(CC) -print-libgcc-file-name)
 
 SRC_C = \
 	main.c \
@@ -143,7 +144,7 @@ $(BUILD)/flash1.bin: $(BUILD)/flash.elf
 
 $(BUILD)/flash.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/%.o: %.s

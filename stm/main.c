@@ -1178,6 +1178,7 @@ soft_reset:
     goto soft_reset;
 }
 
+#if 0
 double __aeabi_f2d(float x) {
     // TODO
     return 0.0;
@@ -1187,6 +1188,7 @@ float __aeabi_d2f(double x) {
     // TODO
     return 0.0;
 }
+#endif
 
 double sqrt(double x) {
     // TODO
