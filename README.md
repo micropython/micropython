@@ -1,5 +1,8 @@
 The Micro Python project
 ========================
+<p align="center">
+  <img src="https://raw2.github.com/micropython/micropython/master/logo/upython-with-micro.png" alt="MicroPython Logo"/>
+</p>
 
 This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.
