@@ -338,3 +338,19 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
     return self;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
+
+mp_obj_t mp_builtin_str(mp_obj_t o) {
+    vstr_t *vstr = vstr_new();
+    mp_obj_print_helper(vstr_printf_wrapper, vstr, o, PRINT_STR);
+    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);
+
+mp_obj_t mp_builtin_repr(mp_obj_t o) {
+    vstr_t *vstr = vstr_new();
+    mp_obj_print_helper(vstr_printf_wrapper, vstr, o, PRINT_REPR);
+    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
