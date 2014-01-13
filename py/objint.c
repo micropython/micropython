@@ -54,11 +54,13 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 // This is called only for non-SMALL_INT
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     assert(0);
+    return mp_const_none;
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     assert(0);
+    return mp_const_none;
 }
 
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
@@ -69,6 +71,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     }
     // TODO: Raise exception
     assert(0);
+    return mp_const_none;
 }
 
 mp_obj_t mp_obj_new_int(machine_int_t value) {
@@ -77,5 +80,6 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     }
     // TODO: Raise exception
     assert(0);
+    return mp_const_none;
 }
 #endif
