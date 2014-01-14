@@ -13,6 +13,28 @@
 #define ADCx_CLK            (RCC_APB2Periph_ADC1)
 #define ADC_NUM_CHANNELS    (16)
 
+/* Internally connected ADC channels Temp/VBAT/VREF*/
+#if   defined (STM32F40XX) || defined(STM32F41XX)
+#define ADC_TEMP_CHANNEL    (16)
+#define ADC_VBAT_CHANNEL    (18)
+#define ADC_VREF_CHANNEL    (17)
+#elif defined (STM32F42XX) || defined(STM32F43XX)
+#define ADC_TEMP_CHANNEL    (18)
+#define ADC_VBAT_CHANNEL    (18) /* same channel as TEMP */
+#define ADC_VREF_CHANNEL    (17)
+#endif
+
+/* Core temperature sensor definitions */
+#define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
+#define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
+
+/* VBAT divider */
+#if   defined (STM32F40XX) || defined(STM32F41XX)
+#define VBAT_DIV (2)
+#elif defined (STM32F42XX) || defined(STM32F43XX)
+#define VBAT_DIV (4)
+#endif
+
 /* GPIO struct */
 typedef struct {
     GPIO_TypeDef* port;
@@ -82,6 +104,12 @@ void adc_init(uint32_t resolution) {
 
   /* Enable ADCx */
   ADC_Cmd(ADCx, ENABLE);
+
+  /* Enable VBAT/VREF monitor */
+  ADC_VBATCmd(ENABLE);
+
+  /* Enable temperature sensor */
+  ADC_TempSensorVrefintCmd(ENABLE);
 }
 
 uint32_t adc_read_channel(int channel)
@@ -93,7 +121,7 @@ uint32_t adc_read_channel(int channel)
     }
 
     /* ADC regular channel config ADC/Channel/SEQ Rank/Sample time */
-    ADC_RegularChannelConfig(ADCx, channel, 1, ADC_SampleTime_3Cycles);
+    ADC_RegularChannelConfig(ADCx, channel, 1, ADC_SampleTime_15Cycles);
 
     /* Start ADC single conversion */
     ADC_SoftwareStartConv(ADCx);
@@ -102,13 +130,87 @@ uint32_t adc_read_channel(int channel)
     while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) && --timeout >0) {
     }
 
-    /* ADC conversion timed out */ 
+    /* ADC conversion timed out */
     if (timeout == 0) {
         return 0;
     }
 
     /* Return converted data */
     return ADC_GetConversionValue(ADCx); 
+}
+
+int adc_read_core_temp()
+{
+    int timeout = 10000;
+
+    /* ADC temperature sensor channel config ADC/Channel/SEQ Rank/Sample time */
+    /* Note: sample time must be higher than minimum sample time */
+    ADC_RegularChannelConfig(ADCx, ADC_TEMP_CHANNEL, 1, ADC_SampleTime_480Cycles);
+
+    /* Start ADC single conversion */
+    ADC_SoftwareStartConv(ADCx);
+
+    /* Wait for conversion to be complete*/
+    while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) && --timeout >0) {
+    }
+
+    /* ADC conversion timed out */
+    if (timeout == 0) {
+        return 0;
+    }
+
+    /* Convert ADC reading to temperature */
+    /* Temperature formula from datasheet P.411 */
+    return ((ADC_GetConversionValue(ADCx) - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
+}
+
+float adc_read_core_vbat()
+{
+    int timeout = 10000;
+
+    /* ADC VBAT channel config ADC/Channel/SEQ Rank/Sample time */
+    /* Note: sample time must be higher than minimum sample time */
+    ADC_RegularChannelConfig(ADCx, ADC_VBAT_CHANNEL, 1, ADC_SampleTime_144Cycles);
+
+    /* Start ADC single conversion */
+    ADC_SoftwareStartConv(ADCx);
+
+    /* Wait for conversion to be complete */
+    while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) && --timeout >0) {
+    }
+
+    /* ADC conversion timed out */
+    if (timeout == 0) {
+        return 0;
+    }
+
+    /* Convert ADC reading to voltage, VBAT pin is
+       internally connected to a bridge divider by VBAT_DIV */
+    return ADC_GetConversionValue(ADCx)*VBAT_DIV/4096.0f*3.3f;
+}
+
+float adc_read_core_vref()
+{
+    int timeout = 10000;
+
+    /* ADC VBAT channel config ADC/Channel/SEQ Rank/Sample time */
+    /* Note: sample time must be higher than minimum sample time */
+    ADC_RegularChannelConfig(ADCx, ADC_VREF_CHANNEL, 1, ADC_SampleTime_112Cycles);
+
+    /* Start ADC single conversion */
+    ADC_SoftwareStartConv(ADCx);
+
+    /* Wait for conversion to be complete*/
+    while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) && --timeout >0) {
+    }
+
+    /* ADC conversion timed out */
+    if (timeout == 0) {
+        return 0;
+    }
+
+    /* Convert ADC reading to voltage */
+    return ADC_GetConversionValue(ADCx)/4096.0f*3.3f;
 }
 
 /******************************************************************************/
@@ -132,15 +234,54 @@ static mp_obj_t adc_obj_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     return ret;
 }
 
+static mp_obj_t adc_obj_read_core_temp(mp_obj_t self_in) {
+    mp_obj_t ret = mp_const_none;
+    pyb_adc_obj_t *self = self_in;
+
+    if (self->is_enabled) {
+        int data  = adc_read_core_temp();
+        ret = mp_obj_new_int(data);
+    }
+    return ret;
+}
+
+static mp_obj_t adc_obj_read_core_vbat(mp_obj_t self_in) {
+    mp_obj_t ret = mp_const_none;
+    pyb_adc_obj_t *self = self_in;
+
+    if (self->is_enabled) {
+        float data  = adc_read_core_vbat();
+        ret = mp_obj_new_float(data);
+    }
+    return ret;
+}
+
+static mp_obj_t adc_obj_read_core_vref(mp_obj_t self_in) {
+    mp_obj_t ret = mp_const_none;
+    pyb_adc_obj_t *self = self_in;
+
+    if (self->is_enabled) {
+        float data  = adc_read_core_vref();
+        ret = mp_obj_new_float(data);
+    }
+    return ret;
+}
+
 static void adc_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
     pyb_adc_obj_t *self = self_in;
     print(env, "<ADC %lu>", self->adc_id);
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_2(adc_obj_read_channel_obj, adc_obj_read_channel);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_temp_obj, adc_obj_read_core_temp);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_vbat_obj, adc_obj_read_core_vbat);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_vref_obj, adc_obj_read_core_vref);
 
 static const mp_method_t adc_methods[] = {
     { "read_channel",   &adc_obj_read_channel_obj},
+    { "read_core_temp", &adc_obj_read_core_temp_obj},
+    { "read_core_vbat", &adc_obj_read_core_vbat_obj},
+    { "read_core_vref", &adc_obj_read_core_vref_obj},
     { NULL, NULL },
 };
 
