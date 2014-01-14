@@ -1180,6 +1180,7 @@ soft_reset:
     goto soft_reset;
 }
 
+/* now supplied by libgcc library
 double __aeabi_f2d(float x) {
     // TODO
     return 0.0;
@@ -1189,6 +1190,7 @@ float __aeabi_d2f(double x) {
     // TODO
     return 0.0;
 }
+*/
 
 double sqrt(double x) {
     // TODO
