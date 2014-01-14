@@ -59,7 +59,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 3, 3, (mp_fun_3_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, (~((machine_uint_t)0)), (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, 0, (~((machine_uint_t)0)), (mp_fun_kw_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, n_args_min, (~((machine_uint_t)0)), (mp_fun_kw_t)fun_name)
 
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
@@ -285,12 +285,14 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
 // tuple
 extern const mp_obj_type_t tuple_type;
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
+void mp_obj_tuple_del(mp_obj_t self_in);
 
 // list
 extern const mp_obj_type_t list_type;
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
+mp_obj_t list_sort(mp_obj_t args, struct _mp_map_t *kwargs);
 
 // dict
 extern const mp_obj_type_t dict_type;
@@ -305,6 +307,10 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 // slice
 extern const mp_obj_type_t slice_type;
 void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
+
+// zip
+extern const mp_obj_type_t zip_type;
+
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)

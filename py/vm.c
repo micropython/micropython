@@ -440,10 +440,17 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_CALL_FUNCTION:
                         DECODE_UINT;
-                        assert((unum & 0xff00) == 0); // n_keyword
-                        unum &= 0xff; // n_positional
-                        sp += unum;
-                        *sp = rt_call_function_n(*sp, unum, sp - unum);
+                        if ((unum & 0xff00) == 0) {
+                            // no keywords
+                            unum &= 0xff; // n_positional
+                            sp += unum;
+                            *sp = rt_call_function_n(*sp, unum, sp - unum);
+                        } else {
+                            // keywords
+                            int argsize = (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                            sp += argsize;
+                            *sp = rt_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp - argsize);
+                        }
                         break;
 
                     case MP_BC_CALL_METHOD:

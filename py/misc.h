@@ -21,6 +21,7 @@ typedef unsigned int uint;
 #define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
 #define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
+#define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
 
 void *m_malloc(int num_bytes);
 void *m_malloc0(int num_bytes);

@@ -97,6 +97,7 @@ PY_O_BASENAME = \
 	vm.o \
 	showbc.o \
 	repl.o \
+	objzip.o \
 
 # prepend the build destination prefix to the py object files
 

@@ -111,8 +111,10 @@ mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
     mp_obj_tuple_t *o = m_new_obj_var(mp_obj_tuple_t, mp_obj_t, n);
     o->base.type = &tuple_type;
     o->len = n;
-    for (int i = 0; i < n; i++) {
-        o->items[i] = items[i];
+    if (items) {
+        for (int i = 0; i < n; i++) {
+            o->items[i] = items[i];
+        }
     }
     return o;
 }
@@ -133,8 +135,18 @@ mp_obj_t mp_obj_new_tuple_reverse(uint n, const mp_obj_t *items) {
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
     assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
     mp_obj_tuple_t *self = self_in;
-    *len = self->len;
-    *items = &self->items[0];
+    if (len) {
+        *len = self->len;
+    }
+    if (items) {
+        *items = &self->items[0];
+    }
+}
+
+void mp_obj_tuple_del(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    mp_obj_tuple_t *self = self_in;
+    m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
 }
 
 /******************************************************************************/

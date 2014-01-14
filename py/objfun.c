@@ -17,20 +17,43 @@
 
 // mp_obj_fun_native_t defined in obj.h
 
+void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
+    if (n_kw && !self->is_kw) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
+                                          "function does not take keyword arguments"));
+    }
+
+    if (self->n_args_min == self->n_args_max) {
+        if (n_args != self->n_args_min) {
+            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError,
+                                                     "function takes %d positional arguments but %d were given",
+                                                     (const char*)(machine_int_t)self->n_args_min,
+                                                     (const char*)(machine_int_t)n_args));
+        }
+    } else {
+        if (n_args < self->n_args_min) {
+            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError,
+                                                    "<fun name>() missing %d required positional arguments: <list of names of params>",
+                                                    (const char*)(machine_int_t)(self->n_args_min - n_args)));
+        } else if (n_args > self->n_args_max) {
+            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError,
+                                                     "<fun name> expected at most %d arguments, got %d",
+                                                     (void*)(machine_int_t)self->n_args_max, (void*)(machine_int_t)n_args));
+        }
+    }
+}
+
 mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args);
 // args are in reverse order in the array
 mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     mp_obj_fun_native_t *self = self_in;
+    // check number of arguments
+    check_nargs(self, n_args, 0);
     if (self->is_kw) {
         return fun_native_call_n_kw(self_in, n_args, 0, args);
     }
     if (self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
-
-        // check number of arguments
-        if (n_args != self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args_min, (const char*)(machine_int_t)n_args));
-        }
 
         // dispatch function call
         switch (self->n_args_min) {
@@ -54,12 +77,6 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     } else {
         // function takes a variable number of arguments
 
-        if (n_args < self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "<fun name>() missing %d required positional arguments: <list of names of params>", (const char*)(machine_int_t)(self->n_args_min - n_args)));
-        } else if (n_args > self->n_args_max) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "<fun name> expected at most %d arguments, got %d", (void*)(machine_int_t)self->n_args_max, (void*)(machine_int_t)n_args));
-        }
-
         // TODO really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
         mp_obj_t *args_ordered = m_new(mp_obj_t, n_args);
         for (int i = 0; i < n_args; i++) {
@@ -76,9 +93,7 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args) {
     mp_obj_fun_native_t *self = self_in;
 
-    if (!self->is_kw) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
-    }
+    check_nargs(self, n_args, n_kw);
 
     mp_obj_t *vargs = mp_obj_new_tuple_reverse(n_args, args + 2*n_kw);
     mp_map_t *kw_args = mp_map_new(n_kw);

@@ -21,4 +21,5 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_ord_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_pow_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_print_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_range_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);

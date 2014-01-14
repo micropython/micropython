@@ -113,6 +113,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
 
     // built-in user functions
     mp_map_add_qstr(&map_builtins, MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj);
@@ -133,6 +134,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_pow, (mp_obj_t)&mp_builtin_pow_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_print, (mp_obj_t)&mp_builtin_print_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_range, (mp_obj_t)&mp_builtin_range_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
 
     next_unique_code_id = 1; // 0 indicates "no code"
