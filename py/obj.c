@@ -13,6 +13,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "map.h"
+#include "strtonum.h"
 
 mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
@@ -149,6 +150,12 @@ bool mp_obj_less(mp_obj_t o1, mp_obj_t o2) {
 }
 
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
+    return mp_obj_get_int_base(arg, 0);
+}
+
+machine_int_t mp_obj_get_int_base(mp_obj_t arg, mp_obj_t base_arg) {
+    const char *value;
+    int base;
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
@@ -160,6 +167,17 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         // TODO work out if this should be floor, ceil or trunc
         return (machine_int_t)mp_obj_float_get(arg);
 #endif
+    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
+        if (base_arg == 0) {
+            value = qstr_str(mp_obj_str_get(arg));
+            return (machine_int_t)strtonum(value, 0);
+        } else if (MP_OBJ_IS_SMALL_INT(base_arg)) {
+            base = MP_OBJ_SMALL_INT_VALUE(base_arg);
+            value = qstr_str(mp_obj_str_get(arg));
+            return (machine_int_t)strtonum(value, base);
+        } else {
+            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "an integer is required"));
+        }
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }

@@ -70,6 +70,7 @@ PY_O_BASENAME = \
 	emitinlinethumb.o \
 	runtime.o \
 	map.o \
+	strtonum.o \
 	obj.o \
 	objbool.o \
 	objboundmeth.o \
