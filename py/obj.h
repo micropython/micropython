@@ -294,6 +294,9 @@ void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t list_sort(mp_obj_t args, struct _mp_map_t *kwargs);
 
+// enumerate
+extern const mp_obj_type_t enumerate_type;
+
 // dict
 extern const mp_obj_type_t dict_type;
 uint mp_obj_dict_len(mp_obj_t self_in);

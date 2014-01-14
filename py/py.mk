@@ -77,6 +77,7 @@ PY_O_BASENAME = \
 	objclosure.o \
 	objcomplex.o \
 	objdict.o \
+	objenumerate.o \
 	objexcept.o \
 	objfloat.o \
 	objfun.o \
