@@ -158,7 +158,7 @@ machine_int_t mp_obj_get_int_base(mp_obj_t arg, mp_obj_t base_arg) {
         if (base_arg == 0) {
             value = qstr_str(mp_obj_str_get(arg));
             return (machine_int_t)strtonum(value, 0);
-        } else if (MP_OBJ_IS_TYPE(base_arg, &int_type)) {
+        } else if (MP_OBJ_IS_SMALL_INT(base_arg)) {
             base = MP_OBJ_SMALL_INT_VALUE(base_arg);
             value = qstr_str(mp_obj_str_get(arg));
             return (machine_int_t)strtonum(value, base);
