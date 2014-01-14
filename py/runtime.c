@@ -461,6 +461,18 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     //   then fail
     // note that list does not implement + or +=, so that inplace_concat is reached first for +=
 
+    // deal with is, is not
+    if (op == RT_COMPARE_OP_IS) {
+        // TODO: may need to handle strings specially, CPython appears to
+        // assume all strings are interned (so "is" == "==" for strings)
+        return MP_BOOL(lhs == rhs);
+    }
+    if (op == RT_COMPARE_OP_IS_NOT) {
+        // TODO: may need to handle strings specially, CPython appears to
+        // assume all strings are interned (so "is" == "==" for strings)
+        return MP_BOOL(lhs != rhs);
+    }
+
     // deal with == and != for all types
     if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
         if (mp_obj_equal(lhs, rhs)) {
