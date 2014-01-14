@@ -339,7 +339,7 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
     }
     mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, args_items);
     mp_obj_t new_args = rt_build_tuple(1, &self);
-    list_sort(new_args, kwargs);
+    mp_obj_list_sort(new_args, kwargs);
 
     return self;
 }

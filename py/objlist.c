@@ -248,7 +248,7 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     }
 }
 
-mp_obj_t list_sort(mp_obj_t args, mp_map_t *kwargs) {
+mp_obj_t mp_obj_list_sort(mp_obj_t args, mp_map_t *kwargs) {
     mp_obj_t *args_items = NULL;
     uint args_len = 0;
 
@@ -381,7 +381,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
 static MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
-static MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 0, list_sort);
+static MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 0, mp_obj_list_sort);
 
 static const mp_method_t list_type_methods[] = {
     { "append", &list_append_obj },
