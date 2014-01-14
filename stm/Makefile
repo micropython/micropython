@@ -57,6 +57,7 @@ SRC_C = \
 	pybwlan.c \
 	i2c.c \
 	usrsw.c \
+	adc.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -100,6 +101,7 @@ SRC_STM = \
 	usbd_storage_msd.c \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
+	stm32f4xx_adc.c \
 
 #SRC_STM_OTG = \
 #	usb_hcd.c \
