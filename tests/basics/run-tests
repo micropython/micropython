@@ -42,4 +42,7 @@ echo "$numpassed tests passed"
 if [[ $numfailed != 0 ]]
 then
     echo "$numfailed tests failed -$namefailed"
+    exit 1
+else
+    exit 0
 fi

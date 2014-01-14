@@ -568,22 +568,57 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
             return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
         }
-    } else {
-        if (MP_OBJ_IS_OBJ(lhs)) {
-            mp_obj_base_t *o = lhs;
+    }
+
+    /* deal with `in` and `not in`
+     *
+     * NOTE `a in b` is `b.__contains__(a)`, hence why the generic dispatch
+     * needs to go below
+     */
+    if (op == RT_COMPARE_OP_IN || op == RT_COMPARE_OP_NOT_IN) {
+        if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+            mp_obj_base_t *o = rhs;
             if (o->type->binary_op != NULL) {
-                mp_obj_t result = o->type->binary_op(op, lhs, rhs);
-                if (result != NULL) {
-                    return result;
+                mp_obj_t res = o->type->binary_op(op, rhs, lhs);
+                if (res != NULL) {
+                    return res;
                 }
             }
+            if (o->type->getiter != NULL) {
+                /* second attempt, walk the iterator */
+                mp_obj_t next = NULL;
+                mp_obj_t iter = rt_getiter(rhs);
+                while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+                    if (mp_obj_equal(next, lhs)) {
+                        return MP_BOOL(op == RT_COMPARE_OP_IN);
+                    }
+                }
+                return MP_BOOL(op != RT_COMPARE_OP_IN);
+            }
         }
+
+        nlr_jump(mp_obj_new_exception_msg_varg(
+                     MP_QSTR_TypeError, "'%s' object is not iterable",
+                     mp_obj_get_type_str(rhs)));
+        return mp_const_none;
+    }
+
+    if (MP_OBJ_IS_OBJ(lhs)) {
+        mp_obj_base_t *o = lhs;
+        if (o->type->binary_op != NULL) {
+            mp_obj_t result = o->type->binary_op(op, lhs, rhs);
+            if (result != NULL) {
+                return result;
+            }
+        }
+        // TODO implement dispatch for reverse binary ops
     }
 
     // TODO specify in error message what the operator is
     nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
+    return mp_const_none;
 }
 
 mp_obj_t rt_make_function_from_id(int unique_code_id) {

@@ -85,6 +85,15 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return mp_obj_new_str(qstr_from_str_take(val, alloc_len));
             }
             break;
+        case RT_COMPARE_OP_IN:
+        case RT_COMPARE_OP_NOT_IN:
+            /* NOTE `a in b` is `b.__contains__(a)` */
+            if (MP_OBJ_IS_TYPE(rhs_in, &str_type)) {
+                const char *rhs_str = qstr_str(((mp_obj_str_t*)rhs_in)->qstr);
+                /* FIXME \0 in strs */
+                return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (strstr(lhs_str, rhs_str) == NULL));
+            }
+            break;
     }
 
     return MP_OBJ_NULL; // op not supported
