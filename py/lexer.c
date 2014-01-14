@@ -614,7 +614,7 @@ mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_strea
     lex->num_indent_level = 1;
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     lex->indent_level[0] = 0;
-    vstr_init(&lex->vstr);
+    vstr_init(&lex->vstr, 32);
 
     // preload characters
     lex->chr0 = stream_next_char(stream_data);

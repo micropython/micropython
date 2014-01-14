@@ -33,6 +33,7 @@ CFLAGS += -Os -DNDEBUG
 endif
 
 LDFLAGS = --nostdlib -T stm32f405.ld
+LIBS = $(shell $(CC) -print-libgcc-file-name)
 
 SRC_C = \
 	main.c \
@@ -57,6 +58,7 @@ SRC_C = \
 	pybwlan.c \
 	i2c.c \
 	usrsw.c \
+	adc.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -100,6 +102,7 @@ SRC_STM = \
 	usbd_storage_msd.c \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
+	stm32f4xx_adc.c \
 
 #SRC_STM_OTG = \
 #	usb_hcd.c \
@@ -143,7 +146,7 @@ $(BUILD)/flash1.bin: $(BUILD)/flash.elf
 
 $(BUILD)/flash.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/%.o: %.s

@@ -40,6 +40,7 @@
 #include "pybwlan.h"
 #include "i2c.h"
 #include "usrsw.h"
+#include "adc.h"
 
 int errno;
 
@@ -390,7 +391,7 @@ void do_repl(void) {
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
-    vstr_init(&line);
+    vstr_init(&line, 32);
 
     for (;;) {
         vstr_reset(&line);
@@ -839,6 +840,7 @@ soft_reset:
         rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_n(2, pyb_I2C));
         rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
         rt_store_attr(m, qstr_from_str_static("Usart"), rt_make_function_n(2, pyb_Usart));
+        rt_store_attr(m, qstr_from_str_static("ADC"), rt_make_function_n(1, pyb_ADC));
         rt_store_name(qstr_from_str_static("pyb"), m);
 
         rt_store_name(qstr_from_str_static("open"), rt_make_function_n(2, pyb_io_open));
@@ -1178,6 +1180,7 @@ soft_reset:
     goto soft_reset;
 }
 
+/* now supplied by libgcc library
 double __aeabi_f2d(float x) {
     // TODO
     return 0.0;
@@ -1187,6 +1190,7 @@ float __aeabi_d2f(double x) {
     // TODO
     return 0.0;
 }
+*/
 
 double sqrt(double x) {
     // TODO

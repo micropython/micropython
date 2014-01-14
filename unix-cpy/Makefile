@@ -11,8 +11,15 @@ ECHO = @echo
 
 # compiler settings
 CC = gcc
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -Os #-DNDEBUG
+CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99
 LDFLAGS = -lm
+
+#Debugging/Optimization
+ifdef DEBUG
+CFLAGS += -Og -ggdb
+else
+CFLAGS += -Os #-DNDEBUG
+endif
 
 # source files
 SRC_C = \

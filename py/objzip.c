@@ -12,12 +12,6 @@ typedef struct _mp_obj_zip_t {
     mp_obj_t iters[];
 } mp_obj_zip_t;
 
-static mp_obj_t zip_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
-static mp_obj_t zip_iternext(mp_obj_t self_in);
-
 static mp_obj_t zip_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
     /* NOTE: args are backwards */
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
@@ -29,13 +23,9 @@ static mp_obj_t zip_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
     return o;
 }
 
-const mp_obj_type_t zip_type = {
-    { &mp_const_type },
-    "zip",
-    .make_new = zip_make_new,
-    .iternext = zip_iternext,
-    .getiter = zip_getiter,
-};
+static mp_obj_t zip_getiter(mp_obj_t self_in) {
+    return self_in;
+}
 
 static mp_obj_t zip_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &zip_type));
@@ -57,3 +47,11 @@ static mp_obj_t zip_iternext(mp_obj_t self_in) {
     }
     return o;
 }
+
+const mp_obj_type_t zip_type = {
+    { &mp_const_type },
+    "zip",
+    .make_new = zip_make_new,
+    .getiter = zip_getiter,
+    .iternext = zip_iternext,
+};

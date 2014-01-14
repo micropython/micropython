@@ -59,15 +59,19 @@ typedef struct _vstr_t {
     bool had_error;
 } vstr_t;
 
-void vstr_init(vstr_t *vstr);
+void vstr_init(vstr_t *vstr, int alloc);
 void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(void);
+vstr_t *vstr_new_size(int alloc);
 void vstr_free(vstr_t *vstr);
 void vstr_reset(vstr_t *vstr);
 bool vstr_had_error(vstr_t *vstr);
 char *vstr_str(vstr_t *vstr);
 int vstr_len(vstr_t *vstr);
 void vstr_hint_size(vstr_t *vstr, int size);
+char  *vstr_extend(vstr_t *vstr, int size);
+bool vstr_set_size(vstr_t *vstr, int size);
+bool vstr_shrink(vstr_t *vstr);
 char *vstr_add_len(vstr_t *vstr, int len);
 void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
