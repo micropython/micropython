@@ -60,6 +60,7 @@ long strtonum(const char *restrict s, int base) {
         p--;
     }
 
+    errno = 0;
     found = strtol(p, &num, base);
     if (errno) {
         goto value_error;
