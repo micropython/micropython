@@ -207,7 +207,7 @@ static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     return mp_const_none;
 }
 
-static void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_usart_obj_t *self = self_in;
     print(env, "<Usart %lu>", self->usart_id);
 }

@@ -267,7 +267,7 @@ static mp_obj_t adc_obj_read_core_vref(mp_obj_t self_in) {
     return ret;
 }
 
-static void adc_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void adc_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_obj_t *self = self_in;
     print(env, "<ADC %lu>", self->adc_id);
 }

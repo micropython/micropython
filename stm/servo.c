@@ -116,7 +116,7 @@ typedef struct _pyb_servo_obj_t {
     uint servo_id;
 } pyb_servo_obj_t;
 
-static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
     print(env, "<Servo %lu>", self->servo_id);
 }

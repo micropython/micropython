@@ -252,7 +252,7 @@ typedef struct _pyb_i2c_obj_t {
     i2c_state_t i2c_state;
 } pyb_i2c_obj_t;
 
-void i2c_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void i2c_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
     print(env, "<I2C%lu addr:%lu>", (unsigned int)self->i2c_port, (unsigned int)self->i2c_addr);
 }

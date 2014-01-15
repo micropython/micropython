@@ -243,7 +243,6 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_less(mp_obj_t o1, mp_obj_t o2);
 
 machine_int_t mp_obj_get_int(mp_obj_t arg);
-machine_int_t mp_obj_parse_int(mp_obj_t arg, mp_obj_t base_arg);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
