@@ -284,7 +284,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
     int top_level_rule;
     switch (input_kind) {
         case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
-        //case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
+        case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
         default: top_level_rule = RULE_file_input;
     }
     push_rule(parser, rules[top_level_rule], 0);

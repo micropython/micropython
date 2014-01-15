@@ -15,6 +15,8 @@ DEF_RULE(single_input, nc, or(3), tok(NEWLINE), rule(simple_stmt), rule(compound
 DEF_RULE(file_input, nc, and(1), opt_rule(file_input_2))
 DEF_RULE(file_input_2, c(generic_all_nodes), one_or_more, rule(file_input_3))
 DEF_RULE(file_input_3, nc, or(2), tok(NEWLINE), rule(stmt))
+DEF_RULE(eval_input, nc, and(2), rule(testlist), opt_rule(eval_input_2))
+DEF_RULE(eval_input_2, nc, and(1), tok(NEWLINE))
 
 // decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
 // decorators: decorator+

@@ -8,6 +8,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_any_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_callable_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_chr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_divmod_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_eval_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_hash_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_isinstance_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_issubclass_obj);

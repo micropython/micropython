@@ -2708,7 +2708,12 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 #endif
 
     // compile
-    if (scope->kind == SCOPE_MODULE) {
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(scope->pn, PN_eval_input)) {
+        assert(scope->kind == SCOPE_MODULE);
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)scope->pn;
+        compile_node(comp, pns->nodes[0]); // compile the expression
+        EMIT(return_value);
+    } else if (scope->kind == SCOPE_MODULE) {
         if (!comp->is_repl) {
             check_for_doc_string(comp, scope->pn);
         }
@@ -2833,7 +2838,6 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     }
 
     EMIT(end_pass);
-
 }
 
 void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
