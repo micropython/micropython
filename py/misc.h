@@ -50,6 +50,8 @@ bool unichar_isdigit(unichar c);
 #define streq(s1, s2) (strcmp((s1), (s2)) == 0)
 */
 
+long strtonum(const char *restrict s, int base);
+
 /** variable string *********************************************/
 
 typedef struct _vstr_t {

@@ -18,11 +18,17 @@ static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
             return MP_OBJ_NEW_SMALL_INT(0);
 
         case 1:
-            // TODO allow string as arg and parse it
-            return mp_obj_new_int(mp_obj_get_int(args[0]));
+            if (MP_OBJ_IS_TYPE(args[0], &str_type)) {
+                // a string, parse it
+                return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[0])), 0));
+            } else {
+                return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
+            }
 
-        //case 2:
-            // TODO, parse with given base
+        case 2:
+            // should be a string, parse it
+            // TODO proper error checking of argument types
+            return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[1])), mp_obj_get_int(args[0])));
 
         default:
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", (void*)(machine_int_t)n_args));
