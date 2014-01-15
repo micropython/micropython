@@ -13,7 +13,7 @@ typedef struct _mp_obj_bool_t {
     bool value;
 } mp_obj_bool_t;
 
-static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_bool_t *self = self_in;
     if (self->value) {
         print(env, "True");

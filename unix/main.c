@@ -63,7 +63,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val);
+        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
         printf("\n");
     }
 }
@@ -159,7 +159,7 @@ typedef struct _test_obj_t {
     int value;
 } test_obj_t;
 
-static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     test_obj_t *self = self_in;
     print(env, "<test %d>", self->value);
 }

@@ -20,7 +20,7 @@ typedef struct _mp_obj_dict_t {
 static mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
 static mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
 
-static void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
     bool first = true;
     print(env, "{");
@@ -31,9 +31,9 @@ static void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
             print(env, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next->key);
+        mp_obj_print_helper(print, env, next->key, PRINT_REPR);
         print(env, ": ");
-        mp_obj_print_helper(print, env, next->value);
+        mp_obj_print_helper(print, env, next->value, PRINT_REPR);
     }
     print(env, "}");
 }
@@ -350,7 +350,7 @@ static mp_obj_t dict_view_getiter(mp_obj_t view_in) {
     return o;
 }
 
-static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
     mp_obj_dict_view_t *self = self_in;
     bool first = true;
@@ -363,7 +363,7 @@ static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
             print(env, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next);
+        mp_obj_print_helper(print, env, next, PRINT_REPR);
     }
     print(env, "])");
 }

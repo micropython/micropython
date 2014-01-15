@@ -21,13 +21,25 @@ typedef struct mp_obj_exception_t {
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
-void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
+void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
     if (o->msg != 0) {
         print(env, "%s: %s", qstr_str(o->id), qstr_str(o->msg));
     } else {
-        print(env, "%s", qstr_str(o->id));
-        tuple_print(print, env, &o->args);
+        // Yes, that's how CPython has it
+        if (kind == PRINT_REPR) {
+            print(env, "%s", qstr_str(o->id));
+        }
+        if (kind == PRINT_STR) {
+            if (o->args.len == 0) {
+                print(env, "");
+                return;
+            } else if (o->args.len == 1) {
+                mp_obj_print_helper(print, env, o->args.items[0], PRINT_STR);
+                return;
+            }
+        }
+        tuple_print(print, env, &o->args, kind);
     }
 }
 

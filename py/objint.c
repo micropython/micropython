@@ -39,7 +39,7 @@ const mp_obj_type_t int_type = {
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 // This is called only for non-SMALL_INT
-void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
 }
 
 // This is called only for non-SMALL_INT

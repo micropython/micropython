@@ -10,7 +10,7 @@ typedef struct _mp_obj_none_t {
     mp_obj_base_t base;
 } mp_obj_none_t;
 
-void none_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void none_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "None");
 }
 

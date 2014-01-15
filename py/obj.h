@@ -85,7 +85,11 @@ typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(mp_obj_t, struct _mp_map_t*);
 
-typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o);
+typedef enum {
+    PRINT_STR, PRINT_REPR
+} mp_print_kind_t;
+
+typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
 typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_call_n_kw_fun_t)(mp_obj_t fun, int n_args, int n_kw, const mp_obj_t *args); // args are in reverse order in the array
@@ -230,8 +234,8 @@ mp_obj_t mp_obj_new_module(qstr module_name);
 mp_obj_t mp_obj_get_type(mp_obj_t o_in);
 const char *mp_obj_get_type_str(mp_obj_t o_in);
 
-void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in);
-void mp_obj_print(mp_obj_t o);
+void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
+void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
