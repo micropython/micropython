@@ -91,6 +91,7 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *ar
 static const mp_method_t rawfile_type_methods[] = {
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
+        { "readline", &mp_stream_unbuffered_readline_obj},
         { "write", &mp_stream_write_obj },
         { "close", &fdfile_close_obj },
         { NULL, NULL },
