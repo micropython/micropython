@@ -38,7 +38,7 @@ def test(value, base):
 
 
 test('  1x', 0)
-test('  1\02  ', 0)
+test('  1' + chr(2) + '  ', 0)
 test('', 0)
 test(' ', 0)
 test('  \t\t  ', 0)

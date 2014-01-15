@@ -49,16 +49,14 @@ long strtonum(const char *restrict s, int base) {
             p -= 2;
         }
     } else if (base == 8 && c == '0') {
-        if ((c | 32) == 'o') {
-            base = 8;
-        } else {
-            goto value_error;
+        c = *(p++);
+        if ((c | 32) != 'o') {
+            p -= 2;
         }
     } else if (base == 2 && c == '0') {
-        if ((c | 32) == 'b') {
-            base = 2;
-        } else {
-            goto value_error;
+        c = *(p++);
+        if ((c | 32) != 'b') {
+            p -= 2;
         }
     } else {
         if (base == 0) base = 10;
