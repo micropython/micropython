@@ -140,10 +140,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     int ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
-        char *str = m_new(char, 2);
-        str[0] = ord;
-        str[1] = '\0';
-        return mp_obj_new_str(qstr_from_str_take(str, 2));
+        char str[2] = {ord, '\0'};
+        return mp_obj_new_str(qstr_from_strn_copy(str, 1));
     } else {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "chr() arg not in range(0x110000)"));
     }
@@ -310,6 +308,14 @@ static mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range);
 
+static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
+    vstr_t *vstr = vstr_new();
+    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in);
+    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
+
 static mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     mp_obj_t value;
@@ -324,6 +330,7 @@ static mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
     }
     return value;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
@@ -343,4 +350,5 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
 
     return self;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
