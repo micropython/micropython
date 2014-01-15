@@ -111,6 +111,7 @@ void rt_init(void) {
 #endif
     mp_map_add_qstr(&map_builtins, MP_QSTR_int, (mp_obj_t)&int_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_list, (mp_obj_t)&list_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_map, (mp_obj_t)&map_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);

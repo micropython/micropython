@@ -84,6 +84,7 @@ PY_O_BASENAME = \
 	objgenerator.o \
 	objint.o \
 	objlist.o \
+	objmap.o \
 	objmodule.o \
 	objnone.o \
 	objrange.o \
