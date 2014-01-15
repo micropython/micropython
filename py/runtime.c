@@ -105,11 +105,14 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_complex, (mp_obj_t)&complex_type);
 #endif
     mp_map_add_qstr(&map_builtins, MP_QSTR_dict, (mp_obj_t)&dict_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_enumerate, (mp_obj_t)&enumerate_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_filter, (mp_obj_t)&filter_type);
 #if MICROPY_ENABLE_FLOAT
     mp_map_add_qstr(&map_builtins, MP_QSTR_float, (mp_obj_t)&float_type);
 #endif
     mp_map_add_qstr(&map_builtins, MP_QSTR_int, (mp_obj_t)&int_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_list, (mp_obj_t)&list_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_map, (mp_obj_t)&map_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
