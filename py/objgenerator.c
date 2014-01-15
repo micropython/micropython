@@ -61,7 +61,7 @@ typedef struct _mp_obj_gen_instance_t {
     mp_obj_t state[];
 } mp_obj_gen_instance_t;
 
-void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "<generator object 'fun-name' at %p>", self_in);
 }
 

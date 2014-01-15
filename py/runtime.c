@@ -141,6 +141,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj);
 
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;

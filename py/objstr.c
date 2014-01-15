@@ -22,10 +22,14 @@ static mp_obj_t mp_obj_new_str_iterator(mp_obj_str_t *str, int cur);
 /******************************************************************************/
 /* str                                                                        */
 
-void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_str_t *self = self_in;
-    // TODO need to escape chars etc
-    print(env, "'%s'", qstr_str(self->qstr));
+    if (kind == PRINT_STR) {
+        print(env, "%s", qstr_str(self->qstr));
+    } else {
+        // TODO need to escape chars etc
+        print(env, "'%s'", qstr_str(self->qstr));
+    }
 }
 
 mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
@@ -254,13 +258,6 @@ mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
     return mp_obj_new_str(qstr_from_str_take(stripped_str, stripped_len + 1));
 }
 
-void vstr_printf_wrapper(void *env, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    vstr_vprintf(env, fmt, args);
-    va_end(args);
-}
-
 mp_obj_t str_format(int n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &str_type));
     mp_obj_str_t *self = args[0];
@@ -277,7 +274,8 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
                 if (arg_i >= n_args) {
                     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "tuple index out of range"));
                 }
-                mp_obj_print_helper(vstr_printf_wrapper, vstr, args[arg_i]);
+                // TODO: may be PRINT_REPR depending on formatting code
+                mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_STR);
                 arg_i++;
             }
         } else {

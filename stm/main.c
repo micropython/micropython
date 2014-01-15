@@ -444,7 +444,7 @@ void do_repl(void) {
                     }
                 } else {
                     // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
                     printf("\n");
                 }
             }
@@ -489,7 +489,7 @@ bool do_file(const char *filename) {
         return true;
     } else {
         // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val);
+        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
         printf("\n");
         return false;
     }
@@ -671,7 +671,7 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
-void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     printf("<file %p>", self_in);
 }
 
@@ -1114,13 +1114,13 @@ soft_reset:
                 if (nlr_push(&nlr) == 0) {
                     mp_obj_t ret = rt_call_function_0(module_fun);
                     printf("done! got: ");
-                    mp_obj_print(ret);
+                    mp_obj_print(ret, PRINT_REPR);
                     printf("\n");
                     nlr_pop();
                 } else {
                     // uncaught exception
                     printf("exception: ");
-                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
                     printf("\n");
                 }
 

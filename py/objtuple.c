@@ -16,14 +16,14 @@ static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur);
 /******************************************************************************/
 /* tuple                                                                      */
 
-void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in) {
+void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_tuple_t *o = o_in;
     print(env, "(");
     for (int i = 0; i < o->len; i++) {
         if (i > 0) {
             print(env, ", ");
         }
-        mp_obj_print_helper(print, env, o->items[i]);
+        mp_obj_print_helper(print, env, o->items[i], PRINT_REPR);
     }
     if (o->len == 1) {
         print(env, ",");

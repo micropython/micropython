@@ -64,7 +64,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___buil
 
 static mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
-        mp_obj_print(o);
+        mp_obj_print(o, PRINT_REPR);
         printf("\n");
     }
     return mp_const_none;
@@ -283,13 +283,7 @@ static mp_obj_t mp_builtin_print(int n_args, const mp_obj_t *args) {
         if (i > 0) {
             printf(" ");
         }
-        if (MP_OBJ_IS_TYPE(args[i], &str_type)) {
-            // special case, print string raw
-            printf("%s", qstr_str(mp_obj_str_get(args[i])));
-        } else {
-            // print the object Python style
-            mp_obj_print(args[i]);
-        }
+        mp_obj_print(args[i], PRINT_STR);
     }
     printf("\n");
     return mp_const_none;
@@ -310,7 +304,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range
 
 static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
-    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in);
+    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
     return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
 }
 
@@ -352,3 +346,11 @@ static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
+
+static mp_obj_t mp_builtin_str(mp_obj_t o_in) {
+    vstr_t *vstr = vstr_new();
+    mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, o_in, PRINT_STR);
+    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);

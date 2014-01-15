@@ -15,7 +15,7 @@ typedef struct _mp_obj_fdfile_t {
     int fd;
 } mp_obj_fdfile_t;
 
-static void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_fdfile_t *self = self_in;
     print(env, "<io.FileIO %d>", self->fd);
 }
