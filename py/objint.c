@@ -19,11 +19,9 @@ static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
             return MP_OBJ_NEW_SMALL_INT(0);
 
         case 1:
-            // TODO allow string as arg and parse it
             return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
 
         case 2:
-            // TODO make args[0] and args[1] correct
             return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_base(args[1], args[0]));
 
         default:
