@@ -92,6 +92,50 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
     return mp_obj_new_str(qstr_from_str_take(buf, total_size + 1));
 }
 
+// Unbuffered, inefficient implementation of readline() for raw I/O files.
+static mp_obj_t stream_unbuffered_readline(int n_args, const mp_obj_t *args) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    if (o->type->stream_p.read == NULL) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OSError, "Operation not supported"));
+    }
+
+    machine_int_t max_size = -1;
+    if (n_args > 1) {
+        max_size = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    }
+
+    vstr_t *vstr;
+    if (max_size != -1) {
+        vstr = vstr_new_size(max_size + 1); // TODO: \0
+    } else {
+        vstr = vstr_new();
+    }
+
+    int error;
+    while (max_size == -1 || max_size-- != 0) {
+        char *p = vstr_add_len(vstr, 1);
+        if (p == NULL) {
+            // TODO
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError/*MP_QSTR_RuntimeError*/, "Out of memory"));
+        }
+
+        machine_int_t out_sz = o->type->stream_p.read(o, p, 1, &error);
+        if (out_sz == -1) {
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
+        }
+        if (out_sz == 0 || *p == '\n') {
+            break;
+        }
+    }
+    // TODO: \0
+    vstr_add_byte(vstr, 0);
+    vstr_shrink(vstr);
+    return mp_obj_new_str(qstr_from_str_take(vstr_str(vstr), vstr_len(vstr)));
+}
+
+
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_read_obj, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write);
