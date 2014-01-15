@@ -106,6 +106,7 @@ void rt_init(void) {
 #endif
     mp_map_add_qstr(&map_builtins, MP_QSTR_dict, (mp_obj_t)&dict_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_enumerate, (mp_obj_t)&enumerate_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_filter, (mp_obj_t)&filter_type);
 #if MICROPY_ENABLE_FLOAT
     mp_map_add_qstr(&map_builtins, MP_QSTR_float, (mp_obj_t)&float_type);
 #endif

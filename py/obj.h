@@ -300,6 +300,9 @@ extern const mp_obj_type_t map_type;
 // enumerate
 extern const mp_obj_type_t enumerate_type;
 
+// filter
+extern const mp_obj_type_t filter_type;
+
 // dict
 extern const mp_obj_type_t dict_type;
 uint mp_obj_dict_len(mp_obj_t self_in);
