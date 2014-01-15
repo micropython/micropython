@@ -270,7 +270,8 @@ mp_obj_t str_format(int n_args, const mp_obj_t *args) {
             str++;
             if (*str == '{') {
                 vstr_add_char(vstr, '{');
-            } else if (*str == '}') {
+            } else {
+                while (*str != '}') str++;
                 if (arg_i >= n_args) {
                     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "tuple index out of range"));
                 }
