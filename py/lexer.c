@@ -35,6 +35,7 @@ struct _mp_lexer_t {
     mp_token_t tok_cur;
 };
 
+// TODO replace with a call to a standard function
 bool str_strn_equal(const char *str, const char *strn, int len) {
     uint i = 0;
 
@@ -64,15 +65,6 @@ void mp_token_show(const mp_token_t *tok) {
         }
     }
     printf("\n");
-}
-
-void mp_token_show_error_prefix(const mp_token_t *tok) {
-    printf("(%s:%d:%d) ", tok->src_name, tok->src_line, tok->src_column);
-}
-
-bool mp_token_show_error(const mp_token_t *tok, const char *msg) {
-    printf("(%s:%d:%d) %s\n", tok->src_name, tok->src_line, tok->src_column, msg);
-    return false;
 }
 
 #define CUR_CHAR(lex) ((lex)->chr0)
@@ -684,8 +676,9 @@ bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
 }
 */
 
-bool mp_lexer_show_error(mp_lexer_t *lex, const char *msg) {
-    return mp_token_show_error(&lex->tok_cur, msg);
+bool mp_lexer_show_error_pythonic_prefix(mp_lexer_t *lex) {
+    printf("  File \"%s\", line %d column %d\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column);
+    return false;
 }
 
 bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {

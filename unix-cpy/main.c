@@ -27,16 +27,29 @@ void do_file(const char *file) {
         mp_lexer_free(lex);
 
     } else {
-        // compile
+        // parse
+        qstr parse_exc_id;
+        const char *parse_exc_msg;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
 
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        if (pn == MP_PARSE_NODE_NULL) {
+            // parse error
+            mp_lexer_show_error_pythonic_prefix(lex);
+            printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+            mp_lexer_free(lex);
+            return;
+        }
+
         mp_lexer_free(lex);
 
         if (pn != MP_PARSE_NODE_NULL) {
             //printf("----------------\n");
             //parse_node_show(pn, 0);
             //printf("----------------\n");
+
+            // compile
             mp_obj_t module_fun = mp_compile(pn, false);
+
             //printf("----------------\n");
 
             if (module_fun == mp_const_none) {

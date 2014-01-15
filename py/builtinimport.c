@@ -48,16 +48,19 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     rt_globals_set(mp_obj_module_get_globals(module_obj));
 
     // parse the imported script
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    qstr parse_exc_id;
+    const char *parse_exc_msg;
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
-        // TODO handle parse error correctly
+        // parse error; clean up and raise exception
         rt_locals_set(old_locals);
         rt_globals_set(old_globals);
-        return mp_const_none;
+        nlr_jump(mp_obj_new_exception_msg(parse_exc_id, parse_exc_msg));
     }
 
+    // compile the imported script
     mp_obj_t module_fun = mp_compile(pn, false);
 
     if (module_fun == mp_const_none) {

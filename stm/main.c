@@ -418,10 +418,18 @@ void do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), 0);
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
-        mp_lexer_free(lex);
+        qstr parse_exc_id;
+        const char *parse_exc_msg;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_exc_id, &parse_exc_msg);
 
-        if (pn != MP_PARSE_NODE_NULL) {
+        if (pn == MP_PARSE_NODE_NULL) {
+            // parse error
+            mp_lexer_show_error_pythonic_prefix(lex);
+            printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+            mp_lexer_free(lex);
+        } else {
+            // parse okay
+            mp_lexer_free(lex);
             mp_obj_t module_fun = mp_compile(pn, true);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
@@ -455,12 +463,19 @@ bool do_file(const char *filename) {
         return false;
     }
 
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
-    mp_lexer_free(lex);
+    qstr parse_exc_id;
+    const char *parse_exc_msg;
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
 
     if (pn == MP_PARSE_NODE_NULL) {
+        // parse error
+        mp_lexer_show_error_pythonic_prefix(lex);
+        printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+        mp_lexer_free(lex);
         return false;
     }
+
+    mp_lexer_free(lex);
 
     mp_obj_t module_fun = mp_compile(pn, false);
     if (module_fun == mp_const_none) {
@@ -1073,7 +1088,9 @@ soft_reset:
         // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
         printf("lex; al=%u\n", m_get_total_bytes_allocated());
         sys_tick_delay_ms(1000);
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        qstr parse_exc_id;
+        const char *parse_exc_msg;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
         mp_lexer_free(lex);
         if (pn != MP_PARSE_NODE_NULL) {
             printf("pars;al=%u\n", m_get_total_bytes_allocated());

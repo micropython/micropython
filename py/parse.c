@@ -8,6 +8,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "lexer.h"
 #include "parse.h"
 
@@ -265,7 +266,7 @@ static void push_result_rule(parser_t *parser, const rule_t *rule, int num_args)
     push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr *exc_id_out, const char **exc_msg_out) {
 
     // allocate memory for the parser and its stacks
 
@@ -598,17 +599,20 @@ finished:
     return result;
 
 syntax_error:
-    // TODO these should raise a proper exception
     if (mp_lexer_is_kind(lex, MP_TOKEN_INDENT)) {
-        mp_lexer_show_error_pythonic(lex, "IndentationError: unexpected indent");
+        *exc_id_out = MP_QSTR_IndentationError;
+        *exc_msg_out = "unexpected indent";
     } else if (mp_lexer_is_kind(lex, MP_TOKEN_DEDENT_MISMATCH)) {
-        mp_lexer_show_error_pythonic(lex, "IndentationError: unindent does not match any outer indentation level");
+        *exc_id_out = MP_QSTR_IndentationError;
+        *exc_msg_out = "unindent does not match any outer indentation level";
     } else {
-        mp_lexer_show_error_pythonic(lex, "syntax error:");
+        *exc_id_out = MP_QSTR_SyntaxError;
+        *exc_msg_out = "invalid syntax";
 #ifdef USE_RULE_NAME
-        mp_lexer_show_error(lex, rule->rule_name);
-#endif
+        // debugging: print the rule name that failed and the token
+        mp_lexer_show_error_pythonic(lex, rule->rule_name);
         mp_token_show(mp_lexer_cur(lex));
+#endif
     }
     result = MP_PARSE_NODE_NULL;
     goto finished;

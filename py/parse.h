@@ -62,4 +62,5 @@ typedef enum {
     MP_PARSE_EVAL_INPUT,
 } mp_parse_input_kind_t;
 
-mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
+// returns MP_PARSE_NODE_NULL on error, and then exc_id_out and exc_msg_out are valid
+mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr *exc_id_out, const char **exc_msg_out);
