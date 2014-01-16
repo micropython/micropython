@@ -85,6 +85,14 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_SLICE (1)
 #endif
 
+// Enable features which improve CPython compatibility
+// but may lead to more code size/memory usage.
+// TODO: Originally intended as generic category to not
+// add bunch of once-off options. May need refactoring later
+#ifndef MICROPY_CPYTHON_COMPAT
+#define MICROPY_CPYTHON_COMPAT (1)
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
