@@ -143,6 +143,13 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj);
 
+#if MICROPY_CPYTHON_COMPAT
+    // Add (empty) micropython module, so it was possible to "import micropython",
+    // which can be a placeholder module on CPython.
+    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("micropython"));
+    rt_store_name(qstr_from_str_static("micropython"), m);
+#endif
+
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;
     unique_codes = NULL;
