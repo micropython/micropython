@@ -1,3 +1,9 @@
+try:
+    import micropython
+except:
+    pass
+
+
 def mandelbrot():
     # returns True if c, complex, is in the Mandelbrot set
     @micropython.native
