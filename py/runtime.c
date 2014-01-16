@@ -297,6 +297,24 @@ int rt_is_true(mp_obj_t arg) {
         return 0;
     } else if (arg == mp_const_true) {
         return 1;
+    } else if (MP_OBJ_IS_QSTR(arg)) {
+        // TODO: \0
+        return *qstr_str(MP_OBJ_QSTR_VALUE(arg)) != 0;
+    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
+        // TODO: \0
+        return *qstr_str(mp_obj_str_get(arg)) != 0;
+    } else if (MP_OBJ_IS_TYPE(arg, &list_type)) {
+        uint len;
+        mp_obj_t *dummy;
+        mp_obj_list_get(arg, &len, &dummy);
+        return len != 0;
+    } else if (MP_OBJ_IS_TYPE(arg, &tuple_type)) {
+        uint len;
+        mp_obj_t *dummy;
+        mp_obj_tuple_get(arg, &len, &dummy);
+        return len != 0;
+    } else if (MP_OBJ_IS_TYPE(arg, &dict_type)) {
+        return mp_obj_dict_len(arg) != 0;
     } else {
         assert(0);
         return 0;
