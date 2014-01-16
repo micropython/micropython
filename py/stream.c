@@ -88,6 +88,7 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
         }
     }
     vstr_set_size(vstr, total_size + 1); // TODO: for \0
+    buf = vstr_str(vstr);
     buf[total_size] = 0;
     return mp_obj_new_str(qstr_from_str_take(buf, total_size + 1));
 }
