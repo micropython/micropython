@@ -34,10 +34,11 @@ def conway_go(num_frames):
     for i in range(num_frames):
         conway_step()           # do 1 iteration
         lcd.show()              # update the LCD
+        pyb.delay(300)
 
 # PC testing
 import lcd
 import pyb
 lcd = lcd.LCD(128, 32)
 conway_rand()
-conway_go(100)
+conway_go(1000)
