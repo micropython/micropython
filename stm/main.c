@@ -455,8 +455,7 @@ void do_repl(void) {
 }
 
 bool do_file(const char *filename) {
-    mp_lexer_file_buf_t fb;
-    mp_lexer_t *lex = mp_lexer_new_from_file(filename, &fb);
+    mp_lexer_t *lex = mp_lexer_new_from_file(filename);
 
     if (lex == NULL) {
         printf("could not open file '%s' for reading\n", filename);
