@@ -10,18 +10,23 @@
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.
 
-static mp_obj_t stream_read(mp_obj_t self_in, mp_obj_t arg) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+static mp_obj_t stream_readall(mp_obj_t self_in);
+
+static mp_obj_t stream_read(int n_args, const mp_obj_t *args) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
     if (o->type->stream_p.read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OSError, "Operation not supported"));
     }
 
-    machine_int_t sz = mp_obj_get_int(arg);
+    machine_int_t sz;
+    if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
+        return stream_readall(args[0]);
+    }
     // +1 because so far we mark end of string with \0
     char *buf = m_new(char, sz + 1);
     int error;
-    machine_int_t out_sz = o->type->stream_p.read(self_in, buf, sz, &error);
+    machine_int_t out_sz = o->type->stream_p.read(o, buf, sz, &error);
     if (out_sz == -1) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
@@ -136,7 +141,7 @@ static mp_obj_t stream_unbuffered_readline(int n_args, const mp_obj_t *args) {
 }
 
 
-MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_read_obj, stream_read);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write);
