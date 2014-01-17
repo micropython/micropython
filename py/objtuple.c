@@ -72,7 +72,7 @@ static mp_obj_t tuple_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *arg
     }
 }
 
-static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs, ...) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:

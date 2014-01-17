@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -117,7 +118,7 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return true;
 }
 
-static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs, ...) {
     mp_obj_list_t *o = lhs;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -125,6 +126,16 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             // list load
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
+        }
+        case RT_BINARY_OP_SUBSCR_STORE:
+        {
+            va_list args;
+            va_start(args, rhs);
+            mp_obj_t val = va_arg(args, mp_obj_t);
+            va_end(args);
+            uint index = mp_get_index(o->base.type, o->len, rhs);
+            o->items[index] = val;
+            return val;
         }
         case RT_BINARY_OP_ADD:
         {

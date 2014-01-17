@@ -49,7 +49,7 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 }
 
 // This is called only for non-SMALL_INT
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     assert(0);
     return mp_const_none;
 }

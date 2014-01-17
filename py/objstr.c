@@ -32,7 +32,7 @@ void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     }
 }
 
-mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     mp_obj_str_t *lhs = lhs_in;
     const char *lhs_str = qstr_str(lhs->qstr);
     switch (op) {

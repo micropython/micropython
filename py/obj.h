@@ -94,7 +94,7 @@ typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj
 typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_call_n_kw_fun_t)(mp_obj_t fun, int n_args, int n_kw, const mp_obj_t *args); // args are in reverse order in the array
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
-typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
+typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t, ...);
 typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[1] = value; for method, dest[0] = self, dest[1] = method
 typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded
 

@@ -79,7 +79,7 @@ static mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     mp_obj_complex_t *lhs = lhs_in;
     return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
 }

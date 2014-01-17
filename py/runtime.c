@@ -895,15 +895,14 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
-    if (MP_OBJ_IS_TYPE(base, &list_type)) {
-        // list store
-        mp_obj_list_store(base, index, value);
-    } else if (MP_OBJ_IS_TYPE(base, &dict_type)) {
-        // dict store
-        mp_obj_dict_store(base, index, value);
-    } else {
-        assert(0);
+    mp_obj_type_t *type = mp_obj_get_type(base);
+    if (type->binary_op != NULL) {
+        mp_obj_t r = type->binary_op(RT_BINARY_OP_SUBSCR_STORE, base, index, value);
+        if (r != MP_OBJ_NULL) {
+            return;
+        }
     }
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
 }
 
 mp_obj_t rt_getiter(mp_obj_t o_in) {

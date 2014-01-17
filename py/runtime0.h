@@ -7,6 +7,7 @@ typedef enum {
 
 typedef enum {
     RT_BINARY_OP_SUBSCR,
+    RT_BINARY_OP_SUBSCR_STORE,
     RT_BINARY_OP_OR,
     RT_BINARY_OP_XOR,
     RT_BINARY_OP_AND,
