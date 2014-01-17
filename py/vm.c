@@ -109,6 +109,11 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         PUSH(MP_OBJ_NEW_SMALL_INT(unum));
                         break;
 
+                    case MP_BC_LOAD_CONST_INT:
+                        DECODE_QSTR;
+                        PUSH(mp_obj_new_int_from_long_str(qstr_str(qstr)));
+                        break;
+
                     case MP_BC_LOAD_CONST_DEC:
                         DECODE_QSTR;
                         PUSH(rt_load_const_dec(qstr));
