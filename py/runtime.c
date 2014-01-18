@@ -761,7 +761,7 @@ mp_obj_t rt_store_set(mp_obj_t set, mp_obj_t item) {
     return set;
 }
 
-// unpacked items are stored in order into the array pointed to by items
+// unpacked items are stored in reverse order into the array pointed to by items
 void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     if (MP_OBJ_IS_TYPE(seq_in, &tuple_type) || MP_OBJ_IS_TYPE(seq_in, &list_type)) {
         uint seq_len;
@@ -776,7 +776,9 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
         } else if (seq_len > num) {
             nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
         }
-        memcpy(items, seq_items, num * sizeof(mp_obj_t));
+        for (uint i = 0; i < num; i++) {
+            items[i] = seq_items[num - 1 - i];
+        }
     } else {
         // TODO call rt_getiter and extract via rt_iternext
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));

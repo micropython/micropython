@@ -450,7 +450,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_UNPACK_SEQUENCE:
                         DECODE_UINT;
-                        rt_unpack_sequence(sp[0], unum, sp + unum - 1);
+                        rt_unpack_sequence(sp[0], unum, sp);
                         sp += unum - 1;
                         break;
 
