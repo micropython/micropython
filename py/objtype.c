@@ -28,16 +28,26 @@ static mp_obj_t mp_obj_new_class(mp_obj_t class) {
     return o;
 }
 
-static mp_map_elem_t *mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr, mp_map_lookup_kind_t lookup_kind) {
+// will return MP_OBJ_NULL if not found
+static mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
     for (;;) {
-        if (type->locals_dict == NULL) {
-            return NULL;
-        }
-        assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
-        mp_map_t *locals_map = ((void*)type->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
-        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), lookup_kind);
-        if (elem != NULL) {
-            return elem;
+        if (type->locals_dict != NULL) {
+            // search locals_dict (the dynamically created set of methods/attributes)
+
+            assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
+            mp_map_t *locals_map = ((void*)type->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                return elem->value;
+            }
+        } else if (type->methods != NULL) {
+            // search methods (the const set of methods)
+
+            for (const mp_method_t *meth = type->methods; meth->name != NULL; meth++) {
+                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                    return (mp_obj_t)meth->fun;
+                }
+            }
         }
 
         // attribute not found, keep searching base classes
@@ -55,9 +65,9 @@ static mp_map_elem_t *mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr, 
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_const_type));
-            elem = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr, lookup_kind);
-            if (elem != NULL) {
-                return elem;
+            mp_obj_t obj = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
+            if (obj != MP_OBJ_NULL) {
+                return obj;
             }
         }
 
@@ -78,18 +88,18 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     mp_obj_t o = mp_obj_new_class(self_in);
 
     // look for __init__ function
-    mp_map_elem_t *init_fn = mp_obj_class_lookup(self, MP_QSTR___init__, MP_MAP_LOOKUP);
+    mp_obj_t init_fn = mp_obj_class_lookup(self, MP_QSTR___init__);
 
-    if (init_fn != NULL) {
+    if (init_fn != MP_OBJ_NULL) {
         // call __init__ function
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
-            init_ret = rt_call_function_n_kw(init_fn->value, 1, 0, (mp_obj_t*)&o);
+            init_ret = rt_call_function_n_kw(init_fn, 1, 0, (mp_obj_t*)&o);
         } else {
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = o;
             memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
-            init_ret = rt_call_function_n_kw(init_fn->value, n_args + 1, n_kw, args2);
+            init_ret = rt_call_function_n_kw(init_fn, n_args + 1, n_kw, args2);
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
@@ -156,9 +166,9 @@ static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (op_name == NULL) {
         return MP_OBJ_NULL;
     }
-    mp_map_elem_t *elem = mp_obj_class_lookup(lhs->base.type, qstr_from_str_static(op_name), MP_MAP_LOOKUP);
-    if (elem != NULL) {
-        return rt_call_function_2(elem->value, lhs_in, rhs_in);
+    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, qstr_from_str_static(op_name));
+    if (member != MP_OBJ_NULL) {
+        return rt_call_function_2(member, lhs_in, rhs_in);
     } else {
         return MP_OBJ_NULL;
     }
@@ -173,41 +183,49 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[0] = elem->value;
         return;
     }
-    elem = mp_obj_class_lookup(self->base.type, attr, MP_MAP_LOOKUP);
-    if (elem != NULL) {
-        if (mp_obj_is_callable(elem->value)) {
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
+    if (member != MP_OBJ_NULL) {
+        if (mp_obj_is_callable(member)) {
             // class member is callable so build a bound method
-            dest[0] = elem->value;
-            dest[1] = self_in;
+            // check if the methods are functions, static or class methods
+            // see http://docs.python.org/3.3/howto/descriptor.html
+            // TODO check that this is the correct place to have this logic
+            if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
+                // return just the function
+                dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+            } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
+                // return a bound method, with self being the type of this object
+                dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+                dest[1] = mp_obj_get_type(self_in);
+            } else {
+                // return a bound method, with self being this object
+                dest[0] = member;
+                dest[1] = self_in;
+            }
             return;
         } else {
             // class member is a value, so just return that value
-            dest[0] = elem->value;
+            dest[0] = member;
             return;
         }
     }
 }
 
 static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
-    // logic: look in class locals (no add) then obj members (add) (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
-    mp_map_elem_t *elem = mp_obj_class_lookup(self->base.type, attr, MP_MAP_LOOKUP);
-    if (elem != NULL) {
-        elem->value = value;
-    } else {
-        mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    }
+    mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return true;
 }
 
 bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
-    mp_map_elem_t *elem = mp_obj_class_lookup(self->base.type, qstr_from_str_static("__setitem__"), MP_MAP_LOOKUP);
-    if (elem != NULL) {
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, qstr_from_str_static("__setitem__"));
+    if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
-        return rt_call_function_n_kw(elem->value, 3, 0, args);
+        rt_call_function_n_kw(member, 3, 0, args);
+        return true;
     } else {
-        return MP_OBJ_NULL;
+        return false;
     }
 }
 
@@ -260,34 +278,21 @@ static mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
 static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
-    mp_map_elem_t *elem = mp_obj_class_lookup(self, attr, MP_MAP_LOOKUP);
-    if (elem != NULL) {
-        dest[0] = elem->value;
-        return;
-    }
-
-    // generic method lookup
-    // this is a lookup in the class itself (ie not the classes type or instance)
-    const mp_method_t *meth = self->methods;
-    if (meth != NULL) {
-        for (; meth->name != NULL; meth++) {
-            if (strcmp(meth->name, qstr_str(attr)) == 0) {
-                // check if the methods are functions, static or class methods
-                // see http://docs.python.org/3.3/howto/descriptor.html
-                if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
-                    // return just the function
-                    dest[0] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
-                } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
-                    // return a bound method, with self being this class
-                    dest[0] = ((mp_obj_classmethod_t*)meth->fun)->fun;
-                    dest[1] = self_in;
-                } else {
-                    // return just the function
-                    // TODO need to wrap in a type check for the first argument; eg list.append(1,1) needs to throw an exception
-                    dest[0] = (mp_obj_t)meth->fun;
-                }
-                return;
-            }
+    mp_obj_t member = mp_obj_class_lookup(self, attr);
+    if (member != MP_OBJ_NULL) {
+        // check if the methods are functions, static or class methods
+        // see http://docs.python.org/3.3/howto/descriptor.html
+        if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
+            // return just the function
+            dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+        } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
+            // return a bound method, with self being this class
+            dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+            dest[1] = self_in;
+        } else {
+            // return just the function
+            // TODO need to wrap in a type check for the first argument; eg list.append(1,1) needs to throw an exception
+            dest[0] = (mp_obj_t)member;
         }
     }
 }
@@ -298,9 +303,10 @@ static bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 
     // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
 
-    mp_map_elem_t *elem = mp_obj_class_lookup(self, attr, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-    if (elem != NULL) {
-        elem->value = value;
+    if (self->locals_dict != NULL) {
+        assert(MP_OBJ_IS_TYPE(self->locals_dict, &dict_type)); // Micro Python restriction, for now
+        mp_map_t *locals_map = ((void*)self->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
+        mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         return true;
     } else {
         return false;

@@ -820,8 +820,8 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         if (attr == MP_QSTR___next__ && type->iternext != NULL) {
             dest[0] = (mp_obj_t)&mp_builtin_next_obj;
             dest[1] = base;
-        } else {
-            // generic method lookup
+        } else if (type->load_attr == NULL) {
+            // generic method lookup if type didn't provide a specific one
             // this is a lookup in the object (ie not class or type)
             const mp_method_t *meth = type->methods;
             if (meth != NULL) {
