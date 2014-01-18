@@ -21,6 +21,7 @@
 #endif
 
 extern const mp_obj_fun_native_t mp_builtin_open_obj;
+void rawsocket_init();
 
 static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
@@ -223,6 +224,7 @@ int main(int argc, char **argv) {
 
     rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
     rt_store_name(qstr_from_str_static("open"), (mp_obj_t)&mp_builtin_open_obj);
+    rawsocket_init();
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
