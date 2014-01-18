@@ -105,7 +105,6 @@ typedef enum _mp_token_kind_t {
 } mp_token_kind_t;
 
 typedef struct _mp_token_t {
-    const char *src_name;       // name of source
     uint src_line;              // source line
     uint src_column;            // source column
 
@@ -129,6 +128,7 @@ mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_strea
 mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, uint free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
+qstr mp_lexer_source_name(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
 const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex);
 bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind);

@@ -281,6 +281,9 @@ static void emit_native_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
 }
 
+static void emit_native_set_source_line(emit_t *emit, int source_line) {
+}
+
 static void adjust_stack(emit_t *emit, int stack_size_delta) {
     emit->stack_size += stack_size_delta;
     assert(emit->stack_size >= 0);
@@ -1228,6 +1231,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_last_emit_was_return_value,
     emit_native_get_stack_size,
     emit_native_set_stack_size,
+    emit_native_set_source_line,
 
     emit_native_load_id,
     emit_native_store_id,

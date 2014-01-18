@@ -80,7 +80,8 @@ static const rule_t *rules[] = {
 };
 
 typedef struct _rule_stack_t {
-    byte rule_id;
+    unsigned int src_line : 24;
+    unsigned int rule_id : 8;
     int32_t arg_i; // what should be the size and signedness?
 } rule_stack_t;
 
@@ -92,45 +93,54 @@ typedef struct _parser_t {
     uint result_stack_alloc;
     uint result_stack_top;
     mp_parse_node_t *result_stack;
+
+    mp_lexer_t *lexer;
 } parser_t;
 
-static void push_rule(parser_t *parser, const rule_t *rule, int arg_i) {
+static void push_rule(parser_t *parser, int src_line, const rule_t *rule, int arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
         parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
         parser->rule_stack_alloc *= 2;
     }
-    parser->rule_stack[parser->rule_stack_top].rule_id = rule->rule_id;
-    parser->rule_stack[parser->rule_stack_top].arg_i = arg_i;
-    parser->rule_stack_top += 1;
+    rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
+    rs->src_line = src_line;
+    rs->rule_id = rule->rule_id;
+    rs->arg_i = arg_i;
 }
 
 static void push_rule_from_arg(parser_t *parser, uint arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
     uint rule_id = arg & RULE_ARG_ARG_MASK;
     assert(rule_id < RULE_maximum_number_of);
-    push_rule(parser, rules[rule_id], 0);
+    push_rule(parser, mp_lexer_cur(parser->lexer)->src_line, rules[rule_id], 0);
 }
 
-static void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i) {
+static void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *src_line) {
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
+    *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
 }
 
 mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
     return (mp_parse_node_t)(kind | (arg << 4));
 }
 
-int num_parse_nodes_allocated = 0;
-mp_parse_node_struct_t *parse_node_new_struct(int rule_id, int num_args) {
+//int num_parse_nodes_allocated = 0;
+mp_parse_node_struct_t *parse_node_new_struct(int src_line, int rule_id, int num_args) {
     mp_parse_node_struct_t *pn = m_new_obj_var(mp_parse_node_struct_t, mp_parse_node_t, num_args);
-    pn->source = 0; // TODO
+    pn->source_line = src_line;
     pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
-    num_parse_nodes_allocated += 1;
+    //num_parse_nodes_allocated += 1;
     return pn;
 }
 
 void mp_parse_node_show(mp_parse_node_t pn, int indent) {
+    if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+        printf("[% 4d] ", (int)((mp_parse_node_struct_t*)pn)->source_line);
+    } else {
+        printf("       ");
+    }
     for (int i = 0; i < indent; i++) {
         printf(" ");
     }
@@ -258,8 +268,8 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     push_result_node(parser, pn);
 }
 
-static void push_result_rule(parser_t *parser, const rule_t *rule, int num_args) {
-    mp_parse_node_struct_t *pn = parse_node_new_struct(rule->rule_id, num_args);
+static void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
+    mp_parse_node_struct_t *pn = parse_node_new_struct(src_line, rule->rule_id, num_args);
     for (int i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
@@ -280,6 +290,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
     parser->result_stack_top = 0;
     parser->result_stack = m_new(mp_parse_node_t, parser->result_stack_alloc);
 
+    parser->lexer = lex;
+
     // work out the top-level rule to use, and push it on the stack
     int top_level_rule;
     switch (input_kind) {
@@ -287,13 +299,14 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
         default: top_level_rule = RULE_file_input;
     }
-    push_rule(parser, rules[top_level_rule], 0);
+    push_rule(parser, mp_lexer_cur(lex)->src_line, rules[top_level_rule], 0);
 
     // parse!
 
-    uint n, i;
+    uint n, i; // state for the current rule
+    uint rule_src_line; // source line for the first token matched by the current rule
     bool backtrack = false;
-    const rule_t *rule;
+    const rule_t *rule = NULL;
     mp_token_kind_t tok_kind;
     bool emit_rule;
     bool had_trailing_sep;
@@ -304,7 +317,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
             break;
         }
 
-        pop_rule(parser, &rule, &i);
+        pop_rule(parser, &rule, &i, &rule_src_line);
         n = rule->act & RULE_ACT_ARG_MASK;
 
         /*
@@ -333,8 +346,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                             }
                             break;
                         case RULE_ARG_RULE:
-                            push_rule(parser, rule, i + 1);
-                            push_rule_from_arg(parser, rule->arg[i]);
+                            push_rule(parser, rule_src_line, rule, i + 1); // save this or-rule
+                            push_rule_from_arg(parser, rule->arg[i]); // push child of or-rule
                             goto next_rule;
                         default:
                             assert(0);
@@ -398,14 +411,9 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                             }
                             break;
                         case RULE_ARG_RULE:
-                            //if (i + 1 < n) {
-                                push_rule(parser, rule, i + 1);
-                            //}
-                            push_rule_from_arg(parser, rule->arg[i]);
-                            goto next_rule;
                         case RULE_ARG_OPT_RULE:
-                            push_rule(parser, rule, i + 1);
-                            push_rule_from_arg(parser, rule->arg[i]);
+                            push_rule(parser, rule_src_line, rule, i + 1); // save this and-rule
+                            push_rule_from_arg(parser, rule->arg[i]); // push child of and-rule
                             goto next_rule;
                         default:
                             assert(0);
@@ -462,9 +470,9 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                 }
                 //printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, n, i, num_not_nil);
                 if (emit_rule) {
-                    push_result_rule(parser, rule, i);
+                    push_result_rule(parser, rule_src_line, rule, i);
                 } else if (num_not_nil == 0) {
-                    push_result_rule(parser, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
+                    push_result_rule(parser, rule_src_line, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
                     //result_stack_show(parser);
                     //assert(0);
                 } else if (num_not_nil == 1) {
@@ -478,7 +486,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                     }
                     push_result_node(parser, pn);
                 } else {
-                    push_result_rule(parser, rule, i);
+                    push_result_rule(parser, rule_src_line, rule, i);
                 }
                 break;
 
@@ -538,8 +546,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                                 }
                                 break;
                             case RULE_ARG_RULE:
-                                push_rule(parser, rule, i + 1);
-                                push_rule_from_arg(parser, arg);
+                                push_rule(parser, rule_src_line, rule, i + 1); // save this list-rule
+                                push_rule_from_arg(parser, arg); // push child of list-rule
                                 goto next_rule;
                             default:
                                 assert(0);
@@ -559,13 +567,13 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                     // list matched single item
                     if (had_trailing_sep) {
                         // if there was a trailing separator, make a list of a single item
-                        push_result_rule(parser, rule, i);
+                        push_result_rule(parser, rule_src_line, rule, i);
                     } else {
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
                     //printf("done list %s %d %d\n", rule->rule_name, n, i);
-                    push_result_rule(parser, rule, i);
+                    push_result_rule(parser, rule_src_line, rule, i);
                 }
                 break;
 

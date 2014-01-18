@@ -58,6 +58,7 @@ mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
+    const byte *code_info;
     const byte *ip;
     mp_obj_t *sp;
     uint n_state;
@@ -74,7 +75,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     mp_obj_gen_instance_t *self = self_in;
-    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[self->n_state - 1], &self->sp);
+    bool yield = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
     if (yield) {
         return *self->sp;
     } else {
@@ -98,6 +99,7 @@ const mp_obj_type_t gen_instance_type = {
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, mp_obj_t, n_state);
     o->base.type = &gen_instance_type;
+    o->code_info = bytecode;
     o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
     o->n_state = n_state;
@@ -111,6 +113,10 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args,
     // prelude for making cells (closed over variables)
     // for now we just make sure there are no cells variables
     // need to work out how to implement closed over variables in generators
+
+    // get code info size
+    machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
+    o->ip += code_info_size;
     assert(o->ip[0] == 0);
     o->ip += 1;
 

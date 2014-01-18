@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -14,7 +15,7 @@
 // don't know if that's intentional or not, but we don't allow it
 
 struct _mp_lexer_t {
-    const char *name;           // name of source
+    qstr source_name;           // name of source
     void *stream_data;          // data for stream
     mp_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
     mp_lexer_stream_close_t stream_close;           // stream callback to free
@@ -49,7 +50,7 @@ bool str_strn_equal(const char *str, const char *strn, int len) {
 }
 
 void mp_token_show(const mp_token_t *tok) {
-    printf("(%s:%d:%d) kind:%d str:%p len:%d", tok->src_name, tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
+    printf("(%d:%d) kind:%d str:%p len:%d", tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
     if (tok->str != NULL && tok->len > 0) {
         const char *i = tok->str;
         const char *j = i + tok->len;
@@ -292,7 +293,6 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
             next_char(lex);
             if (!is_physical_newline(lex)) {
                 // SyntaxError: unexpected character after line continuation character
-                tok->src_name = lex->name;
                 tok->src_line = lex->line;
                 tok->src_column = lex->column;
                 tok->kind = MP_TOKEN_BAD_LINE_CONTINUATION;
@@ -309,7 +309,6 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
     }
 
     // set token source information
-    tok->src_name = lex->name;
     tok->src_line = lex->line;
     tok->src_column = lex->column;
 
@@ -594,7 +593,7 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
 mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close) {
     mp_lexer_t *lex = m_new(mp_lexer_t, 1);
 
-    lex->name = src_name; // TODO do we need to strdup this?
+    lex->source_name = qstr_from_strn_copy(src_name, strlen(src_name));
     lex->stream_data = stream_data;
     lex->stream_next_char = stream_next_char;
     lex->stream_close = stream_close;
@@ -642,6 +641,10 @@ void mp_lexer_free(mp_lexer_t *lex) {
     }
 }
 
+qstr mp_lexer_source_name(mp_lexer_t *lex) {
+    return lex->source_name;
+}
+
 void mp_lexer_to_next(mp_lexer_t *lex) {
     mp_lexer_next_token_into(lex, &lex->tok_cur, false);
 }
@@ -677,11 +680,11 @@ bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
 */
 
 bool mp_lexer_show_error_pythonic_prefix(mp_lexer_t *lex) {
-    printf("  File \"%s\", line %d column %d\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column);
+    printf("  File \"%s\", line %d column %d\n", qstr_str(lex->source_name), lex->tok_cur.src_line, lex->tok_cur.src_column);
     return false;
 }
 
 bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {
-    printf("  File \"%s\", line %d column %d\n%s\n", lex->tok_cur.src_name, lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
+    printf("  File \"%s\", line %d column %d\n%s\n", qstr_str(lex->source_name), lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
     return false;
 }

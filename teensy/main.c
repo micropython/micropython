@@ -310,13 +310,14 @@ bool do_file(const char *filename) {
     }
 
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    qstr source_name = mp_lexer_source_name(lex);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         return false;
     }
 
-    mp_obj_t module_fun = mp_compile(pn, false);
+    mp_obj_t module_fun = mp_compile(pn, source_name, false);
     if (module_fun == mp_const_none) {
         return false;
     }

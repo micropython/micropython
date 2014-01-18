@@ -18,6 +18,10 @@
 void mp_show_byte_code(const byte *ip, int len) {
     const byte *ip_start = ip;
 
+    // get code info size
+    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    ip += code_info_size;
+
     // decode prelude
     {
         uint n_local = *ip++;

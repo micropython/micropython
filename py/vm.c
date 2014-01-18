@@ -38,7 +38,12 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
         assert(i < 8);
         state[n_state - 1 - i] = args[i];
     }
+
     const byte *ip = code;
+
+    // get code info size
+    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    ip += code_info_size;
 
     // execute prelude to make any cells (closed over variables)
     {
@@ -53,7 +58,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     }
 
     // execute the byte code
-    if (mp_execute_byte_code_2(&ip, &state[n_state - 1], &sp)) {
+    if (mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp)) {
         // it shouldn't yield
         assert(0);
     }
@@ -65,7 +70,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
-bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
+bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
     const byte *ip = *ip_in_out;
@@ -79,12 +84,14 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
     volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
     machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
     machine_uint_t *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
+    const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
     for (;;) {
         if (nlr_push(&nlr) == 0) {
             // loop to execute byte code
             for (;;) {
+                save_ip = ip;
                 int op = *ip++;
                 switch (op) {
                     case MP_BC_LOAD_CONST_FALSE:
@@ -517,6 +524,23 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
         } else {
             // exception occurred
+
+            // set file and line number that the exception occurred at
+            if (MP_OBJ_IS_TYPE(nlr.ret_val, &exception_type)) {
+                machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
+                qstr = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
+                machine_uint_t source_line = 1;
+                machine_uint_t bc = save_ip - code_info - code_info_size;
+                //printf("find %lu %d %d\n", bc, code_info[8], code_info[9]);
+                for (const byte* ci = code_info + 8; bc > ci[0]; ci += 2) {
+                    bc -= ci[0];
+                    source_line += ci[1];
+                    if (ci[0] == 0 && ci[1] == 0) {
+                        break;
+                    }
+                }
+                mp_obj_exception_set_source_info(nlr.ret_val, qstr, source_line);
+            }
 
             while (currently_in_except_block) {
                 // nested exception

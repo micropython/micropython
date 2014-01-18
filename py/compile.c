@@ -2505,6 +2505,7 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         }
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        EMIT(set_line_number, pns->source_line);
         compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
         if (f == NULL) {
             printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
@@ -3024,7 +3025,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 }
 
-mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
+mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
     comp->is_repl = is_repl;
@@ -3131,7 +3132,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, bool is_repl) {
 
                 default:
                     if (emit_bc == NULL) {
-                        emit_bc = emit_bc_new(max_num_labels);
+                        emit_bc = emit_bc_new(source_file, max_num_labels);
                     }
                     comp->emit = emit_bc;
                     comp->emit_method_table = &emit_bc_method_table;

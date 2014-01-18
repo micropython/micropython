@@ -17,6 +17,8 @@
 // have args tuple (or otherwise have it as NULL).
 typedef struct mp_obj_exception_t {
     mp_obj_base_t base;
+    qstr source_file;
+    machine_uint_t source_line;
     qstr id;
     qstr msg;
     mp_obj_tuple_t args;
@@ -87,6 +89,8 @@ mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...) {
     // make exception object
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t*, 0);
     o->base.type = &exception_type;
+    o->source_file = 0;
+    o->source_line = 0;
     o->id = id;
     o->args.len = 0;
     if (fmt == NULL) {
@@ -108,4 +112,24 @@ qstr mp_obj_exception_get_type(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
     mp_obj_exception_t *self = self_in;
     return self->id;
+}
+
+void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line) {
+    assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
+    mp_obj_exception_t *self = self_in;
+    // TODO make a list of file/line pairs for the traceback
+    // for now, just keep the first one
+    if (file != 0 && self->source_file == 0) {
+        self->source_file = file;
+    }
+    if (line != 0 && self->source_line == 0) {
+        self->source_line = line;
+    }
+}
+
+void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line) {
+    assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
+    mp_obj_exception_t *self = self_in;
+    *file = self->source_file;
+    *line = self->source_line;
 }

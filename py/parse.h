@@ -28,7 +28,7 @@ struct _mp_lexer_t;
 typedef machine_uint_t mp_parse_node_t; // must be pointer size
 
 typedef struct _mp_parse_node_struct_t {
-    uint32_t source;            // file identifier, and line number
+    uint32_t source_line;       // line number in source file
     uint32_t kind_num_nodes;    // parse node kind, and number of nodes
     mp_parse_node_t nodes[];    // nodes
 } mp_parse_node_struct_t;

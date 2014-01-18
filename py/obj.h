@@ -273,6 +273,8 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 // exception
 extern const mp_obj_type_t exception_type;
 qstr mp_obj_exception_get_type(mp_obj_t self_in);
+void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line);
+void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line);
 
 // str
 extern const mp_obj_type_t str_type;

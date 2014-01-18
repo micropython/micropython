@@ -68,6 +68,9 @@ static void emit_cpy_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
 }
 
+static void emit_cpy_set_source_line(emit_t *emit, int source_line) {
+}
+
 static void emit_cpy_load_id(emit_t *emit, qstr qstr) {
     emit_common_load_id(emit, &emit_cpython_method_table, emit->scope, qstr);
 }
@@ -798,6 +801,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_last_emit_was_return_value,
     emit_cpy_get_stack_size,
     emit_cpy_set_stack_size,
+    emit_cpy_set_source_line,
 
     emit_cpy_load_id,
     emit_cpy_store_id,

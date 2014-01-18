@@ -49,13 +49,14 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         return;
     }
 
+    qstr source_name = mp_lexer_source_name(lex);
     mp_lexer_free(lex);
 
     //printf("----------------\n");
-    //parse_node_show(pn, 0);
+    //mp_parse_node_show(pn, 0);
     //printf("----------------\n");
 
-    mp_obj_t module_fun = mp_compile(pn, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
 
     if (module_fun == mp_const_none) {
         // compile error
@@ -69,7 +70,14 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
+        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+        if (MP_OBJ_IS_TYPE(exc, &exception_type)) {
+            qstr file;
+            machine_uint_t line;
+            mp_obj_exception_get_source_info(exc, &file, &line);
+            printf("File \"%s\", line %d\n", qstr_str(file), (int)line);
+        }
+        mp_obj_print(exc, PRINT_REPR);
         printf("\n");
     }
 }

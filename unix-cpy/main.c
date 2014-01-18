@@ -48,7 +48,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
 
             // compile
-            mp_obj_t module_fun = mp_compile(pn, false);
+            mp_obj_t module_fun = mp_compile(pn, 0, false);
 
             //printf("----------------\n");
 

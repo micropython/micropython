@@ -51,6 +51,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     qstr parse_exc_id;
     const char *parse_exc_msg;
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
+    qstr source_name = mp_lexer_source_name(lex);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
@@ -61,7 +62,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
 
     // compile the imported script
-    mp_obj_t module_fun = mp_compile(pn, false);
+    mp_obj_t module_fun = mp_compile(pn, source_name, false);
 
     if (module_fun == mp_const_none) {
         // TODO handle compile error correctly

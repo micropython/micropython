@@ -103,6 +103,7 @@ const emit_method_table_t emit_pass1_method_table = {
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
+    (void*)emit_pass1_dummy,
 
     emit_pass1_load_id,
     emit_pass1_store_id,

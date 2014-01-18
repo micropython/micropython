@@ -23,6 +23,7 @@ typedef struct _emit_method_table_t {
     bool (*last_emit_was_return_value)(emit_t *emit);
     int (*get_stack_size)(emit_t *emit);
     void (*set_stack_size)(emit_t *emit, int size);
+    void (*set_line_number)(emit_t *emit, int line);
 
     void (*load_id)(emit_t *emit, qstr qstr);
     void (*store_id)(emit_t *emit, qstr qstr);
@@ -119,7 +120,7 @@ extern const emit_method_table_t emit_native_thumb_method_table;
 emit_t *emit_pass1_new(qstr qstr___class__);
 void emit_pass1_free(emit_t *emit);
 emit_t *emit_cpython_new(uint max_num_labels);
-emit_t *emit_bc_new(uint max_num_labels);
+emit_t *emit_bc_new(qstr source_file, uint max_num_labels);
 emit_t *emit_native_x64_new(uint max_num_labels);
 emit_t *emit_native_thumb_new(uint max_num_labels);
 
