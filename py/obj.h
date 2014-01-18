@@ -96,6 +96,7 @@ typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
 typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded
+typedef bool (*mp_store_item_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value); // return true if store succeeded
 
 typedef struct _mp_method_t {
     const char *name;
@@ -160,6 +161,9 @@ struct _mp_obj_type_t {
 
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr;
+    // Implements container[index] = val; note that load_item is implemented
+    // by binary_op(RT_BINARY_OP_SUBSCR)
+    mp_store_item_fun_t store_item;
 
     // these are for dynamically created types (classes)
     mp_obj_t bases_tuple;

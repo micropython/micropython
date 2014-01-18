@@ -879,7 +879,15 @@ void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         // dict store
         mp_obj_dict_store(base, index, value);
     } else {
-        assert(0);
+        mp_obj_type_t *type = mp_obj_get_type(base);
+        if (type->store_item != NULL) {
+            bool r = type->store_item(base, index, value);
+            if (r) {
+                return;
+            }
+            // TODO: call base classes here?
+        }
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
     }
 }
 
