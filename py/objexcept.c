@@ -7,6 +7,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpqstr.h"
 #include "obj.h"
 #include "objtuple.h"
 
@@ -43,20 +44,19 @@ void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, 
     }
 }
 
-// args in reversed order
-static mp_obj_t exception_call(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_exception_t *base = self_in;
-    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t*, n_args);
+
+    if (n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "%s does not take keyword arguments", qstr_str(base->id)));
+    }
+
+    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
     o->base.type = &exception_type;
     o->id = base->id;
     o->msg = 0;
     o->args.len = n_args;
-
-    // TODO: factor out as reusable copy_reversed()
-    int j = 0;
-    for (int i = n_args - 1; i >= 0; i--) {
-        o->args.items[i] = args[j++];
-    }
+    memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
     return o;
 }
 
@@ -64,7 +64,7 @@ const mp_obj_type_t exception_type = {
     { &mp_const_type },
     "exception",
     .print = exception_print,
-    .call_n = exception_call,
+    .call = exception_call,
 };
 
 mp_obj_t mp_obj_new_exception(qstr id) {

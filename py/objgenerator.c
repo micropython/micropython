@@ -20,8 +20,7 @@ typedef struct _mp_obj_gen_wrap_t {
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
-// args are in reverse order in the array
-mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_t self_fun = self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &fun_bc_type));
@@ -32,6 +31,9 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     if (n_args != bc_n_args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)bc_n_args, (const char*)(machine_int_t)n_args));
     }
+    if (n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+    }
 
     return mp_obj_new_gen_instance(bc_code, self->n_state, n_args, args);
 }
@@ -39,7 +41,7 @@ mp_obj_t gen_wrap_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t gen_wrap_type = {
     { &mp_const_type },
     "generator",
-    .call_n = gen_wrap_call_n,
+    .call = gen_wrap_call,
 };
 
 mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
@@ -58,6 +60,7 @@ typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
     const byte *ip;
     mp_obj_t *sp;
+    uint n_state;
     mp_obj_t state[];
 } mp_obj_gen_instance_t;
 
@@ -71,7 +74,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     mp_obj_gen_instance_t *self = self_in;
-    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[0], &self->sp);
+    bool yield = mp_execute_byte_code_2(&self->ip, &self->state[self->n_state - 1], &self->sp);
     if (yield) {
         return *self->sp;
     } else {
@@ -92,16 +95,16 @@ const mp_obj_type_t gen_instance_type = {
     .iternext = gen_instance_iternext,
 };
 
-// args are in reverse order in the array
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, mp_obj_t, n_state);
     o->base.type = &gen_instance_type;
     o->ip = bytecode;
-    o->sp = o->state + n_state;
+    o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
+    o->n_state = n_state;
 
-    // copy args (which are in reverse order) to start of state array
+    // copy args to end of state array, in reverse (that's how mp_execute_byte_code_2 needs it)
     for (int i = 0; i < n_args; i++) {
-        o->state[i] = args[n_args - 1 - i];
+        o->state[n_state - 1 - i] = args[i];
     }
 
     // TODO

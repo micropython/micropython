@@ -12,7 +12,9 @@
 
 // This dispatcher function is expected to be independent of the implementation
 // of long int
-static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             return MP_OBJ_NEW_SMALL_INT(0);
@@ -28,7 +30,7 @@ static mp_obj_t int_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args)
         case 2:
             // should be a string, parse it
             // TODO proper error checking of argument types
-            return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[1])), mp_obj_get_int(args[0])));
+            return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[0])), mp_obj_get_int(args[1])));
 
         default:
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", (void*)(machine_int_t)n_args));

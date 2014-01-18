@@ -14,16 +14,15 @@ typedef struct _mp_obj_filter_t {
     mp_obj_t iter;
 } mp_obj_filter_t;
 
-static mp_obj_t filter_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
-    /* NOTE: args are backwards */
-    if (n_args != 2) {
+static mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    if (n_args != 2 || n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "filter expected 2 arguments"));
     }
     assert(n_args == 2);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
     o->base.type = &filter_type;
-    o->fun = args[1];
-    o->iter = rt_getiter(args[0]);
+    o->fun = args[0];
+    o->iter = rt_getiter(args[1]);
     return o;
 }
 
@@ -38,7 +37,7 @@ static mp_obj_t filter_iternext(mp_obj_t self_in) {
     while ((next = rt_iternext(self->iter)) != mp_const_stop_iteration) {
         mp_obj_t val;
         if (self->fun != mp_const_none) {
-            val = rt_call_function_n(self->fun, 1, &next);
+            val = rt_call_function_n_kw(self->fun, 1, 0, &next);
         } else {
             val = next;
         }

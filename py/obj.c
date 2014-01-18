@@ -63,7 +63,7 @@ bool mp_obj_is_callable(mp_obj_t o_in) {
         return false;
     } else {
         mp_obj_base_t *o = o_in;
-        return o->type->call_n != NULL;
+        return o->type->call != NULL;
     }
 }
 

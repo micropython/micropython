@@ -24,8 +24,9 @@ static void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, "%.8g", o->value);
 }
 
-// args are reverse in the array
-static mp_obj_t float_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             return mp_obj_new_float(0);

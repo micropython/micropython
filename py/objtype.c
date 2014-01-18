@@ -70,8 +70,7 @@ static void class_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-// args are reverse in the array
-static mp_obj_t class_make_new(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
 
@@ -83,14 +82,14 @@ static mp_obj_t class_make_new(mp_obj_t self_in, int n_args, const mp_obj_t *arg
     if (init_fn != NULL) {
         // call __init__ function
         mp_obj_t init_ret;
-        if (n_args == 0) {
-            init_ret = rt_call_function_n(init_fn->value, 1, (mp_obj_t*)&o);
+        if (n_args == 0 && n_kw == 0) {
+            init_ret = rt_call_function_n_kw(init_fn->value, 1, 0, (mp_obj_t*)&o);
         } else {
-            mp_obj_t *args2 = m_new(mp_obj_t, n_args + 1);
-            memcpy(args2, args, n_args * sizeof(mp_obj_t));
-            args2[n_args] = o;
-            init_ret = rt_call_function_n(init_fn->value, n_args + 1, args2);
-            m_del(mp_obj_t, args2, n_args + 1);
+            mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
+            args2[0] = o;
+            memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            init_ret = rt_call_function_n_kw(init_fn->value, n_args + 1, n_kw, args2);
+            m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
@@ -112,19 +111,19 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
-        dest[1] = elem->value;
+        dest[0] = elem->value;
         return;
     }
     elem = mp_obj_class_lookup(self->base.type, attr, MP_MAP_LOOKUP);
     if (elem != NULL) {
         if (mp_obj_is_callable(elem->value)) {
             // class member is callable so build a bound method
-            dest[1] = elem->value;
-            dest[0] = self_in;
+            dest[0] = elem->value;
+            dest[1] = self_in;
             return;
         } else {
             // class member is a value, so just return that value
-            dest[1] = elem->value;
+            dest[0] = elem->value;
             return;
         }
     }
@@ -153,25 +152,25 @@ static void type_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "<class '%s'>", self->name);
 }
 
-// args are reverse in the array
-static mp_obj_t type_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 1:
             return mp_obj_get_type(args[0]);
 
         case 3:
-            // args[2] = name
+            // args[0] = name
             // args[1] = bases tuple
-            // args[0] = locals dict
-            return mp_obj_new_type(mp_obj_get_qstr(args[2]), args[1], args[0]);
+            // args[2] = locals dict
+            return mp_obj_new_type(mp_obj_get_qstr(args[0]), args[1], args[2]);
 
         default:
             nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes at 1 or 3 arguments"));
     }
 }
 
-// args are in reverse order in the array
-static mp_obj_t type_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // instantiate an instance of a class
 
     mp_obj_type_t *self = self_in;
@@ -181,19 +180,19 @@ static mp_obj_t type_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) 
     }
 
     // make new instance
-    mp_obj_t o = self->make_new(self, n_args, args);
+    mp_obj_t o = self->make_new(self, n_args, n_kw, args);
 
     // return new instance
     return o;
 }
 
-// for fail, do nothing; for attr, dest[1] = value; for method, dest[0] = self, dest[1] = method
+// for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
     mp_map_elem_t *elem = mp_obj_class_lookup(self, attr, MP_MAP_LOOKUP);
     if (elem != NULL) {
-        dest[1] = elem->value;
+        dest[0] = elem->value;
         return;
     }
 
@@ -207,15 +206,15 @@ static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 // see http://docs.python.org/3.3/howto/descriptor.html
                 if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
                     // return just the function
-                    dest[1] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                    dest[0] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
                 } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
                     // return a bound method, with self being this class
-                    dest[1] = ((mp_obj_classmethod_t*)meth->fun)->fun;
-                    dest[0] = self_in;
+                    dest[0] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                    dest[1] = self_in;
                 } else {
                     // return just the function
                     // TODO need to wrap in a type check for the first argument; eg list.append(1,1) needs to throw an exception
-                    dest[1] = (mp_obj_t)meth->fun;
+                    dest[0] = (mp_obj_t)meth->fun;
                 }
                 return;
             }
@@ -243,7 +242,7 @@ const mp_obj_type_t mp_const_type = {
     "type",
     .print = type_print,
     .make_new = type_make_new,
-    .call_n = type_call_n,
+    .call = type_call,
     .load_attr = type_load_attr,
     .store_attr = type_store_attr,
 };

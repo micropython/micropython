@@ -694,79 +694,53 @@ mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple) {
 }
 
 mp_obj_t rt_call_function_0(mp_obj_t fun) {
-    return rt_call_function_n(fun, 0, NULL);
+    return rt_call_function_n_kw(fun, 0, 0, NULL);
 }
 
 mp_obj_t rt_call_function_1(mp_obj_t fun, mp_obj_t arg) {
-    return rt_call_function_n(fun, 1, &arg);
+    return rt_call_function_n_kw(fun, 1, 0, &arg);
 }
 
 mp_obj_t rt_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
     mp_obj_t args[2];
-    args[1] = arg1;
-    args[0] = arg2;
-    return rt_call_function_n(fun, 2, args);
+    args[0] = arg1;
+    args[1] = arg2;
+    return rt_call_function_n_kw(fun, 2, 0, args);
 }
 
-// args are in reverse order in the array
-mp_obj_t rt_call_function_n(mp_obj_t fun_in, int n_args, const mp_obj_t *args) {
+// args contains, eg: arg0  arg1  key0  value0  key1  value1
+mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO improve this: fun object can specify its type and we parse here the arguments,
     // passing to the function arrays of fixed and keyword arguments
 
-    DEBUG_OP_printf("calling function %p(n_args=%d, args=%p)\n", fun_in, n_args, args);
-
-    if (MP_OBJ_IS_SMALL_INT(fun_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
-    } else {
-        mp_obj_base_t *fun = fun_in;
-        if (fun->type->call_n != NULL) {
-            return fun->type->call_n(fun_in, n_args, args);
-        } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
-        }
-    }
-}
-
-// args are in reverse order in the array; keyword arguments come first, value then key
-// eg: (value1, key1, value0, key0, arg1, arg0)
-mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO merge this and _n into a single, smarter thing
     DEBUG_OP_printf("calling function %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
 
     if (MP_OBJ_IS_SMALL_INT(fun_in)) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
     } else {
         mp_obj_base_t *fun = fun_in;
-        if (fun->type->call_n_kw != NULL) {
-            return fun->type->call_n_kw(fun_in, n_args, n_kw, args);
+        if (fun->type->call != NULL) {
+            return fun->type->call(fun_in, n_args, n_kw, args);
         } else {
             nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
         }
     }
 }
 
-// args contains: arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
-// if n_args==0 then there are only self/NULL and fun
-mp_obj_t rt_call_method_n(uint n_args, const mp_obj_t *args) {
-    DEBUG_OP_printf("call method %p(self=%p, n_args=%u)\n", args[n_args + 1], args[n_args], n_args);
-    return rt_call_function_n(args[n_args + 1], n_args + ((args[n_args] == NULL) ? 0 : 1), args);
-}
-
-// args contains: kw_val(n_kw-1)  kw_key(n_kw-1) ... kw_val(0)  kw_key(0)  arg(n_args-1)  arg(n_args-2)  ...  arg(0)  self/NULL  fun
+// args contains: fun  self/NULL  arg(0)  ...  arg(n_args-2)  arg(n_args-1)  kw_key(0)  kw_val(0)  ... kw_key(n_kw-1)  kw_val(n_kw-1)
+// if n_args==0 and n_kw==0 then there are only fun and self/NULL
 mp_obj_t rt_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args) {
-    uint n = n_args + 2 * n_kw;
-    DEBUG_OP_printf("call method %p(self=%p, n_args=%u, n_kw=%u)\n", args[n + 1], args[n], n_args, n_kw);
-    return rt_call_function_n_kw(args[n + 1], n_args + ((args[n] == NULL) ? 0 : 1), n_kw, args);
+    DEBUG_OP_printf("call method (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p)\n", args[0], args[1], n_args, n_kw, args);
+    int adjust = (args[1] == NULL) ? 0 : 1;
+    return rt_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
 }
 
-// items are in reverse order
 mp_obj_t rt_build_tuple(int n_args, mp_obj_t *items) {
-    return mp_obj_new_tuple_reverse(n_args, items);
+    return mp_obj_new_tuple(n_args, items);
 }
 
-// items are in reverse order
 mp_obj_t rt_build_list(int n_args, mp_obj_t *items) {
-    return mp_obj_new_list_reverse(n_args, items);
+    return mp_obj_new_list(n_args, items);
 }
 
 mp_obj_t rt_build_set(int n_args, mp_obj_t *items) {
@@ -814,9 +788,9 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     // use load_method
     mp_obj_t dest[2];
     rt_load_method(base, attr, dest);
-    if (dest[0] == NULL) {
+    if (dest[1] == NULL) {
         // load_method returned just a normal attribute
-        return dest[1];
+        return dest[0];
     } else {
         // load_method returned a method, so build a bound method object
         return mp_obj_new_bound_meth(dest[0], dest[1]);
@@ -839,10 +813,10 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     }
 
     // if nothing found yet, look for built-in and generic names
-    if (dest[1] == NULL) {
+    if (dest[0] == NULL) {
         if (attr == MP_QSTR___next__ && type->iternext != NULL) {
-            dest[1] = (mp_obj_t)&mp_builtin_next_obj;
-            dest[0] = base;
+            dest[0] = (mp_obj_t)&mp_builtin_next_obj;
+            dest[1] = base;
         } else {
             // generic method lookup
             // this is a lookup in the object (ie not class or type)
@@ -854,15 +828,15 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
                         // see http://docs.python.org/3.3/howto/descriptor.html
                         if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
                             // return just the function
-                            dest[1] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                            dest[0] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
                         } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
                             // return a bound method, with self being the type of this object
-                            dest[1] = ((mp_obj_classmethod_t*)meth->fun)->fun;
-                            dest[0] = mp_obj_get_type(base);
+                            dest[0] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                            dest[1] = mp_obj_get_type(base);
                         } else {
                             // return a bound method, with self being this object
-                            dest[1] = (mp_obj_t)meth->fun;
-                            dest[0] = base;
+                            dest[0] = (mp_obj_t)meth->fun;
+                            dest[1] = base;
                         }
                         break;
                     }
@@ -871,7 +845,7 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         }
     }
 
-    if (dest[1] == NULL) {
+    if (dest[0] == NULL) {
         // no attribute/method called attr
         // following CPython, we give a more detailed error message for type objects
         if (MP_OBJ_IS_TYPE(base, &mp_const_type)) {
@@ -995,8 +969,8 @@ void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_build_set,
     rt_store_set,
     rt_make_function_from_id,
-    rt_call_function_n,
-    rt_call_method_n,
+    rt_call_function_n_kw,
+    rt_call_method_n_kw,
     rt_binary_op,
     rt_getiter,
     rt_iternext,

@@ -30,8 +30,9 @@ void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
     }
 }
 
-// args are reverse in the array
-static mp_obj_t complex_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             return mp_obj_new_complex(0, 0);
@@ -47,19 +48,19 @@ static mp_obj_t complex_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *a
         case 2:
         {
             mp_float_t real, imag;
-            if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
-                mp_obj_complex_get(args[1], &real, &imag);
+            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+                mp_obj_complex_get(args[0], &real, &imag);
             } else {
-                real = mp_obj_get_float(args[1]);
+                real = mp_obj_get_float(args[0]);
                 imag = 0;
             }
-            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+            if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
                 mp_float_t real2, imag2;
-                mp_obj_complex_get(args[0], &real2, &imag2);
+                mp_obj_complex_get(args[1], &real2, &imag2);
                 real -= imag2;
                 imag += real2;
             } else {
-                imag += mp_obj_get_float(args[0]);
+                imag += mp_obj_get_float(args[1]);
             }
             return mp_obj_new_complex(real, imag);
         }

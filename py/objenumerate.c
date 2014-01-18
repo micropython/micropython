@@ -20,15 +20,12 @@ static mp_obj_t enumerate_iternext(mp_obj_t self_in);
 
 /* TODO: enumerate is one of the ones that can take args or kwargs.
    Sticking to args for now */
-static mp_obj_t enumerate_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
-    /* NOTE: args are backwards */
+static mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(n_args > 0);
-    args += n_args - 1;
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = &enumerate_type;
     o->iter = rt_getiter(args[0]);
-    o->cur = n_args > 1 ? mp_obj_get_int(args[-1]) : 0;
-
+    o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
     return o;
 }
 

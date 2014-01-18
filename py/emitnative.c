@@ -1156,7 +1156,8 @@ static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
         vtype_kind_t vtype_fun;
         emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
         assert(vtype_fun == VTYPE_PYOBJ);
-        emit_call_with_imm_arg(emit, RT_F_CALL_FUNCTION_N, rt_call_function_n, n_positional, REG_ARG_2);
+        // XXX rt_call_function_n now merged with rt_call_function_n_kw
+        //emit_call_with_imm_arg(emit, RT_F_CALL_FUNCTION_N, rt_call_function_n, n_positional, REG_ARG_2);
     //}
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
@@ -1181,7 +1182,8 @@ static void emit_native_call_method(emit_t *emit, int n_positional, int n_keywor
     */
         emit_pre(emit);
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_positional + 2); // pointer to items in reverse order, including meth and self
-        emit_call_with_imm_arg(emit, RT_F_CALL_METHOD_N, rt_call_method_n, n_positional, REG_ARG_1);
+        // XXX rt_call_method_n now merged with rt_call_method_n_kw
+        //emit_call_with_imm_arg(emit, RT_F_CALL_METHOD_N, rt_call_method_n, n_positional, REG_ARG_1);
     //}
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }

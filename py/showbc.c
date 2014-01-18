@@ -286,12 +286,11 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("BUILD_MAP " UINT_FMT, unum);
                 break;
 
-                /*
             case MP_BC_STORE_MAP:
-                sp += 2;
-                rt_store_map(sp[0], sp[-2], sp[-1]);
+                printf("STORE_MAP");
                 break;
 
+                /*
             case MP_BC_MAP_ADD:
                 DECODE_UINT;
                 // I think it's guaranteed by the compiler that sp[unum + 1] is a map
@@ -309,6 +308,13 @@ void mp_show_byte_code(const byte *ip, int len) {
                 DECODE_UINT;
                 printf("SET_ADD " UINT_FMT, unum);
                 break;
+
+#if MICROPY_ENABLE_SLICE
+            case MP_BC_BUILD_SLICE:
+                DECODE_UINT;
+                printf("BUILD_SLICE " UINT_FMT, unum);
+                break;
+#endif
 
             case MP_BC_UNPACK_SEQUENCE:
                 DECODE_UINT;

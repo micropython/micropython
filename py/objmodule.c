@@ -26,7 +26,7 @@ static void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = self_in;
     mp_map_elem_t *elem = mp_map_lookup(self->globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
-        dest[1] = elem->value;
+        dest[0] = elem->value;
     }
 }
 

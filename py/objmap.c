@@ -15,18 +15,17 @@ typedef struct _mp_obj_map_t {
     mp_obj_t iters[];
 } mp_obj_map_t;
 
-static mp_obj_t map_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
-    /* NOTE: args are backwards */
-    if (n_args < 2) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "map must have at least 2 arguments"));
+static mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    if (n_args < 2 || n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "map must have at least 2 arguments and no keyword arguments"));
     }
     assert(n_args >= 2);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
     o->base.type = &map_type;
     o->n_iters = n_args - 1;
-    o->fun = args[n_args - 1];
+    o->fun = args[0];
     for (int i = 0; i < n_args - 1; i++) {
-        o->iters[i] = rt_getiter(args[n_args-i-2]);
+        o->iters[i] = rt_getiter(args[i + 1]);
     }
     return o;
 }
@@ -48,7 +47,7 @@ static mp_obj_t map_iternext(mp_obj_t self_in) {
         }
         nextses[i] = next;
     }
-    return rt_call_function_n(self->fun, self->n_iters, nextses);
+    return rt_call_function_n_kw(self->fun, self->n_iters, 0, nextses);
 }
 
 const mp_obj_type_t map_type = {

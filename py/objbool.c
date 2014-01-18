@@ -22,8 +22,9 @@ static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env
     }
 }
 
-// args are reverse in the array
-static mp_obj_t bool_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0: return mp_const_false;
         case 1: if (rt_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }

@@ -31,8 +31,9 @@ void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
     print(env, ")");
 }
 
-// args are in reverse order in the array
-static mp_obj_t tuple_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             // return a empty tuple
@@ -115,19 +116,6 @@ mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
         for (int i = 0; i < n; i++) {
             o->items[i] = items[i];
         }
-    }
-    return o;
-}
-
-mp_obj_t mp_obj_new_tuple_reverse(uint n, const mp_obj_t *items) {
-    if (n == 0) {
-        return mp_const_empty_tuple;
-    }
-    mp_obj_tuple_t *o = m_new_obj_var(mp_obj_tuple_t, mp_obj_t, n);
-    o->base.type = &tuple_type;
-    o->len = n;
-    for (int i = 0; i < n; i++) {
-        o->items[i] = items[n - i - 1];
     }
     return o;
 }

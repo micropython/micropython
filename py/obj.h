@@ -83,19 +83,18 @@ typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
-typedef mp_obj_t (*mp_fun_kw_t)(mp_obj_t, struct _mp_map_t*);
+typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, struct _mp_map_t *);
 
 typedef enum {
     PRINT_STR, PRINT_REPR
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
-typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, int n_args, const mp_obj_t *args); // args are in reverse order in the array
-typedef mp_obj_t (*mp_call_n_fun_t)(mp_obj_t fun, int n_args, const mp_obj_t *args); // args are in reverse order in the array
-typedef mp_obj_t (*mp_call_n_kw_fun_t)(mp_obj_t fun, int n_args, int n_kw, const mp_obj_t *args); // args are in reverse order in the array
+typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
+typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
-typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[1] = value; for method, dest[0] = self, dest[1] = method
+typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded
 
 typedef struct _mp_method_t {
@@ -144,8 +143,7 @@ struct _mp_obj_type_t {
     mp_print_fun_t print;
     mp_make_new_fun_t make_new;     // to make an instance of the type
 
-    mp_call_n_fun_t call_n;
-    mp_call_n_kw_fun_t call_n_kw;
+    mp_call_fun_t call;
     mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
     mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
 
@@ -222,13 +220,11 @@ mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun);
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
-mp_obj_t mp_obj_new_tuple_reverse(uint n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
-mp_obj_t mp_obj_new_list_reverse(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
-mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth);
+mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
 mp_obj_t mp_obj_get_type(mp_obj_t o_in);
@@ -296,7 +292,7 @@ extern const mp_obj_type_t list_type;
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
-mp_obj_t mp_obj_list_sort(mp_obj_t args, struct _mp_map_t *kwargs);
+mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, struct _mp_map_t *kwargs);
 
 // map (the python builtin, not the dict implementation detail)
 extern const mp_obj_type_t map_type;

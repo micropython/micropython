@@ -1,5 +1,6 @@
 #include <stdlib.h>
-#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -14,32 +15,36 @@ typedef struct _mp_obj_bound_meth_t {
     mp_obj_t self;
 } mp_obj_bound_meth_t;
 
-// args are in reverse order in the array
-mp_obj_t bound_meth_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_bound_meth_t *self = self_in;
 
-    if (n_args == 0) {
-        return rt_call_function_n(self->meth, 1, &self->self);
-    } else if (n_args == 1) {
-        mp_obj_t args2[2];
-        args2[1] = self->self;
-        args2[0] = args[0];
-        return rt_call_function_n(self->meth, 2, args2);
+    // need to insert self->self before all other args and then call self->meth
+
+    int n_total = n_args + 2 * n_kw;
+    if (n_total <= 4) {
+        // use stack to allocate temporary args array
+        mp_obj_t args2[5];
+        args2[0] = self->self;
+        memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
+        return rt_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
     } else {
-        // TODO not implemented
-        assert(0);
-        return mp_const_none;
-        //return rt_call_function_2(self->meth, n_args + 1, self->self + args);
+        // use heap to allocate temporary args array
+        mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_total);
+        args2[0] = self->self;
+        memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
+        mp_obj_t res = rt_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
+        m_del(mp_obj_t, args2, 1 + n_total);
+        return res;
     }
 }
 
 const mp_obj_type_t bound_meth_type = {
     { &mp_const_type },
     "bound_method",
-    .call_n = bound_meth_call_n,
+    .call = bound_meth_call,
 };
 
-mp_obj_t mp_obj_new_bound_meth(mp_obj_t self, mp_obj_t meth) {
+mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self) {
     mp_obj_bound_meth_t *o = m_new_obj(mp_obj_bound_meth_t);
     o->base.type = &bound_meth_type;
     o->meth = meth;

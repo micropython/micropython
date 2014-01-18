@@ -43,16 +43,28 @@ void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
     }
 }
 
-mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args);
-// args are in reverse order in the array
-mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &fun_native_type));
     mp_obj_fun_native_t *self = self_in;
+
     // check number of arguments
-    check_nargs(self, n_args, 0);
+    check_nargs(self, n_args, n_kw);
+
     if (self->is_kw) {
-        return fun_native_call_n_kw(self_in, n_args, 0, args);
-    }
-    if (self->n_args_min == self->n_args_max) {
+        // function allows keywords
+
+        // TODO if n_kw==0 then don't allocate any memory for map (either pass NULL or allocate it on the heap)
+        mp_map_t *kw_args = mp_map_new(n_kw);
+        for (int i = 0; i < 2 * n_kw; i += 2) {
+            qstr name = mp_obj_str_get(args[n_args + i]);
+            mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[n_args + i + 1];
+        }
+        mp_obj_t res = ((mp_fun_kw_t)self->fun)(n_args, args, kw_args);
+        // TODO clean up kw_args
+
+        return res;
+
+    } else if (self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
 
         // dispatch function call
@@ -64,10 +76,10 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
                 return ((mp_fun_1_t)self->fun)(args[0]);
 
             case 2:
-                return ((mp_fun_2_t)self->fun)(args[1], args[0]);
+                return ((mp_fun_2_t)self->fun)(args[0], args[1]);
 
             case 3:
-                return ((mp_fun_3_t)self->fun)(args[2], args[1], args[0]);
+                return ((mp_fun_3_t)self->fun)(args[0], args[1], args[2]);
 
             default:
                 assert(0);
@@ -75,42 +87,16 @@ mp_obj_t fun_native_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
         }
 
     } else {
-        // function takes a variable number of arguments
+        // function takes a variable number of arguments, but no keywords
 
-        // TODO really the args need to be passed in as a Python tuple, as the form f(*[1,2]) can be used to pass var args
-        mp_obj_t *args_ordered = m_new(mp_obj_t, n_args);
-        for (int i = 0; i < n_args; i++) {
-            args_ordered[i] = args[n_args - i - 1];
-        }
-
-        mp_obj_t res = ((mp_fun_var_t)self->fun)(n_args, args_ordered);
-        m_del(mp_obj_t, args_ordered, n_args);
-
-        return res;
+        return ((mp_fun_var_t)self->fun)(n_args, args);
     }
-}
-
-mp_obj_t fun_native_call_n_kw(mp_obj_t self_in, int n_args, int n_kw, const mp_obj_t *args) {
-    mp_obj_fun_native_t *self = self_in;
-
-    check_nargs(self, n_args, n_kw);
-
-    mp_obj_t *vargs = mp_obj_new_tuple_reverse(n_args, args + 2*n_kw);
-    mp_map_t *kw_args = mp_map_new(n_kw);
-    for (int i = 0; i < 2*n_kw; i+=2) {
-        qstr name = mp_obj_str_get(args[i+1]);
-        mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[i];
-    }
-    mp_obj_t res = ((mp_fun_kw_t)self->fun)(vargs, kw_args);
-    // TODO clean up vargs and kw_args
-    return res;
 }
 
 const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
     "function",
-    .call_n = fun_native_call_n,
-    .call_n_kw = fun_native_call_n_kw,
+    .call = fun_native_call,
 };
 
 // fun must have the correct signature for n_args fixed arguments
@@ -156,12 +142,14 @@ typedef struct _mp_obj_fun_bc_t {
     const byte *bytecode;   // bytecode for the function
 } mp_obj_fun_bc_t;
 
-// args are in reverse order in the array
-mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
     if (n_args != self->n_args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+    }
+    if (n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
     }
 
     // optimisation: allow the compiler to optimise this tail call for
@@ -180,7 +168,7 @@ mp_obj_t fun_bc_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
     "function",
-    .call_n = fun_bc_call_n,
+    .call = fun_bc_call,
 };
 
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
@@ -257,12 +245,14 @@ mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-// args are in reverse order in the array
-mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
     if (n_args != self->n_args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+    }
+    if (n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
     }
 
     machine_uint_t ret;
@@ -271,9 +261,9 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
     } else if (n_args == 1) {
         ret = ((inline_asm_fun_1_t)self->fun)(convert_obj_for_inline_asm(args[0]));
     } else if (n_args == 2) {
-        ret = ((inline_asm_fun_2_t)self->fun)(convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[0]));
+        ret = ((inline_asm_fun_2_t)self->fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]));
     } else if (n_args == 3) {
-        ret = ((inline_asm_fun_3_t)self->fun)(convert_obj_for_inline_asm(args[2]), convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[0]));
+        ret = ((inline_asm_fun_3_t)self->fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[2]));
     } else {
         assert(0);
         ret = 0;
@@ -285,7 +275,7 @@ mp_obj_t fun_asm_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
 static const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
-    .call_n = fun_asm_call_n,
+    .call = fun_asm_call,
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {

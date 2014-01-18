@@ -38,8 +38,7 @@ static void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "}");
 }
 
-// args are reverse in the array
-static mp_obj_t dict_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO create from an iterable!
     return rt_build_map(0);
 }

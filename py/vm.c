@@ -19,24 +19,24 @@
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
-#define PUSH(val) *--sp = (val)
-#define POP() (*sp++)
+#define PUSH(val) *++sp = (val)
+#define POP() (*sp--)
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-// args are in reverse order in array
 mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, uint n_state) {
-    mp_obj_t temp_state[10]; // TODO allocate properly
+    // allocate state for locals and stack
+    mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
-    mp_obj_t *sp = &state[10];
     if (n_state > 10) {
         state = m_new(mp_obj_t, n_state);
-        sp = &state[n_state];
     }
+    mp_obj_t *sp = &state[0] - 1;
+
     // init args
     for (int i = 0; i < n_args; i++) {
         assert(i < 8);
-        state[i] = args[n_args - 1 - i];
+        state[n_state - 1 - i] = args[i];
     }
     const byte *ip = code;
 
@@ -45,15 +45,15 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
         for (uint n_local = *ip++; n_local > 0; n_local--) {
             uint local_num = *ip++;
             if (local_num < n_args) {
-                state[local_num] = mp_obj_new_cell(state[local_num]);
+                state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
             } else {
-                state[local_num] = mp_obj_new_cell(MP_OBJ_NULL);
+                state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
             }
         }
     }
 
     // execute the byte code
-    if (mp_execute_byte_code_2(&ip, &state[0], &sp)) {
+    if (mp_execute_byte_code_2(&ip, &state[n_state - 1], &sp)) {
         // it shouldn't yield
         assert(0);
     }
@@ -63,8 +63,8 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     return *sp;
 }
 
-// fastn has items in normal order
-// sp points to top of stack which grows down
+// fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
+// sp points to bottom of stack which grows up
 bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
@@ -73,7 +73,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
     machine_uint_t unum;
     qstr qstr;
     mp_obj_t obj1, obj2;
-    mp_obj_t fast0 = fastn[0], fast1 = fastn[1], fast2 = fastn[2];
+    mp_obj_t fast0 = fastn[0], fast1 = fastn[-1], fast2 = fastn[-2];
     nlr_buf_t nlr;
 
     volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
@@ -148,12 +148,21 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_LOAD_FAST_N:
                         DECODE_UINT;
-                        PUSH(fastn[unum]);
+                        PUSH(fastn[-unum]);
                         break;
 
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(rt_get_cell(fastn[unum]));
+                        if (unum == 0) {
+                            obj1 = fast0;
+                        } else if (unum == 1) {
+                            obj1 = fast1;
+                        } else if (unum == 2) {
+                            obj1 = fast2;
+                        } else {
+                            obj1 = fastn[-unum];
+                        }
+                        PUSH(rt_get_cell(obj1));
                         break;
 
                     case MP_BC_LOAD_NAME:
@@ -173,8 +182,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_LOAD_METHOD:
                         DECODE_QSTR;
-                        sp -= 1;
-                        rt_load_method(sp[1], qstr, sp);
+                        rt_load_method(*sp, qstr, sp);
+                        sp += 1;
                         break;
 
                     case MP_BC_LOAD_BUILD_CLASS:
@@ -195,12 +204,21 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_STORE_FAST_N:
                         DECODE_UINT;
-                        fastn[unum] = POP();
+                        fastn[-unum] = POP();
                         break;
 
                     case MP_BC_STORE_DEREF:
                         DECODE_UINT;
-                        rt_set_cell(fastn[unum], POP());
+                        if (unum == 0) {
+                            obj1 = fast0;
+                        } else if (unum == 1) {
+                            obj1 = fast1;
+                        } else if (unum == 2) {
+                            obj1 = fast2;
+                        } else {
+                            obj1 = fastn[-unum];
+                        }
+                        rt_set_cell(obj1, POP());
                         break;
 
                     case MP_BC_STORE_NAME:
@@ -215,13 +233,13 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_STORE_ATTR:
                         DECODE_QSTR;
-                        rt_store_attr(sp[0], qstr, sp[1]);
-                        sp += 2;
+                        rt_store_attr(sp[0], qstr, sp[-1]);
+                        sp -= 2;
                         break;
 
                     case MP_BC_STORE_SUBSCR:
-                        rt_store_subscr(sp[1], sp[0], sp[2]);
-                        sp += 3;
+                        rt_store_subscr(sp[-1], sp[0], sp[-2]);
+                        sp -= 3;
                         break;
 
                     case MP_BC_DUP_TOP:
@@ -230,26 +248,26 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         break;
 
                     case MP_BC_DUP_TOP_TWO:
-                        sp -= 2;
-                        sp[0] = sp[2];
-                        sp[1] = sp[3];
+                        sp += 2;
+                        sp[0] = sp[-2];
+                        sp[-1] = sp[-3];
                         break;
 
                     case MP_BC_POP_TOP:
-                        ++sp;
+                        sp -= 1;
                         break;
 
                     case MP_BC_ROT_TWO:
                         obj1 = sp[0];
-                        sp[0] = sp[1];
-                        sp[1] = obj1;
+                        sp[0] = sp[-1];
+                        sp[-1] = obj1;
                         break;
 
                     case MP_BC_ROT_THREE:
                         obj1 = sp[0];
-                        sp[0] = sp[1];
-                        sp[1] = sp[2];
-                        sp[2] = obj1;
+                        sp[0] = sp[-1];
+                        sp[-1] = sp[-2];
+                        sp[-2] = obj1;
                         break;
 
                     case MP_BC_JUMP:
@@ -276,14 +294,14 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         if (rt_is_true(TOP())) {
                             ip += unum;
                         } else {
-                            sp++;
+                            sp--;
                         }
                         break;
 
                     case MP_BC_JUMP_IF_FALSE_OR_POP:
                         DECODE_SLABEL;
                         if (rt_is_true(TOP())) {
-                            sp++;
+                            sp--;
                         } else {
                             ip += unum;
                         }
@@ -321,7 +339,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                         obj1 = rt_iternext(TOP());
                         if (obj1 == mp_const_stop_iteration) {
-                            ++sp; // pop the exhausted iterator
+                            --sp; // pop the exhausted iterator
                             ip += unum; // jump to after for-block
                         } else {
                             PUSH(obj1); // push the next iteration value
@@ -345,7 +363,7 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         //exc_sp--; // discard ip
                         currently_in_except_block = (exc_sp[0] & 1); // restore previous state
                         exc_sp -= 2; // pop back to previous exception handler
-                        //sp += 3; // pop 3 exception values
+                        //sp -= 3; // pop 3 exception values
                         break;
 
                     case MP_BC_UNARY_OP:
@@ -362,23 +380,21 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_BUILD_TUPLE:
                         DECODE_UINT;
-                        obj1 = rt_build_tuple(unum, sp);
-                        sp += unum - 1;
-                        SET_TOP(obj1);
+                        sp -= unum - 1;
+                        SET_TOP(rt_build_tuple(unum, sp));
                         break;
 
                     case MP_BC_BUILD_LIST:
                         DECODE_UINT;
-                        obj1 = rt_build_list(unum, sp);
-                        sp += unum - 1;
-                        SET_TOP(obj1);
+                        sp -= unum - 1;
+                        SET_TOP(rt_build_list(unum, sp));
                         break;
 
                     case MP_BC_LIST_APPEND:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[unum] is a list
-                        rt_list_append(sp[unum], sp[0]);
-                        sp++;
+                        rt_list_append(sp[-unum], sp[0]);
+                        sp--;
                         break;
 
                     case MP_BC_BUILD_MAP:
@@ -387,29 +403,28 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         break;
 
                     case MP_BC_STORE_MAP:
-                        sp += 2;
-                        rt_store_map(sp[0], sp[-2], sp[-1]);
+                        sp -= 2;
+                        rt_store_map(sp[0], sp[2], sp[1]);
                         break;
 
                     case MP_BC_MAP_ADD:
                         DECODE_UINT;
-                        // I think it's guaranteed by the compiler that sp[unum + 1] is a map
-                        rt_store_map(sp[unum + 1], sp[0], sp[1]);
-                        sp += 2;
+                        // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
+                        rt_store_map(sp[-unum - 1], sp[0], sp[-1]);
+                        sp -= 2;
                         break;
 
                     case MP_BC_BUILD_SET:
                         DECODE_UINT;
-                        obj1 = rt_build_set(unum, sp);
-                        sp += unum - 1;
-                        SET_TOP(obj1);
+                        sp -= unum - 1;
+                        SET_TOP(rt_build_set(unum, sp));
                         break;
 
                     case MP_BC_SET_ADD:
                         DECODE_UINT;
-                        // I think it's guaranteed by the compiler that sp[unum] is a set
-                        rt_store_set(sp[unum], sp[0]);
-                        sp++;
+                        // I think it's guaranteed by the compiler that sp[-unum] is a set
+                        rt_store_set(sp[-unum], sp[0]);
+                        sp--;
                         break;
 
 #if MICROPY_ENABLE_SLICE
@@ -428,8 +443,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_UNPACK_SEQUENCE:
                         DECODE_UINT;
-                        rt_unpack_sequence(sp[0], unum, sp - unum + 1);
-                        sp -= unum - 1;
+                        rt_unpack_sequence(sp[0], unum, sp + unum - 1);
+                        sp += unum - 1;
                         break;
 
                     case MP_BC_MAKE_FUNCTION:
@@ -445,32 +460,18 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
 
                     case MP_BC_CALL_FUNCTION:
                         DECODE_UINT;
-                        if ((unum & 0xff00) == 0) {
-                            // no keywords
-                            unum &= 0xff; // n_positional
-                            sp += unum;
-                            *sp = rt_call_function_n(*sp, unum, sp - unum);
-                        } else {
-                            // keywords
-                            int argsize = (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                            sp += argsize;
-                            *sp = rt_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp - argsize);
-                        }
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                        SET_TOP(rt_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                         break;
 
                     case MP_BC_CALL_METHOD:
                         DECODE_UINT;
-                        if ((unum & 0xff00) == 0) {
-                            // no keywords
-                            unum &= 0xff;
-                            obj1 = rt_call_method_n(unum, sp);
-                            sp += unum + 1;
-                        } else {
-                            // keywords
-                            obj1 = rt_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp);
-                            sp += (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
-                        }
-                        SET_TOP(obj1);
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                        SET_TOP(rt_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
                         break;
 
                     case MP_BC_RETURN_VALUE:
@@ -489,8 +490,8 @@ bool mp_execute_byte_code_2(const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **
                         nlr_pop();
                         *ip_in_out = ip;
                         fastn[0] = fast0;
-                        fastn[1] = fast1;
-                        fastn[2] = fast2;
+                        fastn[-1] = fast1;
+                        fastn[-2] = fast2;
                         *sp_in_out = sp;
                         return true;
 

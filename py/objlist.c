@@ -38,7 +38,9 @@ static void list_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "]");
 }
 
-static mp_obj_t list_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             // return a new, empty list
@@ -248,19 +250,14 @@ static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     }
 }
 
-mp_obj_t mp_obj_list_sort(mp_obj_t args, mp_map_t *kwargs) {
-    mp_obj_t *args_items = NULL;
-    uint args_len = 0;
-
-    assert(MP_OBJ_IS_TYPE(args, &tuple_type));
-    mp_obj_tuple_get(args, &args_len, &args_items);
-    assert(args_len >= 1);
-    assert(MP_OBJ_IS_TYPE(args_items[0], &list_type));
-    if (args_len > 1) {
+mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    assert(n_args >= 1);
+    assert(MP_OBJ_IS_TYPE(args[0], &list_type));
+    if (n_args > 1) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
                                           "list.sort takes no positional arguments"));
     }
-    mp_obj_list_t *self = args_items[0];
+    mp_obj_list_t *self = args[0];
     if (self->len > 1) {
         mp_map_elem_t *keyfun = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("key")), MP_MAP_LOOKUP);
         mp_map_elem_t *reverse = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("reverse")), MP_MAP_LOOKUP);
@@ -421,14 +418,6 @@ mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items) {
     mp_obj_list_t *o = list_new(n);
     for (int i = 0; i < n; i++) {
         o->items[i] = items[i];
-    }
-    return o;
-}
-
-mp_obj_t mp_obj_new_list_reverse(uint n, mp_obj_t *items) {
-    mp_obj_list_t *o = list_new(n);
-    for (int i = 0; i < n; i++) {
-        o->items[i] = items[n - i - 1];
     }
     return o;
 }

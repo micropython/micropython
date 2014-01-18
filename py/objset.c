@@ -46,7 +46,9 @@ void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 }
 
 
-static mp_obj_t set_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     switch (n_args) {
         case 0:
             // return a new, empty set
@@ -239,7 +241,7 @@ static mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (MP_OBJ_IS_TYPE(self_in, &set_type)) {
         self = self_in;
     } else {
-        self = set_make_new(NULL, 1, &self_in);
+        self = set_make_new((mp_obj_t)&set_type, 1, 0, &self_in);
         cleanup_self = true;
     }
 
@@ -248,7 +250,7 @@ static mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (MP_OBJ_IS_TYPE(other_in, &set_type)) {
         other = other_in;
     } else {
-        other = set_make_new(NULL, 1, &other_in);
+        other = set_make_new((mp_obj_t)&set_type, 1, 0, &other_in);
         cleanup_other = true;
     }
     bool out = true;

@@ -12,13 +12,14 @@ typedef struct _mp_obj_zip_t {
     mp_obj_t iters[];
 } mp_obj_zip_t;
 
-static mp_obj_t zip_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
-    /* NOTE: args are backwards */
+static mp_obj_t zip_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // TODO check n_kw == 0
+
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
     o->base.type = &zip_type;
     o->n_iters = n_args;
     for (int i = 0; i < n_args; i++) {
-        o->iters[i] = rt_getiter(args[n_args-i-1]);
+        o->iters[i] = rt_getiter(args[i]);
     }
     return o;
 }

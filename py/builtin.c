@@ -45,12 +45,11 @@ static mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
     // TODO do proper metaclass resolution for multiple base objects
 
     // create the new class using a call to the meta object
-    // (arguments must be backwards in the array)
     mp_obj_t meta_args[3];
-    meta_args[2] = args[1]; // class name
+    meta_args[0] = args[1]; // class name
     meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
-    meta_args[0] = class_locals; // dict of members
-    mp_obj_t new_class = rt_call_function_n(meta, 3, meta_args);
+    meta_args[2] = class_locals; // dict of members
+    mp_obj_t new_class = rt_call_function_n_kw(meta, 3, 0, meta_args);
 
     // store into cell if neede
     if (cell != mp_const_none) {
@@ -153,10 +152,10 @@ static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     if (MP_OBJ_IS_SMALL_INT(o1_in) && MP_OBJ_IS_SMALL_INT(o2_in)) {
         mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
         mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
-        mp_obj_t revs_args[2];
-        revs_args[1] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
-        revs_args[0] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
-        return rt_build_tuple(2, revs_args);
+        mp_obj_t args[2];
+        args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
+        args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
+        return rt_build_tuple(2, args);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
@@ -327,20 +326,14 @@ static mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
-static mp_obj_t mp_builtin_sorted(mp_obj_t args, mp_map_t *kwargs) {
-    mp_obj_t *args_items = NULL;
-    uint args_len = 0;
-
-    assert(MP_OBJ_IS_TYPE(args, &tuple_type));
-    mp_obj_tuple_get(args, &args_len, &args_items);
-    assert(args_len >= 1);
-    if (args_len > 1) {
+static mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    assert(n_args >= 1);
+    if (n_args > 1) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
                                           "must use keyword argument for key function"));
     }
-    mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, args_items);
-    mp_obj_t new_args = rt_build_tuple(1, &self);
-    mp_obj_list_sort(new_args, kwargs);
+    mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, 0, args);
+    mp_obj_list_sort(1, &self, kwargs);
 
     return self;
 }

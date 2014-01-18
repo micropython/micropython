@@ -45,7 +45,7 @@ static mp_obj_t fdfile_close(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
-static mp_obj_t fdfile_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args) {
+static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     o->base.type = type_in;
 
@@ -112,8 +112,8 @@ static const mp_obj_type_t rawfile_type = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t mp_builtin_open(int n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin_open(uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO: analyze mode and buffering args and instantiate appropriate type
-    return fdfile_make_new((mp_obj_t)&rawfile_type, n_args, args);
+    return fdfile_make_new((mp_obj_t)&rawfile_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, mp_builtin_open);

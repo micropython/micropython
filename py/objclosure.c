@@ -16,26 +16,33 @@ typedef struct _mp_obj_closure_t {
     mp_obj_t *closed;
 } mp_obj_closure_t;
 
-// args are in reverse order in the array
-mp_obj_t closure_call_n(mp_obj_t self_in, int n_args, const mp_obj_t *args) {
+mp_obj_t closure_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_closure_t *self = self_in;
 
-    // concatenate args and closed-over-vars, in reverse order
-    // TODO perhaps cache this array so we don't need to create it each time we are called
-    mp_obj_t *args2 = m_new(mp_obj_t, self->n_closed + n_args);
-    memcpy(args2, args, n_args * sizeof(mp_obj_t));
-    for (int i = 0; i < self->n_closed; i++) {
-        args2[n_args + i] = self->closed[self->n_closed - 1 - i];
-    }
+    // need to concatenate closed-over-vars and args
 
-    // call the function with the new vars array
-    return rt_call_function_n(self->fun, n_args + self->n_closed, args2);
+    int n_total = self->n_closed + n_args + 2 * n_kw;
+    if (n_total <= 5) {
+        // use stack to allocate temporary args array
+        mp_obj_t args2[5];
+        memcpy(args2, self->closed, self->n_closed * sizeof(mp_obj_t));
+        memcpy(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+        return rt_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
+    } else {
+        // use heap to allocate temporary args array
+        mp_obj_t *args2 = m_new(mp_obj_t, n_total);
+        memcpy(args2, self->closed, self->n_closed * sizeof(mp_obj_t));
+        memcpy(args2 + self->n_closed, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+        mp_obj_t res = rt_call_function_n_kw(self->fun, self->n_closed + n_args, n_kw, args2);
+        m_del(mp_obj_t, args2, n_total);
+        return res;
+    }
 }
 
 const mp_obj_type_t closure_type = {
     { &mp_const_type },
     "closure",
-    .call_n = closure_call_n,
+    .call = closure_call,
 };
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple) {
