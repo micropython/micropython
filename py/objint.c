@@ -56,7 +56,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
-    assert(0);
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "long int not supported in this build"));
     return mp_const_none;
 }
 
@@ -66,8 +66,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    // TODO: Raise exception
-    assert(0);
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "small int overflow"));
     return mp_const_none;
 }
 
@@ -75,8 +74,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     if (MP_OBJ_FITS_SMALL_INT(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    // TODO: Raise exception
-    assert(0);
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "small int overflow"));
     return mp_const_none;
 }
 #endif

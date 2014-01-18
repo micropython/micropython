@@ -32,6 +32,7 @@ Q(OSError)
 Q(SyntaxError)
 Q(TypeError)
 Q(ValueError)
+Q(OverflowError)
 
 Q(abs)
 Q(all)

@@ -89,6 +89,9 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_TypeError, mp_obj_new_exception(MP_QSTR_TypeError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_SyntaxError, mp_obj_new_exception(MP_QSTR_SyntaxError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_ValueError, mp_obj_new_exception(MP_QSTR_ValueError));
+    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
+    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
+    mp_map_add_qstr(&map_builtins, MP_QSTR_OverflowError, mp_obj_new_exception(MP_QSTR_OverflowError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_OSError, mp_obj_new_exception(MP_QSTR_OSError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_AssertionError, mp_obj_new_exception(MP_QSTR_AssertionError));
 
