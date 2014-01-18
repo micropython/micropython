@@ -17,6 +17,7 @@
 #include "runtime.h"
 #include "map.h"
 #include "builtin.h"
+#include "objarray.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -121,6 +122,10 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
 
+    mp_obj_t m_array = mp_obj_new_module(MP_QSTR_array);
+    rt_store_attr(m_array, MP_QSTR_array, (mp_obj_t)&array_type);
+    rt_store_name(MP_QSTR_array, m_array);
+
     // built-in user functions
     mp_map_add_qstr(&map_builtins, MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj);
@@ -145,6 +150,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj);
 
 #if MICROPY_CPYTHON_COMPAT
     // Add (empty) micropython module, so it was possible to "import micropython",
