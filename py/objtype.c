@@ -9,6 +9,7 @@
 #include "mpqstr.h"
 #include "obj.h"
 #include "map.h"
+#include "runtime0.h"
 #include "runtime.h"
 
 /******************************************************************************/
@@ -105,6 +106,64 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     return o;
 }
 
+// TODO somehow replace const char * with a qstr
+static const char *binary_op_method_name[] = {
+    [RT_BINARY_OP_SUBSCR] = "__getitem__",
+    /*
+    RT_BINARY_OP_OR,
+    RT_BINARY_OP_XOR,
+    RT_BINARY_OP_AND,
+    RT_BINARY_OP_LSHIFT,
+    RT_BINARY_OP_RSHIFT,
+    */
+    [RT_BINARY_OP_ADD] = "__add__",
+    [RT_BINARY_OP_SUBTRACT] = "__sub__",
+    /*
+    RT_BINARY_OP_MULTIPLY,
+    RT_BINARY_OP_FLOOR_DIVIDE,
+    RT_BINARY_OP_TRUE_DIVIDE,
+    RT_BINARY_OP_MODULO,
+    RT_BINARY_OP_POWER,
+    RT_BINARY_OP_INPLACE_OR,
+    RT_BINARY_OP_INPLACE_XOR,
+    RT_BINARY_OP_INPLACE_AND,
+    RT_BINARY_OP_INPLACE_LSHIFT,
+    RT_BINARY_OP_INPLACE_RSHIFT,
+    RT_BINARY_OP_INPLACE_ADD,
+    RT_BINARY_OP_INPLACE_SUBTRACT,
+    RT_BINARY_OP_INPLACE_MULTIPLY,
+    RT_BINARY_OP_INPLACE_FLOOR_DIVIDE,
+    RT_BINARY_OP_INPLACE_TRUE_DIVIDE,
+    RT_BINARY_OP_INPLACE_MODULO,
+    RT_BINARY_OP_INPLACE_POWER,
+    RT_COMPARE_OP_LESS,
+    RT_COMPARE_OP_MORE,
+    RT_COMPARE_OP_EQUAL,
+    RT_COMPARE_OP_LESS_EQUAL,
+    RT_COMPARE_OP_MORE_EQUAL,
+    RT_COMPARE_OP_NOT_EQUAL,
+    RT_COMPARE_OP_IN,
+    RT_COMPARE_OP_NOT_IN,
+    RT_COMPARE_OP_IS,
+    RT_COMPARE_OP_IS_NOT,
+    */
+    [RT_COMPARE_OP_EXCEPTION_MATCH] = "__not_implemented__",
+};
+
+static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    mp_obj_class_t *lhs = lhs_in;
+    const char *op_name = binary_op_method_name[op];
+    if (op_name == NULL) {
+        return MP_OBJ_NULL;
+    }
+    mp_map_elem_t *elem = mp_obj_class_lookup(lhs->base.type, qstr_from_str_static(op_name), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        return rt_call_function_2(elem->value, lhs_in, rhs_in);
+    } else {
+        return MP_OBJ_NULL;
+    }
+}
+
 static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
@@ -139,6 +198,17 @@ static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
     return true;
+}
+
+bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_class_t *self = self_in;
+    mp_map_elem_t *elem = mp_obj_class_lookup(self->base.type, qstr_from_str_static("__setitem__"), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        mp_obj_t args[3] = {self_in, index, value};
+        return rt_call_function_n_kw(elem->value, 3, 0, args);
+    } else {
+        return MP_OBJ_NULL;
+    }
 }
 
 /******************************************************************************/
@@ -255,8 +325,10 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->name = qstr_str(name);
     o->print = class_print;
     o->make_new = class_make_new;
+    o->binary_op = class_binary_op;
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
+    o->store_item = class_store_item;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
     return o;
