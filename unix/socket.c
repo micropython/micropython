@@ -182,7 +182,7 @@ static const mp_obj_type_t rawsocket_type = {
 };
 
 static mp_obj_t mod_socket_htons(mp_obj_t arg) {
-    return MP_OBJ_NEW_SMALL_INT(htons(MP_OBJ_SMALL_INT_VALUE(arg)));
+    return MP_OBJ_NEW_SMALL_INT((machine_int_t)htons(MP_OBJ_SMALL_INT_VALUE(arg)));
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
 
@@ -243,9 +243,9 @@ static mp_obj_t mod_socket_getaddrinfo(int n_args, const mp_obj_t *args) {
     mp_obj_t list = rt_build_list(0, NULL);
     for (; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
-        t->items[0] = MP_OBJ_NEW_SMALL_INT(addr->ai_family);
-        t->items[1] = MP_OBJ_NEW_SMALL_INT(addr->ai_socktype);
-        t->items[2] = MP_OBJ_NEW_SMALL_INT(addr->ai_protocol);
+        t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_family);
+        t->items[1] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_socktype);
+        t->items[2] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_protocol);
         // "canonname will be a string representing the canonical name of the host
         // if AI_CANONNAME is part of the flags argument; else canonname will be empty." ??
         if (addr->ai_canonname) {
@@ -264,7 +264,7 @@ extern mp_obj_type_t sockaddr_in_type;
 
 #define STORE_INT_CONST(m, name) rt_store_attr(m, qstr_from_str_static(#name), MP_OBJ_NEW_SMALL_INT(name))
 
-void socket_init() {
+void rawsocket_init() {
     mp_obj_t m = mp_obj_new_module(qstr_from_str_static("rawsocket"));
     rt_store_attr(m, qstr_from_str_static("socket"), (mp_obj_t)&rawsocket_type);
 #if MICROPY_SOCKET_EXTRA
