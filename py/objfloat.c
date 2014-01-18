@@ -53,7 +53,7 @@ static mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-static mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     mp_obj_float_t *lhs = lhs_in;
     if (MP_OBJ_IS_TYPE(rhs_in, &complex_type)) {
         return mp_obj_complex_binary_op(op, lhs->value, 0, rhs_in);

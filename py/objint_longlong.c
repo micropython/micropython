@@ -28,7 +28,7 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     print(env, "%lld" SUFFIX, self->val);
 }
 
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     mp_obj_int_t *lhs = lhs_in;
     mp_obj_int_t *rhs = rhs_in;
     long long rhs_val;

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -44,7 +45,7 @@ static mp_obj_t dict_make_new(mp_obj_t type_in, int n_args, const mp_obj_t *args
     return rt_build_map(0);
 }
 
-static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -56,6 +57,15 @@ static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             } else {
                 return elem->value;
             }
+        }
+        case RT_BINARY_OP_SUBSCR_STORE:
+        {
+            va_list args;
+            va_start(args, rhs_in);
+            mp_obj_t val = va_arg(args, mp_obj_t);
+            va_end(args);
+            mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = val;
+            return val;
         }
         case RT_COMPARE_OP_IN:
         case RT_COMPARE_OP_NOT_IN:
@@ -368,7 +378,7 @@ static void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "])");
 }
 
-static mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in, ...) {
     /* only supported for the 'keys' kind until sets and dicts are refactored */
     mp_obj_dict_view_t *o = lhs_in;
     if (o->kind != MP_DICT_VIEW_KEYS) return NULL;

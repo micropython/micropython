@@ -375,7 +375,7 @@ static mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 
 
-static mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+static mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs, ...) {
     mp_obj_t args[] = {lhs, rhs};
     switch (op) {
     case RT_BINARY_OP_OR:
