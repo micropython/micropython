@@ -330,6 +330,8 @@ void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *sto
 // zip
 extern const mp_obj_type_t zip_type;
 
+// array
+extern const mp_obj_type_t array_type;
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)
