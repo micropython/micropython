@@ -265,6 +265,10 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 
 // int
 extern const mp_obj_type_t int_type;
+// For long int, returns value truncated to machine_int_t
+machine_int_t mp_obj_int_get(mp_obj_t self_in);
+// Will rains exception if value doesn't fit into machine_int_t
+machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 
 // exception
 extern const mp_obj_type_t exception_type;

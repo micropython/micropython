@@ -77,4 +77,13 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "small int overflow"));
     return mp_const_none;
 }
+
+machine_int_t mp_obj_int_get(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+
+machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+
 #endif
