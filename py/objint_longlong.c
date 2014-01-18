@@ -120,9 +120,17 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     return o;
 }
 
-machine_int_t mp_obj_int_get_int(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    }
     mp_obj_int_t *self = self_in;
     return self->val;
+}
+
+machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+    // TODO: Check overflow
+    return mp_obj_int_get(self_in);
 }
 
 #endif

@@ -155,6 +155,8 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
+        return mp_obj_int_get_checked(arg);
 #if MICROPY_ENABLE_FLOAT
     } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
         // TODO work out if this should be floor, ceil or trunc
