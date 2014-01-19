@@ -1,25 +1,39 @@
 /**************************************************************************//**
  * @file     core_cmFunc.h
  * @brief    CMSIS Cortex-M Core Function Access Header File
- * @version  V3.01
- * @date     06. March 2012
+ * @version  V3.20
+ * @date     25. February 2013
  *
  * @note
- * Copyright (C) 2009-2012 ARM Limited. All rights reserved.
- *
- * @par
- * ARM Limited (ARM) is supplying this software for use with Cortex-M
- * processor based microcontrollers.  This file can be freely distributed
- * within development tools that are supporting such ARM based processors.
- *
- * @par
- * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
- * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
- * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
- * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  *
  ******************************************************************************/
+/* Copyright (c) 2009 - 2013 ARM LIMITED
+
+   All rights reserved.
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+   - Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+   - Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+   - Neither the name of ARM nor the names of its contributors may be used
+     to endorse or promote products derived from this software without
+     specific prior written permission.
+   *
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
+   ---------------------------------------------------------------------------*/
+
 
 #ifndef __CORE_CMFUNC_H
 #define __CORE_CMFUNC_H
@@ -314,7 +328,7 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq(void)
 {
-  __ASM volatile ("cpsie i");
+  __ASM volatile ("cpsie i" : : : "memory");
 }
 
 
@@ -325,7 +339,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_irq(void)
 {
-  __ASM volatile ("cpsid i");
+  __ASM volatile ("cpsid i" : : : "memory");
 }
 
 
@@ -352,7 +366,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_CONTROL(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_CONTROL(uint32_t control)
 {
-  __ASM volatile ("MSR control, %0" : : "r" (control) );
+  __ASM volatile ("MSR control, %0" : : "r" (control) : "memory");
 }
 
 
@@ -424,7 +438,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PSP(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PSP(uint32_t topOfProcStack)
 {
-  __ASM volatile ("MSR psp, %0\n" : : "r" (topOfProcStack) );
+  __ASM volatile ("MSR psp, %0\n" : : "r" (topOfProcStack) : "sp");
 }
 
 
@@ -451,7 +465,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_MSP(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_MSP(uint32_t topOfMainStack)
 {
-  __ASM volatile ("MSR msp, %0\n" : : "r" (topOfMainStack) );
+  __ASM volatile ("MSR msp, %0\n" : : "r" (topOfMainStack) : "sp");
 }
 
 
@@ -478,7 +492,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PRIMASK(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
 {
-  __ASM volatile ("MSR primask, %0" : : "r" (priMask) );
+  __ASM volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
 }
 
 
@@ -491,7 +505,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PRIMASK(uint32_t p
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_fault_irq(void)
 {
-  __ASM volatile ("cpsie f");
+  __ASM volatile ("cpsie f" : : : "memory");
 }
 
 
@@ -502,7 +516,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_fault_irq(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_fault_irq(void)
 {
-  __ASM volatile ("cpsid f");
+  __ASM volatile ("cpsid f" : : : "memory");
 }
 
 
@@ -529,7 +543,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_BASEPRI(void)
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_BASEPRI(uint32_t value)
 {
-  __ASM volatile ("MSR basepri, %0" : : "r" (value) );
+  __ASM volatile ("MSR basepri, %0" : : "r" (value) : "memory");
 }
 
 
@@ -556,7 +570,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FAULTMASK(void
  */
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_FAULTMASK(uint32_t faultMask)
 {
-  __ASM volatile ("MSR faultmask, %0" : : "r" (faultMask) );
+  __ASM volatile ("MSR faultmask, %0" : : "r" (faultMask) : "memory");
 }
 
 #endif /* (__CORTEX_M >= 0x03) */
@@ -575,7 +589,10 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FPSCR(void)
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   uint32_t result;
 
+  /* Empty asm statement works as a scheduling barrier */
+  __ASM volatile ("");
   __ASM volatile ("VMRS %0, fpscr" : "=r" (result) );
+  __ASM volatile ("");
   return(result);
 #else
    return(0);
@@ -592,7 +609,10 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FPSCR(void)
 __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
 {
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-  __ASM volatile ("VMSR fpscr, %0" : : "r" (fpscr) );
+  /* Empty asm statement works as a scheduling barrier */
+  __ASM volatile ("");
+  __ASM volatile ("VMSR fpscr, %0" : : "r" (fpscr) : "vfpcc");
+  __ASM volatile ("");
 #endif
 }
 

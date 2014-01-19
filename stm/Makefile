@@ -8,6 +8,7 @@ include ../py/py.mk
 RM = /bin/rm
 ECHO = @echo
 
+CMSIS=cmsis
 STMSRC=lib
 #STMOTGSRC=lib-otg
 FATFSSRC=fatfs
@@ -22,7 +23,7 @@ OBJCOPY = arm-none-eabi-objcopy
 SIZE = arm-none-eabi-size
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40XX -DHSE_VALUE=8000000
-CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) -D$(TARGET)
+CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) -D$(TARGET)
 #CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
 
 #Debugging/Optimization

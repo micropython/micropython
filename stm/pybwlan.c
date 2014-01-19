@@ -29,7 +29,7 @@
 #include "cc3k/wlan.h"
 #include "cc3k/nvmem.h"
 
-mp_obj_t pyb_wlan_connect(int n_args, const mp_obj_t *args) {
+mp_obj_t pyb_wlan_connect(uint n_args, const mp_obj_t *args) {
   const char *ap;
   const char *key;
     if (n_args == 2) {
