@@ -155,8 +155,11 @@ void rt_init(void) {
 #if MICROPY_CPYTHON_COMPAT
     // Add (empty) micropython module, so it was possible to "import micropython",
     // which can be a placeholder module on CPython.
-    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("micropython"));
-    rt_store_name(qstr_from_str_static("micropython"), m);
+    mp_obj_t m_mp = mp_obj_new_module(qstr_from_str_static("micropython"));
+    rt_store_name(qstr_from_str_static("micropython"), m_mp);
+
+    mp_obj_t m_sys = mp_obj_new_module(qstr_from_str_static("sys"));
+    rt_store_name(qstr_from_str_static("sys"), m_sys);
 #endif
 
     next_unique_code_id = 1; // 0 indicates "no code"
