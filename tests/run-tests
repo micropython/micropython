@@ -10,7 +10,7 @@ numpassed=0
 numfailed=0
 namefailed=
 
-for infile in basics/*.py
+for infile in basics/*.py io/*.py
 do
     basename=`basename $infile .py`
     outfile=${basename}.out
