@@ -44,16 +44,16 @@ static mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     switch (n_args) {
         case 0:
             // return a new, empty list
-            return rt_build_list(0, NULL);
+            return mp_obj_new_list(0, NULL);
 
         case 1:
         {
             // make list from iterable
             mp_obj_t iterable = rt_getiter(args[0]);
-            mp_obj_t list = rt_build_list(0, NULL);
+            mp_obj_t list = mp_obj_new_list(0, NULL);
             mp_obj_t item;
             while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-                rt_list_append(list, item);
+                mp_obj_list_append(list, item);
             }
             return list;
         }
