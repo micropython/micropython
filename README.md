@@ -21,14 +21,17 @@ Major components in this repository:
 - unix/ -- a version of Micro Python that runs on Unix.
 - stm/ -- a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG.
+- teensy/ -- a version of Micro Python that runs on the Teensy 3.1
+  (preliminary but functional).
 
 Additional components:
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools.
+- examples/ -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and python3, and python2 for the stm port.
+You will also need bash and python (2.7 or 3.3) for the stm port.
 
 The Unix version
 ----------------
