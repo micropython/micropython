@@ -101,6 +101,7 @@ PY_O_BASENAME = \
 	builtin.o \
 	builtinimport.o \
 	builtineval.o \
+	builtinmp.o \
 	vm.o \
 	showbc.o \
 	repl.o \

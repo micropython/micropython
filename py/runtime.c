@@ -153,13 +153,16 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj);
 
 #if MICROPY_CPYTHON_COMPAT
-    // Add (empty) micropython module, so it was possible to "import micropython",
-    // which can be a placeholder module on CPython.
-    mp_obj_t m_mp = mp_obj_new_module(qstr_from_str_static("micropython"));
-    rt_store_name(qstr_from_str_static("micropython"), m_mp);
-
     // Precreate sys module, so "import sys" didn't throw exceptions.
     mp_obj_new_module(qstr_from_str_static("sys"));
+#endif
+
+    mp_obj_t m_mp = mp_obj_new_module(qstr_from_str_static("micropython"));
+    rt_store_name(qstr_from_str_static("micropython"), m_mp);
+#if MICROPY_MEM_STATS
+    rt_store_attr(m_mp, qstr_from_str_static("mem_total"), (mp_obj_t)&mp_builtin_mem_total_obj);
+    rt_store_attr(m_mp, qstr_from_str_static("mem_current"), (mp_obj_t)&mp_builtin_mem_current_obj);
+    rt_store_attr(m_mp, qstr_from_str_static("mem_peak"), (mp_obj_t)&mp_builtin_mem_peak_obj);
 #endif
 
     next_unique_code_id = 1; // 0 indicates "no code"
