@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <stm32f4xx_rcc.h>
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_adc.h>
+#include <stm32f4xx.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -14,7 +12,7 @@
 #define ADC_NUM_CHANNELS    (16)
 
 /* Internally connected ADC channels Temp/VBAT/VREF*/
-#if   defined (STM32F40XX) || defined(STM32F41XX)
+#if   defined (STM32F40XX) || defined(STM32F41XX) || defined(STM32F40_41xxx)
 #define ADC_TEMP_CHANNEL    (16)
 #define ADC_VBAT_CHANNEL    (18)
 #define ADC_VREF_CHANNEL    (17)
@@ -29,7 +27,7 @@
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
 
 /* VBAT divider */
-#if   defined (STM32F40XX) || defined(STM32F41XX)
+#if   defined (STM32F40XX) || defined(STM32F41XX) || defined(STM32F40_41xxx)
 #define VBAT_DIV (2)
 #elif defined (STM32F42XX) || defined(STM32F43XX)
 #define VBAT_DIV (4)

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_exti.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    11-January-2013
+  * @version V1.3.0
+  * @date    08-November-2013
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the EXTI peripheral:           
   *           + Initialization and Configuration
@@ -65,7 +65,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_conf.h"
 #include "stm32f4xx_exti.h"
 
 /** @addtogroup STM32F4xx_StdPeriph_Driver
@@ -264,13 +263,11 @@ void EXTI_ClearFlag(uint32_t EXTI_Line)
   */
 ITStatus EXTI_GetITStatus(uint32_t EXTI_Line)
 {
-  ITStatus bitstatus = RESET;
-  uint32_t enablestatus = 0;
+  FlagStatus bitstatus = RESET;
   /* Check the parameters */
   assert_param(IS_GET_EXTI_LINE(EXTI_Line));
   
-  enablestatus =  EXTI->IMR & EXTI_Line;
-  if (((EXTI->PR & EXTI_Line) != (uint32_t)RESET) && (enablestatus != (uint32_t)RESET))
+  if ((EXTI->PR & EXTI_Line) != (uint32_t)RESET)
   {
     bitstatus = SET;
   }
@@ -279,6 +276,7 @@ ITStatus EXTI_GetITStatus(uint32_t EXTI_Line)
     bitstatus = RESET;
   }
   return bitstatus;
+  
 }
 
 /**

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_flash.h
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    11-January-2013
+  * @version V1.3.0
+  * @date    08-November-2013
   * @brief   This file contains all the functions prototypes for the FLASH 
   *          firmware library.
   ******************************************************************************
@@ -52,6 +52,7 @@
 typedef enum
 { 
   FLASH_BUSY = 1,
+  FLASH_ERROR_RD,
   FLASH_ERROR_PGS,
   FLASH_ERROR_PGP,
   FLASH_ERROR_PGA,
@@ -78,6 +79,15 @@ typedef enum
 #define FLASH_Latency_5                ((uint8_t)0x0005)  /*!< FLASH Five Latency cycles     */
 #define FLASH_Latency_6                ((uint8_t)0x0006)  /*!< FLASH Six Latency cycles      */
 #define FLASH_Latency_7                ((uint8_t)0x0007)  /*!< FLASH Seven Latency cycles    */
+#define FLASH_Latency_8                ((uint8_t)0x0008)  /*!< FLASH Eight Latency cycles    */
+#define FLASH_Latency_9                ((uint8_t)0x0009)  /*!< FLASH Nine Latency cycles     */
+#define FLASH_Latency_10               ((uint8_t)0x000A)  /*!< FLASH Ten Latency cycles      */
+#define FLASH_Latency_11               ((uint8_t)0x000B)  /*!< FLASH Eleven Latency cycles   */
+#define FLASH_Latency_12               ((uint8_t)0x000C)  /*!< FLASH Twelve Latency cycles   */
+#define FLASH_Latency_13               ((uint8_t)0x000D)  /*!< FLASH Thirteen Latency cycles */
+#define FLASH_Latency_14               ((uint8_t)0x000E)  /*!< FLASH Fourteen Latency cycles */
+#define FLASH_Latency_15               ((uint8_t)0x000F)  /*!< FLASH Fifteen Latency cycles  */
+
 
 #define IS_FLASH_LATENCY(LATENCY) (((LATENCY) == FLASH_Latency_0)  || \
                                    ((LATENCY) == FLASH_Latency_1)  || \
@@ -86,8 +96,15 @@ typedef enum
                                    ((LATENCY) == FLASH_Latency_4)  || \
                                    ((LATENCY) == FLASH_Latency_5)  || \
                                    ((LATENCY) == FLASH_Latency_6)  || \
-                                   ((LATENCY) == FLASH_Latency_7))
-
+                                   ((LATENCY) == FLASH_Latency_7)  || \
+                                   ((LATENCY) == FLASH_Latency_8)  || \
+                                   ((LATENCY) == FLASH_Latency_9)  || \
+                                   ((LATENCY) == FLASH_Latency_10) || \
+                                   ((LATENCY) == FLASH_Latency_11) || \
+                                   ((LATENCY) == FLASH_Latency_12) || \
+                                   ((LATENCY) == FLASH_Latency_13) || \
+                                   ((LATENCY) == FLASH_Latency_14) || \
+                                   ((LATENCY) == FLASH_Latency_15))
 /**
   * @}
   */ 
@@ -149,8 +166,20 @@ typedef enum
                                  ((SECTOR) == FLASH_Sector_20)  || ((SECTOR) == FLASH_Sector_21)  ||\
                                  ((SECTOR) == FLASH_Sector_22)  || ((SECTOR) == FLASH_Sector_23))
 
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
 #define IS_FLASH_ADDRESS(ADDRESS) ((((ADDRESS) >= 0x08000000) && ((ADDRESS) < 0x081FFFFF)) ||\
                                    (((ADDRESS) >= 0x1FFF7800) && ((ADDRESS) < 0x1FFF7A0F)))  
+#endif /* STM32F427_437xx ||  STM32F429_439xx */
+
+#if defined (STM32F40_41xxx)
+#define IS_FLASH_ADDRESS(ADDRESS) ((((ADDRESS) >= 0x08000000) && ((ADDRESS) < 0x080FFFFF)) ||\
+                                   (((ADDRESS) >= 0x1FFF7800) && ((ADDRESS) < 0x1FFF7A0F))) 
+#endif /* STM32F40_41xxx */
+
+#if defined (STM32F401xx)                                   
+#define IS_FLASH_ADDRESS(ADDRESS) ((((ADDRESS) >= 0x08000000) && ((ADDRESS) < 0x0803FFFF)) ||\
+                                   (((ADDRESS) >= 0x1FFF7800) && ((ADDRESS) < 0x1FFF7A0F)))                                                                       
+#endif /* STM32F401xx */
 /**
   * @}
   */ 
@@ -185,6 +214,50 @@ typedef enum
 #define OB_WRP_Sector_All     ((uint32_t)0x00000FFF) /*!< Write protection of all Sectors */
 
 #define IS_OB_WRP(SECTOR)((((SECTOR) & (uint32_t)0xFFFFF000) == 0x00000000) && ((SECTOR) != 0x00000000))
+/**
+  * @}
+  */
+
+/** @defgroup  Selection_Protection_Mode
+  * @{
+  */
+#define OB_PcROP_Disable   ((uint8_t)0x00) /*!< Disabled PcROP, nWPRi bits used for Write Protection on sector i */
+#define OB_PcROP_Enable    ((uint8_t)0x80) /*!< Enable PcROP, nWPRi bits used for PCRoP Protection on sector i   */
+#define IS_OB_PCROP_SELECT(PCROP) (((PCROP) == OB_PcROP_Disable) || ((PCROP) == OB_PcROP_Enable))
+/**
+  * @}
+  */
+
+/** @defgroup Option_Bytes_PC_ReadWrite_Protection 
+  * @{
+  */ 
+#define OB_PCROP_Sector_0        ((uint32_t)0x00000001) /*!< PC Read/Write protection of Sector0      */
+#define OB_PCROP_Sector_1        ((uint32_t)0x00000002) /*!< PC Read/Write protection of Sector1      */
+#define OB_PCROP_Sector_2        ((uint32_t)0x00000004) /*!< PC Read/Write protection of Sector2      */
+#define OB_PCROP_Sector_3        ((uint32_t)0x00000008) /*!< PC Read/Write protection of Sector3      */
+#define OB_PCROP_Sector_4        ((uint32_t)0x00000010) /*!< PC Read/Write protection of Sector4      */
+#define OB_PCROP_Sector_5        ((uint32_t)0x00000020) /*!< PC Read/Write protection of Sector5      */
+#define OB_PCROP_Sector_6        ((uint32_t)0x00000040) /*!< PC Read/Write protection of Sector6      */
+#define OB_PCROP_Sector_7        ((uint32_t)0x00000080) /*!< PC Read/Write protection of Sector7      */
+#define OB_PCROP_Sector_8        ((uint32_t)0x00000100) /*!< PC Read/Write protection of Sector8      */
+#define OB_PCROP_Sector_9        ((uint32_t)0x00000200) /*!< PC Read/Write protection of Sector9      */
+#define OB_PCROP_Sector_10       ((uint32_t)0x00000400) /*!< PC Read/Write protection of Sector10     */
+#define OB_PCROP_Sector_11       ((uint32_t)0x00000800) /*!< PC Read/Write protection of Sector11     */
+#define OB_PCROP_Sector_12       ((uint32_t)0x00000001) /*!< PC Read/Write protection of Sector12     */
+#define OB_PCROP_Sector_13       ((uint32_t)0x00000002) /*!< PC Read/Write protection of Sector13     */
+#define OB_PCROP_Sector_14       ((uint32_t)0x00000004) /*!< PC Read/Write protection of Sector14     */
+#define OB_PCROP_Sector_15       ((uint32_t)0x00000008) /*!< PC Read/Write protection of Sector15     */
+#define OB_PCROP_Sector_16       ((uint32_t)0x00000010) /*!< PC Read/Write protection of Sector16     */
+#define OB_PCROP_Sector_17       ((uint32_t)0x00000020) /*!< PC Read/Write protection of Sector17     */
+#define OB_PCROP_Sector_18       ((uint32_t)0x00000040) /*!< PC Read/Write protection of Sector18     */
+#define OB_PCROP_Sector_19       ((uint32_t)0x00000080) /*!< PC Read/Write protection of Sector19     */
+#define OB_PCROP_Sector_20       ((uint32_t)0x00000100) /*!< PC Read/Write protection of Sector20     */
+#define OB_PCROP_Sector_21       ((uint32_t)0x00000200) /*!< PC Read/Write protection of Sector21     */
+#define OB_PCROP_Sector_22       ((uint32_t)0x00000400) /*!< PC Read/Write protection of Sector22     */
+#define OB_PCROP_Sector_23       ((uint32_t)0x00000800) /*!< PC Read/Write protection of Sector23     */
+#define OB_PCROP_Sector_All      ((uint32_t)0x00000FFF) /*!< PC Read/Write protection of all Sectors  */
+
+#define IS_OB_PCROP(SECTOR)((((SECTOR) & (uint32_t)0xFFFFF000) == 0x00000000) && ((SECTOR) != 0x00000000))
 /**
   * @}
   */
@@ -246,6 +319,16 @@ typedef enum
 /**
   * @}
   */
+  
+/** @defgroup FLASH_Dual_Boot
+  * @{
+  */
+#define OB_Dual_BootEnabled   ((uint8_t)0x10) /*!< Dual Bank Boot Enable                             */
+#define OB_Dual_BootDisabled  ((uint8_t)0x00) /*!< Dual Bank Boot Disable, always boot on User Flash */
+#define IS_OB_BOOT(BOOT) (((BOOT) == OB_Dual_BootEnabled) || ((BOOT) == OB_Dual_BootDisabled))
+/**
+  * @}
+  */
 
 /** @defgroup FLASH_Interrupts 
   * @{
@@ -266,12 +349,13 @@ typedef enum
 #define FLASH_FLAG_PGAERR              ((uint32_t)0x00000020)  /*!< FLASH Programming Alignment error flag    */
 #define FLASH_FLAG_PGPERR              ((uint32_t)0x00000040)  /*!< FLASH Programming Parallelism error flag  */
 #define FLASH_FLAG_PGSERR              ((uint32_t)0x00000080)  /*!< FLASH Programming Sequence error flag     */
+#define FLASH_FLAG_RDERR               ((uint32_t)0x00000100)  /*!< Read Protection error flag (PCROP)        */
 #define FLASH_FLAG_BSY                 ((uint32_t)0x00010000)  /*!< FLASH Busy flag                           */ 
 #define IS_FLASH_CLEAR_FLAG(FLAG) ((((FLAG) & (uint32_t)0xFFFFFE0C) == 0x00000000) && ((FLAG) != 0x00000000))
 #define IS_FLASH_GET_FLAG(FLAG)  (((FLAG) == FLASH_FLAG_EOP)    || ((FLAG) == FLASH_FLAG_OPERR)  || \
                                   ((FLAG) == FLASH_FLAG_WRPERR) || ((FLAG) == FLASH_FLAG_PGAERR) || \
                                   ((FLAG) == FLASH_FLAG_PGPERR) || ((FLAG) == FLASH_FLAG_PGSERR) || \
-                                  ((FLAG) == FLASH_FLAG_BSY))
+                                  ((FLAG) == FLASH_FLAG_BSY)    || ((FLAG) == FLASH_FLAG_RDERR))
 /**
   * @}
   */
@@ -346,23 +430,31 @@ void         FLASH_Unlock(void);
 void         FLASH_Lock(void);
 FLASH_Status FLASH_EraseSector(uint32_t FLASH_Sector, uint8_t VoltageRange);
 FLASH_Status FLASH_EraseAllSectors(uint8_t VoltageRange);
+FLASH_Status FLASH_EraseAllBank1Sectors(uint8_t VoltageRange);
+FLASH_Status FLASH_EraseAllBank2Sectors(uint8_t VoltageRange);
 FLASH_Status FLASH_ProgramDoubleWord(uint32_t Address, uint64_t Data);
 FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);
 FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);
 FLASH_Status FLASH_ProgramByte(uint32_t Address, uint8_t Data);
 
 /* Option Bytes Programming functions *****************************************/ 
-void          FLASH_OB_Unlock(void);
+void         FLASH_OB_Unlock(void);
 void         FLASH_OB_Lock(void);
 void         FLASH_OB_WRPConfig(uint32_t OB_WRP, FunctionalState NewState);
 void         FLASH_OB_WRP1Config(uint32_t OB_WRP, FunctionalState NewState);
+void         FLASH_OB_PCROPSelectionConfig(uint8_t OB_PcROP);
+void         FLASH_OB_PCROPConfig(uint32_t OB_PCROP, FunctionalState NewState);
+void         FLASH_OB_PCROP1Config(uint32_t OB_PCROP, FunctionalState NewState);
 void         FLASH_OB_RDPConfig(uint8_t OB_RDP);
 void         FLASH_OB_UserConfig(uint8_t OB_IWDG, uint8_t OB_STOP, uint8_t OB_STDBY);
 void         FLASH_OB_BORConfig(uint8_t OB_BOR);
+void         FLASH_OB_BootConfig(uint8_t OB_BOOT);
 FLASH_Status FLASH_OB_Launch(void);
 uint8_t      FLASH_OB_GetUser(void);
 uint16_t     FLASH_OB_GetWRP(void);
 uint16_t     FLASH_OB_GetWRP1(void);
+uint16_t     FLASH_OB_GetPCROP(void);
+uint16_t     FLASH_OB_GetPCROP1(void);
 FlagStatus   FLASH_OB_GetRDP(void);
 uint8_t      FLASH_OB_GetBOR(void);
 

@@ -22,7 +22,7 @@ LD = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 SIZE = arm-none-eabi-size
 
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40XX -DHSE_VALUE=8000000
+CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40_41xxx -DUSE_STDPERIPH_DRIVER -DHSE_VALUE=8000000
 CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) -D$(TARGET)
 #CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
 
@@ -85,6 +85,7 @@ SRC_STM = \
 	stm32f4xx_spi.c \
 	stm32f4xx_dac.c \
 	stm32f4xx_rng.c \
+	stm32f4xx_i2c.c \
 	usb_core.c \
 	usb_dcd.c \
 	usb_dcd_int.c \

@@ -2,9 +2,10 @@
   ******************************************************************************
   * @file      startup_stm32f40xx.s
   * @author    MCD Application Team
-  * @version   V1.1.0
-  * @date      11-January-2013
-  * @brief     STM32F40xx/41xx Devices vector table for RIDE7 toolchain.          
+  * @version   V1.3.0
+  * @date      08-November-2013
+  * @brief     STM32F40xxx/41xxx Devices vector table for RIDE7 toolchain.
+  *            Same as startup_stm32f40xx.s and maintained for legacy purpose             
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,

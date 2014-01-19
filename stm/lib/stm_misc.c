@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    misc.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    11-January-2013
+  * @version V1.3.0
+  * @date    08-November-2013
   * @brief   This file provides all the miscellaneous firmware functions (add-on
   *          to CMSIS functions).
   *          
@@ -73,7 +73,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_conf.h"
 #include "stm_misc.h"
 
 /** @addtogroup STM32F4xx_StdPeriph_Driver

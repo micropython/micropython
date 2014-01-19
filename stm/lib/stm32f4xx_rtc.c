@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_rtc.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    11-January-2013
+  * @version V1.3.0
+  * @date    08-November-2013
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the Real-Time Clock (RTC) peripheral:
   *           + Initialization
@@ -282,7 +282,6 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_conf.h"
 #include "stm32f4xx_rtc.h"
 
 /** @addtogroup STM32F4xx_StdPeriph_Driver

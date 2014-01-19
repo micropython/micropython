@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_pwr.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    11-January-2013
+  * @version V1.3.0
+  * @date    08-November-2013
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the Power Controller (PWR) peripheral:           
   *           + Backup Domain Access
@@ -35,7 +35,6 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_conf.h"
 #include "stm32f4xx_pwr.h"
 #include "stm32f4xx_rcc.h"
 
@@ -72,6 +71,13 @@
 #define PMODE_BitNumber           0x0E
 #define CR_PMODE_BB               (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PMODE_BitNumber * 4))
 
+/* Alias word address of ODEN bit */
+#define ODEN_BitNumber           0x10
+#define CR_ODEN_BB               (PERIPH_BB_BASE + (CR_OFFSET * 32) + (ODEN_BitNumber * 4))
+
+/* Alias word address of ODSWEN bit */
+#define ODSWEN_BitNumber         0x11
+#define CR_ODSWEN_BB             (PERIPH_BB_BASE + (CR_OFFSET * 32) + (ODSWEN_BitNumber * 4))
 
 /* --- CSR Register ---*/
 
@@ -87,7 +93,7 @@
 /* ------------------ PWR registers bit mask ------------------------ */
 
 /* CR register bit mask */
-#define CR_DS_MASK               ((uint32_t)0xFFFFFFFC)
+#define CR_DS_MASK               ((uint32_t)0xFFFFF3FC)
 #define CR_PLS_MASK              ((uint32_t)0xFFFFFF1F)
 #define CR_VOS_MASK              ((uint32_t)0xFFFF3FFF)
 
@@ -284,20 +290,56 @@ void PWR_WakeUpPinCmd(FunctionalState NewState)
           key, from being accessed. The backup SRAM can be erased only through 
           the Flash interface when a protection level change from level 1 to 
           level 0 is requested. 
-      -@- Refer to the description of Read protection (RDP) in the Flash 
-          programming manual.
+      -@- Refer to the description of Read protection (RDP) in the reference manual.
 
       (+) The main internal regulator can be configured to have a tradeoff between 
           performance and power consumption when the device does not operate at 
-          the maximum frequency. This is done through PWR_MainRegulatorModeConfig() 
-          function which configure VOS bit in PWR_CR register: 
+          the maximum frequency. 
+      (+) For STM32F405xx/407xx and STM32F415xx/417xx  Devices, the regulator can be     
+          configured on the fly through PWR_MainRegulatorModeConfig() function which  
+          configure VOS bit in PWR_CR register:
         (++) When this bit is set (Regulator voltage output Scale 1 mode selected) 
              the System frequency can go up to 168 MHz. 
         (++) When this bit is reset (Regulator voltage output Scale 2 mode selected) 
              the System frequency can go up to 144 MHz.
-              
+             
+       (+) For STM32F42xxx/43xxx Devices, the regulator can be configured through    
+           PWR_MainRegulatorModeConfig() function which configure VOS[1:0] bits in
+           PWR_CR register:  
+           which configure VOS[1:0] bits in PWR_CR register: 
+        (++) When VOS[1:0] = 11 (Regulator voltage output Scale 1 mode selected) 
+             the System frequency can go up to 168 MHz. 
+        (++) When VOS[1:0] = 10 (Regulator voltage output Scale 2 mode selected) 
+             the System frequency can go up to 144 MHz.  
+        (++) When VOS[1:0] = 01 (Regulator voltage output Scale 3 mode selected) 
+             the System frequency can go up to 120 MHz. 
+                          
+       (+) For STM32F42xxx/43xxx Devices, the scale can be modified only when the PLL 
+           is OFF and the HSI or HSE clock source is selected as system clock. 
+           The new value programmed is active only when the PLL is ON.
+           When the PLL is OFF, the voltage scale 3 is automatically selected. 
         Refer to the datasheets for more details.
-           
+        
+       (+) For STM32F42xxx/43xxx Devices, in Run mode: the main regulator has
+           2 operating modes available:
+        (++) Normal mode: The CPU and core logic operate at maximum frequency at a given 
+             voltage scaling (scale 1, scale 2 or scale 3)
+        (++) Over-drive mode: This mode allows the CPU and the core logic to operate at a 
+            higher frequency than the normal mode for a given voltage scaling (scale 1,  
+            scale 2 or scale 3). This mode is enabled through PWR_OverDriveCmd() function and
+            PWR_OverDriveSWCmd() function, to enter or exit from Over-drive mode please follow 
+            the sequence described in Reference manual.
+             
+       (+) For STM32F42xxx/43xxx Devices, in Stop mode: the main regulator or low power regulator 
+           supplies a low power voltage to the 1.2V domain, thus preserving the content of registers 
+           and internal SRAM. 2 operating modes are available:
+         (++) Normal mode: the 1.2V domain is preserved in nominal leakage mode. This mode is only 
+              available when the main regulator or the low power regulator is used in Scale 3 or 
+              low voltage mode.
+         (++) Under-drive mode: the 1.2V domain is preserved in reduced leakage mode. This mode is only
+              available when the main regulator or the low power regulator is in low voltage mode.
+              This mode is enabled through PWR_UnderDriveCmd() function.
+            
 @endverbatim
   * @{
   */
@@ -327,12 +369,12 @@ void PWR_BackupRegulatorCmd(FunctionalState NewState)
   *            @arg PWR_Regulator_Voltage_Scale2: Regulator voltage output Scale 2 mode, 
   *                                                System frequency up to 144 MHz.    
   *            @arg PWR_Regulator_Voltage_Scale3: Regulator voltage output Scale 3 mode, 
-  *                                                System frequency up to 120 MHz
+  *                                                System frequency up to 120 MHz (only for STM32F42xxx/43xxx devices)
   * @retval None
   */
 void PWR_MainRegulatorModeConfig(uint32_t PWR_Regulator_Voltage)
 {
-	uint32_t tmpreg = 0;
+  uint32_t tmpreg = 0;
 	
   /* Check the parameters */
   assert_param(IS_PWR_REGULATOR_VOLTAGE(PWR_Regulator_Voltage));
@@ -347,6 +389,84 @@ void PWR_MainRegulatorModeConfig(uint32_t PWR_Regulator_Voltage)
   
   /* Store the new value */
   PWR->CR = tmpreg;
+}
+
+/**
+  * @brief  Enables or disables the Over-Drive.
+  * 
+  * @note   This function can be used only for STM32F42xxx/STM3243xxx devices.
+  *         This mode allows the CPU and the core logic to operate at a higher frequency
+  *         than the normal mode for a given voltage scaling (scale 1, scale 2 or scale 3).   
+  * 
+  * @note   It is recommended to enter or exit Over-drive mode when the application is not running 
+  *          critical tasks and when the system clock source is either HSI or HSE. 
+  *          During the Over-drive switch activation, no peripheral clocks should be enabled.   
+  *          The peripheral clocks must be enabled once the Over-drive mode is activated.
+  *            
+  * @param  NewState: new state of the Over Drive mode.
+  *          This parameter can be: ENABLE or DISABLE.
+  * @retval None
+  */
+void PWR_OverDriveCmd(FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+  
+  /* Set/Reset the ODEN bit to enable/disable the Over Drive mode */
+  *(__IO uint32_t *) CR_ODEN_BB = (uint32_t)NewState;
+}
+
+/**
+  * @brief  Enables or disables the Over-Drive switching.
+  * 
+  * @note   This function can be used only for STM32F42xxx/STM3243xxx devices. 
+  *       
+  * @param  NewState: new state of the Over Drive switching mode.
+  *          This parameter can be: ENABLE or DISABLE.
+  * @retval None
+  */
+void PWR_OverDriveSWCmd(FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  /* Set/Reset the ODSWEN bit to enable/disable the Over Drive switching mode */
+  *(__IO uint32_t *) CR_ODSWEN_BB = (uint32_t)NewState;
+}
+
+/**
+  * @brief   Enables or disables the Under-Drive mode.
+  * 
+  * @note   This function can be used only for STM32F42xxx/STM3243xxx devices.
+  * @note    This mode is enabled only with STOP low power mode.
+  *          In this mode, the 1.2V domain is preserved in reduced leakage mode. This 
+  *          mode is only available when the main regulator or the low power regulator 
+  *          is in low voltage mode
+  *        
+  * @note   If the Under-drive mode was enabled, it is automatically disabled after 
+  *         exiting Stop mode. 
+  *         When the voltage regulator operates in Under-drive mode, an additional  
+  *         startup delay is induced when waking up from Stop mode.
+  *                    
+  * @param  NewState: new state of the Under Drive mode.
+  *          This parameter can be: ENABLE or DISABLE.
+  * @retval None
+  */
+void PWR_UnderDriveCmd(FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  if (NewState != DISABLE)
+  {
+    /* Set the UDEN[1:0] bits to enable the Under Drive mode */
+    PWR->CR |= (uint32_t)PWR_CR_UDEN;
+  }
+  else
+  {
+    /* Reset the UDEN[1:0] bits to disable the Under Drive mode */
+    PWR->CR &= (uint32_t)(~PWR_CR_UDEN);
+  }
 }
 
 /**
@@ -423,8 +543,10 @@ void PWR_FlashPowerDownCmd(FunctionalState NewState)
       the Stop mode using the PWR_FlashPowerDownCmd() function. 
    
       (+) Entry:
-        (++) The Stop mode is entered using the PWR_EnterSTOPMode(PWR_Regulator_LowPower,) 
-             function with regulator in LowPower or with Regulator ON.
+        (++) The Stop mode is entered using the PWR_EnterSTOPMode(PWR_MainRegulator_ON) 
+             function with:
+          (+++) Main regulator ON.
+          (+++) Low Power regulator ON.
       (+) Exit:
         (++) Any EXTI Line (Internal or External) configured in Interrupt/Event mode.
       
@@ -508,12 +630,12 @@ void PWR_FlashPowerDownCmd(FunctionalState NewState)
   * @note   When the voltage regulator operates in low power mode, an additional 
   *         startup delay is incurred when waking up from Stop mode. 
   *         By keeping the internal regulator ON during Stop mode, the consumption 
-  *         is higher although the startup time is reduced.           
+  *         is higher although the startup time is reduced.
   *     
   * @param  PWR_Regulator: specifies the regulator state in STOP mode.
   *          This parameter can be one of the following values:
-  *            @arg PWR_Regulator_ON: STOP mode with regulator ON
-  *            @arg PWR_Regulator_LowPower: STOP mode with regulator in low power mode
+  *            @arg PWR_MainRegulator_ON: STOP mode with regulator ON
+  *            @arg PWR_LowPowerRegulator_ON: STOP mode with low power regulator ON
   * @param  PWR_STOPEntry: specifies if STOP mode in entered with WFI or WFE instruction.
   *          This parameter can be one of the following values:
   *            @arg PWR_STOPEntry_WFI: enter STOP mode with WFI instruction
@@ -530,10 +652,74 @@ void PWR_EnterSTOPMode(uint32_t PWR_Regulator, uint8_t PWR_STOPEntry)
   
   /* Select the regulator state in STOP mode ---------------------------------*/
   tmpreg = PWR->CR;
-  /* Clear PDDS and LPDSR bits */
+  /* Clear PDDS and LPDS bits */
   tmpreg &= CR_DS_MASK;
   
-  /* Set LPDSR bit according to PWR_Regulator value */
+  /* Set LPDS, MRLVDS and LPLVDS bits according to PWR_Regulator value */
+  tmpreg |= PWR_Regulator;
+  
+  /* Store the new value */
+  PWR->CR = tmpreg;
+  
+  /* Set SLEEPDEEP bit of Cortex System Control Register */
+  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  
+  /* Select STOP mode entry --------------------------------------------------*/
+  if(PWR_STOPEntry == PWR_STOPEntry_WFI)
+  {   
+    /* Request Wait For Interrupt */
+    __WFI();
+  }
+  else
+  {
+    /* Request Wait For Event */
+    __WFE();
+  }
+  /* Reset SLEEPDEEP bit of Cortex System Control Register */
+  SCB->SCR &= (uint32_t)~((uint32_t)SCB_SCR_SLEEPDEEP_Msk);  
+}
+
+/**
+  * @brief  Enters in Under-Drive STOP mode.
+  *  
+  * @note   This mode is only available for STM32F42xxx/STM3243xxx devices. 
+  * 
+  * @note    This mode can be selected only when the Under-Drive is already active 
+  *         
+  * @note   In Stop mode, all I/O pins keep the same state as in Run mode.
+  * @note   When exiting Stop mode by issuing an interrupt or a wakeup event, 
+  *         the HSI RC oscillator is selected as system clock.
+  * @note   When the voltage regulator operates in low power mode, an additional 
+  *         startup delay is incurred when waking up from Stop mode. 
+  *         By keeping the internal regulator ON during Stop mode, the consumption 
+  *         is higher although the startup time is reduced.
+  *     
+  * @param  PWR_Regulator: specifies the regulator state in STOP mode.
+  *          This parameter can be one of the following values:
+  *            @arg PWR_MainRegulator_UnderDrive_ON:  Main Regulator in under-drive mode 
+  *                 and Flash memory in power-down when the device is in Stop under-drive mode
+  *            @arg PWR_LowPowerRegulator_UnderDrive_ON:  Low Power Regulator in under-drive mode 
+  *                and Flash memory in power-down when the device is in Stop under-drive mode
+  * @param  PWR_STOPEntry: specifies if STOP mode in entered with WFI or WFE instruction.
+  *          This parameter can be one of the following values:
+  *            @arg PWR_STOPEntry_WFI: enter STOP mode with WFI instruction
+  *            @arg PWR_STOPEntry_WFE: enter STOP mode with WFE instruction
+  * @retval None
+  */
+void PWR_EnterUnderDriveSTOPMode(uint32_t PWR_Regulator, uint8_t PWR_STOPEntry)
+{
+  uint32_t tmpreg = 0;
+  
+  /* Check the parameters */
+  assert_param(IS_PWR_REGULATOR_UNDERDRIVE(PWR_Regulator));
+  assert_param(IS_PWR_STOP_ENTRY(PWR_STOPEntry));
+  
+  /* Select the regulator state in STOP mode ---------------------------------*/
+  tmpreg = PWR->CR;
+  /* Clear PDDS and LPDS bits */
+  tmpreg &= CR_DS_MASK;
+  
+  /* Set LPDS, MRLUDS and LPLUDS bits according to PWR_Regulator value */
   tmpreg |= PWR_Regulator;
   
   /* Store the new value */
@@ -622,7 +808,13 @@ void PWR_EnterSTANDBYMode(void)
   *                  when the device wakes up from Standby mode or by a system reset 
   *                  or power reset.  
   *            @arg PWR_FLAG_VOSRDY: This flag indicates that the Regulator voltage 
-  *                 scaling output selection is ready. 
+  *                 scaling output selection is ready.
+  *            @arg PWR_FLAG_ODRDY: This flag indicates that the Over-drive mode
+  *                 is ready (STM32F42xxx/43xxx devices) 
+  *            @arg PWR_FLAG_ODSWRDY: This flag indicates that the Over-drive mode
+  *                 switcching is ready (STM32F42xxx/43xxx devices) 
+  *            @arg PWR_FLAG_UDRDY: This flag indicates that the Under-drive mode
+  *                 is enabled in Stop mode (STM32F42xxx/43xxx devices)
   * @retval The new state of PWR_FLAG (SET or RESET).
   */
 FlagStatus PWR_GetFlagStatus(uint32_t PWR_FLAG)
@@ -650,14 +842,28 @@ FlagStatus PWR_GetFlagStatus(uint32_t PWR_FLAG)
   *          This parameter can be one of the following values:
   *            @arg PWR_FLAG_WU: Wake Up flag
   *            @arg PWR_FLAG_SB: StandBy flag
+  *            @arg PWR_FLAG_UDRDY: Under-drive ready flag (STM32F42xxx/43xxx devices)
   * @retval None
   */
 void PWR_ClearFlag(uint32_t PWR_FLAG)
 {
   /* Check the parameters */
   assert_param(IS_PWR_CLEAR_FLAG(PWR_FLAG));
-         
+  
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+  if (PWR_FLAG != PWR_FLAG_UDRDY)
+  {
+    PWR->CR |=  PWR_FLAG << 2;
+  }
+  else
+  {
+    PWR->CSR |= PWR_FLAG_UDRDY;
+  }
+#endif /* STM32F427_437xx ||  STM32F429_439xx */
+
+#if defined (STM32F40_41xxx) || defined (STM32F401xx) 
   PWR->CR |=  PWR_FLAG << 2;
+#endif /* STM32F40_41xxx */
 }
 
 /**
