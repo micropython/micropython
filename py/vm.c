@@ -25,6 +25,8 @@
 #define SET_TOP(val) *sp = (val)
 
 mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, uint n_state) {
+    n_state += 1; // XXX there is a bug somewhere which doesn't count enough state... (conwaylife and mandel have the bug)
+
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -85,6 +87,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
     machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
     machine_uint_t *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
+
+    // TODO if an exception occurs, do fast[0,1,2] become invalid??
 
     // outer exception handling loop
     for (;;) {

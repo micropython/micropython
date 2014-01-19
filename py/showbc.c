@@ -206,25 +206,15 @@ void mp_show_byte_code(const byte *ip, int len) {
                 printf("POP_JUMP_IF_FALSE " UINT_FMT, ip + unum - ip_start);
                 break;
 
-                /*
             case MP_BC_JUMP_IF_TRUE_OR_POP:
                 DECODE_SLABEL;
-                if (rt_is_true(*sp)) {
-                    ip += unum;
-                } else {
-                    sp++;
-                }
+                printf("JUMP_IF_TRUE_OR_POP " UINT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_JUMP_IF_FALSE_OR_POP:
                 DECODE_SLABEL;
-                if (rt_is_true(*sp)) {
-                    sp++;
-                } else {
-                    ip += unum;
-                }
+                printf("JUMP_IF_FALSE_OR_POP " UINT_FMT, ip + unum - ip_start);
                 break;
-                */
 
             case MP_BC_SETUP_EXCEPT:
                 DECODE_ULABEL; // except labels are always forward
