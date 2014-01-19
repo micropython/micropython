@@ -82,7 +82,7 @@ typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_t)(void);
-typedef mp_obj_t (*mp_fun_var_t)(int n, const mp_obj_t *);
+typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, struct _mp_map_t *);
 
 typedef enum {

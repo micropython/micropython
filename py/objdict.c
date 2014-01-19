@@ -145,7 +145,7 @@ static mp_obj_t dict_copy(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 // this is a classmethod
-static mp_obj_t dict_fromkeys(int n_args, const mp_obj_t *args) {
+static mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     mp_obj_t iter = rt_getiter(args[1]);
     mp_obj_t len = mp_obj_len_maybe(iter);
@@ -199,7 +199,7 @@ static mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     return value;
 }
 
-static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
+static mp_obj_t dict_get(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
 
@@ -210,7 +210,7 @@ static mp_obj_t dict_get(int n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
-static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
+static mp_obj_t dict_pop(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
 
@@ -222,7 +222,7 @@ static mp_obj_t dict_pop(int n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
 
-static mp_obj_t dict_setdefault(int n_args, const mp_obj_t *args) {
+static mp_obj_t dict_setdefault(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
 

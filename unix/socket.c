@@ -212,7 +212,7 @@ static mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethostbyname);
 #endif
 
-static mp_obj_t mod_socket_getaddrinfo(int n_args, const mp_obj_t *args) {
+static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     // TODO: Implement all args
     assert(n_args == 2);
     assert(MP_OBJ_IS_TYPE(args[0], &str_type));

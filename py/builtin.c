@@ -18,7 +18,7 @@
 // args[0] is function from class body
 // args[1] is class name
 // args[2:] are base objects
-static mp_obj_t mp_builtin___build_class__(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args);
 
     // we differ from CPython: we set the new __locals__ object here
@@ -187,7 +187,7 @@ static mp_obj_t mp_builtin_len(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_builtin_len);
 
-static mp_obj_t mp_builtin_max(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
         mp_obj_t iterable = rt_getiter(args[0]);
@@ -216,7 +216,7 @@ static mp_obj_t mp_builtin_max(int n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_max_obj, 1, mp_builtin_max);
 
-static mp_obj_t mp_builtin_min(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
         mp_obj_t iterable = rt_getiter(args[0]);
@@ -267,7 +267,7 @@ static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
-static mp_obj_t mp_builtin_pow(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     switch (n_args) {
         case 2: return rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]);
@@ -277,7 +277,7 @@ static mp_obj_t mp_builtin_pow(int n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
-static mp_obj_t mp_builtin_print(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args) {
     for (int i = 0; i < n_args; i++) {
         if (i > 0) {
             printf(" ");
@@ -290,7 +290,7 @@ static mp_obj_t mp_builtin_print(int n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_print_obj, 0, mp_builtin_print);
 
-static mp_obj_t mp_builtin_range(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 3);
     switch (n_args) {
         case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
@@ -309,7 +309,7 @@ static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
-static mp_obj_t mp_builtin_sum(int n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     mp_obj_t value;
     switch (n_args) {

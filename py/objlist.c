@@ -209,7 +209,7 @@ static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-static mp_obj_t list_pop(int n_args, const mp_obj_t *args) {
+static mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
@@ -296,7 +296,7 @@ static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     return mp_obj_new_int(count);
 }
 
-static mp_obj_t list_index(int n_args, const mp_obj_t *args) {
+static mp_obj_t list_index(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];

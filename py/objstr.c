@@ -169,7 +169,7 @@ static bool chr_in_str(const char* const str, const size_t str_len, const char c
     return false;
 }
 
-static mp_obj_t str_find(int n_args, const mp_obj_t *args) {
+static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &str_type));
     if (!MP_OBJ_IS_TYPE(args[1], &str_type)) {
@@ -209,7 +209,7 @@ static mp_obj_t str_find(int n_args, const mp_obj_t *args) {
     }
 }
 
-mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
+mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_TYPE(args[0], &str_type));
     const char *chars_to_del;
@@ -258,7 +258,7 @@ mp_obj_t str_strip(int n_args, const mp_obj_t *args) {
     return mp_obj_new_str(qstr_from_str_take(stripped_str, stripped_len + 1));
 }
 
-mp_obj_t str_format(int n_args, const mp_obj_t *args) {
+mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &str_type));
     mp_obj_str_t *self = args[0];
 

@@ -526,7 +526,7 @@ mp_obj_t pyb_gc(void) {
     return mp_const_none;
 }
 
-mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
+mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     //assert(1 <= n_args && n_args <= 2);
 
     const char *pin_name = qstr_str(mp_obj_get_qstr(args[0]));

@@ -172,12 +172,12 @@ static mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
     return self;
 }
 
-static mp_obj_t set_diff(int n_args, const mp_obj_t *args) {
+static mp_obj_t set_diff(uint n_args, const mp_obj_t *args) {
     return set_diff_int(n_args, args, false);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_obj, 1, set_diff);
 
-static mp_obj_t set_diff_update(int n_args, const mp_obj_t *args) {
+static mp_obj_t set_diff_update(uint n_args, const mp_obj_t *args) {
     set_diff_int(n_args, args, true);
     return mp_const_none;
 }
@@ -356,7 +356,7 @@ static void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     }
 }
 
-static mp_obj_t set_update(int n_args, const mp_obj_t *args) {
+static mp_obj_t set_update(uint n_args, const mp_obj_t *args) {
     assert(n_args > 0);
     assert(MP_OBJ_IS_TYPE(args[0], &set_type));
 
