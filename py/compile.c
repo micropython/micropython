@@ -39,6 +39,7 @@ typedef enum {
 #define EMIT_OPT_ASM_THUMB      (4)
 
 typedef struct _compiler_t {
+    qstr source_file;
     bool is_repl;
     pass_kind_t pass;
     bool had_error; // try to keep compiler clean from nlr
@@ -189,7 +190,7 @@ static int comp_next_label(compiler_t *comp) {
 }
 
 static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, rt_get_unique_code_id(), emit_options);
+    scope_t *scope = scope_new(kind, pn, comp->source_file, rt_get_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -2509,7 +2510,9 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
         if (f == NULL) {
             printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
-            mp_parse_node_show(pn, 0);
+#if MICROPY_DEBUG_PRINTERS
+            mp_parse_node_print(pn, 0);
+#endif
             assert(0);
         } else {
             f(comp, pns);
@@ -2875,10 +2878,12 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
     mp_parse_node_t *nodes;
     int num = list_get(&pn_body, PN_suite_block_stmts, &nodes);
 
+    /*
     if (comp->pass == PASS_3) {
         //printf("----\n");
         scope_print_info(scope);
     }
+    */
 
     for (int i = 0; i < num; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT(nodes[i]));
@@ -3028,6 +3033,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
+    comp->source_file = source_file;
     comp->is_repl = is_repl;
     comp->had_error = false;
 
@@ -3132,7 +3138,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
 
                 default:
                     if (emit_bc == NULL) {
-                        emit_bc = emit_bc_new(source_file, max_num_labels);
+                        emit_bc = emit_bc_new(max_num_labels);
                     }
                     comp->emit = emit_bc;
                     comp->emit_method_table = &emit_bc_method_table;

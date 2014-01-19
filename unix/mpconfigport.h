@@ -9,11 +9,11 @@
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_MEM_STATS           (1)
+#define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
 #define MICROPY_ENABLE_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_FLOAT        (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_LONGLONG)
-#define MICROPY_SHOW_BC             (0)
 
 // type definitions for the specific machine
 

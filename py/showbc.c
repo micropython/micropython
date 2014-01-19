@@ -8,14 +8,14 @@
 #include "mpconfig.h"
 #include "bc0.h"
 
-#if MICROPY_SHOW_BC
+#if MICROPY_DEBUG_PRINTERS
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 #define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
 
-void mp_show_byte_code(const byte *ip, int len) {
+void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
@@ -367,4 +367,4 @@ void mp_show_byte_code(const byte *ip, int len) {
     }
 }
 
-#endif // MICROPY_SHOW_BC
+#endif // MICROPY_DEBUG_PRINTERS

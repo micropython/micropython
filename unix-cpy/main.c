@@ -44,7 +44,7 @@ void do_file(const char *file) {
 
         if (pn != MP_PARSE_NODE_NULL) {
             //printf("----------------\n");
-            //parse_node_show(pn, 0);
+            //mp_parse_node_print(pn, 0);
             //printf("----------------\n");
 
             // compile

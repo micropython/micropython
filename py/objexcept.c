@@ -19,6 +19,7 @@ typedef struct mp_obj_exception_t {
     mp_obj_base_t base;
     qstr source_file;
     machine_uint_t source_line;
+    qstr source_block;
     qstr id;
     qstr msg;
     mp_obj_tuple_t args;
@@ -114,7 +115,7 @@ qstr mp_obj_exception_get_type(mp_obj_t self_in) {
     return self->id;
 }
 
-void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line) {
+void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
     assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
     mp_obj_exception_t *self = self_in;
     // TODO make a list of file/line pairs for the traceback
@@ -125,11 +126,15 @@ void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_
     if (line != 0 && self->source_line == 0) {
         self->source_line = line;
     }
+    if (block != 0 && self->source_block == 0) {
+        self->source_block = block;
+    }
 }
 
-void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line) {
+void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line, qstr *block) {
     assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
     mp_obj_exception_t *self = self_in;
     *file = self->source_file;
     *line = self->source_line;
+    *block = self->source_block;
 }

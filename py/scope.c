@@ -8,15 +8,16 @@
 #include "parse.h"
 #include "scope.h"
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, uint unique_code_id, uint emit_options) {
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint unique_code_id, uint emit_options) {
     scope_t *scope = m_new(scope_t, 1);
     scope->kind = kind;
     scope->parent = NULL;
     scope->next = NULL;
     scope->pn = pn;
+    scope->source_file = source_file;
     switch (kind) {
         case SCOPE_MODULE:
-            scope->simple_name = 0;
+            scope->simple_name = qstr_from_str_static("<module>");
             break;
         case SCOPE_FUNCTION:
         case SCOPE_CLASS:
@@ -72,33 +73,10 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
         scope->id_info_alloc *= 2;
     }
 
-    id_info_t *id_info;
-
-    {
-    /*
-    // just pick next slot in array
-    id_info = &scope->id_info[scope->id_info_len++];
-    */
-    }
-
-    if (0) {
-        // sort insert into id_info array, so we are equivalent to CPython (no other reason to do it)
-        // actually, seems that this is not what CPython does...
-        scope->id_info_len += 1;
-        for (int i = scope->id_info_len - 1;; i--) {
-            if (i == 0 || strcmp(qstr_str(scope->id_info[i - 1].qstr), qstr_str(qstr)) < 0) {
-                id_info = &scope->id_info[i];
-                break;
-            } else {
-                scope->id_info[i] = scope->id_info[i - 1];
-            }
-        }
-    } else {
-        // just add new id to end of array of all ids; this seems to match CPython
-        // important thing is that function arguments are first, but that is
-        // handled by the compiler because it adds arguments before compiling the body
-        id_info = &scope->id_info[scope->id_info_len++];
-    }
+    // add new id to end of array of all ids; this seems to match CPython
+    // important thing is that function arguments are first, but that is
+    // handled by the compiler because it adds arguments before compiling the body
+    id_info_t *id_info = &scope->id_info[scope->id_info_len++];
 
     id_info->param = false;
     id_info->kind = 0;
@@ -213,6 +191,7 @@ void scope_declare_nonlocal(scope_t *scope, qstr qstr) {
     scope_close_over_in_parents(scope, qstr);
 }
 
+#if MICROPY_EMIT_CPYTHON
 void scope_print_info(scope_t *s) {
     if (s->kind == SCOPE_MODULE) {
         printf("code <module>\n");
@@ -264,3 +243,4 @@ void scope_print_info(scope_t *s) {
     printf("     nlocals %d\n", s->num_locals);
     printf("     stacksize %d\n", s->stack_size);
 }
+#endif

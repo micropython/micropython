@@ -39,9 +39,11 @@
 #define MICROPY_MEM_STATS (0)
 #endif
 
-// Whether to build code to show byte code
-#ifndef MICROPY_SHOW_BC
-#define MICROPY_SHOW_BC (0)
+// Whether to build functions that print debugging info:
+//   mp_byte_code_print
+//   mp_parse_node_print
+#ifndef MICROPY_DEBUG_PRINTERS
+#define MICROPY_DEBUG_PRINTERS (0)
 #endif
 
 /*****************************************************************************/

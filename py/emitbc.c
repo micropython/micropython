@@ -21,7 +21,6 @@ struct _emit_t {
 
     scope_t *scope;
 
-    qstr source_file;
     uint last_source_line_offset;
     uint last_source_line;
 
@@ -36,9 +35,8 @@ struct _emit_t {
     byte dummy_data[8];
 };
 
-emit_t *emit_bc_new(qstr source_file, uint max_num_labels) {
+emit_t *emit_bc_new(uint max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
-    emit->source_file = source_file;
     emit->max_num_labels = max_num_labels;
     emit->label_offsets = m_new(uint, emit->max_num_labels);
     return emit;
@@ -187,7 +185,8 @@ static void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     }
 
     // code info
-    emit_write_code_info_qstr(emit, emit->source_file);
+    emit_write_code_info_qstr(emit, scope->source_file);
+    emit_write_code_info_qstr(emit, scope->simple_name);
 
     // prelude for initialising closed over variables
     int num_cell = 0;
@@ -239,6 +238,7 @@ static void emit_bc_set_stack_size(emit_t *emit, int size) {
 }
 
 static void emit_bc_set_source_line(emit_t *emit, int source_line) {
+    //printf("source: line %d -> %d  offset %d -> %d\n", emit->last_source_line, source_line, emit->last_source_line_offset, emit->byte_code_offset);
     if (source_line > emit->last_source_line) {
         int bytes_to_skip = emit->byte_code_offset - emit->last_source_line_offset;
         for (; bytes_to_skip > 255; bytes_to_skip -= 255) {
@@ -249,6 +249,7 @@ static void emit_bc_set_source_line(emit_t *emit, int source_line) {
             emit_write_code_info_byte_byte(emit, 0, 255);
         }
         emit_write_code_info_byte_byte(emit, bytes_to_skip, lines_to_skip);
+        //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
         emit->last_source_line_offset = emit->byte_code_offset;
         emit->last_source_line = source_line;
     }

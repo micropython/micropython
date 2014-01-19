@@ -135,7 +135,8 @@ mp_parse_node_struct_t *parse_node_new_struct(int src_line, int rule_id, int num
     return pn;
 }
 
-void mp_parse_node_show(mp_parse_node_t pn, int indent) {
+#if MICROPY_DEBUG_PRINTERS
+void mp_parse_node_print(mp_parse_node_t pn, int indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         printf("[% 4d] ", (int)((mp_parse_node_struct_t*)pn)->source_line);
     } else {
@@ -167,16 +168,17 @@ void mp_parse_node_show(mp_parse_node_t pn, int indent) {
         printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns2), n);
 #endif
         for (int i = 0; i < n; i++) {
-            mp_parse_node_show(pns2->nodes[i], indent + 2);
+            mp_parse_node_print(pns2->nodes[i], indent + 2);
         }
     }
 }
+#endif // MICROPY_DEBUG_PRINTERS
 
 /*
 static void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
     for (int i = parser->result_stack_top - 1; i >= 0; i--) {
-        mp_parse_node_show(parser->result_stack[i], 0);
+        mp_parse_node_print(parser->result_stack[i], 0);
     }
 }
 */

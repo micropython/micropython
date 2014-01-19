@@ -18,7 +18,7 @@
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
-#define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_QSTR do { qst = *ip++; if (qst > 127) { qst = ((qst & 0x3f) << 8) | (*ip++); } } while (0)
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
 #define TOP() (*sp)
@@ -78,7 +78,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
     const byte *ip = *ip_in_out;
     mp_obj_t *sp = *sp_in_out;
     machine_uint_t unum;
-    qstr qstr;
+    qstr qst;
     mp_obj_t obj1, obj2;
     mp_obj_t fast0 = fastn[0], fast1 = fastn[-1], fast2 = fastn[-2];
     nlr_buf_t nlr;
@@ -122,27 +122,27 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_LOAD_CONST_INT:
                         DECODE_QSTR;
-                        PUSH(mp_obj_new_int_from_long_str(qstr_str(qstr)));
+                        PUSH(mp_obj_new_int_from_long_str(qstr_str(qst)));
                         break;
 
                     case MP_BC_LOAD_CONST_DEC:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_dec(qstr));
+                        PUSH(rt_load_const_dec(qst));
                         break;
 
                     case MP_BC_LOAD_CONST_ID:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qstr)); // TODO
+                        PUSH(rt_load_const_str(qst)); // TODO
                         break;
 
                     case MP_BC_LOAD_CONST_BYTES:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qstr)); // TODO
+                        PUSH(rt_load_const_str(qst)); // TODO
                         break;
 
                     case MP_BC_LOAD_CONST_STRING:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qstr));
+                        PUSH(rt_load_const_str(qst));
                         break;
 
                     case MP_BC_LOAD_FAST_0:
@@ -178,22 +178,22 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_LOAD_NAME:
                         DECODE_QSTR;
-                        PUSH(rt_load_name(qstr));
+                        PUSH(rt_load_name(qst));
                         break;
 
                     case MP_BC_LOAD_GLOBAL:
                         DECODE_QSTR;
-                        PUSH(rt_load_global(qstr));
+                        PUSH(rt_load_global(qst));
                         break;
 
                     case MP_BC_LOAD_ATTR:
                         DECODE_QSTR;
-                        SET_TOP(rt_load_attr(TOP(), qstr));
+                        SET_TOP(rt_load_attr(TOP(), qst));
                         break;
 
                     case MP_BC_LOAD_METHOD:
                         DECODE_QSTR;
-                        rt_load_method(*sp, qstr, sp);
+                        rt_load_method(*sp, qst, sp);
                         sp += 1;
                         break;
 
@@ -234,17 +234,17 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_STORE_NAME:
                         DECODE_QSTR;
-                        rt_store_name(qstr, POP());
+                        rt_store_name(qst, POP());
                         break;
 
                     case MP_BC_STORE_GLOBAL:
                         DECODE_QSTR;
-                        rt_store_global(qstr, POP());
+                        rt_store_global(qst, POP());
                         break;
 
                     case MP_BC_STORE_ATTR:
                         DECODE_QSTR;
-                        rt_store_attr(sp[0], qstr, sp[-1]);
+                        rt_store_attr(sp[0], qst, sp[-1]);
                         sp -= 2;
                         break;
 
@@ -509,12 +509,12 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                     case MP_BC_IMPORT_NAME:
                         DECODE_QSTR;
                         obj1 = POP();
-                        SET_TOP(rt_import_name(qstr, obj1, TOP()));
+                        SET_TOP(rt_import_name(qst, obj1, TOP()));
                         break;
 
                     case MP_BC_IMPORT_FROM:
                         DECODE_QSTR;
-                        obj1 = rt_import_from(TOP(), qstr);
+                        obj1 = rt_import_from(TOP(), qst);
                         PUSH(obj1);
                         break;
 
@@ -532,18 +532,19 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
             // set file and line number that the exception occurred at
             if (MP_OBJ_IS_TYPE(nlr.ret_val, &exception_type)) {
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
-                qstr = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
+                qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
+                qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
                 machine_uint_t source_line = 1;
                 machine_uint_t bc = save_ip - code_info - code_info_size;
-                //printf("find %lu %d %d\n", bc, code_info[8], code_info[9]);
-                for (const byte* ci = code_info + 8; bc > ci[0]; ci += 2) {
+                //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
+                for (const byte* ci = code_info + 12; bc >= ci[0]; ci += 2) {
                     bc -= ci[0];
                     source_line += ci[1];
                     if (ci[0] == 0 && ci[1] == 0) {
                         break;
                     }
                 }
-                mp_obj_exception_set_source_info(nlr.ret_val, qstr, source_line);
+                mp_obj_exception_set_source_info(nlr.ret_val, source_file, source_line, block_name);
             }
 
             while (currently_in_except_block) {

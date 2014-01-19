@@ -54,7 +54,7 @@ typedef struct _mp_parse_node_struct_t {
 
 mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg);
 
-void mp_parse_node_show(mp_parse_node_t pn, int indent);
+void mp_parse_node_print(mp_parse_node_t pn, int indent);
 
 typedef enum {
     MP_PARSE_SINGLE_INPUT,

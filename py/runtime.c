@@ -215,9 +215,8 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
         DEBUG_printf(" %02x", code[i]);
     }
     DEBUG_printf("\n");
-#if MICROPY_SHOW_BC
-    extern void mp_show_byte_code(const byte *code, int len);
-    mp_show_byte_code(code, len);
+#if MICROPY_DEBUG_PRINTERS
+    mp_byte_code_print(code, len);
 #endif
 
 #ifdef WRITE_CODE
