@@ -544,7 +544,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         break;
                     }
                 }
-                mp_obj_exception_set_source_info(nlr.ret_val, source_file, source_line, block_name);
+                mp_obj_exception_add_traceback(nlr.ret_val, source_file, source_line, block_name);
             }
 
             while (currently_in_except_block) {

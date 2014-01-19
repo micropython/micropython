@@ -445,8 +445,7 @@ void do_repl(void) {
                     }
                 } else {
                     // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
-                    printf("\n");
+                    mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
             }
         }
@@ -490,8 +489,7 @@ bool do_file(const char *filename) {
         return true;
     } else {
         // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
-        printf("\n");
+        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return false;
     }
 }

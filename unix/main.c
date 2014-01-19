@@ -73,15 +73,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
-        if (MP_OBJ_IS_TYPE(exc, &exception_type)) {
-            qstr file, block;
-            machine_uint_t line;
-            mp_obj_exception_get_source_info(exc, &file, &line, &block);
-            printf("File \"%s\", line %d, in %s\n", qstr_str(file), (int)line, qstr_str(block));
-        }
-        mp_obj_print(exc, PRINT_REPR);
-        printf("\n");
+        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
     }
 }
 

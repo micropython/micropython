@@ -236,6 +236,7 @@ const char *mp_obj_get_type_str(mp_obj_t o_in);
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
+void mp_obj_print_exception(mp_obj_t exc);
 
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
@@ -273,8 +274,8 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 // exception
 extern const mp_obj_type_t exception_type;
 qstr mp_obj_exception_get_type(mp_obj_t self_in);
-void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
-void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line, qstr *block);
+void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
+void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values);
 
 // str
 extern const mp_obj_type_t str_type;

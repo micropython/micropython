@@ -58,6 +58,22 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_print_helper(printf_wrapper, NULL, o_in, kind);
 }
 
+// helper function to print an exception with traceback
+void mp_obj_print_exception(mp_obj_t exc) {
+    if (MP_OBJ_IS_TYPE(exc, &exception_type)) {
+        machine_uint_t n, *values;
+        mp_obj_exception_get_traceback(exc, &n, &values);
+        if (n > 0) {
+            printf("Traceback (most recent call last):\n");
+            for (int i = n - 3; i >= 0; i -= 3) {
+                printf("  File \"%s\", line %d, in %s\n", qstr_str(values[i]), (int)values[i + 1], qstr_str(values[i + 2]));
+            }
+        }
+    }
+    mp_obj_print(exc, PRINT_REPR);
+    printf("\n");
+}
+
 bool mp_obj_is_callable(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return false;

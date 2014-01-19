@@ -17,9 +17,7 @@
 // have args tuple (or otherwise have it as NULL).
 typedef struct mp_obj_exception_t {
     mp_obj_base_t base;
-    qstr source_file;
-    machine_uint_t source_line;
-    qstr source_block;
+    mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
     qstr id;
     qstr msg;
     mp_obj_tuple_t args;
@@ -90,8 +88,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...) {
     // make exception object
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t*, 0);
     o->base.type = &exception_type;
-    o->source_file = 0;
-    o->source_line = 0;
+    o->traceback = MP_OBJ_NULL;
     o->id = id;
     o->args.len = 0;
     if (fmt == NULL) {
@@ -115,26 +112,27 @@ qstr mp_obj_exception_get_type(mp_obj_t self_in) {
     return self->id;
 }
 
-void mp_obj_exception_set_source_info(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
+void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
     assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
     mp_obj_exception_t *self = self_in;
-    // TODO make a list of file/line pairs for the traceback
-    // for now, just keep the first one
-    if (file != 0 && self->source_file == 0) {
-        self->source_file = file;
+    // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
+    if (self->traceback == MP_OBJ_NULL) {
+        self->traceback = mp_obj_new_list(0, NULL);
     }
-    if (line != 0 && self->source_line == 0) {
-        self->source_line = line;
-    }
-    if (block != 0 && self->source_block == 0) {
-        self->source_block = block;
-    }
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
 }
 
-void mp_obj_exception_get_source_info(mp_obj_t self_in, qstr *file, machine_uint_t *line, qstr *block) {
+void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values) {
     assert(MP_OBJ_IS_TYPE(self_in, &exception_type));
     mp_obj_exception_t *self = self_in;
-    *file = self->source_file;
-    *line = self->source_line;
-    *block = self->source_block;
+    if (self->traceback == MP_OBJ_NULL) {
+        *n = 0;
+        *values = NULL;
+    } else {
+        uint n2;
+        mp_obj_list_get(self->traceback, &n2, (mp_obj_t**)values);
+        *n = n2;
+    }
 }
