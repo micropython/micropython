@@ -28,8 +28,13 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
     */
 
-    // find the file to import
     qstr mod_name = mp_obj_get_qstr(args[0]);
+    mp_obj_t loaded = mp_obj_module_get(mod_name);
+    if (loaded != MP_OBJ_NULL) {
+        return loaded;
+    }
+
+    // find the file to import
     mp_lexer_t *lex = mp_import_open_file(mod_name);
     if (lex == NULL) {
         // TODO handle lexer error correctly

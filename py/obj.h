@@ -356,6 +356,7 @@ extern const mp_obj_type_t gen_instance_type;
 // module
 extern const mp_obj_type_t module_type;
 mp_obj_t mp_obj_new_module(qstr module_name);
+mp_obj_t mp_obj_module_get(qstr module_name);
 struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
