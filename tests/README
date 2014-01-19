@@ -1,0 +1,4 @@
+This directory contains tests for various functionality areas of MicroPython.
+To run all stable tests, run "run-tests" script in this directory. Note
+that bytecode tests are not yet stable and should be run separately in
+"bytecode" subdirectory.
