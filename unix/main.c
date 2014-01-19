@@ -216,6 +216,10 @@ int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
+    mp_obj_t m_sys = mp_obj_new_module(qstr_from_str_static("sys"));
+    mp_obj_t py_argv = mp_obj_new_list(0, NULL);
+    rt_store_attr(m_sys, qstr_from_str_static("argv"), py_argv);
+
     rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
     rt_store_name(qstr_from_str_static("open"), (mp_obj_t)&mp_builtin_open_obj);
     rawsocket_init();
@@ -254,7 +258,11 @@ int main(int argc, char **argv) {
                     return usage();
                 }
             } else {
+                for (int i = a; i < argc; i++) {
+                    rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_strn_copy(argv[i], strlen(argv[i]))));
+                }
                 do_file(argv[a]);
+                break;
             }
         }
     }
