@@ -112,7 +112,7 @@ static const mp_obj_type_t rawfile_type = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t mp_builtin_open(uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args) {
     // TODO: analyze mode and buffering args and instantiate appropriate type
     return fdfile_make_new((mp_obj_t)&rawfile_type, n_args, 0, args);
 }
