@@ -22,14 +22,18 @@ static mp_obj_t mp_obj_new_str_iterator(mp_obj_str_t *str, int cur);
 /******************************************************************************/
 /* str                                                                        */
 
-void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_obj_str_t *self = self_in;
+void mp_obj_str_print_qstr(void (*print)(void *env, const char *fmt, ...), void *env, qstr q, mp_print_kind_t kind) {
     if (kind == PRINT_STR) {
-        print(env, "%s", qstr_str(self->qstr));
+        print(env, "%s", qstr_str(q));
     } else {
         // TODO need to escape chars etc
-        print(env, "'%s'", qstr_str(self->qstr));
+        print(env, "'%s'", qstr_str(q));
     }
+}
+
+void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_obj_str_t *self = self_in;
+    mp_obj_str_print_qstr(print, env, self->qstr, kind);
 }
 
 mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

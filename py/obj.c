@@ -44,6 +44,8 @@ void printf_wrapper(void *env, const char *fmt, ...) {
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(o_in));
+    } else if (MP_OBJ_IS_QSTR(o_in)) {
+        mp_obj_str_print_qstr(print, env, MP_OBJ_QSTR_VALUE(o_in), kind);
     } else {
         mp_obj_base_t *o = o_in;
         if (o->type->print != NULL) {

@@ -280,6 +280,7 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine
 // str
 extern const mp_obj_type_t str_type;
 qstr mp_obj_str_get(mp_obj_t self_in);
+void mp_obj_str_print_qstr(void (*print)(void *env, const char *fmt, ...), void *env, qstr q, mp_print_kind_t kind);
 
 #if MICROPY_ENABLE_FLOAT
 // float
