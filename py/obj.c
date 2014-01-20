@@ -222,7 +222,9 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 
 qstr mp_obj_get_qstr(mp_obj_t arg) {
-    if (MP_OBJ_IS_TYPE(arg, &str_type)) {
+    if (MP_OBJ_IS_QSTR(arg)) {
+        return MP_OBJ_QSTR_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
         return mp_obj_str_get(arg);
     } else {
         assert(0);
