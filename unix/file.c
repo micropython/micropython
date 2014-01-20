@@ -102,8 +102,8 @@ static const mp_obj_type_t rawfile_type = {
     "io.FileIO",
     .print = fdfile_print,
     .make_new = fdfile_make_new,
-    .getiter = NULL,
-    .iternext = NULL,
+    .getiter = mp_identity,
+    .iternext = mp_stream_unbuffered_iter,
     .stream_p = {
         .read = fdfile_read,
         .write = fdfile_write,
