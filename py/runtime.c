@@ -158,8 +158,8 @@ void rt_init(void) {
     mp_obj_t m_mp = mp_obj_new_module(qstr_from_str_static("micropython"));
     rt_store_name(qstr_from_str_static("micropython"), m_mp);
 
-    mp_obj_t m_sys = mp_obj_new_module(qstr_from_str_static("sys"));
-    rt_store_name(qstr_from_str_static("sys"), m_sys);
+    // Precreate sys module, so "import sys" didn't throw exceptions.
+    mp_obj_new_module(qstr_from_str_static("sys"));
 #endif
 
     next_unique_code_id = 1; // 0 indicates "no code"
