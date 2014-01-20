@@ -175,16 +175,8 @@ static bool chr_in_str(const char* const str, const size_t str_len, const char c
 
 static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
-    assert(MP_OBJ_IS_TYPE(args[0], &str_type));
-    if (!MP_OBJ_IS_TYPE(args[1], &str_type)) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(
-                     MP_QSTR_TypeError,
-                     "Can't convert '%s' object to str implicitly",
-                     mp_obj_get_type_str(args[1])));
-    }
-
-    const char* haystack = qstr_str(((mp_obj_str_t*)args[0])->qstr);
-    const char* needle = qstr_str(((mp_obj_str_t*)args[1])->qstr);
+    const char* haystack = qstr_str(mp_obj_str_get(args[0]));
+    const char* needle = qstr_str(mp_obj_str_get(args[1]));
 
     size_t haystack_len = strlen(haystack);
     size_t needle_len = strlen(needle);
@@ -222,14 +214,11 @@ mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         chars_to_del = whitespace;
     } else {
-        assert(MP_OBJ_IS_TYPE(args[1], &str_type));
-        mp_obj_str_t *chars_to_del_obj = args[1];
-        chars_to_del = qstr_str(chars_to_del_obj->qstr);
+        chars_to_del = qstr_str(mp_obj_str_get(args[1]));
     }
 
     const size_t chars_to_del_len = strlen(chars_to_del);
-    mp_obj_str_t *self = args[0];
-    const char *orig_str = qstr_str(self->qstr);
+    const char *orig_str = qstr_str(mp_obj_str_get(args[0]));
     const size_t orig_str_len = strlen(orig_str);
 
     size_t first_good_char_pos = 0;
@@ -321,9 +310,15 @@ mp_obj_t mp_obj_new_str(qstr qstr) {
 }
 
 qstr mp_obj_str_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &str_type));
-    mp_obj_str_t *self = self_in;
-    return self->qstr;
+    if (MP_OBJ_IS_QSTR(self_in)) {
+        return MP_OBJ_QSTR_VALUE(self_in);
+    }
+    if (MP_OBJ_IS_TYPE(self_in, &str_type)) {
+        mp_obj_str_t *self = self_in;
+        return self->qstr;
+    }
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
+             mp_obj_get_type_str(self_in)));
 }
 
 /******************************************************************************/
