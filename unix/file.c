@@ -8,12 +8,15 @@
 #include "mpconfig.h"
 #include "mpqstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "stream.h"
 
 typedef struct _mp_obj_fdfile_t {
     mp_obj_base_t base;
     int fd;
 } mp_obj_fdfile_t;
+
+static const mp_obj_type_t rawfile_type;
 
 static void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_fdfile_t *self = self_in;
@@ -44,6 +47,13 @@ static mp_obj_t fdfile_close(mp_obj_t self_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
+
+static mp_obj_fdfile_t *fdfile_new(int fd) {
+    mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
+    o->base.type = &rawfile_type;
+    o->fd = fd;
+    return o;
+}
 
 static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
@@ -81,11 +91,11 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
         }
     }
 
-    o->fd = open(fname, mode, 0644);
-    if (o->fd == -1) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_OSError, "[Errno %d]", (const char *)(machine_int_t)errno));
+    int fd = open(fname, mode, 0644);
+    if (fd == -1) {
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
     }
-    return o;
+    return fdfile_new(fd);
 }
 
 static const mp_method_t rawfile_type_methods[] = {
@@ -117,3 +127,12 @@ mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args) {
     return fdfile_make_new((mp_obj_t)&rawfile_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, mp_builtin_open);
+
+void file_init() {
+    rt_store_name(qstr_from_str_static("open"), (mp_obj_t)&mp_builtin_open_obj);
+
+    mp_obj_t m_sys = mp_obj_new_module(qstr_from_str_static("sys"));
+    rt_store_attr(m_sys, qstr_from_str_static("stdin"), fdfile_new(STDIN_FILENO));
+    rt_store_attr(m_sys, qstr_from_str_static("stdout"), fdfile_new(STDOUT_FILENO));
+    rt_store_attr(m_sys, qstr_from_str_static("stderr"), fdfile_new(STDERR_FILENO));
+}
