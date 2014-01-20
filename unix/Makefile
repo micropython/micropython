@@ -1,5 +1,5 @@
 # define main target
-PROG = py
+PROG = micropython
 all: $(PROG)
 
 # include py core make definitions
