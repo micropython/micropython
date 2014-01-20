@@ -157,13 +157,7 @@ void rt_init(void) {
     mp_obj_new_module(qstr_from_str_static("sys"));
 #endif
 
-    mp_obj_t m_mp = mp_obj_new_module(qstr_from_str_static("micropython"));
-    rt_store_name(qstr_from_str_static("micropython"), m_mp);
-#if MICROPY_MEM_STATS
-    rt_store_attr(m_mp, qstr_from_str_static("mem_total"), (mp_obj_t)&mp_builtin_mem_total_obj);
-    rt_store_attr(m_mp, qstr_from_str_static("mem_current"), (mp_obj_t)&mp_builtin_mem_current_obj);
-    rt_store_attr(m_mp, qstr_from_str_static("mem_peak"), (mp_obj_t)&mp_builtin_mem_peak_obj);
-#endif
+    mp_module_micropython_init();
 
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;

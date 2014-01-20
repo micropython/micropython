@@ -27,6 +27,4 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_str_obj);
 
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_mem_total_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_mem_current_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_mem_peak_obj);
+void mp_module_micropython_init(void);
