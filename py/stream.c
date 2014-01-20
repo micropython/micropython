@@ -30,6 +30,7 @@ static mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     if (out_sz == -1) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
+        buf = m_realloc(buf, sz + 1, out_sz + 1);
         buf[out_sz] = 0;
         return mp_obj_new_str(qstr_from_str_take(buf, /*out_sz,*/ sz + 1));
     }
