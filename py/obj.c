@@ -288,3 +288,9 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     }
     return MP_OBJ_NEW_SMALL_INT(len);
 }
+
+// Return input argument. Useful as .getiter for objects which are
+// their own iterators, etc.
+mp_obj_t mp_identity(mp_obj_t self) {
+    return self;
+}
