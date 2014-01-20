@@ -347,3 +347,15 @@ static mp_obj_t mp_builtin_str(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);
+
+// TODO: This should be type, this is just quick CPython compat hack
+static mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
+    if (!MP_OBJ_IS_QSTR(args[0]) && !MP_OBJ_IS_TYPE(args[0], &str_type)) {
+        assert(0);
+    }
+    // Currently, MicroPython strings are mix between CPython byte and unicode
+    // strings. So, conversion is null so far.
+    return args[0];
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_bytes_obj, 1, 3, mp_builtin_bytes);
