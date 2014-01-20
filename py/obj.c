@@ -28,6 +28,8 @@ mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return "int";
+    } else if (MP_OBJ_IS_QSTR(o_in)) {
+        return "str";
     } else {
         mp_obj_base_t *o = o_in;
         return o->type->name;
