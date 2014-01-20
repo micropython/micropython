@@ -318,5 +318,4 @@ void rawsocket_init() {
     STORE_INT_CONST(m, SOCK_STREAM);
     STORE_INT_CONST(m, SOCK_DGRAM);
     STORE_INT_CONST(m, SOCK_RAW);
-    rt_store_name(qstr_from_str_static("rawsocket"), m);
 }
