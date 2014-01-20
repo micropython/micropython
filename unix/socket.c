@@ -127,6 +127,42 @@ static mp_obj_t socket_accept(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
+static mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = args[0];
+    int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int flags = 0;
+
+    if (n_args > 2) {
+        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+    }
+
+    char *buf = m_new(char, sz + 1);
+    int out_sz = recv(self->fd, buf, sz, flags);
+    RAISE_ERRNO(out_sz, errno);
+
+    buf = m_realloc(buf, sz + 1, out_sz + 1);
+    buf[out_sz] = 0;
+    return MP_OBJ_NEW_QSTR(qstr_from_str_take(buf, out_sz + 1));
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
+
+static mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = args[0];
+    int flags = 0;
+
+    if (n_args > 2) {
+        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+    }
+
+    const char *buf = qstr_str(mp_obj_str_get(args[1]));
+    int sz = strlen(buf);
+    int out_sz = send(self->fd, buf, sz, flags);
+    RAISE_ERRNO(out_sz, errno);
+
+    return MP_OBJ_NEW_SMALL_INT(out_sz);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
+
 static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -159,6 +195,8 @@ static const mp_method_t rawsocket_type_methods[] = {
         { "bind", &socket_bind_obj },
         { "listen", &socket_listen_obj },
         { "accept", &socket_accept_obj },
+        { "recv", &socket_recv_obj },
+        { "send", &socket_send_obj },
         { "close", &socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
         { "recv", &mp_stream_read_obj },
