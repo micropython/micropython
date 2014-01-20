@@ -137,9 +137,18 @@ static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
     // TODO: \0
     vstr_add_byte(vstr, 0);
     vstr_shrink(vstr);
-    return mp_obj_new_str(qstr_from_str_take(vstr_str(vstr), vstr_len(vstr)));
+    return MP_OBJ_NEW_QSTR(qstr_from_str_take(vstr_str(vstr), vstr_len(vstr)));
 }
 
+mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
+    mp_obj_t l_in = stream_unbuffered_readline(1, &self);
+    const char *l = qstr_str(MP_OBJ_QSTR_VALUE(l_in));
+    // TODO: \0
+    if (*l != 0) {
+        return l_in;
+    }
+    return mp_const_stop_iteration;
+}
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
