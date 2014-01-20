@@ -8,6 +8,8 @@ print(x)
 
 print('123' + "456")
 
+print('123' * 5)
+
 # iter
 print(list('str'))
 

@@ -102,6 +102,18 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (strstr(lhs_str, rhs_str) == NULL));
             }
             break;
+        case RT_BINARY_OP_MULTIPLY:
+        {
+            if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
+                return NULL;
+            }
+            int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
+            size_t len = strlen(lhs_str);
+            char *s = m_new(char, len * n + 1);
+            s[len * n] = 0;
+            mp_seq_multiply(lhs_str, sizeof(*lhs_str), len, n, s);
+            return MP_OBJ_NEW_QSTR(qstr_from_str_take(s, len * n + 1));
+        }
     }
 
     return MP_OBJ_NULL; // op not supported
