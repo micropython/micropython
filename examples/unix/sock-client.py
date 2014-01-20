@@ -1,22 +1,32 @@
-mod = rawsocket
-s = mod.socket()
+try:
+    import rawsocket as _socket
+except:
+    import _socket
+
+
+s = _socket.socket()
 
 if 1:
-    ai = mod.getaddrinfo("google.com", 80)
+    ai = _socket.getaddrinfo("google.com", 80)
     print("Address infos:", ai)
     addr = ai[0][4]
 else:
-    # Deprecated way to construct connection address
-    addr = mod.sockaddr_in()
+    # Deprecated ways to construct connection address
+    addr = _socket.sockaddr_in()
     addr.sin_family = 2
     #addr.sin_addr = (0x0100 << 16) + 0x007f
     #addr.sin_addr = (0x7f00 << 16) + 0x0001
-    #addr.sin_addr = mod.inet_aton("127.0.0.1")
-    addr.sin_addr = mod.gethostbyname("google.com")
-    addr.sin_port = mod.htons(80)
+    #addr.sin_addr = _socket.inet_aton("127.0.0.1")
+    addr.sin_addr = _socket.gethostbyname("google.com")
+    addr.sin_port = _socket.htons(80)
 
 print("Connect address:", addr)
 s.connect(addr)
 
-s.write("GET / HTTP/1.0\n\n")
-print(s.readall())
+if 0:
+    # MicroPython rawsocket module supports file interface directly
+    s.write("GET / HTTP/1.0\n\n")
+    print(s.readall())
+else:
+    s.send(b"GET / HTTP/1.0\n\n")
+    print(s.recv(4096))
