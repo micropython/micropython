@@ -376,3 +376,6 @@ typedef struct _mp_obj_classmethod_t {
     mp_obj_base_t base;
     mp_obj_t fun;
 } mp_obj_classmethod_t;
+
+// sequence helpers
+void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
