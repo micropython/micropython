@@ -208,9 +208,11 @@ static const mp_obj_type_t led_obj_type = {
     .methods = led_methods,
 };
 
-mp_obj_t pyb_Led(mp_obj_t led_id) {
+static mp_obj_t pyb_Led(mp_obj_t led_id) {
     pyb_led_obj_t *o = m_new_obj(pyb_led_obj_t);
     o->base.type = &led_obj_type;
     o->led_id = mp_obj_get_int(led_id);
     return o;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_Led_obj, pyb_Led);

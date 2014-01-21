@@ -36,7 +36,10 @@ CFLAGS += -Os -DNDEBUG
 endif
 
 LDFLAGS = --nostdlib -T stm32f405.ld
-LIBS = $(shell $(CC) -print-libgcc-file-name)
+LIBS =
+
+# uncomment this if you want libgcc
+#LIBS += $(shell $(CC) -print-libgcc-file-name)
 
 SRC_C = \
 	main.c \
@@ -58,10 +61,10 @@ SRC_C = \
 	timer.c \
 	audio.c \
 	sdio.c \
-	pybwlan.c \
 	i2c.c \
 	usrsw.c \
 	adc.c \
+#	pybwlan.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -133,7 +136,7 @@ SRC_CC3K = \
 	ccspi.c \
 	pybcc3k.c \
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o) $(SRC_CC3K:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o)) # $(SRC_CC3K:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STM_OTG:.c=.o))
 
 all2: $(BUILD) $(BUILD)/flash.dfu

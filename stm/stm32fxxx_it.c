@@ -286,6 +286,7 @@ void EXTI15_10_IRQHandler(void) {
     // work out if it's A14 that had the interrupt
     if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
         led_toggle(PYB_LED_G2);
+        /* these are needed for CC3000 support
         extern void SpiIntGPIOHandler(void);
         extern uint32_t exti14_enabled;
         extern uint32_t exti14_missed;
@@ -296,6 +297,7 @@ void EXTI15_10_IRQHandler(void) {
         } else {
             exti14_missed = 1;
         }
+        */
         EXTI_ClearITPendingBit(EXTI_Line14);
         //printf("<- EXTI14 done\n");
     }

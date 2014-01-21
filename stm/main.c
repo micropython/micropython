@@ -61,21 +61,6 @@ void flash_error(int n) {
     led_state(PYB_LED_R2, 0);
 }
 
-static void impl02_c_version(void) {
-    int x = 0;
-    while (x < 400) {
-        int y = 0;
-        while (y < 400) {
-            volatile int z = 0;
-            while (z < 400) {
-                z = z + 1;
-            }
-            y = y + 1;
-        }
-        x = x + 1;
-    }
-}
-
 void __fatal_error(const char *msg) {
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
@@ -107,41 +92,6 @@ mp_obj_t pyb_delay(mp_obj_t count) {
     sys_tick_delay_ms(mp_obj_get_int(count));
     return mp_const_none;
 }
-
-mp_obj_t pyb_led(mp_obj_t state) {
-    led_state(PYB_LED_G1, rt_is_true(state));
-    return state;
-}
-
-/*
-void g(uint i) {
-    printf("g:%d\n", i);
-    if (i & 1) {
-        nlr_jump((void*)(42 + i));
-    }
-}
-void f(void) {
-    nlr_buf_t nlr;
-    int i;
-    for (i = 0; i < 4; i++) {
-        printf("f:loop:%d:%p\n", i, &nlr);
-        if (nlr_push(&nlr) == 0) {
-            // normal
-            //printf("a:%p:%p %p %p %u\n", &nlr, nlr.ip, nlr.sp, nlr.prev, nlr.ret_val);
-            g(i);
-            printf("f:lp:%d:nrm\n", i);
-            nlr_pop();
-        } else {
-            // nlr
-            //printf("b:%p:%p %p %p %u\n", &nlr, nlr.ip, nlr.sp, nlr.prev, nlr.ret_val);
-            printf("f:lp:%d:nlr:%d\n", i, (int)nlr.ret_val);
-        }
-    }
-}
-void nlr_test(void) {
-    f(1);
-}
-*/
 
 void fatality(void) {
     led_state(PYB_LED_R1, 1);
@@ -180,6 +130,8 @@ static const char *help_text =
 "    pyb.switch()   -- return True/False if switch pressed or not\n"
 "    pyb.accel()    -- get accelerometer values\n"
 "    pyb.rand()     -- get a 16-bit random number\n"
+"    pyb.gpio(<port>)           -- get port value (port='a4' for example)\n"
+"    pyb.gpio(<port>, <val>)    -- set port value, True or False, 1 or 0\n"
 ;
 
 // get some help about available functions
@@ -587,7 +539,7 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 
 static void rtc_init(void) {
     uint32_t rtc_clksrc;
-    uint32_t timeout =10000;
+    uint32_t timeout = 1000000;
 
     /* Enable the PWR clock */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
@@ -839,7 +791,6 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
         rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
         rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
-        rt_store_attr(m, MP_QSTR_led, rt_make_function_n(1, pyb_led));
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
         rt_store_attr(m, MP_QSTR_servo, rt_make_function_n(2, pyb_servo_set));
         rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
@@ -849,7 +800,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
         rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
         rt_store_attr(m, MP_QSTR_rand, rt_make_function_n(0, pyb_rng_get));
-        rt_store_attr(m, MP_QSTR_Led, rt_make_function_n(1, pyb_Led));
+        rt_store_attr(m, MP_QSTR_Led, (mp_obj_t)&pyb_Led_obj);
         rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(1, pyb_Servo));
         rt_store_attr(m, MP_QSTR_I2C, rt_make_function_n(2, pyb_I2C));
         rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
@@ -990,151 +941,6 @@ soft_reset:
         vstr_free(vstr);
     }
 
-    //printf("init;al=%u\n", m_get_total_bytes_allocated()); // 1600, due to qstr_init
-    //sys_tick_delay_ms(1000);
-
-    // Python!
-    if (0) {
-        //const char *pysrc = "def f():\n  x=x+1\nprint(42)\n";
-        const char *pysrc =
-            // impl01.py
-            /*
-            "x = 0\n"
-            "while x < 400:\n"
-            "    y = 0\n"
-            "    while y < 400:\n"
-            "        z = 0\n"
-            "        while z < 400:\n"
-            "            z = z + 1\n"
-            "        y = y + 1\n"
-            "    x = x + 1\n";
-            */
-            // impl02.py
-            /*
-            "#@micropython.native\n"
-            "def f():\n"
-            "    x = 0\n"
-            "    while x < 400:\n"
-            "        y = 0\n"
-            "        while y < 400:\n"
-            "            z = 0\n"
-            "            while z < 400:\n"
-            "                z = z + 1\n"
-            "            y = y + 1\n"
-            "        x = x + 1\n"
-            "f()\n";
-            */
-            /*
-            "print('in python!')\n"
-            "x = 0\n"
-            "while x < 4:\n"
-            "    pyb_led(True)\n"
-            "    pyb_delay(201)\n"
-            "    pyb_led(False)\n"
-            "    pyb_delay(201)\n"
-            "    x += 1\n"
-            "print('press me!')\n"
-            "while True:\n"
-            "    pyb_led(pyb_sw())\n";
-            */
-            /*
-            // impl16.py
-            "@micropython.asm_thumb\n"
-            "def delay(r0):\n"
-            "    b(loop_entry)\n"
-            "    label(loop1)\n"
-            "    movw(r1, 55999)\n"
-            "    label(loop2)\n"
-            "    subs(r1, r1, 1)\n"
-            "    cmp(r1, 0)\n"
-            "    bgt(loop2)\n"
-            "    subs(r0, r0, 1)\n"
-            "    label(loop_entry)\n"
-            "    cmp(r0, 0)\n"
-            "    bgt(loop1)\n"
-            "print('in python!')\n"
-            "@micropython.native\n"
-            "def flash(n):\n"
-            "    x = 0\n"
-            "    while x < n:\n"
-            "        pyb_led(True)\n"
-            "        delay(249)\n"
-            "        pyb_led(False)\n"
-            "        delay(249)\n"
-            "        x = x + 1\n"
-            "flash(20)\n";
-            */
-            // impl18.py
-            /*
-            "# basic exceptions\n"
-            "x = 1\n"
-            "try:\n"
-            "    x.a()\n"
-            "except:\n"
-            "    print(x)\n";
-            */
-            // impl19.py
-            "# for loop\n"
-            "def f():\n"
-            "    for x in range(400):\n"
-            "        for y in range(400):\n"
-            "            for z in range(400):\n"
-            "                pass\n"
-            "f()\n";
-
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", pysrc, strlen(pysrc), 0);
-
-        // nalloc=1740;6340;6836 -> 140;4600;496 bytes for lexer, parser, compiler
-        printf("lex; al=%u\n", m_get_total_bytes_allocated());
-        sys_tick_delay_ms(1000);
-        qstr parse_exc_id;
-        const char *parse_exc_msg;
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
-        mp_lexer_free(lex);
-        if (pn != MP_PARSE_NODE_NULL) {
-            printf("pars;al=%u\n", m_get_total_bytes_allocated());
-            sys_tick_delay_ms(1000);
-            //parse_node_show(pn, 0);
-            mp_obj_t module_fun = mp_compile(pn, 0, false);
-            printf("comp;al=%u\n", m_get_total_bytes_allocated());
-            sys_tick_delay_ms(1000);
-
-            if (module_fun == mp_const_none) {
-                printf("compile error\n");
-            } else {
-                // execute it!
-
-                // flash once
-                led_state(PYB_LED_G1, 1);
-                sys_tick_delay_ms(100);
-                led_state(PYB_LED_G1, 0);
-
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    mp_obj_t ret = rt_call_function_0(module_fun);
-                    printf("done! got: ");
-                    mp_obj_print(ret, PRINT_REPR);
-                    printf("\n");
-                    nlr_pop();
-                } else {
-                    // uncaught exception
-                    printf("exception: ");
-                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
-                    printf("\n");
-                }
-
-                // flash once
-                led_state(PYB_LED_G1, 1);
-                sys_tick_delay_ms(100);
-                led_state(PYB_LED_G1, 0);
-
-                sys_tick_delay_ms(1000);
-                printf("nalloc=%u\n", m_get_total_bytes_allocated());
-                sys_tick_delay_ms(1000);
-            }
-        }
-    }
-
     // HID example
     if (0) {
         uint8_t data[4];
@@ -1170,23 +976,6 @@ soft_reset:
 
     do_repl();
 
-    // benchmark C version of impl02.py
-    if (0) {
-        led_state(PYB_LED_G1, 1);
-        sys_tick_delay_ms(100);
-        led_state(PYB_LED_G1, 0);
-        impl02_c_version();
-        led_state(PYB_LED_G1, 1);
-        sys_tick_delay_ms(100);
-        led_state(PYB_LED_G1, 0);
-    }
-
-    // SD card testing
-    if (0) {
-        extern void sdio_init(void);
-        sdio_init();
-    }
-
     printf("PYB: sync filesystems\n");
     pyb_sync();
 
@@ -1196,7 +985,8 @@ soft_reset:
     goto soft_reset;
 }
 
-/* now supplied by libgcc library
+// these 2 functions seem to actually work... no idea why
+// replacing with libgcc does not work (probably due to wrong calling conventions)
 double __aeabi_f2d(float x) {
     // TODO
     return 0.0;
@@ -1206,7 +996,6 @@ float __aeabi_d2f(double x) {
     // TODO
     return 0.0;
 }
-*/
 
 double sqrt(double x) {
     // TODO
