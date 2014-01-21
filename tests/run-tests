@@ -10,7 +10,14 @@ numpassed=0
 numfailed=0
 namefailed=
 
-for infile in basics/*.py io/*.py
+if [ $# -eq 0 ]
+then
+    tests="basics/*.py io/*.py"
+else
+    tests="$@"
+fi
+
+for infile in $tests
 do
     basename=`basename $infile .py`
     outfile=${basename}.out
