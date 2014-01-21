@@ -271,6 +271,7 @@ void TIM6_DAC_IRQHandler(void) {
 #include "std.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 #include "led.h"
 // EXTI

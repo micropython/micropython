@@ -8,7 +8,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -268,7 +268,7 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index)
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     mp_small_int_t len = 0;
     if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
-        len = strlen(qstr_str(mp_obj_str_get(o_in)));
+        len = qstr_len(mp_obj_str_get(o_in));
     } else if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
         uint seq_len;
         mp_obj_t *seq_items;

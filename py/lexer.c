@@ -7,6 +7,8 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
 #include "lexer.h"
 
 #define TAB_SIZE (8)
@@ -593,7 +595,7 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
 mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close) {
     mp_lexer_t *lex = m_new(mp_lexer_t, 1);
 
-    lex->source_name = qstr_from_strn_copy(src_name, strlen(src_name));
+    lex->source_name = qstr_from_str(src_name);
     lex->stream_data = stream_data;
     lex->stream_next_char = stream_next_char;
     lex->stream_close = stream_close;

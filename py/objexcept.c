@@ -7,7 +7,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
 
@@ -100,7 +100,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...) {
         va_start(ap, fmt);
         vstr_vprintf(vstr, fmt, ap);
         va_end(ap);
-        o->msg = qstr_from_str_take(vstr->buf, vstr->alloc);
+        o->msg = qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len);
     }
 
     return o;

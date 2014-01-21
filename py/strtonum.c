@@ -6,7 +6,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "nlr.h"
 #include "obj.h"
 

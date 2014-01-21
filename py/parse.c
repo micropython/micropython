@@ -8,7 +8,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
 
@@ -205,7 +205,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     const mp_token_t *tok = mp_lexer_cur(lex);
     mp_parse_node_t pn;
     if (tok->kind == MP_TOKEN_NAME) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn_copy(tok->str, tok->len));
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn(tok->str, tok->len));
     } else if (tok->kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
@@ -254,16 +254,16 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             }
         }
         if (dec) {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn_copy(str, len));
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn(str, len));
         } else if (small_int && !overflow && MP_FIT_SMALL_INT(int_val)) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn_copy(str, len));
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
         }
     } else if (tok->kind == MP_TOKEN_STRING) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn_copy(tok->str, tok->len));
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn(tok->str, tok->len));
     } else if (tok->kind == MP_TOKEN_BYTES) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn_copy(tok->str, tok->len));
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(tok->str, tok->len));
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, tok->kind);
     }

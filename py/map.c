@@ -4,6 +4,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "map.h"

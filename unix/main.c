@@ -6,6 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
 #include "parse.h"
@@ -216,12 +217,12 @@ int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
-    mp_obj_t m_sys = mp_obj_new_module(qstr_from_str_static("sys"));
+    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
     mp_obj_t py_argv = mp_obj_new_list(0, NULL);
-    rt_store_attr(m_sys, qstr_from_str_static("argv"), py_argv);
+    rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
-    rt_store_name(qstr_from_str_static("test"), test_obj_new(42));
-    rt_store_name(qstr_from_str_static("open"), (mp_obj_t)&mp_builtin_open_obj);
+    rt_store_name(qstr_from_str("test"), test_obj_new(42));
+    rt_store_name(MP_QSTR_open, (mp_obj_t)&mp_builtin_open_obj);
     rawsocket_init();
 
     // Here is some example code to create a class and instance of that class.
@@ -232,9 +233,9 @@ int main(int argc, char **argv) {
     // test_obj = TestClass()
     // test_obj.attr = 42
     mp_obj_t test_class_type, test_class_instance;
-    test_class_type = mp_obj_new_type(qstr_from_str_static("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    rt_store_name(qstr_from_str_static("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
-    rt_store_attr(test_class_instance, qstr_from_str_static("attr"), mp_obj_new_int(42));
+    test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    rt_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
+    rt_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
@@ -259,7 +260,7 @@ int main(int argc, char **argv) {
                 }
             } else {
                 for (int i = a; i < argc; i++) {
-                    rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_strn_copy(argv[i], strlen(argv[i]))));
+                    rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
                 }
                 do_file(argv[a]);
                 break;

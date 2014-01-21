@@ -7,7 +7,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "builtin.h"
@@ -38,8 +38,8 @@ void mp_module_micropython_init(void) {
     rt_store_name(MP_QSTR_micropython, m_mp);
 
 #if MICROPY_MEM_STATS
-    rt_store_attr(m_mp, qstr_from_str_static("mem_total"), (mp_obj_t)&mp_builtin_mem_total_obj);
-    rt_store_attr(m_mp, qstr_from_str_static("mem_current"), (mp_obj_t)&mp_builtin_mem_current_obj);
-    rt_store_attr(m_mp, qstr_from_str_static("mem_peak"), (mp_obj_t)&mp_builtin_mem_peak_obj);
+    rt_store_attr(m_mp, QSTR_FROM_STR_STATIC("mem_total"), (mp_obj_t)&mp_builtin_mem_total_obj);
+    rt_store_attr(m_mp, QSTR_FROM_STR_STATIC("mem_current"), (mp_obj_t)&mp_builtin_mem_current_obj);
+    rt_store_attr(m_mp, QSTR_FROM_STR_STATIC("mem_peak"), (mp_obj_t)&mp_builtin_mem_peak_obj);
 #endif
 }

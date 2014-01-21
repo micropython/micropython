@@ -25,13 +25,8 @@ endif
 
 # default settings; can be overriden in main Makefile
 
-ifndef PY_SRC
-PY_SRC = ../py
-endif
-
-ifndef BUILD
-BUILD = build
-endif
+PY_SRC ?= ../py
+BUILD ?= build
 
 # to create the build directory
 
@@ -41,6 +36,10 @@ $(BUILD):
 # where py object files go (they have a name prefix to prevent filename clashes)
 
 PY_BUILD = $(BUILD)/py.
+
+# file containing qstr defs for the core Python bit
+
+PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
 # py object files
 
@@ -97,6 +96,7 @@ PY_O_BASENAME = \
 	objstr.o \
 	objtuple.o \
 	objtype.o \
+	objzip.o \
 	stream.o \
 	builtin.o \
 	builtinimport.o \
@@ -105,11 +105,20 @@ PY_O_BASENAME = \
 	vm.o \
 	showbc.o \
 	repl.o \
-	objzip.o \
 
 # prepend the build destination prefix to the py object files
 
 PY_O = $(addprefix $(PY_BUILD), $(PY_O_BASENAME))
+
+# qstr data
+
+$(PY_BUILD)qstr.o: $(PY_BUILD)qstrdefs.generated.h
+
+$(PY_BUILD)qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
+	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
+	$(Q)python $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@
+
+# emitters
 
 $(PY_BUILD)emitnx64.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
 	$(ECHO) "CC $<"
@@ -119,11 +128,13 @@ $(PY_BUILD)emitnthumb.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
 
+# general source files
+
 $(PY_BUILD)%.o: $(PY_SRC)/%.S
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-$(PY_BUILD)%.o: $(PY_SRC)/%.c mpconfigport.h
+$(PY_BUILD)%.o: $(PY_SRC)/%.c mpconfigport.h $(PY_SRC)/qstr.h $(PY_QSTR_DEFS) $(QSTR_DEFS)
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -141,5 +152,5 @@ $(PY_BUILD)vm.o: $(PY_SRC)/vm.c
 
 $(PY_BUILD)parse.o: $(PY_SRC)/grammar.h
 $(PY_BUILD)compile.o: $(PY_SRC)/grammar.h
-$(PY_BUILD)/emitcpy.o: $(PY_SRC)/emit.h
+$(PY_BUILD)emitcpy.o: $(PY_SRC)/emit.h
 $(PY_BUILD)emitbc.o: $(PY_SRC)/emit.h

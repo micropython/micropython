@@ -6,7 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "map.h"
 #include "runtime0.h"
@@ -259,8 +259,8 @@ mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     }
     mp_obj_list_t *self = args[0];
     if (self->len > 1) {
-        mp_map_elem_t *keyfun = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("key")), MP_MAP_LOOKUP);
-        mp_map_elem_t *reverse = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(qstr_from_str_static("reverse")), MP_MAP_LOOKUP);
+        mp_map_elem_t *keyfun = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(QSTR_FROM_STR_STATIC("key")), MP_MAP_LOOKUP);
+        mp_map_elem_t *reverse = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(QSTR_FROM_STR_STATIC("reverse")), MP_MAP_LOOKUP);
         mp_quicksort(self->items, self->items + self->len - 1,
                      keyfun ? keyfun->value : NULL,
                      reverse && reverse->value ? rt_is_true(reverse->value) : false);

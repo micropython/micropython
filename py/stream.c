@@ -3,7 +3,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "stream.h"
 
@@ -23,15 +23,14 @@ static mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
         return stream_readall(args[0]);
     }
-    // +1 because so far we mark end of string with \0
-    char *buf = m_new(char, sz + 1);
+    char *buf = m_new(char, sz);
     int error;
     machine_int_t out_sz = o->type->stream_p.read(o, buf, sz, &error);
     if (out_sz == -1) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
-        buf[out_sz] = 0;
-        return mp_obj_new_str(qstr_from_str_take(buf, /*out_sz,*/ sz + 1));
+        // TODO don't intern this string
+        return mp_obj_new_str(qstr_from_strn_take(buf, sz, out_sz));
     }
 }
 
@@ -42,8 +41,8 @@ static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OSError, "Operation not supported"));
     }
 
-    const char *buf = qstr_str(mp_obj_get_qstr(arg));
-    machine_int_t sz = strlen(buf);
+    uint sz;
+    const byte *buf = qstr_data(mp_obj_get_qstr(arg), &sz);
     int error;
     machine_int_t out_sz = o->type->stream_p.write(self_in, buf, sz, &error);
     if (out_sz == -1) {
@@ -92,10 +91,9 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
             }
         }
     }
-    vstr_set_size(vstr, total_size + 1); // TODO: for \0
-    buf = vstr_str(vstr);
-    buf[total_size] = 0;
-    return mp_obj_new_str(qstr_from_str_take(buf, total_size + 1));
+    // TODO don't intern this string
+    vstr_set_size(vstr, total_size);
+    return mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, total_size));
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
@@ -113,7 +111,7 @@ static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
 
     vstr_t *vstr;
     if (max_size != -1) {
-        vstr = vstr_new_size(max_size + 1); // TODO: \0
+        vstr = vstr_new_size(max_size);
     } else {
         vstr = vstr_new();
     }
@@ -134,10 +132,9 @@ static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             break;
         }
     }
-    // TODO: \0
-    vstr_add_byte(vstr, 0);
+    // TODO don't intern this string
     vstr_shrink(vstr);
-    return mp_obj_new_str(qstr_from_str_take(vstr_str(vstr), vstr_len(vstr)));
+    return mp_obj_new_str(qstr_from_strn_take(vstr_str(vstr), vstr->alloc, vstr_len(vstr)));
 }
 
 

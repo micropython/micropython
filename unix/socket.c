@@ -10,7 +10,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
 #include "objarray.h"
@@ -249,7 +249,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         // "canonname will be a string representing the canonical name of the host
         // if AI_CANONNAME is part of the flags argument; else canonname will be empty." ??
         if (addr->ai_canonname) {
-            t->items[3] = MP_OBJ_NEW_QSTR(qstr_from_strn_copy(addr->ai_canonname, strlen(addr->ai_canonname)));
+            t->items[3] = MP_OBJ_NEW_QSTR(qstr_from_str(addr->ai_canonname));
         } else {
             t->items[3] = mp_const_none;
         }
@@ -262,23 +262,23 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod
 
 extern mp_obj_type_t sockaddr_in_type;
 
-#define STORE_INT_CONST(m, name) rt_store_attr(m, qstr_from_str_static(#name), MP_OBJ_NEW_SMALL_INT(name))
+#define STORE_INT_CONST(m, name) rt_store_attr(m, QSTR_FROM_STR_STATIC(#name), MP_OBJ_NEW_SMALL_INT(name))
 
 void rawsocket_init() {
-    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("rawsocket"));
-    rt_store_attr(m, qstr_from_str_static("socket"), (mp_obj_t)&rawsocket_type);
+    mp_obj_t m = mp_obj_new_module(MP_QSTR_rawsocket);
+    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&rawsocket_type);
 #if MICROPY_SOCKET_EXTRA
-    rt_store_attr(m, qstr_from_str_static("sockaddr_in"), (mp_obj_t)&sockaddr_in_type);
-    rt_store_attr(m, qstr_from_str_static("htons"), (mp_obj_t)&mod_socket_htons_obj);
-    rt_store_attr(m, qstr_from_str_static("inet_aton"), (mp_obj_t)&mod_socket_inet_aton_obj);
-    rt_store_attr(m, qstr_from_str_static("gethostbyname"), (mp_obj_t)&mod_socket_gethostbyname_obj);
+    rt_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
+    rt_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
+    rt_store_attr(m, MP_QSTR_inet_aton, (mp_obj_t)&mod_socket_inet_aton_obj);
+    rt_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
 #endif
-    rt_store_attr(m, qstr_from_str_static("getaddrinfo"), (mp_obj_t)&mod_socket_getaddrinfo_obj);
+    rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
     STORE_INT_CONST(m, AF_UNIX);
     STORE_INT_CONST(m, AF_INET);
     STORE_INT_CONST(m, AF_INET6);
     STORE_INT_CONST(m, SOCK_STREAM);
     STORE_INT_CONST(m, SOCK_DGRAM);
     STORE_INT_CONST(m, SOCK_RAW);
-    rt_store_name(qstr_from_str_static("rawsocket"), m);
+    rt_store_name(MP_QSTR_rawsocket, m);
 }

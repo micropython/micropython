@@ -7,7 +7,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"
@@ -273,8 +273,8 @@ static bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
 }
 
 static void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
-    const char *str = qstr_str(qstr);
-    int len = strlen(str);
+    uint len;
+    const byte *str = qstr_data(qstr, &len);
     bool has_single_quote = false;
     bool has_double_quote = false;
     for (int i = 0; i < len; i++) {
@@ -1169,22 +1169,20 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
             int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
             int len = n - 1;
             for (int i = 0; i < n; i++) {
-                len += strlen(qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])));
+                len += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
-            char *str = m_new(char, len + 1);
-            char *str_dest = str;
-            str[0] = 0;
+            byte *q_ptr;
+            byte *str_dest = qstr_build_start(len, &q_ptr);
             for (int i = 0; i < n; i++) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
-                const char *str_src = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-                size_t str_src_len = strlen(str_src);
+                uint str_src_len;
+                const byte *str_src = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &str_src_len);
                 memcpy(str_dest, str_src, str_src_len);
                 str_dest += str_src_len;
             }
-            *str_dest = '\0';
-            *q2 = qstr_from_str_take(str, len + 1);
+            *q2 = qstr_build_end(q_ptr);
             EMIT(import_name, *q2);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
@@ -1221,7 +1219,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #if MICROPY_EMIT_CPYTHON
         EMIT(load_const_verbatim_str, "('*',)");
 #else
-        EMIT(load_const_str, qstr_from_str_static("*"), false);
+        EMIT(load_const_str, QSTR_FROM_STR_STATIC("*"), false);
         EMIT(build_tuple, 1);
 #endif
 
@@ -1248,7 +1246,9 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     vstr_printf(vstr, ", ");
                 }
                 vstr_printf(vstr, "'");
-                vstr_printf(vstr, qstr_str(id2));
+                uint len;
+                const byte *str = qstr_data(id2, &len);
+                vstr_add_strn(vstr, (const char*)str, len);
                 vstr_printf(vstr, "'");
             }
             if (n == 1) {
@@ -2128,24 +2128,21 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
             printf("SyntaxError: cannot mix bytes and nonbytes literals\n");
             return;
         }
-        const char *str = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-        n_bytes += strlen(str);
+        n_bytes += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
     }
 
-    // allocate memory for concatenated string/bytes
-    char *cat_str = m_new(char, n_bytes + 1);
-
     // concatenate string/bytes
-    char *s_dest = cat_str;
+    byte *q_ptr;
+    byte *s_dest = qstr_build_start(n_bytes, &q_ptr);
     for (int i = 0; i < n; i++) {
-        const char *s = qstr_str(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-        size_t s_len = strlen(s);
+        uint s_len;
+        const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
         memcpy(s_dest, s, s_len);
         s_dest += s_len;
     }
-    *s_dest = '\0';
+    qstr q = qstr_build_end(q_ptr);
 
-    EMIT(load_const_str, qstr_from_str_take(cat_str, n_bytes + 1), string_kind == MP_PARSE_NODE_BYTES);
+    EMIT(load_const_str, q, string_kind == MP_PARSE_NODE_BYTES);
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
@@ -2767,7 +2764,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_comp_for));
         mp_parse_node_struct_t *pns_comp_for = (mp_parse_node_struct_t*)pns->nodes[1];
 
-        qstr qstr_arg = qstr_from_str_static(".0");
+        qstr qstr_arg = QSTR_FROM_STR_STATIC(".0");
         if (comp->pass == PASS_1) {
             bool added;
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);

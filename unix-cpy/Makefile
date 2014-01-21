@@ -25,7 +25,7 @@ endif
 SRC_C = \
 	main.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(PY_O)
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 LIB =
 
 $(PROG): $(BUILD) $(OBJ)

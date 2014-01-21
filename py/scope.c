@@ -5,6 +5,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "parse.h"
 #include "scope.h"
 
@@ -17,7 +18,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
     scope->source_file = source_file;
     switch (kind) {
         case SCOPE_MODULE:
-            scope->simple_name = qstr_from_str_static("<module>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<module>");
             break;
         case SCOPE_FUNCTION:
         case SCOPE_CLASS:
@@ -25,19 +26,19 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
             scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
             break;
         case SCOPE_LAMBDA:
-            scope->simple_name = qstr_from_str_static("<lambda>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<lambda>");
             break;
         case SCOPE_LIST_COMP:
-            scope->simple_name = qstr_from_str_static("<listcomp>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<listcomp>");
             break;
         case SCOPE_DICT_COMP:
-            scope->simple_name = qstr_from_str_static("<dictcomp>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<dictcomp>");
             break;
         case SCOPE_SET_COMP:
-            scope->simple_name = qstr_from_str_static("<setcomp>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<setcomp>");
             break;
         case SCOPE_GEN_EXPR:
-            scope->simple_name = qstr_from_str_static("<genexpr>");
+            scope->simple_name = QSTR_FROM_STR_STATIC("<genexpr>");
             break;
         default:
             assert(0);

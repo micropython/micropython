@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_gpio.h>
@@ -12,6 +13,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "systick.h"
 
 #include "nlr.h"
@@ -58,7 +60,7 @@ mp_obj_t decode_addr(unsigned char *ip, int n_bytes) {
     } else if (n_bytes == 32) {
         snprintf(data, 64, "%s", ip);
     }
-    return mp_obj_new_str(qstr_from_strn_copy(data, strlen(data)));
+    return mp_obj_new_str(qstr_from_strn(data, strlen(data)));
 }
 
 void decode_addr_and_store(mp_obj_t object, qstr q_attr, unsigned char *ip, int n_bytes) {
@@ -78,20 +80,20 @@ mp_obj_t pyb_wlan_get_ip(void) {
 
     // if it doesn't already exist, make a new empty class for NetAddress objects
     if (net_address_type == MP_OBJ_NULL) {
-        net_address_type = mp_obj_new_type(qstr_from_str_static("NetAddress"), mp_const_empty_tuple, mp_obj_new_dict(0));
+        net_address_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("NetAddress"), mp_const_empty_tuple, mp_obj_new_dict(0));
     }
 
     // make a new NetAddress object
     mp_obj_t net_addr = rt_call_function_0(net_address_type);
 
     // fill the NetAddress object with data
-    decode_addr_and_store(net_addr, qstr_from_str_static("ip"), &ipconfig.aucIP[0], 4);
-    decode_addr_and_store(net_addr, qstr_from_str_static("subnet"), &ipconfig.aucSubnetMask[0], 4);
-    decode_addr_and_store(net_addr, qstr_from_str_static("gateway"), &ipconfig.aucDefaultGateway[0], 4);
-    decode_addr_and_store(net_addr, qstr_from_str_static("dhcp"), &ipconfig.aucDHCPServer[0], 4);
-    decode_addr_and_store(net_addr, qstr_from_str_static("dns"), &ipconfig.aucDNSServer[0], 4);
-    decode_addr_and_store(net_addr, qstr_from_str_static("mac"), &ipconfig.uaMacAddr[0], 6);
-    decode_addr_and_store(net_addr, qstr_from_str_static("ssid"), &ipconfig.uaSSID[0], 32);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("ip"), &ipconfig.aucIP[0], 4);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("subnet"), &ipconfig.aucSubnetMask[0], 4);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("gateway"), &ipconfig.aucDefaultGateway[0], 4);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("dhcp"), &ipconfig.aucDHCPServer[0], 4);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("dns"), &ipconfig.aucDNSServer[0], 4);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("mac"), &ipconfig.uaMacAddr[0], 6);
+    decode_addr_and_store(net_addr, QSTR_FROM_STR_STATIC("ssid"), &ipconfig.uaSSID[0], 32);
 
     return net_addr;
 }
@@ -122,12 +124,12 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
         last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (3);
     } else {
         if (pyb_wlan_get_host(host_name) == mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg(qstr_from_str_static("WlanError"), "unknown host"));
+            nlr_jump(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "unknown host"));
         }
     }
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd < 0) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", (void*)sd));
     }
     //printf("socket seemed to work\n");
     //sys_tick_delay_ms(200);
@@ -138,7 +140,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
     remote.sin_addr.s_addr = htonl(last_ip);
     int ret = connect(sd, (sockaddr*)&remote, sizeof(sockaddr));
     if (ret != 0) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "connect failed: %d", (void*)ret));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(QSTR_FROM_STR_STATIC("WlanError"), "connect failed: %d", (void*)ret));
     }
     //printf("connect seemed to work\n");
     //sys_tick_delay_ms(200);
@@ -159,7 +161,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             ret = send(sd, query + sent, strlen(query + sent), 0);
             //printf("sent %d bytes\n", ret);
             if (ret < 0) {
-                nlr_jump(mp_obj_new_exception_msg(qstr_from_str_static("WlanError"), "send failed"));
+                nlr_jump(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "send failed"));
             }
             sent += ret;
             //sys_tick_delay_ms(200);
@@ -196,12 +198,12 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             // read data
             ret = recv(sd, buf, 64, 0);
             if (ret < 0) {
-                nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "recv failed %d", (void*)ret));
+                nlr_jump(mp_obj_new_exception_msg_1_arg(QSTR_FROM_STR_STATIC("WlanError"), "recv failed %d", (void*)ret));
             }
             vstr_add_strn(vstr, buf, ret);
         }
 
-        mp_ret = mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+        mp_ret = mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len));
     }
 
     closesocket(sd);
@@ -216,7 +218,7 @@ mp_obj_t pyb_wlan_serve(void) {
     sys_tick_delay_ms(500);
     if (sd < 0) {
         printf("socket fail\n");
-        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "socket failed: %d", (void*)sd));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", (void*)sd));
     }
 
     /*
@@ -237,7 +239,7 @@ mp_obj_t pyb_wlan_serve(void) {
     sys_tick_delay_ms(100);
     if (ret != 0) {
         printf("bind fail\n");
-        nlr_jump(mp_obj_new_exception_msg_1_arg(qstr_from_str_static("WlanError"), "bind failed: %d", (void*)ret));
+        nlr_jump(mp_obj_new_exception_msg_1_arg(QSTR_FROM_STR_STATIC("WlanError"), "bind failed: %d", (void*)ret));
     }
     printf("bind seemed to work\n");
 
@@ -355,14 +357,14 @@ void pyb_wlan_init(void) {
     SpiInit();
     wlan_init(CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
 
-    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("wlan"));
-    rt_store_attr(m, qstr_from_str_static("connect"), rt_make_function_var(0, pyb_wlan_connect));
-    rt_store_attr(m, qstr_from_str_static("disconnect"), rt_make_function_n(0, pyb_wlan_disconnect));
-    rt_store_attr(m, qstr_from_str_static("ip"), rt_make_function_n(0, pyb_wlan_get_ip));
-    rt_store_attr(m, qstr_from_str_static("get_host"), rt_make_function_n(1, pyb_wlan_get_host));
-    rt_store_attr(m, qstr_from_str_static("http_get"), rt_make_function_n(2, pyb_wlan_http_get));
-    rt_store_attr(m, qstr_from_str_static("serve"), rt_make_function_n(0, pyb_wlan_serve));
-    rt_store_name(qstr_from_str_static("wlan"), m);
+    mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("wlan"));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("connect"), rt_make_function_var(0, pyb_wlan_connect));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("disconnect"), rt_make_function_n(0, pyb_wlan_disconnect));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("ip"), rt_make_function_n(0, pyb_wlan_get_ip));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("get_host"), rt_make_function_n(1, pyb_wlan_get_host));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("http_get"), rt_make_function_n(2, pyb_wlan_http_get));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("serve"), rt_make_function_n(0, pyb_wlan_serve));
+    rt_store_name(QSTR_FROM_STR_STATIC("wlan"), m);
 }
 
 void pyb_wlan_start(void) {

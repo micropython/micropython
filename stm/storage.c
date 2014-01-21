@@ -4,6 +4,7 @@
 #include "misc.h"
 #include "systick.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 #include "led.h"
 #include "flash.h"

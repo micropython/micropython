@@ -4,6 +4,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 
 /******************************************************************************/

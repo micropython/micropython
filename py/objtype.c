@@ -6,7 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "map.h"
 #include "runtime0.h"
@@ -166,7 +166,7 @@ static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (op_name == NULL) {
         return MP_OBJ_NULL;
     }
-    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, qstr_from_str_static(op_name));
+    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, QSTR_FROM_STR_STATIC(op_name));
     if (member != MP_OBJ_NULL) {
         return rt_call_function_2(member, lhs_in, rhs_in);
     } else {
@@ -219,7 +219,7 @@ static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 
 bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, qstr_from_str_static("__setitem__"));
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, QSTR_FROM_STR_STATIC("__setitem__"));
     if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         rt_call_function_n_kw(member, 3, 0, args);

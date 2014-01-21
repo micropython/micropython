@@ -2,6 +2,9 @@
 PROG = micropython
 all: $(PROG)
 
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS = qstrdefsport.h
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -27,7 +30,7 @@ SRC_C = \
 	file.c \
 	socket.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(PY_O)
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 LIB = -lreadline
 # the following is needed for BSD
 #LIB += -ltermcap
@@ -40,7 +43,7 @@ ifndef DEBUG
 endif
 	$(Q)size $(PROG)
 
-$(BUILD)/%.o: %.c
+$(BUILD)/%.o: %.c $(QSTR_DEFS)
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 

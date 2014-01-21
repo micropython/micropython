@@ -7,7 +7,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
 #include "scope.h"

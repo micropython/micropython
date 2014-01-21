@@ -1,9 +1,12 @@
 #include <stdint.h>
+#include <string.h>
 #include <stdarg.h>
+
 #include "std.h"
 #include "misc.h"
 #include "systick.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 #include "lcd.h"
 #include "usart.h"

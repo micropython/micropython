@@ -4,6 +4,8 @@
 #include "ff.h"
 
 #include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "lexerfatfs.h"
 

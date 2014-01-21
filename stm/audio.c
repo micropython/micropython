@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
@@ -7,6 +8,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "parse.h"
 #include "obj.h"
 #include "runtime.h"
@@ -90,9 +92,9 @@ void audio_init(void) {
     // enable interrupt
 
     // Python interface
-    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("audio"));
-    rt_store_attr(m, qstr_from_str_static("dac"), rt_make_function_n(1, pyb_audio_dac));
-    rt_store_attr(m, qstr_from_str_static("is_full"), rt_make_function_n(0, pyb_audio_is_full));
-    rt_store_attr(m, qstr_from_str_static("fill"), rt_make_function_n(1, pyb_audio_fill));
-    rt_store_name(qstr_from_str_static("audio"), m);
+    mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("audio"));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("dac"), rt_make_function_n(1, pyb_audio_dac));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("is_full"), rt_make_function_n(0, pyb_audio_is_full));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("fill"), rt_make_function_n(1, pyb_audio_fill));
+    rt_store_name(QSTR_FROM_STR_STATIC("audio"), m);
 }

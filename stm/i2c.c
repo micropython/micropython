@@ -5,6 +5,7 @@
 #include "misc.h"
 #include "systick.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "obj.h"
 
 typedef enum {

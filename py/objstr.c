@@ -7,7 +7,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -36,9 +36,30 @@ void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     mp_obj_str_print_qstr(print, env, self->qstr, kind);
 }
 
+// like strstr but with specified length and allows \0 bytes
+// TODO replace with something more efficient/standard
+static const byte *find_subbytes(const byte *haystack, uint hlen, const byte *needle, uint nlen) {
+    if (hlen >= nlen) {
+        for (uint i = 0; i <= hlen - nlen; i++) {
+            bool found = true;
+            for (uint j = 0; j < nlen; j++) {
+                if (haystack[i + j] != needle[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return haystack + i;
+            }
+        }
+    }
+    return NULL;
+}
+
 mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_str_t *lhs = lhs_in;
-    const char *lhs_str = qstr_str(lhs->qstr);
+    uint lhs_len;
+    const byte *lhs_data = qstr_data(lhs->qstr, &lhs_len);
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
             // TODO: need predicate to check for int-like type (bools are such for example)
@@ -46,31 +67,30 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 // TODO: This implements byte string access for single index so far
                 // TODO: Handle negative indexes.
-                return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
+                return mp_obj_new_int(lhs_data[mp_obj_get_int(rhs_in)]);
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 machine_int_t start, stop, step;
                 mp_obj_slice_get(rhs_in, &start, &stop, &step);
                 assert(step == 1);
-                int len = strlen(lhs_str);
                 if (start < 0) {
-                    start = len + start;
+                    start = lhs_len + start;
                     if (start < 0) {
                         start = 0;
                     }
-                } else if (start > len) {
-                    start = len;
+                } else if (start > lhs_len) {
+                    start = lhs_len;
                 }
                 if (stop <= 0) {
-                    stop = len + stop;
+                    stop = lhs_len + stop;
                     // CPython returns empty string in such case
                     if (stop < 0) {
                         stop = start;
                     }
-                } else if (stop > len) {
-                    stop = len;
+                } else if (stop > lhs_len) {
+                    stop = lhs_len;
                 }
-                return mp_obj_new_str(qstr_from_strn_copy(lhs_str + start, stop - start));
+                return mp_obj_new_str(qstr_from_strn((const char*)lhs_data + start, stop - start));
 #endif
             } else {
                 // Message doesn't match CPython, but we don't have so much bytes as they
@@ -82,24 +102,24 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case RT_BINARY_OP_INPLACE_ADD:
             if (MP_OBJ_IS_TYPE(rhs_in, &str_type)) {
                 // add 2 strings
-                const char *rhs_str = qstr_str(((mp_obj_str_t*)rhs_in)->qstr);
-                size_t lhs_len = strlen(lhs_str);
-                size_t rhs_len = strlen(rhs_str);
-                int alloc_len = lhs_len + rhs_len + 1;
-                char *val = m_new(char, alloc_len);
-                memcpy(val, lhs_str, lhs_len);
-                memcpy(val + lhs_len, rhs_str, rhs_len);
-                val[lhs_len + rhs_len] = '\0';
-                return mp_obj_new_str(qstr_from_str_take(val, alloc_len));
+                uint rhs_len;
+                const byte *rhs_data = qstr_data(((mp_obj_str_t*)rhs_in)->qstr, &rhs_len);
+                int alloc_len = lhs_len + rhs_len;
+                byte *q_ptr;
+                byte *val = qstr_build_start(alloc_len, &q_ptr);
+                memcpy(val, lhs_data, lhs_len);
+                memcpy(val + lhs_len, rhs_data, rhs_len);
+                return mp_obj_new_str(qstr_build_end(q_ptr));
             }
             break;
         case RT_COMPARE_OP_IN:
         case RT_COMPARE_OP_NOT_IN:
             /* NOTE `a in b` is `b.__contains__(a)` */
             if (MP_OBJ_IS_TYPE(rhs_in, &str_type)) {
-                const char *rhs_str = qstr_str(((mp_obj_str_t*)rhs_in)->qstr);
-                /* FIXME \0 in strs */
-                return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (strstr(lhs_str, rhs_str) == NULL));
+                uint rhs_len;
+                const byte *rhs_data = qstr_data(((mp_obj_str_t*)rhs_in)->qstr, &rhs_len);
+                return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len) == NULL));
+                return mp_const_false;
             }
             break;
     }
@@ -143,22 +163,22 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     // make joined string
-    char *joined_str = m_new(char, required_len + 1);
-    char *s_dest = joined_str;
+    byte *q_ptr;
+    byte *s_dest = qstr_build_start(required_len, &q_ptr);
     for (int i = 0; i < seq_len; i++) {
         if (i > 0) {
             memcpy(s_dest, sep_str, sep_len);
             s_dest += sep_len;
         }
-        const char *s2 = qstr_str(mp_obj_str_get(seq_items[i]));
-        size_t s2_len = strlen(s2);
+        uint s2_len;
+        const byte *s2 = qstr_data(mp_obj_str_get(seq_items[i]), &s2_len);
         memcpy(s_dest, s2, s2_len);
         s_dest += s2_len;
     }
-    *s_dest = '\0';
+    qstr q = qstr_build_end(q_ptr);
 
     // return joined string
-    return mp_obj_new_str(qstr_from_str_take(joined_str, required_len + 1));
+    return mp_obj_new_str(q);
 
 bad_arg:
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
@@ -246,20 +266,14 @@ mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     }
 
     if (first_good_char_pos == 0 && last_good_char_pos == 0) {
-        //string is all whitespace, return '\0'
-        char *empty = m_new(char, 1);
-        empty[0] = '\0';
-        return mp_obj_new_str(qstr_from_str_take(empty, 1));
+        //string is all whitespace, return ''
+        return mp_obj_new_str(MP_QSTR_);
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
     //+1 to accomodate the last character
     size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
-    //+1 to accomodate '\0'
-    char *stripped_str = m_new(char, stripped_len + 1);
-    memcpy(stripped_str, orig_str + first_good_char_pos, stripped_len);
-    stripped_str[stripped_len] = '\0';
-    return mp_obj_new_str(qstr_from_str_take(stripped_str, stripped_len + 1));
+    return mp_obj_new_str(qstr_from_strn(orig_str + first_good_char_pos, stripped_len));
 }
 
 mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
@@ -288,7 +302,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
         }
     }
 
-    return mp_obj_new_str(qstr_from_str_take(vstr->buf, vstr->alloc));
+    return mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len));
 }
 
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
@@ -339,7 +353,7 @@ mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     const char *str = qstr_str(self->str->qstr);
     if (self->cur < strlen(str)) {
-        mp_obj_t o_out = mp_obj_new_str(qstr_from_strn_copy(str + self->cur, 1));
+        mp_obj_t o_out = mp_obj_new_str(qstr_from_strn(str + self->cur, 1));
         self->cur += 1;
         return o_out;
     } else {

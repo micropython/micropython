@@ -8,6 +8,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
 #include "parse.h"
@@ -19,10 +20,11 @@
 #include "builtin.h"
 
 static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
-    const char *str = qstr_str(mp_obj_get_qstr(o_in));
+    uint str_len;
+    const byte *str = qstr_data(mp_obj_get_qstr(o_in), &str_len);
 
     // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_str_len("<string>", str, strlen(str), 0);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len("<string>", (const char*)str, str_len, 0);
 
     // parse the string
     qstr parse_exc_id;

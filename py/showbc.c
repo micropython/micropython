@@ -6,6 +6,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "bc0.h"
 
 #if MICROPY_DEBUG_PRINTERS

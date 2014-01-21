@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
 #include "lexer.h"
 
 typedef struct _mp_lexer_str_buf_t {

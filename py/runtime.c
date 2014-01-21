@@ -11,7 +11,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -154,7 +154,7 @@ void rt_init(void) {
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
-    mp_obj_new_module(qstr_from_str_static("sys"));
+    mp_obj_new_module(QSTR_FROM_STR_STATIC("sys"));
 #endif
 
     mp_module_micropython_init();

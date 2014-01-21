@@ -88,14 +88,4 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 #endif
 
-/** unique string ***********************************************/
-
-typedef unsigned int qstr;
-
-void qstr_init(void);
-qstr qstr_from_str_static(const char *str);
-qstr qstr_from_str_take(char *str, int alloc_len);
-qstr qstr_from_strn_copy(const char *str, int len);
-const char* qstr_str(qstr qstr);
-
 #endif // _INCLUDED_MINILIB_H

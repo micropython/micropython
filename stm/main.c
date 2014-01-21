@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_syscfg.h>
@@ -15,7 +16,7 @@
 #include "misc.h"
 #include "ff.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
@@ -677,11 +678,10 @@ void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, m
 mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
     pyb_file_obj_t *self = self_in;
     int n = mp_obj_get_int(arg);
-    char *buf = m_new(char, n + 1);
+    char *buf = m_new(char, n);
     UINT n_out;
     f_read(&self->fp, buf, n, &n_out);
-    buf[n_out] = 0;
-    return mp_obj_new_str(qstr_from_str_take(buf, n + 1));
+    return mp_obj_new_str(qstr_from_strn_take(buf, n, n_out));
 }
 
 mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {
@@ -827,37 +827,37 @@ soft_reset:
 
     // add some functions to the python namespace
     {
-        rt_store_name(qstr_from_str_static("help"), rt_make_function_n(0, pyb_help));
+        rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
 
-        mp_obj_t m = mp_obj_new_module(qstr_from_str_static("pyb"));
-        rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_n(0, pyb_info));
-        rt_store_attr(m, qstr_from_str_static("sd_test"), rt_make_function_n(0, pyb_sd_test));
-        rt_store_attr(m, qstr_from_str_static("stop"), rt_make_function_n(0, pyb_stop));
-        rt_store_attr(m, qstr_from_str_static("standby"), rt_make_function_n(0, pyb_standby));
-        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_n(1, pyb_source_dir));
-        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_n(1, pyb_main));
-        rt_store_attr(m, qstr_from_str_static("sync"), rt_make_function_n(0, pyb_sync));
-        rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_n(0, pyb_gc));
-        rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_n(1, pyb_delay));
-        rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_n(1, pyb_led));
-        rt_store_attr(m, qstr_from_str_static("switch"), (mp_obj_t)&pyb_switch_obj);
-        rt_store_attr(m, qstr_from_str_static("servo"), rt_make_function_n(2, pyb_servo_set));
-        rt_store_attr(m, qstr_from_str_static("pwm"), rt_make_function_n(2, pyb_pwm_set));
-        rt_store_attr(m, qstr_from_str_static("accel"), (mp_obj_t)&pyb_mma_read_obj);
-        rt_store_attr(m, qstr_from_str_static("mma_read"), (mp_obj_t)&pyb_mma_read_all_obj);
-        rt_store_attr(m, qstr_from_str_static("mma_mode"), (mp_obj_t)&pyb_mma_write_mode_obj);
-        rt_store_attr(m, qstr_from_str_static("hid"), rt_make_function_n(1, pyb_hid_send_report));
-        rt_store_attr(m, qstr_from_str_static("time"), rt_make_function_n(0, pyb_rtc_read));
-        rt_store_attr(m, qstr_from_str_static("rand"), rt_make_function_n(0, pyb_rng_get));
-        rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_n(1, pyb_Led));
-        rt_store_attr(m, qstr_from_str_static("Servo"), rt_make_function_n(1, pyb_Servo));
-        rt_store_attr(m, qstr_from_str_static("I2C"), rt_make_function_n(2, pyb_I2C));
-        rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
-        rt_store_attr(m, qstr_from_str_static("Usart"), rt_make_function_n(2, pyb_Usart));
-        rt_store_attr(m, qstr_from_str_static("ADC"), rt_make_function_n(1, pyb_ADC));
-        rt_store_name(qstr_from_str_static("pyb"), m);
+        mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
+        rt_store_attr(m, MP_QSTR_info, rt_make_function_n(0, pyb_info));
+        rt_store_attr(m, MP_QSTR_sd_test, rt_make_function_n(0, pyb_sd_test));
+        rt_store_attr(m, MP_QSTR_stop, rt_make_function_n(0, pyb_stop));
+        rt_store_attr(m, MP_QSTR_standby, rt_make_function_n(0, pyb_standby));
+        rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
+        rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
+        rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
+        rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
+        rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
+        rt_store_attr(m, MP_QSTR_led, rt_make_function_n(1, pyb_led));
+        rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
+        rt_store_attr(m, MP_QSTR_servo, rt_make_function_n(2, pyb_servo_set));
+        rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
+        rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_mma_read_obj);
+        rt_store_attr(m, MP_QSTR_mma_read, (mp_obj_t)&pyb_mma_read_all_obj);
+        rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
+        rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
+        rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
+        rt_store_attr(m, MP_QSTR_rand, rt_make_function_n(0, pyb_rng_get));
+        rt_store_attr(m, MP_QSTR_Led, rt_make_function_n(1, pyb_Led));
+        rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(1, pyb_Servo));
+        rt_store_attr(m, MP_QSTR_I2C, rt_make_function_n(2, pyb_I2C));
+        rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
+        rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
+        rt_store_attr(m, MP_QSTR_ADC, rt_make_function_n(1, pyb_ADC));
+        rt_store_name(MP_QSTR_pyb, m);
 
-        rt_store_name(qstr_from_str_static("open"), rt_make_function_n(2, pyb_io_open));
+        rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
     }
 
     // print a message to the LCD

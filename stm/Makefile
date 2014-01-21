@@ -1,6 +1,9 @@
 # define main target
 all: all2
 
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS = qstrdefsport.h
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -131,7 +134,7 @@ SRC_CC3K = \
 	ccspi.c \
 	pybcc3k.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o) $(SRC_CC3K:.c=.o)) $(PY_O)
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o) $(SRC_CC3K:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STM_OTG:.c=.o))
 
 all2: $(BUILD) $(BUILD)/flash.dfu
@@ -155,7 +158,7 @@ $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
 	$(Q)$(AS) -o $@ $<
 
-$(BUILD)/%.o: %.c
+$(BUILD)/%.o: %.c $(QSTR_DEFS)
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 

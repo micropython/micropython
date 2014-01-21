@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "stm_misc.h"
 #include "stm32f4xx_rcc.h"
@@ -8,6 +9,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+#include "qstr.h"
 #include "parse.h"
 #include "obj.h"
 #include "runtime.h"
@@ -71,12 +73,12 @@ void timer_init(void) {
     TIM_Cmd(TIM6, ENABLE);
 
     // Python interface
-    mp_obj_t m = mp_obj_new_module(qstr_from_str_static("timer"));
-    rt_store_attr(m, qstr_from_str_static("callback"), rt_make_function_n(1, timer_py_set_callback));
-    rt_store_attr(m, qstr_from_str_static("period"), rt_make_function_n(1, timer_py_set_period));
-    rt_store_attr(m, qstr_from_str_static("prescaler"), rt_make_function_n(1, timer_py_set_prescaler));
-    rt_store_attr(m, qstr_from_str_static("value"), rt_make_function_n(0, timer_py_get_value));
-    rt_store_name(qstr_from_str_static("timer"), m);
+    mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("timer"));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("callback"), rt_make_function_n(1, timer_py_set_callback));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("period"), rt_make_function_n(1, timer_py_set_period));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("prescaler"), rt_make_function_n(1, timer_py_set_prescaler));
+    rt_store_attr(m, QSTR_FROM_STR_STATIC("value"), rt_make_function_n(0, timer_py_get_value));
+    rt_store_name(QSTR_FROM_STR_STATIC("timer"), m);
 }
 
 void timer_interrupt(void) {
