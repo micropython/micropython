@@ -19,6 +19,15 @@
     #define USRSW_EXTI_LINE     (EXTI_Line13)
     #define USRSW_EXTI_IRQN     (EXTI15_10_IRQn)
     #define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
+#elif defined (PYBOARD4)
+    #define USRSW_PORT          (GPIOB)
+    #define USRSW_PIN           (GPIO_Pin_3)
+    #define USRSW_PUPD          (GPIO_PuPd_UP)
+    #define USRSW_EXTI_PIN      (EXTI_PinSource3)
+    #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOB)
+    #define USRSW_EXTI_LINE     (EXTI_Line3)
+    #define USRSW_EXTI_IRQN     (EXTI15_10_IRQn)
+    #define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
 #elif defined (STM32F4DISC)
     #define USRSW_PORT          (GPIOA)
     #define USRSW_PIN           (GPIO_Pin_0)
@@ -64,7 +73,7 @@ void switch_init(void) {
 }
 
 int switch_get(void) {
-#if defined (PYBOARD)
+#if defined (PYBOARD) || defined (PYBOARD4)
     if (USRSW_PORT->IDR & USRSW_PIN) {
         // pulled high, so switch is not pressed
         return 0;

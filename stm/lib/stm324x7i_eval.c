@@ -41,124 +41,6 @@
 #include "stm324x7i_eval.h"
 //#include "stm32f4xx_i2c.h"
 
-/** @addtogroup Utilities
-  * @{
-  */ 
-
-/** @addtogroup STM32_EVAL
-  * @{
-  */ 
-
-/** @addtogroup STM324x7I_EVAL
-  * @{
-  */   
-    
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL 
-  * @brief This file provides firmware functions to manage Leds, push-buttons, 
-  *        COM ports, SD card on SDIO and serial EEPROM (sEE) available on 
-  *        STM324x7I-EVAL evaluation board from STMicroelectronics.
-  * @{
-  */ 
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_TypesDefinitions
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_Defines
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_Variables
-  * @{
-  */ 
-#if 0
-GPIO_TypeDef* GPIO_PORT[LEDn] = {LED1_GPIO_PORT, LED2_GPIO_PORT, LED3_GPIO_PORT,
-                                 LED4_GPIO_PORT};
-const uint16_t GPIO_PIN[LEDn] = {LED1_PIN, LED2_PIN, LED3_PIN,
-                                 LED4_PIN};
-const uint32_t GPIO_CLK[LEDn] = {LED1_GPIO_CLK, LED2_GPIO_CLK, LED3_GPIO_CLK,
-                                 LED4_GPIO_CLK};
-
-GPIO_TypeDef* BUTTON_PORT[BUTTONn] = {WAKEUP_BUTTON_GPIO_PORT, TAMPER_BUTTON_GPIO_PORT,
-                                      KEY_BUTTON_GPIO_PORT}; 
-
-const uint16_t BUTTON_PIN[BUTTONn] = {WAKEUP_BUTTON_PIN, TAMPER_BUTTON_PIN,
-                                      KEY_BUTTON_PIN}; 
-
-const uint32_t BUTTON_CLK[BUTTONn] = {WAKEUP_BUTTON_GPIO_CLK, TAMPER_BUTTON_GPIO_CLK,
-                                      KEY_BUTTON_GPIO_CLK};
-
-const uint16_t BUTTON_EXTI_LINE[BUTTONn] = {WAKEUP_BUTTON_EXTI_LINE,
-                                            TAMPER_BUTTON_EXTI_LINE, 
-                                            KEY_BUTTON_EXTI_LINE};
-
-const uint16_t BUTTON_PORT_SOURCE[BUTTONn] = {WAKEUP_BUTTON_EXTI_PORT_SOURCE,
-                                              TAMPER_BUTTON_EXTI_PORT_SOURCE, 
-                                              KEY_BUTTON_EXTI_PORT_SOURCE};
-								 
-const uint16_t BUTTON_PIN_SOURCE[BUTTONn] = {WAKEUP_BUTTON_EXTI_PIN_SOURCE,
-                                             TAMPER_BUTTON_EXTI_PIN_SOURCE, 
-                                             KEY_BUTTON_EXTI_PIN_SOURCE}; 
-const uint16_t BUTTON_IRQn[BUTTONn] = {WAKEUP_BUTTON_EXTI_IRQn, TAMPER_BUTTON_EXTI_IRQn,
-                                       KEY_BUTTON_EXTI_IRQn};
-
-GPIO_TypeDef* COM_TX_PORT[COMn] = {EVAL_COM1_TX_GPIO_PORT};
- 
-GPIO_TypeDef* COM_RX_PORT[COMn] = {EVAL_COM1_RX_GPIO_PORT};
-
-const uint32_t COM_TX_PORT_CLK[COMn] = {EVAL_COM1_TX_GPIO_CLK};
- 
-const uint32_t COM_RX_PORT_CLK[COMn] = {EVAL_COM1_RX_GPIO_CLK};
-
-const uint16_t COM_TX_PIN[COMn] = {EVAL_COM1_TX_PIN};
-
-const uint16_t COM_RX_PIN[COMn] = {EVAL_COM1_RX_PIN};
- 
-const uint16_t COM_TX_PIN_SOURCE[COMn] = {EVAL_COM1_TX_SOURCE};
-
-const uint16_t COM_RX_PIN_SOURCE[COMn] = {EVAL_COM1_RX_SOURCE};
- 
-const uint16_t COM_TX_AF[COMn] = {EVAL_COM1_TX_AF};
- 
-const uint16_t COM_RX_AF[COMn] = {EVAL_COM1_RX_AF};
-
-DMA_InitTypeDef    sEEDMA_InitStructure; 
-NVIC_InitTypeDef   NVIC_InitStructure;
-#endif
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_FunctionPrototypes
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-/** @defgroup STM324x7I_EVAL_LOW_LEVEL_Private_Functions
-  * @{
-  */ 
-
 /**
   * @brief  DeInitializes the SDIO interface.
   * @param  None
@@ -240,12 +122,21 @@ void SD_LowLevel_Init(void)
   GPIO_Init(GPIOC, &GPIO_InitStructure);
   
   /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
-  // dpgeorge: switch is normally open, connected to VDD when card inserted
+#if defined(PYBOARD)
+  // dpgeorge: PYBv2-v3: switch is normally open, connected to VDD when card inserted
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; // needs to be 2MHz due to restrictions on PC13
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);
+#elif defined(PYBOARD4)
+  // dpgeorge: PYBv4: switch is normally open, connected to GND when card inserted
+  GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);
+#endif
 
   /* Enable the SDIO APB2 Clock */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, ENABLE);
@@ -337,26 +228,4 @@ void SD_LowLevel_DMA_RxConfig(uint32_t *BufferDST, uint32_t BufferSize)
   DMA_Cmd(SD_SDIO_DMA_STREAM, ENABLE);
 }
 
-
-/**
-  * @}
-  */ 
-
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */    
-
-/**
-  * @}
-  */ 
-    
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -19,3 +19,9 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef float machine_float_t;
 
 machine_float_t machine_sqrt(machine_float_t x);
+
+// board specific definitions
+
+//#define PYBOARD
+#define PYBOARD4
+//#define STM32F4DISC
