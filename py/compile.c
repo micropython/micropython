@@ -1442,16 +1442,19 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     comp->continue_label = continue_label;
 
     int top_label = comp_next_label(comp);
+    int entry_label = comp_next_label(comp);
 
     // compile: var = start
     compile_node(comp, pn_start);
     c_assign(comp, pn_var, ASSIGN_STORE);
 
-    EMIT(jump, continue_label);
+    EMIT(jump, entry_label);
     EMIT(label_assign, top_label);
 
     // compile body
     compile_node(comp, pn_body);
+
+    EMIT(label_assign, continue_label);
 
     // compile: var += step
     c_assign(comp, pn_var, ASSIGN_AUG_LOAD);
@@ -1459,7 +1462,7 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     EMIT(binary_op, RT_BINARY_OP_INPLACE_ADD);
     c_assign(comp, pn_var, ASSIGN_AUG_STORE);
 
-    EMIT(label_assign, continue_label);
+    EMIT(label_assign, entry_label);
 
     // compile: if var <cond> end: goto top
     compile_node(comp, pn_var);
