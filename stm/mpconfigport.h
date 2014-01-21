@@ -22,6 +22,11 @@ machine_float_t machine_sqrt(machine_float_t x);
 
 // board specific definitions
 
+// choose 1 of these boards
 //#define PYBOARD
 #define PYBOARD4
 //#define STM32F4DISC
+
+#define STM32F40_41xxx
+#define USE_STDPERIPH_DRIVER
+#define HSE_VALUE (8000000)

@@ -17,7 +17,6 @@ STMSRC=lib
 FATFSSRC=fatfs
 CC3KSRC=cc3k
 DFU=../tools/dfu.py
-OSC_VALUE=8000000
 
 AS = arm-none-eabi-as
 CC = arm-none-eabi-gcc
@@ -25,7 +24,7 @@ LD = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 SIZE = arm-none-eabi-size
 
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion -DSTM32F40_41xxx -DUSE_STDPERIPH_DRIVER -DHSE_VALUE=$(OSC_VALUE)
+CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
 #CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
 

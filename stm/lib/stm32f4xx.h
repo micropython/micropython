@@ -57,6 +57,9 @@
  extern "C" {
 #endif /* __cplusplus */
   
+// dpgeorge: we include mpconfigport.h here because it contains the settings for the STM
+#include "mpconfigport.h"
+
 /** @addtogroup Library_configuration_section
   * @{
   */
