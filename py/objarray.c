@@ -255,6 +255,10 @@ static mp_obj_array_t *array_new(char typecode, uint n) {
     return o;
 }
 
+uint mp_obj_array_len(mp_obj_t self_in) {
+    return ((mp_obj_array_t *)self_in)->len;
+}
+
 mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
     memcpy(o->items, items, n);

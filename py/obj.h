@@ -334,6 +334,7 @@ extern const mp_obj_type_t zip_type;
 
 // array
 extern const mp_obj_type_t array_type;
+uint mp_obj_array_len(mp_obj_t self_in);
 
 // functions
 typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)

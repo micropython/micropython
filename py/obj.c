@@ -285,6 +285,8 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         len = seq_len;
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
         len = mp_obj_dict_len(o_in);
+    } else if (MP_OBJ_IS_TYPE(o_in, &array_type)) {
+        len = mp_obj_array_len(o_in);
     } else {
         return MP_OBJ_NULL;
     }
