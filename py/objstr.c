@@ -44,9 +44,8 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // TODO: need predicate to check for int-like type (bools are such for example)
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                // TODO: This implements byte string access for single index so far
-                // TODO: Handle negative indexes.
-                return mp_obj_new_int(lhs_str[mp_obj_get_int(rhs_in)]);
+                uint index = mp_get_index(lhs->base.type, strlen(lhs_str), rhs_in);
+                return mp_obj_new_str(qstr_from_strn_copy(lhs_str + index, 1));
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 machine_int_t start, stop, step;
