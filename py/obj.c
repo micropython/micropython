@@ -28,6 +28,8 @@ mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return "int";
+    } else if (MP_OBJ_IS_QSTR(o_in)) {
+        return "str";
     } else {
         mp_obj_base_t *o = o_in;
         return o->type->name;
@@ -222,7 +224,9 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 
 qstr mp_obj_get_qstr(mp_obj_t arg) {
-    if (MP_OBJ_IS_TYPE(arg, &str_type)) {
+    if (MP_OBJ_IS_QSTR(arg)) {
+        return MP_OBJ_QSTR_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
         return mp_obj_str_get(arg);
     } else {
         assert(0);
@@ -285,4 +289,10 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         return MP_OBJ_NULL;
     }
     return MP_OBJ_NEW_SMALL_INT(len);
+}
+
+// Return input argument. Useful as .getiter for objects which are
+// their own iterators, etc.
+mp_obj_t mp_identity(mp_obj_t self) {
+    return self;
 }

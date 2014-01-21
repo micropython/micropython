@@ -351,6 +351,8 @@ extern const mp_obj_type_t fun_native_type;
 extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code);
 
+mp_obj_t mp_identity(mp_obj_t self);
+
 // generator
 extern const mp_obj_type_t gen_instance_type;
 
@@ -374,3 +376,6 @@ typedef struct _mp_obj_classmethod_t {
     mp_obj_base_t base;
     mp_obj_t fun;
 } mp_obj_classmethod_t;
+
+// sequence helpers
+void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);

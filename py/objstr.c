@@ -65,9 +65,8 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // TODO: need predicate to check for int-like type (bools are such for example)
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                // TODO: This implements byte string access for single index so far
-                // TODO: Handle negative indexes.
-                return mp_obj_new_int(lhs_data[mp_obj_get_int(rhs_in)]);
+                uint index = mp_get_index(lhs->base.type, lhs_len, rhs_in);
+                return mp_obj_new_str(qstr_from_strn((const char*)lhs_data + index, 1));
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 machine_int_t start, stop, step;
@@ -122,6 +121,16 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return mp_const_false;
             }
             break;
+        case RT_BINARY_OP_MULTIPLY:
+        {
+            if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
+                return NULL;
+            }
+            int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
+            char *s = m_new(char, lhs_len * n);
+            mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, s);
+            return MP_OBJ_NEW_QSTR(qstr_from_strn_take(s, lhs_len * n, lhs_len * n));
+        }
     }
 
     return MP_OBJ_NULL; // op not supported
@@ -184,6 +193,45 @@ bad_arg:
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
 }
 
+#define is_ws(c) ((c) == ' ' || (c) == '\t')
+
+static mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
+    int splits = -1;
+    mp_obj_t sep = mp_const_none;
+    if (n_args > 1) {
+        sep = args[1];
+        if (n_args > 2) {
+            splits = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        }
+    }
+    assert(sep == mp_const_none);
+    (void)sep; // unused; to hush compiler warning
+    mp_obj_t res = mp_obj_new_list(0, NULL);
+    const char *s = qstr_str(mp_obj_str_get(args[0]));
+    const char *start;
+
+    // Initial whitespace is not counted as split, so we pre-do it
+    while (is_ws(*s)) s++;
+    while (*s && splits != 0) {
+        start = s;
+        while (*s != 0 && !is_ws(*s)) s++;
+        rt_list_append(res, MP_OBJ_NEW_QSTR(qstr_from_strn(start, s - start)));
+        if (*s == 0) {
+            break;
+        }
+        while (is_ws(*s)) s++;
+        if (splits > 0) {
+            splits--;
+        }
+    }
+
+    if (*s != 0) {
+        rt_list_append(res, MP_OBJ_NEW_QSTR(qstr_from_str(s)));
+    }
+
+    return res;
+}
+
 static bool chr_in_str(const char* const str, const size_t str_len, const char c) {
     for (size_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
@@ -195,16 +243,8 @@ static bool chr_in_str(const char* const str, const size_t str_len, const char c
 
 static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
-    assert(MP_OBJ_IS_TYPE(args[0], &str_type));
-    if (!MP_OBJ_IS_TYPE(args[1], &str_type)) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(
-                     MP_QSTR_TypeError,
-                     "Can't convert '%s' object to str implicitly",
-                     mp_obj_get_type_str(args[1])));
-    }
-
-    const char* haystack = qstr_str(((mp_obj_str_t*)args[0])->qstr);
-    const char* needle = qstr_str(((mp_obj_str_t*)args[1])->qstr);
+    const char* haystack = qstr_str(mp_obj_str_get(args[0]));
+    const char* needle = qstr_str(mp_obj_str_get(args[1]));
 
     size_t haystack_len = strlen(haystack);
     size_t needle_len = strlen(needle);
@@ -242,14 +282,11 @@ mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         chars_to_del = whitespace;
     } else {
-        assert(MP_OBJ_IS_TYPE(args[1], &str_type));
-        mp_obj_str_t *chars_to_del_obj = args[1];
-        chars_to_del = qstr_str(chars_to_del_obj->qstr);
+        chars_to_del = qstr_str(mp_obj_str_get(args[1]));
     }
 
     const size_t chars_to_del_len = strlen(chars_to_del);
-    mp_obj_str_t *self = args[0];
-    const char *orig_str = qstr_str(self->qstr);
+    const char *orig_str = qstr_str(mp_obj_str_get(args[0]));
     const size_t orig_str_len = strlen(orig_str);
 
     size_t first_good_char_pos = 0;
@@ -307,12 +344,14 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
 
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
 static const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
     { "join", &str_join_obj },
+    { "split", &str_split_obj },
     { "strip", &str_strip_obj },
     { "format", &str_format_obj },
     { NULL, NULL }, // end-of-list sentinel
@@ -335,9 +374,15 @@ mp_obj_t mp_obj_new_str(qstr qstr) {
 }
 
 qstr mp_obj_str_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &str_type));
-    mp_obj_str_t *self = self_in;
-    return self->qstr;
+    if (MP_OBJ_IS_QSTR(self_in)) {
+        return MP_OBJ_QSTR_VALUE(self_in);
+    }
+    if (MP_OBJ_IS_TYPE(self_in, &str_type)) {
+        mp_obj_str_t *self = self_in;
+        return self->qstr;
+    }
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
+             mp_obj_get_type_str(self_in)));
 }
 
 /******************************************************************************/

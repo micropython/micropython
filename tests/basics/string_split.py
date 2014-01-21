@@ -1,0 +1,7 @@
+print("a b".split())
+print("   a   b    ".split(None))
+print("   a   b    ".split(None, 1))
+print("   a   b    ".split(None, 2))
+print("   a   b  c  ".split(None, 1))
+print("   a   b  c  ".split(None, 0))
+print("   a   b  c  ".split(None, -1))

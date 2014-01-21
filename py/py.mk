@@ -97,6 +97,7 @@ PY_O_BASENAME = \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
+	sequence.o \
 	stream.o \
 	builtin.o \
 	builtinimport.o \

@@ -1,7 +1,18 @@
-mod = rawsocket
-s = mod.socket()
+try:
+    import rawsocket as socket
+except:
+    import socket
 
-ai = mod.getaddrinfo("127.0.0.1", 8080)
+
+CONTENT = """\
+HTTP/1.0 200 OK
+
+Hello #{} from MicroPython!
+"""
+
+s = socket.socket()
+
+ai = socket.getaddrinfo("127.0.0.1", 8080)
 print("Bind address info:", ai)
 addr = ai[0][4]
 
@@ -17,12 +28,13 @@ while True:
     print("Client address:", client_addr)
     print("Client socket:", client_s)
     print("Request:")
-    print(client_s.read(4096))
-    #print(client_s.readall())
-    client_s.write("""\
-HTTP/1.0 200 OK
-
-Hello #{} from MicroPython!
-""".format(counter))
+    if 0:
+        # MicroPython rawsocket module supports file interface directly
+        print(client_s.read(4096))
+        #print(client_s.readall())
+        client_s.write(CONTENT.format(counter))
+    else:
+        print(client_s.recv(4096))
+        client_s.send(bytes(CONTENT.format(counter), "ascii"))
     client_s.close()
     counter += 1
