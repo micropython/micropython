@@ -175,6 +175,44 @@ bad_arg:
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
 }
 
+#define is_ws(c) ((c) == ' ' || (c) == '\t')
+
+static mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
+    int splits = -1;
+    mp_obj_t sep = mp_const_none;
+    if (n_args > 1) {
+        sep = args[1];
+        if (n_args > 2) {
+            splits = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        }
+    }
+    assert(sep == mp_const_none);
+    mp_obj_t res = mp_obj_new_list(0, NULL);
+    const char *s = qstr_str(mp_obj_str_get(args[0]));
+    const char *start;
+
+    // Initial whitespace is not counted as split, so we pre-do it
+    while (is_ws(*s)) s++;
+    while (*s && splits != 0) {
+        start = s;
+        while (*s != 0 && !is_ws(*s)) s++;
+        rt_list_append(res, MP_OBJ_NEW_QSTR(qstr_from_strn_copy(start, s - start)));
+        if (*s == 0) {
+            break;
+        }
+        while (is_ws(*s)) s++;
+        if (splits > 0) {
+            splits--;
+        }
+    }
+
+    if (*s != 0) {
+        rt_list_append(res, MP_OBJ_NEW_QSTR(qstr_from_strn_copy(s, strlen(s))));
+    }
+
+    return res;
+}
+
 static bool chr_in_str(const char* const str, const size_t str_len, const char c) {
     for (size_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
@@ -293,12 +331,14 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
 
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
 static const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
     { "join", &str_join_obj },
+    { "split", &str_split_obj },
     { "strip", &str_strip_obj },
     { "format", &str_format_obj },
     { NULL, NULL }, // end-of-list sentinel
