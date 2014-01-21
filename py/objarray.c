@@ -29,6 +29,7 @@ typedef struct _mp_obj_array_t {
     void *items;
 } mp_obj_array_t;
 
+static mp_obj_t array_iterator_new(mp_obj_t array_in);
 static mp_obj_array_t *array_new(char typecode, uint n);
 static mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 
@@ -239,6 +240,7 @@ const mp_obj_type_t array_type = {
     "array",
     .print = array_print,
     .make_new = array_make_new,
+    .getiter = array_iterator_new,
     .binary_op = array_binary_op,
     .store_item = array_store_item,
     .methods = array_type_methods,
@@ -262,5 +264,39 @@ uint mp_obj_array_len(mp_obj_t self_in) {
 mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
     memcpy(o->items, items, n);
+    return o;
+}
+
+/******************************************************************************/
+/* array iterator                                                              */
+
+typedef struct _mp_obj_array_it_t {
+    mp_obj_base_t base;
+    mp_obj_array_t *array;
+    machine_uint_t cur;
+} mp_obj_array_it_t;
+
+mp_obj_t array_it_iternext(mp_obj_t self_in) {
+    mp_obj_array_it_t *self = self_in;
+    if (self->cur < self->array->len) {
+        machine_int_t val = array_get_el(self->array, self->cur++);
+        return mp_obj_new_int(val);
+    } else {
+        return mp_const_stop_iteration;
+    }
+}
+
+static const mp_obj_type_t array_it_type = {
+    { &mp_const_type },
+    "array_iterator",
+    .iternext = array_it_iternext,
+};
+
+mp_obj_t array_iterator_new(mp_obj_t array_in) {
+    mp_obj_array_t *array = array_in;
+    mp_obj_array_it_t *o = m_new_obj(mp_obj_array_it_t);
+    o->base.type = &array_it_type;
+    o->array = array;
+    o->cur = 0;
     return o;
 }
