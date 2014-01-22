@@ -62,6 +62,10 @@ bool unichar_isdigit(unichar c) {
     return c < 128 && (attr[c] & FL_DIGIT) != 0;
 }
 
+bool unichar_isxdigit(unichar c) {
+    return unichar_isdigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
 /*
 bool char_is_alpha_or_digit(unichar c) {
     return c < 128 && (attr[c] & (FL_ALPHA | FL_DIGIT)) != 0;

@@ -43,6 +43,7 @@ bool unichar_isspace(unichar c);
 bool unichar_isalpha(unichar c);
 bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
+bool unichar_isxdigit(unichar c);
 
 /** string ******************************************************/
 
