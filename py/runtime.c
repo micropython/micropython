@@ -34,6 +34,7 @@
 static mp_map_t *map_locals;
 static mp_map_t *map_globals;
 static mp_map_t map_builtins;
+static mp_map_t map_loaded_modules; // TODO: expose as sys.modules
 
 typedef enum {
     MP_CODE_NONE,
@@ -82,6 +83,9 @@ void rt_init(void) {
 
     // init built-in hash table
     mp_map_init(&map_builtins, 3);
+
+    // init loaded modules table
+    mp_map_init(&map_loaded_modules, 3);
 
     // built-in exceptions (TODO, make these proper classes)
     mp_map_add_qstr(&map_builtins, MP_QSTR_AttributeError, mp_obj_new_exception(MP_QSTR_AttributeError));
@@ -951,6 +955,10 @@ mp_map_t *rt_globals_get(void) {
 void rt_globals_set(mp_map_t *m) {
     DEBUG_OP_printf("rt_globals_set(%p)\n", m);
     map_globals = m;
+}
+
+mp_map_t *rt_loaded_modules_get(void) {
+    return &map_loaded_modules;
 }
 
 // these must correspond to the respective enum

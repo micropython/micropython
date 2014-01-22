@@ -43,3 +43,4 @@ struct _mp_map_t *rt_locals_get(void);
 void rt_locals_set(struct _mp_map_t *m);
 struct _mp_map_t *rt_globals_get(void);
 void rt_globals_set(struct _mp_map_t *m);
+struct _mp_map_t *rt_loaded_modules_get(void);

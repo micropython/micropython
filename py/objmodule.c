@@ -17,9 +17,6 @@ typedef struct _mp_obj_module_t {
     mp_map_t *globals;
 } mp_obj_module_t;
 
-// TODO: expose as sys.modules
-static mp_map_t *loaded_modules;
-
 static void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_module_t *self = self_in;
     print(env, "<module '%s' from '-unknown-file-'>", qstr_str(self->name));
@@ -49,10 +46,7 @@ const mp_obj_type_t module_type = {
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
-    if (loaded_modules == NULL) {
-        loaded_modules = mp_map_new(1);
-    }
-    mp_map_elem_t *el =  mp_map_lookup(loaded_modules, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    mp_map_elem_t *el =  mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     // We could error out if module already exists, but let C extensions
     // add new members to existing modules.
     if (el->value != MP_OBJ_NULL) {
@@ -69,7 +63,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 }
 
 mp_obj_t mp_obj_module_get(qstr module_name) {
-    mp_map_elem_t *el = mp_map_lookup(loaded_modules, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    mp_map_elem_t *el = mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (el == NULL) {
         return NULL;
     }
