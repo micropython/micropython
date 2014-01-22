@@ -130,7 +130,15 @@ static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
         if (out_sz == -1) {
             nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
         }
-        if (out_sz == 0 || *p == '\n') {
+        if (out_sz == 0) {
+            // Back out previously added byte
+            // TODO: This is a bit hacky, does it supported by vstr API contract?
+            // Consider, what's better - read a char and get OutOfMemory (so read
+            // char is lost), or allocate first as we do.
+            vstr_add_len(vstr, -1);
+            break;
+        }
+        if (*p == '\n') {
             break;
         }
     }
@@ -141,9 +149,9 @@ static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
 
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     mp_obj_t l_in = stream_unbuffered_readline(1, &self);
-    const char *l = qstr_str(MP_OBJ_QSTR_VALUE(l_in));
-    // TODO: \0
-    if (*l != 0) {
+    uint sz;
+    mp_obj_str_get_data(l_in, &sz);
+    if (sz != 0) {
         return l_in;
     }
     return mp_const_stop_iteration;
