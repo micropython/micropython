@@ -715,7 +715,11 @@ int main(void) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
     // enable the CCM RAM and the GPIO's
-    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
+    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN
+#if defined(STM32F4DISC)
+        | RCC_AHB1ENR_GPIODEN
+#endif
+        ;
 
     // configure SDIO pins to be high to start with (apparently makes it more robust)
     {
@@ -794,9 +798,11 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
         rt_store_attr(m, MP_QSTR_servo, rt_make_function_n(2, pyb_servo_set));
         rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
+#if BOARD_HAS_MMA7660
         rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_mma_read_obj);
         rt_store_attr(m, MP_QSTR_mma_read, (mp_obj_t)&pyb_mma_read_all_obj);
         rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
+#endif
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
         rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
         rt_store_attr(m, MP_QSTR_rand, rt_make_function_n(0, pyb_rng_get));
@@ -911,10 +917,11 @@ soft_reset:
     // USB host; not working!
     //pyb_usbh_init();
 
-    // MMA
     if (first_soft_reset) {
-        // init and reset address to zero
+#if BOARD_HAS_MMA7660
+        // MMA: init and reset address to zero
         mma_init();
+#endif
     }
 
     // turn boot-up LED off
@@ -941,6 +948,8 @@ soft_reset:
         vstr_free(vstr);
     }
 
+
+#if BOARD_HAS_MMA7660
     // HID example
     if (0) {
         uint8_t data[4];
@@ -969,6 +978,7 @@ soft_reset:
             sys_tick_delay_ms(15);
         }
     }
+#endif
 
     // wifi
     //pyb_wlan_init();

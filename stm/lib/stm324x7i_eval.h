@@ -49,6 +49,11 @@
 #define SD_DETECT_PIN                    GPIO_Pin_8                  /* PA..8 */
 #define SD_DETECT_GPIO_PORT              GPIOA                       /* GPIOA */
 #define SD_DETECT_GPIO_CLK               RCC_AHB1Periph_GPIOA
+#elif defined(STM32F4DISC)
+// PB15 on the DM-STSTF4BB Base Board
+#define SD_DETECT_PIN                    GPIO_Pin_15                 /* PB.15 */
+#define SD_DETECT_GPIO_PORT              GPIOB                       /* GPIOB */
+#define SD_DETECT_GPIO_CLK               RCC_AHB1Periph_GPIOB
 #endif
 
 #define SDIO_FIFO_ADDRESS                ((uint32_t)0x40012C80)
