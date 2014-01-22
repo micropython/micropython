@@ -126,6 +126,10 @@ static bool is_following_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr1);
 }
 
+static bool is_following_odigit(mp_lexer_t *lex) {
+    return lex->chr1 >= '0' && lex->chr1 <= '7';
+}
+
 // TODO UNICODE include unicode characters in definition of identifiers
 static bool is_head_of_identifier(mp_lexer_t *lex) {
     return is_letter(lex) || lex->chr0 == '_';
@@ -274,6 +278,32 @@ static const char *tok_kw[] = {
     "yield",
     NULL,
 };
+
+static int hex_digit(unichar c) {
+    // c is assumed to be hex digit
+    int n = c - '0';
+    if (n > 9) {
+        n &= ~('a' - 'A');
+        n -= ('A' - ('9' + 1));
+    }
+    return n;
+}
+
+// This is called with CUR_CHAR() before first hex digit, and should return with
+// it pointing to last hex digit
+static bool get_hex(mp_lexer_t *lex, int num_digits, uint *result) {
+    uint num = 0;
+    while (num_digits-- != 0) {
+        next_char(lex);
+        unichar c = CUR_CHAR(lex);
+        if (!unichar_isxdigit(c)) {
+            return false;
+        }
+        num = (num << 4) + hex_digit(c);
+    }
+    *result = num;
+    return true;
+}
 
 static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool first_token) {
     // skip white space and comments
@@ -439,12 +469,34 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         case 'v': c = 0x0b; break;
                         case 'f': c = 0x0c; break;
                         case 'r': c = 0x0d; break;
-                        // TODO \ooo octal
-                        case 'x': // TODO \xhh
-                        case 'N': // TODO \N{name} only in strings
-                        case 'u': // TODO \uxxxx only in strings
-                        case 'U': // TODO \Uxxxxxxxx only in strings
-                        default: break; // TODO error message
+                        case 'x':
+                        {
+                            uint num;
+                            if (!get_hex(lex, 2, &num)) {
+                                // TODO error message
+                                assert(0);
+                            }
+                            c = num;
+                            break;
+                        }
+                        case 'N': break; // TODO \N{name} only in strings
+                        case 'u': break; // TODO \uxxxx only in strings
+                        case 'U': break; // TODO \Uxxxxxxxx only in strings
+                        default:
+                            if (c >= '0' && c <= '7') {
+                                // Octal sequence, 1-3 chars
+                                int digits = 3;
+                                int num = c - '0';
+                                while (is_following_odigit(lex) && --digits != 0) {
+                                    next_char(lex);
+                                    num = num * 8 + (CUR_CHAR(lex) - '0');
+                                }
+                                c = num;
+                            } else {
+                                // TODO error message
+                                assert(0);
+                            }
+                            break;
                     }
                     if (c != MP_LEXER_CHAR_EOF) {
                         vstr_add_char(&lex->vstr, c);
