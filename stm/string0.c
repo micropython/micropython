@@ -34,6 +34,16 @@ void *memset(void *s, int c, size_t n) {
     return s;
 }
 
+int memcmp(const char *s1, const char *s2, size_t n) {
+    while (n--) {
+        char c1 = *s1++;
+        char c2 = *s2++;
+        if (c1 < c2) return -1;
+        else if (c1 > c2) return 1;
+    }
+    return 0;
+}
+
 size_t strlen(const char *str) {
     int len = 0;
     for (const char *s = str; *s; s++) {
