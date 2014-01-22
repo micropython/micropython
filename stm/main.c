@@ -803,7 +803,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
         rt_store_attr(m, MP_QSTR_servo, rt_make_function_n(2, pyb_servo_set));
         rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
-#if BOARD_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
         rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_mma_read_obj);
         rt_store_attr(m, MP_QSTR_mma_read, (mp_obj_t)&pyb_mma_read_all_obj);
         rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
@@ -925,7 +925,7 @@ soft_reset:
     //rt_store_name(qstr_from_str("u_c"), rt_make_function_n(0, pyb_usbh_connect));
 
     if (first_soft_reset) {
-#if BOARD_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
         // MMA: init and reset address to zero
         mma_init();
 #endif
@@ -956,7 +956,7 @@ soft_reset:
     }
 
 
-#if BOARD_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
     // HID example
     if (0) {
         uint8_t data[4];

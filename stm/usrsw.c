@@ -6,38 +6,10 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpconfigport.h"
 #include "qstr.h"
 #include "obj.h"
 #include "usrsw.h"
-
-#if defined (PYBOARD)
-    #define USRSW_PORT          (GPIOA)
-    #define USRSW_PIN           (GPIO_Pin_13)
-    #define USRSW_PUPD          (GPIO_PuPd_UP)
-    #define USRSW_EXTI_PIN      (EXTI_PinSource13)
-    #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOA)
-    #define USRSW_EXTI_LINE     (EXTI_Line13)
-    #define USRSW_EXTI_IRQN     (EXTI15_10_IRQn)
-    #define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
-#elif defined (PYBOARD4)
-    #define USRSW_PORT          (GPIOB)
-    #define USRSW_PIN           (GPIO_Pin_3)
-    #define USRSW_PUPD          (GPIO_PuPd_UP)
-    #define USRSW_EXTI_PIN      (EXTI_PinSource3)
-    #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOB)
-    #define USRSW_EXTI_LINE     (EXTI_Line3)
-    #define USRSW_EXTI_IRQN     (EXTI15_10_IRQn)
-    #define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
-#elif defined (STM32F4DISC)
-    #define USRSW_PORT          (GPIOA)
-    #define USRSW_PIN           (GPIO_Pin_0)
-    #define USRSW_PUPD          (GPIO_PuPd_NOPULL)
-    #define USRSW_EXTI_PIN      (EXTI_PinSource0)
-    #define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOA)
-    #define USRSW_EXTI_LINE     (EXTI_Line0)
-    #define USRSW_EXTI_IRQN     (EXTI0_IRQn)
-    #define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
-#endif
 
 void switch_init(void) {
     // make it an input with pull-up
