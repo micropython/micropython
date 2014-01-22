@@ -45,6 +45,8 @@ extern USB_OTG_CORE_HANDLE USB_OTG_dev;
 
 /* Private function prototypes -----------------------------------------------*/
 extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
+extern uint32_t USBH_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
+//extern uint32_t STM32_USBO_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED 
 extern uint32_t USBD_OTG_EP1IN_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
@@ -163,7 +165,9 @@ void OTG_FS_WKUP_IRQHandler(void)
   {
     *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ; 
     SystemInit();
+#ifdef USE_DEVICE_MODE
     USB_OTG_UngateClock(&USB_OTG_dev);
+#endif
   }
   EXTI_ClearITPendingBit(EXTI_Line18);
 }
@@ -198,8 +202,18 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
-  USBD_OTG_ISR_Handler (&USB_OTG_dev); // device mode
-  //USBH_OTG_ISR_Handler (&USB_OTG_dev); // host mode FIXME
+    if (USB_OTG_IsHostMode(&USB_OTG_dev)) {
+        // host mode
+#ifdef USE_HOST_MODE
+        USBH_OTG_ISR_Handler(&USB_OTG_dev);
+#endif
+        //STM32_USBO_OTG_ISR_Handler(&USB_OTG_dev); // USE_OTG_MODE
+    } else {
+        // device mode
+#ifdef USE_DEVICE_MODE
+        USBD_OTG_ISR_Handler(&USB_OTG_dev);
+#endif
+    }
 }
 
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED 

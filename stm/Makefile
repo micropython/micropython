@@ -26,7 +26,7 @@ SIZE = arm-none-eabi-size
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
-#CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE -DUSE_OTG_MODE
+#CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE #-DUSE_OTG_MODE
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -91,10 +91,13 @@ SRC_STM = \
 	stm32f4xx_dac.c \
 	stm32f4xx_rng.c \
 	stm32f4xx_i2c.c \
+	stm32f4xx_adc.c \
+	stm324x7i_eval.c \
+	stm324x7i_eval_sdio_sd.c \
 	usb_core.c \
+	usb_bsp.c \
 	usb_dcd.c \
 	usb_dcd_int.c \
-	usb_bsp.c \
 	usbd_core.c \
 	usbd_ioreq.c \
 	usbd_req.c \
@@ -107,22 +110,19 @@ SRC_STM = \
 	usbd_msc_data.c \
 	usbd_msc_scsi.c \
 	usbd_storage_msd.c \
-	stm324x7i_eval.c \
-	stm324x7i_eval_sdio_sd.c \
-	stm32f4xx_adc.c \
 
 #SRC_STM_OTG = \
-#	usb_hcd.c \
-#	usb_hcd_int.c \
+	usb_hcd.c \
+	usb_hcd_int.c \
+	usbh_core.c \
+	usbh_hcs.c \
+	usbh_stdreq.c \
+	usbh_ioreq.c \
+	usbh_usr.c \
+	usbh_hid_core.c \
+	usbh_hid_mouse.c \
+	usbh_hid_keybd.c \
 #	usb_otg.c \
-#	usbh_core.c \
-#	usbh_hcs.c \
-#	usbh_stdreq.c \
-#	usbh_ioreq.c \
-#	usbh_usr.c \
-#	usbh_hid_core.c \
-#	usbh_hid_mouse.c \
-#	usbh_hid_keybd.c \
 
 SRC_CC3K = \
 	cc3000_common.c \

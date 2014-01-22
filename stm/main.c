@@ -754,7 +754,7 @@ int main(void) {
     storage_init();
 
     // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
-    //pyb_usart_global_debug = PYB_USART_6;
+    //pyb_usart_global_debug = PYB_USART_3;
     //usart_init(pyb_usart_global_debug, 115200);
 
     int first_soft_reset = true;
@@ -921,6 +921,8 @@ soft_reset:
 
     // USB host; not working!
     //pyb_usbh_init();
+    //rt_store_name(qstr_from_str("u_p"), rt_make_function_n(0, pyb_usbh_process));
+    //rt_store_name(qstr_from_str("u_c"), rt_make_function_n(0, pyb_usbh_connect));
 
     if (first_soft_reset) {
 #if BOARD_HAS_MMA7660

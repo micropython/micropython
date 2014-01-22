@@ -77,11 +77,19 @@ void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
         case PYB_USART_3:
             USARTx = USART3;
 
+#if defined(PYBOARD4)
+            GPIO_Port = GPIOB;
+            GPIO_AF_USARTx = GPIO_AF_USART3;
+            GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+            GPIO_PinSource_TX = GPIO_PinSource10;
+            GPIO_PinSource_RX = GPIO_PinSource11;
+#else
             GPIO_Port = GPIOD;
             GPIO_AF_USARTx = GPIO_AF_USART3;
             GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
             GPIO_PinSource_TX = GPIO_PinSource8;
             GPIO_PinSource_RX = GPIO_PinSource9;
+#endif
 
             RCC_APBxPeriph = RCC_APB1Periph_USART3;
             RCC_APBxPeriphClockCmd =RCC_APB1PeriphClockCmd;
@@ -206,7 +214,7 @@ static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
 static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     pyb_usart_obj_t *self = self_in;
     if (self->is_enabled) {
-        if (MP_OBJ_IS_TYPE(s, &str_type)) {
+        if (MP_OBJ_IS_STR(s)) {
             uint len;
             const byte *data = mp_obj_str_get_data(s, &len);
             usart_tx_bytes(self->usart_id, data, len);
