@@ -190,6 +190,7 @@ void vstr_cut_tail(vstr_t *vstr, int len) {
     } else {
         vstr->len -= len;
     }
+    vstr->buf[vstr->len] = 0;
 }
 
 void vstr_printf(vstr_t *vstr, const char *fmt, ...) {

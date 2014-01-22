@@ -471,7 +471,7 @@ static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         case 'r': c = 0x0d; break;
                         case 'x':
                         {
-                            uint num;
+                            uint num = 0;
                             if (!get_hex(lex, 2, &num)) {
                                 // TODO error message
                                 assert(0);
