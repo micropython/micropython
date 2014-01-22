@@ -27,6 +27,14 @@ machine_float_t machine_sqrt(machine_float_t x);
 #define PYBOARD4
 //#define STM32F4DISC
 
+#if defined(PYBOARD) || defined(PYBOARD4)
+#define BOARD_HAS_MMA7660   (1)
+#define BOARD_HAS_LIS3DSH   (0)
+#else
+#define BOARD_HAS_MMA7660   (0)
+#define BOARD_HAS_LIS3DSH   (1)
+#endif
+
 #define STM32F40_41xxx
 #define USE_STDPERIPH_DRIVER
 #define HSE_VALUE (8000000)
