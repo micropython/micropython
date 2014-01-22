@@ -177,11 +177,6 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
     } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
         return mp_obj_int_get_checked(arg);
-#if MICROPY_ENABLE_FLOAT
-    } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
-        // TODO work out if this should be floor, ceil or trunc
-        return (machine_int_t)mp_obj_float_get(arg);
-#endif
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }
