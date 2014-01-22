@@ -151,6 +151,12 @@ void usart_tx_str(pyb_usart_t usart_id, const char *str) {
     }
 }
 
+void usart_tx_bytes(pyb_usart_t usart_id, const byte *data, uint len) {
+    for (; len > 0; data++, len--) {
+        usart_tx_char(usart_id, *data);
+    }
+}
+
 void usart_tx_strn_cooked(pyb_usart_t usart_id, const char *str, int len) {
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
@@ -201,8 +207,9 @@ static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     pyb_usart_obj_t *self = self_in;
     if (self->is_enabled) {
         if (MP_OBJ_IS_TYPE(s, &str_type)) {
-            const char *str = qstr_str(mp_obj_get_qstr(s));
-            usart_tx_str(self->usart_id, str);
+            uint len;
+            const byte *data = mp_obj_str_get_data(s, &len);
+            usart_tx_bytes(self->usart_id, data, len);
         }
     }
     return mp_const_none;

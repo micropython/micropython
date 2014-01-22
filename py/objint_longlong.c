@@ -24,8 +24,12 @@ static mp_obj_t mp_obj_new_int_from_ll(long long val);
 #endif
 
 void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_obj_int_t *self = self_in;
-    print(env, "%lld" SUFFIX, self->val);
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(self_in));
+    } else {
+        mp_obj_int_t *self = self_in;
+        print(env, "%lld" SUFFIX, self->val);
+    }
 }
 
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

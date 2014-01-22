@@ -21,7 +21,7 @@
 
 static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
     uint str_len;
-    const byte *str = qstr_data(mp_obj_get_qstr(o_in), &str_len);
+    const byte *str = mp_obj_str_get_data(o_in, &str_len);
 
     // create the lexer
     mp_lexer_t *lex = mp_lexer_new_from_str_len("<string>", (const char*)str, str_len, 0);

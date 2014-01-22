@@ -165,7 +165,9 @@ mp_obj_t lcd_pix_show(void) {
 }
 
 mp_obj_t lcd_print(mp_obj_t text) {
-    lcd_print_str(qstr_str(mp_obj_get_qstr(text)));
+    uint len;
+    const byte *data = mp_obj_str_get_data(text, &len);
+    lcd_print_strn((const char*)data, len);
     return mp_const_none;
 }
 

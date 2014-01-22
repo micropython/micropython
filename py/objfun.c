@@ -56,8 +56,7 @@ mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
         // TODO if n_kw==0 then don't allocate any memory for map (either pass NULL or allocate it on the heap)
         mp_map_t *kw_args = mp_map_new(n_kw);
         for (int i = 0; i < 2 * n_kw; i += 2) {
-            qstr name = mp_obj_str_get(args[n_args + i]);
-            mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[n_args + i + 1];
+            mp_map_lookup(kw_args, args[n_args + i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[n_args + i + 1];
         }
         mp_obj_t res = ((mp_fun_kw_t)self->fun)(n_args, args, kw_args);
         // TODO clean up kw_args
@@ -214,9 +213,10 @@ machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 0;
     } else if (obj == mp_const_true) {
         return 1;
-    } else if (MP_OBJ_IS_TYPE(obj, &str_type)) {
+    } else if (MP_OBJ_IS_STR(obj)) {
         // pointer to the string (it's probably constant though!)
-        return (machine_uint_t)qstr_str(mp_obj_str_get(obj));
+        uint l;
+        return (machine_uint_t)mp_obj_str_get_data(obj, &l);
 #if MICROPY_ENABLE_FLOAT
     } else if (MP_OBJ_IS_TYPE(obj, &float_type)) {
         // convert float to int (could also pass in float registers)

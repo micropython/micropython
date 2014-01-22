@@ -64,10 +64,10 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
         return o;
     }
 
-    const char *fname = qstr_str(mp_obj_get_qstr(args[0]));
+    const char *fname = mp_obj_str_get_str(args[0]);
     const char *mode_s;
     if (n_args > 1) {
-        mode_s = qstr_str(mp_obj_get_qstr(args[1]));
+        mode_s = mp_obj_str_get_str(args[1]);
     } else {
         mode_s = "r";
     }

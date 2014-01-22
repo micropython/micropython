@@ -18,6 +18,7 @@
 #include "map.h"
 #include "builtin.h"
 #include "objarray.h"
+#include "bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -77,7 +78,7 @@ static void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
 void rt_init(void) {
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     map_locals = map_globals = mp_map_new(1);
-    mp_map_add_qstr(map_globals, MP_QSTR___name__, mp_obj_new_str(MP_QSTR___main__));
+    mp_map_add_qstr(map_globals, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // init built-in hash table
     mp_map_init(&map_builtins, 3);
@@ -306,12 +307,8 @@ int rt_is_true(mp_obj_t arg) {
         return 0;
     } else if (arg == mp_const_true) {
         return 1;
-    } else if (MP_OBJ_IS_QSTR(arg)) {
-        // TODO: \0
-        return *qstr_str(MP_OBJ_QSTR_VALUE(arg)) != 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
-        // TODO: \0
-        return *qstr_str(mp_obj_str_get(arg)) != 0;
+    } else if (MP_OBJ_IS_STR(arg)) {
+        return mp_obj_str_get_len(arg) != 0;
     } else if (MP_OBJ_IS_TYPE(arg, &list_type)) {
         uint len;
         mp_obj_t *dummy;
@@ -404,7 +401,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
 
 mp_obj_t rt_load_const_str(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
-    return mp_obj_new_str(qstr);
+    return MP_OBJ_NEW_QSTR(qstr);
 }
 
 mp_obj_t rt_load_name(qstr qstr) {
@@ -616,25 +613,23 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
      * needs to go below
      */
     if (op == RT_COMPARE_OP_IN || op == RT_COMPARE_OP_NOT_IN) {
-        if (!MP_OBJ_IS_SMALL_INT(rhs)) {
-            mp_obj_base_t *o = rhs;
-            if (o->type->binary_op != NULL) {
-                mp_obj_t res = o->type->binary_op(op, rhs, lhs);
-                if (res != NULL) {
-                    return res;
+        mp_obj_type_t *type = mp_obj_get_type(rhs);
+        if (type->binary_op != NULL) {
+            mp_obj_t res = type->binary_op(op, rhs, lhs);
+            if (res != NULL) {
+                return res;
+            }
+        }
+        if (type->getiter != NULL) {
+            /* second attempt, walk the iterator */
+            mp_obj_t next = NULL;
+            mp_obj_t iter = rt_getiter(rhs);
+            while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+                if (mp_obj_equal(next, lhs)) {
+                    return MP_BOOL(op == RT_COMPARE_OP_IN);
                 }
             }
-            if (o->type->getiter != NULL) {
-                /* second attempt, walk the iterator */
-                mp_obj_t next = NULL;
-                mp_obj_t iter = rt_getiter(rhs);
-                while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
-                    if (mp_obj_equal(next, lhs)) {
-                        return MP_BOOL(op == RT_COMPARE_OP_IN);
-                    }
-                }
-                return MP_BOOL(op != RT_COMPARE_OP_IN);
-            }
+            return MP_BOOL(op != RT_COMPARE_OP_IN);
         }
 
         nlr_jump(mp_obj_new_exception_msg_varg(
@@ -643,16 +638,16 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         return mp_const_none;
     }
 
-    if (MP_OBJ_IS_OBJ(lhs)) {
-        mp_obj_base_t *o = lhs;
-        if (o->type->binary_op != NULL) {
-            mp_obj_t result = o->type->binary_op(op, lhs, rhs);
-            if (result != NULL) {
-                return result;
-            }
+    // generic binary_op supplied by type
+    mp_obj_type_t *type = mp_obj_get_type(lhs);
+    if (type->binary_op != NULL) {
+        mp_obj_t result = type->binary_op(op, lhs, rhs);
+        if (result != MP_OBJ_NULL) {
+            return result;
         }
-        // TODO implement dispatch for reverse binary ops
     }
+
+    // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
     nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
@@ -900,35 +895,27 @@ void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
 }
 
 mp_obj_t rt_getiter(mp_obj_t o_in) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not iterable"));
+    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    if (type->getiter != NULL) {
+        return type->getiter(o_in);
     } else {
-        mp_obj_base_t *o = o_in;
-        if (o->type->getiter != NULL) {
-            return o->type->getiter(o_in);
-        } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", o->type->name));
-        }
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", type->name));
     }
 }
 
 mp_obj_t rt_iternext(mp_obj_t o_in) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not an iterator"));
+    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    if (type->iternext != NULL) {
+        return type->iternext(o_in);
     } else {
-        mp_obj_base_t *o = o_in;
-        if (o->type->iternext != NULL) {
-            return o->type->iternext(o_in);
-        } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not an iterator", o->type->name));
-        }
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not an iterator", type->name));
     }
 }
 
 mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     // build args array
     mp_obj_t args[5];
-    args[0] = mp_obj_new_str(name);
+    args[0] = MP_OBJ_NEW_QSTR(name);
     args[1] = mp_const_none; // TODO should be globals
     args[2] = mp_const_none; // TODO should be locals
     args[3] = fromlist;

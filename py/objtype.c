@@ -251,7 +251,7 @@ static mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             // args[0] = name
             // args[1] = bases tuple
             // args[2] = locals dict
-            return mp_obj_new_type(mp_obj_get_qstr(args[0]), args[1], args[2]);
+            return mp_obj_new_type(mp_obj_str_get_str(args[0]), args[1], args[2]);
 
         default:
             nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes at 1 or 3 arguments"));
@@ -323,12 +323,12 @@ const mp_obj_type_t mp_const_type = {
     .store_attr = type_store_attr,
 };
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
+mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     assert(MP_OBJ_IS_TYPE(bases_tuple, &tuple_type)); // Micro Python restriction, for now
     assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
     o->base.type = &mp_const_type;
-    o->name = qstr_str(name);
+    o->name = name;
     o->print = class_print;
     o->make_new = class_make_new;
     o->binary_op = class_binary_op;

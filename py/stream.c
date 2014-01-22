@@ -23,15 +23,15 @@ static mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
         return stream_readall(args[0]);
     }
-    char *buf = m_new(char, sz);
+    byte *buf = m_new(byte, sz);
     int error;
     machine_int_t out_sz = o->type->stream_p.read(o, buf, sz, &error);
     if (out_sz == -1) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error));
     } else {
-        // TODO don't intern this string
-        buf = m_realloc(buf, sz, out_sz);
-        return mp_obj_new_str(qstr_from_strn_take(buf, out_sz, out_sz));
+        mp_obj_t s = mp_obj_new_str(buf, out_sz, false); // will reallocate to use exact size
+        m_free(buf, sz);
+        return s;
     }
 }
 
@@ -43,7 +43,7 @@ static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     uint sz;
-    const byte *buf = qstr_data(mp_obj_get_qstr(arg), &sz);
+    const byte *buf = mp_obj_str_get_data(arg, &sz);
     int error;
     machine_int_t out_sz = o->type->stream_p.write(self_in, buf, sz, &error);
     if (out_sz == -1) {
@@ -92,9 +92,10 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
             }
         }
     }
-    // TODO don't intern this string
-    vstr_set_size(vstr, total_size);
-    return mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, total_size));
+
+    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, total_size, false);
+    vstr_free(vstr);
+    return s;
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.

@@ -34,7 +34,7 @@ void *memset(void *s, int c, size_t n) {
     return s;
 }
 
-int strlen(const char *str) {
+size_t strlen(const char *str) {
     int len = 0;
     for (const char *s = str; *s; s++) {
         len += 1;

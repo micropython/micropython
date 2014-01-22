@@ -20,34 +20,35 @@ static mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             return MP_OBJ_NEW_SMALL_INT(0);
 
         case 1:
-            if (MP_OBJ_IS_TYPE(args[0], &str_type)) {
+            if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
-                return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[0])), 0));
+                uint l;
+                const byte *s = mp_obj_str_get_data(args[0], &l);
+                return MP_OBJ_NEW_SMALL_INT(strtonum((const char*)s, 0));
             } else {
                 return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
             }
 
         case 2:
+        {
             // should be a string, parse it
             // TODO proper error checking of argument types
-            return MP_OBJ_NEW_SMALL_INT(strtonum(qstr_str(mp_obj_get_qstr(args[0])), mp_obj_get_int(args[1])));
+            uint l;
+            const byte *s = mp_obj_str_get_data(args[0], &l);
+            return MP_OBJ_NEW_SMALL_INT(strtonum((const char*)s, mp_obj_get_int(args[1])));
+        }
 
         default:
             nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", (void*)(machine_int_t)n_args));
     }
 }
 
-const mp_obj_type_t int_type = {
-    { &mp_const_type },
-    "int",
-    .print = int_print,
-    .make_new = int_make_new,
-    .binary_op = int_binary_op,
-};
-
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-// This is called only for non-SMALL_INT
+
 void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(self_in));
+    }
 }
 
 // This is called only for non-SMALL_INT
@@ -88,4 +89,12 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
-#endif
+#endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+
+const mp_obj_type_t int_type = {
+    { &mp_const_type },
+    "int",
+    .print = int_print,
+    .make_new = int_make_new,
+    .binary_op = int_binary_op,
+};

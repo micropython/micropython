@@ -29,7 +29,7 @@
 #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
 #define Q_GET_DATA(q)   ((q) + 4)
 
-static machine_uint_t compute_hash(const byte *data, uint len) {
+machine_uint_t qstr_compute_hash(const byte *data, uint len) {
     machine_uint_t hash = 0;
     for (const byte *top = data + len; data < top; data++) {
         hash += *data;
@@ -99,9 +99,9 @@ static qstr qstr_add(const byte *q_ptr) {
     return last_pool->total_prev_len + last_pool->len - 1;
 }
 
-static qstr qstr_find_strn(const byte *str, uint str_len) {
+qstr qstr_find_strn(const byte *str, uint str_len) {
     // work out hash of str
-    machine_uint_t str_hash = compute_hash((const byte*)str, str_len);
+    machine_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
     // search pools for the data
     for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
@@ -123,7 +123,7 @@ qstr qstr_from_str(const char *str) {
 qstr qstr_from_strn(const char *str, uint len) {
     qstr q = qstr_find_strn((const byte*)str, len);
     if (q == 0) {
-        machine_uint_t hash = compute_hash((const byte*)str, len);
+        machine_uint_t hash = qstr_compute_hash((const byte*)str, len);
         byte *q_ptr = m_new(byte, 4 + len + 1);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
@@ -154,7 +154,7 @@ qstr qstr_build_end(byte *q_ptr) {
     qstr q = qstr_find_strn(Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
         machine_uint_t len = Q_GET_LENGTH(q_ptr);
-        machine_uint_t hash = compute_hash(Q_GET_DATA(q_ptr), len);
+        machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         q_ptr[4 + len] = '\0';

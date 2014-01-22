@@ -167,9 +167,11 @@ static mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     switch (n_args) {
         case 2:
         {
-            const char *code = qstr_str(mp_obj_str_get(args[0]));
+            // TODO check args
+            uint l;
+            const byte *s = mp_obj_str_get_data(args[0], &l);
             mp_obj_t initializer = args[1];
-            return array_construct(*code, initializer);
+            return array_construct(*s, initializer);
         }
 
         default:

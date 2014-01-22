@@ -153,8 +153,8 @@ static mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
         flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
     }
 
-    const char *buf = qstr_str(mp_obj_str_get(args[1]));
-    int sz = strlen(buf);
+    uint sz;
+    const byte *buf = mp_obj_str_get_data(args[1], &sz);
     int out_sz = send(self->fd, buf, sz, flags);
     RAISE_ERRNO(out_sz, errno);
 
@@ -225,7 +225,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
 
 static mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(arg, &str_type));
-    const char *s = qstr_str(mp_obj_str_get(arg));
+    const char *s = mp_obj_str_get_str(arg);
     struct in_addr addr;
     if (!inet_aton(s, &addr)) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OSError, "Invalid IP address"));
@@ -238,7 +238,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_inet_aton_obj, mod_socket_inet_aton)
 #if MICROPY_SOCKET_EXTRA
 static mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(arg, &str_type));
-    const char *s = qstr_str(mp_obj_str_get(arg));
+    const char *s = mp_obj_str_get_str(arg);
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
@@ -252,9 +252,9 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethos
 static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     // TODO: Implement all args
     assert(n_args == 2);
-    assert(MP_OBJ_IS_TYPE(args[0], &str_type));
+    assert(MP_OBJ_IS_STR(args[0]));
 
-    const char *host = qstr_str(mp_obj_str_get(args[0]));
+    const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
@@ -264,7 +264,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         sprintf(buf, "%d", port);
         serv = buf;
     } else {
-        serv = qstr_str(mp_obj_str_get(args[1]));
+        serv = mp_obj_str_get_str(args[1]);
     }
 
     struct addrinfo hints;

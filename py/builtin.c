@@ -139,8 +139,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     int ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
-        char str[1] = {ord};
-        return mp_obj_new_str(qstr_from_strn(str, 1));
+        byte str[1] = {ord};
+        return mp_obj_new_str(str, 1, true);
     } else {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "chr() arg not in range(0x110000)"));
     }
@@ -258,7 +258,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
 
 static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
-    const byte *str = qstr_data(mp_obj_get_qstr(o_in), &len);
+    const byte *str = mp_obj_str_get_data(o_in, &len);
     if (len == 1) {
         return mp_obj_new_int(str[0]);
     } else {
@@ -305,8 +305,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range
 static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
-    // TODO don't intern this string
-    return mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len));
+    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    vstr_free(vstr);
+    return s;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
@@ -345,8 +346,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 static mp_obj_t mp_builtin_str(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, o_in, PRINT_STR);
-    // TODO don't intern this string
-    return mp_obj_new_str(qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len));
+    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    vstr_free(vstr);
+    return s;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);

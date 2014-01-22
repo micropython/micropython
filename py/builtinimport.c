@@ -29,7 +29,10 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
     */
 
-    qstr mod_name = mp_obj_get_qstr(args[0]);
+    uint mod_name_l;
+    const byte *mod_name_s = mp_obj_str_get_data(args[0], &mod_name_l);
+    qstr mod_name = qstr_from_strn((const char*)mod_name_s, mod_name_l);
+
     mp_obj_t loaded = mp_obj_module_get(mod_name);
     if (loaded != MP_OBJ_NULL) {
         return loaded;
@@ -43,7 +46,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
 
     // create a new module object
-    mp_obj_t module_obj = mp_obj_new_module(mp_obj_get_qstr(args[0]));
+    mp_obj_t module_obj = mp_obj_new_module(mod_name);
 
     // save the old context
     mp_map_t *old_locals = rt_locals_get();

@@ -69,16 +69,20 @@ void __fatal_error(const char *msg) {
     }
 }
 
-static qstr pyb_config_source_dir = 0;
-static qstr pyb_config_main = 0;
+static mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
+static mp_obj_t pyb_config_main = MP_OBJ_NULL;
 
 mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
-    pyb_config_source_dir = mp_obj_get_qstr(source_dir);
+    if (MP_OBJ_IS_STR(source_dir)) {
+        pyb_config_source_dir = source_dir;
+    }
     return mp_const_none;
 }
 
 mp_obj_t pyb_main(mp_obj_t main) {
-    pyb_config_main = mp_obj_get_qstr(main);
+    if (MP_OBJ_IS_STR(main)) {
+        pyb_config_main = main;
+    }
     return mp_const_none;
 }
 
@@ -482,7 +486,7 @@ mp_obj_t pyb_gc(void) {
 mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     //assert(1 <= n_args && n_args <= 2);
 
-    const char *pin_name = qstr_str(mp_obj_get_qstr(args[0]));
+    const char *pin_name = mp_obj_str_get_str(args[0]);
     GPIO_TypeDef *port;
     switch (pin_name[0]) {
         case 'A': case 'a': port = GPIOA; break;
@@ -630,21 +634,22 @@ void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, m
 mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
     pyb_file_obj_t *self = self_in;
     int n = mp_obj_get_int(arg);
-    char *buf = m_new(char, n);
+    byte *buf = m_new(byte, n);
     UINT n_out;
     f_read(&self->fp, buf, n, &n_out);
-    return mp_obj_new_str(qstr_from_strn_take(buf, n, n_out));
+    return mp_obj_new_str(buf, n_out, false);
 }
 
 mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {
     pyb_file_obj_t *self = self_in;
-    const char *s = qstr_str(mp_obj_get_qstr(arg));
+    uint l;
+    const byte *s = mp_obj_str_get_data(arg, &l);
     UINT n_out;
-    FRESULT res = f_write(&self->fp, s, strlen(s), &n_out);
+    FRESULT res = f_write(&self->fp, s, l, &n_out);
     if (res != FR_OK) {
         printf("File error: could not write to file; error code %d\n", res);
-    } else if (n_out != strlen(s)) {
-        printf("File error: could not write all data to file; wrote %d / %d bytes\n", n_out, strlen(s));
+    } else if (n_out != l) {
+        printf("File error: could not write all data to file; wrote %d / %d bytes\n", n_out, l);
     }
     return mp_const_none;
 }
@@ -676,8 +681,8 @@ static const mp_obj_type_t file_obj_type = {
 };
 
 mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
-    const char *filename = qstr_str(mp_obj_get_qstr(o_filename));
-    const char *mode = qstr_str(mp_obj_get_qstr(o_mode));
+    const char *filename = mp_obj_str_get_str(o_filename);
+    const char *mode = mp_obj_str_get_str(o_mode);
     pyb_file_obj_t *self = m_new_obj(pyb_file_obj_t);
     self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
@@ -931,16 +936,16 @@ soft_reset:
     {
         vstr_t *vstr = vstr_new();
         vstr_add_str(vstr, "0:/");
-        if (pyb_config_source_dir == 0) {
+        if (pyb_config_source_dir == MP_OBJ_NULL) {
             vstr_add_str(vstr, "src");
         } else {
-            vstr_add_str(vstr, qstr_str(pyb_config_source_dir));
+            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_source_dir));
         }
         vstr_add_char(vstr, '/');
-        if (pyb_config_main == 0) {
+        if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");
         } else {
-            vstr_add_str(vstr, qstr_str(pyb_config_main));
+            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
         if (!do_file(vstr_str(vstr))) {
             flash_error(3);

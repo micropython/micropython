@@ -40,6 +40,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
 #define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t)))
+#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &str_type))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
@@ -199,14 +200,14 @@ extern const mp_obj_t mp_const_stop_iteration; // special object indicating end 
 
 // General API for objects
 
-mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
+mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
 mp_obj_t mp_obj_new_int_from_long_str(const char *s);
-mp_obj_t mp_obj_new_str(qstr qstr);
+mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
@@ -231,7 +232,7 @@ mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
-mp_obj_t mp_obj_get_type(mp_obj_t o_in);
+mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in);
 const char *mp_obj_get_type_str(mp_obj_t o_in);
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
@@ -248,7 +249,7 @@ machine_int_t mp_obj_get_int(mp_obj_t arg);
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
-qstr mp_obj_get_qstr(mp_obj_t arg);
+//qstr mp_obj_get_qstr(mp_obj_t arg);
 mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o, machine_int_t n);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
@@ -279,8 +280,13 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine
 
 // str
 extern const mp_obj_type_t str_type;
-qstr mp_obj_str_get(mp_obj_t self_in);
-void mp_obj_str_print_qstr(void (*print)(void *env, const char *fmt, ...), void *env, qstr q, mp_print_kind_t kind);
+mp_obj_t mp_obj_str_builder_start(uint len, byte **data);
+mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in);
+bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
+uint mp_obj_str_get_hash(mp_obj_t self_in);
+uint mp_obj_str_get_len(mp_obj_t self_in);
+const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
+const byte *mp_obj_str_get_data(mp_obj_t self_in, uint *len);
 
 #if MICROPY_ENABLE_FLOAT
 // float

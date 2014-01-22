@@ -20,6 +20,9 @@ typedef machine_uint_t qstr;
 
 void qstr_init(void);
 
+machine_uint_t qstr_compute_hash(const byte *data, uint len);
+qstr qstr_find_strn(const byte *str, uint str_len); // returns MP_QSTR_NULL if not found
+
 qstr qstr_from_str(const char *str);
 qstr qstr_from_strn(const char *str, uint len);
 //qstr qstr_from_str_static(const char *str);

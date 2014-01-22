@@ -14,7 +14,7 @@
 #include "runtime.h"
 #include "map.h"
 
-mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
+mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return (mp_obj_t)&int_type;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
@@ -26,14 +26,7 @@ mp_obj_t mp_obj_get_type(mp_obj_t o_in) {
 }
 
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return "int";
-    } else if (MP_OBJ_IS_QSTR(o_in)) {
-        return "str";
-    } else {
-        mp_obj_base_t *o = o_in;
-        return o->type->name;
-    }
+    return mp_obj_get_type(o_in)->name;
 }
 
 void printf_wrapper(void *env, const char *fmt, ...) {
@@ -44,17 +37,11 @@ void printf_wrapper(void *env, const char *fmt, ...) {
 }
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(o_in));
-    } else if (MP_OBJ_IS_QSTR(o_in)) {
-        mp_obj_str_print_qstr(print, env, MP_OBJ_QSTR_VALUE(o_in), kind);
+    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    if (type->print != NULL) {
+        type->print(print, env, o_in, kind);
     } else {
-        mp_obj_base_t *o = o_in;
-        if (o->type->print != NULL) {
-            o->type->print(print, env, o_in, kind);
-        } else {
-            print(env, "<%s>", o->type->name);
-        }
+        print(env, "<%s>", type->name);
     }
 }
 
@@ -94,12 +81,10 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return 1; // needs to hash to same as the integer 1, since True==1
     } else if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
-    } else if (MP_OBJ_IS_QSTR(o_in)) {
-        return MP_OBJ_QSTR_VALUE(o_in);
+    } else if (MP_OBJ_IS_STR(o_in)) {
+        return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &none_type)) {
         return (machine_int_t)o_in;
-    } else if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
-        return mp_obj_str_get(o_in);
     } else {
         assert(0);
         return 0;
@@ -138,10 +123,8 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             }
             return false;
         }
-    } else if (MP_OBJ_IS_QSTR(o1) || MP_OBJ_IS_QSTR(o2)) {
-        return false;
-    } else if (MP_OBJ_IS_TYPE(o1, &str_type) && MP_OBJ_IS_TYPE(o2, &str_type)) {
-        return mp_obj_str_get(o1) == mp_obj_str_get(o2);
+    } else if (MP_OBJ_IS_STR(o1) && MP_OBJ_IS_STR(o2)) {
+        return mp_obj_str_equal(o1, o2);
     } else {
         mp_obj_base_t *o = o1;
         if (o->type->binary_op != NULL) {
@@ -218,17 +201,6 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 }
 #endif
 
-qstr mp_obj_get_qstr(mp_obj_t arg) {
-    if (MP_OBJ_IS_QSTR(arg)) {
-        return MP_OBJ_QSTR_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &str_type)) {
-        return mp_obj_str_get(arg);
-    } else {
-        assert(0);
-        return 0;
-    }
-}
-
 mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o_in, machine_int_t n) {
     if (MP_OBJ_IS_TYPE(o_in, &tuple_type) || MP_OBJ_IS_TYPE(o_in, &list_type)) {
         uint seq_len;
@@ -266,8 +238,8 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index)
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     mp_small_int_t len = 0;
-    if (MP_OBJ_IS_TYPE(o_in, &str_type)) {
-        len = qstr_len(mp_obj_str_get(o_in));
+    if (MP_OBJ_IS_STR(o_in)) {
+        len = mp_obj_str_get_len(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
         uint seq_len;
         mp_obj_t *seq_items;
