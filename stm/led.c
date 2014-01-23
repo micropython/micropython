@@ -4,6 +4,7 @@
 
 #include "misc.h"
 #include "mpconfig.h"
+#include "mpconfigport.h"
 #include "qstr.h"
 #include "obj.h"
 #include "led.h"
@@ -13,61 +14,6 @@
 #define PYB_LED_2   (2)
 #define PYB_LED_3   (3)
 #define PYB_LED_4   (4)
-
-#if defined(PYBOARD)
-    #define PYB_LED1_PORT   (GPIOA)
-    #define PYB_LED1_PIN    (GPIO_Pin_8)
-
-    #define PYB_LED2_PORT   (GPIOA)
-    #define PYB_LED2_PIN    (GPIO_Pin_10)
-
-    #define PYB_LED3_PORT   (GPIOC)
-    #define PYB_LED3_PIN    (GPIO_Pin_4)
-
-    #define PYB_LED4_PORT   (GPIOC)
-    #define PYB_LED4_PIN    (GPIO_Pin_5)
-
-    #define PYB_OTYPE       (GPIO_OType_OD)
-
-    #define PYB_LED_ON(port, pin)  (port->BSRRH = pin)
-    #define PYB_LED_OFF(port, pin) (port->BSRRL = pin)
-
-#elif defined(PYBOARD4)
-    #define PYB_LED1_PORT   (GPIOA)
-    #define PYB_LED1_PIN    (GPIO_Pin_13)
-
-    #define PYB_LED2_PORT   (GPIOA)
-    #define PYB_LED2_PIN    (GPIO_Pin_14)
-
-    #define PYB_LED3_PORT   (GPIOA)
-    #define PYB_LED3_PIN    (GPIO_Pin_15)
-
-    #define PYB_LED4_PORT   (GPIOB)
-    #define PYB_LED4_PIN    (GPIO_Pin_4)
-
-    #define PYB_OTYPE       (GPIO_OType_PP)
-
-    #define PYB_LED_ON(port, pin)  (port->BSRRL = pin)
-    #define PYB_LED_OFF(port, pin) (port->BSRRH = pin)
-
-#elif defined(STM32F4DISC)
-    #define PYB_LED1_PORT   (GPIOD)
-    #define PYB_LED1_PIN    (GPIO_Pin_14)
-
-    #define PYB_LED2_PORT   (GPIOD)
-    #define PYB_LED2_PIN    (GPIO_Pin_12)
-
-    #define PYB_LED3_PORT   (GPIOD)
-    #define PYB_LED3_PIN    (GPIO_Pin_15)
-
-    #define PYB_LED4_PORT   (GPIOD)
-    #define PYB_LED4_PIN    (GPIO_Pin_13)
-
-    #define PYB_OTYPE       (GPIO_OType_PP)
-
-    #define PYB_LED_ON(port, pin)  (port->BSRRL = pin)
-    #define PYB_LED_OFF(port, pin) (port->BSRRH = pin)
-#endif
 
 void led_init(void) {
     /* GPIO structure */
