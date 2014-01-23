@@ -263,12 +263,12 @@ mp_obj_t pyb_mma_read(void) {
     int jolt_info = mma_read_nack();
 
     mp_obj_t data[4];
-    data[0] = mp_obj_new_int(jolt_info);
-    data[1] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
-    data[2] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
-    data[3] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+    data[0] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
+    data[1] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
+    data[2] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
+    data[3] = mp_obj_new_int(jolt_info);
 
-    return rt_build_tuple(4, data); // items in reverse order in data
+    return rt_build_tuple(4, data);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_obj, pyb_mma_read);
@@ -279,11 +279,11 @@ mp_obj_t pyb_mma_read_all(void) {
     mma_send_byte(0);
     mma_restart(MMA_ADDR, 0);
     for (int i = 0; i <= 9; i++) {
-        data[10 - i] = mp_obj_new_int(mma_read_ack());
+        data[i] = mp_obj_new_int(mma_read_ack());
     }
-    data[0] = mp_obj_new_int(mma_read_nack());
+    data[10] = mp_obj_new_int(mma_read_nack());
 
-    return rt_build_tuple(11, data); // items in reverse order in data
+    return rt_build_tuple(11, data);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_all_obj, pyb_mma_read_all);
@@ -298,4 +298,3 @@ mp_obj_t pyb_mma_write_mode(mp_obj_t o_int, mp_obj_t o_mode) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_mma_write_mode_obj, pyb_mma_write_mode);
-

@@ -768,8 +768,8 @@ soft_reset:
     qstr_init();
     rt_init();
 
-    // LCD init
-    //lcd_init(); disabled while servos on PA0 PA1
+    // LCD init (create in with LCD())
+    lcd_init();
 
     // servo
     servo_init();
