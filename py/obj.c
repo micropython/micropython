@@ -66,12 +66,7 @@ void mp_obj_print_exception(mp_obj_t exc) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    if (!MP_OBJ_IS_OBJ(o_in)) {
-        return false;
-    } else {
-        mp_obj_base_t *o = o_in;
-        return o->type->call != NULL;
-    }
+    return mp_obj_get_type(o_in)->call != NULL;
 }
 
 machine_int_t mp_obj_hash(mp_obj_t o_in) {
