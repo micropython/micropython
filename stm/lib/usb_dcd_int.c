@@ -352,7 +352,7 @@ static uint32_t DCD_HandleResume_ISR(USB_OTG_CORE_HANDLE *pdev)
   if(pdev->cfg.low_power)
   {
     /* un-gate USB Core clock */
-    power.d32 = USB_OTG_READ_REG32(&pdev->regs.PCGCCTL); // dpgeorge: taking the address here might be wrong...
+    power.d32 = USB_OTG_READ_REG32(pdev->regs.PCGCCTL);
     power.b.gatehclk = 0;
     power.b.stoppclk = 0;
     USB_OTG_WRITE_REG32(pdev->regs.PCGCCTL, power.d32);
