@@ -278,6 +278,16 @@ static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     }
 }
 
+// TODO: (Much) more variety in args
+static mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
+    GET_STR_DATA_LEN(self_in, str, str_len);
+    GET_STR_DATA_LEN(arg, prefix, prefix_len);
+    if (prefix_len > str_len) {
+        return mp_const_false;
+    }
+    return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
+}
+
 static bool chr_in_str(const byte* const str, const size_t str_len, int c) {
     for (size_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
@@ -364,6 +374,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
+static MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 
@@ -371,6 +382,7 @@ static const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
     { "join", &str_join_obj },
     { "split", &str_split_obj },
+    { "startswith", &str_startswith_obj },
     { "strip", &str_strip_obj },
     { "format", &str_format_obj },
     { NULL, NULL }, // end-of-list sentinel

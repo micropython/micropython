@@ -1,0 +1,5 @@
+print("foobar".startswith("foo"))
+print("foobar".startswith("Foo"))
+print("foobar".startswith("foo1"))
+print("foobar".startswith("foobar"))
+print("foobar".startswith(""))
