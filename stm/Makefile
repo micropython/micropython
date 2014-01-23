@@ -64,6 +64,7 @@ SRC_C = \
 	i2c.c \
 	usrsw.c \
 	adc.c \
+	rtc.c \
 #	pybwlan.c \
 
 SRC_S = \
