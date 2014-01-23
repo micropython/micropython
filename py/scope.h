@@ -56,6 +56,7 @@ typedef struct _scope_t {
 } scope_t;
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint unique_code_id, uint emit_options);
+void scope_free(scope_t *scope);
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added);
 id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);

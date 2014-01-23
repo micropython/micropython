@@ -691,6 +691,7 @@ void mp_lexer_free(mp_lexer_t *lex) {
             lex->stream_close(lex->stream_data);
         }
         vstr_clear(&lex->vstr);
+        m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
         m_del_obj(mp_lexer_t, lex);
     }
 }

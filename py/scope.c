@@ -60,6 +60,11 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
     return scope;
 }
 
+void scope_free(scope_t *scope) {
+    m_del(id_info_t, scope->id_info, scope->id_info_alloc);
+    m_del(scope_t, scope, 1);
+}
+
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
     for (int i = 0; i < scope->id_info_len; i++) {
         if (scope->id_info[i].qstr == qstr) {
