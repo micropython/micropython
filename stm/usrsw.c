@@ -6,7 +6,6 @@
 
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpconfigport.h"
 #include "qstr.h"
 #include "obj.h"
 #include "usrsw.h"

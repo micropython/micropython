@@ -10,3 +10,4 @@ void usb_hid_send_report(uint8_t *buf); // 4 bytes for mouse: ?, x, y, ?
 void pyb_usbh_init(void);
 mp_obj_t pyb_usbh_process(void);
 mp_obj_t pyb_usbh_connect(void);
+mp_obj_t pyb_usbh_info(void);

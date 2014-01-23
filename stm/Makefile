@@ -13,7 +13,7 @@ ECHO = @echo
 
 CMSIS=cmsis
 STMSRC=lib
-#STMOTGSRC=lib-otg
+#STMOTGSRC=usbhost
 FATFSSRC=fatfs
 CC3KSRC=cc3k
 DFU=../tools/dfu.py

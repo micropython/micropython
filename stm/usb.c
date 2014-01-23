@@ -153,4 +153,18 @@ mp_obj_t pyb_usbh_connect(void) {
     return mp_const_none;
 }
 
+mp_obj_t pyb_usbh_info(void) {
+    printf("GOTGCTL:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GOTGCTL);
+    printf("GOTGINT:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GOTGINT);
+    printf("GAHBCFG:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GAHBCFG);
+    printf("GUSBCFG:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GUSBCFG);
+    printf("GRSTCTL:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRSTCTL);
+    printf("GINTSTS:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GINTSTS);
+    printf("GINTMSK:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GINTMSK);
+    //printf("GRXSTSR:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXSTSR);
+    //printf("GRXSTSP:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXSTSP);
+    //printf("GRXFSIZ:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXFSIZ);
+    return mp_const_none;
+}
+
 #endif // USE_HOST_MODE

@@ -876,6 +876,7 @@ soft_reset:
     //pyb_usbh_init();
     //rt_store_name(qstr_from_str("u_p"), rt_make_function_n(0, pyb_usbh_process));
     //rt_store_name(qstr_from_str("u_c"), rt_make_function_n(0, pyb_usbh_connect));
+    //rt_store_name(qstr_from_str("u_i"), rt_make_function_n(0, pyb_usbh_info));
 
     if (first_soft_reset) {
 #if MICROPY_HW_HAS_MMA7660
