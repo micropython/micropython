@@ -479,16 +479,16 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             return MP_OBJ_NEW_SMALL_INT(val);
         }
         return mp_obj_new_int(val);
-    } else { // will be an object (small ints are caught in previous if)
-        mp_obj_base_t *o = arg;
-        if (o->type->unary_op != NULL) {
-            mp_obj_t result = o->type->unary_op(op, arg);
+    } else {
+        mp_obj_type_t *type = mp_obj_get_type(arg);
+        if (type->unary_op != NULL) {
+            mp_obj_t result = type->unary_op(op, arg);
             if (result != NULL) {
                 return result;
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", o->type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", type->name));
     }
 }
 

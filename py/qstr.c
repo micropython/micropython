@@ -106,7 +106,7 @@ qstr qstr_find_strn(const byte *str, uint str_len) {
     // search pools for the data
     for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-            if (Q_GET_HASH(*q) == str_hash && Q_GET_LENGTH(*q) == str_len && strncmp((const char*)Q_GET_DATA(*q), (const char*)str, str_len) == 0) {
+            if (Q_GET_HASH(*q) == str_hash && Q_GET_LENGTH(*q) == str_len && memcmp(Q_GET_DATA(*q), str, str_len) == 0) {
                 return pool->total_prev_len + (q - pool->qstrs);
             }
         }

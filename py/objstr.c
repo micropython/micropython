@@ -447,7 +447,7 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
         if (l1 != l2) {
             return false;
         }
-        return strncmp((const char*)d1, (const char*)d2, l1) == 0;
+        return memcmp(d1, d2, l1) == 0;
     }
 }
 
