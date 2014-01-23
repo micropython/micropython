@@ -23,7 +23,7 @@
 
 typedef enum {
     PN_none = 0,
-#define DEF_RULE(rule, comp, kind, arg...) PN_##rule,
+#define DEF_RULE(rule, comp, kind, ...) PN_##rule,
 #include "grammar.h"
 #undef DEF_RULE
     PN_maximum_number_of,

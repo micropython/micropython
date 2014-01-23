@@ -40,7 +40,7 @@ typedef struct _rule_t {
 
 enum {
     RULE_none = 0,
-#define DEF_RULE(rule, comp, kind, arg...) RULE_##rule,
+#define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
 #include "grammar.h"
 #undef DEF_RULE
     RULE_maximum_number_of,
@@ -56,9 +56,9 @@ enum {
 #define opt_tok(t)              (RULE_ARG_OPT_TOK | MP_TOKEN_##t)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 #ifdef USE_RULE_NAME
-#define DEF_RULE(rule, comp, kind, arg...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { arg } };
+#define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
 #else
-#define DEF_RULE(rule, comp, kind, arg...) static const rule_t rule_##rule = { RULE_##rule, kind, { arg } };
+#define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
 #endif
 #include "grammar.h"
 #undef or
@@ -74,7 +74,7 @@ enum {
 
 static const rule_t *rules[] = {
     NULL,
-#define DEF_RULE(rule, comp, kind, arg...) &rule_##rule,
+#define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
 #include "grammar.h"
 #undef DEF_RULE
 };
