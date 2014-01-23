@@ -42,6 +42,7 @@
 #include "i2c.h"
 #include "usrsw.h"
 #include "adc.h"
+#include "rtc.h"
 
 int errno;
 
@@ -62,8 +63,10 @@ void flash_error(int n) {
 }
 
 void __fatal_error(const char *msg) {
+#if MICROPY_HW_HAS_LCD
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
+#endif
     for (;;) {
         flash_error(1);
     }
@@ -541,87 +544,6 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     return mp_const_none;
 }
 
-static void rtc_init(void) {
-    uint32_t rtc_clksrc;
-    uint32_t timeout = 1000000;
-
-    /* Enable the PWR clock */
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
-
-    /* Allow access to RTC */
-    PWR_BackupAccessCmd(ENABLE);
-
-    /* Enable the LSE OSC */
-    RCC_LSEConfig(RCC_LSE_ON);
-
-    /* Wait till LSE is ready */
-    while((RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) && (--timeout > 0)) {
-    }
-
-    /* If LSE timed out, use LSI instead */
-    if (timeout == 0) {
-        /* Enable the LSI OSC */
-        RCC_LSICmd(ENABLE);
-
-        /* Wait till LSI is ready */
-        while(RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET) {
-        }
-
-        /* Use LSI as the RTC Clock Source */
-        rtc_clksrc = RCC_RTCCLKSource_LSI;
-    } else {
-        /* Use LSE as the RTC Clock Source */
-        rtc_clksrc = RCC_RTCCLKSource_LSE;
-    }
-
-    /* Select the RTC Clock Source */
-    RCC_RTCCLKConfig(rtc_clksrc);
-
-    /* Note: LSI is around (32KHz), these dividers should work either way */
-    /* ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)*/
-    uint32_t uwSynchPrediv = 0xFF;
-    uint32_t uwAsynchPrediv = 0x7F;
-
-    /* Enable the RTC Clock */
-    RCC_RTCCLKCmd(ENABLE);
-
-    /* Wait for RTC APB registers synchronisation */
-    RTC_WaitForSynchro();
-
-    /* Configure the RTC data register and RTC prescaler */
-    RTC_InitTypeDef RTC_InitStructure;
-    RTC_InitStructure.RTC_AsynchPrediv = uwAsynchPrediv;
-    RTC_InitStructure.RTC_SynchPrediv = uwSynchPrediv;
-    RTC_InitStructure.RTC_HourFormat = RTC_HourFormat_24;
-    RTC_Init(&RTC_InitStructure);
-
-    // Set the date (BCD)
-    RTC_DateTypeDef RTC_DateStructure;
-    RTC_DateStructure.RTC_Year = 0x13;
-    RTC_DateStructure.RTC_Month = RTC_Month_October;
-    RTC_DateStructure.RTC_Date = 0x26;
-    RTC_DateStructure.RTC_WeekDay = RTC_Weekday_Saturday;
-    RTC_SetDate(RTC_Format_BCD, &RTC_DateStructure);
-
-    // Set the time (BCD)
-    RTC_TimeTypeDef RTC_TimeStructure;
-    RTC_TimeStructure.RTC_H12     = RTC_H12_AM;
-    RTC_TimeStructure.RTC_Hours   = 0x01;
-    RTC_TimeStructure.RTC_Minutes = 0x53;
-    RTC_TimeStructure.RTC_Seconds = 0x00;
-    RTC_SetTime(RTC_Format_BCD, &RTC_TimeStructure);
-
-    // Indicator for the RTC configuration
-    //RTC_WriteBackupRegister(RTC_BKP_DR0, 0x32F2);
-}
-
-mp_obj_t pyb_rtc_read(void) {
-    RTC_TimeTypeDef RTC_TimeStructure;
-    RTC_GetTime(RTC_Format_BIN, &RTC_TimeStructure);
-    printf("%02d:%02d:%02d\n", RTC_TimeStructure.RTC_Hours, RTC_TimeStructure.RTC_Minutes, RTC_TimeStructure.RTC_Seconds);
-    return mp_const_none;
-}
-
 typedef struct _pyb_file_obj_t {
     mp_obj_base_t base;
     FIL fp;
@@ -726,31 +648,39 @@ int main(void) {
 #endif
         ;
 
-    // configure SDIO pins to be high to start with (apparently makes it more robust)
+#if MICROPY_HW_HAS_SDCARD
     {
-      GPIO_InitTypeDef GPIO_InitStructure;
-      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
-      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-      GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-      GPIO_Init(GPIOC, &GPIO_InitStructure);
+        // configure SDIO pins to be high to start with (apparently makes it more robust)
+        // FIXME this is not making them high, it just makes them outputs...
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-      // Configure PD.02 CMD line
-      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-      GPIO_Init(GPIOD, &GPIO_InitStructure);
+        // Configure PD.02 CMD line
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+        GPIO_Init(GPIOD, &GPIO_InitStructure);
     }
+#endif
 
     // basic sub-system init
     sys_tick_init();
     led_init();
+
+#if MICROPY_HW_ENABLE_RTC
     rtc_init();
+#endif
 
     // turn on LED to indicate bootup
     led_state(PYB_LED_G1, 1);
 
     // more sub-system init
+#if MICROPY_HW_HAS_SWITCH
     switch_init();
+#endif
     storage_init();
 
     // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
@@ -768,23 +698,31 @@ soft_reset:
     qstr_init();
     rt_init();
 
+#if MICROPY_HW_HAS_LCD
     // LCD init (create in with LCD())
     lcd_init();
+#endif
 
+#if MICROPY_HW_ENABLE_SERVO
     // servo
     servo_init();
+#endif
 
+#if MICROPY_HW_ENABLE_AUDIO
     // audio
-    //audio_init();
+    audio_init();
+#endif
 
+#if MICROPY_HW_ENABLE_TIMER
     // timer
     timer_init();
+#endif
 
+#if MICROPY_HW_ENABLE_RNG
     // RNG
-    if (1) {
-        RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
-        RNG_Cmd(ENABLE);
-    }
+    RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
+    RNG_Cmd(ENABLE);
+#endif
 
     // add some functions to the python namespace
     {
@@ -792,7 +730,9 @@ soft_reset:
 
         mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
         rt_store_attr(m, MP_QSTR_info, rt_make_function_n(0, pyb_info));
+#if MICROPY_HW_HAS_SDCARD
         rt_store_attr(m, MP_QSTR_sd_test, rt_make_function_n(0, pyb_sd_test));
+#endif
         rt_store_attr(m, MP_QSTR_stop, rt_make_function_n(0, pyb_stop));
         rt_store_attr(m, MP_QSTR_standby, rt_make_function_n(0, pyb_standby));
         rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
@@ -800,8 +740,12 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
         rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
         rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
+#if MICROPY_HW_HAS_SWITCH
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
+#endif
+#if MICROPY_HW_ENABLE_SERVO
         rt_store_attr(m, MP_QSTR_servo, rt_make_function_n(2, pyb_servo_set));
+#endif
         rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
 #if MICROPY_HW_HAS_MMA7660
         rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_mma_read_obj);
@@ -809,10 +753,16 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
 #endif
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
+#if MICROPY_HW_HAS_RTC
         rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
+#endif
+#if MICROPY_HW_ENABLE_RNG
         rt_store_attr(m, MP_QSTR_rand, rt_make_function_n(0, pyb_rng_get));
+#endif
         rt_store_attr(m, MP_QSTR_Led, (mp_obj_t)&pyb_Led_obj);
+#if MICROPY_HW_ENABLE_SERVO
         rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(1, pyb_Servo));
+#endif
         rt_store_attr(m, MP_QSTR_I2C, rt_make_function_n(2, pyb_I2C));
         rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
         rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
@@ -822,11 +772,14 @@ soft_reset:
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
     }
 
+#if MICROPY_HW_HAS_LCD
     // print a message to the LCD
     lcd_print_str(" micro py board\n");
+#endif
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
+#if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
         reset_filesystem = true;
         for (int i = 0; i < 50; i++) {
@@ -837,7 +790,7 @@ soft_reset:
             sys_tick_delay_ms(10);
         }
     }
-
+#endif
     // local filesystem init
     {
         // try to mount the flash
@@ -965,11 +918,15 @@ soft_reset:
         data[2] = -2;
         data[3] = 0;
         for (;;) {
+        #if MICROPY_HW_HAS_SWITCH
             if (switch_get()) {
                 data[0] = 0x01; // 0x04 is middle, 0x02 is right
             } else {
                 data[0] = 0x00;
             }
+        #else
+            data[0] = 0x00;
+        #endif
             mma_start(0x4c /* MMA_ADDR */, 1);
             mma_send_byte(0);
             mma_restart(0x4c /* MMA_ADDR */, 0);
@@ -987,9 +944,11 @@ soft_reset:
     }
 #endif
 
+#if MICROPY_HW_HAS_WLAN
     // wifi
-    //pyb_wlan_init();
-    //pyb_wlan_start();
+    pyb_wlan_init();
+    pyb_wlan_start();
+#endif
 
     do_repl();
 
