@@ -9,7 +9,7 @@ enum {
     MP_QSTR_ = 1, // the empty qstr
 #define Q(id, str) MP_QSTR_##id,
 // TODO having 'build/py.' here is a bit of a hack, should take config variable from Makefile
-#include "build/py.qstrdefs.generated.h"
+#include "build/py/qstrdefs.generated.h"
 #undef Q
     MP_QSTR_number_of,
 } category_t;

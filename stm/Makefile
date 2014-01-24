@@ -1,15 +1,10 @@
-# define main target
-all: all2
+include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include ../py/py.mk
-
-# program for deletion
-RM = /bin/rm
-ECHO = @echo
 
 CMSIS=cmsis
 STMSRC=lib
@@ -18,11 +13,7 @@ FATFSSRC=fatfs
 CC3KSRC=cc3k
 DFU=../tools/dfu.py
 
-AS = arm-none-eabi-as
-CC = arm-none-eabi-gcc
-LD = arm-none-eabi-ld
-OBJCOPY = arm-none-eabi-objcopy
-SIZE = arm-none-eabi-size
+CROSS_COMPILE = arm-none-eabi-
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
@@ -72,11 +63,12 @@ SRC_S = \
 	startup_stm32f40xx.s \
 	gchelper.s \
 
-SRC_FATFS = \
+SRC_FATFS = $(addprefix $(FATFSSRC)/,\
 	ff.c \
 	diskio.c \
+	)
 
-SRC_STM = \
+SRC_STM = $(addprefix $(STMSRC)/,\
 	stm32f4xx_rcc.c \
 	stm32f4xx_syscfg.c \
 	stm_misc.c \
@@ -112,8 +104,9 @@ SRC_STM = \
 	usbd_msc_data.c \
 	usbd_msc_scsi.c \
 	usbd_storage_msd.c \
+	)
 
-#SRC_STM_OTG = \
+#SRC_STM_OTG = $(addprefix $(STMSRC)/,\
 	usb_hcd.c \
 	usb_hcd_int.c \
 	usbh_core.c \
@@ -125,8 +118,9 @@ SRC_STM = \
 	usbh_hid_mouse.c \
 	usbh_hid_keybd.c \
 #	usb_otg.c \
+	)
 
-SRC_CC3K = \
+SRC_CC3K = $(addprefix $(CC3KSRC)/,\
 	cc3000_common.c \
 	evnt_handler.c \
 	hci.c \
@@ -137,11 +131,12 @@ SRC_CC3K = \
 	wlan.c \
 	ccspi.c \
 	pybcc3k.c \
+	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o)) # $(SRC_CC3K:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STM_OTG:.c=.o))
 
-all2: $(BUILD) $(BUILD)/flash.dfu
+all: $(BUILD) $(BUILD)/flash.dfu
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
 	$(ECHO) "Create $@"
@@ -158,31 +153,5 @@ $(BUILD)/flash.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/%.o: %.s
-	$(ECHO) "AS $<"
-	$(Q)$(AS) -o $@ $<
+include ../py/mkrules.mk
 
-$(BUILD)/%.o: %.c $(QSTR_DEFS)
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD)/%.o: $(FATFSSRC)/%.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD)/%.o: $(STMSRC)/%.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-#$(BUILD)/%.o: $(STMOTGSRC)/%.c
-#	$(ECHO) "CC $<"
-#	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD)/%.o: $(CC3KSRC)/%.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-clean:
-	$(RM) -rf $(BUILD)
-
-.PHONY: all all2 clean
