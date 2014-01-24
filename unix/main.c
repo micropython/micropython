@@ -62,6 +62,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     */
 
     mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    parse_node_free_struct(pn);
 
     if (module_fun == mp_const_none) {
         // compile error
