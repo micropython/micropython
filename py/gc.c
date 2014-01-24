@@ -187,6 +187,22 @@ void gc_collect_end(void) {
     gc_sweep();
 }
 
+extern void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
+
+void gc_collect(void) {
+    extern char _ram_start;  /* defined by linker script */
+    extern char _ram_end;    /* defined by linker script */
+    extern char _heap_start; /* defined by linker script */
+    extern char _heap_end;   /* defined by linker script */
+
+    gc_collect_start();
+    gc_collect_root((void**)&_ram_start, (&_heap_start - &_ram_start) / 4);
+    machine_uint_t regs[10];
+    gc_helper_get_regs_and_clean_stack(regs, (uint32_t) &_heap_end);
+    gc_collect_root((void**)&_heap_end, (&_ram_end - &_heap_end) / 4); // will trace regs since they now live in this function on the stack
+    gc_collect_end();
+}
+
 void gc_info(gc_info_t *info) {
     info->total = (gc_pool_end - gc_pool_start) * sizeof(machine_uint_t);
     info->used = 0;
