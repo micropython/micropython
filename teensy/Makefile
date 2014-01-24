@@ -1,12 +1,7 @@
-# define main target
-all: all2
+include ../py/mkenv.mk
 
 # include py core make definitions
 include ../py/py.mk
-
-# program for deletion
-RM = /bin/rm
-ECHO = @echo
 
 ifeq ($(ARDUINO),)
 $(error Please define ARDUINO (where TeensyDuino is installed))
@@ -14,17 +9,12 @@ endif
 TOOLS_PATH = $(ARDUINO)/hardware/tools
 COMPILER_PATH = $(TOOLS_PATH)/arm-none-eabi/bin
 CORE_PATH = $(ARDUINO)/hardware/teensy/cores/teensy3
-TARGET=TEENSY
 
-AS = $(COMPILER_PATH)/arm-none-eabi-as
-CC = $(COMPILER_PATH)/arm-none-eabi-gcc
-LD = $(COMPILER_PATH)/arm-none-eabi-ld
-OBJCOPY = $(COMPILER_PATH)/arm-none-eabi-objcopy
-SIZE = $(COMPILER_PATH)/arm-none-eabi-size
+CROSS_COMPILE = $(COMPILER_PATH)/arm-none-eabi-
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
-CFLAGS = -I. -I$(PY_SRC) -I$(CORE_PATH) -Wall -ansi -std=gnu99
+CFLAGS = -I. -I$(PY_SRC) -I$(CORE_PATH) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld
 LIBS = -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
 
@@ -35,9 +25,6 @@ else
 CFLAGS += -Os #-DNDEBUG
 endif
 
-# if order is not important for these, move them up
-CFLAGS += $(CFLAGS_CORTEX_M4) -D$(TARGET)
-
 SRC_C = \
 	main.c \
 	lcd.c \
@@ -47,13 +34,15 @@ SRC_C = \
 	memzip.c \
 	usb.c \
 
-STM_SRC_C = \
+STM_SRC_C = $(addprefix stm/,\
 	malloc0.c \
 	printf.c \
 	string0.c \
+	)
 
-STM_SRC_S = \
+STM_SRC_S = $(addprefix stm/,\
 	gchelper.s \
+	)
 
 SRC_TEENSY = \
 	mk20dx128.c \
@@ -70,7 +59,7 @@ OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o
 # the following is needed for BSD
 #LIB += -ltermcap
 
-all2: $(BUILD) hex
+all: hex
 hex: $(BUILD)/micropython-mz.hex
 
 post_compile: $(BUILD)/micropython-mz.hex
@@ -100,25 +89,7 @@ $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
-$(BUILD)/%.o: %.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD)/%.o: ../stm/%.s
-	$(ECHO) "AS $<"
-	$(Q)$(AS) -o $@ $<
-
-$(BUILD)/%.o: ../stm/%.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
 $(BUILD)/%.o: $(CORE_PATH)/%.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(call compile_c)
 
-$(BUILD)/main.o: mpconfigport.h
-
-clean:
-	$(RM) -rf $(BUILD)
-
-.PHONY: all all2 clean
+include ../py/mkrules.mk

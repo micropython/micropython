@@ -1,48 +1,11 @@
-##########
-# The following should eventually go into a more central location
-# when a reorg is done.
-#
-# Turn on increased build verbosity by defining BUILD_VERBOSE in your main
-# Makefile or in your environment. You can also use V=1 on the make command
-# line.
-ifeq ("$(origin V)", "command line")
-BUILD_VERBOSE=$(V)
-endif
-ifndef BUILD_VERBOSE
-BUILD_VERBOSE = 0
-endif
-ifeq ($(BUILD_VERBOSE),0)
-Q = @
-else
-Q =
-endif
-# Since this is a new feature, advertise it
-ifeq ($(BUILD_VERBOSE),0)
-$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
-endif
-#
-#########
-
-# default settings; can be overriden in main Makefile
-
-PY_SRC ?= ../py
-BUILD ?= build
-
-# to create the build directory
-
-$(BUILD):
-	$(Q)mkdir -p $@
-
 # where py object files go (they have a name prefix to prevent filename clashes)
-
-PY_BUILD = $(BUILD)/py.
+PY_BUILD = $(BUILD)/py
 
 # file containing qstr defs for the core Python bit
 
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
 # py object files
-
 PY_O_BASENAME = \
 	nlrx86.o \
 	nlrx64.o \
@@ -108,50 +71,37 @@ PY_O_BASENAME = \
 	repl.o \
 
 # prepend the build destination prefix to the py object files
-
-PY_O = $(addprefix $(PY_BUILD), $(PY_O_BASENAME))
+PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
 # qstr data
 
-$(PY_BUILD)qstr.o: $(PY_BUILD)qstrdefs.generated.h
-
-$(PY_BUILD)qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
+# Adding an order only dependency on $(PY_BUILD) causes $(PY_BUILD) to get
+# created before we run the script to generate the .h
+$(PY_BUILD)/qstrdefs.generated.h: | $(PY_BUILD)
+$(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
 	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
 	$(Q)python $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@
 
+# We don't know which source files actually need the generated.h (since
+# it is #included from str.h). The compiler generated dependencies will cause
+# the right .o's to get recompiled if the generated.h file changes. Adding
+# an order-only dependendency to all of the .o's will cause the generated .h
+# to get built before we try to compile any of them.
+$(PY_O): | $(PY_BUILD)/qstrdefs.generated.h
+
 # emitters
 
-$(PY_BUILD)emitnx64.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -DN_X64 -c -o $@ $<
+$(PY_BUILD)/emitnx64.o: CFLAGS += -DN_X64
+$(PY_BUILD)/emitnx64.o: py/emitnative.c
+	$(call compile_c)
 
-$(PY_BUILD)emitnthumb.o: $(PY_SRC)/emitnative.c $(PY_SRC)/emit.h mpconfigport.h
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -DN_THUMB -c -o $@ $<
-
-# general source files
-
-$(PY_BUILD)%.o: $(PY_SRC)/%.S
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(PY_BUILD)%.o: $(PY_SRC)/%.c mpconfigport.h $(PY_SRC)/qstr.h $(PY_QSTR_DEFS) $(QSTR_DEFS)
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+$(PY_BUILD)/emitnthumb.o: CFLAGS += -DN_THUMB
+$(PY_BUILD)/emitnthumb.o: py/emitnative.c
+	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
-$(PY_BUILD)gc.o: $(PY_SRC)/gc.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -O3 -c -o $@ $<
+$(PY_BUILD)gc.o: CFLAGS += -O3
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
-$(PY_BUILD)vm.o: $(PY_SRC)/vm.c
-	$(ECHO) "CC $<"
-	$(Q)$(CC) $(CFLAGS) -O3 -c -o $@ $<
+$(PY_BUILD)vm.o: CFLAGS += -O3
 
-# header dependencies
-
-$(PY_BUILD)parse.o: $(PY_SRC)/grammar.h
-$(PY_BUILD)compile.o: $(PY_SRC)/grammar.h
-$(PY_BUILD)emitcpy.o: $(PY_SRC)/emit.h
-$(PY_BUILD)emitbc.o: $(PY_SRC)/emit.h
