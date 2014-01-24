@@ -3,10 +3,9 @@ try:
 except:
     pass
 
-
 def mandelbrot():
     # returns True if c, complex, is in the Mandelbrot set
-    @micropython.native
+    #@micropython.native
     def in_set(c):
         z = 0
         for i in range(40):

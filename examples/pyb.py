@@ -1,9 +1,9 @@
 # pyboard testing functions for CPython
 import time
 
-
 def delay(n):
-    time.sleep(float(n) / 1000)
+    #time.sleep(float(n) / 1000)
+    pass
 
 rand_seed = 1
 def rand():
