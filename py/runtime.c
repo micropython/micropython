@@ -408,6 +408,13 @@ mp_obj_t rt_load_const_str(qstr qstr) {
     return MP_OBJ_NEW_QSTR(qstr);
 }
 
+mp_obj_t rt_load_const_bytes(qstr qstr) {
+    DEBUG_OP_printf("load b'%s'\n", qstr_str(qstr));
+    uint len;
+    const byte *data = qstr_data(qstr, &len);
+    return mp_obj_new_bytes(data, len);
+}
+
 mp_obj_t rt_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qstr));

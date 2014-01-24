@@ -2,6 +2,7 @@ int rt_is_true(mp_obj_t arg);
 
 mp_obj_t rt_load_const_dec(qstr qstr);
 mp_obj_t rt_load_const_str(qstr qstr);
+mp_obj_t rt_load_const_bytes(qstr qstr);
 mp_obj_t rt_load_name(qstr qstr);
 mp_obj_t rt_load_global(qstr qstr);
 mp_obj_t rt_load_build_class(void);

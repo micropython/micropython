@@ -138,7 +138,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_LOAD_CONST_BYTES:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qst)); // TODO
+                        PUSH(rt_load_const_bytes(qst));
                         break;
 
                     case MP_BC_LOAD_CONST_STRING:
