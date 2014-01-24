@@ -19,10 +19,6 @@ _minimum_heap_size = 16K;
 /* top end of the stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
-_ram_start = 0x20000000;
-_ram_end   = 0x20020000;
-_heap_end  = 0x2001c000;
-
 /* define output sections */
 SECTIONS
 {

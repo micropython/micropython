@@ -48,7 +48,6 @@
 int errno;
 
 extern uint32_t _heap_start;
-extern uint32_t _heap_end;
 
 static FATFS fatfs0;
 
@@ -456,12 +455,21 @@ bool do_file(const char *filename) {
     }
 }
 
-mp_obj_t pyb_gc(void) {
-    uint32_t start,ticks;
+#define RAM_START (0x20000000) // fixed for chip
+#define HEAP_END  (0x2001c000) // tunable
+#define RAM_END   (0x20020000) // fixed for chip
 
-    start = sys_tick_counter;
-    gc_collect();
-    ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
+
+void gc_collect(void) {
+    uint32_t start = sys_tick_counter;
+    gc_collect_start();
+    gc_collect_root((void**)RAM_START, (((uint32_t)&_heap_start) - RAM_START) / 4);
+    machine_uint_t regs[10];
+    gc_helper_get_regs_and_clean_stack(regs, HEAP_END);
+    gc_collect_root((void**)HEAP_END, (RAM_END - HEAP_END) / 4); // will trace regs since they now live in this function on the stack
+    gc_collect_end();
+    uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
 
     if (0) {
         // print GC info
@@ -472,7 +480,10 @@ mp_obj_t pyb_gc(void) {
         printf(" %lu : %lu\n", info.used, info.free);
         printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
     }
+}
 
+mp_obj_t pyb_gc(void) {
+    gc_collect();
     return mp_const_none;
 }
 
@@ -598,7 +609,7 @@ int main(void) {
 soft_reset:
 
     // GC init
-    gc_init(&_heap_start, &_heap_end);
+    gc_init(&_heap_start, (void*)HEAP_END);
 
     // Micro Python init
     qstr_init();
