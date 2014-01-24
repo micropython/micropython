@@ -112,7 +112,7 @@ static char *prompt(char *p) {
     } else {
         l++;
     }
-    char *line = m_new(char, l);
+    char *line = malloc(l);
     memcpy(line, buf, l);
 #endif
     return line;
@@ -140,6 +140,7 @@ static void do_repl(void) {
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
         execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        free(line);
     }
 }
 
