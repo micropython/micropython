@@ -17,6 +17,8 @@ typedef enum {
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
+    void (*free)(emit_t *emit);
+
     void (*set_native_types)(emit_t *emit, bool do_native_types);
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);

@@ -3155,6 +3155,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     }
 
     bool had_error = comp->had_error;
+    if (comp->emit_method_table->free != NULL) {
+        comp->emit_method_table->free(comp->emit);
+    }
     m_del_obj(compiler_t, comp);
     uint unique_code_id = module_scope->unique_code_id;
     for (scope_t *s = module_scope; s;) {

@@ -146,6 +146,15 @@ emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     return emit;
 }
 
+static void emit_native_free(emit_t *emit) {
+#if N_X64
+    asm_x64_free(emit->as, false);
+#elif N_THUMB
+    asm_thumb_free(emit->as, false);
+#endif
+    m_del_obj(emit_t, emit);
+}
+
 static void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
     emit->do_viper_types = do_viper_types;
 }
@@ -1226,6 +1235,8 @@ static void emit_native_yield_from(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
+    emit_native_free,
+
     emit_native_set_viper_types,
     emit_native_start_pass,
     emit_native_end_pass,
