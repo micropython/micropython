@@ -20,18 +20,24 @@
 struct _emit_inline_asm_t {
     int pass;
     scope_t *scope;
-    int max_num_labels;
+    uint max_num_labels;
     qstr *label_lookup;
     asm_thumb_t *as;
 };
 
 emit_inline_asm_t *emit_inline_thumb_new(uint max_num_labels) {
-    emit_inline_asm_t *emit = m_new(emit_inline_asm_t, 1);
+    emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);
     memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
     emit->as = asm_thumb_new(max_num_labels);
     return emit;
+}
+
+void emit_inline_thumb_free(emit_inline_asm_t *emit) {
+    m_del(qstr, emit->label_lookup, emit->max_num_labels);
+    asm_thumb_free(emit->as, false);
+    m_del_obj(emit_inline_asm_t, emit);
 }
 
 static void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {

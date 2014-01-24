@@ -796,8 +796,6 @@ static void emit_cpy_yield_from(emit_t *emit) {
 }
 
 const emit_method_table_t emit_cpython_method_table = {
-    NULL,
-
     emit_cpy_set_native_types,
     emit_cpy_start_pass,
     emit_cpy_end_pass,

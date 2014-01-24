@@ -17,8 +17,6 @@ typedef enum {
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
-    void (*free)(emit_t *emit);
-
     void (*set_native_types)(emit_t *emit, bool do_native_types);
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
@@ -120,11 +118,15 @@ extern const emit_method_table_t emit_native_x64_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 
 emit_t *emit_pass1_new(qstr qstr___class__);
-void emit_pass1_free(emit_t *emit);
 emit_t *emit_cpython_new(uint max_num_labels);
 emit_t *emit_bc_new(uint max_num_labels);
 emit_t *emit_native_x64_new(uint max_num_labels);
 emit_t *emit_native_thumb_new(uint max_num_labels);
+
+void emit_pass1_free(emit_t *emit);
+void emit_bc_free(emit_t *emit);
+void emit_native_x64_free(emit_t *emit);
+void emit_native_thumb_free(emit_t *emit);
 
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 
@@ -139,3 +141,5 @@ typedef struct _emit_inline_asm_method_table_t {
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;
 
 emit_inline_asm_t *emit_inline_thumb_new(uint max_num_labels);
+void emit_inline_thumb_free(emit_inline_asm_t *emit);
+

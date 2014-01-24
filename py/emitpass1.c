@@ -97,8 +97,6 @@ static void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
 }
 
 const emit_method_table_t emit_pass1_method_table = {
-    emit_pass1_free,
-
     (void*)emit_pass1_dummy,
     emit_pass1_start_pass,
     emit_pass1_end_pass,

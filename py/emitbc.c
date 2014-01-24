@@ -43,7 +43,7 @@ emit_t *emit_bc_new(uint max_num_labels) {
     return emit;
 }
 
-static void emit_bc_free(emit_t *emit) {
+void emit_bc_free(emit_t *emit) {
     m_del(uint, emit->label_offsets, emit->max_num_labels);
     m_del_obj(emit_t, emit);
 }
@@ -756,8 +756,6 @@ static void emit_bc_yield_from(emit_t *emit) {
 }
 
 const emit_method_table_t emit_bc_method_table = {
-    emit_bc_free,
-
     emit_bc_set_native_types,
     emit_bc_start_pass,
     emit_bc_end_pass,

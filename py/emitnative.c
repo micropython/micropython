@@ -146,7 +146,7 @@ emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     return emit;
 }
 
-static void emit_native_free(emit_t *emit) {
+void EXPORT_FUN(free)(emit_t *emit) {
 #if N_X64
     asm_x64_free(emit->as, false);
 #elif N_THUMB
@@ -1235,8 +1235,6 @@ static void emit_native_yield_from(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
-    emit_native_free,
-
     emit_native_set_viper_types,
     emit_native_start_pass,
     emit_native_end_pass,

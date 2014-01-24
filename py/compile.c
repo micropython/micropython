@@ -3154,11 +3154,28 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
         }
     }
 
-    bool had_error = comp->had_error;
-    if (comp->emit_method_table->free != NULL) {
-        comp->emit_method_table->free(comp->emit);
+    // free the emitters
+#if !MICROPY_EMIT_CPYTHON
+    if (emit_bc != NULL) {
+        emit_bc_free(emit_bc);
     }
-    m_del_obj(compiler_t, comp);
+#if MICROPY_EMIT_NATIVE
+    if (emit_native != NULL) {
+#if MICROPY_EMIT_X64
+        emit_native_x64_free(emit_native);
+#elif MICROPY_EMIT_THUMB
+        emit_native_thumb_free(emit_native);
+#endif
+    }
+#endif
+#if MICROPY_EMIT_INLINE_THUMB
+    if (emit_inline_thumb != NULL) {
+        emit_inline_thumb_free(emit_inline_thumb);
+    }
+#endif
+#endif // !MICROPY_EMIT_CPYTHON
+
+    // free the scopes
     uint unique_code_id = module_scope->unique_code_id;
     for (scope_t *s = module_scope; s;) {
         scope_t *next = s->next;
@@ -3166,13 +3183,17 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
         s = next;
     }
 
+    // free the compiler
+    bool had_error = comp->had_error;
+    m_del_obj(compiler_t, comp);
+
     if (had_error) {
         // TODO return a proper error message
         return mp_const_none;
     } else {
 #if MICROPY_EMIT_CPYTHON
         // can't create code, so just return true
-        (void)unique_code_id; // to suppress warning that module_scope is unused
+        (void)unique_code_id; // to suppress warning that unique_code_id is unused
         return mp_const_true;
 #else
         // return function that executes the outer module
