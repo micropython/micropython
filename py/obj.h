@@ -208,6 +208,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
 mp_obj_t mp_obj_new_int_from_long_str(const char *s);
 mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
@@ -280,13 +281,16 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine
 
 // str
 extern const mp_obj_type_t str_type;
-mp_obj_t mp_obj_str_builder_start(uint len, byte **data);
+mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);
 mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in);
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
 uint mp_obj_str_get_hash(mp_obj_t self_in);
 uint mp_obj_str_get_len(mp_obj_t self_in);
 const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
 const byte *mp_obj_str_get_data(mp_obj_t self_in, uint *len);
+
+// bytes
+extern const mp_obj_type_t bytes_type;
 
 #if MICROPY_ENABLE_FLOAT
 // float

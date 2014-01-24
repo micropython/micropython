@@ -28,16 +28,21 @@ typedef struct _mp_obj_str_t {
 // use this macro to extract the string data and length
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
-static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, int cur);
+static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+static mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 
 /******************************************************************************/
 /* str                                                                        */
 
 void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    if (kind == PRINT_STR) {
+    bool is_bytes = MP_OBJ_IS_TYPE(self_in, &bytes_type);
+    if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
     } else {
+        if (is_bytes) {
+            print(env, "b");
+        }
         // TODO need to escape chars etc
         print(env, "'%.*s'", str_len, str_data);
     }
@@ -71,7 +76,11 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in);
-                return mp_obj_new_str(lhs_data + index, 1, true);
+                if (MP_OBJ_IS_TYPE(lhs_in, &bytes_type)) {
+                    return MP_OBJ_NEW_SMALL_INT(lhs_data[index]);
+                } else {
+                    return mp_obj_new_str(lhs_data + index, 1, true);
+                }
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 machine_int_t start, stop, step;
@@ -120,7 +129,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
                 // code for non-qstr
                 byte *data;
-                mp_obj_t s = mp_obj_str_builder_start(alloc_len, &data);
+                mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(lhs_in), alloc_len, &data);
                 memcpy(data, lhs_data, lhs_len);
                 memcpy(data + lhs_len, rhs_data, rhs_len);
                 return mp_obj_str_builder_end(s);
@@ -143,17 +152,13 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
             byte *data;
-            mp_obj_t s = mp_obj_str_builder_start(lhs_len * n, &data);
+            mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(lhs_in), lhs_len * n, &data);
             mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);
             return mp_obj_str_builder_end(s);
         }
     }
 
     return MP_OBJ_NULL; // op not supported
-}
-
-static mp_obj_t str_getiter(mp_obj_t o_in) {
-    return mp_obj_new_str_iterator(o_in, 0);
 }
 
 mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
@@ -188,7 +193,7 @@ mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
 
     // make joined string
     byte *data;
-    mp_obj_t joined_str = mp_obj_str_builder_start(required_len, &data);
+    mp_obj_t joined_str = mp_obj_str_builder_start(mp_obj_get_type(self_in), required_len, &data);
     for (int i = 0; i < seq_len; i++) {
         if (i > 0) {
             memcpy(data, sep_str, sep_len);
@@ -393,13 +398,23 @@ const mp_obj_type_t str_type = {
     "str",
     .print = str_print,
     .binary_op = str_binary_op,
-    .getiter = str_getiter,
+    .getiter = mp_obj_new_str_iterator,
     .methods = str_type_methods,
 };
 
-mp_obj_t mp_obj_str_builder_start(uint len, byte **data) {
+// Reuses most of methods from str
+const mp_obj_type_t bytes_type = {
+    { &mp_const_type },
+    "bytes",
+    .print = str_print,
+    .binary_op = str_binary_op,
+    .getiter = mp_obj_new_bytes_iterator,
+    .methods = str_type_methods,
+};
+
+mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
     mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
-    o->base.type = &str_type;
+    o->base.type = type;
     o->len = len;
     *data = o->data;
     return o;
@@ -413,6 +428,16 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     return o;
 }
 
+static mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
+    mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
+    o->base.type = type;
+    o->hash = qstr_compute_hash(data, len);
+    o->len = len;
+    memcpy(o->data, data, len * sizeof(byte));
+    o->data[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    return o;
+}
+
 mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already) {
     qstr q = qstr_find_strn(data, len);
     if (q != MP_QSTR_NULL) {
@@ -423,14 +448,12 @@ mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_alread
         return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
     } else {
         // no existing qstr, don't make one
-        mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
-        o->base.type = &str_type;
-        o->hash = qstr_compute_hash(data, len);
-        o->len = len;
-        memcpy(o->data, data, len * sizeof(byte));
-        o->data[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
-        return o;
+        return str_new(&str_type, data, len);
     }
+}
+
+mp_obj_t mp_obj_new_bytes(const byte* data, uint len) {
+    return str_new(&bytes_type, data, len);
 }
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
@@ -522,10 +545,36 @@ static const mp_obj_type_t str_it_type = {
     .iternext = str_it_iternext,
 };
 
-mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, int cur) {
+mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
+    mp_obj_str_it_t *self = self_in;
+    GET_STR_DATA_LEN(self->str, str, len);
+    if (self->cur < len) {
+        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(str[self->cur]);
+        self->cur += 1;
+        return o_out;
+    } else {
+        return mp_const_stop_iteration;
+    }
+}
+
+static const mp_obj_type_t bytes_it_type = {
+    { &mp_const_type },
+    "bytes_iterator",
+    .iternext = bytes_it_iternext,
+};
+
+mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
     o->base.type = &str_it_type;
     o->str = str;
-    o->cur = cur;
+    o->cur = 0;
+    return o;
+}
+
+mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
+    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+    o->base.type = &bytes_it_type;
+    o->str = str;
+    o->cur = 0;
     return o;
 }
