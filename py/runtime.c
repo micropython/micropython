@@ -165,6 +165,7 @@ void rt_init(void) {
 
     mp_module_micropython_init();
 
+    // TODO: wastes one mp_code_t structure in mem
     next_unique_code_id = 1; // 0 indicates "no code"
     unique_codes_alloc = 0;
     unique_codes = NULL;
@@ -176,6 +177,9 @@ void rt_init(void) {
 
 void rt_deinit(void) {
     m_del(mp_code_t, unique_codes, unique_codes_alloc);
+    mp_map_free(map_globals);
+    mp_map_deinit(&map_loaded_modules);
+    mp_map_deinit(&map_builtins);
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fclose(fp_write_code);
