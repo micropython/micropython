@@ -116,7 +116,6 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     return o;
 }
 
-// TODO somehow replace const char * with a qstr
 static const qstr binary_op_method_name[] = {
     [RT_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
