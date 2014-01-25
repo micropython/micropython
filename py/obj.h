@@ -43,7 +43,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &str_type))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(machine_int_t)(((small_int) << 1) | 1))
 
 #define MP_OBJ_QSTR_VALUE(o) (((mp_small_int_t)(o)) >> 2)
 #define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((machine_uint_t)qstr) << 2) | 2))
