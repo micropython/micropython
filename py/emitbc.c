@@ -71,10 +71,14 @@ static void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
     c[3] = (qstr >> 24) & 0xff;
 }
 
-static void emit_write_code_info_byte_byte(emit_t* emit, byte b1, uint b2) {
-    byte* c = emit_get_cur_to_write_code_info(emit, 2);
-    c[0] = b1;
-    c[1] = b2;
+static void emit_write_code_info_bytes_lines(emit_t* emit, uint bytes_to_skip, uint lines_to_skip) {
+    for (; bytes_to_skip > 31; bytes_to_skip -= 31) {
+        *emit_get_cur_to_write_code_info(emit, 1) = 31;
+    }
+    for (; lines_to_skip > 7; lines_to_skip -= 7) {
+        *emit_get_cur_to_write_code_info(emit, 1) = 7 << 5;
+    }
+    *emit_get_cur_to_write_code_info(emit, 1) = bytes_to_skip | (lines_to_skip << 5);
 }
 
 // all functions must go through this one to emit byte code
@@ -218,7 +222,7 @@ static void emit_bc_end_pass(emit_t *emit) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    emit_write_code_info_byte_byte(emit, 0, 0); // end of line number info
+    emit_write_code_info_bytes_lines(emit, 0, 0); // end of line number info
 
     if (emit->pass == PASS_2) {
         // calculate size of code in bytes
@@ -246,15 +250,9 @@ static void emit_bc_set_stack_size(emit_t *emit, int size) {
 static void emit_bc_set_source_line(emit_t *emit, int source_line) {
     //printf("source: line %d -> %d  offset %d -> %d\n", emit->last_source_line, source_line, emit->last_source_line_offset, emit->byte_code_offset);
     if (source_line > emit->last_source_line) {
-        int bytes_to_skip = emit->byte_code_offset - emit->last_source_line_offset;
-        for (; bytes_to_skip > 255; bytes_to_skip -= 255) {
-            emit_write_code_info_byte_byte(emit, 255, 0);
-        }
-        int lines_to_skip = source_line - emit->last_source_line;
-        for (; lines_to_skip > 255; lines_to_skip -= 255) {
-            emit_write_code_info_byte_byte(emit, 0, 255);
-        }
-        emit_write_code_info_byte_byte(emit, bytes_to_skip, lines_to_skip);
+        uint bytes_to_skip = emit->byte_code_offset - emit->last_source_line_offset;
+        uint lines_to_skip = source_line - emit->last_source_line;
+        emit_write_code_info_bytes_lines(emit, bytes_to_skip, lines_to_skip);
         //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
         emit->last_source_line_offset = emit->byte_code_offset;
         emit->last_source_line = source_line;

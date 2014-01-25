@@ -550,12 +550,9 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                 machine_uint_t source_line = 1;
                 machine_uint_t bc = save_ip - code_info - code_info_size;
                 //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
-                for (const byte* ci = code_info + 12; bc >= ci[0]; ci += 2) {
-                    bc -= ci[0];
-                    source_line += ci[1];
-                    if (ci[0] == 0 && ci[1] == 0) {
-                        break;
-                    }
+                for (const byte* ci = code_info + 12; *ci && bc >= ((*ci) & 31); ci++) {
+                    bc -= *ci & 31;
+                    source_line += *ci >> 5;
                 }
                 mp_obj_exception_add_traceback(nlr.ret_val, source_file, source_line, block_name);
             }
