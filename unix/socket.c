@@ -311,6 +311,18 @@ struct sym_entry {
     C(SOCK_STREAM),
     C(SOCK_DGRAM),
     C(SOCK_RAW),
+
+    C(MSG_DONTROUTE),
+    C(MSG_DONTWAIT),
+
+    C(SOL_SOCKET),
+    C(SO_BROADCAST),
+    C(SO_ERROR),
+    C(SO_KEEPALIVE),
+    C(SO_LINGER),
+    C(SO_REUSEADDR),
+
+    {NULL}
 };
 
 #undef C
