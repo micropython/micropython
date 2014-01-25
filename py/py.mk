@@ -78,7 +78,7 @@ PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
 # Adding an order only dependency on $(PY_BUILD) causes $(PY_BUILD) to get
 # created before we run the script to generate the .h
-$(PY_BUILD)/qstrdefs.generated.h: | $(PY_BUILD)
+$(PY_BUILD)/qstrdefs.generated.h: | $(PY_BUILD)/
 $(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
 	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
 	$(Q)python $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@

@@ -65,7 +65,7 @@ ifneq ($(PROG),)
 all: $(PROG)
 
 $(PROG): $(OBJ)
-	$(ECHO) "LINK $<"
+	$(ECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
 ifndef DEBUG
 	$(Q)strip $(PROG)
