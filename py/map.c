@@ -40,6 +40,17 @@ mp_map_t *mp_map_new(int n) {
     return map;
 }
 
+// Differentiate from mp_map_clear() - semantics is different
+void mp_map_deinit(mp_map_t *map) {
+    m_del(mp_map_elem_t, map->table, map->alloc);
+    map->used = map->alloc = 0;
+}
+
+void mp_map_free(mp_map_t *map) {
+    mp_map_deinit(map);
+    m_del_obj(mp_map_t, map);
+}
+
 void mp_map_clear(mp_map_t *map) {
     map->used = 0;
     map->all_keys_are_qstrs = 1;
