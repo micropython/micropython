@@ -63,7 +63,7 @@ mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
 
         return res;
 
-    } else if (self->n_args_min == self->n_args_max) {
+    } else if (self->n_args_min <= 3 && self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
 
         // dispatch function call
