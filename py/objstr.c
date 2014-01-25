@@ -77,7 +77,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in);
                 if (MP_OBJ_IS_TYPE(lhs_in, &bytes_type)) {
-                    return MP_OBJ_NEW_SMALL_INT(lhs_data[index]);
+                    return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
                 } else {
                     return mp_obj_new_str(lhs_data + index, 1, true);
                 }
@@ -549,7 +549,7 @@ mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
-        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(str[self->cur]);
+        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT((mp_small_int_t)str[self->cur]);
         self->cur += 1;
         return o_out;
     } else {

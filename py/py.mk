@@ -47,6 +47,7 @@ PY_O_BASENAME = \
 	objfloat.o \
 	objfun.o \
 	objgenerator.o \
+	objgetitemiter.o \
 	objint.o \
 	objint_longlong.o \
 	objlist.o \

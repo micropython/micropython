@@ -117,8 +117,8 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
 }
 
 // TODO somehow replace const char * with a qstr
-static const char *binary_op_method_name[] = {
-    [RT_BINARY_OP_SUBSCR] = "__getitem__",
+static const qstr binary_op_method_name[] = {
+    [RT_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
     RT_BINARY_OP_OR,
     RT_BINARY_OP_XOR,
@@ -126,8 +126,8 @@ static const char *binary_op_method_name[] = {
     RT_BINARY_OP_LSHIFT,
     RT_BINARY_OP_RSHIFT,
     */
-    [RT_BINARY_OP_ADD] = "__add__",
-    [RT_BINARY_OP_SUBTRACT] = "__sub__",
+    [RT_BINARY_OP_ADD] = MP_QSTR___add__,
+    [RT_BINARY_OP_SUBTRACT] = MP_QSTR___sub__,
     /*
     RT_BINARY_OP_MULTIPLY,
     RT_BINARY_OP_FLOOR_DIVIDE,
@@ -157,16 +157,16 @@ static const char *binary_op_method_name[] = {
     RT_COMPARE_OP_IS,
     RT_COMPARE_OP_IS_NOT,
     */
-    [RT_COMPARE_OP_EXCEPTION_MATCH] = "__not_implemented__",
+    [RT_COMPARE_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
 };
 
 static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_class_t *lhs = lhs_in;
-    const char *op_name = binary_op_method_name[op];
-    if (op_name == NULL) {
+    qstr op_name = binary_op_method_name[op];
+    if (op_name == 0) {
         return MP_OBJ_NULL;
     }
-    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, QSTR_FROM_STR_STATIC(op_name));
+    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name);
     if (member != MP_OBJ_NULL) {
         return rt_call_function_2(member, lhs_in, rhs_in);
     } else {

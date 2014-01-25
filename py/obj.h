@@ -39,7 +39,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
-#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t)))
+#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &str_type))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
@@ -231,6 +231,7 @@ mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
+mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
 mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in);

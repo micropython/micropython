@@ -13,6 +13,10 @@ Q(__next__)
 Q(__qualname__)
 Q(__repl_print__)
 
+Q(__getitem__)
+Q(__add__)
+Q(__sub__)
+
 Q(micropython)
 Q(byte_code)
 Q(native)

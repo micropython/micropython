@@ -87,7 +87,7 @@ void rt_init(void) {
     // init loaded modules table
     mp_map_init(&map_loaded_modules, 3);
 
-    // built-in exceptions (TODO, make these proper classes)
+    // built-in exceptions (TODO, make these proper classes, and const if possible)
     mp_map_add_qstr(&map_builtins, MP_QSTR_AttributeError, mp_obj_new_exception(MP_QSTR_AttributeError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_IndexError, mp_obj_new_exception(MP_QSTR_IndexError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_KeyError, mp_obj_new_exception(MP_QSTR_KeyError));
@@ -100,6 +100,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_OverflowError, mp_obj_new_exception(MP_QSTR_OverflowError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_OSError, mp_obj_new_exception(MP_QSTR_OSError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_AssertionError, mp_obj_new_exception(MP_QSTR_AssertionError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_StopIteration, mp_obj_new_exception(MP_QSTR_StopIteration));
 
     // built-in objects
     mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
@@ -805,7 +806,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     // use load_method
     mp_obj_t dest[2];
     rt_load_method(base, attr, dest);
-    if (dest[1] == NULL) {
+    if (dest[1] == MP_OBJ_NULL) {
         // load_method returned just a normal attribute
         return dest[0];
     } else {
@@ -814,9 +815,10 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
     }
 }
 
-void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
-    DEBUG_OP_printf("load method %p.%s\n", base, qstr_str(attr));
-
+// no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
+// normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
+// method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
+static void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
@@ -830,7 +832,7 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     }
 
     // if nothing found yet, look for built-in and generic names
-    if (dest[0] == NULL) {
+    if (dest[0] == MP_OBJ_NULL) {
         if (attr == MP_QSTR___next__ && type->iternext != NULL) {
             dest[0] = (mp_obj_t)&mp_builtin_next_obj;
             dest[1] = base;
@@ -861,8 +863,14 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             }
         }
     }
+}
 
-    if (dest[0] == NULL) {
+void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
+    DEBUG_OP_printf("load method %p.%s\n", base, qstr_str(attr));
+
+    rt_load_method_maybe(base, attr, dest);
+
+    if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
         // following CPython, we give a more detailed error message for type objects
         if (MP_OBJ_IS_TYPE(base, &mp_const_type)) {
@@ -910,7 +918,16 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
     if (type->getiter != NULL) {
         return type->getiter(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", type->name));
+        // check for __getitem__ method
+        mp_obj_t dest[2];
+        rt_load_method_maybe(o_in, qstr_from_str("__getitem__"), dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            // __getitem__ exists, create an iterator
+            return mp_obj_new_getitem_iter(dest);
+        } else {
+            // object not iterable
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", type->name));
+        }
     }
 }
 
