@@ -77,7 +77,7 @@ void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
         case PYB_USART_3:
             USARTx = USART3;
 
-#if defined(PYBOARD4)
+#if defined(PYBOARD3) || defined(PYBOARD4)
             GPIO_Port = GPIOB;
             GPIO_AF_USARTx = GPIO_AF_USART3;
             GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;

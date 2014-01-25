@@ -137,8 +137,10 @@ static const char *help_text =
 "    pyb.switch()   -- return True/False if switch pressed or not\n"
 "    pyb.accel()    -- get accelerometer values\n"
 "    pyb.rand()     -- get a 16-bit random number\n"
-"    pyb.gpio(<port>)           -- get port value (port='a4' for example)\n"
+"    pyb.gpio(<port>)           -- get port value (port='A4' for example)\n"
 "    pyb.gpio(<port>, <val>)    -- set port value, True or False, 1 or 0\n"
+"    pyb.ADC(<port>) -- make an analog port object (port='C0' for example)\n"
+"                       ADC methods: read()\n"
 ;
 
 // get some help about available functions
@@ -348,7 +350,7 @@ int readline(vstr_t *line, const char *prompt) {
 }
 
 void do_repl(void) {
-    stdout_tx_str("Micro Python build <git hash> on 2/1/2014; PYBv3 with STM32F405RG\r\n");
+    stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
@@ -654,7 +656,8 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_I2C, rt_make_function_n(2, pyb_I2C));
         rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
         rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
-        rt_store_attr(m, MP_QSTR_ADC, rt_make_function_n(1, pyb_ADC));
+        rt_store_attr(m, qstr_from_str("ADC_all"), (mp_obj_t)&pyb_ADC_all_obj);
+        rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
         rt_store_name(MP_QSTR_pyb, m);
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));

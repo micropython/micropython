@@ -23,11 +23,13 @@ machine_float_t machine_sqrt(machine_float_t x);
 // board specific definitions
 
 // choose 1 of these boards
-//#define PYBOARD
-#define PYBOARD4
+#define PYBOARD3
+//#define PYBOARD4
 //#define STM32F4DISC
 
-#if defined (PYBOARD)
+#if defined (PYBOARD3)
+    #define MICROPY_HW_BOARD_NAME       "PYBv3"
+
     #define MICROPY_HW_HAS_SWITCH       (1)
     #define MICROPY_HW_HAS_SDCARD       (1)
     #define MICROPY_HW_HAS_MMA7660      (1)
@@ -68,6 +70,8 @@ machine_float_t machine_sqrt(machine_float_t x);
     #define PYB_LED_OFF(port, pin) (port->BSRRL = pin)
 
 #elif defined (PYBOARD4)
+    #define MICROPY_HW_BOARD_NAME       "PYBv4"
+
     #define MICROPY_HW_HAS_SWITCH       (1)
     #define MICROPY_HW_HAS_SDCARD       (1)
     #define MICROPY_HW_HAS_MMA7660      (1)
@@ -108,6 +112,8 @@ machine_float_t machine_sqrt(machine_float_t x);
     #define PYB_LED_OFF(port, pin) (port->BSRRH = pin)
 
 #elif defined (STM32F4DISC)
+    #define MICROPY_HW_BOARD_NAME       "F4DISC"
+
     #define MICROPY_HW_HAS_SWITCH       (1)
     #define MICROPY_HW_HAS_SDCARD       (0)
     #define MICROPY_HW_HAS_MMA7660      (0)

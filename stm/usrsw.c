@@ -44,7 +44,7 @@ void switch_init(void) {
 }
 
 int switch_get(void) {
-#if defined (PYBOARD) || defined (PYBOARD4)
+#if defined (PYBOARD3) || defined (PYBOARD4)
     if (USRSW_PORT->IDR & USRSW_PIN) {
         // pulled high, so switch is not pressed
         return 0;

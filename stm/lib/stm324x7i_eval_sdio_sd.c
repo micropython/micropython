@@ -518,7 +518,7 @@ uint8_t SD_Detect(void)
   __IO uint8_t status = SD_PRESENT;
 
   /*!< Check GPIO to detect SD */
-#if defined(PYBOARD)
+#if defined(PYBOARD3)
   if (GPIO_ReadInputDataBit(SD_DETECT_GPIO_PORT, SD_DETECT_PIN) != Bit_SET)
 #elif defined(PYBOARD4)
   if (GPIO_ReadInputDataBit(SD_DETECT_GPIO_PORT, SD_DETECT_PIN) == Bit_SET)

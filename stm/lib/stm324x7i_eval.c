@@ -122,7 +122,7 @@ void SD_LowLevel_Init(void)
   GPIO_Init(GPIOC, &GPIO_InitStructure);
   
   /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
-#if defined(PYBOARD)
+#if defined(PYBOARD3)
   // dpgeorge: PYBv2-v3: switch is normally open, connected to VDD when card inserted
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; // needs to be 2MHz due to restrictions on PC13

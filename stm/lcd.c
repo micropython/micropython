@@ -13,7 +13,7 @@
 #include "font_petme128_8x8.h"
 #include "lcd.h"
 
-#if defined(PYBOARD)
+#if defined(PYBOARD3)
 #define PYB_LCD_PORT        (GPIOA)
 #define PYB_LCD_CS1_PIN     (GPIO_Pin_0)
 #define PYB_LCD_RST_PIN     (GPIO_Pin_1)

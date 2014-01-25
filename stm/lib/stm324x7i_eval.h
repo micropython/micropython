@@ -41,7 +41,7 @@
 /**
   * @brief  SD FLASH SDIO Interface
   */
-#if defined(PYBOARD)
+#if defined(PYBOARD3)
 #define SD_DETECT_PIN                    GPIO_Pin_13                 /* PC.13 */
 #define SD_DETECT_GPIO_PORT              GPIOC                       /* GPIOC */
 #define SD_DETECT_GPIO_CLK               RCC_AHB1Periph_GPIOC

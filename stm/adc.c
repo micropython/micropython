@@ -2,6 +2,7 @@
 #include <stm32f4xx.h>
 
 #include "misc.h"
+#include "nlr.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
@@ -41,7 +42,7 @@ typedef struct {
 } gpio_t;
 
 /* ADC GPIOs */
-static gpio_t adc_gpio[] = {
+static const gpio_t adc_gpio[] = {
     {GPIOA, GPIO_Pin_0},    /* ADC123_IN0 */
     {GPIOA, GPIO_Pin_1},    /* ADC123_IN1 */
     {GPIOA, GPIO_Pin_2},    /* ADC123_IN2 */
@@ -61,7 +62,7 @@ static gpio_t adc_gpio[] = {
 
 };
 
-void adc_init(uint32_t resolution) {
+void adc_init_all(uint32_t resolution) {
   ADC_InitTypeDef       ADC_InitStructure;
   GPIO_InitTypeDef      GPIO_InitStructure;
   ADC_CommonInitTypeDef ADC_CommonInitStructure;
@@ -89,6 +90,54 @@ void adc_init(uint32_t resolution) {
       GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
       GPIO_Init(adc_gpio[i].port, &GPIO_InitStructure);
   }
+
+  /* ADCx Init */
+//  ADC_DeInit();
+  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+  ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+  ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
+  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
+  ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
+  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+  ADC_InitStructure.ADC_NbrOfConversion = 1;
+  ADC_Init(ADCx, &ADC_InitStructure);
+
+  /* Enable ADCx */
+  ADC_Cmd(ADCx, ENABLE);
+
+  /* Enable VBAT/VREF monitor */
+  ADC_VBATCmd(ENABLE);
+
+  /* Enable temperature sensor */
+  ADC_TempSensorVrefintCmd(ENABLE);
+}
+
+void adc_init_single(uint32_t channel) {
+  ADC_InitTypeDef       ADC_InitStructure;
+  GPIO_InitTypeDef      GPIO_InitStructure;
+  ADC_CommonInitTypeDef ADC_CommonInitStructure;
+
+  /* Enable ADCx, DMA and GPIO clocks */ 
+#if 0
+  /* GPIO clocks enabled in main */
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA |
+                         RCC_AHB1Periph_GPIOB |
+                         RCC_AHB1Periph_GPIOC, ENABLE);
+#endif
+  RCC_APB2PeriphClockCmd(ADCx_CLK, ENABLE);
+
+  /* ADC Common Init */
+  ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
+  ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
+  ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
+  ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
+  ADC_CommonInit(&ADC_CommonInitStructure);
+
+  /* Configure ADC GPIO for the single channel */
+  GPIO_InitStructure.GPIO_Pin = adc_gpio[channel].pin;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(adc_gpio[channel].port, &GPIO_InitStructure);
 
   /* ADCx Init */
 //  ADC_DeInit();
@@ -213,91 +262,183 @@ float adc_read_core_vref()
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* Micro Python bindings : adc_all object                                     */
 
-typedef struct _pyb_adc_obj_t {
+typedef struct _pyb_obj_adc_all_t {
     mp_obj_base_t base;
-    int adc_id;
     bool is_enabled;
-} pyb_adc_obj_t;
+} pyb_obj_adc_all_t;
 
-static mp_obj_t adc_obj_read_channel(mp_obj_t self_in, mp_obj_t channel) {
-    mp_obj_t ret = mp_const_none;
-    pyb_adc_obj_t *self = self_in;
+static void adc_all_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    print(env, "<ADC all>");
+}
+
+static mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
+    pyb_obj_adc_all_t *self = self_in;
 
     if (self->is_enabled) {
         uint32_t chan = mp_obj_get_int(channel);
         uint32_t data = adc_read_channel(chan);
-        ret = mp_obj_new_int(data);
+        return mp_obj_new_int(data);
+    } else {
+        return mp_const_none;
     }
-    return ret;
 }
 
-static mp_obj_t adc_obj_read_core_temp(mp_obj_t self_in) {
-    mp_obj_t ret = mp_const_none;
-    pyb_adc_obj_t *self = self_in;
+static mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
+    pyb_obj_adc_all_t *self = self_in;
 
     if (self->is_enabled) {
         int data  = adc_read_core_temp();
-        ret = mp_obj_new_int(data);
+        return mp_obj_new_int(data);
+    } else {
+        return mp_const_none;
     }
-    return ret;
 }
 
-static mp_obj_t adc_obj_read_core_vbat(mp_obj_t self_in) {
-    mp_obj_t ret = mp_const_none;
-    pyb_adc_obj_t *self = self_in;
+static mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
+    pyb_obj_adc_all_t *self = self_in;
 
     if (self->is_enabled) {
         float data  = adc_read_core_vbat();
-        ret = mp_obj_new_float(data);
+        return mp_obj_new_float(data);
+    } else {
+        return mp_const_none;
     }
-    return ret;
 }
 
-static mp_obj_t adc_obj_read_core_vref(mp_obj_t self_in) {
-    mp_obj_t ret = mp_const_none;
-    pyb_adc_obj_t *self = self_in;
+static mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
+    pyb_obj_adc_all_t *self = self_in;
 
     if (self->is_enabled) {
         float data  = adc_read_core_vref();
-        ret = mp_obj_new_float(data);
+        return mp_obj_new_float(data);
+    } else {
+        return mp_const_none;
     }
-    return ret;
 }
 
-static void adc_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_adc_obj_t *self = self_in;
-    print(env, "<ADC %lu>", self->adc_id);
-}
+static MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
-static MP_DEFINE_CONST_FUN_OBJ_2(adc_obj_read_channel_obj, adc_obj_read_channel);
-static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_temp_obj, adc_obj_read_core_temp);
-static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_vbat_obj, adc_obj_read_core_vbat);
-static MP_DEFINE_CONST_FUN_OBJ_1(adc_obj_read_core_vref_obj, adc_obj_read_core_vref);
-
-static const mp_method_t adc_methods[] = {
-    { "read_channel",   &adc_obj_read_channel_obj},
-    { "read_core_temp", &adc_obj_read_core_temp_obj},
-    { "read_core_vbat", &adc_obj_read_core_vbat_obj},
-    { "read_core_vref", &adc_obj_read_core_vref_obj},
+static const mp_method_t adc_all_methods[] = {
+    { "read_channel",   &adc_all_read_channel_obj},
+    { "read_core_temp", &adc_all_read_core_temp_obj},
+    { "read_core_vbat", &adc_all_read_core_vbat_obj},
+    { "read_core_vref", &adc_all_read_core_vref_obj},
     { NULL, NULL },
 };
 
-static const mp_obj_type_t adc_obj_type = {
+static const mp_obj_type_t adc_all_type = {
     { &mp_const_type },
-    "ADC",
-    .print = adc_obj_print,
-    .methods = adc_methods,
+    "ADC_all",
+    .print = adc_all_print,
+    .methods = adc_all_methods,
 };
 
-mp_obj_t pyb_ADC(mp_obj_t resolution) {
+mp_obj_t pyb_ADC_all(mp_obj_t resolution) {
     /* init ADC */
-    adc_init(mp_obj_get_int(resolution));
+    adc_init_all(mp_obj_get_int(resolution));
 
-    pyb_adc_obj_t *o = m_new_obj(pyb_adc_obj_t);
-    o->base.type = &adc_obj_type;
-    o->adc_id = 1;
+    pyb_obj_adc_all_t *o = m_new_obj(pyb_obj_adc_all_t);
+    o->base.type = &adc_all_type;
     o->is_enabled = true;
     return o;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_ADC_all_obj, pyb_ADC_all);
+
+/******************************************************************************/
+/* Micro Python bindings : adc object (single channel)                        */
+
+typedef struct _pyb_obj_adc_t {
+    mp_obj_base_t base;
+    mp_obj_t pin_name;
+    int channel;
+    bool is_enabled;
+} pyb_obj_adc_t;
+
+static void adc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    pyb_obj_adc_t *self = self_in;
+    print(env, "<ADC on ");
+    mp_obj_print_helper(print, env, self->pin_name, PRINT_STR);
+    print(env, " channel=%lu>", self->channel);
+}
+
+static mp_obj_t adc_read(mp_obj_t self_in) {
+    pyb_obj_adc_t *self = self_in;
+
+    if (self->is_enabled) {
+        uint32_t data = adc_read_channel(self->channel);
+        return mp_obj_new_int(data);
+    } else {
+        return mp_const_none;
+    }
+}
+
+static MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
+
+static const mp_method_t adc_methods[] = {
+    { "read", &adc_read_obj},
+    { NULL, NULL },
+};
+
+static const mp_obj_type_t adc_type = {
+    { &mp_const_type },
+    "ADC",
+    .print = adc_print,
+    .methods = adc_methods,
+};
+
+mp_obj_t pyb_ADC(mp_obj_t pin_name_obj) {
+
+    pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
+    o->base.type = &adc_type;
+    o->pin_name = pin_name_obj;
+
+    // work out the channel from the pin name
+    const char *pin_name = mp_obj_str_get_str(pin_name_obj);
+    GPIO_TypeDef *port;
+    switch (pin_name[0]) {
+        case 'A': case 'a': port = GPIOA; break;
+        case 'B': case 'b': port = GPIOB; break;
+        case 'C': case 'c': port = GPIOC; break;
+        default: goto pin_error;
+    }
+    uint pin_num = 0;
+    for (const char *s = pin_name + 1; *s; s++) {
+        if (!('0' <= *s && *s <= '9')) {
+            goto pin_error;
+        }
+        pin_num = 10 * pin_num + *s - '0';
+    }
+    if (!(0 <= pin_num && pin_num <= 15)) {
+        goto pin_error;
+    }
+
+    int i;
+    for (i = 0; i < ADC_NUM_CHANNELS; i++) {
+        if (adc_gpio[i].port == port && adc_gpio[i].pin == (1 << pin_num)) {
+            o->channel = i;
+            break;
+        }
+    }
+
+    if (i == ADC_NUM_CHANNELS) {
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not have ADC capabilities", pin_name));
+    }
+
+    // init ADC just for this channel
+    adc_init_single(o->channel);
+
+    o->is_enabled = true;
+
+    return o;
+
+pin_error:
+    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_ADC_obj, pyb_ADC);

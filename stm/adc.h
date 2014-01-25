@@ -1,1 +1,2 @@
-mp_obj_t pyb_ADC(mp_obj_t resolution);
+MP_DECLARE_CONST_FUN_OBJ(pyb_ADC_all_obj);
+MP_DECLARE_CONST_FUN_OBJ(pyb_ADC_obj);
