@@ -135,6 +135,20 @@ mp_parse_node_struct_t *parse_node_new_struct(int src_line, int rule_id, int num
     return pn;
 }
 
+int parse_node_free_struct(mp_parse_node_t pn_in) {
+    int cnt = 0;
+    if (MP_PARSE_NODE_IS_STRUCT(pn_in)) {
+        mp_parse_node_struct_t *pn = (mp_parse_node_struct_t *)pn_in;
+        int n = pn->kind_num_nodes >> 8;
+        for (int i = 0; i < n; i++) {
+            cnt += parse_node_free_struct(pn->nodes[i]);
+        }
+        m_del_var(mp_parse_node_struct_t, mp_parse_node_t, n, pn);
+        cnt++;
+    }
+    return cnt;
+}
+
 #if MICROPY_DEBUG_PRINTERS
 void mp_parse_node_print(mp_parse_node_t pn, int indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
