@@ -24,13 +24,13 @@ static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
     const byte *str = mp_obj_str_get_data(o_in, &str_len);
 
     // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_str_len("<string>", (const char*)str, str_len, 0);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, (const char*)str, str_len, 0);
+    qstr source_name = mp_lexer_source_name(lex);
 
     // parse the string
     qstr parse_exc_id;
     const char *parse_exc_msg;
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_EVAL_INPUT, &parse_exc_id, &parse_exc_msg);
-    qstr source_name = mp_lexer_source_name(lex);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
@@ -40,6 +40,7 @@ static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
 
     // compile the string
     mp_obj_t module_fun = mp_compile(pn, source_name, false);
+    mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
         // TODO handle compile error correctly

@@ -62,7 +62,6 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     */
 
     mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
-    parse_node_free_struct(pn);
 
     if (module_fun == mp_const_none) {
         // compile error
@@ -139,7 +138,7 @@ static void do_repl(void) {
             }
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", line, strlen(line), false);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
         execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
         free(line);
     }
@@ -163,7 +162,7 @@ static void do_file(const char *file) {
 }
 
 static void do_str(const char *str) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", str, strlen(str), false);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
     execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
 

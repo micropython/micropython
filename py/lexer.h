@@ -124,8 +124,8 @@ typedef struct _mp_lexer_t mp_lexer_t;
 
 void mp_token_show(const mp_token_t *tok);
 
-mp_lexer_t *mp_lexer_new(const char *src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close);
-mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, uint free_len);
+mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close);
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, uint len, uint free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
 qstr mp_lexer_source_name(mp_lexer_t *lex);

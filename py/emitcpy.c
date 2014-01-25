@@ -192,29 +192,26 @@ static void print_quoted_str(qstr qstr, bool bytes) {
     if (bytes) {
         printf("b");
     }
-    bool quote_single = false;
+    int quote_char = '\'';
     if (has_single_quote && !has_double_quote) {
-        printf("\"");
-    } else {
-        quote_single = true;
-        printf("'");
+        quote_char = '"';
     }
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n') {
-            printf("\\n");
-        } else if (str[i] == '\\') {
+    printf("%c", quote_char);
+    for (const char *s = str, *top = str + len; s < top; s++) {
+        if (*s == quote_char) {
+            printf("\\%c", quote_char);
+        } else if (*s == '\\') {
             printf("\\\\");
-        } else if (str[i] == '\'' && quote_single) {
-            printf("\\'");
+        } else if (32 <= *s && *s <= 126) {
+            printf("%c", *s);
+        } else if (*s == '\n') {
+            printf("\\n");
+        // TODO add more escape codes here
         } else {
-            printf("%c", str[i]);
+            printf("\\x%02x", (*s) & 0xff);
         }
     }
-    if (has_single_quote && !has_double_quote) {
-        printf("\"");
-    } else {
-        printf("'");
-    }
+    printf("%c", quote_char);
 }
 
 static void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {

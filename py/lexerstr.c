@@ -28,7 +28,7 @@ static void str_buf_free(mp_lexer_str_buf_t *sb) {
     m_del_obj(mp_lexer_str_buf_t, sb);
 }
 
-mp_lexer_t *mp_lexer_new_from_str_len(const char *src_name, const char *str, uint len, uint free_len) {
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, uint len, uint free_len) {
     mp_lexer_str_buf_t *sb = m_new_obj(mp_lexer_str_buf_t);
     sb->free_len = free_len;
     sb->src_beg = str;

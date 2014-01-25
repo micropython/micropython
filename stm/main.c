@@ -378,7 +378,7 @@ void do_repl(void) {
             }
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), 0);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
         qstr parse_exc_id;
         const char *parse_exc_msg;
         mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_exc_id, &parse_exc_msg);
@@ -393,6 +393,7 @@ void do_repl(void) {
             // parse okay
             mp_lexer_free(lex);
             mp_obj_t module_fun = mp_compile(pn, source_name, true);
+            mp_parse_node_free(pn);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 uint32_t start = sys_tick_counter;
@@ -439,6 +440,8 @@ bool do_file(const char *filename) {
     mp_lexer_free(lex);
 
     mp_obj_t module_fun = mp_compile(pn, source_name, false);
+    mp_parse_node_free(pn);
+
     if (module_fun == mp_const_none) {
         return false;
     }

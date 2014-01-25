@@ -40,11 +40,39 @@ void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
     } else {
+        // this escapes characters, but it will be very slow to print (calling print many times)
+        bool has_single_quote = false;
+        bool has_double_quote = false;
+        for (const byte *s = str_data, *top = str_data + str_len; (!has_single_quote || !has_double_quote) && s < top; s++) {
+            if (*s == '\'') {
+                has_single_quote = true;
+            } else if (*s == '"') {
+                has_double_quote = true;
+            }
+        }
         if (is_bytes) {
             print(env, "b");
         }
-        // TODO need to escape chars etc
-        print(env, "'%.*s'", str_len, str_data);
+        int quote_char = '\'';
+        if (has_single_quote && !has_double_quote) {
+            quote_char = '"';
+        }
+        print(env, "%c", quote_char);
+        for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+            if (*s == quote_char) {
+                print(env, "\\%c", quote_char);
+            } else if (*s == '\\') {
+                print(env, "\\\\");
+            } else if (32 <= *s && *s <= 126) {
+                print(env, "%c", *s);
+            } else if (*s == '\n') {
+                print(env, "\\n");
+            // TODO add more escape codes here if we want to match CPython
+            } else {
+                print(env, "\\x%02x", *s);
+            }
+        }
+        print(env, "%c", quote_char);
     }
 }
 
@@ -474,13 +502,17 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     }
 }
 
+void bad_implicit_conversion(mp_obj_t self_in) __attribute__((noreturn));
+void bad_implicit_conversion(mp_obj_t self_in) {
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(self_in)));
+}
+
 uint mp_obj_str_get_hash(mp_obj_t self_in) {
     if (MP_OBJ_IS_STR(self_in)) {
         GET_STR_HASH(self_in, h);
         return h;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
-                 mp_obj_get_type_str(self_in)));
+        bad_implicit_conversion(self_in);
     }
 }
 
@@ -489,8 +521,20 @@ uint mp_obj_str_get_len(mp_obj_t self_in) {
         GET_STR_LEN(self_in, l);
         return l;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
-                 mp_obj_get_type_str(self_in)));
+        bad_implicit_conversion(self_in);
+    }
+}
+
+// use this if you will anyway convert the string to a qstr
+// will be more efficient for the case where it's already a qstr
+qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
+    if (MP_OBJ_IS_QSTR(self_in)) {
+        return MP_OBJ_QSTR_VALUE(self_in);
+    } else if (MP_OBJ_IS_TYPE(self_in, &str_type)) {
+        mp_obj_str_t *self = self_in;
+        return qstr_from_strn((char*)self->data, self->len);
+    } else {
+        bad_implicit_conversion(self_in);
     }
 }
 
@@ -502,8 +546,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
         (void)l; // len unused
         return (const char*)s;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
-                 mp_obj_get_type_str(self_in)));
+        bad_implicit_conversion(self_in);
     }
 }
 
@@ -513,8 +556,7 @@ const byte *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
         *len = l;
         return s;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly",
-                 mp_obj_get_type_str(self_in)));
+        bad_implicit_conversion(self_in);
     }
 }
 

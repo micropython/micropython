@@ -26,6 +26,8 @@
 #define RULE_ARG_OPT_TOK        (0x3000)
 #define RULE_ARG_OPT_RULE       (0x4000)
 
+#define ADD_BLANK_NODE(rule_id) ((rule_id) == RULE_funcdef || (rule_id) == RULE_classdef || (rule_id) == RULE_comp_for || (rule_id) == RULE_lambdef || (rule_id) == RULE_lambdef_nocond)
+
 // (un)comment to use rule names; for debugging
 //#define USE_RULE_NAME (1)
 
@@ -135,15 +137,23 @@ mp_parse_node_struct_t *parse_node_new_struct(int src_line, int rule_id, int num
     return pn;
 }
 
-int parse_node_free_struct(mp_parse_node_t pn_in) {
-    int cnt = 0;
-    if (MP_PARSE_NODE_IS_STRUCT(pn_in)) {
-        mp_parse_node_struct_t *pn = (mp_parse_node_struct_t *)pn_in;
-        int n = pn->kind_num_nodes >> 8;
-        for (int i = 0; i < n; i++) {
-            cnt += parse_node_free_struct(pn->nodes[i]);
+uint mp_parse_node_free(mp_parse_node_t pn) {
+    uint cnt = 0;
+    if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+        uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        uint rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
+        bool adjust = ADD_BLANK_NODE(rule_id);
+        if (adjust) {
+            n--;
         }
-        m_del_var(mp_parse_node_struct_t, mp_parse_node_t, n, pn);
+        for (uint i = 0; i < n; i++) {
+            cnt += mp_parse_node_free(pns->nodes[i]);
+        }
+        if (adjust) {
+            n++;
+        }
+        m_del_var(mp_parse_node_struct_t, mp_parse_node_t, n, pns);
         cnt++;
     }
     return cnt;
@@ -174,15 +184,15 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
             default: assert(0);
         }
     } else {
-        mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pn;
-        int n = pns2->kind_num_nodes >> 8;
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
-        printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns2)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns2), n);
+        printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #else
-        printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns2), n);
+        printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #endif
-        for (int i = 0; i < n; i++) {
-            mp_parse_node_print(pns2->nodes[i], indent + 2);
+        for (uint i = 0; i < n; i++) {
+            mp_parse_node_print(pns->nodes[i], indent + 2);
         }
     }
 }
@@ -472,7 +482,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr
                 }
 
                 // always emit these rules, and add an extra blank node at the end (to be used by the compiler to store data)
-                if (rule->rule_id == RULE_funcdef || rule->rule_id == RULE_classdef || rule->rule_id == RULE_comp_for || rule->rule_id == RULE_lambdef || rule->rule_id == RULE_lambdef_nocond) {
+                if (ADD_BLANK_NODE(rule->rule_id)) {
                     emit_rule = true;
                     push_result_node(parser, MP_PARSE_NODE_NULL);
                     i += 1;

@@ -49,7 +49,7 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     f_read(&fb->fp, fb->buf, sizeof(fb->buf), &n);
     fb->len = n;
     fb->pos = 0;
-    return mp_lexer_new(filename, fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
+    return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
 }
 
 /******************************************************************************/
