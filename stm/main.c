@@ -28,6 +28,7 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
+#include "gccollect.h"
 #include "systick.h"
 #include "led.h"
 #include "servo.h"
@@ -46,8 +47,6 @@
 #include "file.h"
 
 int errno;
-
-extern uint32_t _heap_start;
 
 static FATFS fatfs0;
 
@@ -180,6 +179,7 @@ static mp_obj_t pyb_info(void) {
         printf("_ebss=%p\n", &_ebss);
         printf("_estack=%p\n", &_estack);
         printf("_etext=%p\n", &_etext);
+        printf("_ram_start=%p\n", &_ram_start);
         printf("_heap_start=%p\n", &_heap_start);
     }
 
@@ -455,38 +455,6 @@ bool do_file(const char *filename) {
     }
 }
 
-#define RAM_START (0x20000000) // fixed for chip
-#define HEAP_END  (0x2001c000) // tunable
-#define RAM_END   (0x20020000) // fixed for chip
-
-void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
-
-void gc_collect(void) {
-    uint32_t start = sys_tick_counter;
-    gc_collect_start();
-    gc_collect_root((void**)RAM_START, (((uint32_t)&_heap_start) - RAM_START) / 4);
-    machine_uint_t regs[10];
-    gc_helper_get_regs_and_clean_stack(regs, HEAP_END);
-    gc_collect_root((void**)HEAP_END, (RAM_END - HEAP_END) / 4); // will trace regs since they now live in this function on the stack
-    gc_collect_end();
-    uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-
-    if (0) {
-        // print GC info
-        gc_info_t info;
-        gc_info(&info);
-        printf("GC@%lu %lums\n", start, ticks);
-        printf(" %lu total\n", info.total);
-        printf(" %lu : %lu\n", info.used, info.free);
-        printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
-    }
-}
-
-mp_obj_t pyb_gc(void) {
-    gc_collect();
-    return mp_const_none;
-}
-
 mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     //assert(1 <= n_args && n_args <= 2);
 
@@ -655,7 +623,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
         rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
         rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
-        rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
+        rt_store_attr(m, MP_QSTR_gc, (mp_obj_t)&pyb_gc_obj);
         rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
 #if MICROPY_HW_HAS_SWITCH
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);

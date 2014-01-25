@@ -40,6 +40,7 @@ SRC_C = \
 	string0.c \
 	malloc0.c \
 	systick.c  \
+	gccollect.c \
 	lexerfatfs.c \
 	led.c \
 	lcd.c \
