@@ -362,6 +362,6 @@ void rawsocket_init() {
 #endif
     rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
     for (struct sym_entry *p = constants; p->sym != NULL; p++) {
-        rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT(p->val));
+        rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
     }
 }

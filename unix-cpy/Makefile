@@ -10,9 +10,9 @@ include ../py/py.mk
 CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX
 LDFLAGS = -lm
 
-#Debugging/Optimization
+# Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -Og -ggdb
+CFLAGS += -O0 -g
 else
 CFLAGS += -Os #-DNDEBUG
 endif
