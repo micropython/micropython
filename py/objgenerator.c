@@ -73,8 +73,15 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+static mp_obj_t gen_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_gen_instance_t *self = self_in;
+    if (self->sp == self->state - 1) {
+        if (send_value != mp_const_none) {
+            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "can't send non-None value to a just-started generator"));
+        }
+    } else {
+        *self->sp = send_value;
+    }
     bool yield = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
     if (yield) {
         return *self->sp;
@@ -87,6 +94,16 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
         }
     }
 }
+static MP_DEFINE_CONST_FUN_OBJ_2(gen_send_obj, gen_send);
+
+mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+    return gen_send(self_in, mp_const_none);
+}
+
+static const mp_method_t gen_type_methods[] = {
+    { "send", &gen_send_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
 
 const mp_obj_type_t gen_instance_type = {
     { &mp_const_type },
@@ -94,6 +111,7 @@ const mp_obj_type_t gen_instance_type = {
     .print = gen_instance_print,
     .getiter = gen_instance_getiter,
     .iternext = gen_instance_iternext,
+    .methods = gen_type_methods,
 };
 
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {

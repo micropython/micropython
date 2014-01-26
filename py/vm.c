@@ -73,6 +73,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
+// returns true if bytecode yielded
 bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
