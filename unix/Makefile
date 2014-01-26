@@ -15,7 +15,7 @@ LDFLAGS = -lm
 
 #Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -Og -ggdb
+CFLAGS += -O0 -g
 else
 CFLAGS += -Os #-DNDEBUG
 endif
