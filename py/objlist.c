@@ -23,6 +23,9 @@ static mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 static mp_obj_list_t *list_new(uint n);
 static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
 
+// TODO: Move to mpconfig.h
+#define LIST_MIN_ALLOC 4
+
 /******************************************************************************/
 /* list                                                                       */
 
@@ -181,6 +184,7 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_list_t *self = self_in;
     if (self->len >= self->alloc) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
+        assert(self->items);
         self->alloc *= 2;
     }
     self->items[self->len++] = arg;
@@ -215,7 +219,7 @@ static mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
-    if (self->alloc > 2 * self->len) {
+    if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
         self->alloc /= 2;
     }
@@ -267,8 +271,8 @@ static mp_obj_t list_clear(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &list_type));
     mp_obj_list_t *self = self_in;
     self->len = 0;
-    self->items = m_renew(mp_obj_t, self->items, self->alloc, 4);
-    self->alloc = 4;
+    self->items = m_renew(mp_obj_t, self->items, self->alloc, LIST_MIN_ALLOC);
+    self->alloc = LIST_MIN_ALLOC;
     return mp_const_none;
 }
 
@@ -403,7 +407,7 @@ const mp_obj_type_t list_type = {
 static mp_obj_list_t *list_new(uint n) {
     mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
     o->base.type = &list_type;
-    o->alloc = n < 4 ? 4 : n;
+    o->alloc = n < LIST_MIN_ALLOC ? LIST_MIN_ALLOC : n;
     o->len = n;
     o->items = m_new(mp_obj_t, o->alloc);
     return o;
