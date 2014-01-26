@@ -27,9 +27,9 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm_misc.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
-#include "stm_misc.h"
 #include "usb_bsp.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -97,7 +97,7 @@
 void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-    /* Configure DM DP Pins */
+    /* Configure DM DP Pins on PA11 and PA12 */
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
@@ -109,7 +109,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_OTG_FS);
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_OTG_FS);
 
-    /* Configure VBUS Pin (or disable VBUS_SENSING_ENABLED) */
+    /* Configure VBUS Pin on PA9 (or disable VBUS_SENSING_ENABLED) */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
@@ -117,8 +117,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    /*
-    // Configure ID pin (only in host mode)
+    // Configure ID pin on PA10
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
@@ -126,7 +125,6 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev) {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_OTG_FS);
-    */
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
     RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_OTG_FS, ENABLE);
@@ -235,7 +233,7 @@ void  USB_OTG_BSP_ConfigVBUS(USB_OTG_CORE_HANDLE *pdev) {
 void USB_OTG_BSP_uDelay (const uint32_t usec)
 {
   uint32_t count = 0;
-  const uint32_t utime = (160 * usec / 5);
+  const uint32_t utime = (168 * usec / 5);
   do
   {
     if ( ++count > utime )

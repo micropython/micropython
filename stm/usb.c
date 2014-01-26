@@ -17,32 +17,32 @@
 extern CDC_IF_Prop_TypeDef VCP_fops;
 #endif
 
-USB_OTG_CORE_HANDLE USB_OTG_dev;
+USB_OTG_CORE_HANDLE USB_OTG_Core;
 
-static int is_enabled = 0;
+static int dev_is_enabled = 0;
 static char rx_buf[64];
 static int rx_buf_in;
 static int rx_buf_out;
 
-void usb_init(void) {
-    if (!is_enabled) {
-        // only init USB once in the device's power-lifetime
+void pyb_usb_dev_init(void) {
 #ifdef USE_DEVICE_MODE
-        USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
-        //USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
-#endif
+    if (!dev_is_enabled) {
+        // only init USB once in the device's power-lifetime
+        USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
+        //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
     }
     rx_buf_in = 0;
     rx_buf_out = 0;
-    is_enabled = 1;
+    dev_is_enabled = 1;
+#endif
 }
 
 bool usb_vcp_is_enabled(void) {
-    return is_enabled;
+    return dev_is_enabled;
 }
 
 void usb_vcp_receive(const char *buf, uint32_t len) {
-    if (is_enabled) {
+    if (dev_is_enabled) {
         for (int i = 0; i < len; i++) {
             rx_buf[rx_buf_in++] = buf[i];
             if (rx_buf_in >= sizeof(rx_buf)) {
@@ -82,11 +82,11 @@ void usb_vcp_send_str(const char *str) {
 }
 
 void usb_vcp_send_strn(const char *str, int len) {
-    if (is_enabled) {
 #ifdef USE_DEVICE_MODE
+    if (dev_is_enabled) {
         VCP_fops.pIf_DataTx((const uint8_t*)str, len);
-#endif
     }
+#endif
 }
 
 #include "usbd_conf.h"
@@ -117,7 +117,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 
 void usb_hid_send_report(uint8_t *buf) {
 #ifdef USE_DEVICE_MODE
-    USBD_HID_SendReport(&USB_OTG_dev, buf, 4);
+    USBD_HID_SendReport(&USB_OTG_Core, buf, 4);
 #endif
 }
 
@@ -126,45 +126,63 @@ void usb_hid_send_report(uint8_t *buf) {
 
 #ifdef USE_HOST_MODE
 
-#include "lib-otg/usbh_core.h"
-#include "lib-otg/usbh_usr.h"
-#include "lib-otg/usbh_hid_core.h"
-#include "lib-otg/usb_hcd_int.h"
+#include "led.h"
+#include "usbh_core.h"
+#include "usbh_usr.h"
+#include "usbh_hid_core.h"
+#include "usbh_hid_keybd.h"
+#include "usbh_hid_mouse.h"
 
 __ALIGN_BEGIN USBH_HOST USB_Host __ALIGN_END ;
 
 static int host_is_enabled = 0;
-void pyb_usbh_init(void) {
+
+void pyb_usb_host_init(void) {
     if (!host_is_enabled) {
         // only init USBH once in the device's power-lifetime
         /* Init Host Library */
-        USBH_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USB_Host, &HID_cb, &USR_Callbacks);
+        USBH_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USB_Host, &HID_cb, &USR_Callbacks);
     }
     host_is_enabled = 1;
 }
 
-mp_obj_t pyb_usbh_process(void) {
-    USBH_Process(&USB_OTG_dev, &USB_Host);
-    return mp_const_none;
+void pyb_usb_host_process(void) {
+    USBH_Process(&USB_OTG_Core, &USB_Host);
 }
 
-mp_obj_t pyb_usbh_connect(void) {
-    USBH_HCD_INT_fops->DevConnected(&USB_OTG_dev);
-    return mp_const_none;
+uint8_t usb_keyboard_key = 0;
+
+// TODO this is an ugly hack to get key presses
+uint pyb_usb_host_get_keyboard(void) {
+    uint key = usb_keyboard_key;
+    usb_keyboard_key = 0;
+    return key;
 }
 
-mp_obj_t pyb_usbh_info(void) {
-    printf("GOTGCTL:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GOTGCTL);
-    printf("GOTGINT:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GOTGINT);
-    printf("GAHBCFG:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GAHBCFG);
-    printf("GUSBCFG:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GUSBCFG);
-    printf("GRSTCTL:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRSTCTL);
-    printf("GINTSTS:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GINTSTS);
-    printf("GINTMSK:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GINTMSK);
-    //printf("GRXSTSR:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXSTSR);
-    //printf("GRXSTSP:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXSTSP);
-    //printf("GRXFSIZ:%08x\n", (unsigned int)USB_OTG_dev.regs.GREGS->GRXFSIZ);
-    return mp_const_none;
+void USR_MOUSE_Init(void) {
+    led_state(4, 1);
+    USB_OTG_BSP_mDelay(100);
+    led_state(4, 0);
+}
+
+void USR_MOUSE_ProcessData(HID_MOUSE_Data_TypeDef *data) {
+    led_state(4, 1);
+    USB_OTG_BSP_mDelay(50);
+    led_state(4, 0);
+}
+
+void USR_KEYBRD_Init(void) {
+    led_state(4, 1);
+    USB_OTG_BSP_mDelay(100);
+    led_state(4, 0);
+}
+
+void USR_KEYBRD_ProcessData(uint8_t pbuf) {
+    led_state(4, 1);
+    USB_OTG_BSP_mDelay(50);
+    led_state(4, 0);
+    //lcd_print_strn((char*)&pbuf, 1);
+    usb_keyboard_key = pbuf;
 }
 
 #endif // USE_HOST_MODE

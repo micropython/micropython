@@ -23,8 +23,8 @@ machine_float_t machine_sqrt(machine_float_t x);
 // board specific definitions
 
 // choose 1 of these boards
-#define PYBOARD3
-//#define PYBOARD4
+//#define PYBOARD3
+#define PYBOARD4
 //#define STM32F4DISC
 
 #if defined (PYBOARD3)
@@ -76,7 +76,7 @@ machine_float_t machine_sqrt(machine_float_t x);
     #define MICROPY_HW_HAS_SDCARD       (1)
     #define MICROPY_HW_HAS_MMA7660      (1)
     #define MICROPY_HW_HAS_LIS3DSH      (0)
-    #define MICROPY_HW_HAS_LCD          (0)
+    #define MICROPY_HW_HAS_LCD          (1)
     #define MICROPY_HW_HAS_WLAN         (0)
     #define MICROPY_HW_ENABLE_RNG       (1)
     #define MICROPY_HW_ENABLE_RTC       (1)
@@ -158,3 +158,5 @@ machine_float_t machine_sqrt(machine_float_t x);
 #define STM32F40_41xxx
 #define USE_STDPERIPH_DRIVER
 #define HSE_VALUE (8000000)
+#define USE_DEVICE_MODE
+//#define USE_HOST_MODE

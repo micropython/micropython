@@ -6,18 +6,23 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
-CMSIS=cmsis
-STMSRC=lib
-#STMOTGSRC=usbhost
-FATFSSRC=fatfs
-CC3KSRC=cc3k
+CMSIS_DIR=cmsis
+STMPERIPH_DIR=stmperiph
+STMUSB_DIR=stmusb
+STMUSBD_DIR=stmusbd
+STMUSBH_DIR=stmusbh
+FATFS_DIR=fatfs
+CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 
 CROSS_COMPILE = arm-none-eabi-
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = -I. -I$(PY_SRC) -I$(FATFSSRC) -I$(CMSIS) -I$(STMSRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
-#CFLAGS += -I$(STMOTGSRC) -DUSE_HOST_MODE #-DUSE_OTG_MODE
+CFLAGS = -I. -I$(PY_SRC) -I$(CMSIS_DIR) -I$(STMPERIPH_DIR) -I$(STMUSB_DIR) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
+CFLAGS += -I$(STMUSBD_DIR)
+CFLAGS += -I$(STMUSBH_DIR)
+CFLAGS += -I$(FATFS_DIR)
+#CFLAGS += -I$(CC3K_DIR)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -64,15 +69,10 @@ SRC_S = \
 	startup_stm32f40xx.s \
 	gchelper.s \
 
-SRC_FATFS = $(addprefix $(FATFSSRC)/,\
-	ff.c \
-	diskio.c \
-	)
-
-SRC_STM = $(addprefix $(STMSRC)/,\
+SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\
+	stm_misc.c \
 	stm32f4xx_rcc.c \
 	stm32f4xx_syscfg.c \
-	stm_misc.c \
 	stm32f4xx_flash.c \
 	stm32f4xx_dma.c \
 	stm32f4xx_gpio.c \
@@ -89,10 +89,19 @@ SRC_STM = $(addprefix $(STMSRC)/,\
 	stm32f4xx_adc.c \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
+	)
+
+SRC_STMUSB = $(addprefix $(STMUSB_DIR)/,\
 	usb_core.c \
 	usb_bsp.c \
 	usb_dcd.c \
 	usb_dcd_int.c \
+	usb_hcd.c \
+	usb_hcd_int.c \
+	)
+#	usb_otg.c \
+
+SRC_STMUSBD = $(addprefix $(STMUSBD_DIR)/,\
 	usbd_core.c \
 	usbd_ioreq.c \
 	usbd_req.c \
@@ -107,9 +116,7 @@ SRC_STM = $(addprefix $(STMSRC)/,\
 	usbd_storage_msd.c \
 	)
 
-#SRC_STM_OTG = $(addprefix $(STMSRC)/,\
-	usb_hcd.c \
-	usb_hcd_int.c \
+SRC_STMUSBH = $(addprefix $(STMUSBH_DIR)/,\
 	usbh_core.c \
 	usbh_hcs.c \
 	usbh_stdreq.c \
@@ -118,10 +125,14 @@ SRC_STM = $(addprefix $(STMSRC)/,\
 	usbh_hid_core.c \
 	usbh_hid_mouse.c \
 	usbh_hid_keybd.c \
-#	usb_otg.c \
 	)
 
-SRC_CC3K = $(addprefix $(CC3KSRC)/,\
+SRC_FATFS = $(addprefix $(FATFS_DIR)/,\
+	ff.c \
+	diskio.c \
+	)
+
+SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 	cc3000_common.c \
 	evnt_handler.c \
 	hci.c \
@@ -134,8 +145,11 @@ SRC_CC3K = $(addprefix $(CC3KSRC)/,\
 	pybcc3k.c \
 	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_FATFS:.c=.o) $(SRC_STM:.c=.o)) # $(SRC_CC3K:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_STM_OTG:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_STMPERIPH:.c=.o) $(SRC_STMUSB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBD:.c=.o))
+#OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBH:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
+#OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 
 all: $(BUILD) $(BUILD)/flash.dfu
 
@@ -155,4 +169,3 @@ $(BUILD)/flash.elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 include ../py/mkrules.mk
-

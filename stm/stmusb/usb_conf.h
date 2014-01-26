@@ -237,9 +237,9 @@
 /* END host specific stuff */
 
 /****************** USB OTG MODE CONFIGURATION ********************************/
-//#define USE_HOST_MODE // set in Makefile
-#define USE_DEVICE_MODE
-//#define USE_OTG_MODE // set in Makefile
+//#define USE_HOST_MODE // set in mpconfigport.h
+//#define USE_DEVICE_MODE // set in mpconfigport.h
+//#define USE_OTG_MODE // set in mpconfigport.h
 
 #ifndef USB_OTG_FS_CORE
  #ifndef USB_OTG_HS_CORE

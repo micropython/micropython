@@ -274,6 +274,9 @@ void stdout_tx_str(const char *str) {
     if (pyb_usart_global_debug != PYB_USART_NONE) {
         usart_tx_str(pyb_usart_global_debug, str);
     }
+#if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+    lcd_print_str(str);
+#endif
     usb_vcp_send_str(str);
 }
 
@@ -285,6 +288,13 @@ int readline(vstr_t *line, const char *prompt) {
     for (;;) {
         char c;
         for (;;) {
+#ifdef USE_HOST_MODE
+            pyb_usb_host_process();
+            c = pyb_usb_host_get_keyboard();
+            if (c != 0) {
+                break;
+            }
+#endif
             if (usb_vcp_rx_any() != 0) {
                 c = usb_vcp_rx_get();
                 break;
@@ -350,6 +360,12 @@ int readline(vstr_t *line, const char *prompt) {
 }
 
 void do_repl(void) {
+#if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+    // in host mode, we enable the LCD for the repl
+    mp_obj_t lcd_o = rt_call_function_0(rt_load_name(qstr_from_str("LCD")));
+    rt_call_function_1(rt_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
+#endif
+
     stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
@@ -532,11 +548,7 @@ int main(void) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
     // enable the CCM RAM and the GPIO's
-    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN
-#if defined(STM32F4DISC)
-        | RCC_AHB1ENR_GPIODEN
-#endif
-        ;
+    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
 #if MICROPY_HW_HAS_SDCARD
     {
@@ -589,7 +601,7 @@ soft_reset:
     rt_init();
 
 #if MICROPY_HW_HAS_LCD
-    // LCD init (create in with LCD())
+    // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();
 #endif
 
@@ -662,11 +674,6 @@ soft_reset:
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
     }
-
-#if MICROPY_HW_HAS_LCD
-    // print a message to the LCD
-    lcd_print_str(" micro py board\n");
-#endif
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
@@ -760,14 +767,13 @@ soft_reset:
         flash_error(4);
     }
 
-    // USB
-    usb_init();
-
-    // USB host; not working!
-    //pyb_usbh_init();
-    //rt_store_name(qstr_from_str("u_p"), rt_make_function_n(0, pyb_usbh_process));
-    //rt_store_name(qstr_from_str("u_c"), rt_make_function_n(0, pyb_usbh_connect));
-    //rt_store_name(qstr_from_str("u_i"), rt_make_function_n(0, pyb_usbh_info));
+#ifdef USE_HOST_MODE
+    // USB host
+    pyb_usb_host_init();
+#elif defined(USE_DEVICE_MODE)
+    // USB device
+    pyb_usb_dev_init();
+#endif
 
     if (first_soft_reset) {
 #if MICROPY_HW_HAS_MMA7660

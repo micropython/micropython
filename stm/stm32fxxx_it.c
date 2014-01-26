@@ -41,7 +41,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern USB_OTG_CORE_HANDLE USB_OTG_dev;
+extern USB_OTG_CORE_HANDLE USB_OTG_Core;
 
 /* Private function prototypes -----------------------------------------------*/
 extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
@@ -161,12 +161,12 @@ void PendSV_Handler(void)
 #ifdef USE_USB_OTG_FS  
 void OTG_FS_WKUP_IRQHandler(void)
 {
-  if(USB_OTG_dev.cfg.low_power)
+  if(USB_OTG_Core.cfg.low_power)
   {
     *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ; 
     SystemInit();
 #ifdef USE_DEVICE_MODE
-    USB_OTG_UngateClock(&USB_OTG_dev);
+    USB_OTG_UngateClock(&USB_OTG_Core);
 #endif
   }
   EXTI_ClearITPendingBit(EXTI_Line18);
@@ -181,11 +181,11 @@ void OTG_FS_WKUP_IRQHandler(void)
 #ifdef USE_USB_OTG_HS  
 void OTG_HS_WKUP_IRQHandler(void)
 {
-  if(USB_OTG_dev.cfg.low_power)
+  if(USB_OTG_Core.cfg.low_power)
   {
     *(uint32_t *)(0xE000ED10) &= 0xFFFFFFF9 ; 
     SystemInit();
-    USB_OTG_UngateClock(&USB_OTG_dev);
+    USB_OTG_UngateClock(&USB_OTG_Core);
   }
   EXTI_ClearITPendingBit(EXTI_Line20);
 }
@@ -202,16 +202,16 @@ void OTG_HS_IRQHandler(void)
 void OTG_FS_IRQHandler(void)
 #endif
 {
-    if (USB_OTG_IsHostMode(&USB_OTG_dev)) {
+    if (USB_OTG_IsHostMode(&USB_OTG_Core)) {
         // host mode
 #ifdef USE_HOST_MODE
-        USBH_OTG_ISR_Handler(&USB_OTG_dev);
+        USBH_OTG_ISR_Handler(&USB_OTG_Core);
 #endif
-        //STM32_USBO_OTG_ISR_Handler(&USB_OTG_dev); // USE_OTG_MODE
+        //STM32_USBO_OTG_ISR_Handler(&USB_OTG_Core); // USE_OTG_MODE
     } else {
         // device mode
 #ifdef USE_DEVICE_MODE
-        USBD_OTG_ISR_Handler(&USB_OTG_dev);
+        USBD_OTG_ISR_Handler(&USB_OTG_Core);
 #endif
     }
 }
@@ -224,7 +224,7 @@ void OTG_FS_IRQHandler(void)
   */
 void OTG_HS_EP1_IN_IRQHandler(void)
 {
-  USBD_OTG_EP1IN_ISR_Handler (&USB_OTG_dev);
+  USBD_OTG_EP1IN_ISR_Handler (&USB_OTG_Core);
 }
 
 /**
@@ -234,7 +234,7 @@ void OTG_HS_EP1_IN_IRQHandler(void)
   */
 void OTG_HS_EP1_OUT_IRQHandler(void)
 {
-  USBD_OTG_EP1OUT_ISR_Handler (&USB_OTG_dev);
+  USBD_OTG_EP1OUT_ISR_Handler (&USB_OTG_Core);
 }
 #endif
 

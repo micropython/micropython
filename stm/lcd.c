@@ -324,6 +324,12 @@ void lcd_print_strn(const char *str, unsigned int len) {
         }
         if (*str == '\n') {
             lcd_next_line = 1;
+        } else if (*str == '\r') {
+            lcd_column = 0;
+        } else if (*str == '\b') {
+            if (lcd_column > 0) {
+                lcd_column--;
+            }
         } else if (lcd_column >= LCD_BUF_W) {
             lcd_next_line = 1;
             str -= 1;
@@ -359,6 +365,6 @@ void lcd_print_strn(const char *str, unsigned int len) {
     }
 
     if (did_new_line) {
-        sys_tick_delay_ms(200);
+        sys_tick_delay_ms(50);
     }
 }
