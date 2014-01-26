@@ -40,6 +40,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
 #define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
+#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &int_type))
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &str_type))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)

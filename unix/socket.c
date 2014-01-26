@@ -162,6 +162,29 @@ static mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
+static mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = args[0];
+    int level = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int option = mp_obj_get_int(args[2]);
+
+    const void *optval;
+    socklen_t optlen;
+    if (MP_OBJ_IS_INT(args[3])) {
+        int val = mp_obj_int_get(args[3]);
+        optval = &val;
+        optlen = sizeof(val);
+    } else {
+        buffer_info_t bufinfo;
+        get_buffer(args[3], &bufinfo);
+        optval = bufinfo.buf;
+        optlen = bufinfo.len;
+    }
+    int r = setsockopt(self->fd, level, option, optval, optlen);
+    RAISE_ERRNO(r, errno);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
+
 static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -196,6 +219,7 @@ static const mp_method_t rawsocket_type_methods[] = {
         { "accept", &socket_accept_obj },
         { "recv", &socket_recv_obj },
         { "send", &socket_send_obj },
+        { "setsockopt", &socket_setsockopt_obj },
         { "close", &socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
         { "recv", &mp_stream_read_obj },
@@ -299,7 +323,33 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod
 
 extern mp_obj_type_t sockaddr_in_type;
 
-#define STORE_INT_CONST(m, name) rt_store_attr(m, QSTR_FROM_STR_STATIC(#name), MP_OBJ_NEW_SMALL_INT(name))
+#define C(name) { #name, name }
+
+struct sym_entry {
+    const char *sym;
+    int val;
+} constants[] = {
+    C(AF_UNIX),
+    C(AF_INET),
+    C(AF_INET6),
+    C(SOCK_STREAM),
+    C(SOCK_DGRAM),
+    C(SOCK_RAW),
+
+    C(MSG_DONTROUTE),
+    C(MSG_DONTWAIT),
+
+    C(SOL_SOCKET),
+    C(SO_BROADCAST),
+    C(SO_ERROR),
+    C(SO_KEEPALIVE),
+    C(SO_LINGER),
+    C(SO_REUSEADDR),
+
+    {NULL}
+};
+
+#undef C
 
 void rawsocket_init() {
     mp_obj_t m = mp_obj_new_module(MP_QSTR_rawsocket);
@@ -311,10 +361,7 @@ void rawsocket_init() {
     rt_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
 #endif
     rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
-    STORE_INT_CONST(m, AF_UNIX);
-    STORE_INT_CONST(m, AF_INET);
-    STORE_INT_CONST(m, AF_INET6);
-    STORE_INT_CONST(m, SOCK_STREAM);
-    STORE_INT_CONST(m, SOCK_DGRAM);
-    STORE_INT_CONST(m, SOCK_RAW);
+    for (struct sym_entry *p = constants; p->sym != NULL; p++) {
+        rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT(p->val));
+    }
 }
