@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include ../py/py.mk
+include ../embed/embed.mk
 
 CMSIS_DIR=cmsis
 STMPERIPH_DIR=stmperiph
@@ -23,6 +24,7 @@ CFLAGS += -I$(STMUSBD_DIR)
 CFLAGS += -I$(STMUSBH_DIR)
 CFLAGS += -I$(FATFS_DIR)
 #CFLAGS += -I$(CC3K_DIR)
+CFLAGS += $(CFLAGS_EMBED)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -63,6 +65,7 @@ SRC_C = \
 	adc.c \
 	rtc.c \
 	file.c \
+	hal_target_gpio.c \
 #	pybwlan.c \
 
 SRC_S = \
@@ -145,11 +148,16 @@ SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 	pybcc3k.c \
 	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_STMPERIPH:.c=.o) $(SRC_STMUSB:.c=.o))
+OBJ = $(PY_O) $(EMBED_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_STMPERIPH:.c=.o) $(SRC_STMUSB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBD:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBH:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
+OBJ += $(addprefix $(BUILD)/hal/, $(SRC_HAL:.c=.o))
+
+$(BUILD)/hal/%.o: %.c
+	$(compile_c)
 
 all: $(BUILD) $(BUILD)/flash.dfu
 

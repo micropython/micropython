@@ -135,6 +135,21 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     }
 }
 
+void mp_map_walk(mp_map_t *map, bool (*fn)(void *param, mp_obj_t key, mp_obj_t value), void *param) {
+    uint pos;
+    if (!map) {
+        return;
+    }
+    for (pos = 0; pos < map->alloc; pos++) {
+        mp_map_elem_t *elem = &map->table[pos];
+        if (elem->key != NULL) {
+            if (!fn(param, elem->key, elem->value)) {
+                return;
+            }
+        }
+    }
+}
+
 /******************************************************************************/
 /* set                                                                        */
 

@@ -31,6 +31,7 @@ mp_map_t *mp_map_new(int n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+void mp_map_walk(mp_map_t *map, bool (*fn)(mp_obj_t param, mp_obj_t key, mp_obj_t value), mp_obj_t param);
 void mp_map_clear(mp_map_t *map);
 
 void mp_set_init(mp_set_t *set, int n);
