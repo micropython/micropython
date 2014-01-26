@@ -16,6 +16,7 @@ ai = socket.getaddrinfo("127.0.0.1", 8080)
 print("Bind address info:", ai)
 addr = ai[0][4]
 
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(addr)
 s.listen(5)
 print("Listening, connect your browser to http://127.0.0.1:8080/")
