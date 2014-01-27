@@ -24,9 +24,9 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_complex_t *o = o_in;
     if (o->real == 0) {
-        print(env, "%.8gj", o->imag);
+        print(env, "%.8gj",  (double) o->imag);
     } else {
-        print(env, "(%.8g+%.8gj)", o->real, o->imag);
+        print(env, "(%.8g+%.8gj)", (double) o->real, (double) o->imag);
     }
 }
 
