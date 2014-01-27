@@ -6,6 +6,7 @@
 #include "misc.h"
 #include "systick.h"
 #include "mpconfig.h"
+#include "mpconfigport.h"
 #include "qstr.h"
 #include "obj.h"
 #include "lcd.h"
@@ -247,7 +248,9 @@ void stdout_print_strn(void *data, const char *str, unsigned int len) {
         any = true;
     }
     if (!any) {
+#if MICROPY_HW_HAS_LCD
         lcd_print_strn(str, len);
+#endif
     }
 }
 
