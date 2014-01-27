@@ -21,7 +21,7 @@ mp_obj_t mp_obj_new_float(mp_float_t value);
 
 static void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_float_t *o = o_in;
-    print(env, "%.8g", o->value);
+    print(env, "%.8g", (double) o->value);
 }
 
 static mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
