@@ -119,6 +119,14 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return true;
 }
 
+static mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
+    mp_obj_list_t *self = self_in;
+    switch (op) {
+        case RT_UNARY_OP_NOT: if (self->len == 0) { return mp_const_true; } else { return mp_const_false; }
+        default: return MP_OBJ_NULL; // op not supported for None
+    }
+}
+
 static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = lhs;
     switch (op) {
@@ -395,6 +403,7 @@ const mp_obj_type_t list_type = {
     "list",
     .print = list_print,
     .make_new = list_make_new,
+    .unary_op = list_unary_op,
     .binary_op = list_binary_op,
     .getiter = list_getiter,
     .methods = list_type_methods,

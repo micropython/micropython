@@ -43,6 +43,14 @@ static mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     return rt_build_map(0);
 }
 
+static mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
+    mp_obj_dict_t *self = self_in;
+    switch (op) {
+        case RT_UNARY_OP_NOT: if (self->map.used == 0) { return mp_const_true; } else { return mp_const_false; }
+        default: return MP_OBJ_NULL; // op not supported for None
+    }
+}
+
 static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
@@ -436,6 +444,7 @@ const mp_obj_type_t dict_type = {
     "dict",
     .print = dict_print,
     .make_new = dict_make_new,
+    .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
     .getiter = dict_getiter,
     .methods = dict_type_methods,

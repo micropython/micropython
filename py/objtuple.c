@@ -73,6 +73,14 @@ static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
+static mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
+    mp_obj_tuple_t *self = self_in;
+    switch (op) {
+        case RT_UNARY_OP_NOT: if (self->len == 0) { return mp_const_true; } else { return mp_const_false; }
+        default: return MP_OBJ_NULL; // op not supported for None
+    }
+}
+
 static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
@@ -97,6 +105,7 @@ const mp_obj_type_t tuple_type = {
     "tuple",
     .print = tuple_print,
     .make_new = tuple_make_new,
+    .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,
 };

@@ -481,7 +481,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
     if (MP_OBJ_IS_SMALL_INT(arg)) {
         mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
         switch (op) {
-            case RT_UNARY_OP_NOT: if (val != 0) { return mp_const_true;} else { return mp_const_false; }
+            case RT_UNARY_OP_NOT: if (val == 0) { return mp_const_true;} else { return mp_const_false; }
             case RT_UNARY_OP_POSITIVE: break;
             case RT_UNARY_OP_NEGATIVE: val = -val; break;
             case RT_UNARY_OP_INVERT: val = ~val; break;
