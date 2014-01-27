@@ -5,9 +5,14 @@
     .text
 
 /* uint nlr_push(4(%esp)=nlr_buf_t *nlr) */
+#ifdef __apple_build_version__
     .globl  nlr_push
     .type   nlr_push, @function
 nlr_push:
+#else
+    .globl  _nlr_push
+_nlr_push:
+#endif
     mov     4(%esp), %edx           # load nlr_buf
     mov     (%esp), %eax            # load return %ip
     mov     %eax, 8(%edx)           # store %ip into nlr_buf+8
@@ -21,22 +26,36 @@ nlr_push:
     mov     %edx, nlr_top           # stor new nlr_buf (to make linked list)
     xor     %eax, %eax              # return 0, normal return
     ret                             # return
+#ifdef __apple_build_version__
     .size   nlr_push, .-nlr_push
+#endif
 
 /* void nlr_pop() */
+#ifdef __apple_build_version__
     .globl  nlr_pop
     .type   nlr_pop, @function
 nlr_pop:
+#else
+    .globl  _nlr_pop
+_nlr_pop:
+#endif
     mov     nlr_top, %eax           # load nlr_top
     mov     (%eax), %eax            # load prev nlr_buf
     mov     %eax, nlr_top           # store nlr_top (to unlink list)
     ret                             # return
+#ifdef __apple_build_version__
     .size   nlr_pop, .-nlr_pop
+#endif
 
 /* void nlr_jump(4(%esp)=uint val) */
+#ifdef __apple_build_version__
     .globl  nlr_jump
     .type   nlr_jump, @function
 nlr_jump:
+#else
+    .globl  _nlr_jump
+    _nlr_jump:
+#endif
     mov     nlr_top, %edx           # load nlr_top
     mov     4(%esp), %eax           # load return value
     mov     %eax, 4(%edx)           # store return value
@@ -52,8 +71,12 @@ nlr_jump:
     xor     %eax, %eax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
+#ifdef __apple_build_version__
     .size   nlr_jump, .-nlr_jump
+#endif
 
+#ifdef __apple_build_version__
     .local  nlr_top
+#endif
     .comm   nlr_top,4,4
 #endif
