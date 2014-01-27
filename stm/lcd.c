@@ -41,6 +41,16 @@
 #define PYB_LCD_BL_PORT    (GPIOB)
 #define PYB_LCD_BL_PIN     (GPIO_Pin_1) // Y12 = PB1
 */
+#elif defined(STM32F4DISC)
+/* Configure if needed */
+#define PYB_LCD_PORT       (GPIOA)
+#define PYB_LCD_CS1_PIN    (GPIO_Pin_2) // X3
+#define PYB_LCD_RST_PIN    (GPIO_Pin_3) // X4
+#define PYB_LCD_A0_PIN     (GPIO_Pin_4) // X5
+#define PYB_LCD_SCL_PIN    (GPIO_Pin_5) // X6
+#define PYB_LCD_SI_PIN     (GPIO_Pin_7) // X8
+#define PYB_LCD_BL_PORT    (GPIOC)
+#define PYB_LCD_BL_PIN     (GPIO_Pin_5) // X12
 #endif
 
 #define LCD_INSTR (0)
