@@ -73,8 +73,11 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-static mp_obj_t gen_send(mp_obj_t self_in, mp_obj_t send_value) {
+static mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_gen_instance_t *self = self_in;
+    if (self->ip == 0) {
+        return mp_const_stop_iteration;
+    }
     if (self->sp == self->state - 1) {
         if (send_value != mp_const_none) {
             nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "can't send non-None value to a just-started generator"));
@@ -86,6 +89,12 @@ static mp_obj_t gen_send(mp_obj_t self_in, mp_obj_t send_value) {
     if (yield) {
         return *self->sp;
     } else {
+        // Explicitly mark generator as completed. If we don't do this,
+        // subsequent next() may re-execute statements after last yield
+        // again and again, leading to side effects.
+        // TODO: check how return with value behaves under such conditions
+        // in CPython.
+        self->ip = 0;
         if (*self->sp == mp_const_none) {
             return mp_const_stop_iteration;
         } else {
@@ -94,14 +103,22 @@ static mp_obj_t gen_send(mp_obj_t self_in, mp_obj_t send_value) {
         }
     }
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(gen_send_obj, gen_send);
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
-    return gen_send(self_in, mp_const_none);
+    return gen_next_send(self_in, mp_const_none);
 }
 
+static mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
+    mp_obj_t ret = gen_next_send(self_in, send_value);
+    if (ret == mp_const_stop_iteration) {
+        nlr_jump(mp_obj_new_exception(MP_QSTR_StopIteration));
+    }
+    return ret;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
+
 static const mp_method_t gen_type_methods[] = {
-    { "send", &gen_send_obj },
+    { "send", &gen_instance_send_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 

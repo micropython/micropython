@@ -52,6 +52,12 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 }
 
 // This is called only for non-SMALL_INT
+mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
+    assert(0);
+    return mp_const_none;
+}
+
+// This is called only for non-SMALL_INT
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     assert(0);
     return mp_const_none;
@@ -96,5 +102,6 @@ const mp_obj_type_t int_type = {
     "int",
     .print = int_print,
     .make_new = int_make_new,
+    .unary_op = int_unary_op,
     .binary_op = int_binary_op,
 };
