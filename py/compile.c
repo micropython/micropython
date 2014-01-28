@@ -1912,7 +1912,21 @@ void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_not_test_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
+#if MICROPY_EMIT_CPYTHON
     EMIT_ARG(unary_op, RT_UNARY_OP_NOT);
+#else
+    // eliminate use of NOT byte code
+    int l_load_false = comp_next_label(comp);
+    int l_done = comp_next_label(comp);
+    int stack_size = EMIT(get_stack_size);
+    EMIT_ARG(pop_jump_if_true, l_load_false);
+    EMIT_ARG(load_const_tok, MP_TOKEN_KW_TRUE);
+    EMIT_ARG(jump, l_done);
+    EMIT_ARG(label_assign, l_load_false);
+    EMIT_ARG(load_const_tok, MP_TOKEN_KW_FALSE);
+    EMIT_ARG(label_assign, l_done);
+    EMIT_ARG(set_stack_size, stack_size); // force stack size since it counts 1 pop and 2 pushes statically, but really it's 1 pop and 1 push dynamically
+#endif
 }
 
 void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {

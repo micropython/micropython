@@ -1,5 +1,5 @@
 typedef enum {
-    RT_UNARY_OP_NOT,
+    RT_UNARY_OP_NOT, // TODO remove this op since it's no longer needed
     RT_UNARY_OP_POSITIVE,
     RT_UNARY_OP_NEGATIVE,
     RT_UNARY_OP_INVERT,

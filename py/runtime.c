@@ -315,23 +315,18 @@ int rt_is_true(mp_obj_t arg) {
         return 0;
     } else if (arg == mp_const_true) {
         return 1;
-    } else if (MP_OBJ_IS_STR(arg)) {
-        return mp_obj_str_get_len(arg) != 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &list_type)) {
-        uint len;
-        mp_obj_t *dummy;
-        mp_obj_list_get(arg, &len, &dummy);
-        return len != 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &tuple_type)) {
-        uint len;
-        mp_obj_t *dummy;
-        mp_obj_tuple_get(arg, &len, &dummy);
-        return len != 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &dict_type)) {
-        return mp_obj_dict_len(arg) != 0;
     } else {
-        assert(0);
-        return 0;
+        mp_obj_t len = mp_obj_len_maybe(arg);
+        if (len != MP_OBJ_NULL) {
+            // obj has a length, truth determined if len != 0
+            return len != MP_OBJ_NEW_SMALL_INT(0);
+        } else {
+            // TODO check for __bool__ method
+            // TODO check floats and complex numbers
+
+            // any other obj is true (TODO is that correct?)
+            return 1;
+        }
     }
 }
 
