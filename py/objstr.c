@@ -34,45 +34,49 @@ static mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 /******************************************************************************/
 /* str                                                                        */
 
-void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
+    // this escapes characters, but it will be very slow to print (calling print many times)
+    bool has_single_quote = false;
+    bool has_double_quote = false;
+    for (const byte *s = str_data, *top = str_data + str_len; (!has_single_quote || !has_double_quote) && s < top; s++) {
+        if (*s == '\'') {
+            has_single_quote = true;
+        } else if (*s == '"') {
+            has_double_quote = true;
+        }
+    }
+    int quote_char = '\'';
+    if (has_single_quote && !has_double_quote) {
+        quote_char = '"';
+    }
+    print(env, "%c", quote_char);
+    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+        if (*s == quote_char) {
+            print(env, "\\%c", quote_char);
+        } else if (*s == '\\') {
+            print(env, "\\\\");
+        } else if (32 <= *s && *s <= 126) {
+            print(env, "%c", *s);
+        } else if (*s == '\n') {
+            print(env, "\\n");
+        // TODO add more escape codes here if we want to match CPython
+        } else {
+            print(env, "\\x%02x", *s);
+        }
+    }
+    print(env, "%c", quote_char);
+}
+
+static void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &bytes_type);
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
     } else {
-        // this escapes characters, but it will be very slow to print (calling print many times)
-        bool has_single_quote = false;
-        bool has_double_quote = false;
-        for (const byte *s = str_data, *top = str_data + str_len; (!has_single_quote || !has_double_quote) && s < top; s++) {
-            if (*s == '\'') {
-                has_single_quote = true;
-            } else if (*s == '"') {
-                has_double_quote = true;
-            }
-        }
         if (is_bytes) {
             print(env, "b");
         }
-        int quote_char = '\'';
-        if (has_single_quote && !has_double_quote) {
-            quote_char = '"';
-        }
-        print(env, "%c", quote_char);
-        for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
-            if (*s == quote_char) {
-                print(env, "\\%c", quote_char);
-            } else if (*s == '\\') {
-                print(env, "\\\\");
-            } else if (32 <= *s && *s <= 126) {
-                print(env, "%c", *s);
-            } else if (*s == '\n') {
-                print(env, "\\n");
-            // TODO add more escape codes here if we want to match CPython
-            } else {
-                print(env, "\\x%02x", *s);
-            }
-        }
-        print(env, "%c", quote_char);
+        mp_str_print_quoted(print, env, str_data, str_len);
     }
 }
 
