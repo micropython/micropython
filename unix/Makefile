@@ -11,6 +11,7 @@ include ../py/py.mk
 
 # compiler settings
 CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX
+CFLAGS += -I/usr/lib/libffi-3.0.13/include
 LDFLAGS = -lm -ldl -lffi
 
 # Debugging/Optimization

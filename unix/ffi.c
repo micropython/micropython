@@ -82,7 +82,7 @@ static ffi_type *get_ffi_type(mp_obj_t o_in)
     nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "Unknown type"));
 }
 
-static mp_obj_t return_ffi_value(int val, char type)
+static mp_obj_t return_ffi_value(ffi_arg val, char type)
 {
     switch (type) {
         case 's': {
@@ -242,7 +242,7 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
 
-    int values[n_args];
+    ffi_arg values[n_args];
     void *valueptrs[n_args];
     int i;
     for (i = 0; i < n_args; i++) {
@@ -253,17 +253,17 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = mp_obj_int_get(a);
         } else if (MP_OBJ_IS_STR(a) || MP_OBJ_IS_TYPE(a, &bytes_type)) {
             const char *s = mp_obj_str_get_str(a);
-            values[i] = (int)s;
+            values[i] = (ffi_arg)s;
         } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = a;
-            values[i] = (int)p->func;
+            values[i] = (ffi_arg)p->func;
         } else {
             assert(0);
         }
         valueptrs[i] = &values[i];
     }
 
-    int retval;
+    ffi_arg retval;
     ffi_call(&self->cif, self->func, &retval, valueptrs);
     return return_ffi_value(retval, self->rettype);
 }
