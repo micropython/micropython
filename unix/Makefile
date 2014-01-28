@@ -11,7 +11,7 @@ include ../py/py.mk
 
 # compiler settings
 CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX
-LDFLAGS = -lm
+LDFLAGS = -lm -ldl -lffi
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -25,6 +25,7 @@ SRC_C = \
 	main.c \
 	file.c \
 	socket.c \
+	ffi.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 LIB = -lreadline

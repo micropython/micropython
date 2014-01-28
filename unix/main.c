@@ -24,6 +24,7 @@
 extern const mp_obj_fun_native_t mp_builtin_open_obj;
 void file_init();
 void rawsocket_init();
+void ffi_init();
 
 static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
@@ -227,6 +228,7 @@ int main(int argc, char **argv) {
 
     file_init();
     rawsocket_init();
+    ffi_init();
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
