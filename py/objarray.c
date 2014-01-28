@@ -164,20 +164,17 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 }
 
 static mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    switch (n_args) {
-        case 2:
-        {
-            // TODO check args
-            uint l;
-            const byte *s = mp_obj_str_get_data(args[0], &l);
-            mp_obj_t initializer = args[1];
-            return array_construct(*s, initializer);
-        }
-
-        default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unexpected # of arguments, %d given", n_args));
+    if (n_args < 1 || n_args > 2) {
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unexpected # of arguments, %d given", n_args));
     }
-    return NULL;
+    // TODO check args
+    uint l;
+    const byte *typecode = mp_obj_str_get_data(args[0], &l);
+    if (n_args == 1) {
+        return array_new(*typecode, 0);
+    }
+
+    return array_construct(*typecode, args[1]);
 }
 
 // This is top-level factory function, not virtual method
