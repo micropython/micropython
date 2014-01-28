@@ -5,13 +5,14 @@
     .text
 
 /* uint nlr_push(4(%esp)=nlr_buf_t *nlr) */
-#ifdef __apple_build_version__
+#ifdef _WIN32
+    .globl  _nlr_push
+    .def    _nlr_push; .scl 2; .type 32; .endef
+_nlr_push:
+#else
     .globl  nlr_push
     .type   nlr_push, @function
 nlr_push:
-#else
-    .globl  _nlr_push
-_nlr_push:
 #endif
     mov     4(%esp), %edx           # load nlr_buf
     mov     (%esp), %eax            # load return %ip
@@ -26,35 +27,37 @@ _nlr_push:
     mov     %edx, nlr_top           # stor new nlr_buf (to make linked list)
     xor     %eax, %eax              # return 0, normal return
     ret                             # return
-#ifdef __apple_build_version__
+#ifndef _WIN32
     .size   nlr_push, .-nlr_push
 #endif
 
 /* void nlr_pop() */
-#ifdef __apple_build_version__
+#ifdef _WIN32
+    .globl  _nlr_pop
+    .def    _nlr_pop; .scl 2; .type 32; .endef
+_nlr_pop:
+#else
     .globl  nlr_pop
     .type   nlr_pop, @function
 nlr_pop:
-#else
-    .globl  _nlr_pop
-_nlr_pop:
 #endif
     mov     nlr_top, %eax           # load nlr_top
     mov     (%eax), %eax            # load prev nlr_buf
     mov     %eax, nlr_top           # store nlr_top (to unlink list)
     ret                             # return
-#ifdef __apple_build_version__
+#ifndef _WIN32
     .size   nlr_pop, .-nlr_pop
 #endif
 
 /* void nlr_jump(4(%esp)=uint val) */
-#ifdef __apple_build_version__
+#ifdef _WIN32
+    .globl  _nlr_jump
+    .def    _nlr_jump; .scl 2; .type 32; .endef
+_nlr_jump:
+#else
     .globl  nlr_jump
     .type   nlr_jump, @function
 nlr_jump:
-#else
-    .globl  _nlr_jump
-    _nlr_jump:
 #endif
     mov     nlr_top, %edx           # load nlr_top
     mov     4(%esp), %eax           # load return value
@@ -71,12 +74,13 @@ nlr_jump:
     xor     %eax, %eax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
-#ifdef __apple_build_version__
+#ifndef _WIN32
     .size   nlr_jump, .-nlr_jump
 #endif
 
-#ifdef __apple_build_version__
+#ifndef _WIN32
     .local  nlr_top
 #endif
     .comm   nlr_top,4,4
-#endif
+
+#endif /* __i386__ */
