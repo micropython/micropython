@@ -124,19 +124,20 @@ static void array_set_el(mp_obj_array_t *o, int index, mp_obj_t val_in) {
 static void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
-        print(env, "bytearray(", o->typecode);
+        print(env, "bytearray(b", o->typecode);
+        mp_str_print_quoted(print, env, o->items, o->len);
     } else {
         print(env, "array('%c'", o->typecode);
-    }
-    if (o->len > 0) {
-        print(env, ", [", o->typecode);
-        for (int i = 0; i < o->len; i++) {
-            if (i > 0) {
-                print(env, ", ");
+        if (o->len > 0) {
+            print(env, ", [", o->typecode);
+            for (int i = 0; i < o->len; i++) {
+                if (i > 0) {
+                    print(env, ", ");
+                }
+                print(env, "%d", array_get_el(o, i));
             }
-            print(env, "%d", array_get_el(o, i));
+            print(env, "]");
         }
-        print(env, "]");
     }
     print(env, ")");
 }

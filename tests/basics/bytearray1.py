@@ -1,6 +1,7 @@
 a = bytearray([1, 2, 200])
 print(a[0], a[2])
 print(a[-1])
+print(a)
 a[2] = 255
 print(a[-1])
 a.append(10)
