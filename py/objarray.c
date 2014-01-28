@@ -271,6 +271,17 @@ mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
     return o;
 }
 
+// Create bytearray which references specified memory area
+mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items) {
+    mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
+    o->base.type = &array_type;
+    o->typecode = BYTEARRAY_TYPECODE;
+    o->free = 0;
+    o->len = n;
+    o->items = items;
+    return o;
+}
+
 /******************************************************************************/
 /* array iterator                                                              */
 
