@@ -8,8 +8,20 @@
 #include "rtc.h"
 
 void rtc_init(void) {
-    uint32_t rtc_clksrc;
-    uint32_t timeout = 1000000;
+    /* Enable the PWR clock */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+
+    /* Allow access to RTC */
+    PWR_BackupAccessCmd(ENABLE);
+
+    if (RTC_ReadBackupRegister(RTC_BKP_DR0) == 0x32F2) {
+        // RTC still alive, so don't re-init it
+        // wait for RTC APB register synchronisation
+        RTC_WaitForSynchro();
+        return;
+    }
+
+    uint32_t timeout = 10000000;
 
     /* Enable the PWR clock */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
@@ -26,7 +38,10 @@ void rtc_init(void) {
 
     /* If LSE timed out, use LSI instead */
     if (timeout == 0) {
-        /* Enable the LSI OSC */
+        // Disable the LSE OSC
+        RCC_LSEConfig(RCC_LSE_OFF);
+
+        // Enable the LSI OSC
         RCC_LSICmd(ENABLE);
 
         /* Wait till LSI is ready */
@@ -34,14 +49,11 @@ void rtc_init(void) {
         }
 
         /* Use LSI as the RTC Clock Source */
-        rtc_clksrc = RCC_RTCCLKSource_LSI;
+        RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
     } else {
         /* Use LSE as the RTC Clock Source */
-        rtc_clksrc = RCC_RTCCLKSource_LSE;
+        RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
     }
-
-    /* Select the RTC Clock Source */
-    RCC_RTCCLKConfig(rtc_clksrc);
 
     /* Note: LSI is around (32KHz), these dividers should work either way */
     /* ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)*/
@@ -78,7 +90,7 @@ void rtc_init(void) {
     RTC_SetTime(RTC_Format_BCD, &RTC_TimeStructure);
 
     // Indicator for the RTC configuration
-    //RTC_WriteBackupRegister(RTC_BKP_DR0, 0x32F2);
+    RTC_WriteBackupRegister(RTC_BKP_DR0, 0x32F2);
 }
 
 /******************************************************************************/

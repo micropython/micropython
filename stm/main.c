@@ -655,7 +655,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
 #endif
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
-#if MICROPY_HW_HAS_RTC
+#if MICROPY_HW_ENABLE_RTC
         rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
 #endif
 #if MICROPY_HW_ENABLE_RNG
