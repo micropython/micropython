@@ -594,7 +594,7 @@ int main(void) {
 soft_reset:
 
     // GC init
-    gc_init(&_heap_start, (void*)HEAP_END);
+    gc_init(&_heap_start, &_heap_end);
 
     // Micro Python init
     qstr_init();
