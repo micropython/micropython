@@ -216,6 +216,18 @@ int usage(void) {
     return 1;
 }
 
+mp_obj_t mem_info(void) {
+    printf("mem: total=%d, current=%d, peak=%d\n", m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
+    return mp_const_none;
+}
+
+mp_obj_t qstr_info(void) {
+    uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+    qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
+    printf("qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+    return mp_const_none;
+}
+
 int main(int argc, char **argv) {
     qstr_init();
     rt_init();
@@ -225,6 +237,8 @@ int main(int argc, char **argv) {
     rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
     rt_store_name(qstr_from_str("test"), test_obj_new(42));
+    rt_store_name(qstr_from_str("mem_info"), rt_make_function_n(0, mem_info));
+    rt_store_name(qstr_from_str("qstr_info"), rt_make_function_n(0, qstr_info));
 
     file_init();
     rawsocket_init();

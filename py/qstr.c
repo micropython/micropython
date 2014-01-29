@@ -185,3 +185,19 @@ const byte *qstr_data(qstr q, uint *len) {
     *len = Q_GET_LENGTH(qd);
     return Q_GET_DATA(qd);
 }
+
+void qstr_pool_info(uint *n_pool, uint *n_qstr, uint *n_str_data_bytes, uint *n_total_bytes) {
+    *n_pool = 0;
+    *n_qstr = 0;
+    *n_str_data_bytes = 0;
+    *n_total_bytes = 0;
+    for (qstr_pool_t *pool = last_pool; pool != NULL && pool != &const_pool; pool = pool->prev) {
+        *n_pool += 1;
+        *n_qstr += pool->len;
+        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+            *n_str_data_bytes += Q_GET_ALLOC(*q);
+        }
+        *n_total_bytes += sizeof(qstr_pool_t) + sizeof(qstr) * pool->alloc;
+    }
+    *n_total_bytes += *n_str_data_bytes;
+}
