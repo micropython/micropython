@@ -2501,7 +2501,7 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // pass
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        int arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: EMIT_ARG(load_id, arg); break;
             case MP_PARSE_NODE_SMALL_INT: EMIT_ARG(load_const_small_int, arg); break;
@@ -3030,7 +3030,8 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         scope->flags |= SCOPE_FLAG_OPTIMISED;
 
         // TODO possibly other ways it can be nested
-        if (scope->parent->kind == SCOPE_FUNCTION || (scope->parent->kind == SCOPE_CLASS && scope->parent->parent->kind == SCOPE_FUNCTION)) {
+        // Note that we don't actually use this information at the moment (for CPython compat only)
+        if ((SCOPE_FUNCTION <= scope->parent->kind && scope->parent->kind <= SCOPE_SET_COMP) || (scope->parent->kind == SCOPE_CLASS && scope->parent->parent->kind == SCOPE_FUNCTION)) {
             scope->flags |= SCOPE_FLAG_NESTED;
         }
     }

@@ -599,7 +599,7 @@ static void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     emit_post_push_imm(emit, vtype, val);
 }
 
-static void emit_native_load_const_small_int(emit_t *emit, int arg) {
+static void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);

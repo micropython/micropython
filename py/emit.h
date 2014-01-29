@@ -34,7 +34,7 @@ typedef struct _emit_method_table_t {
     void (*import_from)(emit_t *emit, qstr qstr);
     void (*import_star)(emit_t *emit);
     void (*load_const_tok)(emit_t *emit, mp_token_kind_t tok);
-    void (*load_const_small_int)(emit_t *emit, int arg);
+    void (*load_const_small_int)(emit_t *emit, machine_int_t arg);
     void (*load_const_int)(emit_t *emit, qstr qstr);
     void (*load_const_dec)(emit_t *emit, qstr qstr);
     void (*load_const_id)(emit_t *emit, qstr qstr);

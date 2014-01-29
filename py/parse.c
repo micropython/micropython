@@ -172,15 +172,15 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         printf("NULL\n");
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        int arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_SMALL_INT: printf("int(%d)\n", arg); break;
+            case MP_PARSE_NODE_SMALL_INT: printf("int(" INT_FMT ")\n", arg); break;
             case MP_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_TOKEN: printf("tok(%d)\n", arg); break;
+            case MP_PARSE_NODE_TOKEN: printf("tok(" INT_FMT ")\n", arg); break;
             default: assert(0);
         }
     } else {

@@ -26,8 +26,6 @@
 #define SET_TOP(val) *sp = (val)
 
 mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, uint n_state) {
-    n_state += 1; // XXX there is a bug somewhere which doesn't count enough state... (conwaylife and mandel have the bug)
-
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -479,8 +477,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_MAKE_CLOSURE:
                         DECODE_UINT;
-                        obj1 = POP();
-                        PUSH(rt_make_closure_from_id(unum, obj1));
+                        SET_TOP(rt_make_closure_from_id(unum, TOP()));
                         break;
 
                     case MP_BC_CALL_FUNCTION:

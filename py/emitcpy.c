@@ -149,10 +149,10 @@ static void emit_cpy_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     }
 }
 
-static void emit_cpy_load_const_small_int(emit_t *emit, int arg) {
+static void emit_cpy_load_const_small_int(emit_t *emit, machine_int_t arg) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
-        printf("LOAD_CONST %d\n", arg);
+        printf("LOAD_CONST " INT_FMT "\n", arg);
     }
 }
 

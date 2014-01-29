@@ -217,7 +217,7 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
     //printf("byte code: %d bytes\n", len);
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d\n", unique_code_id, code, len, n_args);
+    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d n_locals=%d n_stack=%d\n", unique_code_id, code, len, n_args, n_locals, n_stack);
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");

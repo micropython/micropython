@@ -108,7 +108,7 @@ static void emit_write_byte_code_byte_byte(emit_t* emit, byte b1, uint b2) {
 }
 
 // integers (for small ints) are stored as 24 bits, in excess
-static void emit_write_byte_code_byte_int(emit_t* emit, byte b1, int num) {
+static void emit_write_byte_code_byte_int(emit_t* emit, byte b1, machine_int_t num) {
     num += 0x800000;
     assert(0 <= num && num <= 0xffffff);
     byte* c = emit_get_cur_to_write_byte_code(emit, 4);
@@ -319,7 +319,7 @@ static void emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     }
 }
 
-static void emit_bc_load_const_small_int(emit_t *emit, int arg) {
+static void emit_bc_load_const_small_int(emit_t *emit, machine_int_t arg) {
     emit_pre(emit, 1);
     emit_write_byte_code_byte_int(emit, MP_BC_LOAD_CONST_SMALL_INT, arg);
 }
@@ -390,7 +390,7 @@ static void emit_bc_load_attr(emit_t *emit, qstr qstr) {
 }
 
 static void emit_bc_load_method(emit_t *emit, qstr qstr) {
-    emit_pre(emit, 0);
+    emit_pre(emit, 1);
     emit_write_byte_code_byte_qstr(emit, MP_BC_LOAD_METHOD, qstr);
 }
 
@@ -707,7 +707,7 @@ static void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, b
     if (have_dbl_star_arg) {
         s += 1;
     }
-    emit_pre(emit, -n_positional - 2 * n_keyword - s);
+    emit_pre(emit, -1 - n_positional - 2 * n_keyword - s);
     int op;
     if (have_star_arg) {
         if (have_dbl_star_arg) {
