@@ -12,7 +12,6 @@ else:
     CPYTHON3 = 'python3.3'
     MP_PY = '../unix/micropython'
 
-
 test_count = 0
 testcase_count = 0
 passed_count = 0
@@ -20,7 +19,7 @@ failed_tests = []
 tests = []
 
 if not sys.argv[1:]:
-    tests = glob('basics/*.py') + glob('io/*.py')
+    tests = sorted(glob('basics/*.py') + glob('io/*.py'))
 else:
     tests = sys.argv[1:]
 
@@ -28,11 +27,14 @@ for test_file in tests:
     test_name = os.path.splitext(os.path.basename(test_file))[0]
 
     output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
-    output_mypy = subprocess.check_output([MP_PY, test_file])
+    try:
+        output_mupy = subprocess.check_output([MP_PY, test_file])
+    except subprocess.CalledProcessError:
+        output_mupy = 'CRASH'
 
     testcase_count += len(output_expected.splitlines())
 
-    if output_expected != output_mypy:
+    if output_expected == output_mupy:
         print("pass ", test_file)
         passed_count += 1
     else:
@@ -41,11 +43,9 @@ for test_file in tests:
 
     test_count += 1
 
-print("{} tests performed ({} individual testcases)".format(test_count,
-                                                            testcase_count))
+print("{} tests performed ({} individual testcases)".format(test_count, testcase_count))
 print("{} tests passed".format(passed_count))
 
 if len(failed_tests) > 0:
-    print("{} tests failed: {}".format(len(failed_tests),
-                                       ' '.join(failed_tests)))
+    print("{} tests failed: {}".format(len(failed_tests), ' '.join(failed_tests)))
     sys.exit(1)
