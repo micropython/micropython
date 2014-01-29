@@ -206,12 +206,14 @@ static mp_obj_t pyb_info(void) {
     return mp_const_none;
 }
 
+#if MICROPY_HW_HAS_SDCARD
 // SD card test
 static mp_obj_t pyb_sd_test(void) {
     extern void sdio_init(void);
     sdio_init();
     return mp_const_none;
 }
+#endif
 
 static void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
