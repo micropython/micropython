@@ -13,20 +13,19 @@
 
 // This is unified class for C-level and Python-level exceptions
 // Python-level exception have empty ->msg and all arguments are in
-// args tuple. C-level excepttion likely have ->msg, and may as well
-// have args tuple (or otherwise have it as NULL).
+// args tuple. C-level excepttion likely have ->msg and args is empty.
 typedef struct mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
     qstr id;
-    qstr msg;
+    vstr_t *msg;
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
 void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
-    if (o->msg != 0) {
-        print(env, "%s: %s", qstr_str(o->id), qstr_str(o->msg));
+    if (o->msg != NULL) {
+        print(env, "%s: %s", qstr_str(o->id), vstr_str(o->msg));
     } else {
         // Yes, that's how CPython has it
         if (kind == PRINT_REPR) {
@@ -55,7 +54,7 @@ static mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const m
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
     o->base.type = &exception_type;
     o->id = base->id;
-    o->msg = 0;
+    o->msg = NULL;
     o->args.len = n_args;
     memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
     return o;
@@ -92,15 +91,14 @@ mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...) {
     o->id = id;
     o->args.len = 0;
     if (fmt == NULL) {
-        o->msg = 0;
+        o->msg = NULL;
     } else {
         // render exception message
-        vstr_t *vstr = vstr_new();
+        o->msg = vstr_new();
         va_list ap;
         va_start(ap, fmt);
-        vstr_vprintf(vstr, fmt, ap);
+        vstr_vprintf(o->msg, fmt, ap);
         va_end(ap);
-        o->msg = qstr_from_strn_take(vstr->buf, vstr->alloc, vstr->len);
     }
 
     return o;
