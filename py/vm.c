@@ -80,15 +80,12 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
     machine_uint_t unum;
     qstr qst;
     mp_obj_t obj1, obj2;
-    mp_obj_t fast0 = fastn[0], fast1 = fastn[-1], fast2 = fastn[-2];
     nlr_buf_t nlr;
 
     volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
     machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
     machine_uint_t *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
-
-    // TODO if an exception occurs, do fast[0,1,2] become invalid??
 
     // outer exception handling loop
     for (;;) {
@@ -146,15 +143,15 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         break;
 
                     case MP_BC_LOAD_FAST_0:
-                        PUSH(fast0);
+                        PUSH(fastn[0]);
                         break;
 
                     case MP_BC_LOAD_FAST_1:
-                        PUSH(fast1);
+                        PUSH(fastn[-1]);
                         break;
 
                     case MP_BC_LOAD_FAST_2:
-                        PUSH(fast2);
+                        PUSH(fastn[-2]);
                         break;
 
                     case MP_BC_LOAD_FAST_N:
@@ -164,16 +161,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        if (unum == 0) {
-                            obj1 = fast0;
-                        } else if (unum == 1) {
-                            obj1 = fast1;
-                        } else if (unum == 2) {
-                            obj1 = fast2;
-                        } else {
-                            obj1 = fastn[-unum];
-                        }
-                        PUSH(rt_get_cell(obj1));
+                        PUSH(rt_get_cell(fastn[-unum]));
                         break;
 
                     case MP_BC_LOAD_NAME:
@@ -202,15 +190,15 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         break;
 
                     case MP_BC_STORE_FAST_0:
-                        fast0 = POP();
+                        fastn[0] = POP();
                         break;
 
                     case MP_BC_STORE_FAST_1:
-                        fast1 = POP();
+                        fastn[-1] = POP();
                         break;
 
                     case MP_BC_STORE_FAST_2:
-                        fast2 = POP();
+                        fastn[-2] = POP();
                         break;
 
                     case MP_BC_STORE_FAST_N:
@@ -220,16 +208,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     case MP_BC_STORE_DEREF:
                         DECODE_UINT;
-                        if (unum == 0) {
-                            obj1 = fast0;
-                        } else if (unum == 1) {
-                            obj1 = fast1;
-                        } else if (unum == 2) {
-                            obj1 = fast2;
-                        } else {
-                            obj1 = fastn[-unum];
-                        }
-                        rt_set_cell(obj1, POP());
+                        rt_set_cell(fastn[-unum], POP());
                         break;
 
                     case MP_BC_STORE_NAME:
@@ -511,9 +490,6 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                     case MP_BC_YIELD_VALUE:
                         nlr_pop();
                         *ip_in_out = ip;
-                        fastn[0] = fast0;
-                        fastn[-1] = fast1;
-                        fastn[-2] = fast2;
                         *sp_in_out = sp;
                         return true;
 

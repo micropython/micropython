@@ -44,11 +44,14 @@ typedef enum {
 } mp_code_kind_t;
 
 typedef struct _mp_code_t {
-    mp_code_kind_t kind;
-    int n_args;
-    int n_locals;
-    int n_stack;
-    bool is_generator;
+    struct {
+        mp_code_kind_t kind : 8;
+        bool is_generator : 1;
+    };
+    struct {
+        uint n_args : 16;
+        uint n_state : 16;
+    };
     union {
         struct {
             byte *code;
@@ -63,7 +66,7 @@ typedef struct _mp_code_t {
     };
 } mp_code_t;
 
-static int next_unique_code_id;
+static uint next_unique_code_id;
 static machine_uint_t unique_codes_alloc = 0;
 static mp_code_t *unique_codes = NULL;
 
@@ -187,30 +190,30 @@ void rt_deinit(void) {
 #endif
 }
 
-int rt_get_unique_code_id(void) {
+uint rt_get_unique_code_id(void) {
     return next_unique_code_id++;
 }
 
 static void alloc_unique_codes(void) {
     if (next_unique_code_id > unique_codes_alloc) {
+        DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, next_unique_code_id);
         // increase size of unique_codes table
         unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, next_unique_code_id);
-        for (int i = unique_codes_alloc; i < next_unique_code_id; i++) {
+        for (uint i = unique_codes_alloc; i < next_unique_code_id; i++) {
             unique_codes[i].kind = MP_CODE_NONE;
         }
         unique_codes_alloc = next_unique_code_id;
     }
 }
 
-void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
+void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
     alloc_unique_codes();
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_locals = n_locals;
-    unique_codes[unique_code_id].n_stack = n_stack;
     unique_codes[unique_code_id].is_generator = is_generator;
+    unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_state = n_locals + n_stack;
     unique_codes[unique_code_id].u_byte.code = code;
     unique_codes[unique_code_id].u_byte.len = len;
 
@@ -238,15 +241,14 @@ void rt_assign_byte_code(int unique_code_id, byte *code, uint len, int n_args, i
 #endif
 }
 
-void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) {
+void rt_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_locals = 0;
-    unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
+    unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_native.fun = fun;
 
     //printf("native code: %d bytes\n", len);
@@ -271,15 +273,14 @@ void rt_assign_native_code(int unique_code_id, void *fun, uint len, int n_args) 
 #endif
 }
 
-void rt_assign_inline_asm_code(int unique_code_id, void *fun, uint len, int n_args) {
+void rt_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_args) {
     alloc_unique_codes();
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_locals = 0;
-    unique_codes[unique_code_id].n_stack = 0;
     unique_codes[unique_code_id].is_generator = false;
+    unique_codes[unique_code_id].n_args = n_args;
+    unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -678,7 +679,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
     mp_obj_t fun;
     switch (c->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->n_args, c->n_locals + c->n_stack, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(c->n_args, c->n_state, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
             fun = rt_make_function_n(c->n_args, c->u_native.fun);
@@ -693,7 +694,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
 
     // check for generator functions and if so wrap in generator object
     if (c->is_generator) {
-        fun = mp_obj_new_gen_wrap(c->n_locals, c->n_stack, fun);
+        fun = mp_obj_new_gen_wrap(fun);
     }
 
     return fun;

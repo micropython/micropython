@@ -16,7 +16,6 @@
 
 typedef struct _mp_obj_gen_wrap_t {
     mp_obj_base_t base;
-    uint n_state;
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
@@ -35,7 +34,7 @@ mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t 
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
     }
 
-    return mp_obj_new_gen_instance(bc_code, self->n_state, n_args, args);
+    return mp_obj_new_gen_instance(bc_code, bc_n_state, n_args, args);
 }
 
 const mp_obj_type_t gen_wrap_type = {
@@ -44,11 +43,9 @@ const mp_obj_type_t gen_wrap_type = {
     .call = gen_wrap_call,
 };
 
-mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun) {
+mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
     mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
     o->base.type = &gen_wrap_type;
-    // we have at least 3 locals so the bc can write back fast[0,1,2] safely; should improve how this is done
-    o->n_state = (n_locals < 3 ? 3 : n_locals) + n_stack;
     o->fun = fun;
     return o;
 }

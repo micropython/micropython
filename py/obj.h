@@ -223,7 +223,7 @@ mp_obj_t mp_obj_new_range(int start, int stop, int step);
 mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step);
 mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code);
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
-mp_obj_t mp_obj_new_gen_wrap(uint n_locals, uint n_stack, mp_obj_t fun);
+mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
