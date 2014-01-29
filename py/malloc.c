@@ -4,6 +4,12 @@
 #include "misc.h"
 #include "mpconfig.h"
 
+#if 0 // print debugging info
+#define DEBUG_printf(args...) printf(args)
+#else // don't print debugging info
+#define DEBUG_printf(args...) (void)0
+#endif
+
 #if MICROPY_MEM_STATS
 static int total_bytes_allocated = 0;
 static int current_bytes_allocated = 0;
@@ -26,6 +32,7 @@ void *m_malloc(int num_bytes) {
     current_bytes_allocated += num_bytes;
     UPDATE_PEAK();
 #endif
+    DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
     return ptr;
 }
 
@@ -43,6 +50,7 @@ void *m_malloc0(int num_bytes) {
     current_bytes_allocated += num_bytes;
     UPDATE_PEAK();
 #endif
+    DEBUG_printf("malloc0 %d : %p\n", num_bytes, ptr);
     return ptr;
 }
 
@@ -67,6 +75,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     current_bytes_allocated += diff;
     UPDATE_PEAK();
 #endif
+    DEBUG_printf("realloc %d, %d : %p\n", old_num_bytes, new_num_bytes, ptr);
     return ptr;
 }
 
@@ -77,6 +86,7 @@ void m_free(void *ptr, int num_bytes) {
 #if MICROPY_MEM_STATS
     current_bytes_allocated -= num_bytes;
 #endif
+    DEBUG_printf("free %p, %d\n", ptr, num_bytes);
 }
 
 int m_get_total_bytes_allocated(void) {

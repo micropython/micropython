@@ -129,6 +129,7 @@ static const char *help_text =
 "Specific commands for the board:\n"
 "    pyb.info()     -- print some general information\n"
 "    pyb.gc()       -- run the garbage collector\n"
+"    pyb.repl_info(<val>) -- enable/disable printing of info after each command\n"
 "    pyb.delay(<n>) -- wait for n milliseconds\n"
 "    pyb.Led(<n>)   -- create Led object for LED n (n=1,2)\n"
 "                      Led methods: on(), off()\n"
@@ -212,6 +213,13 @@ static mp_obj_t pyb_info(void) {
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 
+    return mp_const_none;
+}
+
+static bool repl_display_debugging_info = 0;
+
+static mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
+    repl_display_debugging_info = mp_obj_get_int(o_value);
     return mp_const_none;
 }
 
@@ -429,14 +437,17 @@ void do_repl(void) {
                 if (nlr_push(&nlr) == 0) {
                     rt_call_function_0(module_fun);
                     nlr_pop();
-                    // optional timing
-                    if (0) {
-                        uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
-                        printf("(took %lu ms)\n", ticks);
-                    }
                 } else {
                     // uncaught exception
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+                }
+
+                // display debugging info if wanted
+                if (repl_display_debugging_info) {
+                    uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
+                    printf("took %lu ms\n", ticks);
+                    gc_collect();
+                    pyb_info();
                 }
             }
         }
@@ -643,6 +654,8 @@ soft_reset:
 
         mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
         rt_store_attr(m, MP_QSTR_info, rt_make_function_n(0, pyb_info));
+        rt_store_attr(m, MP_QSTR_gc, (mp_obj_t)&pyb_gc_obj);
+        rt_store_attr(m, qstr_from_str("repl_info"), rt_make_function_n(1, pyb_set_repl_info));
 #if MICROPY_HW_HAS_SDCARD
         rt_store_attr(m, MP_QSTR_sd_test, rt_make_function_n(0, pyb_sd_test));
 #endif
@@ -651,7 +664,6 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
         rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
         rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
-        rt_store_attr(m, MP_QSTR_gc, (mp_obj_t)&pyb_gc_obj);
         rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
 #if MICROPY_HW_HAS_SWITCH
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
