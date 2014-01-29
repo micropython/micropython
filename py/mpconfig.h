@@ -76,6 +76,12 @@
 typedef long long mp_longint_impl_t;
 #endif
 
+// Whether to include information in the byte code to determine source
+// line number (increases RAM usage, but doesn't slow byte code execution)
+#ifndef MICROPY_ENABLE_SOURCE_LINE
+#define MICROPY_ENABLE_SOURCE_LINE (0)
+#endif
+
 // Whether to support float and complex types
 #ifndef MICROPY_ENABLE_FLOAT
 #define MICROPY_ENABLE_FLOAT (0)

@@ -249,6 +249,7 @@ static void emit_bc_set_stack_size(emit_t *emit, int size) {
 
 static void emit_bc_set_source_line(emit_t *emit, int source_line) {
     //printf("source: line %d -> %d  offset %d -> %d\n", emit->last_source_line, source_line, emit->last_source_line_offset, emit->byte_code_offset);
+#if MICROPY_ENABLE_SOURCE_LINE
     if (source_line > emit->last_source_line) {
         uint bytes_to_skip = emit->byte_code_offset - emit->last_source_line_offset;
         uint lines_to_skip = source_line - emit->last_source_line;
@@ -257,6 +258,7 @@ static void emit_bc_set_source_line(emit_t *emit, int source_line) {
         emit->last_source_line_offset = emit->byte_code_offset;
         emit->last_source_line = source_line;
     }
+#endif
 }
 
 static void emit_bc_load_id(emit_t *emit, qstr qstr) {

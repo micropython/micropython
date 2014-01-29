@@ -57,7 +57,11 @@ void mp_obj_print_exception(mp_obj_t exc) {
         if (n > 0) {
             printf("Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
+#if MICROPY_ENABLE_SOURCE_LINE
                 printf("  File \"%s\", line %d, in %s\n", qstr_str(values[i]), (int)values[i + 1], qstr_str(values[i + 2]));
+#else
+                printf("  File \"%s\", in %s\n", qstr_str(values[i]), qstr_str(values[i + 2]));
+#endif
             }
         }
     }
