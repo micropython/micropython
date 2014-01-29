@@ -13,10 +13,10 @@ void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t hea
 void gc_collect(void) {
     uint32_t start = sys_tick_counter;
     gc_collect_start();
-    gc_collect_root((void**)&_ram_start, (&_heap_start - &_ram_start) / 4);
+    gc_collect_root((void**)&_ram_start, ((uint32_t)&_heap_start - (uint32_t)&_ram_start) / sizeof(uint32_t));
     machine_uint_t regs[10];
     gc_helper_get_regs_and_clean_stack(regs, (machine_uint_t)&_heap_end);
-    gc_collect_root((void**)&_heap_end, (&_ram_end - &_heap_end) / 4); // will trace regs since they now live in this function on the stack
+    gc_collect_root((void**)&_heap_end, ((uint32_t)&_ram_end - (uint32_t)&_heap_end) / sizeof(uint32_t)); // will trace regs since they now live in this function on the stack
     gc_collect_end();
     uint32_t ticks = sys_tick_counter - start; // TODO implement a function that does this properly
 

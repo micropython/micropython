@@ -174,15 +174,24 @@ static mp_obj_t pyb_info(void) {
         extern void *_ebss;
         extern void *_estack;
         extern void *_etext;
+        printf("_etext=%p\n", &_etext);
         printf("_sidata=%p\n", &_sidata);
         printf("_sdata=%p\n", &_sdata);
         printf("_edata=%p\n", &_edata);
         printf("_sbss=%p\n", &_sbss);
         printf("_ebss=%p\n", &_ebss);
         printf("_estack=%p\n", &_estack);
-        printf("_etext=%p\n", &_etext);
         printf("_ram_start=%p\n", &_ram_start);
         printf("_heap_start=%p\n", &_heap_start);
+        printf("_heap_end=%p\n", &_heap_end);
+        printf("_ram_end=%p\n", &_ram_end);
+    }
+
+    // qstr info
+    {
+        uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+        qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
+        printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     }
 
     // GC info
