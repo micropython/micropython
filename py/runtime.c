@@ -304,23 +304,23 @@ void rt_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_a
 
 int rt_is_true(mp_obj_t arg) {
     DEBUG_OP_printf("is true %p\n", arg);
-    if (MP_OBJ_IS_SMALL_INT(arg)) {
+    if (arg == mp_const_false) {
+        return 0;
+    } else if (arg == mp_const_true) {
+        return 1;
+    } else if (arg == mp_const_none) {
+        return 0;
+    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         if (MP_OBJ_SMALL_INT_VALUE(arg) == 0) {
             return 0;
         } else {
             return 1;
         }
-    } else if (arg == mp_const_none) {
-        return 0;
-    } else if (arg == mp_const_false) {
-        return 0;
-    } else if (arg == mp_const_true) {
-        return 1;
     } else {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(RT_UNARY_OP_BOOL, arg);
-            if (result != NULL) {
+            if (result != MP_OBJ_NULL) {
                 return result == mp_const_true;
             }
         }

@@ -47,7 +47,7 @@ static mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     switch (op) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
-        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
+        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
         default: return MP_OBJ_NULL; // op not supported for None
     }
 }

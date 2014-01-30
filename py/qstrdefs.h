@@ -13,6 +13,8 @@ Q(__next__)
 Q(__qualname__)
 Q(__repl_print__)
 
+Q(__bool__)
+Q(__len__)
 Q(__getitem__)
 Q(__add__)
 Q(__sub__)

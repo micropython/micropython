@@ -116,6 +116,29 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     return o;
 }
 
+static const qstr unary_op_method_name[] = {
+    [RT_UNARY_OP_BOOL] = MP_QSTR___bool__,
+    [RT_UNARY_OP_LEN] = MP_QSTR___len__,
+    //[RT_UNARY_OP_POSITIVE,
+    //[RT_UNARY_OP_NEGATIVE,
+    //[RT_UNARY_OP_INVERT,
+    [RT_UNARY_OP_NOT] = MP_QSTR_, // not implemented, used to make sure array has full size
+};
+
+static mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
+    mp_obj_class_t *self = self_in;
+    qstr op_name = unary_op_method_name[op];
+    if (op_name == 0) {
+        return MP_OBJ_NULL;
+    }
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, op_name);
+    if (member != MP_OBJ_NULL) {
+        return rt_call_function_1(member, self_in);
+    } else {
+        return MP_OBJ_NULL;
+    }
+}
+
 static const qstr binary_op_method_name[] = {
     [RT_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
@@ -330,6 +353,7 @@ mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals
     o->name = name;
     o->print = class_print;
     o->make_new = class_make_new;
+    o->unary_op = class_unary_op;
     o->binary_op = class_binary_op;
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
