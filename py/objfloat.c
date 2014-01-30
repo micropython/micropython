@@ -47,7 +47,7 @@ static mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 static mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
     mp_obj_float_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_NOT: if (o->value != 0) { return mp_const_true;} else { return mp_const_false; }
+        case RT_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
         case RT_UNARY_OP_POSITIVE: return o_in;
         case RT_UNARY_OP_NEGATIVE: return mp_obj_new_float(-o->value);
         default: return NULL; // op not supported

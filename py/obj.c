@@ -251,9 +251,15 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         len = seq_len;
     } else if (MP_OBJ_IS_TYPE(o_in, &dict_type)) {
         len = mp_obj_dict_len(o_in);
-    } else if (MP_OBJ_IS_TYPE(o_in, &array_type)) {
-        len = mp_obj_array_len(o_in);
     } else {
+        mp_obj_type_t *type = mp_obj_get_type(o_in);
+        if (type->unary_op != NULL) {
+            mp_obj_t result = type->unary_op(RT_UNARY_OP_LEN, o_in);
+            if (result != MP_OBJ_NULL) {
+                return result;
+            }
+        }
+
         return MP_OBJ_NULL;
     }
     return MP_OBJ_NEW_SMALL_INT(len);

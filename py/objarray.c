@@ -189,6 +189,15 @@ static mp_obj_t mp_builtin_bytearray(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bytearray_obj, mp_builtin_bytearray);
 
+static mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
+    mp_obj_array_t *o = o_in;
+    switch (op) {
+        case RT_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
+        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
+        default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
 static mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_array_t *o = lhs;
     switch (op) {
@@ -245,6 +254,7 @@ const mp_obj_type_t array_type = {
     .print = array_print,
     .make_new = array_make_new,
     .getiter = array_iterator_new,
+    .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .store_item = array_store_item,
     .methods = array_type_methods,

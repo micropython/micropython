@@ -36,7 +36,7 @@ static mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
 static mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
     machine_int_t value = ((mp_obj_bool_t*)o_in)->value;
     switch (op) {
-        case RT_UNARY_OP_NOT: if (value) { return mp_const_false; } else { return mp_const_true; }
+        case RT_UNARY_OP_BOOL: return o_in;
         case RT_UNARY_OP_POSITIVE: return MP_OBJ_NEW_SMALL_INT(value);
         case RT_UNARY_OP_NEGATIVE: return MP_OBJ_NEW_SMALL_INT(-value);
         case RT_UNARY_OP_INVERT:

@@ -317,15 +317,20 @@ int rt_is_true(mp_obj_t arg) {
     } else if (arg == mp_const_true) {
         return 1;
     } else {
+        mp_obj_type_t *type = mp_obj_get_type(arg);
+        if (type->unary_op != NULL) {
+            mp_obj_t result = type->unary_op(RT_UNARY_OP_BOOL, arg);
+            if (result != NULL) {
+                return result == mp_const_true;
+            }
+        }
+
         mp_obj_t len = mp_obj_len_maybe(arg);
         if (len != MP_OBJ_NULL) {
             // obj has a length, truth determined if len != 0
             return len != MP_OBJ_NEW_SMALL_INT(0);
         } else {
-            // TODO check for __bool__ method
-            // TODO check floats and complex numbers
-
-            // any other obj is true (TODO is that correct?)
+            // any other obj is true per Python semantics
             return 1;
         }
     }
@@ -476,7 +481,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
     if (MP_OBJ_IS_SMALL_INT(arg)) {
         mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
         switch (op) {
-            case RT_UNARY_OP_NOT: if (val == 0) { return mp_const_true;} else { return mp_const_false; }
+            case RT_UNARY_OP_BOOL: return MP_BOOL(val != 0);
             case RT_UNARY_OP_POSITIVE: break;
             case RT_UNARY_OP_NEGATIVE: val = -val; break;
             case RT_UNARY_OP_INVERT: val = ~val; break;
