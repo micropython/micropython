@@ -325,12 +325,19 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         break;
 
                     case MP_BC_END_FINALLY:
-                        // not implemented
+                        // not fully implemented
                         // if TOS is an exception, reraises the exception (3 values on TOS)
-                        // if TOS is an integer, does something else
                         // if TOS is None, just pops it and continues
+                        // if TOS is an integer, does something else
                         // else error
-                        assert(0);
+                        if (MP_OBJ_IS_TYPE(TOP(), &exception_type)) {
+                            nlr_jump(TOP());
+                        }
+                        if (TOP() == mp_const_none) {
+                            sp--;
+                        } else {
+                            assert(0);
+                        }
                         break;
 
                     case MP_BC_GET_ITER:
@@ -361,6 +368,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         // TODO need to work out how blocks work etc
                         // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
                         assert(exc_sp >= &exc_stack[0]);
+                        assert(currently_in_except_block);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
                         currently_in_except_block = (exc_sp[0] & 1); // restore previous state
@@ -517,6 +525,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
             // exception occurred
 
             // set file and line number that the exception occurred at
+            // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
+            // But consider how to handle nested exceptions.
             if (MP_OBJ_IS_TYPE(nlr.ret_val, &exception_type)) {
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
