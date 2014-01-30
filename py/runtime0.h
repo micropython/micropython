@@ -1,8 +1,11 @@
 typedef enum {
-    RT_UNARY_OP_NOT, // TODO remove this op since it's no longer needed
+    RT_UNARY_OP_BOOL, // __bool__
+    RT_UNARY_OP_LEN, // __len__
     RT_UNARY_OP_POSITIVE,
     RT_UNARY_OP_NEGATIVE,
     RT_UNARY_OP_INVERT,
+    // Used only for CPython-compatible codegeneration
+    RT_UNARY_OP_NOT,
 } rt_unary_op_t;
 
 typedef enum {

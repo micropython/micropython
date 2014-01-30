@@ -125,7 +125,8 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
 static mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
     mp_obj_list_t *self = self_in;
     switch (op) {
-        case RT_UNARY_OP_NOT: if (self->len == 0) { return mp_const_true; } else { return mp_const_false; }
+        case RT_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
+        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
         default: return MP_OBJ_NULL; // op not supported for None
     }
 }

@@ -35,7 +35,7 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_NOT: return MP_BOOL(o->val != 0); // TODO: implements RT_UNARY_OP_BOOL
+        case RT_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
         case RT_UNARY_OP_POSITIVE: return o_in;
         case RT_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
         case RT_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
