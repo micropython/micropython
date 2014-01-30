@@ -151,7 +151,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBD:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 
-all: $(BUILD) $(BUILD)/flash.dfu
+all: $(BUILD)/flash.dfu
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
 	$(ECHO) "Create $@"

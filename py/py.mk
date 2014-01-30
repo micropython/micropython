@@ -101,8 +101,8 @@ $(PY_BUILD)/emitnthumb.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
-$(PY_BUILD)gc.o: CFLAGS += -O3
+$(PY_BUILD)/gc.o: CFLAGS += -O3
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
-$(PY_BUILD)vm.o: CFLAGS += -O3
+$(PY_BUILD)/vm.o: CFLAGS += -O3
 
