@@ -59,8 +59,8 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
         free(ptr);
         return NULL;
     }
-    ptr = realloc(ptr, new_num_bytes);
-    if (ptr == NULL) {
+    void *new_ptr = realloc(ptr, new_num_bytes);
+    if (new_ptr == NULL) {
         printf("could not allocate memory, reallocating %d bytes\n", new_num_bytes);
         return NULL;
     }
@@ -75,8 +75,8 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     current_bytes_allocated += diff;
     UPDATE_PEAK();
 #endif
-    DEBUG_printf("realloc %d, %d : %p\n", old_num_bytes, new_num_bytes, ptr);
-    return ptr;
+    DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
+    return new_ptr;
 }
 
 void m_free(void *ptr, int num_bytes) {
