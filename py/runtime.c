@@ -739,6 +739,8 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
 
     if (MP_OBJ_IS_SMALL_INT(fun_in)) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
+    } else if(MP_OBJ_IS_STR(fun_in)) {
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'str' object is not callable"));
     } else {
         mp_obj_base_t *fun = fun_in;
         if (fun->type->call != NULL) {
