@@ -737,17 +737,14 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
 
     DEBUG_OP_printf("calling function %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
 
-    if (MP_OBJ_IS_SMALL_INT(fun_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'int' object is not callable"));
-    } else if(MP_OBJ_IS_STR(fun_in)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "'str' object is not callable"));
+    // get the type
+    mp_obj_type_t *type = mp_obj_get_type(fun_in);
+
+    // do the call
+    if (type->call != NULL) {
+        return type->call(fun_in, n_args, n_kw, args);
     } else {
-        mp_obj_base_t *fun = fun_in;
-        if (fun->type->call != NULL) {
-            return fun->type->call(fun_in, n_args, n_kw, args);
-        } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", fun->type->name));
-        }
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", type->name));
     }
 }
 
