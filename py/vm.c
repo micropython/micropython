@@ -13,6 +13,13 @@
 #include "bc0.h"
 #include "bc.h"
 
+// Value stack grows up (this makes it incompatible with native C stack, but
+// makes sure that arguments to functions are in natural order arg1..argN
+// (Python semantics mandates left-to-right evaluation order, including for
+// function arguments). Stack pointer is pre-incremented and points at the
+// top element.
+// Exception stack also grows up, top element is also pointed at.
+
 // Exception stack entry
 typedef struct _mp_exc_stack {
     const byte *handler;
@@ -22,9 +29,6 @@ typedef struct _mp_exc_stack {
     // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
     byte opcode;
 } mp_exc_stack;
-
-// (value) stack grows down (to be compatible with native code when passing pointers to the stack), top element is pointed to
-// exception stack grows up, top element is pointed to
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
