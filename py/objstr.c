@@ -413,61 +413,82 @@ mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[1]));
     assert(MP_OBJ_IS_STR(args[2]));
 
-    int max_rep = 0;
+    machine_int_t max_rep = 0;
     if (n_args == 4) {
 	assert(MP_OBJ_IS_SMALL_INT(args[3]));
 	max_rep = MP_OBJ_SMALL_INT_VALUE(args[3]);
 	if (max_rep == 0) {
-	    return(args[0]);
-	}
-	else if (max_rep < 0) {
+	    return args[0];
+	} else if (max_rep < 0) {
 	    max_rep = 0;
 	}
     }
-    //if max_rep is still 0 by this point we will need to do all possible replacements
+
+    // if max_rep is still 0 by this point we will need to do all possible replacements
 
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], old, old_len);
     GET_STR_DATA_LEN(args[2], new, new_len);
+
+    // old won't exist in str if it's longer, so nothing to replace
     if (old_len > str_len) {
-	return(args[0]);
+	return args[0];
     }
 
-    size_t required_len = 0;
-    const byte *old_occurrence;
-    const byte *offset_ptr = str;
-    size_t offset_num = 0;
-    while((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len)) != NULL){
-	required_len += old_occurrence - offset_ptr;
-	required_len += new_len;
-	offset_ptr = old_occurrence + old_len;
-	offset_num = offset_ptr - str;
-    }
-    required_len += str_len - offset_num;
-    byte *data;
-    mp_obj_t replaced_str = mp_obj_str_builder_start(mp_obj_get_type(args[0]), required_len, &data);
+    // data for the replaced string
+    byte *data = NULL;
+    mp_obj_t replaced_str = MP_OBJ_NULL;
 
-    size_t replaced_str_index = 0;
-    int replacements_done = 0;
-    offset_ptr = str;
-    offset_num = 0;
-    while((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len)) != NULL){
-	//copy from just after end of last occurrence of to-be-replaced string to right before start of next occurrence
-    	memcpy(data + replaced_str_index, offset_ptr, old_occurrence - offset_ptr);
-    	replaced_str_index += old_occurrence - offset_ptr;
-	//copy the replacement string
-    	memcpy(data + replaced_str_index, new, new_len);
-    	replaced_str_index += new_len;
-	offset_ptr = old_occurrence + old_len;
-	offset_num = offset_ptr - str;
+    // do 2 passes over the string:
+    //   first pass computes the required length of the replaced string
+    //   second pass does the replacements
+    for (;;) {
+        machine_uint_t replaced_str_index = 0;
+        machine_uint_t num_replacements_done = 0;
+        const byte *old_occurrence;
+        const byte *offset_ptr = str;
+        machine_uint_t offset_num = 0;
+        while ((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len)) != NULL) {
+            // copy from just after end of last occurrence of to-be-replaced string to right before start of next occurrence
+            if (data != NULL) {
+                memcpy(data + replaced_str_index, offset_ptr, old_occurrence - offset_ptr);
+            }
+            replaced_str_index += old_occurrence - offset_ptr;
+            // copy the replacement string
+            if (data != NULL) {
+                memcpy(data + replaced_str_index, new, new_len);
+            }
+            replaced_str_index += new_len;
+            offset_ptr = old_occurrence + old_len;
+            offset_num = offset_ptr - str;
 
-	replacements_done++;
-	if (max_rep != 0 && replacements_done == max_rep){
-	    break;
-	}
+            num_replacements_done++;
+            if (max_rep != 0 && num_replacements_done == max_rep){
+                break;
+            }
+        }
+
+        // copy from just after end of last occurrence of to-be-replaced string to end of old string
+        if (data != NULL) {
+            memcpy(data + replaced_str_index, offset_ptr, str_len - offset_num);
+        }
+        replaced_str_index += str_len - offset_num;
+
+        if (data == NULL) {
+            // first pass
+            if (num_replacements_done == 0) {
+                // no substr found, return original string
+                return args[0];
+            } else {
+                // substr found, allocate new string
+                replaced_str = mp_obj_str_builder_start(mp_obj_get_type(args[0]), replaced_str_index, &data);
+            }
+        } else {
+            // second pass, we are done
+            break;
+        }
     }
-    //copy from just after end of last occurrence of to-be-replaced string to end of old string
-    memcpy(data + replaced_str_index, offset_ptr, str_len - offset_num);
+
     return mp_obj_str_builder_end(replaced_str);
 }
 
