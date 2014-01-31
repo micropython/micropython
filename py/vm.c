@@ -13,6 +13,16 @@
 #include "bc0.h"
 #include "bc.h"
 
+// Exception stack entry
+typedef struct _mp_exc_stack {
+    const byte *handler;
+    // bit 0 is saved currently_in_except_block value
+    machine_uint_t val_sp;
+    // We might only have 2 interesting cases here: SETUP_EXCEPT & SETUP_FINALLY,
+    // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
+    byte opcode;
+} mp_exc_stack;
+
 // (value) stack grows down (to be compatible with native code when passing pointers to the stack), top element is pointed to
 // exception stack grows up, top element is pointed to
 
@@ -83,8 +93,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
     nlr_buf_t nlr;
 
     volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
-    machine_uint_t exc_stack[8]; // on the exception stack we store (ip, sp | X) for each block, X = previous value of currently_in_except_block
-    machine_uint_t *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
+    mp_exc_stack exc_stack[4];
+    mp_exc_stack *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
@@ -318,9 +328,12 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
 
                     // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                     case MP_BC_SETUP_EXCEPT:
+                    case MP_BC_SETUP_FINALLY:
                         DECODE_ULABEL; // except labels are always forward
-                        *++exc_sp = (machine_uint_t)ip + unum;
-                        *++exc_sp = (((machine_uint_t)sp) | currently_in_except_block);
+                        ++exc_sp;
+                        exc_sp->opcode = op;
+                        exc_sp->handler = ip + unum;
+                        exc_sp->val_sp = (((machine_uint_t)sp) | currently_in_except_block);
                         currently_in_except_block = 0; // in a try block now
                         break;
 
@@ -359,8 +372,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                     case MP_BC_POP_BLOCK:
                         // we are exiting an exception handler, so pop the last one of the exception-stack
                         assert(exc_sp >= &exc_stack[0]);
-                        currently_in_except_block = (exc_sp[0] & 1); // restore previous state
-                        exc_sp -= 2; // pop back to previous exception handler
+                        currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                        exc_sp--; // pop back to previous exception handler
                         break;
 
                     // matched against: SETUP_EXCEPT
@@ -371,8 +384,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         assert(currently_in_except_block);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
-                        currently_in_except_block = (exc_sp[0] & 1); // restore previous state
-                        exc_sp -= 2; // pop back to previous exception handler
+                        currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                        exc_sp--; // pop back to previous exception handler
                         //sp -= 3; // pop 3 exception values
                         break;
 
@@ -550,8 +563,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                 // at the moment we are just raising the very last exception (the one that caused the nested exception)
 
                 // move up to previous exception handler
-                currently_in_except_block = (exc_sp[0] & 1); // restore previous state
-                exc_sp -= 2; // pop back to previous exception handler
+                currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                exc_sp--; // pop back to previous exception handler
             }
 
             if (exc_sp >= &exc_stack[0]) {
@@ -559,8 +572,8 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                 currently_in_except_block = 1;
 
                 // catch exception and pass to byte code
-                sp = (mp_obj_t*)(exc_sp[0] & (~((machine_uint_t)1)));
-                ip = (const byte*)(exc_sp[-1]);
+                sp = (mp_obj_t*)(exc_sp->val_sp & (~((machine_uint_t)1)));
+                ip = exc_sp->handler;
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
