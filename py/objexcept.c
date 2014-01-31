@@ -12,8 +12,8 @@
 #include "objtuple.h"
 
 // This is unified class for C-level and Python-level exceptions
-// Python-level exception have empty ->msg and all arguments are in
-// args tuple. C-level excepttion likely have ->msg and args is empty.
+// Python-level exceptions have empty ->msg and all arguments are in
+// args tuple. C-level exceptions likely have ->msg set, and args is empty.
 typedef struct mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now

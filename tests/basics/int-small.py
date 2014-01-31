@@ -1,4 +1,4 @@
-# This test small int range for 32-bit machine
+# This tests small int range for 32-bit machine
 
 a = 0x3fffff
 print(a)
