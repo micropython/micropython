@@ -1,0 +1,8 @@
+print("".replace("a", "b"))
+print("aaa".replace("a", "b", 0))
+print("aaa".replace("a", "b", -5))
+print("asdfasdf".replace("a", "b"))
+print("aabbaabbaabbaa".replace("aa", "cc", 3))
+print("a".replace("aa", "bb"))
+print("testingtesting".replace("ing", ""))
+print("testINGtesting".replace("ing", "ING!"))
