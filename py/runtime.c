@@ -616,10 +616,12 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             }
             return mp_obj_new_int(lhs_val);
+#if MICROPY_ENABLE_FLOAT
         } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
         } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
             return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
+#endif
         }
     }
 
