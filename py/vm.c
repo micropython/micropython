@@ -46,7 +46,7 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, uint n_state) {
+mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state) {
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -56,9 +56,11 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     mp_obj_t *sp = &state[0] - 1;
 
     // init args
-    for (int i = 0; i < n_args; i++) {
-        assert(i < 8);
+    for (uint i = 0; i < n_args; i++) {
         state[n_state - 1 - i] = args[i];
+    }
+    for (uint i = 0; i < n_args2; i++) {
+        state[n_state - 1 - n_args - i] = args2[i];
     }
 
     const byte *ip = code;
@@ -71,7 +73,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     {
         for (uint n_local = *ip++; n_local > 0; n_local--) {
             uint local_num = *ip++;
-            if (local_num < n_args) {
+            if (local_num < n_args + n_args2) {
                 state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
             } else {
                 state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);

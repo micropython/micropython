@@ -154,26 +154,13 @@ mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *a
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
     }
 
-    mp_obj_t full_args[n_args];
-    if (n_args < self->n_args) {
-        memcpy(full_args, args, n_args * sizeof(*args));
-        int use_def_args = self->n_args - n_args;
-        memcpy(full_args + n_args, self->def_args + self->n_def_args - use_def_args, use_def_args * sizeof(*args));
-        args = full_args;
-        n_args = self->n_args;
-    }
-
-    // optimisation: allow the compiler to optimise this tail call for
-    // the common case when the globals don't need to be changed
+    uint use_def_args = self->n_args - n_args;
     mp_map_t *old_globals = rt_globals_get();
-    if (self->globals == old_globals) {
-        return mp_execute_byte_code(self->bytecode, args, n_args, self->n_state);
-    } else {
-        rt_globals_set(self->globals);
-        mp_obj_t result = mp_execute_byte_code(self->bytecode, args, n_args, self->n_state);
-        rt_globals_set(old_globals);
-        return result;
-    }
+    rt_globals_set(self->globals);
+    mp_obj_t result = mp_execute_byte_code(self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state);
+    rt_globals_set(old_globals);
+
+    return result;
 }
 
 const mp_obj_type_t fun_bc_type = {

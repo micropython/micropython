@@ -107,6 +107,22 @@ static void emit_write_byte_code_byte_byte(emit_t* emit, byte b1, uint b2) {
     c[1] = b2;
 }
 
+static void emit_write_byte_code_uint(emit_t* emit, uint num) {
+    if (num <= 127) { // fits in 0x7f
+        // fit argument in single byte
+        byte* c = emit_get_cur_to_write_byte_code(emit, 1);
+        c[0] = num;
+    } else if (num <= 16383) { // fits in 0x3fff
+        // fit argument in two bytes
+        byte* c = emit_get_cur_to_write_byte_code(emit, 2);
+        c[0] = (num >> 8) | 0x80;
+        c[1] = num;
+    } else {
+        // larger numbers not implemented/supported
+        assert(0);
+    }
+}
+
 // integers (for small ints) are stored as 24 bits, in excess
 static void emit_write_byte_code_byte_int(emit_t* emit, byte b1, machine_int_t num) {
     num += 0x800000;
@@ -118,26 +134,21 @@ static void emit_write_byte_code_byte_int(emit_t* emit, byte b1, machine_int_t n
     c[3] = num >> 16;
 }
 
-static void emit_write_byte_code_byte_uint(emit_t* emit, byte b1, uint num) {
-    if (num <= 127) { // fits in 0x7f
-        // fit argument in single byte
-        byte* c = emit_get_cur_to_write_byte_code(emit, 2);
-        c[0] = b1;
-        c[1] = num;
-    } else if (num <= 16383) { // fits in 0x3fff
-        // fit argument in two bytes
-        byte* c = emit_get_cur_to_write_byte_code(emit, 3);
-        c[0] = b1;
-        c[1] = (num >> 8) | 0x80;
-        c[2] = num;
-    } else {
-        // larger numbers not implemented/supported
-        assert(0);
-    }
+static void emit_write_byte_code_byte_uint(emit_t* emit, byte b, uint num) {
+    emit_write_byte_code_byte(emit, b);
+    emit_write_byte_code_uint(emit, num);
 }
 
-static void emit_write_byte_code_byte_qstr(emit_t* emit, byte b1, qstr qstr) {
-    emit_write_byte_code_byte_uint(emit, b1, qstr);
+/* currently unused
+static void emit_write_byte_code_byte_uint_uint(emit_t* emit, byte b, uint num1, uint num2) {
+    emit_write_byte_code_byte(emit, b);
+    emit_write_byte_code_byte_uint(emit, num1);
+    emit_write_byte_code_byte_uint(emit, num2);
+}
+*/
+
+static void emit_write_byte_code_byte_qstr(emit_t* emit, byte b, qstr qstr) {
+    emit_write_byte_code_byte_uint(emit, b, qstr);
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
@@ -665,13 +676,13 @@ static void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
 
 static void emit_bc_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     assert(n_dict_params == 0);
-    if (n_default_params != 0) {
+    if (n_default_params == 0) {
+        emit_pre(emit, 1);
+        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
+    } else {
         emit_bc_build_tuple(emit, n_default_params);
         emit_pre(emit, 0);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
-    } else {
-        emit_pre(emit, 1);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
     }
 }
 
