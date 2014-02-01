@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
 #include "map.h"
 #include "runtime.h"
 #include "bc.h"
@@ -136,19 +137,30 @@ mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_map_t *globals;      // the context within which this function was defined
-    int n_args;             // number of arguments this function takes
+    short n_args;           // number of arguments this function takes
+    short n_def_args;       // number of default arguments
     uint n_state;           // total state size for the executing function (incl args, locals, stack)
     const byte *bytecode;   // bytecode for the function
+    mp_obj_t def_args[];    // values of default args, if any
 } mp_obj_fun_bc_t;
 
 mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
-    if (n_args != self->n_args) {
+    if (n_args < self->n_args - self->n_def_args || n_args > self->n_args) {
         nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
     }
     if (n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+    }
+
+    mp_obj_t full_args[n_args];
+    if (n_args < self->n_args) {
+        memcpy(full_args, args, n_args * sizeof(*args));
+        int use_def_args = self->n_args - n_args;
+        memcpy(full_args + n_args, self->def_args + self->n_def_args - use_def_args, use_def_args * sizeof(*args));
+        args = full_args;
+        n_args = self->n_args;
     }
 
     // optimisation: allow the compiler to optimise this tail call for
@@ -170,13 +182,22 @@ const mp_obj_type_t fun_bc_type = {
     .call = fun_bc_call,
 };
 
-mp_obj_t mp_obj_new_fun_bc(int n_args, uint n_state, const byte *code) {
-    mp_obj_fun_bc_t *o = m_new_obj(mp_obj_fun_bc_t);
+mp_obj_t mp_obj_new_fun_bc(int n_args, mp_obj_t def_args_in, uint n_state, const byte *code) {
+    int n_def_args = 0;
+    mp_obj_tuple_t *def_args = def_args_in;
+    if (def_args != MP_OBJ_NULL) {
+        n_def_args = def_args->len;
+    }
+    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_def_args);
     o->base.type = &fun_bc_type;
     o->globals = rt_globals_get();
     o->n_args = n_args;
+    o->n_def_args = n_def_args;
     o->n_state = n_state;
     o->bytecode = code;
+    if (def_args != MP_OBJ_NULL) {
+        memcpy(o->def_args, def_args->items, n_def_args * sizeof(*o->def_args));
+    }
     return o;
 }
 
