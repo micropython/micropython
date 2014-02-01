@@ -456,18 +456,21 @@ static void emit_cpy_setup_loop(emit_t *emit, int label) {
     }
 }
 
-static void emit_cpy_break_loop(emit_t *emit, int label) {
+static void emit_cpy_break_loop(emit_t *emit, int label, int except_depth) {
     emit_pre(emit, 0, 1);
     if (emit->pass == PASS_3) {
-        printf("BREAK_LOOP\n"); // CPython doesn't have label
-        //printf("BREAK_LOOP %d\n", emit->label_offsets[label]);
+        printf("BREAK_LOOP\n");
     }
 }
 
-static void emit_cpy_continue_loop(emit_t *emit, int label) {
-    emit_pre(emit, 0, 3);
-    if (emit->pass == PASS_3) {
-        printf("CONTINUE_LOOP %d\n", emit->label_offsets[label]);
+static void emit_cpy_continue_loop(emit_t *emit, int label, int except_depth) {
+    if (except_depth == 0) {
+        emit_cpy_jump(emit, label);
+    } else {
+        emit_pre(emit, 0, 3);
+        if (emit->pass == PASS_3) {
+            printf("CONTINUE_LOOP %d\n", emit->label_offsets[label]);
+        }
     }
 }
 
