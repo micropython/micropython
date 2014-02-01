@@ -63,8 +63,9 @@
 #define MP_BC_POP_EXCEPT         (0x55)
 #define MP_BC_UNWIND_JUMP        (0x56) // rel byte code offset, 16-bit signed, in excess; then a byte
 
-#define MP_BC_UNARY_OP           (0x60) // byte
-#define MP_BC_BINARY_OP          (0x61) // byte
+#define MP_BC_NOT                (0x60)
+#define MP_BC_UNARY_OP           (0x61) // byte
+#define MP_BC_BINARY_OP          (0x62) // byte
 
 #define MP_BC_BUILD_TUPLE        (0x70) // uint
 #define MP_BC_BUILD_LIST         (0x71) // uint

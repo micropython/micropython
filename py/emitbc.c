@@ -600,13 +600,32 @@ static void emit_bc_pop_except(emit_t *emit) {
 }
 
 static void emit_bc_unary_op(emit_t *emit, rt_unary_op_t op) {
-    emit_pre(emit, 0);
-    emit_write_byte_code_byte_byte(emit, MP_BC_UNARY_OP, op);
+    if (op == RT_UNARY_OP_NOT) {
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte_byte(emit, MP_BC_UNARY_OP, RT_UNARY_OP_BOOL);
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte(emit, MP_BC_NOT);
+    } else {
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte_byte(emit, MP_BC_UNARY_OP, op);
+    }
 }
 
 static void emit_bc_binary_op(emit_t *emit, rt_binary_op_t op) {
+    bool invert = false;
+    if (op == RT_BINARY_OP_NOT_IN) {
+        invert = true;
+        op = RT_BINARY_OP_IN;
+    } else if (op == RT_BINARY_OP_IS_NOT) {
+        invert = true;
+        op = RT_BINARY_OP_IS;
+    }
     emit_pre(emit, -1);
     emit_write_byte_code_byte_byte(emit, MP_BC_BINARY_OP, op);
+    if (invert) {
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte(emit, MP_BC_NOT);
+    }
 }
 
 static void emit_bc_build_tuple(emit_t *emit, int n_args) {

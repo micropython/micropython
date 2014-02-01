@@ -1466,9 +1466,9 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     compile_node(comp, pn_var);
     compile_node(comp, pn_end);
     if (MP_PARSE_NODE_LEAF_ARG(pn_step) >= 0) {
-        EMIT_ARG(binary_op, RT_COMPARE_OP_LESS);
+        EMIT_ARG(binary_op, RT_BINARY_OP_LESS);
     } else {
-        EMIT_ARG(binary_op, RT_COMPARE_OP_MORE);
+        EMIT_ARG(binary_op, RT_BINARY_OP_MORE);
     }
     EMIT_ARG(pop_jump_if_true, top_label);
 
@@ -1605,7 +1605,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             }
             EMIT(dup_top);
             compile_node(comp, pns_exception_expr);
-            EMIT_ARG(binary_op, RT_COMPARE_OP_EXCEPTION_MATCH);
+            EMIT_ARG(binary_op, RT_BINARY_OP_EXCEPTION_MATCH);
             EMIT_ARG(pop_jump_if_false, end_finally_label);
         }
 
@@ -1912,21 +1912,7 @@ void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_not_test_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
-#if MICROPY_EMIT_CPYTHON
     EMIT_ARG(unary_op, RT_UNARY_OP_NOT);
-#else
-    // eliminate use of NOT byte code
-    int l_load_false = comp_next_label(comp);
-    int l_done = comp_next_label(comp);
-    int stack_size = EMIT(get_stack_size);
-    EMIT_ARG(pop_jump_if_true, l_load_false);
-    EMIT_ARG(load_const_tok, MP_TOKEN_KW_TRUE);
-    EMIT_ARG(jump, l_done);
-    EMIT_ARG(label_assign, l_load_false);
-    EMIT_ARG(load_const_tok, MP_TOKEN_KW_FALSE);
-    EMIT_ARG(label_assign, l_done);
-    EMIT_ARG(set_stack_size, stack_size); // force stack size since it counts 1 pop and 2 pushes statically, but really it's 1 pop and 1 push dynamically
-#endif
 }
 
 void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1947,26 +1933,26 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
         if (MP_PARSE_NODE_IS_TOKEN(pns->nodes[i])) {
             rt_binary_op_t op;
             switch (MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])) {
-                case MP_TOKEN_OP_LESS: op = RT_COMPARE_OP_LESS; break;
-                case MP_TOKEN_OP_MORE: op = RT_COMPARE_OP_MORE; break;
-                case MP_TOKEN_OP_DBL_EQUAL: op = RT_COMPARE_OP_EQUAL; break;
-                case MP_TOKEN_OP_LESS_EQUAL: op = RT_COMPARE_OP_LESS_EQUAL; break;
-                case MP_TOKEN_OP_MORE_EQUAL: op = RT_COMPARE_OP_MORE_EQUAL; break;
-                case MP_TOKEN_OP_NOT_EQUAL: op = RT_COMPARE_OP_NOT_EQUAL; break;
-                case MP_TOKEN_KW_IN: op = RT_COMPARE_OP_IN; break;
-                default: assert(0); op = RT_COMPARE_OP_LESS; // shouldn't happen
+                case MP_TOKEN_OP_LESS: op = RT_BINARY_OP_LESS; break;
+                case MP_TOKEN_OP_MORE: op = RT_BINARY_OP_MORE; break;
+                case MP_TOKEN_OP_DBL_EQUAL: op = RT_BINARY_OP_EQUAL; break;
+                case MP_TOKEN_OP_LESS_EQUAL: op = RT_BINARY_OP_LESS_EQUAL; break;
+                case MP_TOKEN_OP_MORE_EQUAL: op = RT_BINARY_OP_MORE_EQUAL; break;
+                case MP_TOKEN_OP_NOT_EQUAL: op = RT_BINARY_OP_NOT_EQUAL; break;
+                case MP_TOKEN_KW_IN: op = RT_BINARY_OP_IN; break;
+                default: assert(0); op = RT_BINARY_OP_LESS; // shouldn't happen
             }
             EMIT_ARG(binary_op, op);
         } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])) {
             mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[i];
             int kind = MP_PARSE_NODE_STRUCT_KIND(pns2);
             if (kind == PN_comp_op_not_in) {
-                EMIT_ARG(binary_op, RT_COMPARE_OP_NOT_IN);
+                EMIT_ARG(binary_op, RT_BINARY_OP_NOT_IN);
             } else if (kind == PN_comp_op_is) {
                 if (MP_PARSE_NODE_IS_NULL(pns2->nodes[0])) {
-                    EMIT_ARG(binary_op, RT_COMPARE_OP_IS);
+                    EMIT_ARG(binary_op, RT_BINARY_OP_IS);
                 } else {
-                    EMIT_ARG(binary_op, RT_COMPARE_OP_IS_NOT);
+                    EMIT_ARG(binary_op, RT_BINARY_OP_IS_NOT);
                 }
             } else {
                 // shouldn't happen

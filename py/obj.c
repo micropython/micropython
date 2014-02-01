@@ -116,7 +116,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
                 // If o2 is long int, dispatch to its virtual methods
                 mp_obj_base_t *o = o2;
                 if (o->type->binary_op != NULL) {
-                    mp_obj_t r = o->type->binary_op(RT_COMPARE_OP_EQUAL, o2, o1);
+                    mp_obj_t r = o->type->binary_op(RT_BINARY_OP_EQUAL, o2, o1);
                     return r == mp_const_true ? true : false;
                 }
             }
@@ -127,7 +127,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     } else {
         mp_obj_base_t *o = o1;
         if (o->type->binary_op != NULL) {
-            mp_obj_t r = o->type->binary_op(RT_COMPARE_OP_EQUAL, o1, o2);
+            mp_obj_t r = o->type->binary_op(RT_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 return r == mp_const_true ? true : false;
             }

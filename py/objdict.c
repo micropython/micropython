@@ -65,11 +65,10 @@ static mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return elem->value;
             }
         }
-        case RT_COMPARE_OP_IN:
-        case RT_COMPARE_OP_NOT_IN:
+        case RT_BINARY_OP_IN:
         {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
-            return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (elem == NULL));
+            return MP_BOOL(elem != NULL);
         }
         default:
             // op not supported
@@ -380,7 +379,7 @@ static mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     /* only supported for the 'keys' kind until sets and dicts are refactored */
     mp_obj_dict_view_t *o = lhs_in;
     if (o->kind != MP_DICT_VIEW_KEYS) return NULL;
-    if (op != RT_COMPARE_OP_IN && op != RT_COMPARE_OP_NOT_IN) return NULL;
+    if (op != RT_BINARY_OP_IN) return NULL;
     return dict_binary_op(op, o->dict, rhs_in);
 }
 

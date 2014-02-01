@@ -263,12 +263,14 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("POP_EXCEPT");
                 break;
 
-                /*
+            case MP_BC_NOT:
+                printf("NOT");
+                break;
+
             case MP_BC_UNARY_OP:
                 unum = *ip++;
-                *sp = rt_unary_op(unum, *sp);
+                printf("UNARY_OP " UINT_FMT, unum);
                 break;
-                */
 
             case MP_BC_BINARY_OP:
                 unum = *ip++;

@@ -545,10 +545,10 @@ static void emit_cpy_unary_op(emit_t *emit, rt_unary_op_t op) {
     emit_pre(emit, 0, 1);
     if (emit->pass == PASS_3) {
         switch (op) {
-            case RT_UNARY_OP_NOT: printf("UNARY_NOT\n"); break;
             case RT_UNARY_OP_POSITIVE: printf("UNARY_POSITIVE\n"); break;
             case RT_UNARY_OP_NEGATIVE: printf("UNARY_NEGATIVE\n"); break;
             case RT_UNARY_OP_INVERT: printf("UNARY_INVERT\n"); break;
+            case RT_UNARY_OP_NOT: printf("UNARY_NOT\n"); break;
             default: assert(0);
         }
     }
@@ -589,17 +589,17 @@ static void emit_cpy_binary_op(emit_t *emit, rt_binary_op_t op) {
             case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: printf("INPLACE_TRUE_DIVIDE\n"); break;
             case RT_BINARY_OP_INPLACE_MODULO: printf("INPLACE_MODULO\n"); break;
             case RT_BINARY_OP_INPLACE_POWER: printf("INPLACE_POWER\n"); break;
-            case RT_COMPARE_OP_LESS: printf("COMPARE_OP <\n"); break;
-            case RT_COMPARE_OP_MORE: printf("COMPARE_OP >\n"); break;
-            case RT_COMPARE_OP_EQUAL: printf("COMPARE_OP ==\n"); break;
-            case RT_COMPARE_OP_LESS_EQUAL: printf("COMPARE_OP <=\n"); break;
-            case RT_COMPARE_OP_MORE_EQUAL: printf("COMPARE_OP >=\n"); break;
-            case RT_COMPARE_OP_NOT_EQUAL: printf("COMPARE_OP !=\n"); break;
-            case RT_COMPARE_OP_IN: printf("COMPARE_OP in\n"); break;
-            case RT_COMPARE_OP_NOT_IN: printf("COMPARE_OP not in\n"); break;
-            case RT_COMPARE_OP_IS: printf("COMPARE_OP is\n"); break;
-            case RT_COMPARE_OP_IS_NOT: printf("COMPARE_OP is not\n"); break;
-            case RT_COMPARE_OP_EXCEPTION_MATCH: printf("COMPARE_OP exception match\n"); break;
+            case RT_BINARY_OP_LESS: printf("COMPARE_OP <\n"); break;
+            case RT_BINARY_OP_MORE: printf("COMPARE_OP >\n"); break;
+            case RT_BINARY_OP_EQUAL: printf("COMPARE_OP ==\n"); break;
+            case RT_BINARY_OP_LESS_EQUAL: printf("COMPARE_OP <=\n"); break;
+            case RT_BINARY_OP_MORE_EQUAL: printf("COMPARE_OP >=\n"); break;
+            case RT_BINARY_OP_NOT_EQUAL: printf("COMPARE_OP !=\n"); break;
+            case RT_BINARY_OP_IN: printf("COMPARE_OP in\n"); break;
+            case RT_BINARY_OP_IS: printf("COMPARE_OP is\n"); break;
+            case RT_BINARY_OP_EXCEPTION_MATCH: printf("COMPARE_OP exception match\n"); break;
+            case RT_BINARY_OP_NOT_IN: printf("COMPARE_OP not in\n"); break;
+            case RT_BINARY_OP_IS_NOT: printf("COMPARE_OP is not\n"); break;
             default: assert(0);
         }
     }

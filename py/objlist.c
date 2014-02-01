@@ -67,7 +67,7 @@ static mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     return NULL;
 }
 
-// Don't pass RT_COMPARE_OP_NOT_EQUAL here
+// Don't pass RT_BINARY_OP_NOT_EQUAL here
 static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &list_type));
     if (!MP_OBJ_IS_TYPE(another_in, &list_type)) {
@@ -75,19 +75,19 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     }
     mp_obj_list_t *self = self_in;
     mp_obj_list_t *another = another_in;
-    if (op == RT_COMPARE_OP_EQUAL && self->len != another->len) {
+    if (op == RT_BINARY_OP_EQUAL && self->len != another->len) {
         return false;
     }
 
     // Let's deal only with > & >=
-    if (op == RT_COMPARE_OP_LESS || op == RT_COMPARE_OP_LESS_EQUAL) {
+    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
         mp_obj_t t = self;
         self = another;
         another = t;
-        if (op == RT_COMPARE_OP_LESS) {
-            op = RT_COMPARE_OP_MORE;
+        if (op == RT_BINARY_OP_LESS) {
+            op = RT_BINARY_OP_MORE;
         } else {
-            op = RT_COMPARE_OP_MORE_EQUAL;
+            op = RT_BINARY_OP_MORE_EQUAL;
         }
     }
 
@@ -96,7 +96,7 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     bool rel_status;
     for (int i = 0; i < len; i++) {
         eq_status = mp_obj_equal(self->items[i], another->items[i]);
-        if (op == RT_COMPARE_OP_EQUAL && !eq_status) {
+        if (op == RT_BINARY_OP_EQUAL && !eq_status) {
             return false;
         }
         rel_status = (rt_binary_op(op, self->items[i], another->items[i]) == mp_const_true);
@@ -113,7 +113,7 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
                 // ... then longer list length wins (we deal only with >)
                 return false;
             }
-        } else if (op == RT_COMPARE_OP_MORE) {
+        } else if (op == RT_BINARY_OP_MORE) {
             // Otherwise, if we have strict relation, equality means failure
             return false;
         }
@@ -169,14 +169,14 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return s;
         }
-        case RT_COMPARE_OP_EQUAL:
-        case RT_COMPARE_OP_LESS:
-        case RT_COMPARE_OP_LESS_EQUAL:
-        case RT_COMPARE_OP_MORE:
-        case RT_COMPARE_OP_MORE_EQUAL:
+        case RT_BINARY_OP_EQUAL:
+        case RT_BINARY_OP_LESS:
+        case RT_BINARY_OP_LESS_EQUAL:
+        case RT_BINARY_OP_MORE:
+        case RT_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(list_cmp_helper(op, lhs, rhs));
-        case RT_COMPARE_OP_NOT_EQUAL:
-            return MP_BOOL(!list_cmp_helper(RT_COMPARE_OP_EQUAL, lhs, rhs));
+        case RT_BINARY_OP_NOT_EQUAL:
+            return MP_BOOL(!list_cmp_helper(RT_BINARY_OP_EQUAL, lhs, rhs));
 
         default:
             // op not supported
@@ -237,7 +237,7 @@ static mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
 
 // TODO make this conform to CPython's definition of sort
 static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool reversed) {
-    int op = reversed ? RT_COMPARE_OP_MORE : RT_COMPARE_OP_LESS;
+    int op = reversed ? RT_BINARY_OP_MORE : RT_BINARY_OP_LESS;
     while (head < tail) {
         mp_obj_t *h = head - 1;
         mp_obj_t *t = tail;

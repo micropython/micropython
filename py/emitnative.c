@@ -1017,7 +1017,7 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
             asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == RT_COMPARE_OP_LESS) {
+        } else if (op == RT_BINARY_OP_LESS) {
 #if N_X64
             asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
             asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);

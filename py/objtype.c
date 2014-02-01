@@ -117,6 +117,7 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
 }
 
 static const qstr unary_op_method_name[] = {
+    [RT_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this
     [RT_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [RT_UNARY_OP_LEN] = MP_QSTR___len__,
     //[RT_UNARY_OP_POSITIVE,
@@ -168,18 +169,16 @@ static const qstr binary_op_method_name[] = {
     RT_BINARY_OP_INPLACE_TRUE_DIVIDE,
     RT_BINARY_OP_INPLACE_MODULO,
     RT_BINARY_OP_INPLACE_POWER,
-    RT_COMPARE_OP_LESS,
-    RT_COMPARE_OP_MORE,
-    RT_COMPARE_OP_EQUAL,
-    RT_COMPARE_OP_LESS_EQUAL,
-    RT_COMPARE_OP_MORE_EQUAL,
-    RT_COMPARE_OP_NOT_EQUAL,
-    RT_COMPARE_OP_IN,
-    RT_COMPARE_OP_NOT_IN,
-    RT_COMPARE_OP_IS,
-    RT_COMPARE_OP_IS_NOT,
+    RT_BINARY_OP_LESS,
+    RT_BINARY_OP_MORE,
+    RT_BINARY_OP_EQUAL,
+    RT_BINARY_OP_LESS_EQUAL,
+    RT_BINARY_OP_MORE_EQUAL,
+    RT_BINARY_OP_NOT_EQUAL,
+    RT_BINARY_OP_IN,
+    RT_BINARY_OP_IS,
     */
-    [RT_COMPARE_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
+    [RT_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
 };
 
 static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

@@ -103,17 +103,17 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case RT_BINARY_OP_INPLACE_RSHIFT:
             lhs->val >>= (int)rhs_val; return lhs;
 
-        case RT_COMPARE_OP_LESS:
+        case RT_BINARY_OP_LESS:
             return MP_BOOL(lhs->val < rhs_val);
-        case RT_COMPARE_OP_MORE:
+        case RT_BINARY_OP_MORE:
             return MP_BOOL(lhs->val > rhs_val);
-        case RT_COMPARE_OP_LESS_EQUAL:
+        case RT_BINARY_OP_LESS_EQUAL:
             return MP_BOOL(lhs->val <= rhs_val);
-        case RT_COMPARE_OP_MORE_EQUAL:
+        case RT_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(lhs->val >= rhs_val);
-        case RT_COMPARE_OP_EQUAL:
+        case RT_BINARY_OP_EQUAL:
             return MP_BOOL(lhs->val == rhs_val);
-        case RT_COMPARE_OP_NOT_EQUAL:
+        case RT_BINARY_OP_NOT_EQUAL:
             return MP_BOOL(lhs->val != rhs_val);
 
         default:

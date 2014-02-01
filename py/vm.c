@@ -428,6 +428,14 @@ unwind_jump:
                         //sp -= 3; // pop 3 exception values
                         break;
 
+                    case MP_BC_NOT:
+                        if (TOP() == mp_const_true) {
+                            SET_TOP(mp_const_false);
+                        } else {
+                            SET_TOP(mp_const_true);
+                        }
+                        break;
+
                     case MP_BC_UNARY_OP:
                         unum = *ip++;
                         SET_TOP(rt_unary_op(unum, TOP()));

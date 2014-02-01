@@ -168,12 +168,11 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             break;
 
-        case RT_COMPARE_OP_IN:
-        case RT_COMPARE_OP_NOT_IN:
+        case RT_BINARY_OP_IN:
             /* NOTE `a in b` is `b.__contains__(a)` */
             if (MP_OBJ_IS_STR(rhs_in)) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
-                return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len) == NULL));
+                return MP_BOOL(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len) != NULL);
             }
             break;
 

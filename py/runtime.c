@@ -478,6 +478,7 @@ void rt_store_global(qstr qstr, mp_obj_t obj) {
 
 mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
     DEBUG_OP_printf("unary %d %p\n", op, arg);
+
     if (MP_OBJ_IS_SMALL_INT(arg)) {
         mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
         switch (op) {
@@ -516,28 +517,23 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     //   then fail
     // note that list does not implement + or +=, so that inplace_concat is reached first for +=
 
-    // deal with is, is not
-    if (op == RT_COMPARE_OP_IS) {
+    // deal with is
+    if (op == RT_BINARY_OP_IS) {
         // TODO: may need to handle strings specially, CPython appears to
         // assume all strings are interned (so "is" == "==" for strings)
         return MP_BOOL(lhs == rhs);
     }
-    if (op == RT_COMPARE_OP_IS_NOT) {
-        // TODO: may need to handle strings specially, CPython appears to
-        // assume all strings are interned (so "is" == "==" for strings)
-        return MP_BOOL(lhs != rhs);
-    }
 
     // deal with == and != for all types
-    if (op == RT_COMPARE_OP_EQUAL || op == RT_COMPARE_OP_NOT_EQUAL) {
+    if (op == RT_BINARY_OP_EQUAL || op == RT_BINARY_OP_NOT_EQUAL) {
         if (mp_obj_equal(lhs, rhs)) {
-            if (op == RT_COMPARE_OP_EQUAL) {
+            if (op == RT_BINARY_OP_EQUAL) {
                 return mp_const_true;
             } else {
                 return mp_const_false;
             }
         } else {
-            if (op == RT_COMPARE_OP_EQUAL) {
+            if (op == RT_BINARY_OP_EQUAL) {
                 return mp_const_false;
             } else {
                 return mp_const_true;
@@ -546,7 +542,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     // deal with exception_match for all types
-    if (op == RT_COMPARE_OP_EXCEPTION_MATCH) {
+    if (op == RT_BINARY_OP_EXCEPTION_MATCH) {
         // TODO properly! at the moment it just compares the exception identifier for equality
         if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
             if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
@@ -604,10 +600,10 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     lhs_val = ans;
                     break;
                 }
-                case RT_COMPARE_OP_LESS: return MP_BOOL(lhs_val < rhs_val); break;
-                case RT_COMPARE_OP_MORE: return MP_BOOL(lhs_val > rhs_val); break;
-                case RT_COMPARE_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;
-                case RT_COMPARE_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val); break;
+                case RT_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val); break;
+                case RT_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val); break;
+                case RT_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;
+                case RT_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val); break;
 
                 default: assert(0);
             }
@@ -625,12 +621,12 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
     }
 
-    /* deal with `in` and `not in`
+    /* deal with `in`
      *
      * NOTE `a in b` is `b.__contains__(a)`, hence why the generic dispatch
      * needs to go below
      */
-    if (op == RT_COMPARE_OP_IN || op == RT_COMPARE_OP_NOT_IN) {
+    if (op == RT_BINARY_OP_IN) {
         mp_obj_type_t *type = mp_obj_get_type(rhs);
         if (type->binary_op != NULL) {
             mp_obj_t res = type->binary_op(op, rhs, lhs);
@@ -644,10 +640,10 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_obj_t iter = rt_getiter(rhs);
             while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
                 if (mp_obj_equal(next, lhs)) {
-                    return MP_BOOL(op == RT_COMPARE_OP_IN);
+                    return mp_const_true;
                 }
             }
-            return MP_BOOL(op != RT_COMPARE_OP_IN);
+            return mp_const_false;
         }
 
         nlr_jump(mp_obj_new_exception_msg_varg(

@@ -396,24 +396,23 @@ static mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         return set_intersect(lhs, rhs);
     case RT_BINARY_OP_INPLACE_SUBTRACT:
         return set_diff(2, args);
-    case RT_COMPARE_OP_LESS:
+    case RT_BINARY_OP_LESS:
         return set_issubset_proper(lhs, rhs);
-    case RT_COMPARE_OP_MORE:
+    case RT_BINARY_OP_MORE:
         return set_issuperset_proper(lhs, rhs);
-    case RT_COMPARE_OP_EQUAL:
+    case RT_BINARY_OP_EQUAL:
         return set_equal(lhs, rhs);
-    case RT_COMPARE_OP_LESS_EQUAL:
+    case RT_BINARY_OP_LESS_EQUAL:
         return set_issubset(lhs, rhs);
-    case RT_COMPARE_OP_MORE_EQUAL:
+    case RT_BINARY_OP_MORE_EQUAL:
         return set_issuperset(lhs, rhs);
-    case RT_COMPARE_OP_NOT_EQUAL:
+    case RT_BINARY_OP_NOT_EQUAL:
         return MP_BOOL(set_equal(lhs, rhs) == mp_const_false);
-    case RT_COMPARE_OP_IN:
-    case RT_COMPARE_OP_NOT_IN:
+    case RT_BINARY_OP_IN:
     {
         mp_obj_set_t *o = lhs;
         mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
-        return MP_BOOL((op == RT_COMPARE_OP_IN) ^ (elem == NULL));
+        return MP_BOOL(elem != NULL);
     }
     default:
         // op not supported
