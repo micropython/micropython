@@ -48,6 +48,9 @@ LINE_CODING linecoding =
 
 /* These are external variables imported from CDC core to be used for IN 
    transfer management. */
+
+extern uint32_t APP_dev_is_connected; // set if CDC device is connected
+
 extern uint8_t  APP_Rx_Buffer []; /* Write CDC received data in this buffer.
                                      These data will be sent over USB IN endpoint
                                      in the CDC core functions. */
@@ -158,7 +161,7 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
     break;
 
   case SET_CONTROL_LINE_STATE:
-    /* Not  needed for this driver */
+    APP_dev_is_connected = Len & 0x1; // wValue is passed in Len (bit of a hack)
     break;
 
   case SEND_BREAK:

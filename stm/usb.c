@@ -21,6 +21,7 @@ extern CDC_IF_Prop_TypeDef VCP_fops;
 USB_OTG_CORE_HANDLE USB_OTG_Core;
 
 static int dev_is_enabled = 0;
+uint32_t APP_dev_is_connected = 0; /* used by usbd_cdc_vcp */
 static char rx_buf[64];
 static int rx_buf_in;
 static int rx_buf_out;
@@ -46,6 +47,10 @@ void pyb_usb_dev_init(void) {
 
 bool usb_vcp_is_enabled(void) {
     return dev_is_enabled;
+}
+
+bool usb_vcp_is_connected(void) {
+    return APP_dev_is_connected;
 }
 
 void usb_vcp_set_interrupt_char(int c) {
