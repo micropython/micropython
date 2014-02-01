@@ -242,7 +242,9 @@ int main(int argc, char **argv) {
 
     file_init();
     rawsocket_init();
+#if MICROPY_MOD_FFI
     ffi_init();
+#endif
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.

@@ -1,4 +1,5 @@
 include ../py/mkenv.mk
+-include mpconfigport.mk
 
 # define main target
 PROG = micropython
@@ -10,9 +11,16 @@ QSTR_DEFS = qstrdefsport.h
 include ../py/py.mk
 
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX
-CFLAGS += -I/usr/lib/libffi-3.0.13/include
-LDFLAGS = -lm -ldl -lffi
+CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD)
+LDFLAGS = $(LDFLAGS_MOD) -lm
+
+ifeq ($(MICROPY_MOD_FFI),1)
+# Note - include path below is specific to @dpgeorge
+CFLAGS_MOD += -I/usr/lib/libffi-3.0.13/include -DMICROPY_MOD_FFI=1
+LDFLAGS_MOD += -ldl -lffi
+SRC_MOD += ffi.c
+endif
+
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -26,7 +34,7 @@ SRC_C = \
 	main.c \
 	file.c \
 	socket.c \
-	ffi.c \
+	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 LIB = -lreadline
