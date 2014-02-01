@@ -648,7 +648,7 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
                     // Not a Data request
 
                     // Transfer the command to the interface layer */
-                    return VCP_fops.pIf_Ctrl(req->bRequest, NULL, 0);
+                    return VCP_fops.pIf_Ctrl(req->bRequest, NULL, req->wValue);
                 }
 
             } else if (req->wIndex == 2) {

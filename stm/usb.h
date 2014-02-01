@@ -1,5 +1,6 @@
 void pyb_usb_dev_init(void);
 bool usb_vcp_is_enabled(void);
+bool usb_vcp_is_connected(void);
 int usb_vcp_rx_any(void);
 char usb_vcp_rx_get(void);
 void usb_vcp_send_str(const char* str);

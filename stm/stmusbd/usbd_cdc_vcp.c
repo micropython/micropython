@@ -62,6 +62,8 @@ static uint16_t VCP_Ctrl     (uint32_t Cmd, uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataTx   (const uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
 
+extern int dev_is_connected;
+
 CDC_IF_Prop_TypeDef VCP_fops = 
 {
   VCP_Init,
@@ -158,7 +160,7 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
     break;
 
   case SET_CONTROL_LINE_STATE:
-    /* Not  needed for this driver */
+    dev_is_connected = Len & 0x1; //wValue passed in Len
     break;
 
   case SEND_BREAK:
