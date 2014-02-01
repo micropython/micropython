@@ -674,7 +674,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     return mp_const_none;
 }
 
-mp_obj_t rt_make_function_from_id(int unique_code_id) {
+mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
     DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
     if (unique_code_id < 1 || unique_code_id >= next_unique_code_id) {
         // illegal code id
@@ -686,7 +686,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
     mp_obj_t fun;
     switch (c->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->n_args, c->n_state, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(c->n_args, def_args, c->n_state, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
             fun = rt_make_function_n(c->n_args, c->u_native.fun);
@@ -710,7 +710,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id) {
 mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = rt_make_function_from_id(unique_code_id);
+    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, MP_OBJ_NULL);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

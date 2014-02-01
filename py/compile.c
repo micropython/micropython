@@ -3212,7 +3212,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
         return mp_const_true;
 #else
         // return function that executes the outer module
-        return rt_make_function_from_id(unique_code_id);
+        return rt_make_function_from_id(unique_code_id, MP_OBJ_NULL);
 #endif
     }
 }
