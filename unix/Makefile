@@ -14,6 +14,10 @@ include ../py/py.mk
 CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD)
 LDFLAGS = $(LDFLAGS_MOD) -lm
 
+ifeq ($(MICROPY_MOD_TIME),1)
+CFLAGS_MOD += -DMICROPY_MOD_TIME=1
+SRC_MOD += time.c
+endif
 ifeq ($(MICROPY_MOD_FFI),1)
 CFLAGS_MOD += `pkg-config --cflags libffi` -DMICROPY_MOD_FFI=1
 LDFLAGS_MOD += -ldl -lffi

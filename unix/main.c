@@ -24,6 +24,7 @@
 extern const mp_obj_fun_native_t mp_builtin_open_obj;
 void file_init();
 void rawsocket_init();
+void time_init();
 void ffi_init();
 
 static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
@@ -242,6 +243,9 @@ int main(int argc, char **argv) {
 
     file_init();
     rawsocket_init();
+#if MICROPY_MOD_TIME
+    time_init();
+#endif
 #if MICROPY_MOD_FFI
     ffi_init();
 #endif
