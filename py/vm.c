@@ -30,6 +30,13 @@ typedef struct _mp_exc_stack {
     byte opcode;
 } mp_exc_stack;
 
+// Exception stack unwind reasons (WHY_* in CPython-speak)
+typedef enum {
+    UNWIND_RETURN = 1,
+    UNWIND_BREAK,
+    UNWIND_CONTINUE,
+} mp_unwind_reason_t;
+
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
@@ -106,6 +113,7 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
         if (nlr_push(&nlr) == 0) {
             // loop to execute byte code
             for (;;) {
+dispatch_loop:
                 save_ip = ip;
                 int op = *ip++;
                 switch (op) {
@@ -352,6 +360,19 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         }
                         if (TOP() == mp_const_none) {
                             sp--;
+                        } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
+                            // We finished "finally" coroutine and now dispatch back
+                            // to our caller, based on TOS value
+                            mp_unwind_reason_t reason = MP_OBJ_SMALL_INT_VALUE(POP());
+                            switch (reason) {
+                                case UNWIND_RETURN:
+                                    goto unwind_return;
+                                // TODO
+                                case UNWIND_BREAK:
+                                case UNWIND_CONTINUE:
+                                ;
+                            }
+                            assert(0);
                         } else {
                             assert(0);
                         }
@@ -501,6 +522,23 @@ bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_ob
                         break;
 
                     case MP_BC_RETURN_VALUE:
+unwind_return:
+                        while (exc_sp >= exc_stack) {
+                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY) {
+                                // We're going to run "finally" code as a coroutine
+                                // (not calling it recursively). Set up a sentinel
+                                // on a stack so it can return back to us when it is
+                                // done (when END_FINALLY reached).
+                                PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_RETURN));
+                                ip = exc_sp->handler;
+                                // We don't need to do anything with sp, finally is just
+                                // syntactic sugar for sequential execution??
+                                // sp =
+                                exc_sp--;
+                                goto dispatch_loop;
+                            }
+                            exc_sp--;
+                        }
                         nlr_pop();
                         *sp_in_out = sp;
                         assert(exc_sp == &exc_stack[0] - 1);
