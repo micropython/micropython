@@ -339,6 +339,11 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("MAKE_FUNCTION " UINT_FMT, unum);
                 break;
 
+            case MP_BC_MAKE_FUNCTION_DEFARGS:
+                DECODE_UINT;
+                printf("MAKE_FUNCTION_DEFARGS " UINT_FMT, unum);
+                break;
+
             case MP_BC_MAKE_CLOSURE:
                 DECODE_UINT;
                 printf("MAKE_CLOSURE " UINT_FMT, unum);

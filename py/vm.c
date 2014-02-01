@@ -497,7 +497,12 @@ dispatch_loop:
 
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(rt_make_function_from_id(unum));
+                        PUSH(rt_make_function_from_id(unum, MP_OBJ_NULL));
+                        break;
+
+                    case MP_BC_MAKE_FUNCTION_DEFARGS:
+                        DECODE_UINT;
+                        SET_TOP(rt_make_function_from_id(unum, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
