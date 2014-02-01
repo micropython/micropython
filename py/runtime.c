@@ -519,8 +519,6 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
     // deal with is
     if (op == RT_BINARY_OP_IS) {
-        // TODO: may need to handle strings specially, CPython appears to
-        // assume all strings are interned (so "is" == "==" for strings)
         return MP_BOOL(lhs == rhs);
     }
 
@@ -624,13 +622,13 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     /* deal with `in`
      *
      * NOTE `a in b` is `b.__contains__(a)`, hence why the generic dispatch
-     * needs to go below
+     * needs to go below with swapped arguments
      */
     if (op == RT_BINARY_OP_IN) {
         mp_obj_type_t *type = mp_obj_get_type(rhs);
         if (type->binary_op != NULL) {
             mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != NULL) {
+            if (res != MP_OBJ_NULL) {
                 return res;
             }
         }
