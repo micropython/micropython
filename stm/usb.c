@@ -11,6 +11,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "pendsv.h"
 #include "usb.h"
 
 #ifdef USE_DEVICE_MODE
@@ -23,6 +24,8 @@ static int dev_is_enabled = 0;
 static char rx_buf[64];
 static int rx_buf_in;
 static int rx_buf_out;
+static int interrupt_char = VCP_CHAR_NONE;
+mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 
 void pyb_usb_dev_init(void) {
 #ifdef USE_DEVICE_MODE
@@ -33,7 +36,11 @@ void pyb_usb_dev_init(void) {
     }
     rx_buf_in = 0;
     rx_buf_out = 0;
+    interrupt_char = VCP_CHAR_NONE;
     dev_is_enabled = 1;
+
+    // create an exception object for interrupting by VCP
+    mp_const_vcp_interrupt = mp_obj_new_exception(qstr_from_str("VCPInterrupt"));
 #endif
 }
 
@@ -41,9 +48,24 @@ bool usb_vcp_is_enabled(void) {
     return dev_is_enabled;
 }
 
+void usb_vcp_set_interrupt_char(int c) {
+    if (dev_is_enabled) {
+        interrupt_char = c;
+    }
+}
+
 void usb_vcp_receive(const char *buf, uint32_t len) {
     if (dev_is_enabled) {
         for (int i = 0; i < len; i++) {
+
+            // catch special interrupt character
+            if (buf[i] == interrupt_char) {
+                // raise exception when interrupts are finished
+                pendsv_nlr_jump(mp_const_vcp_interrupt);
+                interrupt_char = VCP_CHAR_NONE;
+                continue;
+            }
+
             rx_buf[rx_buf_in++] = buf[i];
             if (rx_buf_in >= sizeof(rx_buf)) {
                 rx_buf_in = 0;

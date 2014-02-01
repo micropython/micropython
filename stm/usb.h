@@ -1,5 +1,10 @@
+#define VCP_CHAR_NONE   (0)
+#define VCP_CHAR_CTRL_C (3)
+#define VCP_CHAR_CTRL_D (4)
+
 void pyb_usb_dev_init(void);
 bool usb_vcp_is_enabled(void);
+void usb_vcp_set_interrupt_char(int c);
 int usb_vcp_rx_any(void);
 char usb_vcp_rx_get(void);
 void usb_vcp_send_str(const char* str);

@@ -151,6 +151,8 @@ void DebugMon_Handler(void)
   */
 void PendSV_Handler(void)
 {
+    extern void pendsv_isr_handler(void);
+    pendsv_isr_handler();
 }
 
 /**

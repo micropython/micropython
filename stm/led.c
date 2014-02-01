@@ -103,6 +103,7 @@ void led_toggle(pyb_led_t led) {
             return;
     }
 
+    // XXX this assumes LED is driven by a low MCU output (true for PYBv3, false for PYBv4)
     if (!(port->ODR & pin)) {
         // turn LED off
         PYB_LED_OFF(port, pin);

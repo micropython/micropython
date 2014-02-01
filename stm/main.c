@@ -30,6 +30,7 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"
+#include "pendsv.h"
 #include "led.h"
 #include "servo.h"
 #include "lcd.h"
@@ -327,7 +328,7 @@ int readline(vstr_t *line, const char *prompt) {
             }
         }
         if (escape == 0) {
-            if (c == 4 && vstr_len(line) == len) {
+            if (c == VCP_CHAR_CTRL_D && vstr_len(line) == len) {
                 return 0;
             } else if (c == '\r') {
                 stdout_tx_str("\r\n");
@@ -435,10 +436,14 @@ void do_repl(void) {
                 nlr_buf_t nlr;
                 uint32_t start = sys_tick_counter;
                 if (nlr_push(&nlr) == 0) {
+                    usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
                     rt_call_function_0(module_fun);
+                    usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
                     nlr_pop();
                 } else {
                     // uncaught exception
+                    // FIXME it could be that an interrupt happens just before we disable it here
+                    usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
 
@@ -488,11 +493,15 @@ bool do_file(const char *filename) {
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
         rt_call_function_0(module_fun);
+        usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         nlr_pop();
         return true;
     } else {
         // uncaught exception
+        // FIXME it could be that an interrupt happens just before we disable it here
+        usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return false;
     }
@@ -560,6 +569,10 @@ mp_obj_t pyb_rng_get(void) {
     return mp_obj_new_int(RNG_GetRandomNumber() >> 16);
 }
 
+mp_obj_t pyb_millis(void) {
+    return mp_obj_new_int(sys_tick_counter);
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -592,6 +605,7 @@ int main(void) {
 
     // basic sub-system init
     sys_tick_init();
+    pendsv_init();
     led_init();
 
 #if MICROPY_HW_ENABLE_RTC
@@ -693,6 +707,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
         rt_store_attr(m, qstr_from_str("ADC_all"), (mp_obj_t)&pyb_ADC_all_obj);
         rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
+        rt_store_attr(m, qstr_from_str("millis"), rt_make_function_n(0, pyb_millis));
         rt_store_name(MP_QSTR_pyb, m);
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
