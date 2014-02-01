@@ -45,6 +45,9 @@
 #include "adc.h"
 #include "rtc.h"
 #include "file.h"
+#include "gpio_api.h"
+#include "hal.h"
+#include "hal_gpio.h"
 
 int errno;
 
@@ -70,6 +73,11 @@ void __fatal_error(const char *msg) {
     for (;;) {
         flash_error(1);
     }
+}
+
+// mbed_die is provided for the mbed hal routines
+void mbed_die(void) {
+    __fatal_error("mbed_die");
 }
 
 static mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
@@ -338,7 +346,7 @@ int readline(vstr_t *line, const char *prompt) {
                 return 1;
             } else if (c == 27) {
                 escape = true;
-            } else if (c == 127) {
+            } else if (c == 127 || c == 8) {
                 if (vstr_len(line) > len) {
                     vstr_cut_tail(line, 1);
                     stdout_tx_str("\b \b");
@@ -693,6 +701,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
         rt_store_attr(m, qstr_from_str("ADC_all"), (mp_obj_t)&pyb_ADC_all_obj);
         rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
+        hal_target_init_Gpio_class(m);
         rt_store_name(MP_QSTR_pyb, m);
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
