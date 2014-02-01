@@ -72,8 +72,8 @@ typedef struct _emit_method_table_t {
     void (*jump_if_true_or_pop)(emit_t *emit, int label);
     void (*jump_if_false_or_pop)(emit_t *emit, int label);
     void (*setup_loop)(emit_t *emit, int label);
-    void (*break_loop)(emit_t *emit, int label);
-    void (*continue_loop)(emit_t *emit, int label);
+    void (*break_loop)(emit_t *emit, int label, int except_depth);
+    void (*continue_loop)(emit_t *emit, int label, int except_depth);
     void (*setup_with)(emit_t *emit, int label);
     void (*with_cleanup)(emit_t *emit);
     void (*setup_except)(emit_t *emit, int label);

@@ -931,10 +931,10 @@ static void emit_native_setup_loop(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-static void emit_native_break_loop(emit_t *emit, int label) {
+static void emit_native_break_loop(emit_t *emit, int label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
-static void emit_native_continue_loop(emit_t *emit, int label) {
+static void emit_native_continue_loop(emit_t *emit, int label, int except_depth) {
     assert(0);
 }
 static void emit_native_setup_with(emit_t *emit, int label) {

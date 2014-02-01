@@ -220,14 +220,10 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("SETUP_LOOP " UINT_FMT, ip + unum - ip_start);
                 break;
 
-            case MP_BC_BREAK_LOOP:
-                DECODE_ULABEL; // loop labels are always forward
-                printf("BREAK_LOOP " UINT_FMT, ip + unum - ip_start);
-                break;
-
-            case MP_BC_CONTINUE_LOOP:
-                DECODE_ULABEL; // loop labels are always forward
-                printf("CONTINUE_LOOP " UINT_FMT, ip + unum - ip_start);
+            case MP_BC_UNWIND_JUMP:
+                DECODE_SLABEL;
+                printf("UNWIND_JUMP " UINT_FMT " %d", ip + unum - ip_start, *ip);
+                ip += 1;
                 break;
 
             case MP_BC_SETUP_EXCEPT:

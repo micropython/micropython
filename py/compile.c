@@ -50,7 +50,8 @@ typedef struct _compiler_t {
 
     int break_label;
     int continue_label;
-    int except_nest_level;
+    int break_continue_except_level;
+    int cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
     int n_arg_keyword;
     bool have_star_arg;
@@ -1080,18 +1081,14 @@ void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->break_label == 0) {
         printf("ERROR: cannot break from here\n");
     }
-    EMIT_ARG(break_loop, comp->break_label);
+    EMIT_ARG(break_loop, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->continue_label == 0) {
         printf("ERROR: cannot continue from here\n");
     }
-    if (comp->except_nest_level > 0) {
-        EMIT_ARG(continue_loop, comp->continue_label);
-    } else {
-        EMIT_ARG(jump, comp->continue_label);
-    }
+    EMIT_ARG(continue_loop, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1387,15 +1384,22 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(label_assign, l_end);
 }
 
+#define START_BREAK_CONTINUE_BLOCK \
+    int old_break_label = comp->break_label; \
+    int old_continue_label = comp->continue_label; \
+    int break_label = comp_next_label(comp); \
+    int continue_label = comp_next_label(comp); \
+    comp->break_label = break_label; \
+    comp->continue_label = continue_label; \
+    comp->break_continue_except_level = comp->cur_except_level;
+
+#define END_BREAK_CONTINUE_BLOCK \
+    comp->break_label = old_break_label; \
+    comp->continue_label = old_continue_label; \
+    comp->break_continue_except_level = comp->cur_except_level;
+
 void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int old_break_label = comp->break_label;
-    int old_continue_label = comp->continue_label;
-
-    int break_label = comp_next_label(comp);
-    int continue_label = comp_next_label(comp);
-
-    comp->break_label = break_label;
-    comp->continue_label = continue_label;
+    START_BREAK_CONTINUE_BLOCK
 
     // compared to CPython, we have an optimised version of while loops
 #if MICROPY_EMIT_CPYTHON
@@ -1423,8 +1427,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #endif
 
     // break/continue apply to outer loop (if any) in the else block
-    comp->break_label = old_break_label;
-    comp->continue_label = old_continue_label;
+    END_BREAK_CONTINUE_BLOCK
 
     compile_node(comp, pns->nodes[2]); // else
 
@@ -1434,14 +1437,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 // TODO preload end and step onto stack if they are not constants
 // TODO check if step is negative and do opposite test
 void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
-    int old_break_label = comp->break_label;
-    int old_continue_label = comp->continue_label;
-
-    int break_label = comp_next_label(comp);
-    int continue_label = comp_next_label(comp);
-
-    comp->break_label = break_label;
-    comp->continue_label = continue_label;
+    START_BREAK_CONTINUE_BLOCK
 
     int top_label = comp_next_label(comp);
     int entry_label = comp_next_label(comp);
@@ -1477,8 +1473,7 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     EMIT_ARG(pop_jump_if_true, top_label);
 
     // break/continue apply to outer loop (if any) in the else block
-    comp->break_label = old_break_label;
-    comp->continue_label = old_continue_label;
+    END_BREAK_CONTINUE_BLOCK
 
     compile_node(comp, pn_else);
 
@@ -1531,17 +1526,10 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 #endif
 
-    int old_break_label = comp->break_label;
-    int old_continue_label = comp->continue_label;
+    START_BREAK_CONTINUE_BLOCK
 
-    int for_label = comp_next_label(comp);
     int pop_label = comp_next_label(comp);
     int end_label = comp_next_label(comp);
-
-    int break_label = comp_next_label(comp);
-
-    comp->continue_label = for_label;
-    comp->break_label = break_label;
 
     // I don't think our implementation needs SETUP_LOOP/POP_BLOCK for for-statements
 #if MICROPY_EMIT_CPYTHON
@@ -1550,19 +1538,18 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     compile_node(comp, pns->nodes[1]); // iterator
     EMIT(get_iter);
-    EMIT_ARG(label_assign, for_label);
+    EMIT_ARG(label_assign, continue_label);
     EMIT_ARG(for_iter, pop_label);
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
     compile_node(comp, pns->nodes[2]); // body
     if (!EMIT(last_emit_was_return_value)) {
-        EMIT_ARG(jump, for_label);
+        EMIT_ARG(jump, continue_label);
     }
     EMIT_ARG(label_assign, pop_label);
     EMIT(for_iter_end);
 
     // break/continue apply to outer loop (if any) in the else block
-    comp->break_label = old_break_label;
-    comp->continue_label = old_continue_label;
+    END_BREAK_CONTINUE_BLOCK
 
 #if MICROPY_EMIT_CPYTHON
     EMIT(pop_block);
@@ -1582,8 +1569,10 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     int stack_size = EMIT(get_stack_size);
     int l1 = comp_next_label(comp);
     int success_label = comp_next_label(comp);
-    comp->except_nest_level += 1; // for correct handling of continue
+
     EMIT_ARG(setup_except, l1);
+    comp->cur_except_level += 1;
+
     compile_node(comp, pn_body); // body
     EMIT(pop_block);
     EMIT_ARG(jump, success_label);
@@ -1634,6 +1623,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
             EMIT_ARG(setup_finally, l3);
+            comp->cur_except_level += 1;
         }
         compile_node(comp, pns_except->nodes[1]);
         if (qstr_exception_local != 0) {
@@ -1646,15 +1636,18 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
             EMIT_ARG(store_id, qstr_exception_local);
             EMIT_ARG(delete_id, qstr_exception_local);
+
+            comp->cur_except_level -= 1;
             EMIT(end_finally);
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
     }
 
+    comp->cur_except_level -= 1;
     EMIT(end_finally);
+
     EMIT_ARG(label_assign, success_label);
-    comp->except_nest_level -= 1;
     compile_node(comp, pn_else); // else block, can be null
     EMIT_ARG(label_assign, l2);
     EMIT_ARG(set_stack_size, stack_size);
@@ -1664,7 +1657,10 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     // don't understand how the stack works with exceptions, so we force it to return to the correct value
     int stack_size = EMIT(get_stack_size);
     int l_finally_block = comp_next_label(comp);
+
     EMIT_ARG(setup_finally, l_finally_block);
+    comp->cur_except_level += 1;
+
     if (n_except == 0) {
         assert(MP_PARSE_NODE_IS_NULL(pn_else));
         compile_node(comp, pn_body);
@@ -1675,7 +1671,10 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     EMIT_ARG(label_assign, l_finally_block);
     compile_node(comp, pn_finally);
+
+    comp->cur_except_level -= 1;
     EMIT(end_finally);
+
     EMIT_ARG(set_stack_size, stack_size);
 }
 
@@ -3056,7 +3055,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
 
     comp->break_label = 0;
     comp->continue_label = 0;
-    comp->except_nest_level = 0;
+    comp->break_continue_except_level = 0;
+    comp->cur_except_level = 0;
+
     comp->scope_head = NULL;
     comp->scope_cur = NULL;
 

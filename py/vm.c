@@ -31,10 +31,11 @@ typedef struct _mp_exc_stack {
 } mp_exc_stack;
 
 // Exception stack unwind reasons (WHY_* in CPython-speak)
+// TODO perhaps compress this to RETURN=0, JUMP>0, with number of unwinds
+// left to do encoded in the JUMP number
 typedef enum {
     UNWIND_RETURN = 1,
-    UNWIND_BREAK,
-    UNWIND_CONTINUE,
+    UNWIND_JUMP,
 } mp_unwind_reason_t;
 
 #define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
@@ -328,16 +329,29 @@ dispatch_loop:
                         break;
                         */
 
-                    // TODO this might need more sophisticated handling when breaking from within an except
-                    case MP_BC_BREAK_LOOP:
-                        DECODE_ULABEL;
-                        ip += unum;
-                        break;
-
-                    // TODO this might need more sophisticated handling when breaking from within an except
-                    case MP_BC_CONTINUE_LOOP:
-                        DECODE_ULABEL;
-                        ip += unum;
+                    case MP_BC_UNWIND_JUMP:
+                        DECODE_SLABEL;
+                        PUSH((void*)(ip + unum)); // push destination ip for jump
+                        PUSH((void*)(machine_uint_t)(*ip)); // push number of exception handlers to unwind
+unwind_jump:
+                        unum = (machine_uint_t)POP(); // get number of exception handlers to unwind
+                        while (unum > 0) {
+                            unum -= 1;
+                            assert(exc_sp >= exc_stack);
+                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY) {
+                                // We're going to run "finally" code as a coroutine
+                                // (not calling it recursively). Set up a sentinel
+                                // on a stack so it can return back to us when it is
+                                // done (when END_FINALLY reached).
+                                PUSH((void*)unum); // push number of exception handlers left to unwind
+                                PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_JUMP)); // push sentinel
+                                ip = exc_sp->handler; // get exception handler byte code address
+                                exc_sp--; // pop exception handler
+                                goto dispatch_loop; // run the exception handler
+                            }
+                            exc_sp--;
+                        }
+                        ip = (const byte*)POP(); // pop destination ip for jump
                         break;
 
                     // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
@@ -369,10 +383,8 @@ dispatch_loop:
                             switch (reason) {
                                 case UNWIND_RETURN:
                                     goto unwind_return;
-                                // TODO
-                                case UNWIND_BREAK:
-                                case UNWIND_CONTINUE:
-                                ;
+                                case UNWIND_JUMP:
+                                    goto unwind_jump;
                             }
                             assert(0);
                         } else {

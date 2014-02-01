@@ -540,14 +540,14 @@ static void emit_bc_setup_loop(emit_t *emit, int label) {
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_LOOP, label);
 }
 
-static void emit_bc_break_loop(emit_t *emit, int label) {
-    emit_pre(emit, 0);
-    emit_write_byte_code_byte_unsigned_label(emit, MP_BC_BREAK_LOOP, label);
-}
-
-static void emit_bc_continue_loop(emit_t *emit, int label) {
-    emit_pre(emit, 0);
-    emit_write_byte_code_byte_unsigned_label(emit, MP_BC_CONTINUE_LOOP, label);
+static void emit_bc_unwind_jump(emit_t *emit, int label, int except_depth) {
+    if (except_depth == 0) {
+        emit_bc_jump(emit, label);
+    } else {
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte_signed_label(emit, MP_BC_UNWIND_JUMP, label);
+        emit_write_byte_code_byte(emit, except_depth);
+    }
 }
 
 static void emit_bc_setup_with(emit_t *emit, int label) {
@@ -828,8 +828,8 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_jump_if_true_or_pop,
     emit_bc_jump_if_false_or_pop,
     emit_bc_setup_loop,
-    emit_bc_break_loop,
-    emit_bc_continue_loop,
+    emit_bc_unwind_jump,
+    emit_bc_unwind_jump,
     emit_bc_setup_with,
     emit_bc_with_cleanup,
     emit_bc_setup_except,
