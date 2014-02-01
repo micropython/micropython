@@ -15,8 +15,7 @@ CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD)
 LDFLAGS = $(LDFLAGS_MOD) -lm
 
 ifeq ($(MICROPY_MOD_FFI),1)
-# Note - include path below is specific to @dpgeorge
-CFLAGS_MOD += -I/usr/lib/libffi-3.0.13/include -DMICROPY_MOD_FFI=1
+CFLAGS_MOD += `pkg-config --cflags libffi` -DMICROPY_MOD_FFI=1
 LDFLAGS_MOD += -ldl -lffi
 SRC_MOD += ffi.c
 endif
