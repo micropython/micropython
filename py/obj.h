@@ -396,3 +396,4 @@ typedef struct _mp_obj_classmethod_t {
 // sequence helpers
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
 bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
+#define m_seq_copy(dest, src, len, item_sz) memcpy(dest, src, len * sizeof(item_sz))
