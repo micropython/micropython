@@ -364,3 +364,9 @@ static mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_bytes_obj, 1, 3, mp_builtin_bytes);
+
+static mp_obj_t mp_builtin_id(mp_obj_t o_in) {
+    return mp_obj_new_int((machine_int_t)o_in);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
