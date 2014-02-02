@@ -169,6 +169,18 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);
             return mp_obj_str_builder_end(s);
         }
+
+        // These 2 are never passed here, dealt with as a special case in rt_binary_op().
+        //case RT_BINARY_OP_EQUAL:
+        //case RT_BINARY_OP_NOT_EQUAL:
+        case RT_BINARY_OP_LESS:
+        case RT_BINARY_OP_LESS_EQUAL:
+        case RT_BINARY_OP_MORE:
+        case RT_BINARY_OP_MORE_EQUAL:
+            if (MP_OBJ_IS_STR(rhs_in)) {
+                GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
+                return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
+            }
     }
 
     return MP_OBJ_NULL; // op not supported
