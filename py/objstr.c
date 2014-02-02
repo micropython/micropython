@@ -115,26 +115,8 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 }
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
-                machine_int_t start, stop, step;
-                mp_obj_slice_get(rhs_in, &start, &stop, &step);
-                assert(step == 1);
-                if (start < 0) {
-                    start = lhs_len + start;
-                    if (start < 0) {
-                        start = 0;
-                    }
-                } else if (start > lhs_len) {
-                    start = lhs_len;
-                }
-                if (stop <= 0) {
-                    stop = lhs_len + stop;
-                    // CPython returns empty string in such case
-                    if (stop < 0) {
-                        stop = start;
-                    }
-                } else if (stop > lhs_len) {
-                    stop = lhs_len;
-                }
+                machine_uint_t start, stop;
+                assert(m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop));
                 return mp_obj_new_str(lhs_data + start, stop - start, false);
 #endif
             } else {
