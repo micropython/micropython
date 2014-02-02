@@ -8,6 +8,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_any_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_bytes_obj); // Temporary hack
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_callable_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_chr_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_dir_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_divmod_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_eval_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_hash_obj);

@@ -35,7 +35,7 @@ static mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
             // search locals_dict (the dynamically created set of methods/attributes)
 
             assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
-            mp_map_t *locals_map = ((void*)type->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
+            mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 return elem->value;

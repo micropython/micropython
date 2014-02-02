@@ -141,6 +141,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_bytes, (mp_obj_t)&mp_builtin_bytes_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_eval, (mp_obj_t)&mp_builtin_eval_obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj);

@@ -148,6 +148,36 @@ static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
+static mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
+    // TODO make this function more general and less of a hack
+
+    mp_map_t *map;
+    if (n_args == 0) {
+        // make a list of names in the local name space
+        map = rt_locals_get();
+    } else { // n_args == 1
+        // make a list of names in the given object
+        mp_obj_type_t *type = mp_obj_get_type(args[0]);
+        if (type == &module_type) {
+            map = mp_obj_module_get_globals(args[0]);
+        } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
+            map = mp_obj_dict_get_map(type->locals_dict);
+        } else {
+            return mp_obj_new_list(0, NULL);
+        }
+    }
+
+    mp_obj_t dir = mp_obj_new_list(0, NULL);
+    for (uint i = 0; i < map->alloc; i++) {
+        if (map->table[i].key != MP_OBJ_NULL) {
+            mp_obj_list_append(dir, map->table[i].key);
+        }
+    }
+    return dir;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
+
 static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     if (MP_OBJ_IS_SMALL_INT(o1_in) && MP_OBJ_IS_SMALL_INT(o2_in)) {
         mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
