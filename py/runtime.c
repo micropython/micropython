@@ -768,8 +768,8 @@ mp_obj_t rt_store_set(mp_obj_t set, mp_obj_t item) {
 
 // unpacked items are stored in reverse order into the array pointed to by items
 void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
+    uint seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &tuple_type) || MP_OBJ_IS_TYPE(seq_in, &list_type)) {
-        uint seq_len;
         mp_obj_t *seq_items;
         if (MP_OBJ_IS_TYPE(seq_in, &tuple_type)) {
             mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
@@ -777,17 +777,33 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
             mp_obj_list_get(seq_in, &seq_len, &seq_items);
         }
         if (seq_len < num) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "need more than %d values to unpack", (void*)(machine_uint_t)seq_len));
+            goto too_short;
         } else if (seq_len > num) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", (void*)(machine_uint_t)num));
+            goto too_long;
         }
         for (uint i = 0; i < num; i++) {
             items[i] = seq_items[num - 1 - i];
         }
     } else {
-        // TODO call rt_getiter and extract via rt_iternext
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(seq_in)));
+        mp_obj_t iterable = rt_getiter(seq_in);
+
+        for (seq_len = 0; seq_len < num; seq_len++) {
+            mp_obj_t el = rt_iternext(iterable);
+            if (el == mp_const_stop_iteration) {
+                goto too_short;
+            }
+            items[num - 1 - seq_len] = el;
+        }
+        if (rt_iternext(iterable) != mp_const_stop_iteration) {
+            goto too_long;
+        }
     }
+    return;
+
+too_short:
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "need more than %d values to unpack", seq_len));
+too_long:
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", num));
 }
 
 mp_obj_t rt_build_map(int n_args) {

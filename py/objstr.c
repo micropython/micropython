@@ -115,25 +115,9 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 }
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
-                machine_int_t start, stop, step;
-                mp_obj_slice_get(rhs_in, &start, &stop, &step);
-                assert(step == 1);
-                if (start < 0) {
-                    start = lhs_len + start;
-                    if (start < 0) {
-                        start = 0;
-                    }
-                } else if (start > lhs_len) {
-                    start = lhs_len;
-                }
-                if (stop <= 0) {
-                    stop = lhs_len + stop;
-                    // CPython returns empty string in such case
-                    if (stop < 0) {
-                        stop = start;
-                    }
-                } else if (stop > lhs_len) {
-                    stop = lhs_len;
+                machine_uint_t start, stop;
+                if (!m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop)) {
+                    assert(0);
                 }
                 return mp_obj_new_str(lhs_data + start, stop - start, false);
 #endif
@@ -187,6 +171,18 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);
             return mp_obj_str_builder_end(s);
         }
+
+        // These 2 are never passed here, dealt with as a special case in rt_binary_op().
+        //case RT_BINARY_OP_EQUAL:
+        //case RT_BINARY_OP_NOT_EQUAL:
+        case RT_BINARY_OP_LESS:
+        case RT_BINARY_OP_LESS_EQUAL:
+        case RT_BINARY_OP_MORE:
+        case RT_BINARY_OP_MORE_EQUAL:
+            if (MP_OBJ_IS_STR(rhs_in)) {
+                GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
+                return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
+            }
     }
 
     return MP_OBJ_NULL; // op not supported

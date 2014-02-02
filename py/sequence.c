@@ -14,6 +14,8 @@
 
 // Helpers for sequence types
 
+#define SWAP(type, var1, var2) { type t = var2; var2 = var1; var1 = t; }
+
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest) {
@@ -22,4 +24,70 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
         memcpy(dest, items, copy_sz);
         dest = (char*)dest + copy_sz;
     }
+}
+
+bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end) {
+    machine_int_t start, stop, step;
+    mp_obj_slice_get(slice, &start, &stop, &step);
+    if (step != 1) {
+        return false;
+    }
+
+    // Unlike subscription, out-of-bounds slice indexes are never error
+    if (start < 0) {
+        start = len + start;
+        if (start < 0) {
+            start = 0;
+        }
+    } else if (start > len) {
+        start = len;
+    }
+    if (stop <= 0) {
+        stop = len + stop;
+        // CPython returns empty sequence in such case
+        if (stop < 0) {
+            stop = start;
+        }
+    } else if (stop > len) {
+        stop = len;
+    }
+    *begin = start;
+    *end = stop;
+    return true;
+}
+
+// Special-case comparison function for sequences of bytes
+// Don't pass RT_BINARY_OP_NOT_EQUAL here
+bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2) {
+    // Let's deal only with > & >=
+    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
+        SWAP(const byte*, data1, data2);
+        SWAP(uint, len1, len2);
+        if (op == RT_BINARY_OP_LESS) {
+            op = RT_BINARY_OP_MORE;
+        } else {
+            op = RT_BINARY_OP_MORE_EQUAL;
+        }
+    }
+    uint min_len = len1 < len2 ? len1 : len2;
+    int res = memcmp(data1, data2, min_len);
+    if (res < 0) {
+        return false;
+    }
+    if (res > 0) {
+        return true;
+    }
+
+    // If we had tie in the last element...
+    // ... and we have lists of different lengths...
+    if (len1 != len2) {
+        if (len1 < len2) {
+            // ... then longer list length wins (we deal only with >)
+            return false;
+        }
+    } else if (op == RT_BINARY_OP_MORE) {
+        // Otherwise, if we have strict relation, equality means failure
+        return false;
+    }
+    return true;
 }
