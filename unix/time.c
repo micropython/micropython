@@ -14,7 +14,12 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 static mp_obj_t mod_time_clock() {
-    return mp_obj_new_int((machine_int_t)clock());
+//    return mp_obj_new_int((machine_int_t)clock());
+    // POSIX requires CLOCKS_PER_SEC equals 1000000, so that's what we assume
+    // float cannot represent full range of int32 precisely, so we pre-divide
+    // int to reduce resolution, and then actually do float division hoping
+    // to preserve integer part resolution.
+    return mp_obj_new_float((float)(clock() / 1000) / 1000.0);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
