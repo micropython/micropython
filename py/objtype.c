@@ -275,7 +275,7 @@ static mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             return mp_obj_new_type(mp_obj_str_get_str(args[0]), args[1], args[2]);
 
         default:
-            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes at 1 or 3 arguments"));
+            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes 1 or 3 arguments"));
     }
 }
 

@@ -210,6 +210,11 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_start = num_locals;
         num_locals += scope->stack_size;
     }
+    if (pass == PASS_2) {
+        // XXX big hack to make sure we have some locals in PASS_2
+        // this is so that on PASS_2 the code emitted in x64 has the right size
+        num_locals += 2;
+    }
 #if N_X64
     asm_x64_entry(emit->as, num_locals);
 #elif N_THUMB
@@ -492,8 +497,8 @@ static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, in
         assert(si->kind == STACK_VALUE);
         assert(si->vtype == VTYPE_PYOBJ);
     }
-    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size - 1, reg_dest);
     adjust_stack(emit, -n_pop);
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
@@ -503,7 +508,7 @@ static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, i
         emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
         emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;
     }
-    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size + n_push - 1, reg_dest);
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
     adjust_stack(emit, n_push);
 }
 
@@ -519,6 +524,17 @@ static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
 static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
     need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val, arg_reg);
+#if N_X64
+    asm_x64_call_ind(emit->as, fun, REG_RAX);
+#elif N_THUMB
+    asm_thumb_bl_ind(emit->as, rt_fun_table[fun_kind], fun_kind, REG_R3);
+#endif
+}
+
+static void emit_call_with_2_imm_args(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2) {
+    need_reg_all(emit);
+    ASM_MOV_IMM_TO_REG(arg_val1, arg_reg1);
+    ASM_MOV_IMM_TO_REG(arg_val2, arg_reg2);
 #if N_X64
     asm_x64_call_ind(emit->as, fun, REG_RAX);
 #elif N_THUMB
@@ -1046,14 +1062,14 @@ static void emit_native_build_tuple(emit_t *emit, int n_args) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
     emit_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     emit_call_with_imm_arg(emit, RT_F_BUILD_TUPLE, rt_build_tuple, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
 }
 
 static void emit_native_build_list(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     emit_call_with_imm_arg(emit, RT_F_BUILD_LIST, rt_build_list, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
 }
@@ -1099,7 +1115,7 @@ static void emit_native_map_add(emit_t *emit, int map_index) {
 
 static void emit_native_build_set(emit_t *emit, int n_args) {
     emit_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items in reverse order
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     emit_call_with_imm_arg(emit, RT_F_BUILD_SET, rt_build_set, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
 }
@@ -1141,7 +1157,10 @@ static void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_pa
 static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     // call special viper runtime routine with type info for args, and wanted type info for return
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
-    /*
+
+    /* we no longer have these _n specific call_function's
+     * they anyway push args into an array
+     * and they would take too much room in the native dispatch table
     if (n_positional == 0) {
         vtype_kind_t vtype_fun;
         emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
@@ -1162,21 +1181,21 @@ static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
         emit_call(emit, RT_F_CALL_FUNCTION_2, rt_call_function_2);
     } else {
     */
-        emit_pre(emit);
-        if (n_positional != 0) {
-            emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional); // pointer to args in reverse order
-        }
-        vtype_kind_t vtype_fun;
-        emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
-        assert(vtype_fun == VTYPE_PYOBJ);
-        // XXX rt_call_function_n now merged with rt_call_function_n_kw
-        //emit_call_with_imm_arg(emit, RT_F_CALL_FUNCTION_N, rt_call_function_n, n_positional, REG_ARG_2);
-    //}
+
+    emit_pre(emit);
+    if (n_positional != 0) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional); // pointer to args
+    }
+    vtype_kind_t vtype_fun;
+    emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
+    assert(vtype_fun == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, RT_F_CALL_FUNCTION_N_KW_FOR_NATIVE, rt_call_function_n_kw_for_native, n_positional, REG_ARG_2);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 static void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
+
     /*
     if (n_positional == 0) {
         vtype_kind_t vtype_meth, vtype_self;
@@ -1193,11 +1212,10 @@ static void emit_native_call_method(emit_t *emit, int n_positional, int n_keywor
         emit_call(emit, RT_F_CALL_METHOD_2, rt_call_method_2);
     } else {
     */
-        emit_pre(emit);
-        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_positional + 2); // pointer to items in reverse order, including meth and self
-        // XXX rt_call_method_n now merged with rt_call_method_n_kw
-        //emit_call_with_imm_arg(emit, RT_F_CALL_METHOD_N, rt_call_method_n, n_positional, REG_ARG_1);
-    //}
+
+    emit_pre(emit);
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional + 2); // pointer to items, including meth and self
+    emit_call_with_2_imm_args(emit, RT_F_CALL_METHOD_N_KW, rt_call_method_n_kw, n_positional, REG_ARG_1, n_keyword, REG_ARG_2);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 

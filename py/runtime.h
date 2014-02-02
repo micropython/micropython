@@ -20,6 +20,7 @@ mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple);
 mp_obj_t rt_call_function_0(mp_obj_t fun);
 mp_obj_t rt_call_function_1(mp_obj_t fun, mp_obj_t arg);
 mp_obj_t rt_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
+mp_obj_t rt_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args);
 mp_obj_t rt_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t rt_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t rt_build_tuple(int n_args, mp_obj_t *items);

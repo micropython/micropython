@@ -231,13 +231,6 @@ void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, 
 #if MICROPY_DEBUG_PRINTERS
     mp_byte_code_print(code, len);
 #endif
-
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(code, len, 1, fp_write_code);
-        fflush(fp_write_code);
-    }
-#endif
 #endif
 }
 
@@ -724,6 +717,12 @@ mp_obj_t rt_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
     return rt_call_function_n_kw(fun, 2, 0, args);
 }
 
+// wrapper that accepts n_args and n_kw in one argument
+// native emitter can only pass at most 3 arguments to a function
+mp_obj_t rt_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args) {
+    return rt_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
+}
+
 // args contains, eg: arg0  arg1  key0  value0  key1  value1
 mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO improve this: fun object can specify its type and we parse here the arguments,
@@ -998,6 +997,7 @@ void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_store_subscr,
     rt_is_true,
     rt_unary_op,
+    rt_binary_op,
     rt_build_tuple,
     rt_build_list,
     rt_list_append,
@@ -1006,9 +1006,8 @@ void *const rt_fun_table[RT_F_NUMBER_OF] = {
     rt_build_set,
     rt_store_set,
     rt_make_function_from_id,
-    rt_call_function_n_kw,
+    rt_call_function_n_kw_for_native,
     rt_call_method_n_kw,
-    rt_binary_op,
     rt_getiter,
     rt_iternext,
 };
