@@ -116,7 +116,9 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 #if MICROPY_ENABLE_SLICE
             } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
                 machine_uint_t start, stop;
-                assert(m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop));
+                if (!m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop)) {
+                    assert(0);
+                }
                 return mp_obj_new_str(lhs_data + start, stop - start, false);
 #endif
             } else {

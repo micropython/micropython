@@ -91,7 +91,9 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 #if MICROPY_ENABLE_SLICE
             if (MP_OBJ_IS_TYPE(rhs, &slice_type)) {
                 machine_uint_t start, stop;
-                assert(m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop));
+                if (!m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop)) {
+                    assert(0);
+                }
                 mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
                 m_seq_copy(res->items, o->items + start, res->len, mp_obj_t);
                 return res;
