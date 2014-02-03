@@ -110,6 +110,7 @@ void rt_init(void) {
 
     // built-in core functions
     mp_map_add_qstr(&map_builtins, MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj);
+    mp_map_add_qstr(&map_builtins, MP_QSTR___import__, (mp_obj_t)&mp_builtin___import___obj);
     mp_map_add_qstr(&map_builtins, MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj);
 
     // built-in types

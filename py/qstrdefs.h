@@ -4,6 +4,7 @@
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
+Q(__import__)
 Q(__init__)
 Q(__locals__)
 Q(__main__)

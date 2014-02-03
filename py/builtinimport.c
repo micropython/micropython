@@ -95,3 +95,4 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
 
     return module_obj;
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);
