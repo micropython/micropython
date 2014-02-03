@@ -19,7 +19,7 @@
 #include "map.h"
 #include "builtin.h"
 
-static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
+static mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
     uint str_len;
     const byte *str = mp_obj_str_get_data(o_in, &str_len);
 
@@ -30,7 +30,7 @@ static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
     // parse the string
     qstr parse_exc_id;
     const char *parse_exc_msg;
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_EVAL_INPUT, &parse_exc_id, &parse_exc_msg);
+    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_exc_id, &parse_exc_msg);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
@@ -51,4 +51,14 @@ static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
     return rt_call_function_0(module_fun);
 }
 
+static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
+    return parse_compile_execute(o_in, MP_PARSE_EVAL_INPUT);
+}
+
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
+
+static mp_obj_t mp_builtin_exec(mp_obj_t o_in) {
+    return parse_compile_execute(o_in, MP_PARSE_FILE_INPUT);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_exec_obj, mp_builtin_exec);

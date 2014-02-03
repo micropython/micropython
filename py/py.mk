@@ -65,7 +65,7 @@ PY_O_BASENAME = \
 	stream.o \
 	builtin.o \
 	builtinimport.o \
-	builtineval.o \
+	builtinevex.o \
 	builtinmp.o \
 	vm.o \
 	showbc.o \
