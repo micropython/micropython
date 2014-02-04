@@ -10,6 +10,11 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
+/** generic ops *************************************************/
+
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 /** memomry allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
