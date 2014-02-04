@@ -168,8 +168,14 @@ void rt_init(void) {
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
-    mp_obj_new_module(MP_QSTR_sys);
+    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
+    // Avoid warning of unused var
+    (void)m_sys;
 #endif
+    // init sys.path
+    // for efficiency, left to platform-specific startup code
+    //sys_path = mp_obj_new_list(0, NULL);
+    //rt_store_attr(m_sys, MP_QSTR_path, sys_path);
 
     mp_module_micropython_init();
 

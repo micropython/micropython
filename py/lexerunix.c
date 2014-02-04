@@ -14,7 +14,6 @@
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
-        printf("cannot open file %s\n", filename);
         return NULL;
     }
     uint size = lseek(fd, 0, SEEK_END);
