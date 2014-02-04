@@ -168,7 +168,7 @@ void rt_init(void) {
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
-    mp_obj_new_module(QSTR_FROM_STR_STATIC("sys"));
+    mp_obj_new_module(MP_QSTR_sys);
 #endif
 
     mp_module_micropython_init();
