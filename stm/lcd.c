@@ -4,6 +4,9 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
+
+#if MICROPY_HW_HAS_LCD
+
 #include "qstr.h"
 #include "parse.h"
 #include "obj.h"
@@ -378,3 +381,5 @@ void lcd_print_strn(const char *str, unsigned int len) {
         sys_tick_delay_ms(50);
     }
 }
+
+#endif // MICROPY_HW_HAS_LCD

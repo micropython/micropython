@@ -290,14 +290,21 @@ void TIM6_DAC_IRQHandler(void) {
 #include "qstr.h"
 #include "obj.h"
 #include "led.h"
+
+void Default_Handler(void); // Found in startup_stm32f40xx.s
+
 // EXTI
-// for USRSW on A13
+// for USRSW on A13 for PYBOARD3, and B11 for NETDUINO_PLUS_2
 // for cc3000 on A14
 void EXTI15_10_IRQHandler(void) {
-    // work out if it's A13 that had the interrupt
-    if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
-        // this is used just to wake the device
-        EXTI_ClearITPendingBit(EXTI_Line13);
+    // work out if it's the user switch that had the interrupt
+    // Note that if the user switch is on a diffetent IRQ, then this code
+    // should be optimized out.
+    if (USRSW_EXTI_IRQN == EXTI15_10_IRQn) {
+        if (EXTI_GetITStatus(USRSW_EXTI_LINE) != RESET) {
+            // this is used just to wake the device
+            EXTI_ClearITPendingBit(USRSW_EXTI_LINE);
+        }
     }
     // work out if it's A14 that had the interrupt
     if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
@@ -319,10 +326,24 @@ void EXTI15_10_IRQHandler(void) {
     }
 }
 
-#if defined(STM32F4DISC)
+// STM32F4DISC is setup for A0
 void EXTI0_IRQHandler(void) {
-    // clear pending interrupt bit
-    EXTI_ClearITPendingBit(EXTI_Line0);
+    if (USRSW_EXTI_IRQN == EXTI0_IRQn) {
+        // this is used just to wake the device
+        EXTI_ClearITPendingBit(USRSW_EXTI_LINE);
+    } else {
+        Default_Handler();
+    }
 }
-#endif
+
+// PYBOARD4 has button on PB3
+void EXTI3_IRQHandler(void) {
+    if (USRSW_EXTI_IRQN == EXTI3_IRQn) {
+        // this is used just to wake the device
+        EXTI_ClearITPendingBit(USRSW_EXTI_LINE);
+    } else {
+        Default_Handler();
+    }
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
