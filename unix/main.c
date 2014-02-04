@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     if (path == NULL) {
         path = "~/.micropython/lib:/usr/lib/micropython";
     }
-    uint path_num = 0;
+    uint path_num = 1; // [0] is for current dir (or base dir of the script)
     for (char *p = path; p != NULL; p = strchr(p, ':')) {
         path_num++;
         if (p != NULL) {
@@ -246,10 +246,11 @@ int main(int argc, char **argv) {
         }
     }
     sys_path = mp_obj_new_list(path_num, NULL);
-    mp_obj_t *items;
-    mp_obj_list_get(sys_path, &path_num, &items);
+    mp_obj_t *path_items;
+    mp_obj_list_get(sys_path, &path_num, &path_items);
+    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     char *p = path;
-    for (int i = 0; i < path_num; i++) {
+    for (int i = 1; i < path_num; i++) {
         char *p1 = strchr(p, ':');
         if (p1 == NULL) {
             p1 = p + strlen(p);
@@ -259,9 +260,9 @@ int main(int argc, char **argv) {
             CHECKBUF(buf, PATH_MAX);
             CHECKBUF_APPEND(buf, home, strlen(home));
             CHECKBUF_APPEND(buf, p + 1, p1 - p - 1);
-            items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
+            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
         } else {
-            items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
         }
         p = p1 + 1;
     }
@@ -318,6 +319,13 @@ int main(int argc, char **argv) {
                     return usage();
                 }
             } else {
+                // Set base dir of the script as first entry in sys.path
+                char *basedir = realpath(argv[a], NULL);
+                if (basedir != NULL) {
+                    char *p = strrchr(basedir, '/');
+                    path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+                    free(basedir);
+                }
                 for (int i = a; i < argc; i++) {
                     rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
                 }
