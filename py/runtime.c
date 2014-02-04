@@ -92,6 +92,7 @@ void rt_init(void) {
 
     // built-in exceptions (TODO, make these proper classes, and const if possible)
     mp_map_add_qstr(&map_builtins, MP_QSTR_AttributeError, mp_obj_new_exception(MP_QSTR_AttributeError));
+    mp_map_add_qstr(&map_builtins, MP_QSTR_ImportError, mp_obj_new_exception(MP_QSTR_ImportError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_IndexError, mp_obj_new_exception(MP_QSTR_IndexError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_KeyError, mp_obj_new_exception(MP_QSTR_KeyError));
     mp_map_add_qstr(&map_builtins, MP_QSTR_NameError, mp_obj_new_exception(MP_QSTR_NameError));

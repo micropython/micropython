@@ -31,6 +31,7 @@ Q(StopIteration)
 
 Q(AssertionError)
 Q(AttributeError)
+Q(ImportError)
 Q(IndentationError)
 Q(IndexError)
 Q(KeyError)
