@@ -435,8 +435,10 @@ static mp_obj_list_t *list_new(uint n) {
 
 mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items) {
     mp_obj_list_t *o = list_new(n);
-    for (int i = 0; i < n; i++) {
-        o->items[i] = items[i];
+    if (items != NULL) {
+        for (int i = 0; i < n; i++) {
+            o->items[i] = items[i];
+        }
     }
     return o;
 }
