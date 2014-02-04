@@ -233,7 +233,41 @@ int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
+    char *home = getenv("HOME");
+    char *path = getenv("MICROPYPATH");
+    if (path == NULL) {
+        path = "~/.micropython/lib:/usr/lib/micropython";
+    }
+    uint path_num = 0;
+    for (char *p = path; p != NULL; p = strchr(p, ':')) {
+        path_num++;
+        if (p != NULL) {
+            p++;
+        }
+    }
+    sys_path = mp_obj_new_list(path_num, NULL);
+    mp_obj_t *items;
+    mp_obj_list_get(sys_path, &path_num, &items);
+    char *p = path;
+    for (int i = 0; i < path_num; i++) {
+        char *p1 = strchr(p, ':');
+        if (p1 == NULL) {
+            p1 = p + strlen(p);
+        }
+        if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            // Expand standalone ~ to $HOME
+            CHECKBUF(buf, PATH_MAX);
+            CHECKBUF_APPEND(buf, home, strlen(home));
+            CHECKBUF_APPEND(buf, p + 1, p1 - p - 1);
+            items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
+        } else {
+            items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+        }
+        p = p1 + 1;
+    }
+
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
+    rt_store_attr(m_sys, MP_QSTR_path, sys_path);
     mp_obj_t py_argv = mp_obj_new_list(0, NULL);
     rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
