@@ -52,7 +52,7 @@ int switch_get(void) {
         // pulled low, so switch is pressed
         return 1;
     }
-#elif defined (STM32F4DISC)
+#elif defined (STM32F4DISC) || defined(NETDUINO_PLUS_2)
     /* switch pulled down */
     if (USRSW_PORT->IDR & USRSW_PIN) {
         // pulled high, so switch is pressed

@@ -54,6 +54,10 @@
 #define SD_DETECT_PIN                    GPIO_Pin_15                 /* PB.15 */
 #define SD_DETECT_GPIO_PORT              GPIOB                       /* GPIOB */
 #define SD_DETECT_GPIO_CLK               RCC_AHB1Periph_GPIOB
+#elif defined(NETDUINO_PLUS_2)
+#define SD_DETECT_PIN                    GPIO_Pin_5                  /* PB.5 */
+#define SD_DETECT_GPIO_PORT              GPIOB                       /* GPIOB */
+#define SD_DETECT_GPIO_CLK               RCC_AHB1Periph_GPIOB
 #endif
 
 #define SDIO_FIFO_ADDRESS                ((uint32_t)0x40012C80)
