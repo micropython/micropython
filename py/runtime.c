@@ -129,6 +129,7 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_list, (mp_obj_t)&list_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_map, (mp_obj_t)&map_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_super, (mp_obj_t)&super_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
@@ -852,7 +853,10 @@ static void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 
     // if nothing found yet, look for built-in and generic names
     if (dest[0] == MP_OBJ_NULL) {
-        if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+        if (attr == MP_QSTR___class__) {
+            // a.__class__ is equivalent to type(a)
+            dest[0] = type;
+        } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
             dest[0] = (mp_obj_t)&mp_builtin_next_obj;
             dest[1] = base;
         } else if (type->load_attr == NULL) {

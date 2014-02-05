@@ -61,6 +61,8 @@ typedef struct _compiler_t {
     int param_pass_num_dict_params;
     int param_pass_num_default_params;
 
+    bool func_arg_is_super; // used to compile special case of super() function call
+
     scope_t *scope_head;
     scope_t *scope_cur;
 
@@ -959,6 +961,7 @@ void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
             // nodes[1] contains arguments to the decorator function, if any
             if (!MP_PARSE_NODE_IS_NULL(pns_decorator->nodes[1])) {
                 // call the decorator function with the arguments in nodes[1]
+                comp->func_arg_is_super = false;
                 compile_node(comp, pns_decorator->nodes[1]);
             }
         }
@@ -2062,8 +2065,37 @@ void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
+void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    // this is to handle special super() call
+    comp->func_arg_is_super = MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_super;
+
+    compile_generic_all_nodes(comp, pns);
+}
+
 void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_struct_t *pns, bool is_method_call) {
     // function to call is on top of stack
+
+#if !MICROPY_EMIT_CPYTHON
+    // this is to handle special super() call
+    if (MP_PARSE_NODE_IS_NULL(pns->nodes[0]) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
+        EMIT_ARG(load_id, MP_QSTR___class__);
+        // get first argument to function
+        bool found = false;
+        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
+            if (comp->scope_cur->id_info[i].param) {
+                EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].local_num);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            printf("TypeError: super() call cannot find self\n");
+            return;
+        }
+        EMIT_ARG(call_function, 2, 0, false, false);
+        return;
+    }
+#endif
 
     int old_n_arg_keyword = comp->n_arg_keyword;
     bool old_have_star_arg = comp->have_star_arg;
@@ -2107,6 +2139,7 @@ void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             compile_node(comp, pns->nodes[i]);
         }
+        comp->func_arg_is_super = false;
     }
 }
 
@@ -2836,7 +2869,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 #if MICROPY_EMIT_CPYTHON
             EMIT_ARG(load_closure, MP_QSTR___class__, 0); // XXX check this is the correct local num
 #else
-            EMIT_ARG(load_fast, MP_QSTR___class__, 0); // XXX check this is the correct local num
+            EMIT_ARG(load_fast, MP_QSTR___class__, id->local_num);
 #endif
         }
         EMIT(return_value);
@@ -3044,6 +3077,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     comp->break_continue_except_level = 0;
     comp->cur_except_level = 0;
 
+    comp->func_arg_is_super = false;
+
     comp->scope_head = NULL;
     comp->scope_cur = NULL;
 
@@ -3054,7 +3089,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
 
     // compile pass 1
-    comp->emit = emit_pass1_new(MP_QSTR___class__);
+    comp->emit = emit_pass1_new();
     comp->emit_method_table = &emit_pass1_method_table;
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;

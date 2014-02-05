@@ -363,6 +363,96 @@ mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals
 }
 
 /******************************************************************************/
+// super object
+
+typedef struct _mp_obj_super_t {
+    mp_obj_base_t base;
+    mp_obj_t type;
+    mp_obj_t obj;
+} mp_obj_super_t;
+
+static void super_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_obj_super_t *self = self_in;
+    print(env, "<super: ");
+    mp_obj_print_helper(print, env, self->type, PRINT_STR);
+    print(env, ", ");
+    mp_obj_print_helper(print, env, self->obj, PRINT_STR);
+    print(env, ">");
+}
+
+static mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    if (n_args != 2 || n_kw != 0) {
+        // 0 arguments are turned into 2 in the compiler
+        // 1 argument is not yet implemented
+        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "super() requires 2 arguments"));
+    }
+    return mp_obj_new_super(args[0], args[1]);
+}
+
+// for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
+static void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    assert(MP_OBJ_IS_TYPE(self_in, &super_type));
+    mp_obj_super_t *self = self_in;
+
+    assert(MP_OBJ_IS_TYPE(self->type, &mp_const_type));
+
+    mp_obj_type_t *type = self->type;
+
+    // for a const struct, this entry might be NULL
+    if (type->bases_tuple == MP_OBJ_NULL) {
+        return;
+    }
+
+    uint len;
+    mp_obj_t *items;
+    mp_obj_tuple_get(type->bases_tuple, &len, &items);
+    for (uint i = 0; i < len; i++) {
+        assert(MP_OBJ_IS_TYPE(items[i], &mp_const_type));
+        mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
+        if (member != MP_OBJ_NULL) {
+            // XXX this and the code in class_load_attr need to be factored out
+            if (mp_obj_is_callable(member)) {
+                // class member is callable so build a bound method
+                // check if the methods are functions, static or class methods
+                // see http://docs.python.org/3.3/howto/descriptor.html
+                // TODO check that this is the correct place to have this logic
+                if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
+                    // return just the function
+                    dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+                } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
+                    // return a bound method, with self being the type of this object
+                    dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+                    dest[1] = mp_obj_get_type(self->obj);
+                } else {
+                    // return a bound method, with self being this object
+                    dest[0] = member;
+                    dest[1] = self->obj;
+                }
+                return;
+            } else {
+                // class member is a value, so just return that value
+                dest[0] = member;
+                return;
+            }
+        }
+    }
+}
+
+const mp_obj_type_t super_type = {
+    { &mp_const_type },
+    "super",
+    .print = super_print,
+    .make_new = super_make_new,
+    .load_attr = super_load_attr,
+};
+
+mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
+    mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
+    *o = (mp_obj_super_t){{&super_type}, type, obj};
+    return o;
+}
+
+/******************************************************************************/
 // built-ins specific to types
 
 static mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {

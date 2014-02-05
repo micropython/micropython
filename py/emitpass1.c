@@ -15,13 +15,11 @@
 #include "emit.h"
 
 struct _emit_t {
-    qstr qstr___class__;
     scope_t *scope;
 };
 
-emit_t *emit_pass1_new(qstr qstr___class__) {
+emit_t *emit_pass1_new(void) {
     emit_t *emit = m_new(emit_t, 1);
-    emit->qstr___class__ = qstr___class__;
     return emit;
 }
 
@@ -45,18 +43,21 @@ static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     bool added;
     id_info_t *id = scope_find_or_add_id(emit->scope, qstr, &added);
     if (added) {
-        if (strcmp(qstr_str(qstr), "super") == 0 && emit->scope->kind == SCOPE_FUNCTION) {
+#if MICROPY_EMIT_CPYTHON
+        if (qstr == MP_QSTR_super && emit->scope->kind == SCOPE_FUNCTION) {
             // special case, super is a global, and also counts as use of __class__
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
-            id_info_t *id2 = scope_find_local_in_parent(emit->scope, emit->qstr___class__);
+            id_info_t *id2 = scope_find_local_in_parent(emit->scope, MP_QSTR___class__);
             if (id2 != NULL) {
-                id2 = scope_find_or_add_id(emit->scope, emit->qstr___class__, &added);
+                id2 = scope_find_or_add_id(emit->scope, MP_QSTR___class__, &added);
                 if (added) {
                     id2->kind = ID_INFO_KIND_FREE;
-                    scope_close_over_in_parents(emit->scope, emit->qstr___class__);
+                    scope_close_over_in_parents(emit->scope, MP_QSTR___class__);
                 }
             }
-        } else {
+        } else
+#endif
+        {
             id_info_t *id2 = scope_find_local_in_parent(emit->scope, qstr);
             if (id2 != NULL && (id2->kind == ID_INFO_KIND_LOCAL || id2->kind == ID_INFO_KIND_CELL || id2->kind == ID_INFO_KIND_FREE)) {
                 id->kind = ID_INFO_KIND_FREE;

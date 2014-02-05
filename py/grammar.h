@@ -214,7 +214,7 @@ DEF_RULE(term_op, nc, or(4), tok(OP_STAR), tok(OP_SLASH), tok(OP_PERCENT), tok(O
 DEF_RULE(factor, nc, or(2), rule(factor_2), rule(power))
 DEF_RULE(factor_2, c(factor_2), and(2), rule(factor_op), rule(factor))
 DEF_RULE(factor_op, nc, or(3), tok(OP_PLUS), tok(OP_MINUS), tok(OP_TILDE))
-DEF_RULE(power, c(generic_all_nodes), and(3), rule(atom), opt_rule(power_trailers), opt_rule(power_dbl_star))
+DEF_RULE(power, c(power), and(3), rule(atom), opt_rule(power_trailers), opt_rule(power_dbl_star))
 DEF_RULE(power_trailers, c(power_trailers), one_or_more, rule(trailer))
 DEF_RULE(power_dbl_star, c(power_dbl_star), and(2), tok(OP_DBL_STAR), rule(factor))
 

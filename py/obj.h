@@ -231,6 +231,7 @@ mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
+mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args);
 mp_obj_t mp_obj_new_module(qstr module_name);
@@ -370,6 +371,9 @@ extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code);
 
 mp_obj_t mp_identity(mp_obj_t self);
+
+// super
+extern const mp_obj_type_t super_type;
 
 // generator
 extern const mp_obj_type_t gen_instance_type;
