@@ -147,18 +147,6 @@ static void do_repl(void) {
 }
 
 static void do_file(const char *file) {
-    // hack: set dir for import based on where this file is
-    {
-        const char * s = strrchr(file, '/');
-        if (s != NULL) {
-            int len = s - file;
-            char *dir = m_new(char, len + 1);
-            memcpy(dir, file, len);
-            dir[len] = '\0';
-            mp_import_set_directory(dir);
-        }
-    }
-
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
