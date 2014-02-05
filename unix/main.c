@@ -334,3 +334,17 @@ int main(int argc, char **argv) {
 machine_float_t machine_sqrt(machine_float_t x) {
     return sqrt(x);
 }
+
+#include <sys/stat.h>
+
+uint mp_import_stat(const char *path) {
+    struct stat st;
+    if (stat(path, &st) == 0) {
+        if (S_ISDIR(st.st_mode)) {
+            return MP_IMPORT_STAT_DIR;
+        } else if (S_ISREG(st.st_mode)) {
+            return MP_IMPORT_STAT_FILE;
+        }
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
+}

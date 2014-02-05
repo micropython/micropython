@@ -19,30 +19,26 @@
 #include "map.h"
 #include "builtin.h"
 
+#define PATH_SEP_CHAR '/'
+
 mp_obj_t sys_path;
 
-mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
-    /*
-    printf("import:\n");
-    for (int i = 0; i < n; i++) {
-        printf("  ");
-        mp_obj_print(args[i]);
-        printf("\n");
+mp_import_stat_t stat_dir_or_file(vstr_t *path) {
+    //printf("stat %s\n", vstr_str(path));
+    mp_import_stat_t stat = mp_import_stat(vstr_str(path));
+    if (stat == MP_IMPORT_STAT_DIR) {
+        return stat;
     }
-    */
-
-    qstr mod_name = mp_obj_str_get_qstr(args[0]);
-
-    mp_obj_t loaded = mp_obj_module_get(mod_name);
-    if (loaded != MP_OBJ_NULL) {
-        return loaded;
+    vstr_add_str(path, ".py");
+    stat = mp_import_stat(vstr_str(path));
+    if (stat == MP_IMPORT_STAT_FILE) {
+        return stat;
     }
+    return MP_IMPORT_STAT_NO_EXIST;
+}
 
-    // find the file to import
-    uint mod_name_len;
-    const byte* mod_name_p = qstr_data(mod_name, &mod_name_len);
-    mp_lexer_t *lex = NULL;
-
+mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
+    // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
     if (sys_path != MP_OBJ_NULL) {
@@ -50,37 +46,41 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
 
     if (path_num == 0) {
-        CHECKBUF(fname, PATH_MAX);
-        CHECKBUF_APPEND(fname, mod_name_p, mod_name_len);
-        CHECKBUF_APPEND(fname, ".py", sizeof(".py") - 1);
-        CHECKBUF_APPEND_0(fname);
-        lex = mp_lexer_new_from_file(fname);
+        // sys_path is empty, so just use the given file name
+        vstr_add_strn(dest, file_str, file_len);
+        return stat_dir_or_file(dest);
     } else {
+        // go through each path looking for a directory or file
         for (int i = 0; i < path_num; i++) {
-            CHECKBUF(fname, PATH_MAX);
+            vstr_reset(dest);
             uint p_len;
             const byte *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
-                CHECKBUF_APPEND(fname, p, p_len);
-                CHECKBUF_APPEND(fname, "/", 1);
+                vstr_add_strn(dest, (const char*)p, p_len);
+                vstr_add_char(dest, PATH_SEP_CHAR);
             }
-            CHECKBUF_APPEND(fname, mod_name_p, mod_name_len);
-            CHECKBUF_APPEND(fname, ".py", sizeof(".py") - 1);
-            CHECKBUF_APPEND_0(fname);
-            lex = mp_lexer_new_from_file(fname);
-            if (lex != NULL) {
-                break;
+            vstr_add_strn(dest, file_str, file_len);
+            mp_import_stat_t stat = stat_dir_or_file(dest);
+            if (stat != MP_IMPORT_STAT_NO_EXIST) {
+                return stat;
             }
         }
+
+        // could not find a directory or file
+        return MP_IMPORT_STAT_NO_EXIST;
     }
+}
+
+void do_load(mp_obj_t module_obj, vstr_t *file) {
+    // create the lexer
+    mp_lexer_t *lex = mp_lexer_new_from_file(vstr_str(file));
 
     if (lex == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", mod_name_p));
+        // we verified the file exists using stat, but lexer could still fail
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
     }
-    qstr source_name = mp_lexer_source_name(lex);
 
-    // create a new module object
-    mp_obj_t module_obj = mp_obj_new_module(mod_name);
+    qstr source_name = mp_lexer_source_name(lex);
 
     // save the old context
     mp_map_t *old_locals = rt_locals_get();
@@ -111,7 +111,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
         // TODO handle compile error correctly
         rt_locals_set(old_locals);
         rt_globals_set(old_globals);
-        return mp_const_none;
+        return;
     }
 
     // complied successfully, execute it
@@ -127,7 +127,84 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
     rt_locals_set(old_locals);
     rt_globals_set(old_globals);
+}
+
+mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
+    /*
+    printf("import:\n");
+    for (int i = 0; i < n; i++) {
+        printf("  ");
+        mp_obj_print(args[i]);
+        printf("\n");
+    }
+    */
+
+    // check if module already exists
+    mp_obj_t module_obj = mp_obj_module_get(mp_obj_str_get_qstr(args[0]));
+    if (module_obj != MP_OBJ_NULL) {
+        return module_obj;
+    }
+
+    uint mod_len;
+    const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
+
+    uint last = 0;
+    vstr_t *path = vstr_new();
+    module_obj = MP_OBJ_NULL;
+    uint i;
+    for (i = 1; i <= mod_len; i++) {
+        if (i == mod_len || mod_str[i] == '.') {
+            // create a qstr for the module name up to this depth
+            qstr mod_name = qstr_from_strn(mod_str, i);
+
+            // find the file corresponding to the module name
+            mp_import_stat_t stat;
+            if (vstr_len(path) == 0) {
+                // first module in the dotted-name; search for a directory or file
+                stat = find_file(mod_str, i, path);
+            } else {
+                // latter module in the dotted-name; append to path
+                vstr_add_char(path, PATH_SEP_CHAR);
+                vstr_add_strn(path, mod_str + last, i - last);
+                stat = stat_dir_or_file(path);
+            }
+            last = i + 1;
+
+            // fail if we couldn't find the file
+            if (stat == MP_IMPORT_STAT_NO_EXIST) {
+                nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
+            }
+
+            module_obj = mp_obj_module_get(mod_name);
+            if (module_obj == MP_OBJ_NULL) {
+                // module not already loaded, so load it!
+
+                module_obj = mp_obj_new_module(mod_name);
+
+                if (stat == MP_IMPORT_STAT_DIR) {
+                    vstr_add_char(path, PATH_SEP_CHAR);
+                    vstr_add_str(path, "__init__.py");
+                    if (mp_import_stat(vstr_str(path)) == MP_IMPORT_STAT_FILE) {
+                        do_load(module_obj, path);
+                    }
+                    vstr_cut_tail(path, 12); // cut off /__init__.py
+                } else { // MP_IMPORT_STAT_FILE
+                    do_load(module_obj, path);
+                    break;
+                }
+            }
+        }
+    }
+
+    if (i < mod_len) {
+        // we loaded a package, now need to load objects from within that package
+        // TODO
+        assert(0);
+    }
+
+    vstr_free(path);
 
     return module_obj;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);

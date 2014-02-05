@@ -51,3 +51,8 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     fb->pos = 0;
     return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
 }
+
+mp_import_stat_t mp_import_stat(const char *path) {
+    // TODO implement me!
+    return MP_IMPORT_STAT_NO_EXIST;
+}

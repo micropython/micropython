@@ -12,8 +12,12 @@ typedef unsigned int uint;
 
 /** generic ops *************************************************/
 
+#ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
+#ifndef MAX
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 
 /** memomry allocation ******************************************/
 
@@ -93,6 +97,7 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 /** non-dynamic size-bounded variable buffer/string *************/
 
 #define CHECKBUF(buf, max_size) char buf[max_size + 1]; uint buf##_len = max_size; char *buf##_p = buf;
+#define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
 #define CHECKBUF_APPEND(buf, src, src_len) \
         { int l = MIN(src_len, buf##_len); \
         memcpy(buf##_p, src, l); \

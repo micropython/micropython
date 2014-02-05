@@ -65,7 +65,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 mp_obj_t mp_obj_module_get(qstr module_name) {
     mp_map_elem_t *el = mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (el == NULL) {
-        return NULL;
+        return MP_OBJ_NULL;
     }
     return el->value;
 }

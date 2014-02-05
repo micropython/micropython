@@ -136,5 +136,17 @@ bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind);
 bool mp_lexer_show_error_pythonic_prefix(mp_lexer_t *lex);
 bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg);
 
-// used to import a module; must be implemented for a specific port
-mp_lexer_t *mp_import_open_file(qstr mod_name);
+/******************************************************************/
+// platform specific import function; must be implemented for a specific port
+// TODO tidy up, rename, or put elsewhere
+
+//mp_lexer_t *mp_import_open_file(qstr mod_name);
+
+typedef enum {
+    MP_IMPORT_STAT_NO_EXIST,
+    MP_IMPORT_STAT_DIR,
+    MP_IMPORT_STAT_FILE,
+} mp_import_stat_t;
+
+mp_import_stat_t mp_import_stat(const char *path);
+mp_lexer_t *mp_lexer_new_from_file(const char *filename);
