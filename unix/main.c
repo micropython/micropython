@@ -147,18 +147,6 @@ static void do_repl(void) {
 }
 
 static void do_file(const char *file) {
-    // hack: set dir for import based on where this file is
-    {
-        const char * s = strrchr(file, '/');
-        if (s != NULL) {
-            int len = s - file;
-            char *dir = m_new(char, len + 1);
-            memcpy(dir, file, len);
-            dir[len] = '\0';
-            mp_import_set_directory(dir);
-        }
-    }
-
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
@@ -233,7 +221,42 @@ int main(int argc, char **argv) {
     qstr_init();
     rt_init();
 
+    char *home = getenv("HOME");
+    char *path = getenv("MICROPYPATH");
+    if (path == NULL) {
+        path = "~/.micropython/lib:/usr/lib/micropython";
+    }
+    uint path_num = 1; // [0] is for current dir (or base dir of the script)
+    for (char *p = path; p != NULL; p = strchr(p, ':')) {
+        path_num++;
+        if (p != NULL) {
+            p++;
+        }
+    }
+    sys_path = mp_obj_new_list(path_num, NULL);
+    mp_obj_t *path_items;
+    mp_obj_list_get(sys_path, &path_num, &path_items);
+    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    char *p = path;
+    for (int i = 1; i < path_num; i++) {
+        char *p1 = strchr(p, ':');
+        if (p1 == NULL) {
+            p1 = p + strlen(p);
+        }
+        if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            // Expand standalone ~ to $HOME
+            CHECKBUF(buf, PATH_MAX);
+            CHECKBUF_APPEND(buf, home, strlen(home));
+            CHECKBUF_APPEND(buf, p + 1, p1 - p - 1);
+            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
+        } else {
+            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+        }
+        p = p1 + 1;
+    }
+
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
+    rt_store_attr(m_sys, MP_QSTR_path, sys_path);
     mp_obj_t py_argv = mp_obj_new_list(0, NULL);
     rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
@@ -284,6 +307,13 @@ int main(int argc, char **argv) {
                     return usage();
                 }
             } else {
+                // Set base dir of the script as first entry in sys.path
+                char *basedir = realpath(argv[a], NULL);
+                if (basedir != NULL) {
+                    char *p = strrchr(basedir, '/');
+                    path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+                    free(basedir);
+                }
                 for (int i = a; i < argc; i++) {
                     rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
                 }

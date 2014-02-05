@@ -19,6 +19,8 @@
 #include "map.h"
 #include "builtin.h"
 
+mp_obj_t sys_path;
+
 mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     /*
     printf("import:\n");
@@ -37,10 +39,43 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
 
     // find the file to import
-    mp_lexer_t *lex = mp_import_open_file(mod_name);
+    uint mod_name_len;
+    const byte* mod_name_p = qstr_data(mod_name, &mod_name_len);
+    mp_lexer_t *lex = NULL;
+
+    uint path_num = 0;
+    mp_obj_t *path_items;
+    if (sys_path != MP_OBJ_NULL) {
+        mp_obj_list_get(sys_path, &path_num, &path_items);
+    }
+
+    if (path_num == 0) {
+        CHECKBUF(fname, PATH_MAX);
+        CHECKBUF_APPEND(fname, mod_name_p, mod_name_len);
+        CHECKBUF_APPEND(fname, ".py", sizeof(".py") - 1);
+        CHECKBUF_APPEND_0(fname);
+        lex = mp_lexer_new_from_file(fname);
+    } else {
+        for (int i = 0; i < path_num; i++) {
+            CHECKBUF(fname, PATH_MAX);
+            uint p_len;
+            const byte *p = mp_obj_str_get_data(path_items[i], &p_len);
+            if (p_len > 0) {
+                CHECKBUF_APPEND(fname, p, p_len);
+                CHECKBUF_APPEND(fname, "/", 1);
+            }
+            CHECKBUF_APPEND(fname, mod_name_p, mod_name_len);
+            CHECKBUF_APPEND(fname, ".py", sizeof(".py") - 1);
+            CHECKBUF_APPEND_0(fname);
+            lex = mp_lexer_new_from_file(fname);
+            if (lex != NULL) {
+                break;
+            }
+        }
+    }
+
     if (lex == NULL) {
-        // TODO handle lexer error correctly
-        return mp_const_none;
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", mod_name_p));
     }
     qstr source_name = mp_lexer_source_name(lex);
 

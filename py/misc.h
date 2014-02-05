@@ -10,6 +10,11 @@
 typedef unsigned char byte;
 typedef unsigned int uint;
 
+/** generic ops *************************************************/
+
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 /** memomry allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
@@ -84,6 +89,17 @@ void vstr_add_strn(vstr_t *vstr, const char *str, int len);
 //void vstr_add_le32(vstr_t *vstr, unsigned int v);
 void vstr_cut_tail(vstr_t *vstr, int len);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
+
+/** non-dynamic size-bounded variable buffer/string *************/
+
+#define CHECKBUF(buf, max_size) char buf[max_size + 1]; uint buf##_len = max_size; char *buf##_p = buf;
+#define CHECKBUF_APPEND(buf, src, src_len) \
+        { int l = MIN(src_len, buf##_len); \
+        memcpy(buf##_p, src, l); \
+        buf##_len -= l; \
+        buf##_p += l; }
+#define CHECKBUF_APPEND_0(buf) { *buf##_p = 0; }
+#define CHECKBUF_LEN(buf) (buf##_p - buf)
 
 #ifdef va_start
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);

@@ -14,7 +14,6 @@
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
-        printf("cannot open file %s\n", filename);
         return NULL;
     }
     uint size = lseek(fd, 0, SEEK_END);
@@ -29,26 +28,6 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     }
 
     return mp_lexer_new_from_str_len(qstr_from_str(filename), data, size, size);
-}
-
-/******************************************************************************/
-/* unix implementation of import                                              */
-
-// TODO properly!
-
-static const char *import_base_dir = NULL;
-
-void mp_import_set_directory(const char *dir) {
-    import_base_dir = dir;
-}
-
-mp_lexer_t *mp_import_open_file(qstr mod_name) {
-    vstr_t *vstr = vstr_new();
-    if (import_base_dir != NULL) {
-        vstr_printf(vstr, "%s/", import_base_dir);
-    }
-    vstr_printf(vstr, "%s.py", qstr_str(mod_name));
-    return mp_lexer_new_from_file(vstr_str(vstr)); // TODO does lexer need to copy the string? can we free it here?
 }
 
 #endif // MICROPY_ENABLE_LEXER_UNIX

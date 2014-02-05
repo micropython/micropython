@@ -51,36 +51,3 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     fb->pos = 0;
     return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
 }
-
-/******************************************************************************/
-// implementation of import
-
-#include "ff.h"
-
-mp_lexer_t *mp_import_open_file(qstr mod_name) {
-    vstr_t *vstr = vstr_new();
-    FRESULT res;
-
-    // look for module in src/
-    vstr_printf(vstr, "0:/src/%s.py", qstr_str(mod_name));
-    res = f_stat(vstr_str(vstr), NULL);
-    if (res == FR_OK) {
-        // found file
-        return mp_lexer_new_from_file(vstr_str(vstr)); // TODO does lexer need to copy the string? can we free it here?
-    }
-
-    // look for module in /
-    vstr_reset(vstr);
-    vstr_printf(vstr, "0:/%s.py", qstr_str(mod_name));
-    res = f_stat(vstr_str(vstr), NULL);
-    if (res == FR_OK) {
-        // found file
-        return mp_lexer_new_from_file(vstr_str(vstr)); // TODO does lexer need to copy the string? can we free it here?
-    }
-
-    // could not find file
-    vstr_free(vstr);
-    printf("import %s: could not find file in src/ or /\n", qstr_str(mod_name));
-
-    return NULL;
-}
