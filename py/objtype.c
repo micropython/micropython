@@ -117,13 +117,12 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
 }
 
 static const qstr unary_op_method_name[] = {
-    [RT_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this
     [RT_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [RT_UNARY_OP_LEN] = MP_QSTR___len__,
     //[RT_UNARY_OP_POSITIVE,
     //[RT_UNARY_OP_NEGATIVE,
     //[RT_UNARY_OP_INVERT,
-    [RT_UNARY_OP_NOT] = MP_QSTR_, // not implemented, used to make sure array has full size
+    [RT_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
 static mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
