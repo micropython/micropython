@@ -74,6 +74,79 @@ static mp_code_t *unique_codes = NULL;
 FILE *fp_write_code = NULL;
 #endif
 
+// builtins
+// we put this table in ROM because it's always needed and takes up quite a bit of room in RAM
+// in fact, it uses less ROM here in table form than the equivalent in code form initialising a dynamic mp_map_t object in RAM
+// at the moment it's a linear table, but we could convert it to a const mp_map_t table with a simple preprocessing script
+// if we wanted to allow dynamic modification of the builtins, we could provide an mp_map_t object which is searched before this one
+
+typedef struct _mp_builtin_elem_t {
+    qstr qstr;
+    mp_obj_t fun;
+} mp_builtin_elem_t;
+
+static const mp_builtin_elem_t builtin_table[] = {
+    // built-in core functions
+    { MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj },
+    { MP_QSTR___import__, (mp_obj_t)&mp_builtin___import___obj },
+    { MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj },
+
+    // built-in types
+    { MP_QSTR_bool, (mp_obj_t)&bool_type },
+#if MICROPY_ENABLE_FLOAT
+    { MP_QSTR_complex, (mp_obj_t)&complex_type },
+#endif
+    { MP_QSTR_dict, (mp_obj_t)&dict_type },
+    { MP_QSTR_enumerate, (mp_obj_t)&enumerate_type },
+    { MP_QSTR_filter, (mp_obj_t)&filter_type },
+#if MICROPY_ENABLE_FLOAT
+    { MP_QSTR_float, (mp_obj_t)&float_type },
+#endif
+    { MP_QSTR_int, (mp_obj_t)&int_type },
+    { MP_QSTR_list, (mp_obj_t)&list_type },
+    { MP_QSTR_map, (mp_obj_t)&map_type },
+    { MP_QSTR_set, (mp_obj_t)&set_type },
+    { MP_QSTR_super, (mp_obj_t)&super_type },
+    { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
+    { MP_QSTR_type, (mp_obj_t)&mp_const_type },
+    { MP_QSTR_zip, (mp_obj_t)&zip_type },
+
+    { MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod },
+    { MP_QSTR_staticmethod, (mp_obj_t)&mp_type_staticmethod },
+
+    // built-in user functions
+    { MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj },
+    { MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj },
+    { MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj },
+    { MP_QSTR_bytes, (mp_obj_t)&mp_builtin_bytes_obj },
+    { MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj },
+    { MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj },
+    { MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj },
+    { MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj },
+    { MP_QSTR_eval, (mp_obj_t)&mp_builtin_eval_obj },
+    { MP_QSTR_exec, (mp_obj_t)&mp_builtin_exec_obj },
+    { MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj },
+    { MP_QSTR_id, (mp_obj_t)&mp_builtin_id_obj },
+    { MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj },
+    { MP_QSTR_issubclass, (mp_obj_t)&mp_builtin_issubclass_obj },
+    { MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj },
+    { MP_QSTR_len, (mp_obj_t)&mp_builtin_len_obj },
+    { MP_QSTR_max, (mp_obj_t)&mp_builtin_max_obj },
+    { MP_QSTR_min, (mp_obj_t)&mp_builtin_min_obj },
+    { MP_QSTR_next, (mp_obj_t)&mp_builtin_next_obj },
+    { MP_QSTR_ord, (mp_obj_t)&mp_builtin_ord_obj },
+    { MP_QSTR_pow, (mp_obj_t)&mp_builtin_pow_obj },
+    { MP_QSTR_print, (mp_obj_t)&mp_builtin_print_obj },
+    { MP_QSTR_range, (mp_obj_t)&mp_builtin_range_obj },
+    { MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj },
+    { MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj },
+    { MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj },
+    { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
+    { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
+
+    { MP_QSTR_, MP_OBJ_NULL }, // end of list sentinel
+};
+
 // a good optimising compiler will inline this if necessary
 static void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
     mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
@@ -109,66 +182,8 @@ void rt_init(void) {
     // built-in objects
     mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
 
-    // built-in core functions
-    mp_map_add_qstr(&map_builtins, MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR___import__, (mp_obj_t)&mp_builtin___import___obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj);
-
-    // built-in types
-    mp_map_add_qstr(&map_builtins, MP_QSTR_bool, (mp_obj_t)&bool_type);
-#if MICROPY_ENABLE_FLOAT
-    mp_map_add_qstr(&map_builtins, MP_QSTR_complex, (mp_obj_t)&complex_type);
-#endif
-    mp_map_add_qstr(&map_builtins, MP_QSTR_dict, (mp_obj_t)&dict_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_enumerate, (mp_obj_t)&enumerate_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_filter, (mp_obj_t)&filter_type);
-#if MICROPY_ENABLE_FLOAT
-    mp_map_add_qstr(&map_builtins, MP_QSTR_float, (mp_obj_t)&float_type);
-#endif
-    mp_map_add_qstr(&map_builtins, MP_QSTR_int, (mp_obj_t)&int_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_list, (mp_obj_t)&list_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_map, (mp_obj_t)&map_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_set, (mp_obj_t)&set_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_super, (mp_obj_t)&super_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_tuple, (mp_obj_t)&tuple_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
-
-    mp_map_add_qstr(&map_builtins, MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_staticmethod, (mp_obj_t)&mp_type_staticmethod);
-
     mp_obj_t m_array = mp_obj_new_module(MP_QSTR_array);
     rt_store_attr(m_array, MP_QSTR_array, (mp_obj_t)&array_type);
-
-    // built-in user functions
-    mp_map_add_qstr(&map_builtins, MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_bytes, (mp_obj_t)&mp_builtin_bytes_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_eval, (mp_obj_t)&mp_builtin_eval_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_exec, (mp_obj_t)&mp_builtin_exec_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_id, (mp_obj_t)&mp_builtin_id_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_issubclass, (mp_obj_t)&mp_builtin_issubclass_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_len, (mp_obj_t)&mp_builtin_len_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_max, (mp_obj_t)&mp_builtin_max_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_min, (mp_obj_t)&mp_builtin_min_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_next, (mp_obj_t)&mp_builtin_next_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_ord, (mp_obj_t)&mp_builtin_ord_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_pow, (mp_obj_t)&mp_builtin_pow_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_print, (mp_obj_t)&mp_builtin_print_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_range, (mp_obj_t)&mp_builtin_range_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj);
-    mp_map_add_qstr(&map_builtins, MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj);
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
@@ -432,16 +447,11 @@ mp_obj_t rt_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
     mp_map_elem_t *elem = mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
-    if (elem == NULL) {
-        elem = mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
-        if (elem == NULL) {
-            elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
-            if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
-            }
-        }
+    if (elem != NULL) {
+        return elem->value;
+    } else {
+        return rt_load_global(qstr);
     }
-    return elem->value;
 }
 
 mp_obj_t rt_load_global(qstr qstr) {
@@ -451,6 +461,11 @@ mp_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
+            for (const mp_builtin_elem_t *e = &builtin_table[0]; e->qstr != MP_QSTR_; e++) {
+                if (e->qstr == qstr) {
+                    return e->fun;
+                }
+            }
             nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
@@ -460,10 +475,11 @@ mp_obj_t rt_load_global(qstr qstr) {
 mp_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     mp_map_elem_t *elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
-    if (elem == NULL) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_NameError, "name '__build_class__' is not defined"));
+    if (elem != NULL) {
+        return elem->value;
+    } else {
+        return (mp_obj_t)&mp_builtin___build_class___obj;
     }
-    return elem->value;
 }
 
 mp_obj_t rt_get_cell(mp_obj_t cell) {
