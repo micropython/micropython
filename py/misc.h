@@ -68,10 +68,17 @@ typedef struct _vstr_t {
     int alloc;
     int len;
     char *buf;
-    bool had_error;
+    struct {
+        bool had_error : 1;
+        bool fixed_buf : 1;
+    };
 } vstr_t;
 
+// convenience macro to declare a vstr with a fixed size buffer on the stack
+#define VSTR_FIXED(vstr, alloc) vstr_t vstr; char vstr##_buf[(alloc)]; vstr_init_fixed_buf(&vstr, (alloc), vstr##_buf);
+
 void vstr_init(vstr_t *vstr, int alloc);
+void vstr_init_fixed_buf(vstr_t *vstr, int alloc, char *buf);
 void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(void);
 vstr_t *vstr_new_size(int alloc);
@@ -81,7 +88,7 @@ bool vstr_had_error(vstr_t *vstr);
 char *vstr_str(vstr_t *vstr);
 int vstr_len(vstr_t *vstr);
 void vstr_hint_size(vstr_t *vstr, int size);
-char  *vstr_extend(vstr_t *vstr, int size);
+char *vstr_extend(vstr_t *vstr, int size);
 bool vstr_set_size(vstr_t *vstr, int size);
 bool vstr_shrink(vstr_t *vstr);
 char *vstr_add_len(vstr_t *vstr, int len);

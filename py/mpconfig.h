@@ -101,6 +101,12 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_CPYTHON_COMPAT (1)
 #endif
 
+// Maximum length of a path in the filesystem
+// So we can allocate a buffer on the stack for path manipulation in import
+#ifndef MICROPY_PATH_MAX
+#define MICROPY_PATH_MAX (512)
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

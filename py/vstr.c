@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 #include "misc.h"
 
 // returned value is always at least 1 greater than argument
@@ -16,10 +17,23 @@ void vstr_init(vstr_t *vstr, int alloc) {
     }
     vstr->buf[0] = 0;
     vstr->had_error = false;
+    vstr->fixed_buf = false;
+}
+
+void vstr_init_fixed_buf(vstr_t *vstr, int alloc, char *buf) {
+    assert(alloc > 0); // need at least room for the null byte
+    vstr->alloc = alloc;
+    vstr->len = 0;
+    vstr->buf = buf;
+    vstr->buf[0] = 0;
+    vstr->had_error = false;
+    vstr->fixed_buf = true;
 }
 
 void vstr_clear(vstr_t *vstr) {
-    m_del(char, vstr->buf, vstr->alloc);
+    if (!vstr->fixed_buf) {
+        m_del(char, vstr->buf, vstr->alloc);
+    }
     vstr->buf = NULL;
 }
 
@@ -43,7 +57,9 @@ vstr_t *vstr_new_size(int alloc) {
 
 void vstr_free(vstr_t *vstr) {
     if (vstr != NULL) {
-        m_del(char, vstr->buf, vstr->alloc);
+        if (!vstr->fixed_buf) {
+            m_del(char, vstr->buf, vstr->alloc);
+        }
         m_del_obj(vstr_t, vstr);
     }
 }
@@ -73,7 +89,10 @@ int vstr_len(vstr_t *vstr) {
 }
 
 // Extend vstr strictly to by requested size, return pointer to newly added chunk
-char  *vstr_extend(vstr_t *vstr, int size) {
+char *vstr_extend(vstr_t *vstr, int size) {
+    if (vstr->fixed_buf) {
+        return NULL;
+    }
     char *new_buf = m_renew(char, vstr->buf, vstr->alloc, vstr->alloc + size);
     if (new_buf == NULL) {
         vstr->had_error = true;
@@ -87,6 +106,9 @@ char  *vstr_extend(vstr_t *vstr, int size) {
 
 // Shrink vstr to be given size
 bool vstr_set_size(vstr_t *vstr, int size) {
+    if (vstr->fixed_buf) {
+        return false;
+    }
     char *new_buf = m_renew(char, vstr->buf, vstr->alloc, size);
     if (new_buf == NULL) {
         vstr->had_error = true;
@@ -102,8 +124,11 @@ bool vstr_shrink(vstr_t *vstr) {
     return vstr_set_size(vstr, vstr->len);
 }
 
-bool vstr_ensure_extra(vstr_t *vstr, int size) {
+static bool vstr_ensure_extra(vstr_t *vstr, int size) {
     if (vstr->len + size + 1 > vstr->alloc) {
+        if (vstr->fixed_buf) {
+            return false;
+        }
         int new_alloc = ROUND_ALLOC((vstr->len + size + 1) * 2);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         if (new_buf == NULL) {
@@ -156,8 +181,15 @@ void vstr_add_str(vstr_t *vstr, const char *str) {
 
 void vstr_add_strn(vstr_t *vstr, const char *str, int len) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
+        // if buf is fixed, we got here because there isn't enough room left
+        // so just try to copy as much as we can, with room for null byte
+        if (vstr->fixed_buf && vstr->len + 1 < vstr->alloc) {
+            len = vstr->alloc - vstr->len - 1;
+            goto copy;
+        }
         return;
     }
+copy:
     memmove(vstr->buf + vstr->len, str, len);
     vstr->len += len;
     vstr->buf[vstr->len] = 0;

@@ -149,7 +149,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
 
     uint last = 0;
-    vstr_t *path = vstr_new();
+    VSTR_FIXED(path, MICROPY_PATH_MAX)
     module_obj = MP_OBJ_NULL;
     uint i;
     for (i = 1; i <= mod_len; i++) {
@@ -159,14 +159,14 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;
-            if (vstr_len(path) == 0) {
+            if (vstr_len(&path) == 0) {
                 // first module in the dotted-name; search for a directory or file
-                stat = find_file(mod_str, i, path);
+                stat = find_file(mod_str, i, &path);
             } else {
                 // latter module in the dotted-name; append to path
-                vstr_add_char(path, PATH_SEP_CHAR);
-                vstr_add_strn(path, mod_str + last, i - last);
-                stat = stat_dir_or_file(path);
+                vstr_add_char(&path, PATH_SEP_CHAR);
+                vstr_add_strn(&path, mod_str + last, i - last);
+                stat = stat_dir_or_file(&path);
             }
             last = i + 1;
 
@@ -182,14 +182,14 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
                 module_obj = mp_obj_new_module(mod_name);
 
                 if (stat == MP_IMPORT_STAT_DIR) {
-                    vstr_add_char(path, PATH_SEP_CHAR);
-                    vstr_add_str(path, "__init__.py");
-                    if (mp_import_stat(vstr_str(path)) == MP_IMPORT_STAT_FILE) {
-                        do_load(module_obj, path);
+                    vstr_add_char(&path, PATH_SEP_CHAR);
+                    vstr_add_str(&path, "__init__.py");
+                    if (mp_import_stat(vstr_str(&path)) == MP_IMPORT_STAT_FILE) {
+                        do_load(module_obj, &path);
                     }
-                    vstr_cut_tail(path, 12); // cut off /__init__.py
+                    vstr_cut_tail(&path, 12); // cut off /__init__.py
                 } else { // MP_IMPORT_STAT_FILE
-                    do_load(module_obj, path);
+                    do_load(module_obj, &path);
                     break;
                 }
             }
@@ -201,8 +201,6 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
         // TODO
         assert(0);
     }
-
-    vstr_free(path);
 
     return module_obj;
 }
