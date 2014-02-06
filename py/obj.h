@@ -66,11 +66,11 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
 
-#define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_obj_staticmethod_t obj_name
-#define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_obj_classmethod_t obj_name
+#define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
+#define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
 
-#define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_obj_staticmethod_t obj_name = {{&mp_type_staticmethod}, fun_name}
-#define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_classmethod_t obj_name = {{&mp_type_classmethod}, fun_name}
+#define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
+#define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
 // Need to declare this here so we are not dependent on map.h
 struct _mp_map_t;
@@ -180,7 +180,6 @@ struct _mp_obj_type_t {
     abs             float complex
     hash            bool int none str
     equal           int str
-    less            int
     get_array_n     tuple list
 
     unpack seq      list tuple
@@ -389,15 +388,11 @@ struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
 
-typedef struct _mp_obj_staticmethod_t {
+// this structure is used for instances of both staticmethod and classmethod
+typedef struct _mp_obj_static_class_method_t {
     mp_obj_base_t base;
     mp_obj_t fun;
-} mp_obj_staticmethod_t;
-
-typedef struct _mp_obj_classmethod_t {
-    mp_obj_base_t base;
-    mp_obj_t fun;
-} mp_obj_classmethod_t;
+} mp_obj_static_class_method_t;
 
 // sequence helpers
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);

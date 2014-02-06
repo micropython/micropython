@@ -134,6 +134,9 @@ void rt_init(void) {
     mp_map_add_qstr(&map_builtins, MP_QSTR_type, (mp_obj_t)&mp_const_type);
     mp_map_add_qstr(&map_builtins, MP_QSTR_zip, (mp_obj_t)&zip_type);
 
+    mp_map_add_qstr(&map_builtins, MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod);
+    mp_map_add_qstr(&map_builtins, MP_QSTR_staticmethod, (mp_obj_t)&mp_type_staticmethod);
+
     mp_obj_t m_array = mp_obj_new_module(MP_QSTR_array);
     rt_store_attr(m_array, MP_QSTR_array, (mp_obj_t)&array_type);
 
@@ -876,10 +879,10 @@ static void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
                         // see http://docs.python.org/3.3/howto/descriptor.html
                         if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {
                             // return just the function
-                            dest[0] = ((mp_obj_staticmethod_t*)meth->fun)->fun;
+                            dest[0] = ((mp_obj_static_class_method_t*)meth->fun)->fun;
                         } else if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_classmethod)) {
                             // return a bound method, with self being the type of this object
-                            dest[0] = ((mp_obj_classmethod_t*)meth->fun)->fun;
+                            dest[0] = ((mp_obj_static_class_method_t*)meth->fun)->fun;
                             dest[1] = mp_obj_get_type(base);
                         } else {
                             // return a bound method, with self being this object
@@ -970,6 +973,8 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
 }
 
 mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
+    DEBUG_printf("import name %s\n", qstr_str(name));
+
     // build args array
     mp_obj_t args[5];
     args[0] = MP_OBJ_NEW_QSTR(name);
@@ -983,6 +988,8 @@ mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
 }
 
 mp_obj_t rt_import_from(mp_obj_t module, qstr name) {
+    DEBUG_printf("import from %p %s\n", module, qstr_str(name));
+
     mp_obj_t x = rt_load_attr(module, name);
     /* TODO convert AttributeError to ImportError
     if (fail) {

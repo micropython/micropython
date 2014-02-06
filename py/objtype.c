@@ -212,10 +212,10 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // TODO check that this is the correct place to have this logic
             if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
                 // return just the function
-                dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+                dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
             } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
                 // return a bound method, with self being the type of this object
-                dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+                dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
                 dest[1] = mp_obj_get_type(self_in);
             } else {
                 // return a bound method, with self being this object
@@ -304,10 +304,10 @@ static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // see http://docs.python.org/3.3/howto/descriptor.html
         if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
             // return just the function
-            dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+            dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
         } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
             // return a bound method, with self being this class
-            dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+            dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
             dest[1] = self_in;
         } else {
             // return just the function
@@ -417,10 +417,10 @@ static void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 // TODO check that this is the correct place to have this logic
                 if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
                     // return just the function
-                    dest[0] = ((mp_obj_staticmethod_t*)member)->fun;
+                    dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
                 } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
                     // return a bound method, with self being the type of this object
-                    dest[0] = ((mp_obj_classmethod_t*)member)->fun;
+                    dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
                     dest[1] = mp_obj_get_type(self->obj);
                 } else {
                     // return a bound method, with self being this object
@@ -507,12 +507,26 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)
 
+static mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
+
+    if (n_args != 1 || n_kw != 0) {
+        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "function takes 1 positional argument but %d were given", (void*)(machine_int_t)n_args));
+    }
+
+    mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);
+    *o = (mp_obj_static_class_method_t){{(mp_obj_type_t*)self_in}, args[0]};
+    return o;
+}
+
 const mp_obj_type_t mp_type_staticmethod = {
     { &mp_const_type },
     "staticmethod",
+    .make_new = static_class_method_make_new
 };
 
 const mp_obj_type_t mp_type_classmethod = {
     { &mp_const_type },
     "classmethod",
+    .make_new = static_class_method_make_new
 };
