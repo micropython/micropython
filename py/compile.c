@@ -188,6 +188,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
     return pn;
 }
 
+static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
 void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 static int comp_next_label(compiler_t *comp) {
@@ -880,15 +881,8 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
     EMIT_ARG(load_const_id, cscope->simple_name);
 
     // nodes[1] has parent classes, if any
-    if (MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
-        // no parent classes
-        EMIT_ARG(call_function, 2, 0, false, false);
-    } else {
-        // have a parent class or classes
-        // TODO what if we have, eg, *a or **a in the parent list?
-        compile_node(comp, pns->nodes[1]);
-        EMIT_ARG(call_function, 2 + list_len(pns->nodes[1], PN_arglist), 0, false, false);
-    }
+    comp->func_arg_is_super = false;
+    compile_trailer_paren_helper(comp, pns->nodes[1], false, 2);
 
     // return its name (the 'C' in class C(...):")
     return cscope->simple_name;
@@ -2072,12 +2066,12 @@ void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_generic_all_nodes(comp, pns);
 }
 
-void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_struct_t *pns, bool is_method_call) {
+static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
     // function to call is on top of stack
 
 #if !MICROPY_EMIT_CPYTHON
     // this is to handle special super() call
-    if (MP_PARSE_NODE_IS_NULL(pns->nodes[0]) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
+    if (MP_PARSE_NODE_IS_NULL(pn_arglist) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
         EMIT_ARG(load_id, MP_QSTR___class__);
         // get first argument to function
         bool found = false;
@@ -2104,10 +2098,10 @@ void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_struct_t *pns,
     comp->have_star_arg = false;
     comp->have_dbl_star_arg = false;
 
-    compile_node(comp, pns->nodes[0]); // arguments to function call; can be null
+    compile_node(comp, pn_arglist); // arguments to function call; can be null
 
     // compute number of positional arguments
-    int n_positional = list_len(pns->nodes[0], PN_arglist) - comp->n_arg_keyword;
+    int n_positional = n_positional_extra + list_len(pn_arglist, PN_arglist) - comp->n_arg_keyword;
     if (comp->have_star_arg) {
         n_positional -= 1;
     }
@@ -2134,7 +2128,7 @@ void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
             mp_parse_node_struct_t *pns_period = (mp_parse_node_struct_t*)pns->nodes[i];
             mp_parse_node_struct_t *pns_paren = (mp_parse_node_struct_t*)pns->nodes[i + 1];
             EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0])); // get the method
-            compile_trailer_paren_helper(comp, pns_paren, true);
+            compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
             i += 1;
         } else {
             compile_node(comp, pns->nodes[i]);
@@ -2364,7 +2358,7 @@ void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    compile_trailer_paren_helper(comp, pns, false);
+    compile_trailer_paren_helper(comp, pns->nodes[0], false, 0);
 }
 
 void compile_trailer_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) {
