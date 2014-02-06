@@ -64,6 +64,7 @@ SRC_C = \
 	adc.c \
 	rtc.c \
 	file.c \
+	pinmap.c \
 #	pybwlan.c \
 
 SRC_S = \
