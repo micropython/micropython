@@ -91,3 +91,52 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
     }
     return true;
 }
+
+// Special-case comparison function for sequences of mp_obj_t
+// Don't pass RT_BINARY_OP_NOT_EQUAL here
+bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2) {
+    if (op == RT_BINARY_OP_EQUAL && len1 != len2) {
+        return false;
+    }
+
+    // Let's deal only with > & >=
+    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
+        SWAP(const mp_obj_t *, items1, items2);
+        SWAP(uint, len1, len2);
+        if (op == RT_BINARY_OP_LESS) {
+            op = RT_BINARY_OP_MORE;
+        } else {
+            op = RT_BINARY_OP_MORE_EQUAL;
+        }
+    }
+
+    int len = len1 < len2 ? len1 : len2;
+    bool eq_status = true; // empty lists are equal
+    bool rel_status;
+    for (int i = 0; i < len; i++) {
+        eq_status = mp_obj_equal(items1[i], items2[i]);
+        if (op == RT_BINARY_OP_EQUAL && !eq_status) {
+            return false;
+        }
+        rel_status = (rt_binary_op(op, items1[i], items2[i]) == mp_const_true);
+        if (!eq_status && !rel_status) {
+            return false;
+        }
+    }
+
+    // If we had tie in the last element...
+    if (eq_status) {
+        // ... and we have lists of different lengths...
+        if (len1 != len2) {
+            if (len1 < len2) {
+                // ... then longer list length wins (we deal only with >)
+                return false;
+            }
+        } else if (op == RT_BINARY_OP_MORE) {
+            // Otherwise, if we have strict relation, equality means failure
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -75,51 +75,8 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     }
     mp_obj_list_t *self = self_in;
     mp_obj_list_t *another = another_in;
-    if (op == RT_BINARY_OP_EQUAL && self->len != another->len) {
-        return false;
-    }
 
-    // Let's deal only with > & >=
-    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
-        mp_obj_t t = self;
-        self = another;
-        another = t;
-        if (op == RT_BINARY_OP_LESS) {
-            op = RT_BINARY_OP_MORE;
-        } else {
-            op = RT_BINARY_OP_MORE_EQUAL;
-        }
-    }
-
-    int len = self->len < another->len ? self->len : another->len;
-    bool eq_status = true; // empty lists are equal
-    bool rel_status;
-    for (int i = 0; i < len; i++) {
-        eq_status = mp_obj_equal(self->items[i], another->items[i]);
-        if (op == RT_BINARY_OP_EQUAL && !eq_status) {
-            return false;
-        }
-        rel_status = (rt_binary_op(op, self->items[i], another->items[i]) == mp_const_true);
-        if (!eq_status && !rel_status) {
-            return false;
-        }
-    }
-
-    // If we had tie in the last element...
-    if (eq_status) {
-        // ... and we have lists of different lengths...
-        if (self->len != another->len) {
-            if (self->len < another->len) {
-                // ... then longer list length wins (we deal only with >)
-                return false;
-            }
-        } else if (op == RT_BINARY_OP_MORE) {
-            // Otherwise, if we have strict relation, equality means failure
-            return false;
-        }
-    }
-
-    return true;
+    return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
 static mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
