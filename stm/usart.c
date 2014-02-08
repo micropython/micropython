@@ -159,7 +159,7 @@ void usart_tx_str(pyb_usart_t usart_id, const char *str) {
     }
 }
 
-void usart_tx_bytes(pyb_usart_t usart_id, const byte *data, uint len) {
+void usart_tx_bytes(pyb_usart_t usart_id, const char *data, uint len) {
     for (; len > 0; data++, len--) {
         usart_tx_char(usart_id, *data);
     }
@@ -216,7 +216,7 @@ static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     if (self->is_enabled) {
         if (MP_OBJ_IS_STR(s)) {
             uint len;
-            const byte *data = mp_obj_str_get_data(s, &len);
+            const char *data = mp_obj_str_get_data(s, &len);
             usart_tx_bytes(self->usart_id, data, len);
         }
     }

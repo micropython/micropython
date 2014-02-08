@@ -23,8 +23,8 @@ static mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
                 uint l;
-                const byte *s = mp_obj_str_get_data(args[0], &l);
-                return MP_OBJ_NEW_SMALL_INT(strtonum((const char*)s, 0));
+                const char *s = mp_obj_str_get_data(args[0], &l);
+                return MP_OBJ_NEW_SMALL_INT(strtonum(s, 0));
             } else {
                 return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
             }
@@ -34,8 +34,8 @@ static mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             // should be a string, parse it
             // TODO proper error checking of argument types
             uint l;
-            const byte *s = mp_obj_str_get_data(args[0], &l);
-            return MP_OBJ_NEW_SMALL_INT(strtonum((const char*)s, mp_obj_get_int(args[1])));
+            const char *s = mp_obj_str_get_data(args[0], &l);
+            return MP_OBJ_NEW_SMALL_INT(strtonum(s, mp_obj_get_int(args[1])));
         }
 
         default:

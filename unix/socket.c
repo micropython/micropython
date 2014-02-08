@@ -154,7 +154,7 @@ static mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
     }
 
     uint sz;
-    const byte *buf = mp_obj_str_get_data(args[1], &sz);
+    const char *buf = mp_obj_str_get_data(args[1], &sz);
     int out_sz = send(self->fd, buf, sz, flags);
     RAISE_ERRNO(out_sz, errno);
 

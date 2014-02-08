@@ -288,9 +288,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
 
 static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
-    const byte *str = mp_obj_str_get_data(o_in, &len);
+    const char *str = mp_obj_str_get_data(o_in, &len);
     if (len == 1) {
-        return mp_obj_new_int(str[0]);
+        // don't sign extend when converting to ord
+        // TODO unicode
+        return mp_obj_new_int(((const byte*)str)[0]);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "ord() expected a character, but string of length %d found", len));
     }

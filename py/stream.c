@@ -43,7 +43,7 @@ static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     uint sz;
-    const byte *buf = mp_obj_str_get_data(arg, &sz);
+    const char *buf = mp_obj_str_get_data(arg, &sz);
     int error;
     machine_int_t out_sz = o->type->stream_p.write(self_in, buf, sz, &error);
     if (out_sz == -1) {

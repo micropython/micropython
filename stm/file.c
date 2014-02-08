@@ -29,7 +29,7 @@ mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
 mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {
     pyb_file_obj_t *self = self_in;
     uint l;
-    const byte *s = mp_obj_str_get_data(arg, &l);
+    const char *s = mp_obj_str_get_data(arg, &l);
     UINT n_out;
     FRESULT res = f_write(&self->fp, s, l, &n_out);
     if (res != FR_OK) {

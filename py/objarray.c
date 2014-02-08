@@ -174,7 +174,7 @@ static mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
     // TODO check args
     uint l;
-    const byte *typecode = mp_obj_str_get_data(args[0], &l);
+    const char *typecode = mp_obj_str_get_data(args[0], &l);
     if (n_args == 1) {
         return array_new(*typecode, 0);
     }

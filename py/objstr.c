@@ -635,11 +635,11 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
     }
 }
 
-const byte *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
+const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
     if (MP_OBJ_IS_STR(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;
-        return s;
+        return (const char*)s;
     } else {
         bad_implicit_conversion(self_in);
     }

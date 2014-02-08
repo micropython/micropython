@@ -54,9 +54,9 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
         for (int i = 0; i < path_num; i++) {
             vstr_reset(dest);
             uint p_len;
-            const byte *p = mp_obj_str_get_data(path_items[i], &p_len);
+            const char *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
-                vstr_add_strn(dest, (const char*)p, p_len);
+                vstr_add_strn(dest, p, p_len);
                 vstr_add_char(dest, PATH_SEP_CHAR);
             }
             vstr_add_strn(dest, file_str, file_len);

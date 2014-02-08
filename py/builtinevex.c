@@ -21,10 +21,10 @@
 
 static mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
     uint str_len;
-    const byte *str = mp_obj_str_get_data(o_in, &str_len);
+    const char *str = mp_obj_str_get_data(o_in, &str_len);
 
     // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, (const char*)str, str_len, 0);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);
     qstr source_name = mp_lexer_source_name(lex);
 
     // parse the string
