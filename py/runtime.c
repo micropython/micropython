@@ -968,7 +968,7 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
     } else {
         // check for __getitem__ method
         mp_obj_t dest[2];
-        rt_load_method_maybe(o_in, qstr_from_str("__getitem__"), dest);
+        rt_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
         if (dest[0] != MP_OBJ_NULL) {
             // __getitem__ exists, create an iterator
             return mp_obj_new_getitem_iter(dest);

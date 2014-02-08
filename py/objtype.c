@@ -239,7 +239,7 @@ static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 
 bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, QSTR_FROM_STR_STATIC("__setitem__"));
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
     if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         rt_call_function_n_kw(member, 3, 0, args);
