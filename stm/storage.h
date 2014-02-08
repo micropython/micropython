@@ -1,3 +1,5 @@
+#define FLASH_BLOCK_SIZE (512)
+
 void storage_init(void);
 uint32_t storage_get_block_size(void);
 uint32_t storage_get_block_count(void);

@@ -13,20 +13,20 @@
 #include "diskio.h"        /* FatFs lower layer API */
 #include "misc.h"
 #include "storage.h"
+#include "sdcard.h"
 
 PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
+    {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
     /*
-    {0, 2},     // Logical drive 1 ==> Physical drive 0, 2nd partition
-    {0, 3},     // Logical drive 2 ==> Physical drive 0, 3rd partition
-    {1, 0},     // Logical drive 3 ==> Physical drive 1 (auto detection)
+    {0, 2},     // Logical drive 2 ==> Physical drive 0, 2nd partition
+    {0, 3},     // Logical drive 3 ==> Physical drive 0, 3rd partition
     */
 };
 
 /* Definitions of physical drive number for each media */
 #define PD_FLASH (0)
-#define PD_SD    (1)
-#define BLOCK_SIZE (512)
+#define PD_SDCARD (1)
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
@@ -37,8 +37,15 @@ DSTATUS disk_initialize (
 )
 {
     switch (pdrv) {
-        case PD_FLASH :
+        case PD_FLASH:
             storage_init();
+            return 0;
+
+        case PD_SDCARD:
+            if (!sdcard_power_on()) {
+                return STA_NODISK;
+            }
+            // TODO return STA_PROTECT if SD card is read only
             return 0;
     }
 
@@ -58,8 +65,9 @@ DSTATUS disk_status (
             // flash is ready
             return 0;
 
-        case PD_SD:
-            return STA_NOINIT;
+        case PD_SDCARD:
+            // TODO return STA_PROTECT if SD card is read only
+            return 0;
     }
 
     return STA_NOINIT;
@@ -79,7 +87,16 @@ DRESULT disk_read (
     switch (pdrv) {
         case PD_FLASH:
             for (int i = 0; i < count; i++) {
-                if (!storage_read_block(buff + i * BLOCK_SIZE, sector + i)) {
+                if (!storage_read_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
+                    return RES_ERROR;
+                }
+            }
+            return RES_OK;
+
+        case PD_SDCARD:
+            // TODO have a multi-block read function
+            for (int i = 0; i < count; i++) {
+                if (!sdcard_read_block(buff + i * SDCARD_BLOCK_SIZE, sector + i)) {
                     return RES_ERROR;
                 }
             }
@@ -104,7 +121,16 @@ DRESULT disk_write (
     switch (pdrv) {
         case PD_FLASH:
             for (int i = 0; i < count; i++) {
-                if (!storage_write_block(buff + i * BLOCK_SIZE, sector + i)) {
+                if (!storage_write_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
+                    return RES_ERROR;
+                }
+            }
+            return RES_OK;
+
+        case PD_SDCARD:
+            // TODO have a multi-block write function
+            for (int i = 0; i < count; i++) {
+                if (!sdcard_write_block(buff + i * SDCARD_BLOCK_SIZE, sector + i)) {
                     return RES_ERROR;
                 }
             }
@@ -138,6 +164,18 @@ DRESULT disk_ioctl (
                     *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) block size
                     return RES_OK;
             }
+            break;
+
+        case PD_SDCARD:
+            switch (cmd) {
+                case CTRL_SYNC:
+                    return RES_OK;
+
+                case GET_BLOCK_SIZE:
+                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) block size
+                    return RES_OK;
+            }
+            break;
     }
 
     return RES_PARERR;
@@ -148,6 +186,7 @@ DWORD get_fattime (
     void
 )
 {
+    // TODO replace with call to RTC
     int year = 2013;
     int month = 10;
     int day = 12;

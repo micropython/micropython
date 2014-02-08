@@ -10,51 +10,50 @@
 #include "flash.h"
 #include "storage.h"
 
-#define BLOCK_SIZE (512)
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
 #define FLASH_PART1_START_BLOCK (0x100)
 #define FLASH_PART1_NUM_BLOCKS (224) // 16k+16k+16k+64k=112k
 #define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 
-static bool is_initialised = false;
-static uint32_t cache_flash_sector_id;
-static uint32_t cache_flash_sector_start;
-static uint32_t cache_flash_sector_size;
-static bool cache_dirty;
-static uint32_t sys_tick_counter_last_write;
+static bool flash_is_initialised = false;
+static bool flash_cache_dirty;
+static uint32_t flash_cache_sector_id;
+static uint32_t flash_cache_sector_start;
+static uint32_t flash_cache_sector_size;
+static uint32_t flash_sys_tick_counter_last_write;
 
-static void cache_flush(void) {
-    if (cache_dirty) {
+static void flash_cache_flush(void) {
+    if (flash_cache_dirty) {
         // sync the cache RAM buffer by writing it to the flash page
-        flash_write(cache_flash_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, cache_flash_sector_size / 4);
-        cache_dirty = false;
+        flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_cache_dirty = false;
         // indicate a clean cache with LED off
         led_state(PYB_LED_R1, 0);
     }
 }
 
-static uint8_t *cache_get_addr_for_write(uint32_t flash_addr) {
+static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
-    if (cache_flash_sector_id != flash_sector_id) {
-        cache_flush();
+    if (flash_cache_sector_id != flash_sector_id) {
+        flash_cache_flush();
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
-        cache_flash_sector_id = flash_sector_id;
-        cache_flash_sector_start = flash_sector_start;
-        cache_flash_sector_size = flash_sector_size;
+        flash_cache_sector_id = flash_sector_id;
+        flash_cache_sector_start = flash_sector_start;
+        flash_cache_sector_size = flash_sector_size;
     }
-    cache_dirty = true;
+    flash_cache_dirty = true;
     // indicate a dirty cache with LED on
     led_state(PYB_LED_R1, 1);
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
 
-static uint8_t *cache_get_addr_for_read(uint32_t flash_addr) {
+static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
-    if (cache_flash_sector_id == flash_sector_id) {
+    if (flash_cache_sector_id == flash_sector_id) {
         // in cache, copy from there
         return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
     }
@@ -63,16 +62,16 @@ static uint8_t *cache_get_addr_for_read(uint32_t flash_addr) {
 }
 
 void storage_init(void) {
-    if (!is_initialised) {
-        cache_flash_sector_id = 0;
-        cache_dirty = false;
-        is_initialised = true;
-        sys_tick_counter_last_write = 0;
+    if (!flash_is_initialised) {
+        flash_cache_dirty = false;
+        flash_cache_sector_id = 0;
+        flash_is_initialised = true;
+        flash_sys_tick_counter_last_write = 0;
     }
 }
 
 uint32_t storage_get_block_size(void) {
-    return BLOCK_SIZE;
+    return FLASH_BLOCK_SIZE;
 }
 
 uint32_t storage_get_block_count(void) {
@@ -81,11 +80,11 @@ uint32_t storage_get_block_count(void) {
 
 bool storage_needs_flush(void) {
     // wait 2 seconds after last write to flush
-    return cache_dirty && sys_tick_has_passed(sys_tick_counter_last_write, 2000);
+    return flash_cache_dirty && sys_tick_has_passed(flash_sys_tick_counter_last_write, 2000);
 }
 
 void storage_flush(void) {
-    cache_flush();
+    flash_cache_flush();
 }
 
 static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_block, uint32_t num_blocks) {
@@ -145,9 +144,9 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
         // non-MBR block, get data from flash memory, possibly via cache
-        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * BLOCK_SIZE;
-        uint8_t *src = cache_get_addr_for_read(flash_addr);
-        memcpy(dest, src, BLOCK_SIZE);
+        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+        uint8_t *src = flash_cache_get_addr_for_read(flash_addr);
+        memcpy(dest, src, FLASH_BLOCK_SIZE);
         return true;
 
     } else {
@@ -164,10 +163,10 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
 
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
         // non-MBR block, copy to cache
-        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * BLOCK_SIZE;
-        uint8_t *dest = cache_get_addr_for_write(flash_addr);
-        memcpy(dest, src, BLOCK_SIZE);
-        sys_tick_counter_last_write = sys_tick_counter;
+        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+        uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);
+        memcpy(dest, src, FLASH_BLOCK_SIZE);
+        flash_sys_tick_counter_last_write = sys_tick_counter;
         return true;
 
     } else {

@@ -35,6 +35,7 @@
 #include "servo.h"
 #include "lcd.h"
 #include "storage.h"
+#include "sdcard.h"
 #include "mma.h"
 #include "usart.h"
 #include "usb.h"
@@ -50,6 +51,7 @@
 int errno;
 
 static FATFS fatfs0;
+static FATFS fatfs1;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -223,15 +225,6 @@ static mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
     repl_display_debugging_info = mp_obj_get_int(o_value);
     return mp_const_none;
 }
-
-#if MICROPY_HW_HAS_SDCARD
-// SD card test
-static mp_obj_t pyb_sd_test(void) {
-    extern void sdio_init(void);
-    sdio_init();
-    return mp_const_none;
-}
-#endif
 
 static void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
@@ -640,6 +633,9 @@ int main(void) {
 #if MICROPY_HW_HAS_SWITCH
     switch_init();
 #endif
+#if MICROPY_HW_HAS_SDCARD
+    sdcard_init();
+#endif
     storage_init();
 
     // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
@@ -692,7 +688,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_gc, (mp_obj_t)&pyb_gc_obj);
         rt_store_attr(m, qstr_from_str("repl_info"), rt_make_function_n(1, pyb_set_repl_info));
 #if MICROPY_HW_HAS_SDCARD
-        rt_store_attr(m, MP_QSTR_sd_test, rt_make_function_n(0, pyb_sd_test));
+        rt_store_attr(m, qstr_from_str("SD"), (mp_obj_t)&pyb_sdcard_obj);
 #endif
         rt_store_attr(m, MP_QSTR_stop, rt_make_function_n(0, pyb_stop));
         rt_store_attr(m, MP_QSTR_standby, rt_make_function_n(0, pyb_standby));
@@ -843,6 +839,16 @@ soft_reset:
 
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
+
+#if MICROPY_HW_HAS_SDCARD
+    // if an SD card is present then mount it on 1:/
+    if (sdcard_is_present()) {
+        FRESULT res = f_mount(&fatfs1, "1:", 1);
+        if (res != FR_OK) {
+            printf("[SD] could not mount SD card\n");
+        }
+    }
+#endif
 
     // run main script
     {

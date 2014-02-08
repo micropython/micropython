@@ -58,7 +58,7 @@ SRC_C = \
 	usb.c \
 	timer.c \
 	audio.c \
-	sdio.c \
+	sdcard.c \
 	i2c.c \
 	usrsw.c \
 	adc.c \
