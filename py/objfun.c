@@ -54,15 +54,11 @@ mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
     if (self->is_kw) {
         // function allows keywords
 
-        // TODO if n_kw==0 then don't allocate any memory for map (either pass NULL or allocate it on the heap)
-        mp_map_t *kw_args = mp_map_new(n_kw);
-        for (int i = 0; i < 2 * n_kw; i += 2) {
-            mp_map_lookup(kw_args, args[n_args + i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = args[n_args + i + 1];
-        }
-        mp_obj_t res = ((mp_fun_kw_t)self->fun)(n_args, args, kw_args);
-        // TODO clean up kw_args
+        // we create a map directly from the given args array
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
-        return res;
+        return ((mp_fun_kw_t)self->fun)(n_args, args, &kw_args);
 
     } else if (self->n_args_min <= 3 && self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
