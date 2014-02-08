@@ -74,6 +74,18 @@ static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
+// Don't pass RT_BINARY_OP_NOT_EQUAL here
+static bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    if (!MP_OBJ_IS_TYPE(another_in, &tuple_type)) {
+        return false;
+    }
+    mp_obj_tuple_t *self = self_in;
+    mp_obj_tuple_t *another = another_in;
+
+    return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
+}
+
 static mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
@@ -102,6 +114,15 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
         }
+        case RT_BINARY_OP_EQUAL:
+        case RT_BINARY_OP_LESS:
+        case RT_BINARY_OP_LESS_EQUAL:
+        case RT_BINARY_OP_MORE:
+        case RT_BINARY_OP_MORE_EQUAL:
+            return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
+        case RT_BINARY_OP_NOT_EQUAL:
+            return MP_BOOL(!tuple_cmp_helper(RT_BINARY_OP_EQUAL, lhs, rhs));
+
         default:
             // op not supported
             return NULL;
