@@ -84,6 +84,12 @@ static mp_obj_t socket_close(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
+static mp_obj_t socket_fileno(mp_obj_t self_in) {
+    mp_obj_socket_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(self->fd);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
+
 static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
     buffer_info_t bufinfo;
@@ -209,6 +215,7 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 }
 
 static const mp_method_t microsocket_type_methods[] = {
+        { "fileno", &socket_fileno_obj },
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
         { "readline", &mp_stream_unbuffered_readline_obj},
