@@ -6,7 +6,8 @@ typedef struct _mp_map_elem_t {
 typedef struct _mp_map_t {
     struct {
         machine_uint_t all_keys_are_qstrs : 1;
-        machine_uint_t used : (8 * sizeof(machine_uint_t) - 1);
+        machine_uint_t table_is_fixed_array : 1;
+        machine_uint_t used : (8 * sizeof(machine_uint_t) - 2);
     };
     machine_uint_t alloc;
     mp_map_elem_t *table;
@@ -27,6 +28,7 @@ typedef enum _mp_map_lookup_kind_t {
 
 int get_doubling_prime_greater_or_equal_to(int x);
 void mp_map_init(mp_map_t *map, int n);
+void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
 mp_map_t *mp_map_new(int n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);

@@ -28,10 +28,24 @@ int get_doubling_prime_greater_or_equal_to(int x) {
 /* map                                                                        */
 
 void mp_map_init(mp_map_t *map, int n) {
-    map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
+    if (n == 0) {
+        map->alloc = 0;
+        map->table = NULL;
+    } else {
+        map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
+        map->table = m_new0(mp_map_elem_t, map->alloc);
+    }
     map->used = 0;
     map->all_keys_are_qstrs = 1;
-    map->table = m_new0(mp_map_elem_t, map->alloc);
+    map->table_is_fixed_array = 0;
+}
+
+void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table) {
+    map->alloc = n;
+    map->used = n;
+    map->all_keys_are_qstrs = 1;
+    map->table_is_fixed_array = 1;
+    map->table = (mp_map_elem_t*)table;
 }
 
 mp_map_t *mp_map_new(int n) {
@@ -42,7 +56,9 @@ mp_map_t *mp_map_new(int n) {
 
 // Differentiate from mp_map_clear() - semantics is different
 void mp_map_deinit(mp_map_t *map) {
-    m_del(mp_map_elem_t, map->table, map->alloc);
+    if (!map->table_is_fixed_array) {
+        m_del(mp_map_elem_t, map->table, map->alloc);
+    }
     map->used = map->alloc = 0;
 }
 
@@ -52,15 +68,14 @@ void mp_map_free(mp_map_t *map) {
 }
 
 void mp_map_clear(mp_map_t *map) {
+    if (!map->table_is_fixed_array) {
+        m_del(mp_map_elem_t, map->table, map->alloc);
+    }
+    map->alloc = 0;
     map->used = 0;
     map->all_keys_are_qstrs = 1;
-    machine_uint_t a = map->alloc;
-    map->alloc = 0;
-    map->table = m_renew(mp_map_elem_t, map->table, a, map->alloc);
-    mp_map_elem_t nul = {NULL, NULL};
-    for (uint i=0; i<map->alloc; i++) {
-        map->table[i] = nul;
-    }
+    map->table_is_fixed_array = 0;
+    map->table = NULL;
 }
 
 static void mp_map_rehash(mp_map_t *map) {
@@ -79,21 +94,37 @@ static void mp_map_rehash(mp_map_t *map) {
 }
 
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
+    // if the map is a fixed array then we must do a brute force linear search
+    if (map->table_is_fixed_array) {
+        if (lookup_kind != MP_MAP_LOOKUP) {
+            return NULL;
+        }
+        for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
+            if (elem->key == index || (!map->all_keys_are_qstrs && mp_obj_equal(elem->key, index))) {
+                return elem;
+            }
+        }
+        return NULL;
+    }
+
+    // map is a hash table (not a fixed array), so do a hash lookup
+
     machine_uint_t hash;
     hash = mp_obj_hash(index);
     if (map->alloc == 0) {
-        if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+        if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             mp_map_rehash(map);
         } else {
             return NULL;
         }
     }
+
     uint pos = hash % map->alloc;
     for (;;) {
         mp_map_elem_t *elem = &map->table[pos];
         if (elem->key == NULL) {
             // not in table
-            if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+            if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 if (map->used + 1 >= map->alloc) {
                     // not enough room in table, rehash it
                     mp_map_rehash(map);
@@ -117,7 +148,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 elem->key = index;
             }
             */
-            if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
+            if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 map->used--;
                 // this leaks this memory (but see dict_get_helper)
                 mp_map_elem_t *retval = m_new(mp_map_elem_t, 1);
@@ -195,7 +226,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
             } else {
                 return MP_OBJ_NULL;
             }
-        } else if (lookup_kind & MP_MAP_LOOKUP_FIRST || mp_obj_equal(elem, index)) {
+        } else if ((lookup_kind & MP_MAP_LOOKUP_FIRST) || mp_obj_equal(elem, index)) {
             // found it
             if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 set->used--;
@@ -210,11 +241,8 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
 }
 
 void mp_set_clear(mp_set_t *set) {
-    set->used = 0;
-    machine_uint_t a = set->alloc;
+    m_del(mp_obj_t, set->table, set->alloc);
     set->alloc = 0;
-    set->table = m_renew(mp_obj_t, set->table, a, set->alloc);
-    for (uint i=0; i<set->alloc; i++) {
-        set->table[i] = NULL;
-    }
+    set->used = 0;
+    set->table = NULL;
 }
