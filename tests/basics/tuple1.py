@@ -14,3 +14,5 @@ except AttributeError:
 print(x[1:])
 print(x[:-1])
 print(x[2:3])
+
+print(x + (10, 100, 10000))

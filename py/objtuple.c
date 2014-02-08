@@ -114,6 +114,16 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
         }
+        case RT_BINARY_OP_ADD:
+        {
+            if (!MP_OBJ_IS_TYPE(rhs, &tuple_type)) {
+                return NULL;
+            }
+            mp_obj_tuple_t *p = rhs;
+            mp_obj_tuple_t *s = mp_obj_new_tuple(o->len + p->len, NULL);
+            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
+            return s;
+        }
         case RT_BINARY_OP_EQUAL:
         case RT_BINARY_OP_LESS:
         case RT_BINARY_OP_LESS_EQUAL:

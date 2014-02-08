@@ -114,8 +114,7 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
-            memcpy(s->items, o->items, sizeof(mp_obj_t) * o->len);
-            memcpy(s->items + o->len, p->items, sizeof(mp_obj_t) * p->len);
+            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
         case RT_BINARY_OP_INPLACE_ADD:
