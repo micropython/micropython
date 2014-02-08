@@ -24,7 +24,7 @@ typedef struct _mp_obj_socket_t {
     int fd;
 } mp_obj_socket_t;
 
-static const mp_obj_type_t rawsocket_type;
+static const mp_obj_type_t microsocket_type;
 
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
@@ -48,7 +48,7 @@ error:
 
 static mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &rawsocket_type;
+    o->base.type = &microsocket_type;
     o->fd = fd;
     return o;
 }
@@ -208,7 +208,7 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return socket_new(fd);
 }
 
-static const mp_method_t rawsocket_type_methods[] = {
+static const mp_method_t microsocket_type_methods[] = {
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
         { "readline", &mp_stream_unbuffered_readline_obj},
@@ -228,7 +228,7 @@ static const mp_method_t rawsocket_type_methods[] = {
         { NULL, NULL },
 };
 
-static const mp_obj_type_t rawsocket_type = {
+static const mp_obj_type_t microsocket_type = {
     { &mp_const_type },
     "socket",
     .print = socket_print,
@@ -239,7 +239,7 @@ static const mp_obj_type_t rawsocket_type = {
         .read = socket_read,
         .write = socket_write,
     },
-    .methods = rawsocket_type_methods,
+    .methods = microsocket_type_methods,
 };
 
 static mp_obj_t mod_socket_htons(mp_obj_t arg) {
@@ -351,9 +351,9 @@ struct sym_entry {
 
 #undef C
 
-void rawsocket_init() {
-    mp_obj_t m = mp_obj_new_module(MP_QSTR_rawsocket);
-    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&rawsocket_type);
+void microsocket_init() {
+    mp_obj_t m = mp_obj_new_module(MP_QSTR_microsocket);
+    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&microsocket_type);
 #if MICROPY_SOCKET_EXTRA
     rt_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
     rt_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
