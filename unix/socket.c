@@ -216,6 +216,7 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
 static const mp_method_t microsocket_type_methods[] = {
         { "fileno", &socket_fileno_obj },
+        { "makefile", &mp_identity_obj },
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
         { "readline", &mp_stream_unbuffered_readline_obj},

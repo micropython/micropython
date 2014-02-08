@@ -370,6 +370,7 @@ extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code);
 
 mp_obj_t mp_identity(mp_obj_t self);
+MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 
 // super
 extern const mp_obj_type_t super_type;
