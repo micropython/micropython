@@ -124,6 +124,16 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
+        case RT_BINARY_OP_MULTIPLY:
+        {
+            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+                return NULL;
+            }
+            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
+            mp_obj_tuple_t *s = mp_obj_new_tuple(o->len * n, NULL);
+            mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
+            return s;
+        }
         case RT_BINARY_OP_EQUAL:
         case RT_BINARY_OP_LESS:
         case RT_BINARY_OP_LESS_EQUAL:
