@@ -333,7 +333,7 @@ extern mp_obj_type_t sockaddr_in_type;
 
 #define C(name) { #name, name }
 
-struct sym_entry {
+static const struct sym_entry {
     const char *sym;
     int val;
 } constants[] = {
@@ -369,7 +369,7 @@ void microsocket_init() {
     rt_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
 #endif
     rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
-    for (struct sym_entry *p = constants; p->sym != NULL; p++) {
+    for (const struct sym_entry *p = constants; p->sym != NULL; p++) {
         rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
     }
 }
