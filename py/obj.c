@@ -253,3 +253,4 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 mp_obj_t mp_identity(mp_obj_t self) {
     return self;
 }
+MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);

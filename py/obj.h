@@ -370,6 +370,7 @@ extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code);
 
 mp_obj_t mp_identity(mp_obj_t self);
+MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 
 // super
 extern const mp_obj_type_t super_type;
@@ -397,5 +398,9 @@ typedef struct _mp_obj_static_class_method_t {
 // sequence helpers
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
 bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
-#define m_seq_copy(dest, src, len, item_sz) memcpy(dest, src, len * sizeof(item_sz))
+#define m_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
+#define m_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, len1 * sizeof(item_t)); memcpy(dest + len1, src2, len2 * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2);
+bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
+mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
+mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);

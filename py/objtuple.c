@@ -74,6 +74,18 @@ static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
+// Don't pass RT_BINARY_OP_NOT_EQUAL here
+static bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    if (!MP_OBJ_IS_TYPE(another_in, &tuple_type)) {
+        return false;
+    }
+    mp_obj_tuple_t *self = self_in;
+    mp_obj_tuple_t *another = another_in;
+
+    return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
+}
+
 static mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
@@ -102,6 +114,35 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             uint index = mp_get_index(o->base.type, o->len, rhs);
             return o->items[index];
         }
+        case RT_BINARY_OP_ADD:
+        {
+            if (!MP_OBJ_IS_TYPE(rhs, &tuple_type)) {
+                return NULL;
+            }
+            mp_obj_tuple_t *p = rhs;
+            mp_obj_tuple_t *s = mp_obj_new_tuple(o->len + p->len, NULL);
+            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
+            return s;
+        }
+        case RT_BINARY_OP_MULTIPLY:
+        {
+            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+                return NULL;
+            }
+            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
+            mp_obj_tuple_t *s = mp_obj_new_tuple(o->len * n, NULL);
+            mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
+            return s;
+        }
+        case RT_BINARY_OP_EQUAL:
+        case RT_BINARY_OP_LESS:
+        case RT_BINARY_OP_LESS_EQUAL:
+        case RT_BINARY_OP_MORE:
+        case RT_BINARY_OP_MORE_EQUAL:
+            return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
+        case RT_BINARY_OP_NOT_EQUAL:
+            return MP_BOOL(!tuple_cmp_helper(RT_BINARY_OP_EQUAL, lhs, rhs));
+
         default:
             // op not supported
             return NULL;
@@ -112,6 +153,26 @@ static mp_obj_t tuple_getiter(mp_obj_t o_in) {
     return mp_obj_new_tuple_iterator(o_in, 0);
 }
 
+static mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    mp_obj_tuple_t *self = self_in;
+    return mp_seq_count_obj(self->items, self->len, value);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
+
+static mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(args[0], &tuple_type));
+    mp_obj_tuple_t *self = args[0];
+    return mp_seq_index_obj(self->items, self->len, n_args, args);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
+
+static const mp_method_t tuple_type_methods[] = {
+    { "count", &tuple_count_obj },
+    { "index", &tuple_index_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
+
 const mp_obj_type_t tuple_type = {
     { &mp_const_type },
     "tuple",
@@ -120,6 +181,7 @@ const mp_obj_type_t tuple_type = {
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,
+    .methods = tuple_type_methods,
 };
 
 // the zero-length tuple

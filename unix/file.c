@@ -48,6 +48,12 @@ static mp_obj_t fdfile_close(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
+static mp_obj_t fdfile_fileno(mp_obj_t self_in) {
+    mp_obj_fdfile_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(self->fd);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
+
 static mp_obj_fdfile_t *fdfile_new(int fd) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     o->base.type = &rawfile_type;
@@ -99,6 +105,7 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 }
 
 static const mp_method_t rawfile_type_methods[] = {
+        { "fileno", &fdfile_fileno_obj },
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
         { "readline", &mp_stream_unbuffered_readline_obj},

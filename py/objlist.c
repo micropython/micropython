@@ -75,51 +75,8 @@ static bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     }
     mp_obj_list_t *self = self_in;
     mp_obj_list_t *another = another_in;
-    if (op == RT_BINARY_OP_EQUAL && self->len != another->len) {
-        return false;
-    }
 
-    // Let's deal only with > & >=
-    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
-        mp_obj_t t = self;
-        self = another;
-        another = t;
-        if (op == RT_BINARY_OP_LESS) {
-            op = RT_BINARY_OP_MORE;
-        } else {
-            op = RT_BINARY_OP_MORE_EQUAL;
-        }
-    }
-
-    int len = self->len < another->len ? self->len : another->len;
-    bool eq_status = true; // empty lists are equal
-    bool rel_status;
-    for (int i = 0; i < len; i++) {
-        eq_status = mp_obj_equal(self->items[i], another->items[i]);
-        if (op == RT_BINARY_OP_EQUAL && !eq_status) {
-            return false;
-        }
-        rel_status = (rt_binary_op(op, self->items[i], another->items[i]) == mp_const_true);
-        if (!eq_status && !rel_status) {
-            return false;
-        }
-    }
-
-    // If we had tie in the last element...
-    if (eq_status) {
-        // ... and we have lists of different lengths...
-        if (self->len != another->len) {
-            if (self->len < another->len) {
-                // ... then longer list length wins (we deal only with >)
-                return false;
-            }
-        } else if (op == RT_BINARY_OP_MORE) {
-            // Otherwise, if we have strict relation, equality means failure
-            return false;
-        }
-    }
-
-    return true;
+    return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
 static mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
@@ -157,8 +114,7 @@ static mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
-            memcpy(s->items, o->items, sizeof(mp_obj_t) * o->len);
-            memcpy(s->items + o->len, p->items, sizeof(mp_obj_t) * p->len);
+            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
         case RT_BINARY_OP_INPLACE_ADD:
@@ -304,38 +260,14 @@ static mp_obj_t list_copy(mp_obj_t self_in) {
 static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &list_type));
     mp_obj_list_t *self = self_in;
-    int count = 0;
-    for (int i = 0; i < self->len; i++) {
-         if (mp_obj_equal(self->items[i], value)) {
-              count++;
-         }
-    }
-
-    return mp_obj_new_int(count);
+    return mp_seq_count_obj(self->items, self->len, value);
 }
 
 static mp_obj_t list_index(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
-    mp_obj_t *value = args[1];
-    uint start = 0;
-    uint stop = self->len;
-
-    if (n_args >= 3) {
-        start = mp_get_index(self->base.type, self->len, args[2]);
-        if (n_args >= 4) {
-            stop = mp_get_index(self->base.type, self->len, args[3]);
-        }
-    }
-
-    for (uint i = start; i < stop; i++) {
-         if (mp_obj_equal(self->items[i], value)) {
-              return mp_obj_new_int(i);
-         }
-    }
-
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in list"));
+    return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
 static mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {

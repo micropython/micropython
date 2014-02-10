@@ -24,7 +24,7 @@ typedef struct _mp_obj_socket_t {
     int fd;
 } mp_obj_socket_t;
 
-static const mp_obj_type_t rawsocket_type;
+static const mp_obj_type_t microsocket_type;
 
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
@@ -48,7 +48,7 @@ error:
 
 static mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &rawsocket_type;
+    o->base.type = &microsocket_type;
     o->fd = fd;
     return o;
 }
@@ -83,6 +83,12 @@ static mp_obj_t socket_close(mp_obj_t self_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
+
+static mp_obj_t socket_fileno(mp_obj_t self_in) {
+    mp_obj_socket_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(self->fd);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
 static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
@@ -208,7 +214,9 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return socket_new(fd);
 }
 
-static const mp_method_t rawsocket_type_methods[] = {
+static const mp_method_t microsocket_type_methods[] = {
+        { "fileno", &socket_fileno_obj },
+        { "makefile", &mp_identity_obj },
         { "read", &mp_stream_read_obj },
         { "readall", &mp_stream_readall_obj },
         { "readline", &mp_stream_unbuffered_readline_obj},
@@ -228,7 +236,7 @@ static const mp_method_t rawsocket_type_methods[] = {
         { NULL, NULL },
 };
 
-static const mp_obj_type_t rawsocket_type = {
+static const mp_obj_type_t microsocket_type = {
     { &mp_const_type },
     "socket",
     .print = socket_print,
@@ -239,7 +247,7 @@ static const mp_obj_type_t rawsocket_type = {
         .read = socket_read,
         .write = socket_write,
     },
-    .methods = rawsocket_type_methods,
+    .methods = microsocket_type_methods,
 };
 
 static mp_obj_t mod_socket_htons(mp_obj_t arg) {
@@ -283,8 +291,8 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
-        int port = MP_OBJ_SMALL_INT_VALUE(args[1]);
-        static char buf[20];
+        int port = (short)MP_OBJ_SMALL_INT_VALUE(args[1]);
+        char buf[6];
         sprintf(buf, "%d", port);
         serv = buf;
     } else {
@@ -325,7 +333,7 @@ extern mp_obj_type_t sockaddr_in_type;
 
 #define C(name) { #name, name }
 
-struct sym_entry {
+static const struct sym_entry {
     const char *sym;
     int val;
 } constants[] = {
@@ -351,9 +359,9 @@ struct sym_entry {
 
 #undef C
 
-void rawsocket_init() {
-    mp_obj_t m = mp_obj_new_module(MP_QSTR_rawsocket);
-    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&rawsocket_type);
+void microsocket_init() {
+    mp_obj_t m = mp_obj_new_module(MP_QSTR_microsocket);
+    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&microsocket_type);
 #if MICROPY_SOCKET_EXTRA
     rt_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
     rt_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
@@ -361,7 +369,7 @@ void rawsocket_init() {
     rt_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
 #endif
     rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
-    for (struct sym_entry *p = constants; p->sym != NULL; p++) {
+    for (const struct sym_entry *p = constants; p->sym != NULL; p++) {
         rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
     }
 }
