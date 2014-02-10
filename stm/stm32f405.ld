@@ -17,7 +17,7 @@ _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
  
 /* top end of the stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
+_stack_end = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
@@ -47,8 +47,8 @@ SECTIONS
     /*  *(.glue_7t)  */    /* glue thumb to arm code */
 
         . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
-        _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
+        _text_end = .;     /* define a global symbol at end of code */
+        _data_start_init = _text_end; /* This is used by the startup in order to initialize the .data secion */
     } >FLASH_TEXT
      
     /*
@@ -69,29 +69,29 @@ SECTIONS
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data : AT ( _sidata )
+    .data : AT ( _data_start_init )
     {
         . = ALIGN(4);
-        _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
+        _data_start = .;   /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         _ram_start = .;    /* create a global symbol at ram start for garbage collector */
         *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
-        _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
+        _data_end = .;     /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
             
     /* Uninitialized data section */
     .bss :
     {
         . = ALIGN(4);
-        _sbss = .;         /* define a global symbol at bss start; used by startup code */
+        _bss_start = .;    /* define a global symbol at bss start; used by startup code */
         *(.bss)
         *(.bss*)
         *(COMMON)
 
         . = ALIGN(4);
-        _ebss = .;         /* define a global symbol at bss end; used by startup code */
+        _bss_end = .;      /* define a global symbol at bss end; used by startup code and GC */
     } >RAM
 
     /* this is to define the start of the heap, and make sure we have a minimum size */

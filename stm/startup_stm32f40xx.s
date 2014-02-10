@@ -47,15 +47,15 @@
 
 /* start address for the initialization values of the .data section. 
 defined in linker script */
-.word  _sidata
+.word  _data_start_init
 /* start address for the .data section. defined in linker script */  
-.word  _sdata
+.word  _data_start
 /* end address for the .data section. defined in linker script */
-.word  _edata
+.word  _data_end
 /* start address for the .bss section. defined in linker script */
-.word  _sbss
+.word  _bss_start
 /* end address for the .bss section. defined in linker script */
-.word  _ebss
+.word  _bss_end
 /* stack used for SystemInit_ExtMemCtl; always internal RAM used */
 
 /**
@@ -90,9 +90,9 @@ LoopCopyDataInit:
   cmp  r2, r3
   bcc  CopyDataInit
   */
-    ldr     r0, =_sidata        @ source pointer
-    ldr     r1, =_sdata         @ destination pointer
-    ldr     r2, =_edata         @ maximum destination pointer
+    ldr     r0, =_data_start_init   @ source pointer
+    ldr     r1, =_data_start        @ destination pointer
+    ldr     r2, =_data_end          @ maximum destination pointer
     b       data_init_entry
 data_init_loop:
     ldr     r3, [r0], #4
@@ -117,8 +117,8 @@ LoopFillZerobss:
   */
 
     movs    r0, #0              @ source value
-    ldr     r1, =_sbss          @ destination pointer
-    ldr     r2, =_ebss          @ maximum destination pointer
+    ldr     r1, =_bss_start     @ destination pointer
+    ldr     r2, =_bss_end       @ maximum destination pointer
     b       bss_init_entry
 bss_init_loop:
     str     r0, [r1], #4
@@ -158,7 +158,7 @@ Infinite_Loop:
     
     
 g_pfnVectors:
-  .word  _estack
+  .word  _stack_end
   .word  Reset_Handler
   .word  NMI_Handler
   .word  HardFault_Handler
