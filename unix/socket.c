@@ -86,7 +86,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 static mp_obj_t socket_fileno(mp_obj_t self_in) {
     mp_obj_socket_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(self->fd);
+    return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 

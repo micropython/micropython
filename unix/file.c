@@ -50,7 +50,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
 static mp_obj_t fdfile_fileno(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(self->fd);
+    return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
 
