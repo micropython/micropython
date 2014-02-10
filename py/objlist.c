@@ -274,24 +274,7 @@ static mp_obj_t list_index(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &list_type));
     mp_obj_list_t *self = args[0];
-    mp_obj_t *value = args[1];
-    uint start = 0;
-    uint stop = self->len;
-
-    if (n_args >= 3) {
-        start = mp_get_index(self->base.type, self->len, args[2]);
-        if (n_args >= 4) {
-            stop = mp_get_index(self->base.type, self->len, args[3]);
-        }
-    }
-
-    for (uint i = start; i < stop; i++) {
-         if (mp_obj_equal(self->items[i], value)) {
-              return mp_obj_new_int(i);
-         }
-    }
-
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in list"));
+    return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
 static mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {

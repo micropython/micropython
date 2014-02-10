@@ -402,3 +402,4 @@ bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_ui
 #define m_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, len1 * sizeof(item_t)); memcpy(dest + len1, src2, len2 * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2);
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
+mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);

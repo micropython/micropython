@@ -140,3 +140,26 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
 
     return true;
 }
+
+// Special-case of index() which searches for mp_obj_t
+mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args) {
+    mp_obj_type_t *type = mp_obj_get_type(args[0]);
+    mp_obj_t *value = args[1];
+    uint start = 0;
+    uint stop = len;
+
+    if (n_args >= 3) {
+        start = mp_get_index(type, len, args[2]);
+        if (n_args >= 4) {
+            stop = mp_get_index(type, len, args[3]);
+        }
+    }
+
+    for (uint i = start; i < stop; i++) {
+         if (mp_obj_equal(items[i], value)) {
+              return mp_obj_new_int_from_uint(i);
+         }
+    }
+
+    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in sequence"));
+}
