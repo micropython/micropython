@@ -8,6 +8,13 @@
 
 #if MICROPY_ENABLE_GC
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf(args...) printf(args)
+#else // don't print debugging info
+#define DEBUG_printf(args...) (void)0
+#endif
+
 typedef unsigned char byte;
 
 #define WORDS_PER_BLOCK (4)
@@ -61,6 +68,7 @@ static machine_uint_t *gc_sp;
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
+    DEBUG_printf("Initializing GC heap: %p-%p\n", start, end);
 
     // calculate parameters for GC
     machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
@@ -81,11 +89,9 @@ void gc_init(void *start, void *end) {
         gc_pool_start[i] = 0;
     }
 
-    /*
-    printf("GC layout:\n");
-    printf("  alloc table at %p, length %u bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
-    printf("  pool at %p, length %u blocks = %u words = %u bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
-    */
+    DEBUG_printf("GC layout:\n");
+    DEBUG_printf("  alloc table at %p, length %u bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
+    DEBUG_printf("  pool at %p, length %u blocks = %u words = %u bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
 }
 
 #define VERIFY_PTR(ptr) ( \
@@ -332,10 +338,10 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     }
 }
 
-/*
+#if DEBUG_PRINT
 static void gc_dump_at(void) {
     for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
-        printf("block % 6u ", bl);
+        printf("block %06u ", bl);
         switch (ATB_GET_KIND(bl)) {
             case AT_FREE: printf("FREE"); break;
             case AT_HEAD: printf("HEAD"); break;
@@ -346,23 +352,23 @@ static void gc_dump_at(void) {
     }
 }
 
-int main(void) {
-    machine_uint_t len = 1000;
+void gc_test(void) {
+    machine_uint_t len = 500;
     machine_uint_t *heap = malloc(len);
     gc_init(heap, heap + len / sizeof(machine_uint_t));
     void *ptrs[100];
     {
-        machine_uint_t *p = gc_alloc(16);
+        machine_uint_t **p = gc_alloc(16);
         p[0] = gc_alloc(64);
         p[1] = gc_alloc(1);
         p[2] = gc_alloc(1);
         p[3] = gc_alloc(1);
-        machine_uint_t *p2 = gc_alloc(16);
+        machine_uint_t ***p2 = gc_alloc(16);
         p2[0] = p;
         p2[1] = p;
         ptrs[0] = p2;
     }
-    for (int i = 0; i < 50; i+=2) {
+    for (int i = 0; i < 25; i+=2) {
         machine_uint_t *p = gc_alloc(i);
         printf("p=%p\n", p);
         if (i & 3) {
@@ -370,10 +376,15 @@ int main(void) {
         }
     }
 
+    printf("Before GC:\n");
     gc_dump_at();
-    gc_collect(ptrs, sizeof(ptrs) / sizeof(void*));
+    printf("Starting GC...\n");
+    gc_collect_start();
+    gc_collect_root(ptrs, sizeof(ptrs) / sizeof(void*));
+    gc_collect_end();
+    printf("After GC:\n");
     gc_dump_at();
 }
-*/
+#endif
 
 #endif // MICROPY_ENABLE_GC
