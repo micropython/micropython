@@ -291,8 +291,8 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
-        int port = MP_OBJ_SMALL_INT_VALUE(args[1]);
-        static char buf[20];
+        int port = (short)MP_OBJ_SMALL_INT_VALUE(args[1]);
+        char buf[6];
         sprintf(buf, "%d", port);
         serv = buf;
     } else {
