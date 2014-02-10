@@ -1,5 +1,5 @@
 #ifdef __x86_64__
-/* x64 callee save: bx, bp, sp, r12, r14, r14, r15 */
+/* x64 callee save: bx, bp, sp, r12, r13, r14, r15 */
 
     .file   "nlr.s"
     .text
