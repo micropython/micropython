@@ -153,6 +153,18 @@ static mp_obj_t tuple_getiter(mp_obj_t o_in) {
     return mp_obj_new_tuple_iterator(o_in, 0);
 }
 
+static mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(args[0], &tuple_type));
+    mp_obj_tuple_t *self = args[0];
+    return mp_seq_index_obj(self->items, self->len, n_args, args);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
+
+static const mp_method_t tuple_type_methods[] = {
+    { "index", &tuple_index_obj },
+    { NULL, NULL }, // end-of-list sentinel
+};
+
 const mp_obj_type_t tuple_type = {
     { &mp_const_type },
     "tuple",
@@ -161,6 +173,7 @@ const mp_obj_type_t tuple_type = {
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,
+    .methods = tuple_type_methods,
 };
 
 // the zero-length tuple
