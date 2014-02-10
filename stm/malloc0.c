@@ -29,18 +29,6 @@ void *realloc(void *ptr, size_t n) {
 
 #endif
 
-void *malloc(size_t n) {
-    return gc_alloc(n);
-}
-
-void free(void *ptr) {
-    gc_free(ptr);
-}
-
-void *realloc(void *ptr, size_t n) {
-    return gc_realloc(ptr, n);
-}
-
 void __assert_func(void) {
     printf("\nASSERT FAIL!");
     for (;;) {
