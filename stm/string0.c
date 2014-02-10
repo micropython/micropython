@@ -78,17 +78,6 @@ int strncmp(const char *s1, const char *s2, size_t n) {
     else return 0;
 }
 
-char *strndup(const char *s, size_t n) {
-    size_t len = strlen(s);
-    if (n > len) {
-        n = len;
-    }
-    char *s2 = malloc(n + 1);
-    memcpy(s2, s, n);
-    s2[n] = '\0';
-    return s2;
-}
-
 char *strcpy(char *dest, const char *src) {
     char *d = dest;
     while (*src) {
