@@ -15,11 +15,19 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "repl.h"
+#include "gc.h"
 
 #if MICROPY_USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
+
+// Heap size of GC heap (if enabled)
+// TODO: allow to specify on command line
+#define HEAP_SIZE 128*1024
+
+// Stack top at the start of program
+void *stack_top;
 
 extern const mp_obj_fun_native_t mp_builtin_open_obj;
 void file_init();
@@ -217,7 +225,24 @@ mp_obj_t qstr_info(void) {
     return mp_const_none;
 }
 
+#if MICROPY_ENABLE_GC
+// TODO: this doesn't belong here
+static mp_obj_t pyb_gc(void) {
+    gc_collect();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_gc_obj, pyb_gc);
+#endif
+
 int main(int argc, char **argv) {
+    volatile int stack_dummy;
+    stack_top = (void*)&stack_dummy;
+
+#if MICROPY_ENABLE_GC
+    char *heap = malloc(HEAP_SIZE);
+    gc_init(heap, heap + HEAP_SIZE);
+#endif
+
     qstr_init();
     rt_init();
 
@@ -263,6 +288,9 @@ int main(int argc, char **argv) {
     rt_store_name(qstr_from_str("test"), test_obj_new(42));
     rt_store_name(qstr_from_str("mem_info"), rt_make_function_n(0, mem_info));
     rt_store_name(qstr_from_str("qstr_info"), rt_make_function_n(0, qstr_info));
+#if MICROPY_ENABLE_GC
+    rt_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
+#endif
 
     file_init();
     microsocket_init();

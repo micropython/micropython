@@ -35,6 +35,7 @@ endif
 # source files
 SRC_C = \
 	main.c \
+	gccollect.c \
 	file.c \
 	socket.c \
 	$(SRC_MOD)
