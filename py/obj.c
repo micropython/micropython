@@ -132,9 +132,9 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
                 return r == mp_const_true ? true : false;
             }
         }
-        // TODO: Debugging helper
-        printf("Equality for '%s' and '%s' types not yet implemented\n", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2));
-        assert(0);
+
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NotImplementedError,
+            "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
         return false;
     }
 }
