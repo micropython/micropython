@@ -33,8 +33,8 @@ DEF_RULE(decorator, nc, and(4), tok(DEL_AT), rule(dotted_name), opt_rule(trailer
 DEF_RULE(decorators, nc, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and(2), rule(decorators), rule(decorated_body))
 DEF_RULE(decorated_body, nc, or(2), rule(classdef), rule(funcdef))
-DEF_RULE(funcdef, c(funcdef), and(8), tok(KW_DEF), tok(NAME), tok(DEL_PAREN_OPEN), opt_rule(typedargslist), tok(DEL_PAREN_CLOSE), opt_rule(funcdef_2), tok(DEL_COLON), rule(suite))
-DEF_RULE(funcdef_2, nc, and(2), tok(DEL_MINUS_MORE), rule(test))
+DEF_RULE(funcdef, c(funcdef), and(8), tok(KW_DEF), tok(NAME), tok(DEL_PAREN_OPEN), opt_rule(typedargslist), tok(DEL_PAREN_CLOSE), opt_rule(funcdefrettype), tok(DEL_COLON), rule(suite))
+DEF_RULE(funcdefrettype, nc, and(2), tok(DEL_MINUS_MORE), rule(test))
 // TODO typedargslist lets through more than is allowed
 DEF_RULE(typedargslist, nc, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
 DEF_RULE(typedargslist_item, nc, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))

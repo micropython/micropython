@@ -2764,7 +2764,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
         }
 
-        assert(MP_PARSE_NODE_IS_NULL(pns->nodes[2])); // 2 is something...
+        // pns->nodes[2] is return/whole function annotation
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
         // emit return if it wasn't the last opcode

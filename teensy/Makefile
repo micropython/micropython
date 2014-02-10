@@ -1,5 +1,8 @@
 include ../py/mkenv.mk
 
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS = qstrdefsport.h
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -32,6 +35,8 @@ SRC_C = \
 	lexerfatfs.c \
 	lexermemzip.c \
 	memzip.c \
+	servo.c \
+	usart.c \
 	usb.c \
 
 STM_SRC_C = $(addprefix stm/,\
@@ -54,7 +59,7 @@ SRC_TEENSY = \
 	usb_serial.c \
 	yield.c \
 
-OBJ = $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o)) $(PY_O)
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 #LIB = -lreadline
 # the following is needed for BSD
 #LIB += -ltermcap

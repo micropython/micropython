@@ -6,7 +6,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
-#include "mpqstr.h"
+#include "qstr.h"
 #include "lexer.h"
 #include "lexermemzip.h"
 #include "parse.h"
@@ -15,6 +15,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "repl.h"
+#include "servo.h"
 #include "usb.h"
 #include "gc.h"
 #include "led.h"
@@ -53,6 +54,32 @@ static const char *help_text =
 "    pyb.rand()     -- get a 16-bit random number\n"
 #endif
 ;
+
+mp_obj_t pyb_analog_read(mp_obj_t pin_obj) {
+    uint pin = mp_obj_get_int(pin_obj);
+    int val = analogRead(pin);
+    return MP_OBJ_NEW_SMALL_INT(val);
+}
+
+mp_obj_t pyb_analog_write(mp_obj_t pin_obj, mp_obj_t val_obj) {
+    uint pin = mp_obj_get_int(pin_obj);
+    int val = mp_obj_get_int(val_obj);
+    analogWrite(pin, val);
+    return mp_const_none;
+}
+
+mp_obj_t pyb_analog_write_resolution(mp_obj_t res_obj) {
+    int res = mp_obj_get_int(res_obj);
+    analogWriteResolution(res);
+    return mp_const_none;
+}
+
+mp_obj_t pyb_analog_write_frequency(mp_obj_t pin_obj, mp_obj_t freq_obj) {
+    uint pin = mp_obj_get_int(pin_obj);
+    int freq = mp_obj_get_int(freq_obj);
+    analogWriteFrequency(pin, freq);
+    return mp_const_none;
+}
 
 // get some help about available functions
 static mp_obj_t pyb_help(void) {
@@ -181,16 +208,26 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 #endif
 
-static qstr pyb_config_source_dir = 0;
-static qstr pyb_config_main = 0;
+static mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
+static mp_obj_t pyb_config_main = MP_OBJ_NULL;
 
 mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
-    pyb_config_source_dir = mp_obj_get_qstr(source_dir);
+    if (MP_OBJ_IS_STR(source_dir)) {
+        pyb_config_source_dir = source_dir;
+        printf("source_dir = '");
+        mp_obj_print(source_dir, PRINT_STR);
+        printf("'\n");
+    }
     return mp_const_none;
 }
 
 mp_obj_t pyb_main(mp_obj_t main) {
-    pyb_config_main = mp_obj_get_qstr(main);
+    if (MP_OBJ_IS_STR(main)) {
+        pyb_config_main = main;
+        printf("main = '");
+        mp_obj_print(main, PRINT_STR);
+        printf("'\n");
+    }
     return mp_const_none;
 }
 
@@ -205,7 +242,7 @@ mp_obj_t pyb_led(mp_obj_t state) {
 }
 
 mp_obj_t pyb_run(mp_obj_t filename_obj) {
-    const char *filename = qstr_str(mp_obj_get_qstr(filename_obj));
+    const char *filename = qstr_str(mp_obj_str_get_qstr(filename_obj));
     do_file(filename);
     return mp_const_none;
 }
@@ -309,15 +346,24 @@ bool do_file(const char *filename) {
         return false;
     }
 
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    qstr parse_exc_id;
+    const char *parse_exc_msg;
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
     qstr source_name = mp_lexer_source_name(lex);
-    mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
+        // parse error
+        mp_lexer_show_error_pythonic_prefix(lex);
+        printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+        mp_lexer_free(lex);
         return false;
     }
 
+    mp_lexer_free(lex);
+
     mp_obj_t module_fun = mp_compile(pn, source_name, false);
+    mp_parse_node_free(pn);
+
     if (module_fun == mp_const_none) {
         return false;
     }
@@ -329,7 +375,7 @@ bool do_file(const char *filename) {
         return true;
     } else {
         // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val);
+        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
         printf("\n");
         return false;
     }
@@ -340,7 +386,7 @@ void do_repl(void) {
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
-    vstr_init(&line);
+    vstr_init(&line, 32);
 
     for (;;) {
         vstr_reset(&line);
@@ -366,12 +412,21 @@ void do_repl(void) {
             }
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len("<stdin>", vstr_str(&line), vstr_len(&line), 0);
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT);
-        mp_lexer_free(lex);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
+        qstr parse_exc_id;
+        const char *parse_exc_msg;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_exc_id, &parse_exc_msg);
+        qstr source_name = mp_lexer_source_name(lex);
 
-        if (pn != MP_PARSE_NODE_NULL) {
-            mp_obj_t module_fun = mp_compile(pn, true);
+        if (pn == MP_PARSE_NODE_NULL) {
+            // parse error
+            mp_lexer_show_error_pythonic_prefix(lex);
+            printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+            mp_lexer_free(lex);
+        } else {
+            // parse okay
+            mp_lexer_free(lex);
+            mp_obj_t module_fun = mp_compile(pn, source_name, true);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 uint32_t start = micros();
@@ -381,11 +436,11 @@ void do_repl(void) {
                     // optional timing
                     if (0) {
                         uint32_t ticks = micros() - start; // TODO implement a function that does this properly
-                        printf("(took %lu us)\n", ticks);
+                        printf("(took %lu ms)\n", ticks);
                     }
                 } else {
                     // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val);
+                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
                     printf("\n");
                 }
             }
@@ -396,11 +451,15 @@ void do_repl(void) {
 }
 
 int main(void) {
-    pinMode(LED_BUILTIN, OUTPUT);    
+    pinMode(LED_BUILTIN, OUTPUT);
+#if 0
     // Wait for host side to get connected
     while (!usb_vcp_is_connected()) {
         ;
     }
+#else
+    delay(1000);
+#endif
 
     led_init();
     led_state(PYB_LED_BUILTIN, 1);
@@ -415,28 +474,34 @@ soft_reset:
     qstr_init();
     rt_init();
 
-#if 1
     // add some functions to the python namespace
     {
-        rt_store_name(qstr_from_str_static("help"), rt_make_function_0(pyb_help));
-        mp_obj_t m = mp_obj_new_module(qstr_from_str_static("pyb"));
-        rt_store_attr(m, qstr_from_str_static("info"), rt_make_function_0(pyb_info));
-        rt_store_attr(m, qstr_from_str_static("source_dir"), rt_make_function_1(pyb_source_dir));
-        rt_store_attr(m, qstr_from_str_static("main"), rt_make_function_1(pyb_main));
-        rt_store_attr(m, qstr_from_str_static("gc"), rt_make_function_0(pyb_gc));
-        rt_store_attr(m, qstr_from_str_static("delay"), rt_make_function_1(pyb_delay));
-        rt_store_attr(m, qstr_from_str_static("led"), rt_make_function_1(pyb_led));
-        rt_store_attr(m, qstr_from_str_static("Led"), rt_make_function_1(pyb_Led));
-        rt_store_attr(m, qstr_from_str_static("gpio"), (mp_obj_t)&pyb_gpio_obj);
-        rt_store_name(qstr_from_str_static("pyb"), m);
-        rt_store_name(qstr_from_str_static("run"), rt_make_function_1(pyb_run));
-    }
-#endif
+        rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
+        mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
+        rt_store_attr(m, MP_QSTR_info, rt_make_function_n(0, pyb_info));
+        rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
+        rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
+        rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
+        rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
+        rt_store_attr(m, MP_QSTR_led, rt_make_function_n(1, pyb_led));
+        rt_store_attr(m, MP_QSTR_Led, rt_make_function_n(1, pyb_Led));
+        rt_store_attr(m, MP_QSTR_analogRead, rt_make_function_n(1, pyb_analog_read));
+        rt_store_attr(m, MP_QSTR_analogWrite, rt_make_function_n(2, pyb_analog_write));
+        rt_store_attr(m, MP_QSTR_analogWriteResolution, rt_make_function_n(1, pyb_analog_write_resolution));
+        rt_store_attr(m, MP_QSTR_analogWriteFrequency, rt_make_function_n(2, pyb_analog_write_frequency));
 
+        rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
+        rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(0, pyb_Servo));
+        rt_store_name(MP_QSTR_pyb, m);
+        rt_store_name(MP_QSTR_run, rt_make_function_n(1, pyb_run));
+    }
+
+    printf("About execute /boot.py\n");
     if (!do_file("/boot.py")) {
         printf("Unable to open '/boot.py'\n");
         flash_error(4);
     }
+    printf("Done executing /boot.py\n");
 
     // Turn bootup LED off
     led_state(PYB_LED_BUILTIN, 0);
@@ -445,21 +510,23 @@ soft_reset:
     {
         vstr_t *vstr = vstr_new();
         vstr_add_str(vstr, "/");
-        if (pyb_config_source_dir == 0) {
+        if (pyb_config_source_dir == MP_OBJ_NULL) {
             vstr_add_str(vstr, "src");
         } else {
-            vstr_add_str(vstr, qstr_str(pyb_config_source_dir));
+            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_source_dir));
         }
         vstr_add_char(vstr, '/');
-        if (pyb_config_main == 0) {
+        if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");
         } else {
-            vstr_add_str(vstr, qstr_str(pyb_config_main));
+            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
+        printf("About execute '%s'\n", vstr_str(vstr));
         if (!do_file(vstr_str(vstr))) {
             printf("Unable to open '%s'\n", vstr_str(vstr));
             flash_error(3);
         }
+        printf("Done executing '%s'\n", vstr_str(vstr));
         vstr_free(vstr);
     }
 
@@ -469,16 +536,6 @@ soft_reset:
 
 //    first_soft_reset = false;
     goto soft_reset;
-}
-
-double __aeabi_f2d(float x) {
-    // TODO
-    return 0.0;
-}
-
-float __aeabi_d2f(double x) {
-    // TODO
-    return 0.0;
 }
 
 double sqrt(double x) {
