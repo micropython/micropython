@@ -164,3 +164,15 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
 
     nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in sequence"));
 }
+
+mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value) {
+    uint count = 0;
+    for (uint i = 0; i < len; i++) {
+         if (mp_obj_equal(items[i], value)) {
+              count++;
+         }
+    }
+
+    // Common sense says this cannot overflow small int
+    return MP_OBJ_NEW_SMALL_INT(count);
+}

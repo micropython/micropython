@@ -153,6 +153,13 @@ static mp_obj_t tuple_getiter(mp_obj_t o_in) {
     return mp_obj_new_tuple_iterator(o_in, 0);
 }
 
+static mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    mp_obj_tuple_t *self = self_in;
+    return mp_seq_count_obj(self->items, self->len, value);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
+
 static mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &tuple_type));
     mp_obj_tuple_t *self = args[0];
@@ -161,6 +168,7 @@ static mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
 static const mp_method_t tuple_type_methods[] = {
+    { "count", &tuple_count_obj },
     { "index", &tuple_index_obj },
     { NULL, NULL }, // end-of-list sentinel
 };

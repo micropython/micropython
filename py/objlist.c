@@ -260,14 +260,7 @@ static mp_obj_t list_copy(mp_obj_t self_in) {
 static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &list_type));
     mp_obj_list_t *self = self_in;
-    int count = 0;
-    for (int i = 0; i < self->len; i++) {
-         if (mp_obj_equal(self->items[i], value)) {
-              count++;
-         }
-    }
-
-    return mp_obj_new_int(count);
+    return mp_seq_count_obj(self->items, self->len, value);
 }
 
 static mp_obj_t list_index(uint n_args, const mp_obj_t *args) {
