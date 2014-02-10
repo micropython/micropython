@@ -29,14 +29,6 @@ void *realloc(void *ptr, size_t n) {
 
 #endif
 
-void *calloc(size_t sz, size_t n) {
-    char *ptr = malloc(sz * n);
-    for (int i = 0; i < sz * n; i++) {
-        ptr[i] = 0;
-    }
-    return ptr;
-}
-
 void *malloc(size_t n) {
     return gc_alloc(n);
 }

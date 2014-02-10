@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -37,20 +38,10 @@ void *m_malloc(int num_bytes) {
 }
 
 void *m_malloc0(int num_bytes) {
-    if (num_bytes == 0) {
-        return NULL;
+    void *ptr = m_malloc(num_bytes);
+    if (ptr != NULL) {
+        memset(ptr, 0, num_bytes);
     }
-    void *ptr = calloc(1, num_bytes);
-    if (ptr == NULL) {
-        printf("could not allocate memory, allocating %d bytes\n", num_bytes);
-        return NULL;
-    }
-#if MICROPY_MEM_STATS
-    total_bytes_allocated += num_bytes;
-    current_bytes_allocated += num_bytes;
-    UPDATE_PEAK();
-#endif
-    DEBUG_printf("malloc0 %d : %p\n", num_bytes, ptr);
     return ptr;
 }
 

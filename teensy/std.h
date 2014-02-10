@@ -4,7 +4,6 @@ void __assert_func(void);
 
 void *malloc(size_t n);
 void free(void *ptr);
-void *calloc(size_t sz, size_t n);
 void *realloc(void *ptr, size_t n);
 
 void *memcpy(void *dest, const void *src, size_t n);
