@@ -155,8 +155,9 @@ static mp_obj_t servo_obj_attached(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(attached);
 }
 
-static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
+    (void)kind;
     print(env, "<Servo %lu>", self->servo_id);
 }
 
