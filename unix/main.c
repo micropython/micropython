@@ -81,7 +81,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     }
 }
 
-static char *str_join(const char *s1, int sep_char, const char *s2) {
+static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
     char *s = m_new(char, l1 + l2 + 2);
@@ -133,7 +133,7 @@ static void do_repl(void) {
                 if (line2 == NULL || strlen(line2) == 0) {
                     break;
                 }
-                char *line3 = str_join(line, '\n', line2);
+                char *line3 = strjoin(line, '\n', line2);
                 free(line);
                 free(line2);
                 line = line3;
