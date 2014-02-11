@@ -47,6 +47,7 @@
 #include "adc.h"
 #include "rtc.h"
 #include "file.h"
+#include "pinmap.h"
 
 int errno;
 
@@ -496,46 +497,27 @@ bool do_file(const char *filename) {
 mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     //assert(1 <= n_args && n_args <= 2);
 
-    const char *pin_name = mp_obj_str_get_str(args[0]);
-    GPIO_TypeDef *port;
-    switch (pin_name[0]) {
-        case 'A': case 'a': port = GPIOA; break;
-        case 'B': case 'b': port = GPIOB; break;
-        case 'C': case 'c': port = GPIOC; break;
-        default: goto pin_error;
-    }
-    uint pin_num = 0;
-    for (const char *s = pin_name + 1; *s; s++) {
-        if (!('0' <= *s && *s <= '9')) {
-            goto pin_error;
-        }
-        pin_num = 10 * pin_num + *s - '0';
-    }
-    if (!(0 <= pin_num && pin_num <= 15)) {
-        goto pin_error;
-    }
+    pinmap_pin_t pin = pinmap_map_user_obj(args[0]);
+    GPIO_TypeDef *port = PINMAP_GPIO_PORT_FROM_PIN(pin);
+    uint pin_num = PINMAP_PIN_NUM_FROM_PIN(pin);
 
     if (n_args == 1) {
         // get pin
         if ((port->IDR & (1 << pin_num)) != (uint32_t)Bit_RESET) {
             return MP_OBJ_NEW_SMALL_INT(1);
-        } else {
-            return MP_OBJ_NEW_SMALL_INT(0);
         }
-    } else {
-        // set pin
-        if (rt_is_true(args[1])) {
-            // set pin high
-            port->BSRRL = 1 << pin_num;
-        } else {
-            // set pin low
-            port->BSRRH = 1 << pin_num;
-        }
-        return mp_const_none;
+        return MP_OBJ_NEW_SMALL_INT(0);
     }
 
-pin_error:
-    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
+    // set pin
+    if (rt_is_true(args[1])) {
+        // set pin high
+        port->BSRRL = 1 << pin_num;
+    } else {
+        // set pin low
+        port->BSRRH = 1 << pin_num;
+    }
+    return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
