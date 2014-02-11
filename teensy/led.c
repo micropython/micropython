@@ -42,8 +42,9 @@ typedef struct _pyb_led_obj_t {
     uint led_id;
 } pyb_led_obj_t;
 
-void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in) {
+void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
+    (void)kind;
     print(env, "<LED %lu>", self->led_id);
 }
 
