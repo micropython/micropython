@@ -100,7 +100,7 @@ static const byte *find_subbytes(const byte *haystack, uint hlen, const byte *ne
     return NULL;
 }
 
-mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -188,7 +188,7 @@ mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     return MP_OBJ_NULL; // op not supported
 }
 
-mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_STR(self_in));
 
     // get separation string
@@ -329,7 +329,7 @@ static bool chr_in_str(const byte* const str, const size_t str_len, int c) {
     return false;
 }
 
-mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
+static mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_STR(args[0]));
 
@@ -403,20 +403,20 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
     return s;
 }
 
-mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
+static mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
     assert(MP_OBJ_IS_STR(args[2]));
 
     machine_int_t max_rep = 0;
     if (n_args == 4) {
-	assert(MP_OBJ_IS_SMALL_INT(args[3]));
-	max_rep = MP_OBJ_SMALL_INT_VALUE(args[3]);
-	if (max_rep == 0) {
-	    return args[0];
-	} else if (max_rep < 0) {
-	    max_rep = 0;
-	}
+        assert(MP_OBJ_IS_SMALL_INT(args[3]));
+        max_rep = MP_OBJ_SMALL_INT_VALUE(args[3]);
+        if (max_rep == 0) {
+            return args[0];
+        } else if (max_rep < 0) {
+            max_rep = 0;
+        }
     }
 
     // if max_rep is still 0 by this point we will need to do all possible replacements
@@ -427,7 +427,7 @@ mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
 
     // old won't exist in str if it's longer, so nothing to replace
     if (old_len > str_len) {
-	return args[0];
+        return args[0];
     }
 
     // data for the replaced string
@@ -654,7 +654,7 @@ typedef struct _mp_obj_str_it_t {
     machine_uint_t cur;
 } mp_obj_str_it_t;
 
-mp_obj_t str_it_iternext(mp_obj_t self_in) {
+static mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
@@ -672,7 +672,7 @@ static const mp_obj_type_t str_it_type = {
     .iternext = str_it_iternext,
 };
 
-mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
+static mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
