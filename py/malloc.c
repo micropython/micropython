@@ -19,6 +19,22 @@ static int peak_bytes_allocated = 0;
 #define UPDATE_PEAK() { if (current_bytes_allocated > peak_bytes_allocated) peak_bytes_allocated = current_bytes_allocated; }
 #endif
 
+#if MICROPY_ENABLE_GC
+#include "gc.h"
+
+// We redirect standard alloc functions to GC heap - just for the rest of
+// this module. In the rest of micropython source, system malloc can be
+// freely accessed - for interfacing with system and 3rd-party libs for
+// example. On the other hand, some (e.g. bare-metal) ports may use GC
+// heap as system heap, so, to avoid warnings, we do undef's first.
+#undef malloc
+#undef free
+#undef realloc
+#define malloc gc_alloc
+#define free gc_free
+#define realloc gc_realloc
+#endif // MICROPY_ENABLE_GC
+
 void *m_malloc(int num_bytes) {
     if (num_bytes == 0) {
         return NULL;

@@ -2,10 +2,6 @@ typedef unsigned int size_t;
 
 void __assert_func(void);
 
-void *malloc(size_t n);
-void free(void *ptr);
-void *realloc(void *ptr, size_t n);
-
 void *memcpy(void *dest, const void *src, size_t n);
 void *memmove(void *dest, const void *src, size_t n);
 void *memset(void *s, int c, size_t n);
