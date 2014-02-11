@@ -48,6 +48,8 @@ void gc_helper_get_regs(regs_t arr) {
 #endif
 
 void gc_collect(void) {
+    //gc_dump_info();
+
     gc_collect_start();
     // this traces .data and .bss sections
     extern char __bss_start, _end;
@@ -59,14 +61,8 @@ void gc_collect(void) {
     gc_collect_root((void**)&regs, ((uint32_t)stack_top - (uint32_t)&regs) / sizeof(uint32_t));
     gc_collect_end();
 
-    if (0) {
-        // print GC info
-        gc_info_t info;
-        gc_info(&info);
-        printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", info.total, info.used, info.free);
-        printf(" No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
-               info.num_1block, info.num_2block, info.max_block);
-    }
+    //printf("-----\n");
+    //gc_dump_info();
 }
 
 #endif //MICROPY_ENABLE_GC

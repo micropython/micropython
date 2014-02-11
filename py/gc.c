@@ -240,7 +240,7 @@ void gc_info(gc_info_t *info) {
 
 void *gc_alloc(machine_uint_t n_bytes) {
     machine_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
-    //printf("gc_alloc(%u bytes -> %u blocks)\n", n_bytes, n_blocks);
+    DEBUG_printf("gc_alloc(%u bytes -> %u blocks)\n", n_bytes, n_blocks);
 
     // check for 0 allocation
     if (n_blocks == 0) {
@@ -267,6 +267,7 @@ void *gc_alloc(machine_uint_t n_bytes) {
         if (collected) {
             return NULL;
         }
+        DEBUG_printf("gc_alloc(" UINT_FMT "): no free mem, triggering GC\n", n_bytes);
         gc_collect();
         collected = 1;
     }
@@ -339,6 +340,14 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
         gc_free(ptr);
         return ptr2;
     }
+}
+
+void gc_dump_info() {
+    gc_info_t info;
+    gc_info(&info);
+    printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", info.total, info.used, info.free);
+    printf(" No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
+           info.num_1block, info.num_2block, info.max_block);
 }
 
 #if DEBUG_PRINT
