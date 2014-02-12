@@ -84,7 +84,7 @@ done:
     return (found ^ neg) - neg;
 
 value_error:
-    nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_ValueError, "invalid literal for int() with base %d: '%s'", (void*)(machine_uint_t)base, s));
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "invalid literal for int() with base %d: '%s'", base, s));
 }
 
 #else /* defined(UNIX) */

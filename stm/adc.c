@@ -427,7 +427,7 @@ mp_obj_t pyb_ADC(mp_obj_t pin_name_obj) {
     }
 
     if (i == ADC_NUM_CHANNELS) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not have ADC capabilities", pin_name));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %s does not have ADC capabilities", pin_name));
     }
 
     // init ADC just for this channel
@@ -438,7 +438,7 @@ mp_obj_t pyb_ADC(mp_obj_t pin_name_obj) {
     return o;
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
+    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_ADC_obj, pyb_ADC);

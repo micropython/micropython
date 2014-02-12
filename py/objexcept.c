@@ -48,7 +48,7 @@ STATIC mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const m
     mp_obj_exception_t *base = self_in;
 
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "%s does not take keyword arguments", qstr_str(base->id)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "%s does not take keyword arguments", qstr_str(base->id)));
     }
 
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
@@ -73,14 +73,6 @@ mp_obj_t mp_obj_new_exception(qstr id) {
 
 mp_obj_t mp_obj_new_exception_msg(qstr id, const char *msg) {
     return mp_obj_new_exception_msg_varg(id, msg);
-}
-
-mp_obj_t mp_obj_new_exception_msg_1_arg(qstr id, const char *fmt, const char *a1) {
-    return mp_obj_new_exception_msg_varg(id, fmt, a1);
-}
-
-mp_obj_t mp_obj_new_exception_msg_2_args(qstr id, const char *fmt, const char *a1, const char *a2) {
-    return mp_obj_new_exception_msg_varg(id, fmt, a1, a2);
 }
 
 mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...) {

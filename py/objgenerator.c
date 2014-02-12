@@ -28,7 +28,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     const byte *bc_code;
     mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_n_state, &bc_code);
     if (n_args != bc_n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)bc_n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", bc_n_args, n_args));
     }
     if (n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));

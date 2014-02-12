@@ -62,7 +62,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "list takes at most 1 argument, %d given", (void*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "list takes at most 1 argument, %d given", n_args));
     }
     return NULL;
 }

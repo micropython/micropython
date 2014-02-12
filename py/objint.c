@@ -39,7 +39,7 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", (void*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", n_args));
     }
 }
 

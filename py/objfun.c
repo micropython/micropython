@@ -26,20 +26,19 @@ STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
 
     if (self->n_args_min == self->n_args_max) {
         if (n_args != self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
                                                      "function takes %d positional arguments but %d were given",
-                                                     (const char*)(machine_int_t)self->n_args_min,
-                                                     (const char*)(machine_int_t)n_args));
+                                                     self->n_args_min, n_args));
         }
     } else {
         if (n_args < self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
                                                     "<fun name>() missing %d required positional arguments: <list of names of params>",
-                                                    (const char*)(machine_int_t)(self->n_args_min - n_args)));
+                                                    self->n_args_min - n_args));
         } else if (n_args > self->n_args_max) {
-            nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
                                                      "<fun name> expected at most %d arguments, got %d",
-                                                     (void*)(machine_int_t)self->n_args_max, (void*)(machine_int_t)n_args));
+                                                     self->n_args_max, n_args));
         }
     }
 }
@@ -144,7 +143,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     mp_obj_fun_bc_t *self = self_in;
 
     if (n_args < self->n_args - self->n_def_args || n_args > self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
     }
     if (n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
@@ -253,7 +252,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
     mp_obj_fun_asm_t *self = self_in;
 
     if (n_args != self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_2_args(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", (const char*)(machine_int_t)self->n_args, (const char*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
     }
     if (n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));

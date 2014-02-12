@@ -103,13 +103,13 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
         }
 
     } else {
         // TODO
         if (n_args != 0) {
-            nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "function takes 0 positional arguments but %d were given", (void*)(machine_int_t)n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes 0 positional arguments but %d were given", n_args));
         }
     }
 
@@ -284,7 +284,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_type_t *self = self_in;
 
     if (self->make_new == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "cannot create '%s' instances", self->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "cannot create '%s' instances", self->name));
     }
 
     // make new instance
@@ -511,7 +511,7 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint
     assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
 
     if (n_args != 1 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg_1_arg(MP_QSTR_TypeError, "function takes 1 positional argument but %d were given", (void*)(machine_int_t)n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes 1 positional argument but %d were given", n_args));
     }
 
     mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);
