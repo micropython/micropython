@@ -110,6 +110,12 @@ typedef long long mp_longint_impl_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
+// Allow to override static modifier for global objects, e.g. to use with
+// object code analysis tools which don't support static symbols.
+#ifndef STATIC
+#define STATIC static
+#endif
+
 #define BITS_PER_BYTE (8)
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // machine_int_t value with most significant bit set

@@ -18,7 +18,7 @@
 
 // mp_obj_fun_native_t defined in obj.h
 
-void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
+STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
     if (n_kw && !self->is_kw) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
                                           "function does not take keyword arguments"));
@@ -44,7 +44,7 @@ void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
     }
 }
 
-mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &fun_native_type));
     mp_obj_fun_native_t *self = self_in;
 
@@ -140,7 +140,7 @@ typedef struct _mp_obj_fun_bc_t {
     mp_obj_t def_args[];    // values of default args, if any
 } mp_obj_fun_bc_t;
 
-mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
     if (n_args < self->n_args - self->n_def_args || n_args > self->n_args) {
@@ -207,7 +207,7 @@ typedef machine_uint_t (*inline_asm_fun_2_t)(machine_uint_t, machine_uint_t);
 typedef machine_uint_t (*inline_asm_fun_3_t)(machine_uint_t, machine_uint_t, machine_uint_t);
 
 // convert a Micro Python object to a sensible value for inline asm
-machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
+STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     // TODO for byte_array, pass pointer to the array
     if (MP_OBJ_IS_SMALL_INT(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
@@ -245,11 +245,11 @@ machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 }
 
 // convert a return value from inline asm to a sensible Micro Python object
-mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
+STATIC mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
     if (n_args != self->n_args) {
@@ -276,7 +276,7 @@ mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     return convert_val_from_inline_asm(ret);
 }
 
-static const mp_obj_type_t fun_asm_type = {
+STATIC const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
     "function",
     .call = fun_asm_call,

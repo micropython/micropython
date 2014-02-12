@@ -13,15 +13,11 @@ typedef struct _mp_obj_enumerate_t {
     machine_int_t cur;
 } mp_obj_enumerate_t;
 
-static mp_obj_t enumerate_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
-static mp_obj_t enumerate_iternext(mp_obj_t self_in);
+STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);
 
 /* TODO: enumerate is one of the ones that can take args or kwargs.
    Sticking to args for now */
-static mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(n_args > 0);
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = &enumerate_type;
@@ -35,10 +31,10 @@ const mp_obj_type_t enumerate_type = {
     "enumerate",
     .make_new = enumerate_make_new,
     .iternext = enumerate_iternext,
-    .getiter = enumerate_getiter,
+    .getiter = mp_identity,
 };
 
-static mp_obj_t enumerate_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &enumerate_type));
     mp_obj_enumerate_t *self = self_in;
     mp_obj_t next = rt_iternext(self->iter);

@@ -28,8 +28,8 @@ typedef struct _mp_obj_str_t {
 // use this macro to extract the string data and length
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
-static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
-static mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -67,7 +67,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "%c", quote_char);
 }
 
-static void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &bytes_type);
     if (kind == PRINT_STR && !is_bytes) {
@@ -82,7 +82,7 @@ static void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
 
 // like strstr but with specified length and allows \0 bytes
 // TODO replace with something more efficient/standard
-static const byte *find_subbytes(const byte *haystack, uint hlen, const byte *needle, uint nlen) {
+STATIC const byte *find_subbytes(const byte *haystack, uint hlen, const byte *needle, uint nlen) {
     if (hlen >= nlen) {
         for (uint i = 0; i <= hlen - nlen; i++) {
             bool found = true;
@@ -100,7 +100,7 @@ static const byte *find_subbytes(const byte *haystack, uint hlen, const byte *ne
     return NULL;
 }
 
-static mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -188,7 +188,7 @@ static mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     return MP_OBJ_NULL; // op not supported
 }
 
-static mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_STR(self_in));
 
     // get separation string
@@ -240,7 +240,7 @@ bad_arg:
 
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
 
-static mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     int splits = -1;
     mp_obj_t sep = mp_const_none;
     if (n_args > 1) {
@@ -278,7 +278,7 @@ static mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     return res;
 }
 
-static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
@@ -311,7 +311,7 @@ static mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
 }
 
 // TODO: (Much) more variety in args
-static mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
     GET_STR_DATA_LEN(self_in, str, str_len);
     GET_STR_DATA_LEN(arg, prefix, prefix_len);
     if (prefix_len > str_len) {
@@ -320,7 +320,7 @@ static mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
     return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
 }
 
-static bool chr_in_str(const byte* const str, const size_t str_len, int c) {
+STATIC bool chr_in_str(const byte* const str, const size_t str_len, int c) {
     for (size_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
             return true;
@@ -329,7 +329,7 @@ static bool chr_in_str(const byte* const str, const size_t str_len, int c) {
     return false;
 }
 
-static mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_STR(args[0]));
 
@@ -403,7 +403,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
     return s;
 }
 
-static mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
     assert(MP_OBJ_IS_STR(args[2]));
@@ -487,15 +487,15 @@ static mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     return mp_obj_str_builder_end(replaced_str);
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
-static MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
-static MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
-static MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 
-static const mp_method_t str_type_methods[] = {
+STATIC const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
     { "join", &str_join_obj },
     { "split", &str_split_obj },
@@ -541,7 +541,7 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     return o;
 }
 
-static mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
+STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
     mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
     o->base.type = type;
     o->hash = qstr_compute_hash(data, len);
@@ -654,7 +654,7 @@ typedef struct _mp_obj_str_it_t {
     machine_uint_t cur;
 } mp_obj_str_it_t;
 
-static mp_obj_t str_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
@@ -666,13 +666,13 @@ static mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-static const mp_obj_type_t str_it_type = {
+STATIC const mp_obj_type_t str_it_type = {
     { &mp_const_type },
     "str_iterator",
     .iternext = str_it_iternext,
 };
 
-static mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
@@ -684,7 +684,7 @@ static mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     }
 }
 
-static const mp_obj_type_t bytes_it_type = {
+STATIC const mp_obj_type_t bytes_it_type = {
     { &mp_const_type },
     "bytes_iterator",
     .iternext = bytes_it_iternext,

@@ -13,7 +13,7 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
-static mp_obj_t mp_obj_new_int_from_ll(long long val);
+STATIC mp_obj_t mp_obj_new_int_from_ll(long long val);
 
 // Python3 no longer has "l" suffix for long ints. We allow to use it
 // for debugging purpose though.

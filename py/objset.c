@@ -23,9 +23,9 @@ typedef struct _mp_obj_set_it_t {
     machine_uint_t cur;
 } mp_obj_set_it_t;
 
-static mp_obj_t set_it_iternext(mp_obj_t self_in);
+STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
 
-void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_set_t *self = self_in;
     if (self->set.used == 0) {
         print(env, "set()");
@@ -46,7 +46,7 @@ void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 }
 
 
-static mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -77,7 +77,7 @@ const mp_obj_type_t set_it_type = {
     .iternext = set_it_iternext,
 };
 
-static mp_obj_t set_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_it_type));
     mp_obj_set_it_t *self = self_in;
     machine_uint_t max = self->set->set.alloc;
@@ -93,7 +93,7 @@ static mp_obj_t set_it_iternext(mp_obj_t self_in) {
     return mp_const_stop_iteration;
 }
 
-static mp_obj_t set_getiter(mp_obj_t set_in) {
+STATIC mp_obj_t set_getiter(mp_obj_t set_in) {
     mp_obj_set_it_t *o = m_new_obj(mp_obj_set_it_t);
     o->base.type = &set_it_type;
     o->set = (mp_obj_set_t *)set_in;
@@ -105,15 +105,15 @@ static mp_obj_t set_getiter(mp_obj_t set_in) {
 /******************************************************************************/
 /* set methods                                                                */
 
-static mp_obj_t set_add(mp_obj_t self_in, mp_obj_t item) {
+STATIC mp_obj_t set_add(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
 
-static mp_obj_t set_clear(mp_obj_t self_in) {
+STATIC mp_obj_t set_clear(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
 
@@ -121,9 +121,9 @@ static mp_obj_t set_clear(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 
-static mp_obj_t set_copy(mp_obj_t self_in) {
+STATIC mp_obj_t set_copy(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
 
@@ -135,17 +135,17 @@ static mp_obj_t set_copy(mp_obj_t self_in) {
 
     return other;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);
 
-static mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
+STATIC mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
 
-static mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
+STATIC mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
     assert(n_args > 0);
     assert(MP_OBJ_IS_TYPE(args[0], &set_type));
     mp_obj_set_t *self;
@@ -172,18 +172,18 @@ static mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
     return self;
 }
 
-static mp_obj_t set_diff(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_diff(uint n_args, const mp_obj_t *args) {
     return set_diff_int(n_args, args, false);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_obj, 1, set_diff);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_obj, 1, set_diff);
 
-static mp_obj_t set_diff_update(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_diff_update(uint n_args, const mp_obj_t *args) {
     set_diff_int(n_args, args, true);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_update_obj, 1, set_diff_update);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_update_obj, 1, set_diff_update);
 
-static mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update) {
+STATIC mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     if (self_in == other) {
         return update ? mp_const_none : set_copy(self_in);
@@ -210,17 +210,17 @@ static mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update)
     return update ? mp_const_none : out;
 }
 
-static mp_obj_t set_intersect(mp_obj_t self_in, mp_obj_t other) {
+STATIC mp_obj_t set_intersect(mp_obj_t self_in, mp_obj_t other) {
     return set_intersect_int(self_in, other, false);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_obj, set_intersect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_obj, set_intersect);
 
-static mp_obj_t set_intersect_update(mp_obj_t self_in, mp_obj_t other) {
+STATIC mp_obj_t set_intersect_update(mp_obj_t self_in, mp_obj_t other) {
     return set_intersect_int(self_in, other, true);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_update_obj, set_intersect_update);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_intersect_update_obj, set_intersect_update);
 
-static mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
+STATIC mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
 
@@ -233,9 +233,9 @@ static mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
     }
     return mp_const_true;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_isdisjoint_obj, set_isdisjoint);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_isdisjoint_obj, set_isdisjoint);
 
-static mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool proper) {
+STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool proper) {
     mp_obj_set_t *self;
     bool cleanup_self = false;
     if (MP_OBJ_IS_TYPE(self_in, &set_type)) {
@@ -274,25 +274,25 @@ static mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     }
     return MP_BOOL(out);
 }
-static mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, false);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_issubset_obj, set_issubset);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_issubset_obj, set_issubset);
 
-static mp_obj_t set_issubset_proper(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_issubset_proper(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, true);
 }
 
-static mp_obj_t set_issuperset(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_issuperset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(other_in, self_in, false);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_issuperset_obj, set_issuperset);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_issuperset_obj, set_issuperset);
 
-static mp_obj_t set_issuperset_proper(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_issuperset_proper(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(other_in, self_in, true);
 }
 
-static mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     if (!MP_OBJ_IS_TYPE(other_in, &set_type)) {
@@ -305,7 +305,7 @@ static mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset(self_in, other_in);
 }
 
-static mp_obj_t set_pop(mp_obj_t self_in) {
+STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
 
@@ -316,9 +316,9 @@ static mp_obj_t set_pop(mp_obj_t self_in) {
                          MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_FIRST);
     return obj;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(set_pop_obj, set_pop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_pop_obj, set_pop);
 
-static mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
+STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
@@ -326,9 +326,9 @@ static mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 
-static mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     mp_obj_t iter = rt_getiter(other_in);
@@ -338,17 +338,17 @@ static mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_update_obj, set_symmetric_difference_update);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_update_obj, set_symmetric_difference_update);
 
-static mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     self_in = set_copy(self_in);
     set_symmetric_difference_update(self_in, other_in);
     return self_in;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
 
-static void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
+STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     mp_obj_t iter = rt_getiter(other_in);
     mp_obj_t next;
     while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
@@ -356,7 +356,7 @@ static void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     }
 }
 
-static mp_obj_t set_update(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_update(uint n_args, const mp_obj_t *args) {
     assert(n_args > 0);
     assert(MP_OBJ_IS_TYPE(args[0], &set_type));
 
@@ -366,18 +366,18 @@ static mp_obj_t set_update(uint n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR(set_update_obj, 1, set_update);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(set_update_obj, 1, set_update);
 
-static mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
+STATIC mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = set_copy(self_in);
     set_update_int(self, other_in);
     return self;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 
 
-static mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
     switch (op) {
     case RT_BINARY_OP_OR:
@@ -424,7 +424,7 @@ static mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 /* set constructors & public C API                                            */
 
 
-static const mp_method_t set_type_methods[] = {
+STATIC const mp_method_t set_type_methods[] = {
     { "add", &set_add_obj },
     { "clear", &set_clear_obj },
     { "copy", &set_copy_obj },

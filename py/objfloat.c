@@ -19,12 +19,12 @@ typedef struct _mp_obj_float_t {
 
 mp_obj_t mp_obj_new_float(mp_float_t value);
 
-static void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_float_t *o = o_in;
     print(env, "%.8g", (double) o->value);
 }
 
-static mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -44,7 +44,7 @@ static mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
-static mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
     mp_obj_float_t *o = o_in;
     switch (op) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
@@ -54,7 +54,7 @@ static mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-static mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_float_t *lhs = lhs_in;
     if (MP_OBJ_IS_TYPE(rhs_in, &complex_type)) {
         return mp_obj_complex_binary_op(op, lhs->value, 0, rhs_in);

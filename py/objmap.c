@@ -15,7 +15,7 @@ typedef struct _mp_obj_map_t {
     mp_obj_t iters[];
 } mp_obj_map_t;
 
-static mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args < 2 || n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "map must have at least 2 arguments and no keyword arguments"));
     }
@@ -30,11 +30,11 @@ static mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     return o;
 }
 
-static mp_obj_t map_getiter(mp_obj_t self_in) {
+STATIC mp_obj_t map_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-static mp_obj_t map_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &map_type));
     mp_obj_map_t *self = self_in;
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);

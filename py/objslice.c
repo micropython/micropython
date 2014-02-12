@@ -27,7 +27,7 @@ const mp_obj_type_t ellipsis_type = {
     .print = ellipsis_print,
 };
 
-static const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
+STATIC const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
 const mp_obj_t mp_const_ellipsis = (mp_obj_t)&ellipsis_obj;
 
 /******************************************************************************/

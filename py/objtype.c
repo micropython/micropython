@@ -21,7 +21,7 @@ typedef struct _mp_obj_class_t {
     mp_map_t members;
 } mp_obj_class_t;
 
-static mp_obj_t mp_obj_new_class(mp_obj_t class) {
+STATIC mp_obj_t mp_obj_new_class(mp_obj_t class) {
     mp_obj_class_t *o = m_new_obj(mp_obj_class_t);
     o->base.type = class;
     mp_map_init(&o->members, 0);
@@ -29,7 +29,7 @@ static mp_obj_t mp_obj_new_class(mp_obj_t class) {
 }
 
 // will return MP_OBJ_NULL if not found
-static mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
+STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
     for (;;) {
         if (type->locals_dict != NULL) {
             // search locals_dict (the dynamically created set of methods/attributes)
@@ -77,11 +77,11 @@ static mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
     }
 }
 
-static void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
 
@@ -116,7 +116,7 @@ static mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     return o;
 }
 
-static const qstr unary_op_method_name[] = {
+STATIC const qstr unary_op_method_name[] = {
     [RT_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [RT_UNARY_OP_LEN] = MP_QSTR___len__,
     //[RT_UNARY_OP_POSITIVE,
@@ -125,7 +125,7 @@ static const qstr unary_op_method_name[] = {
     [RT_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
-static mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
     mp_obj_class_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
     if (op_name == 0) {
@@ -139,7 +139,7 @@ static mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-static const qstr binary_op_method_name[] = {
+STATIC const qstr binary_op_method_name[] = {
     [RT_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
     RT_BINARY_OP_OR,
@@ -180,7 +180,7 @@ static const qstr binary_op_method_name[] = {
     [RT_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
 };
 
-static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_class_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
     if (op_name == 0) {
@@ -194,7 +194,7 @@ static mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
-static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
@@ -231,7 +231,7 @@ static void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-static bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
     mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return true;
@@ -255,12 +255,12 @@ bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 //  - there is a constant mp_obj_type_t (called mp_const_type) for the 'type' object
 //  - creating a new class (a new type) creates a new mp_obj_type_t
 
-static void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_type_t *self = self_in;
     print(env, "<class '%s'>", self->name);
 }
 
-static mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -278,7 +278,7 @@ static mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     }
 }
 
-static mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // instantiate an instance of a class
 
     mp_obj_type_t *self = self_in;
@@ -295,7 +295,7 @@ static mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
 }
 
 // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
     mp_obj_t member = mp_obj_class_lookup(self, attr);
@@ -317,7 +317,7 @@ static void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-static bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
     mp_obj_type_t *self = self_in;
 
@@ -370,7 +370,7 @@ typedef struct _mp_obj_super_t {
     mp_obj_t obj;
 } mp_obj_super_t;
 
-static void super_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_super_t *self = self_in;
     print(env, "<super: ");
     mp_obj_print_helper(print, env, self->type, PRINT_STR);
@@ -379,7 +379,7 @@ static void super_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, ">");
 }
 
-static mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args != 2 || n_kw != 0) {
         // 0 arguments are turned into 2 in the compiler
         // 1 argument is not yet implemented
@@ -389,7 +389,7 @@ static mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 }
 
 // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-static void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &super_type));
     mp_obj_super_t *self = self_in;
 
@@ -454,7 +454,7 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
 /******************************************************************************/
 // built-ins specific to types
 
-static mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
+STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
     if (!MP_OBJ_IS_TYPE(object, &mp_const_type)) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "issubclass() arg 1 must be a class"));
     }
@@ -498,7 +498,7 @@ static mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_builtin_issubclass);
 
-static mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
+STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
     return mp_builtin_issubclass(mp_obj_get_type(object), classinfo);
 }
 
@@ -507,7 +507,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)
 
-static mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
 
     if (n_args != 1 || n_kw != 0) {

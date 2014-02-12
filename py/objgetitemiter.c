@@ -15,7 +15,7 @@ typedef struct _mp_obj_getitem_iter_t {
     mp_obj_t args[3];
 } mp_obj_getitem_iter_t;
 
-static mp_obj_t it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     mp_obj_getitem_iter_t *self = self_in;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -36,7 +36,7 @@ static mp_obj_t it_iternext(mp_obj_t self_in) {
     }
 }
 
-static const mp_obj_type_t it_type = {
+STATIC const mp_obj_type_t it_type = {
     { &mp_const_type },
     "iterator",
     .iternext = it_iternext

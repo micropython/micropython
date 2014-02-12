@@ -14,7 +14,7 @@ typedef struct _mp_obj_bool_t {
     bool value;
 } mp_obj_bool_t;
 
-static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_bool_t *self = self_in;
     if (self->value) {
         print(env, "True");
@@ -23,7 +23,7 @@ static void bool_print(void (*print)(void *env, const char *fmt, ...), void *env
     }
 }
 
-static mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -33,7 +33,7 @@ static mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     }
 }
 
-static mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
     machine_int_t value = ((mp_obj_bool_t*)o_in)->value;
     switch (op) {
         case RT_UNARY_OP_BOOL: return o_in;
@@ -53,8 +53,8 @@ const mp_obj_type_t bool_type = {
     .unary_op = bool_unary_op,
 };
 
-static const mp_obj_bool_t false_obj = {{&bool_type}, false};
-static const mp_obj_bool_t true_obj = {{&bool_type}, true};
+STATIC const mp_obj_bool_t false_obj = {{&bool_type}, false};
+STATIC const mp_obj_bool_t true_obj = {{&bool_type}, true};
 
 const mp_obj_t mp_const_false = (mp_obj_t)&false_obj;
 const mp_obj_t mp_const_true = (mp_obj_t)&true_obj;

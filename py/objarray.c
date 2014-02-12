@@ -29,14 +29,14 @@ typedef struct _mp_obj_array_t {
     void *items;
 } mp_obj_array_t;
 
-static mp_obj_t array_iterator_new(mp_obj_t array_in);
-static mp_obj_array_t *array_new(char typecode, uint n);
-static mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
+STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
+STATIC mp_obj_array_t *array_new(char typecode, uint n);
+STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 
 /******************************************************************************/
 /* array                                                                       */
 
-static machine_int_t array_get_el_size(char typecode) {
+STATIC machine_int_t array_get_el_size(char typecode) {
     // This assumes that unsigned and signed types are of the same type,
     // which is invariant for [u]intN_t.
     switch (typecode) {
@@ -57,7 +57,7 @@ static machine_int_t array_get_el_size(char typecode) {
     return -1;
 }
 
-static machine_int_t array_get_el(mp_obj_array_t *o, int index) {
+STATIC machine_int_t array_get_el(mp_obj_array_t *o, int index) {
     machine_int_t val = 0;
     switch (o->typecode) {
         case 'b':
@@ -89,7 +89,7 @@ static machine_int_t array_get_el(mp_obj_array_t *o, int index) {
     return val;
 }
 
-static void array_set_el(mp_obj_array_t *o, int index, mp_obj_t val_in) {
+STATIC void array_set_el(mp_obj_array_t *o, int index, mp_obj_t val_in) {
     machine_int_t val = mp_obj_int_get(val_in);
     switch (o->typecode) {
         case 'b':
@@ -121,7 +121,7 @@ static void array_set_el(mp_obj_array_t *o, int index, mp_obj_t val_in) {
 }
 
 
-static void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
         print(env, "bytearray(b", o->typecode);
@@ -142,7 +142,7 @@ static void array_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, ")");
 }
 
-static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
+STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     uint len;
     // Try to create array of exact len if initializer len is known
     mp_obj_t len_in = mp_obj_len_maybe(initializer);
@@ -168,7 +168,7 @@ static mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     return array;
 }
 
-static mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args < 1 || n_args > 2) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unexpected # of arguments, %d given", n_args));
     }
@@ -184,12 +184,12 @@ static mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
 // This is top-level factory function, not virtual method
 // TODO: "bytearray" really should be type, not function
-static mp_obj_t mp_builtin_bytearray(mp_obj_t arg) {
+STATIC mp_obj_t mp_builtin_bytearray(mp_obj_t arg) {
     return array_construct(BYTEARRAY_TYPECODE, arg);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bytearray_obj, mp_builtin_bytearray);
 
-static mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     mp_obj_array_t *o = o_in;
     switch (op) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
@@ -198,7 +198,7 @@ static mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-static mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_array_t *o = lhs;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -214,7 +214,7 @@ static mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
-static mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &array_type));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
@@ -227,23 +227,23 @@ static mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
-static bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_array_t *o = self_in;
     uint index = mp_get_index(o->base.type, o->len, index_in);
     array_set_el(o, index, value);
     return true;
 }
 
-static machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int flags) {
+STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
     bufinfo->len = o->len * array_get_el_size(o->typecode);
     return 0;
 }
 
-static const mp_method_t array_type_methods[] = {
+STATIC const mp_method_t array_type_methods[] = {
     { "append", &array_append_obj },
     { NULL, NULL },
 };
@@ -261,7 +261,7 @@ const mp_obj_type_t array_type = {
     .buffer_p = { .get_buffer = array_get_buffer },
 };
 
-static mp_obj_array_t *array_new(char typecode, uint n) {
+STATIC mp_obj_array_t *array_new(char typecode, uint n) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     o->base.type = &array_type;
     o->typecode = typecode;
@@ -311,7 +311,7 @@ mp_obj_t array_it_iternext(mp_obj_t self_in) {
     }
 }
 
-static const mp_obj_type_t array_it_type = {
+STATIC const mp_obj_type_t array_it_type = {
     { &mp_const_type },
     "array_iterator",
     .iternext = array_it_iternext,

@@ -14,7 +14,7 @@ typedef struct _mp_obj_filter_t {
     mp_obj_t iter;
 } mp_obj_filter_t;
 
-static mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args != 2 || n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "filter expected 2 arguments"));
     }
@@ -26,11 +26,7 @@ static mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return o;
 }
 
-static mp_obj_t filter_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
-static mp_obj_t filter_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &filter_type));
     mp_obj_filter_t *self = self_in;
     mp_obj_t next;
@@ -52,6 +48,6 @@ const mp_obj_type_t filter_type = {
     { &mp_const_type },
     "filter",
     .make_new = filter_make_new,
-    .getiter = filter_getiter,
+    .getiter = mp_identity,
     .iternext = filter_iternext,
 };

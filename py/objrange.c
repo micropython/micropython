@@ -18,12 +18,12 @@ typedef struct _mp_obj_range_t {
     machine_int_t step;
 } mp_obj_range_t;
 
-mp_obj_t range_getiter(mp_obj_t o_in) {
+STATIC mp_obj_t range_getiter(mp_obj_t o_in) {
     mp_obj_range_t *o = o_in;
     return mp_obj_new_range_iterator(o->start, o->stop, o->step);
 }
 
-static const mp_obj_type_t range_type = {
+STATIC const mp_obj_type_t range_type = {
     { &mp_const_type} ,
     "range",
     .getiter = range_getiter,
@@ -50,7 +50,7 @@ typedef struct _mp_obj_range_it_t {
     machine_int_t step;
 } mp_obj_range_it_t;
 
-mp_obj_t range_it_iternext(mp_obj_t o_in) {
+STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
     mp_obj_range_it_t *o = o_in;
     if ((o->step > 0 && o->cur < o->stop) || (o->step < 0 && o->cur > o->stop)) {
         mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(o->cur);
@@ -61,7 +61,7 @@ mp_obj_t range_it_iternext(mp_obj_t o_in) {
     }
 }
 
-static const mp_obj_type_t range_it_type = {
+STATIC const mp_obj_type_t range_it_type = {
     { &mp_const_type },
     "range_iterator",
     .iternext = range_it_iternext,

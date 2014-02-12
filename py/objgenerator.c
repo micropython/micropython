@@ -19,7 +19,7 @@ typedef struct _mp_obj_gen_wrap_t {
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
-mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_t self_fun = self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &fun_bc_type));
@@ -70,7 +70,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-static mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
+STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_gen_instance_t *self = self_in;
     if (self->ip == 0) {
         return mp_const_stop_iteration;
@@ -105,16 +105,16 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     return gen_next_send(self_in, mp_const_none);
 }
 
-static mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
+STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_next_send(self_in, send_value);
     if (ret == mp_const_stop_iteration) {
         nlr_jump(mp_obj_new_exception(MP_QSTR_StopIteration));
     }
     return ret;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
-static const mp_method_t gen_type_methods[] = {
+STATIC const mp_method_t gen_type_methods[] = {
     { "send", &gen_instance_send_obj },
     { NULL, NULL }, // end-of-list sentinel
 };

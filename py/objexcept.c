@@ -22,7 +22,7 @@ typedef struct mp_obj_exception_t {
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
-void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
     if (o->msg != NULL) {
         print(env, "%s: %s", qstr_str(o->id), vstr_str(o->msg));
@@ -44,7 +44,7 @@ void exception_print(void (*print)(void *env, const char *fmt, ...), void *env, 
     }
 }
 
-static mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_exception_t *base = self_in;
 
     if (n_kw != 0) {

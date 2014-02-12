@@ -12,7 +12,7 @@
 #include "runtime.h"
 #include "objtuple.h"
 
-static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur);
+STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur);
 
 /******************************************************************************/
 /* tuple                                                                      */
@@ -32,7 +32,7 @@ void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
     print(env, ")");
 }
 
-static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -75,7 +75,7 @@ static mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 }
 
 // Don't pass RT_BINARY_OP_NOT_EQUAL here
-static bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
+STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
     if (!MP_OBJ_IS_TYPE(another_in, &tuple_type)) {
         return false;
@@ -86,7 +86,7 @@ static bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
-static mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
@@ -95,7 +95,7 @@ static mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -149,25 +149,25 @@ static mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
-static mp_obj_t tuple_getiter(mp_obj_t o_in) {
+STATIC mp_obj_t tuple_getiter(mp_obj_t o_in) {
     return mp_obj_new_tuple_iterator(o_in, 0);
 }
 
-static mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
+STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
     mp_obj_tuple_t *self = self_in;
     return mp_seq_count_obj(self->items, self->len, value);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
-static mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &tuple_type));
     mp_obj_tuple_t *self = args[0];
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
-static const mp_method_t tuple_type_methods[] = {
+STATIC const mp_method_t tuple_type_methods[] = {
     { "count", &tuple_count_obj },
     { "index", &tuple_index_obj },
     { NULL, NULL }, // end-of-list sentinel
@@ -185,7 +185,7 @@ const mp_obj_type_t tuple_type = {
 };
 
 // the zero-length tuple
-static const mp_obj_tuple_t empty_tuple_obj = {{&tuple_type}, 0};
+STATIC const mp_obj_tuple_t empty_tuple_obj = {{&tuple_type}, 0};
 const mp_obj_t mp_const_empty_tuple = (mp_obj_t)&empty_tuple_obj;
 
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
@@ -229,7 +229,7 @@ typedef struct _mp_obj_tuple_it_t {
     machine_uint_t cur;
 } mp_obj_tuple_it_t;
 
-static mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     mp_obj_tuple_it_t *self = self_in;
     if (self->cur < self->tuple->len) {
         mp_obj_t o_out = self->tuple->items[self->cur];
@@ -240,13 +240,13 @@ static mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     }
 }
 
-static const mp_obj_type_t tuple_it_type = {
+STATIC const mp_obj_type_t tuple_it_type = {
     { &mp_const_type },
     "tuple_iterator",
     .iternext = tuple_it_iternext,
 };
 
-static mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur) {
+STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur) {
     mp_obj_tuple_it_t *o = m_new_obj(mp_obj_tuple_it_t);
     o->base.type = &tuple_it_type;
     o->tuple = tuple;
