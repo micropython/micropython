@@ -31,10 +31,10 @@
 #endif
 
 // locals and globals need to be pointers because they can be the same in outer module scope
-static mp_map_t *map_locals;
-static mp_map_t *map_globals;
-static mp_map_t map_builtins;
-static mp_map_t map_loaded_modules; // TODO: expose as sys.modules
+STATIC mp_map_t *map_locals;
+STATIC mp_map_t *map_globals;
+STATIC mp_map_t map_builtins;
+STATIC mp_map_t map_loaded_modules; // TODO: expose as sys.modules
 
 typedef enum {
     MP_CODE_NONE,
@@ -66,9 +66,9 @@ typedef struct _mp_code_t {
     };
 } mp_code_t;
 
-static uint next_unique_code_id;
-static machine_uint_t unique_codes_alloc = 0;
-static mp_code_t *unique_codes = NULL;
+STATIC uint next_unique_code_id;
+STATIC machine_uint_t unique_codes_alloc = 0;
+STATIC mp_code_t *unique_codes = NULL;
 
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
@@ -85,7 +85,7 @@ typedef struct _mp_builtin_elem_t {
     mp_obj_t fun;
 } mp_builtin_elem_t;
 
-static const mp_builtin_elem_t builtin_table[] = {
+STATIC const mp_builtin_elem_t builtin_table[] = {
     // built-in core functions
     { MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj },
     { MP_QSTR___import__, (mp_obj_t)&mp_builtin___import___obj },
@@ -148,7 +148,7 @@ static const mp_builtin_elem_t builtin_table[] = {
 };
 
 // a good optimising compiler will inline this if necessary
-static void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
+STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
     mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
 }
 
@@ -225,7 +225,7 @@ uint rt_get_unique_code_id(void) {
     return next_unique_code_id++;
 }
 
-static void alloc_unique_codes(void) {
+STATIC void alloc_unique_codes(void) {
     if (next_unique_code_id > unique_codes_alloc) {
         DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, next_unique_code_id);
         // increase size of unique_codes table
@@ -864,7 +864,7 @@ mp_obj_t rt_load_attr(mp_obj_t base, qstr attr) {
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
 // normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
 // method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
-static void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
+STATIC void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;

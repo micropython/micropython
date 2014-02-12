@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "misc.h"
+#include "mpconfig.h"
 
 // attribute flags
 #define FL_PRINT (0x01)
@@ -19,7 +20,7 @@
 #define AT_LO (FL_LOWER | FL_ALPHA | FL_PRINT)
 
 // table of attributes for ascii characters
-static const uint8_t attr[] = {
+STATIC const uint8_t attr[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, AT_SP, AT_SP, AT_SP, 0, AT_SP, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,

@@ -93,7 +93,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
 }
 
 // all functions must go through this one to emit bytes
-static byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_write) {
+STATIC byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (as->pass < ASM_THUMB_PASS_3) {
         as->code_offset += num_bytes_to_write;
@@ -116,20 +116,20 @@ void *asm_thumb_get_code(asm_thumb_t *as) {
 }
 
 /*
-static void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
+STATIC void asm_thumb_write_byte_1(asm_thumb_t *as, byte b1) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 1);
     c[0] = b1;
 }
 */
 
-static void asm_thumb_write_op16(asm_thumb_t *as, uint op) {
+STATIC void asm_thumb_write_op16(asm_thumb_t *as, uint op) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 2);
     // little endian
     c[0] = op;
     c[1] = op >> 8;
 }
 
-static void asm_thumb_write_op32(asm_thumb_t *as, uint op1, uint op2) {
+STATIC void asm_thumb_write_op32(asm_thumb_t *as, uint op1, uint op2) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
     // little endian, op1 then op2
     c[0] = op1;
@@ -144,7 +144,7 @@ static void asm_thumb_write_op32(asm_thumb_t *as, uint op1, uint op2) {
 #define IMM32_L2(x) (((x) >> 16) & 0xff)
 #define IMM32_L3(x) (((x) >> 24) & 0xff)
 
-static void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
+STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
     c[0] = IMM32_L0(w32);
     c[1] = IMM32_L1(w32);
@@ -226,7 +226,7 @@ void asm_thumb_label_assign(asm_thumb_t *as, int label) {
     }
 }
 
-static int get_label_dest(asm_thumb_t *as, int label) {
+STATIC int get_label_dest(asm_thumb_t *as, int label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
@@ -244,7 +244,7 @@ void asm_thumb_movs_rlo_i8(asm_thumb_t *as, uint rlo_dest, int i8_src) {
 #define OP_MOVT (0xf2c0)
 
 // if loading lo half with movw, the i16 value will be zero extended into the r32 register!
-static void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src) {
+STATIC void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src) {
     assert(reg_dest < REG_R15);
     // mov[wt] reg_dest, #i16_src
     asm_thumb_write_op32(as, mov_op | ((i16_src >> 1) & 0x0400) | ((i16_src >> 12) & 0xf), ((i16_src << 4) & 0x7000) | (reg_dest << 8) | (i16_src & 0xff));

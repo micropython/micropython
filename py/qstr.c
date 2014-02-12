@@ -60,13 +60,13 @@ const static qstr_pool_t const_pool = {
     },
 };
 
-static qstr_pool_t *last_pool;
+STATIC qstr_pool_t *last_pool;
 
 void qstr_init(void) {
     last_pool = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
 }
 
-static const byte *find_qstr(qstr q) {
+STATIC const byte *find_qstr(qstr q) {
     // search pool for this qstr
     for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
         if (q >= pool->total_prev_len) {
@@ -78,7 +78,7 @@ static const byte *find_qstr(qstr q) {
     return 0;
 }
 
-static qstr qstr_add(const byte *q_ptr) {
+STATIC qstr qstr_add(const byte *q_ptr) {
     DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", Q_GET_HASH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_DATA(q_ptr));
 
     // make sure we have room in the pool for a new qstr

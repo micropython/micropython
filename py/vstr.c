@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "misc.h"
+#include "mpconfig.h"
 
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
@@ -124,7 +125,7 @@ bool vstr_shrink(vstr_t *vstr) {
     return vstr_set_size(vstr, vstr->len);
 }
 
-static bool vstr_ensure_extra(vstr_t *vstr, int size) {
+STATIC bool vstr_ensure_extra(vstr_t *vstr, int size) {
     if (vstr->len + size + 1 > vstr->alloc) {
         if (vstr->fixed_buf) {
             return false;

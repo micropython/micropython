@@ -40,14 +40,14 @@ void emit_inline_thumb_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-static void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {
+STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->scope = scope;
     asm_thumb_start_pass(emit->as, pass);
     asm_thumb_entry(emit->as, 0);
 }
 
-static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
+STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     asm_thumb_exit(emit->as);
     asm_thumb_end_pass(emit->as);
 
@@ -57,7 +57,7 @@ static void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     }
 }
 
-static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params) {
+STATIC int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
         printf("SyntaxError: can only have up to 4 parameters to inline thumb assembly\n");
         return 0;
@@ -76,13 +76,13 @@ static int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params,
     return n_params;
 }
 
-static void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr label_id) {
+STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     emit->label_lookup[label_num] = label_id;
     asm_thumb_label_assign(emit->as, label_num);
 }
 
-static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
+STATIC bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
     if (wanted_n_args == n_args) {
         return true;
     } else {
@@ -91,7 +91,7 @@ static bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
     }
 }
 
-static uint get_arg_rlo(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+STATIC uint get_arg_rlo(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
@@ -105,7 +105,7 @@ static uint get_arg_rlo(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     return reg_str[1] - '0';
 }
 
-static int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
+STATIC int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
@@ -118,7 +118,7 @@ static int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int 
     return i;
 }
 
-static int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+STATIC int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
         printf("SyntaxError: '%s' expects a label in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
@@ -136,7 +136,7 @@ static int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_a
     return 0;
 }
 
-static void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args) {
+STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
     // "b", LAB, asm_thumb_b_n,

@@ -18,7 +18,7 @@
 // args[0] is function from class body
 // args[1] is class name
 // args[2:] are base objects
-static mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args);
 
     // we differ from CPython: we set the new __locals__ object here
@@ -61,7 +61,7 @@ static mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
-static mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
+STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
         mp_obj_print(o, PRINT_REPR);
         printf("\n");
@@ -100,7 +100,7 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
-static mp_obj_t mp_builtin_all(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
     mp_obj_t iterable = rt_getiter(o_in);
     mp_obj_t item;
     while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
@@ -113,7 +113,7 @@ static mp_obj_t mp_builtin_all(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_all_obj, mp_builtin_all);
 
-static mp_obj_t mp_builtin_any(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
     mp_obj_t iterable = rt_getiter(o_in);
     mp_obj_t item;
     while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
@@ -126,7 +126,7 @@ static mp_obj_t mp_builtin_any(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
-static mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
     if (mp_obj_is_callable(o_in)) {
         return mp_const_true;
     } else {
@@ -136,7 +136,7 @@ static mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
-static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     int ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
         byte str[1] = {ord};
@@ -148,7 +148,7 @@ static mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
-static mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
     mp_map_t *map;
@@ -178,7 +178,7 @@ static mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
 
-static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
+STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     if (MP_OBJ_IS_SMALL_INT(o1_in) && MP_OBJ_IS_SMALL_INT(o2_in)) {
         mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
         mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
@@ -193,20 +193,20 @@ static mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_divmod_obj, mp_builtin_divmod);
 
-static mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
     // TODO hash will generally overflow small integer; can we safely truncate it?
     return mp_obj_new_int(mp_obj_hash(o_in));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
 
-static mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
     return rt_getiter(o_in);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
-static mp_obj_t mp_builtin_len(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == NULL) {
         nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
@@ -217,7 +217,7 @@ static mp_obj_t mp_builtin_len(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_builtin_len);
 
-static mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
         mp_obj_t iterable = rt_getiter(args[0]);
@@ -246,7 +246,7 @@ static mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_max_obj, 1, mp_builtin_max);
 
-static mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
         mp_obj_t iterable = rt_getiter(args[0]);
@@ -275,7 +275,7 @@ static mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_min_obj, 1, mp_builtin_min);
 
-static mp_obj_t mp_builtin_next(mp_obj_t o) {
+STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = rt_iternext(o);
     if (ret == mp_const_stop_iteration) {
         nlr_jump(mp_obj_new_exception(MP_QSTR_StopIteration));
@@ -286,7 +286,7 @@ static mp_obj_t mp_builtin_next(mp_obj_t o) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
 
-static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     if (len == 1) {
@@ -300,7 +300,7 @@ static mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
-static mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     switch (n_args) {
         case 2: return rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]);
@@ -310,7 +310,7 @@ static mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
-static mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args) {
     for (int i = 0; i < n_args; i++) {
         if (i > 0) {
             printf(" ");
@@ -323,7 +323,7 @@ static mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_print_obj, 0, mp_builtin_print);
 
-static mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 3);
     switch (n_args) {
         case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
@@ -334,7 +334,7 @@ static mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range);
 
-static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
     mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
@@ -344,7 +344,7 @@ static mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
-static mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     mp_obj_t value;
     switch (n_args) {
@@ -361,7 +361,7 @@ static mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
-static mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(n_args >= 1);
     if (n_args > 1) {
         nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
@@ -375,7 +375,7 @@ static mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
-static mp_obj_t mp_builtin_str(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_str(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, o_in, PRINT_STR);
     mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
@@ -386,7 +386,7 @@ static mp_obj_t mp_builtin_str(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);
 
 // TODO: This should be type, this is just quick CPython compat hack
-static mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
     if (!MP_OBJ_IS_QSTR(args[0]) && !MP_OBJ_IS_TYPE(args[0], &str_type)) {
         assert(0);
     }
@@ -397,7 +397,7 @@ static mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_bytes_obj, 1, 3, mp_builtin_bytes);
 
-static mp_obj_t mp_builtin_id(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
     return mp_obj_new_int((machine_int_t)o_in);
 }
 

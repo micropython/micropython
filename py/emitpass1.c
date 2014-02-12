@@ -27,18 +27,18 @@ void emit_pass1_free(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-static void emit_pass1_dummy(emit_t *emit) {
+STATIC void emit_pass1_dummy(emit_t *emit) {
 }
 
-static void emit_pass1_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
+STATIC void emit_pass1_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     assert(pass == PASS_1);
     emit->scope = scope;
 }
 
-static void emit_pass1_end_pass(emit_t *emit) {
+STATIC void emit_pass1_end_pass(emit_t *emit) {
 }
 
-static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
+STATIC void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     // name adding/lookup
     bool added;
     id_info_t *id = scope_find_or_add_id(emit->scope, qstr, &added);
@@ -69,7 +69,7 @@ static void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static id_info_t *get_id_for_modification(scope_t *scope, qstr qstr) {
+STATIC id_info_t *get_id_for_modification(scope_t *scope, qstr qstr) {
     // name adding/lookup
     bool added;
     id_info_t *id = scope_find_or_add_id(scope, qstr, &added);
@@ -89,11 +89,11 @@ static id_info_t *get_id_for_modification(scope_t *scope, qstr qstr) {
     return id;
 }
 
-static void emit_pass1_store_id(emit_t *emit, qstr qstr) {
+STATIC void emit_pass1_store_id(emit_t *emit, qstr qstr) {
     get_id_for_modification(emit->scope, qstr);
 }
 
-static void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
+STATIC void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
     get_id_for_modification(emit->scope, qstr);
 }
 

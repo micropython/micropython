@@ -16,15 +16,15 @@
 // living in micropython module
 
 #if MICROPY_MEM_STATS
-static mp_obj_t mem_total() {
+STATIC mp_obj_t mem_total() {
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)m_get_total_bytes_allocated());
 }
 
-static mp_obj_t mem_current() {
+STATIC mp_obj_t mem_current() {
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)m_get_current_bytes_allocated());
 }
 
-static mp_obj_t mem_peak() {
+STATIC mp_obj_t mem_peak() {
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)m_get_peak_bytes_allocated());
 }
 

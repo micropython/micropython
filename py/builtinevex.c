@@ -19,7 +19,7 @@
 #include "map.h"
 #include "builtin.h"
 
-static mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
+STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
     uint str_len;
     const char *str = mp_obj_str_get_data(o_in, &str_len);
 
@@ -51,13 +51,13 @@ static mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse
     return rt_call_function_0(module_fun);
 }
 
-static mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
     return parse_compile_execute(o_in, MP_PARSE_EVAL_INPUT);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
 
-static mp_obj_t mp_builtin_exec(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_exec(mp_obj_t o_in) {
     return parse_compile_execute(o_in, MP_PARSE_FILE_INPUT);
 }
 

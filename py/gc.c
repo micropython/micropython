@@ -21,14 +21,14 @@ typedef unsigned char byte;
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
 #define STACK_SIZE (64) // tunable; minimum is 1
 
-static byte *gc_alloc_table_start;
-static machine_uint_t gc_alloc_table_byte_len;
-static machine_uint_t *gc_pool_start;
-static machine_uint_t *gc_pool_end;
+STATIC byte *gc_alloc_table_start;
+STATIC machine_uint_t gc_alloc_table_byte_len;
+STATIC machine_uint_t *gc_pool_start;
+STATIC machine_uint_t *gc_pool_end;
 
-static int gc_stack_overflow;
-static machine_uint_t gc_stack[STACK_SIZE];
-static machine_uint_t *gc_sp;
+STATIC int gc_stack_overflow;
+STATIC machine_uint_t gc_stack[STACK_SIZE];
+STATIC machine_uint_t *gc_sp;
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
@@ -116,7 +116,7 @@ void gc_init(void *start, void *end) {
         } \
     } while (0)
 
-static void gc_drain_stack(void) {
+STATIC void gc_drain_stack(void) {
     while (gc_sp > gc_stack) {
         // pop the next block off the stack
         machine_uint_t block = *--gc_sp;
@@ -136,7 +136,7 @@ static void gc_drain_stack(void) {
     }
 }
 
-static void gc_deal_with_stack_overflow(void) {
+STATIC void gc_deal_with_stack_overflow(void) {
     while (gc_stack_overflow) {
         gc_stack_overflow = 0;
         gc_sp = gc_stack;
@@ -152,7 +152,7 @@ static void gc_deal_with_stack_overflow(void) {
     }
 }
 
-static void gc_sweep(void) {
+STATIC void gc_sweep(void) {
     // free unmarked heads and their tails
     int free_tail = 0;
     for (machine_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
@@ -351,7 +351,7 @@ void gc_dump_info() {
 }
 
 #if DEBUG_PRINT
-static void gc_dump_at(void) {
+STATIC void gc_dump_at(void) {
     for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
         printf("block %06u ", bl);
         switch (ATB_GET_KIND(bl)) {

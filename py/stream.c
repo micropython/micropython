@@ -10,9 +10,9 @@
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.
 
-static mp_obj_t stream_readall(mp_obj_t self_in);
+STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
-static mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
     if (o->type->stream_p.read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
@@ -35,7 +35,7 @@ static mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     }
 }
 
-static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p.write == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
@@ -58,7 +58,7 @@ static mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
 
 // TODO: should be in mpconfig.h
 #define READ_SIZE 256
-static mp_obj_t stream_readall(mp_obj_t self_in) {
+STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p.read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
@@ -99,7 +99,7 @@ static mp_obj_t stream_readall(mp_obj_t self_in) {
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
-static mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
     if (o->type->stream_p.read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass

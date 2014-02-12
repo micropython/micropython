@@ -176,7 +176,7 @@ void asm_x64_end_pass(asm_x64_t *as) {
 }
 
 // all functions must go through this one to emit bytes
-static byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_write) {
+STATIC byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (as->pass < ASM_X64_PASS_3) {
         as->code_offset += num_bytes_to_write;
@@ -197,25 +197,25 @@ void *asm_x64_get_code(asm_x64_t *as) {
     return as->code_base;
 }
 
-static void asm_x64_write_byte_1(asm_x64_t *as, byte b1) {
+STATIC void asm_x64_write_byte_1(asm_x64_t *as, byte b1) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 1);
     c[0] = b1;
 }
 
-static void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
+STATIC void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 2);
     c[0] = b1;
     c[1] = b2;
 }
 
-static void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
+STATIC void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 3);
     c[0] = b1;
     c[1] = b2;
     c[2] = b3;
 }
 
-static void asm_x64_write_word32(asm_x64_t *as, int w32) {
+STATIC void asm_x64_write_word32(asm_x64_t *as, int w32) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 4);
     c[0] = IMM32_L0(w32);
     c[1] = IMM32_L1(w32);
@@ -223,7 +223,7 @@ static void asm_x64_write_word32(asm_x64_t *as, int w32) {
     c[3] = IMM32_L3(w32);
 }
 
-static void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
+STATIC void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 8);
     c[0] = IMM32_L0(w64);
     c[1] = IMM32_L1(w64);
@@ -236,7 +236,7 @@ static void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
 }
 
 /* unused
-static void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
+STATIC void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
     byte* c;
     assert(offset + 4 <= as->code_size);
     c = as->code_base + offset;
@@ -247,7 +247,7 @@ static void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
 }
 */
 
-static void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int disp_offset) {
+STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int disp_offset) {
     assert(disp_r64 != REG_RSP);
 
     if (disp_offset == 0 && disp_r64 != REG_RBP) {
@@ -282,7 +282,7 @@ void asm_x64_pop_r64(asm_x64_t *as, int dest_r64) {
     asm_x64_write_byte_1(as, OPCODE_POP_R64 | dest_r64);
 }
 
-static void asm_x64_ret(asm_x64_t *as) {
+STATIC void asm_x64_ret(asm_x64_t *as) {
     asm_x64_write_byte_1(as, OPCODE_RET);
 }
 
@@ -472,7 +472,7 @@ void asm_x64_label_assign(asm_x64_t *as, int label) {
     }
 }
 
-static int get_label_dest(asm_x64_t *as, int label) {
+STATIC int get_label_dest(asm_x64_t *as, int label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
@@ -565,7 +565,7 @@ void asm_x64_mov_r32_to_arg(asm_x64_t *as, int src_r32, int dest_arg_num) {
 //  ^                ^
 //  | low address    | high address in RAM
 //
-static int asm_x64_local_offset_from_ebp(asm_x64_t *as, int local_num) {
+STATIC int asm_x64_local_offset_from_ebp(asm_x64_t *as, int local_num) {
     return (-as->num_locals + local_num) * WORD_SIZE;
 }
 

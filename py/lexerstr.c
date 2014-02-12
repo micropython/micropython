@@ -13,7 +13,7 @@ typedef struct _mp_lexer_str_buf_t {
     const char *src_end;        // end (exclusive) of source
 } mp_lexer_str_buf_t;
 
-static unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
+STATIC unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
     if (sb->src_cur < sb->src_end) {
         return *sb->src_cur++;
     } else {
@@ -21,7 +21,7 @@ static unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
     }
 }
 
-static void str_buf_free(mp_lexer_str_buf_t *sb) {
+STATIC void str_buf_free(mp_lexer_str_buf_t *sb) {
     if (sb->free_len > 0) {
         m_free((char*)sb->src_beg, sb->free_len);
     }

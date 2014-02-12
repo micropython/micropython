@@ -74,7 +74,7 @@ enum {
 #undef one_or_more
 #undef DEF_RULE
 
-static const rule_t *rules[] = {
+STATIC const rule_t *rules[] = {
     NULL,
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
 #include "grammar.h"
@@ -99,7 +99,7 @@ typedef struct _parser_t {
     mp_lexer_t *lexer;
 } parser_t;
 
-static void push_rule(parser_t *parser, int src_line, const rule_t *rule, int arg_i) {
+STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
         parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
         parser->rule_stack_alloc *= 2;
@@ -110,14 +110,14 @@ static void push_rule(parser_t *parser, int src_line, const rule_t *rule, int ar
     rs->arg_i = arg_i;
 }
 
-static void push_rule_from_arg(parser_t *parser, uint arg) {
+STATIC void push_rule_from_arg(parser_t *parser, uint arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
     uint rule_id = arg & RULE_ARG_ARG_MASK;
     assert(rule_id < RULE_maximum_number_of);
     push_rule(parser, mp_lexer_cur(parser->lexer)->src_line, rules[rule_id], 0);
 }
 
-static void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *src_line) {
+STATIC void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *src_line) {
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
@@ -199,7 +199,7 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
 #endif // MICROPY_DEBUG_PRINTERS
 
 /*
-static void result_stack_show(parser_t *parser) {
+STATIC void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
     for (int i = parser->result_stack_top - 1; i >= 0; i--) {
         mp_parse_node_print(parser->result_stack[i], 0);
@@ -207,17 +207,17 @@ static void result_stack_show(parser_t *parser) {
 }
 */
 
-static mp_parse_node_t pop_result(parser_t *parser) {
+STATIC mp_parse_node_t pop_result(parser_t *parser) {
     assert(parser->result_stack_top > 0);
     return parser->result_stack[--parser->result_stack_top];
 }
 
-static mp_parse_node_t peek_result(parser_t *parser, int pos) {
+STATIC mp_parse_node_t peek_result(parser_t *parser, int pos) {
     assert(parser->result_stack_top > pos);
     return parser->result_stack[parser->result_stack_top - 1 - pos];
 }
 
-static void push_result_node(parser_t *parser, mp_parse_node_t pn) {
+STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     if (parser->result_stack_top >= parser->result_stack_alloc) {
         parser->result_stack = m_renew(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc * 2);
         parser->result_stack_alloc *= 2;
@@ -225,7 +225,7 @@ static void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
-static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
+STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     const mp_token_t *tok = mp_lexer_cur(lex);
     mp_parse_node_t pn;
     if (tok->kind == MP_TOKEN_NAME) {
@@ -294,7 +294,7 @@ static void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     push_result_node(parser, pn);
 }
 
-static void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
+STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
     mp_parse_node_struct_t *pn = parse_node_new_struct(src_line, rule->rule_id, num_args);
     for (int i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);

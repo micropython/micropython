@@ -188,14 +188,14 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
     return pn;
 }
 
-static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
+STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
 void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
-static int comp_next_label(compiler_t *comp) {
+STATIC int comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
-static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
+STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
     scope_t *scope = scope_new(kind, pn, comp->source_file, rt_get_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
@@ -211,7 +211,7 @@ static scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse
     return scope;
 }
 
-static int list_len(mp_parse_node_t pn, int pn_kind) {
+STATIC int list_len(mp_parse_node_t pn, int pn_kind) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         return 0;
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
@@ -226,7 +226,7 @@ static int list_len(mp_parse_node_t pn, int pn_kind) {
     }
 }
 
-static void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
+STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
     if (MP_PARSE_NODE_IS_STRUCT(pn) && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn) == pn_list_kind) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -238,7 +238,7 @@ static void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn
     }
 }
 
-static int list_get(mp_parse_node_t *pn, int pn_kind, mp_parse_node_t **nodes) {
+STATIC int list_get(mp_parse_node_t *pn, int pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -268,7 +268,7 @@ void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 #if MICROPY_EMIT_CPYTHON
-static bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
+STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_LEAF(pn)) {
         return false;
     }
@@ -278,7 +278,7 @@ static bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
     return true;
 }
 
-static void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
+STATIC void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
     uint len;
     const byte *str = qstr_data(qstr, &len);
     bool has_single_quote = false;
@@ -318,7 +318,7 @@ static void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
     }
 }
 
-static void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
+STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
     assert(MP_PARSE_NODE_IS_LEAF(pn));
     int arg = MP_PARSE_NODE_LEAF_ARG(pn);
     switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
@@ -340,7 +340,7 @@ static void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
     }
 }
 
-static void cpython_c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
+STATIC void cpython_c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
     int n = 0;
     if (pns_list != NULL) {
         n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
@@ -419,18 +419,18 @@ void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
     c_tuple(comp, MP_PARSE_NODE_NULL, pns);
 }
 
-static bool node_is_const_false(mp_parse_node_t pn) {
+STATIC bool node_is_const_false(mp_parse_node_t pn) {
     return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE);
     // untested: || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_ARG(pn) == 1);
 }
 
-static bool node_is_const_true(mp_parse_node_t pn) {
+STATIC bool node_is_const_true(mp_parse_node_t pn) {
     return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE) || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_ARG(pn) == 1);
 }
 
 #if MICROPY_EMIT_CPYTHON
 // the is_nested variable is purely to match with CPython, which doesn't fully optimise not's
-static void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label, bool is_nested) {
+STATIC void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label, bool is_nested) {
     if (node_is_const_false(pn)) {
         if (jump_if == false) {
             EMIT_ARG(jump, label);
@@ -488,7 +488,7 @@ static void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if
 }
 #endif
 
-static void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label) {
+STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label) {
 #if MICROPY_EMIT_CPYTHON
     cpython_c_if_cond(comp, pn, jump_if, label, false);
 #else
@@ -889,7 +889,7 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
 }
 
 // returns true if it was a built-in decorator (even if the built-in had an error)
-static bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_node_t *name_nodes, uint *emit_options) {
+STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_node_t *name_nodes, uint *emit_options) {
     if (MP_PARSE_NODE_LEAF_ARG(name_nodes[0]) != MP_QSTR_micropython) {
         return false;
     }
@@ -2066,7 +2066,7 @@ void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_generic_all_nodes(comp, pns);
 }
 
-static void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
+STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
     // function to call is on top of stack
 
 #if !MICROPY_EMIT_CPYTHON
@@ -2498,7 +2498,7 @@ void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
-static compile_function_t compile_function[] = {
+STATIC compile_function_t compile_function[] = {
     NULL,
 #define nc NULL
 #define c(f) compile_##f

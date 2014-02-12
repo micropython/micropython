@@ -155,11 +155,11 @@ void EXPORT_FUN(free)(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-static void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
+STATIC void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
     emit->do_viper_types = do_viper_types;
 }
 
-static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
+STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_start = 0;
     emit->stack_size = 0;
@@ -255,7 +255,7 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 #endif
 }
 
-static void emit_native_end_pass(emit_t *emit) {
+STATIC void emit_native_end_pass(emit_t *emit) {
 #if N_X64
     if (!emit->last_emit_was_return_value) {
         asm_x64_exit(emit->as);
@@ -284,22 +284,22 @@ static void emit_native_end_pass(emit_t *emit) {
     }
 }
 
-static bool emit_native_last_emit_was_return_value(emit_t *emit) {
+STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-static int emit_native_get_stack_size(emit_t *emit) {
+STATIC int emit_native_get_stack_size(emit_t *emit) {
     return emit->stack_size;
 }
 
-static void emit_native_set_stack_size(emit_t *emit, int size) {
+STATIC void emit_native_set_stack_size(emit_t *emit, int size) {
     emit->stack_size = size;
 }
 
-static void emit_native_set_source_line(emit_t *emit, int source_line) {
+STATIC void emit_native_set_source_line(emit_t *emit, int source_line) {
 }
 
-static void adjust_stack(emit_t *emit, int stack_size_delta) {
+STATIC void adjust_stack(emit_t *emit, int stack_size_delta) {
     emit->stack_size += stack_size_delta;
     assert(emit->stack_size >= 0);
     if (emit->pass > PASS_1 && emit->stack_size > emit->scope->stack_size) {
@@ -308,13 +308,14 @@ static void adjust_stack(emit_t *emit, int stack_size_delta) {
 }
 
 /*
-static void emit_pre_raw(emit_t *emit, int stack_size_delta) {
+STATIC void emit_pre_raw(emit_t *emit, int stack_size_delta) {
     adjust_stack(emit, stack_size_delta);
     emit->last_emit_was_return_value = false;
 }
 */
 
 // this must be called at start of emit functions
+// TODO: module-polymorphic function (read: name clash if made global)
 static void emit_pre(emit_t *emit) {
     emit->last_emit_was_return_value = false;
     // settle the stack
@@ -341,13 +342,13 @@ static void emit_pre(emit_t *emit) {
     */
 }
 
-static vtype_kind_t peek_vtype(emit_t *emit) {
+STATIC vtype_kind_t peek_vtype(emit_t *emit) {
     return emit->stack_info[emit->stack_size - 1].vtype;
 }
 
 // pos=1 is TOS, pos=2 is next, etc
 // use pos=0 for no skipping
-static void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
+STATIC void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
     skip_stack_pos = emit->stack_size - skip_stack_pos;
     for (int i = 0; i < emit->stack_size; i++) {
         if (i != skip_stack_pos) {
@@ -360,7 +361,7 @@ static void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
     }
 }
 
-static void need_reg_all(emit_t *emit) {
+STATIC void need_reg_all(emit_t *emit) {
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_REG) {
@@ -370,7 +371,7 @@ static void need_reg_all(emit_t *emit) {
     }
 }
 
-static void need_stack_settled(emit_t *emit) {
+STATIC void need_stack_settled(emit_t *emit) {
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_REG) {
@@ -387,7 +388,7 @@ static void need_stack_settled(emit_t *emit) {
 }
 
 // pos=1 is TOS, pos=2 is next, etc
-static void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int reg_dest) {
+STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int reg_dest) {
     need_reg_single(emit, reg_dest, pos);
     stack_info_t *si = &emit->stack_info[emit->stack_size - pos];
     *vtype = si->vtype;
@@ -408,27 +409,27 @@ static void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
     }
 }
 
-static void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
+STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
     emit->last_emit_was_return_value = false;
     emit_access_stack(emit, 1, vtype, reg_dest);
     adjust_stack(emit, -1);
 }
 
-static void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb) {
+STATIC void emit_pre_pop_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb) {
     emit_pre_pop_reg(emit, vtypea, rega);
     emit_pre_pop_reg(emit, vtypeb, regb);
 }
 
-static void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb, vtype_kind_t *vtypec, int regc) {
+STATIC void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int rega, vtype_kind_t *vtypeb, int regb, vtype_kind_t *vtypec, int regc) {
     emit_pre_pop_reg(emit, vtypea, rega);
     emit_pre_pop_reg(emit, vtypeb, regb);
     emit_pre_pop_reg(emit, vtypec, regc);
 }
 
-static void emit_post(emit_t *emit) {
+STATIC void emit_post(emit_t *emit) {
 }
 
-static void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
+STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
     stack_info_t *si = &emit->stack_info[emit->stack_size];
     si->vtype = vtype;
     si->kind = STACK_REG;
@@ -436,7 +437,7 @@ static void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
     adjust_stack(emit, 1);
 }
 
-static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t imm) {
+STATIC void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t imm) {
     stack_info_t *si = &emit->stack_info[emit->stack_size];
     si->vtype = vtype;
     si->kind = STACK_IMM;
@@ -444,18 +445,18 @@ static void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, machine_int_t i
     adjust_stack(emit, 1);
 }
 
-static void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb) {
+STATIC void emit_post_push_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb) {
     emit_post_push_reg(emit, vtypea, rega);
     emit_post_push_reg(emit, vtypeb, regb);
 }
 
-static void emit_post_push_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc) {
+STATIC void emit_post_push_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc) {
     emit_post_push_reg(emit, vtypea, rega);
     emit_post_push_reg(emit, vtypeb, regb);
     emit_post_push_reg(emit, vtypec, regc);
 }
 
-static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc, vtype_kind_t vtyped, int regd) {
+STATIC void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, int rega, vtype_kind_t vtypeb, int regb, vtype_kind_t vtypec, int regc, vtype_kind_t vtyped, int regd) {
     emit_post_push_reg(emit, vtypea, rega);
     emit_post_push_reg(emit, vtypeb, regb);
     emit_post_push_reg(emit, vtypec, regc);
@@ -465,7 +466,7 @@ static void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, in
 // vtype of all n_pop objects is VTYPE_PYOBJ
 // does not use any temporary registers (but may use reg_dest before loading it with stack pointer)
 // TODO this needs some thinking for viper code
-static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
+STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
     need_reg_all(emit);
     for (int i = 0; i < n_pop; i++) {
         stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
@@ -502,7 +503,7 @@ static void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, in
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
-static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, int n_push) {
+STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, int n_push) {
     need_reg_all(emit);
     for (int i = 0; i < n_push; i++) {
         emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
@@ -512,7 +513,7 @@ static void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, i
     adjust_stack(emit, n_push);
 }
 
-static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
+STATIC void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
     need_reg_all(emit);
 #if N_X64
     asm_x64_call_ind(emit->as, fun, REG_RAX);
@@ -521,7 +522,7 @@ static void emit_call(emit_t *emit, rt_fun_kind_t fun_kind, void *fun) {
 #endif
 }
 
-static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
+STATIC void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
     need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val, arg_reg);
 #if N_X64
@@ -531,7 +532,7 @@ static void emit_call_with_imm_arg(emit_t *emit, rt_fun_kind_t fun_kind, void *f
 #endif
 }
 
-static void emit_call_with_2_imm_args(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2) {
+STATIC void emit_call_with_2_imm_args(emit_t *emit, rt_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2) {
     need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val1, arg_reg1);
     ASM_MOV_IMM_TO_REG(arg_val2, arg_reg2);
@@ -542,7 +543,7 @@ static void emit_call_with_2_imm_args(emit_t *emit, rt_fun_kind_t fun_kind, void
 #endif
 }
 
-static void emit_native_load_id(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_id(emit_t *emit, qstr qstr) {
     // check for built-ins
     if (strcmp(qstr_str(qstr), "v_int") == 0) {
         assert(0);
@@ -555,17 +556,17 @@ static void emit_native_load_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_native_store_id(emit_t *emit, qstr qstr) {
+STATIC void emit_native_store_id(emit_t *emit, qstr qstr) {
     // TODO check for built-ins and disallow
     emit_common_store_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-static void emit_native_delete_id(emit_t *emit, qstr qstr) {
+STATIC void emit_native_delete_id(emit_t *emit, qstr qstr) {
     // TODO check for built-ins and disallow
     emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-static void emit_native_label_assign(emit_t *emit, int l) {
+STATIC void emit_native_label_assign(emit_t *emit, int l) {
     emit_pre(emit);
     // need to commit stack because we can jump here from elsewhere
     need_stack_settled(emit);
@@ -577,22 +578,22 @@ static void emit_native_label_assign(emit_t *emit, int l) {
     emit_post(emit);
 }
 
-static void emit_native_import_name(emit_t *emit, qstr qstr) {
+STATIC void emit_native_import_name(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_import_from(emit_t *emit, qstr qstr) {
+STATIC void emit_native_import_from(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_import_star(emit_t *emit) {
+STATIC void emit_native_import_star(emit_t *emit) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
+STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     emit_pre(emit);
     int vtype;
     machine_uint_t val;
@@ -615,7 +616,7 @@ static void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     emit_post_push_imm(emit, vtype, val);
 }
 
-static void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
+STATIC void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);
@@ -624,20 +625,20 @@ static void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
     }
 }
 
-static void emit_native_load_const_int(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_const_int(emit_t *emit, qstr qstr) {
     // not implemented
     // load integer, check fits in 32 bits
     assert(0);
 }
 
-static void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
     // for viper, a float/complex is just a Python object
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_LOAD_CONST_DEC, rt_load_const_dec, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_load_const_id(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_const_id(emit_t *emit, qstr qstr) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         assert(0);
@@ -647,7 +648,7 @@ static void emit_native_load_const_id(emit_t *emit, qstr qstr) {
     }
 }
 
-static void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
+STATIC void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_pre(emit);
     if (emit->do_viper_types) {
         // not implemented properly
@@ -660,12 +661,12 @@ static void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-static void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
+STATIC void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
     // not supported/needed for viper
     assert(0);
 }
 
-static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qstr));
@@ -694,30 +695,30 @@ static void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
 #endif
 }
 
-static void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
     assert(0);
 }
 
-static void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_load_name(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_name(emit_t *emit, qstr qstr) {
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_LOAD_NAME, rt_load_name, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_load_global(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_global(emit_t *emit, qstr qstr) {
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_LOAD_GLOBAL, rt_load_global, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_load_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_attr(emit_t *emit, qstr qstr) {
     // depends on type of subject:
     //  - integer, function, pointer to integers: error
     //  - pointer to structure: get member, quite easy
@@ -729,7 +730,7 @@ static void emit_native_load_attr(emit_t *emit, qstr qstr) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_load_method(emit_t *emit, qstr qstr) {
+STATIC void emit_native_load_method(emit_t *emit, qstr qstr) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
@@ -737,13 +738,13 @@ static void emit_native_load_method(emit_t *emit, qstr qstr) {
     emit_call_with_imm_arg(emit, RT_F_LOAD_METHOD, rt_load_method, qstr, REG_ARG_2); // arg2 = method name
 }
 
-static void emit_native_load_build_class(emit_t *emit) {
+STATIC void emit_native_load_build_class(emit_t *emit) {
     emit_pre(emit);
     emit_call(emit, RT_F_LOAD_BUILD_CLASS, rt_load_build_class);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
 #if N_X64
     if (local_num == 0) {
@@ -777,12 +778,12 @@ static void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     }
 }
 
-static void emit_native_store_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_store_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_store_name(emit_t *emit, qstr qstr) {
+STATIC void emit_native_store_name(emit_t *emit, qstr qstr) {
     // rt_store_name, but needs conversion of object (maybe have rt_viper_store_name(obj, type))
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
@@ -791,12 +792,12 @@ static void emit_native_store_name(emit_t *emit, qstr qstr) {
     emit_post(emit);
 }
 
-static void emit_native_store_global(emit_t *emit, qstr qstr) {
+STATIC void emit_native_store_global(emit_t *emit, qstr qstr) {
     // not implemented
     assert(0);
 }
 
-static void emit_native_store_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_native_store_attr(emit_t *emit, qstr qstr) {
     vtype_kind_t vtype_base, vtype_val;
     emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
     assert(vtype_base == VTYPE_PYOBJ);
@@ -805,7 +806,7 @@ static void emit_native_store_attr(emit_t *emit, qstr qstr) {
     emit_post(emit);
 }
 
-static void emit_native_store_subscr(emit_t *emit) {
+STATIC void emit_native_store_subscr(emit_t *emit) {
     // depends on type of subject:
     //  - integer, function, pointer to structure: error
     //  - pointer to integers: store as per array
@@ -818,77 +819,77 @@ static void emit_native_store_subscr(emit_t *emit) {
     emit_call(emit, RT_F_STORE_SUBSCR, rt_store_subscr);
 }
 
-static void emit_native_store_locals(emit_t *emit) {
+STATIC void emit_native_store_locals(emit_t *emit) {
     // not needed
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
     emit_post(emit);
 }
 
-static void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // could support for Python types, just set to None (so GC can reclaim it)
     assert(0);
 }
 
-static void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
     // not supported
     assert(0);
 }
 
-static void emit_native_delete_name(emit_t *emit, qstr qstr) {
+STATIC void emit_native_delete_name(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_name
     assert(0);
 }
 
-static void emit_native_delete_global(emit_t *emit, qstr qstr) {
+STATIC void emit_native_delete_global(emit_t *emit, qstr qstr) {
     // not implemented
     // use rt_delete_global
     assert(0);
 }
 
-static void emit_native_delete_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_native_delete_attr(emit_t *emit, qstr qstr) {
     // not supported
     assert(0);
 }
 
-static void emit_native_delete_subscr(emit_t *emit) {
+STATIC void emit_native_delete_subscr(emit_t *emit) {
     // not supported
     assert(0);
 }
 
-static void emit_native_dup_top(emit_t *emit) {
+STATIC void emit_native_dup_top(emit_t *emit) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
     emit_post_push_reg_reg(emit, vtype, REG_TEMP0, vtype, REG_TEMP0);
 }
 
-static void emit_native_dup_top_two(emit_t *emit) {
+STATIC void emit_native_dup_top_two(emit_t *emit) {
     vtype_kind_t vtype0, vtype1;
     emit_pre_pop_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1);
     emit_post_push_reg_reg_reg_reg(emit, vtype1, REG_TEMP1, vtype0, REG_TEMP0, vtype1, REG_TEMP1, vtype0, REG_TEMP0);
 }
 
-static void emit_native_pop_top(emit_t *emit) {
+STATIC void emit_native_pop_top(emit_t *emit) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
     emit_post(emit);
 }
 
-static void emit_native_rot_two(emit_t *emit) {
+STATIC void emit_native_rot_two(emit_t *emit) {
     vtype_kind_t vtype0, vtype1;
     emit_pre_pop_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1);
     emit_post_push_reg_reg(emit, vtype0, REG_TEMP0, vtype1, REG_TEMP1);
 }
 
-static void emit_native_rot_three(emit_t *emit) {
+STATIC void emit_native_rot_three(emit_t *emit) {
     vtype_kind_t vtype0, vtype1, vtype2;
     emit_pre_pop_reg_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1, &vtype2, REG_TEMP2);
     emit_post_push_reg_reg_reg(emit, vtype0, REG_TEMP0, vtype2, REG_TEMP2, vtype1, REG_TEMP1);
 }
 
-static void emit_native_jump(emit_t *emit, int label) {
+STATIC void emit_native_jump(emit_t *emit, int label) {
     emit_pre(emit);
 #if N_X64
     asm_x64_jmp_label(emit->as, label);
@@ -898,7 +899,7 @@ static void emit_native_jump(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-static void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
@@ -911,7 +912,7 @@ static void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
     }
 }
 
-static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_false(emit_t *emit, int label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -923,7 +924,7 @@ static void emit_native_pop_jump_if_false(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-static void emit_native_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_true(emit_t *emit, int label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -935,42 +936,42 @@ static void emit_native_pop_jump_if_true(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-static void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_native_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, int label) {
     assert(0);
 }
 
-static void emit_native_setup_loop(emit_t *emit, int label) {
+STATIC void emit_native_setup_loop(emit_t *emit, int label) {
     emit_pre(emit);
     emit_post(emit);
 }
 
-static void emit_native_break_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_break_loop(emit_t *emit, int label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
-static void emit_native_continue_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_continue_loop(emit_t *emit, int label, int except_depth) {
     assert(0);
 }
-static void emit_native_setup_with(emit_t *emit, int label) {
+STATIC void emit_native_setup_with(emit_t *emit, int label) {
     // not supported, or could be with runtime call
     assert(0);
 }
-static void emit_native_with_cleanup(emit_t *emit) {
+STATIC void emit_native_with_cleanup(emit_t *emit) {
     assert(0);
 }
-static void emit_native_setup_except(emit_t *emit, int label) {
+STATIC void emit_native_setup_except(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_native_setup_finally(emit_t *emit, int label) {
+STATIC void emit_native_setup_finally(emit_t *emit, int label) {
     assert(0);
 }
-static void emit_native_end_finally(emit_t *emit) {
+STATIC void emit_native_end_finally(emit_t *emit) {
     assert(0);
 }
 
-static void emit_native_get_iter(emit_t *emit) {
+STATIC void emit_native_get_iter(emit_t *emit) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
 
@@ -981,7 +982,7 @@ static void emit_native_get_iter(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_for_iter(emit_t *emit, int label) {
+STATIC void emit_native_for_iter(emit_t *emit, int label) {
     emit_pre(emit);
     vtype_kind_t vtype;
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);
@@ -998,23 +999,23 @@ static void emit_native_for_iter(emit_t *emit, int label) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_for_iter_end(emit_t *emit) {
+STATIC void emit_native_for_iter_end(emit_t *emit) {
     // adjust stack counter (we get here from for_iter ending, which popped the value for us)
     emit_pre(emit);
     adjust_stack(emit, -1);
     emit_post(emit);
 }
 
-static void emit_native_pop_block(emit_t *emit) {
+STATIC void emit_native_pop_block(emit_t *emit) {
     emit_pre(emit);
     emit_post(emit);
 }
 
-static void emit_native_pop_except(emit_t *emit) {
+STATIC void emit_native_pop_except(emit_t *emit) {
     assert(0);
 }
 
-static void emit_native_unary_op(emit_t *emit, rt_unary_op_t op) {
+STATIC void emit_native_unary_op(emit_t *emit, rt_unary_op_t op) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     assert(vtype == VTYPE_PYOBJ);
@@ -1022,7 +1023,7 @@ static void emit_native_unary_op(emit_t *emit, rt_unary_op_t op) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
+STATIC void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
@@ -1058,7 +1059,7 @@ static void emit_native_binary_op(emit_t *emit, rt_binary_op_t op) {
     }
 }
 
-static void emit_native_build_tuple(emit_t *emit, int n_args) {
+STATIC void emit_native_build_tuple(emit_t *emit, int n_args) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
     emit_pre(emit);
@@ -1067,14 +1068,14 @@ static void emit_native_build_tuple(emit_t *emit, int n_args) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
 }
 
-static void emit_native_build_list(emit_t *emit, int n_args) {
+STATIC void emit_native_build_list(emit_t *emit, int n_args) {
     emit_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     emit_call_with_imm_arg(emit, RT_F_BUILD_LIST, rt_build_list, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
 }
 
-static void emit_native_list_append(emit_t *emit, int list_index) {
+STATIC void emit_native_list_append(emit_t *emit, int list_index) {
     // only used in list comprehension
     vtype_kind_t vtype_list, vtype_item;
     emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
@@ -1085,13 +1086,13 @@ static void emit_native_list_append(emit_t *emit, int list_index) {
     emit_post(emit);
 }
 
-static void emit_native_build_map(emit_t *emit, int n_args) {
+STATIC void emit_native_build_map(emit_t *emit, int n_args) {
     emit_pre(emit);
     emit_call_with_imm_arg(emit, RT_F_BUILD_MAP, rt_build_map, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
 }
 
-static void emit_native_store_map(emit_t *emit) {
+STATIC void emit_native_store_map(emit_t *emit) {
     vtype_kind_t vtype_key, vtype_value, vtype_map;
     emit_pre_pop_reg_reg_reg(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3, &vtype_map, REG_ARG_1); // key, value, map
     assert(vtype_key == VTYPE_PYOBJ);
@@ -1101,7 +1102,7 @@ static void emit_native_store_map(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
 
-static void emit_native_map_add(emit_t *emit, int map_index) {
+STATIC void emit_native_map_add(emit_t *emit, int map_index) {
     // only used in list comprehension
     vtype_kind_t vtype_map, vtype_key, vtype_value;
     emit_pre_pop_reg_reg(emit, &vtype_key, REG_ARG_2, &vtype_value, REG_ARG_3);
@@ -1113,14 +1114,14 @@ static void emit_native_map_add(emit_t *emit, int map_index) {
     emit_post(emit);
 }
 
-static void emit_native_build_set(emit_t *emit, int n_args) {
+STATIC void emit_native_build_set(emit_t *emit, int n_args) {
     emit_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     emit_call_with_imm_arg(emit, RT_F_BUILD_SET, rt_build_set, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
 }
 
-static void emit_native_set_add(emit_t *emit, int set_index) {
+STATIC void emit_native_set_add(emit_t *emit, int set_index) {
     // only used in set comprehension
     vtype_kind_t vtype_set, vtype_item;
     emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
@@ -1131,18 +1132,18 @@ static void emit_native_set_add(emit_t *emit, int set_index) {
     emit_post(emit);
 }
 
-static void emit_native_build_slice(emit_t *emit, int n_args) {
+STATIC void emit_native_build_slice(emit_t *emit, int n_args) {
     assert(0);
 }
-static void emit_native_unpack_sequence(emit_t *emit, int n_args) {
+STATIC void emit_native_unpack_sequence(emit_t *emit, int n_args) {
     // call runtime, needs type decl
     assert(0);
 }
-static void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
+STATIC void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
     assert(0);
 }
 
-static void emit_native_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_default_params == 0 && n_dict_params == 0);
     emit_pre(emit);
@@ -1150,11 +1151,11 @@ static void emit_native_make_function(emit_t *emit, scope_t *scope, int n_dict_p
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
     assert(0);
 }
 
-static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     // call special viper runtime routine with type info for args, and wanted type info for return
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
 
@@ -1193,7 +1194,7 @@ static void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
 
     /*
@@ -1219,7 +1220,7 @@ static void emit_native_call_method(emit_t *emit, int n_positional, int n_keywor
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-static void emit_native_return_value(emit_t *emit) {
+STATIC void emit_native_return_value(emit_t *emit) {
     // easy.  since we don't know who we return to, just return the raw value.
     // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;
@@ -1239,15 +1240,15 @@ static void emit_native_return_value(emit_t *emit) {
 #endif
 }
 
-static void emit_native_raise_varargs(emit_t *emit, int n_args) {
+STATIC void emit_native_raise_varargs(emit_t *emit, int n_args) {
     // call runtime
     assert(0);
 }
-static void emit_native_yield_value(emit_t *emit) {
+STATIC void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
     assert(0);
 }
-static void emit_native_yield_from(emit_t *emit) {
+STATIC void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
     assert(0);
 }

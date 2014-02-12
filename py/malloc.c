@@ -12,9 +12,9 @@
 #endif
 
 #if MICROPY_MEM_STATS
-static int total_bytes_allocated = 0;
-static int current_bytes_allocated = 0;
-static int peak_bytes_allocated = 0;
+STATIC int total_bytes_allocated = 0;
+STATIC int current_bytes_allocated = 0;
+STATIC int peak_bytes_allocated = 0;
 
 #define UPDATE_PEAK() { if (current_bytes_allocated > peak_bytes_allocated) peak_bytes_allocated = current_bytes_allocated; }
 #endif

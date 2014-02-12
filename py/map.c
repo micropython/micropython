@@ -11,7 +11,7 @@
 
 // approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
 // prefixed with zero for the empty case.
-static int doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
+STATIC int doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
 
 int get_doubling_prime_greater_or_equal_to(int x) {
     for (int i = 0; i < sizeof(doubling_primes) / sizeof(int); i++) {
@@ -78,7 +78,7 @@ void mp_map_clear(mp_map_t *map) {
     map->table = NULL;
 }
 
-static void mp_map_rehash(mp_map_t *map) {
+STATIC void mp_map_rehash(mp_map_t *map) {
     int old_alloc = map->alloc;
     mp_map_elem_t *old_table = map->table;
     map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
@@ -175,7 +175,7 @@ void mp_set_init(mp_set_t *set, int n) {
     set->table = m_new0(mp_obj_t, set->alloc);
 }
 
-static void mp_set_rehash(mp_set_t *set) {
+STATIC void mp_set_rehash(mp_set_t *set) {
     int old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
     set->alloc = get_doubling_prime_greater_or_equal_to(set->alloc + 1);

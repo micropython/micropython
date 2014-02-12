@@ -72,75 +72,75 @@ void mp_token_show(const mp_token_t *tok) {
 
 #define CUR_CHAR(lex) ((lex)->chr0)
 
-static bool is_end(mp_lexer_t *lex) {
+STATIC bool is_end(mp_lexer_t *lex) {
     return lex->chr0 == MP_LEXER_CHAR_EOF;
 }
 
-static bool is_physical_newline(mp_lexer_t *lex) {
+STATIC bool is_physical_newline(mp_lexer_t *lex) {
     return lex->chr0 == '\n' || lex->chr0 == '\r';
 }
 
-static bool is_char(mp_lexer_t *lex, char c) {
+STATIC bool is_char(mp_lexer_t *lex, char c) {
     return lex->chr0 == c;
 }
 
-static bool is_char_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 || lex->chr0 == c2;
 }
 
-static bool is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
+STATIC bool is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
 /*
-static bool is_char_following(mp_lexer_t *lex, char c) {
+STATIC bool is_char_following(mp_lexer_t *lex, char c) {
     return lex->chr1 == c;
 }
 */
 
-static bool is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr1 == c1 || lex->chr1 == c2;
 }
 
-static bool is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr2 == c1 || lex->chr2 == c2;
 }
 
-static bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
     return lex->chr0 == c1 && lex->chr1 == c2;
 }
 
-static bool is_whitespace(mp_lexer_t *lex) {
+STATIC bool is_whitespace(mp_lexer_t *lex) {
     return unichar_isspace(lex->chr0);
 }
 
-static bool is_letter(mp_lexer_t *lex) {
+STATIC bool is_letter(mp_lexer_t *lex) {
     return unichar_isalpha(lex->chr0);
 }
 
-static bool is_digit(mp_lexer_t *lex) {
+STATIC bool is_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr0);
 }
 
-static bool is_following_digit(mp_lexer_t *lex) {
+STATIC bool is_following_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr1);
 }
 
-static bool is_following_odigit(mp_lexer_t *lex) {
+STATIC bool is_following_odigit(mp_lexer_t *lex) {
     return lex->chr1 >= '0' && lex->chr1 <= '7';
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_head_of_identifier(mp_lexer_t *lex) {
+STATIC bool is_head_of_identifier(mp_lexer_t *lex) {
     return is_letter(lex) || lex->chr0 == '_';
 }
 
 // TODO UNICODE include unicode characters in definition of identifiers
-static bool is_tail_of_identifier(mp_lexer_t *lex) {
+STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
-static void next_char(mp_lexer_t *lex) {
+STATIC void next_char(mp_lexer_t *lex) {
     if (lex->chr0 == MP_LEXER_CHAR_EOF) {
         return;
     }
@@ -203,7 +203,7 @@ void indent_pop(mp_lexer_t *lex) {
 //     c<op> = continue with <op>, if this opchar matches then continue matching
 // this means if the start of two ops are the same then they are equal til the last char
 
-static const char *tok_enc =
+STATIC const char *tok_enc =
     "()[]{},:;@~" // singles
     "<e=c<e="     // < <= << <<=
     ">e=c>e="     // > >= >> >>=
@@ -220,7 +220,7 @@ static const char *tok_enc =
     ".c.E.";      // . ...
 
 // TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
-static const uint8_t tok_enc_kind[] = {
+STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
     MP_TOKEN_DEL_BRACE_OPEN, MP_TOKEN_DEL_BRACE_CLOSE,
@@ -242,7 +242,7 @@ static const uint8_t tok_enc_kind[] = {
 };
 
 // must have the same order as enum in lexer.h
-static const char *tok_kw[] = {
+STATIC const char *tok_kw[] = {
     "False",
     "None",
     "True",
@@ -279,7 +279,7 @@ static const char *tok_kw[] = {
     NULL,
 };
 
-static int hex_digit(unichar c) {
+STATIC int hex_digit(unichar c) {
     // c is assumed to be hex digit
     int n = c - '0';
     if (n > 9) {
@@ -291,7 +291,7 @@ static int hex_digit(unichar c) {
 
 // This is called with CUR_CHAR() before first hex digit, and should return with
 // it pointing to last hex digit
-static bool get_hex(mp_lexer_t *lex, int num_digits, uint *result) {
+STATIC bool get_hex(mp_lexer_t *lex, int num_digits, uint *result) {
     uint num = 0;
     while (num_digits-- != 0) {
         next_char(lex);
@@ -305,7 +305,7 @@ static bool get_hex(mp_lexer_t *lex, int num_digits, uint *result) {
     return true;
 }
 
-static void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool first_token) {
+STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool first_token) {
     // skip white space and comments
     bool had_physical_newline = false;
     while (!is_end(lex)) {
