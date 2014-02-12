@@ -57,8 +57,26 @@ STATIC mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
 
-STATIC mp_obj_t mp_builtin_exec(mp_obj_t o_in) {
-    return parse_compile_execute(o_in, MP_PARSE_FILE_INPUT);
+STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
+    // Unconditional getting/setting assumes that these operations
+    // are cheap, which is the case when this comment was written.
+    mp_map_t *old_globals = rt_globals_get();
+    mp_map_t *old_locals = rt_locals_get();
+    if (n_args > 1) {
+        mp_obj_t globals = args[1];
+        mp_obj_t locals;
+        if (n_args > 2) {
+            locals = args[2];
+        } else {
+            locals = globals;
+        }
+        rt_globals_set(mp_obj_dict_get_map(globals));
+        rt_locals_set(mp_obj_dict_get_map(locals));
+    }
+    mp_obj_t res = parse_compile_execute(args[0], MP_PARSE_FILE_INPUT);
+    rt_globals_set(old_globals);
+    rt_locals_set(old_locals);
+    return res;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_exec_obj, mp_builtin_exec);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
