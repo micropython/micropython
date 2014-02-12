@@ -11,7 +11,7 @@ QSTR_DEFS = qstrdefsport.h
 include ../py/py.mk
 
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD)
+CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
 
 ifeq ($(MICROPY_MOD_TIME),1)
@@ -27,9 +27,10 @@ endif
 
 # Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -O0 -g
+CFLAGS += -g
+COPT = -O0
 else
-CFLAGS += -Os #-DNDEBUG
+COPT = -Os #-DNDEBUG
 endif
 
 # source files
