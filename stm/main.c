@@ -10,6 +10,7 @@
 #include <stm32f4xx_rtc.h>
 #include <stm32f4xx_usart.h>
 #include <stm32f4xx_rng.h>
+#include <usbd_storage_msd.h>
 #include <stm_misc.h>
 #include "std.h"
 
@@ -815,14 +816,6 @@ soft_reset:
         flash_error(4);
     }
 
-#ifdef USE_HOST_MODE
-    // USB host
-    pyb_usb_host_init();
-#elif defined(USE_DEVICE_MODE)
-    // USB device
-    pyb_usb_dev_init();
-#endif
-
     if (first_soft_reset) {
 #if MICROPY_HW_HAS_MMA7660
         // MMA: init and reset address to zero
@@ -839,8 +832,21 @@ soft_reset:
         FRESULT res = f_mount(&fatfs1, "1:", 1);
         if (res != FR_OK) {
             printf("[SD] could not mount SD card\n");
+        } else {
+            if (first_soft_reset) {
+                // use SD card as medium for the USB MSD
+                usbd_storage_select_medium(USBD_STORAGE_MEDIUM_SDCARD);
+            }
         }
     }
+#endif
+
+#ifdef USE_HOST_MODE
+    // USB host
+    pyb_usb_host_init();
+#elif defined(USE_DEVICE_MODE)
+    // USB device
+    pyb_usb_dev_init();
 #endif
 
     // run main script

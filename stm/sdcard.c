@@ -95,6 +95,12 @@ void sdcard_power_off(void) {
     SD_DeInit();
 }
 
+uint64_t sdcard_get_capacity_in_bytes(void) {
+    SD_CardInfo SDCardInfo;
+    SD_GetCardInfo(&SDCardInfo);
+    return SDCardInfo.CardCapacity;
+}
+
 bool sdcard_read_block(uint8_t *dest, uint32_t block_num) {
     // TODO return error if not powered on
 
