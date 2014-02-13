@@ -390,6 +390,10 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("IMPORT_FROM %s", qstr_str(qstr));
                 break;
 
+            case MP_BC_IMPORT_STAR:
+                printf("IMPORT_STAR");
+                break;
+
             default:
                 printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                 assert(0);

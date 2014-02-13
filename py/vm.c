@@ -595,6 +595,10 @@ unwind_return:
                         PUSH(obj1);
                         break;
 
+                    case MP_BC_IMPORT_STAR:
+                        rt_import_all(TOP());
+                        break;
+
                     default:
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                         assert(0);

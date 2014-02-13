@@ -39,6 +39,7 @@ mp_obj_t rt_getiter(mp_obj_t o);
 mp_obj_t rt_iternext(mp_obj_t o);
 mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t rt_import_from(mp_obj_t module, qstr name);
+void rt_import_all(mp_obj_t module);
 
 struct _mp_map_t;
 struct _mp_map_t *rt_locals_get(void);
