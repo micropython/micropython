@@ -1016,6 +1016,17 @@ mp_obj_t rt_import_from(mp_obj_t module, qstr name) {
     return x;
 }
 
+void rt_import_all(mp_obj_t module) {
+    DEBUG_printf("import all %p\n", module);
+
+    mp_map_t *map = mp_obj_module_get_globals(module);
+    for (uint i = 0; i < map->alloc; i++) {
+        if (map->table[i].key != MP_OBJ_NULL) {
+            rt_store_name(MP_OBJ_QSTR_VALUE(map->table[i].key), map->table[i].value);
+        }
+    }
+}
+
 mp_map_t *rt_locals_get(void) {
     return map_locals;
 }
