@@ -11,6 +11,36 @@
 
 // Helpers to work with binary-encoded data
 
+int mp_binary_get_size(char typecode) {
+    // This assumes that unsigned and signed types are of the same type,
+    // which is invariant for [u]intN_t.
+    switch (typecode) {
+        case BYTEARRAY_TYPECODE:
+        case 'b':
+        case 'B':
+            return sizeof(int8_t);
+        case 'h':
+        case 'H':
+            return sizeof(int16_t);
+        case 'i':
+        case 'I':
+            return sizeof(int32_t);
+        case 'l':
+        case 'L':
+            return sizeof(int32_t);
+        case 'q':
+        case 'Q':
+            return sizeof(long long);
+#if MICROPY_ENABLE_FLOAT
+        case 'f':
+            return sizeof(float);
+        case 'd':
+            return sizeof(double);
+#endif
+    }
+    return -1;
+}
+
 mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
     int val = 0;
     switch (typecode) {

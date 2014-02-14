@@ -12,10 +12,7 @@
 #include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
-
-// Use special typecode to differentiate repr() of bytearray vs array.array('B')
-// (underlyingly they're same).
-#define BYTEARRAY_TYPECODE 0
+#include "binary.h"
 
 typedef struct _mp_obj_array_t {
     mp_obj_base_t base;
@@ -36,91 +33,6 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 /******************************************************************************/
 /* array                                                                       */
 
-STATIC machine_int_t array_get_el_size(char typecode) {
-    // This assumes that unsigned and signed types are of the same type,
-    // which is invariant for [u]intN_t.
-    switch (typecode) {
-        case BYTEARRAY_TYPECODE:
-        case 'b':
-        case 'B':
-            return sizeof(int8_t);
-        case 'h':
-        case 'H':
-            return sizeof(int16_t);
-        case 'i':
-        case 'I':
-            return sizeof(int32_t);
-        case 'l':
-        case 'L':
-            return sizeof(int32_t);
-    }
-    return -1;
-}
-
-STATIC machine_int_t array_get_el(mp_obj_array_t *o, int index) {
-    machine_int_t val = 0;
-    switch (o->typecode) {
-        case 'b':
-            val = ((int8_t*)o->items)[index];
-            break;
-        case BYTEARRAY_TYPECODE:
-        case 'B':
-            val = ((uint8_t*)o->items)[index];
-            break;
-        case 'h':
-            val = ((int16_t*)o->items)[index];
-            break;
-        case 'H':
-            val = ((uint16_t*)o->items)[index];
-            break;
-        case 'i':
-            val = ((int32_t*)o->items)[index];
-            break;
-        case 'I':
-            val = ((uint32_t*)o->items)[index];
-            break;
-        case 'l':
-            val = ((int32_t*)o->items)[index];
-            break;
-        case 'L':
-            val = ((uint32_t*)o->items)[index];
-            break;
-    }
-    return val;
-}
-
-STATIC void array_set_el(mp_obj_array_t *o, int index, mp_obj_t val_in) {
-    machine_int_t val = mp_obj_int_get(val_in);
-    switch (o->typecode) {
-        case 'b':
-            ((int8_t*)o->items)[index] = val;
-            break;
-        case BYTEARRAY_TYPECODE:
-        case 'B':
-            ((uint8_t*)o->items)[index] = val;
-            break;
-        case 'h':
-            ((int16_t*)o->items)[index] = val;
-            break;
-        case 'H':
-            ((uint16_t*)o->items)[index] = val;
-            break;
-        case 'i':
-            ((int32_t*)o->items)[index] = val;
-            break;
-        case 'I':
-            ((uint32_t*)o->items)[index] = val;
-            break;
-        case 'l':
-            ((int32_t*)o->items)[index] = val;
-            break;
-        case 'L':
-            ((uint32_t*)o->items)[index] = val;
-            break;
-    }
-}
-
-
 STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
@@ -134,7 +46,7 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
                 if (i > 0) {
                     print(env, ", ");
                 }
-                print(env, "%d", array_get_el(o, i));
+                mp_obj_print_helper(print, env, mp_binary_get_val(o->typecode, o->items, i), PRINT_REPR);
             }
             print(env, "]");
         }
@@ -161,7 +73,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         if (len == 0) {
             array_append(array, item);
         } else {
-            array_set_el(array, i++, item);
+            mp_binary_set_val(typecode, array->items, i++, item);
         }
     }
 
@@ -204,8 +116,7 @@ STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case RT_BINARY_OP_SUBSCR:
         {
             uint index = mp_get_index(o->base.type, o->len, rhs);
-            machine_int_t val = array_get_el(o, index);
-            return mp_obj_new_int(val);
+            return mp_binary_get_val(o->typecode, o->items, index);
         }
 
         default:
@@ -218,12 +129,12 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &array_type));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
-        int item_sz = array_get_el_size(self->typecode);
+        int item_sz = mp_binary_get_size(self->typecode);
         // TODO: alloc policy
         self->free = 8;
         self->items = m_realloc(self->items,  item_sz * self->len, item_sz * (self->len + self->free));
     }
-    array_set_el(self, self->len++, arg);
+    mp_binary_set_val(self->typecode, self->items, self->len++, arg);
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
@@ -232,14 +143,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_array_t *o = self_in;
     uint index = mp_get_index(o->base.type, o->len, index_in);
-    array_set_el(o, index, value);
+    mp_binary_set_val(o->typecode, o->items, index, value);
     return true;
 }
 
 STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
-    bufinfo->len = o->len * array_get_el_size(o->typecode);
+    bufinfo->len = o->len * mp_binary_get_size(o->typecode);
     return 0;
 }
 
@@ -267,7 +178,7 @@ STATIC mp_obj_array_t *array_new(char typecode, uint n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_malloc(array_get_el_size(typecode) * o->len);
+    o->items = m_malloc(mp_binary_get_size(typecode) * o->len);
     return o;
 }
 
@@ -304,8 +215,7 @@ typedef struct _mp_obj_array_it_t {
 mp_obj_t array_it_iternext(mp_obj_t self_in) {
     mp_obj_array_it_t *self = self_in;
     if (self->cur < self->array->len) {
-        machine_int_t val = array_get_el(self->array, self->cur++);
-        return mp_obj_new_int(val);
+        return mp_binary_get_val(self->array->typecode, self->array->items, self->cur++);
     } else {
         return mp_const_stop_iteration;
     }
