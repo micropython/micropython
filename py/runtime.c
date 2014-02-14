@@ -144,6 +144,9 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
     { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
 
+    // Extra builtins as defined by a port
+    MICROPY_EXTRA_BUILTINS
+
     { MP_QSTR_, MP_OBJ_NULL }, // end of list sentinel
 };
 

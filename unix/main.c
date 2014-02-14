@@ -29,7 +29,6 @@
 // Stack top at the start of program
 void *stack_top;
 
-extern const mp_obj_fun_native_t mp_builtin_open_obj;
 void file_init();
 void microsocket_init();
 void time_init();

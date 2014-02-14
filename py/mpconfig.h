@@ -107,6 +107,10 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_PATH_MAX (512)
 #endif
 
+// Additional builtin function definitions - see runtime.c:builtin_table for format.
+#ifndef MICROPY_EXTRA_BUILTINS
+#define MICROPY_EXTRA_BUILTINS
+#endif
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
