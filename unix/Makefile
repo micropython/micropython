@@ -12,7 +12,14 @@ include ../py/py.mk
 
 # compiler settings
 CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
+endif
+ifeq ($(UNAME_S),Darwin)
+    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl
+endif
 
 ifeq ($(MICROPY_MOD_TIME),1)
 CFLAGS_MOD += -DMICROPY_MOD_TIME=1
