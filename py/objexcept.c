@@ -53,6 +53,7 @@ STATIC mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const m
 
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
     o->base.type = &exception_type;
+    o->traceback = MP_OBJ_NULL;
     o->id = base->id;
     o->msg = NULL;
     o->args.len = n_args;
