@@ -10,6 +10,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "binary.h"
 
 typedef struct _mp_obj_opaque_t {
     mp_obj_base_t base;
@@ -295,10 +296,30 @@ static void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);
 }
 
+static mp_obj_t ffivar_get(mp_obj_t self_in) {
+    mp_obj_ffivar_t *self = self_in;
+    return mp_binary_get_val(self->type, self->var, 0);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(ffivar_get_obj, ffivar_get);
+
+static mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
+    mp_obj_ffivar_t *self = self_in;
+    mp_binary_set_val(self->type, self->var, 0, val_in);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(ffivar_set_obj, ffivar_set);
+
+static const mp_method_t ffivar_type_methods[] = {
+        { "get", &ffivar_get_obj },
+        { "set", &ffivar_set_obj },
+        { NULL, NULL },
+};
+
 static const mp_obj_type_t ffivar_type = {
     { &mp_const_type },
     "ffivar",
     .print = ffivar_print,
+    .methods = ffivar_type_methods,
 };
 
 // Generic opaque storage object

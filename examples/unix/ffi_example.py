@@ -19,6 +19,7 @@ print()
 perror("ffi before error")
 open("somethingnonexistent__", 0)
 print(errno)
+print(errno.get())
 perror("ffi after error")
 print()
 

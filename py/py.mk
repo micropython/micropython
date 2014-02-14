@@ -63,6 +63,7 @@ PY_O_BASENAME = \
 	objzip.o \
 	sequence.o \
 	stream.o \
+	binary.o \
 	builtin.o \
 	builtinimport.o \
 	builtinevex.o \
