@@ -42,7 +42,7 @@ int mp_binary_get_size(char typecode) {
 }
 
 mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
-    int val = 0;
+    machine_int_t val = 0;
     switch (typecode) {
         case 'b':
             val = ((int8_t*)p)[index];
