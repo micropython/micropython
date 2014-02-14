@@ -596,7 +596,7 @@ unwind_return:
                         break;
 
                     case MP_BC_IMPORT_STAR:
-                        rt_import_all(TOP());
+                        rt_import_all(POP());
                         break;
 
                     default:
