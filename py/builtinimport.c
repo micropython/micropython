@@ -184,10 +184,14 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
                 if (stat == MP_IMPORT_STAT_DIR) {
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
-                    if (mp_import_stat(vstr_str(&path)) == MP_IMPORT_STAT_FILE) {
-                        do_load(module_obj, &path);
+                    if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
+                        vstr_cut_tail(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
+                        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+                            "Per PEP-420 a dir without __init__.py (%s) is a namespace package; "
+                            "namespace packages are not supported", vstr_str(&path)));
                     }
-                    vstr_cut_tail(&path, 12); // cut off /__init__.py
+                    do_load(module_obj, &path);
+                    vstr_cut_tail(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     break;
