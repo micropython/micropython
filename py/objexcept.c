@@ -27,6 +27,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
         print(env, "%s: %s", qstr_str(o->base.type->name), vstr_str(o->msg));
     } else {
         // Yes, that's how CPython has it
+        // TODO now that exceptions are classes and instances, I think this needs to be changed to match CPython
         if (kind == PRINT_REPR) {
             print(env, "%s", qstr_str(o->base.type->name));
         }
@@ -162,7 +163,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t 
 
     // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
     if (self->traceback == MP_OBJ_NULL) {
-        self->traceback = mp_obj_new_list(3, NULL);
+        self->traceback = mp_obj_new_list(0, NULL);
     }
     mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
     mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);

@@ -152,10 +152,15 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     uint use_def_args = self->n_args - n_args;
     mp_map_t *old_globals = rt_globals_get();
     rt_globals_set(self->globals);
-    mp_obj_t result = mp_execute_byte_code(self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state);
+    mp_obj_t result;
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state, &result);
     rt_globals_set(old_globals);
 
-    return result;
+    if (vm_return_kind == MP_VM_RETURN_NORMAL) {
+        return result;
+    } else { // MP_VM_RETURN_EXCEPTION
+        nlr_jump(result);
+    }
 }
 
 const mp_obj_type_t fun_bc_type = {

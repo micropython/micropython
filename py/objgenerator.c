@@ -82,22 +82,30 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     } else {
         *self->sp = send_value;
     }
-    bool yield = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
-    if (yield) {
-        return *self->sp;
-    } else {
-        // Explicitly mark generator as completed. If we don't do this,
-        // subsequent next() may re-execute statements after last yield
-        // again and again, leading to side effects.
-        // TODO: check how return with value behaves under such conditions
-        // in CPython.
-        self->ip = 0;
-        if (*self->sp == mp_const_none) {
-            return mp_const_stop_iteration;
-        } else {
-            // TODO return StopIteration with value *self->sp
-            return mp_const_stop_iteration;
-        }
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
+    switch (vm_return_kind) {
+        case MP_VM_RETURN_NORMAL:
+            // Explicitly mark generator as completed. If we don't do this,
+            // subsequent next() may re-execute statements after last yield
+            // again and again, leading to side effects.
+            // TODO: check how return with value behaves under such conditions
+            // in CPython.
+            self->ip = 0;
+            if (*self->sp == mp_const_none) {
+                return mp_const_stop_iteration;
+            } else {
+                // TODO return StopIteration with value *self->sp
+                return mp_const_stop_iteration;
+            }
+
+        case MP_VM_RETURN_YIELD:
+            return *self->sp;
+
+        case MP_VM_RETURN_EXCEPTION:
+        default:
+            // TODO
+            assert(0);
+            return mp_const_none;
     }
 }
 

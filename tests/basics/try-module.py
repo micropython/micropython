@@ -3,7 +3,7 @@
 import import1b
 
 def func1():
-    return
+    print('func1')
 
 def func2():
     try:

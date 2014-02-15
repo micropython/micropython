@@ -47,7 +47,7 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state) {
+mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state, mp_obj_t *ret) {
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -83,20 +83,30 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     }
 
     // execute the byte code
-    if (mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp)) {
-        // it shouldn't yield
-        assert(0);
-    }
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp);
 
-    // TODO check fails if, eg, return from within for loop
-    //assert(sp == &state[17]);
-    return *sp;
+    switch (vm_return_kind) {
+        case MP_VM_RETURN_NORMAL:
+            *ret = *sp;
+            return MP_VM_RETURN_NORMAL;
+        case MP_VM_RETURN_EXCEPTION:
+            *ret = state[n_state - 1];
+            return MP_VM_RETURN_EXCEPTION;
+        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
+        default:
+            assert(0);
+            *ret = mp_const_none;
+            return MP_VM_RETURN_NORMAL;
+    }
 }
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
-// returns true if bytecode yielded
-bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
+// returns:
+//  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
+//  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
+//  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
+mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
     const byte *ip = *ip_in_out;
@@ -569,7 +579,7 @@ unwind_return:
                         nlr_pop();
                         *sp_in_out = sp;
                         assert(exc_sp == &exc_stack[0] - 1);
-                        return false;
+                        return MP_VM_RETURN_NORMAL;
 
                     case MP_BC_RAISE_VARARGS:
                         unum = *ip++;
@@ -581,7 +591,7 @@ unwind_return:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
-                        return true;
+                        return MP_VM_RETURN_YIELD;
 
                     case MP_BC_IMPORT_NAME:
                         DECODE_QSTR;
@@ -603,7 +613,7 @@ unwind_return:
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                         assert(0);
                         nlr_pop();
-                        return false;
+                        return MP_VM_RETURN_NORMAL;
                 }
             }
 
@@ -653,9 +663,10 @@ unwind_return:
                 PUSH(nlr.ret_val); // TODO should be type(nlr.ret_val), I think...
 
             } else {
-                // re-raise exception to higher level
-                // TODO what to do if this is a generator??
-                nlr_jump(nlr.ret_val);
+                // propagate exception to higher level
+                // TODO what to do about ip and sp? they don't really make sense at this point
+                fastn[0] = nlr.ret_val; // must put exception here because sp is invalid
+                return MP_VM_RETURN_EXCEPTION;
             }
         }
     }
