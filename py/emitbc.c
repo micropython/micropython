@@ -242,7 +242,7 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_info_size + emit->byte_code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_info_size + emit->byte_code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, emit->scope->flags);
     }
 }
 

@@ -17,20 +17,6 @@ typedef struct _id_info_t {
     int local_num;
 } id_info_t;
 
-// taken from python source, Include/code.h
-#define SCOPE_FLAG_OPTIMISED    0x0001
-#define SCOPE_FLAG_NEWLOCALS    0x0002
-#define SCOPE_FLAG_VARARGS      0x0004
-#define SCOPE_FLAG_VARKEYWORDS  0x0008
-#define SCOPE_FLAG_NESTED       0x0010
-#define SCOPE_FLAG_GENERATOR    0x0020
-/* The SCOPE_FLAG_NOFREE flag is set if there are no free or cell variables.
-   This information is redundant, but it allows a single flag test
-   to determine whether there is any extra work to be done when the
-   call frame is setup.
-*/
-#define SCOPE_FLAG_NOFREE       0x0040
-
 // scope is a "block" in Python parlance
 typedef enum { SCOPE_MODULE, SCOPE_FUNCTION, SCOPE_LAMBDA, SCOPE_LIST_COMP, SCOPE_DICT_COMP, SCOPE_SET_COMP, SCOPE_GEN_EXPR, SCOPE_CLASS } scope_kind_t;
 typedef struct _scope_t {

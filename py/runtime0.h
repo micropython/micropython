@@ -78,11 +78,25 @@ typedef enum {
     RT_F_NUMBER_OF,
 } rt_fun_kind_t;
 
+// taken from python source, Include/code.h
+#define SCOPE_FLAG_OPTIMISED    0x0001
+#define SCOPE_FLAG_NEWLOCALS    0x0002
+#define SCOPE_FLAG_VARARGS      0x0004
+#define SCOPE_FLAG_VARKEYWORDS  0x0008
+#define SCOPE_FLAG_NESTED       0x0010
+#define SCOPE_FLAG_GENERATOR    0x0020
+/* The SCOPE_FLAG_NOFREE flag is set if there are no free or cell variables.
+   This information is redundant, but it allows a single flag test
+   to determine whether there is any extra work to be done when the
+   call frame is setup.
+*/
+#define SCOPE_FLAG_NOFREE       0x0040
+
 extern void *const rt_fun_table[RT_F_NUMBER_OF];
 
 void rt_init(void);
 void rt_deinit(void);
 uint rt_get_unique_code_id(void);
-void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
+void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, int flags);
 void rt_assign_native_code(uint unique_code_id, void *f, uint len, int n_args);
 void rt_assign_inline_asm_code(uint unique_code_id, void *f, uint len, int n_args);
