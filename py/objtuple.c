@@ -175,7 +175,7 @@ STATIC const mp_method_t tuple_type_methods[] = {
 
 const mp_obj_type_t tuple_type = {
     { &mp_const_type },
-    "tuple",
+    .name = MP_QSTR_tuple,
     .print = tuple_print,
     .make_new = tuple_make_new,
     .unary_op = tuple_unary_op,
@@ -242,7 +242,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t tuple_it_type = {
     { &mp_const_type },
-    "tuple_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = tuple_it_iternext,
 };
 

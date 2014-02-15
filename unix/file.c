@@ -116,7 +116,7 @@ static const mp_method_t rawfile_type_methods[] = {
 
 static const mp_obj_type_t rawfile_type = {
     { &mp_const_type },
-    "io.FileIO",
+    .name = MP_QSTR_io_dot_FileIO,
     .print = fdfile_print,
     .make_new = fdfile_make_new,
     .getiter = mp_identity,

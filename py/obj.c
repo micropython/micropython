@@ -26,7 +26,7 @@ mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
 }
 
 const char *mp_obj_get_type_str(mp_obj_t o_in) {
-    return mp_obj_get_type(o_in)->name;
+    return qstr_str(mp_obj_get_type(o_in)->name);
 }
 
 void printf_wrapper(void *env, const char *fmt, ...) {
@@ -41,7 +41,7 @@ void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *e
     if (type->print != NULL) {
         type->print(print, env, o_in, kind);
     } else {
-        print(env, "<%s>", type->name);
+        print(env, "<%s>", qstr_str(type->name));
     }
 }
 
@@ -226,11 +226,11 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index)
             i += len;
         }
         if (i < 0 || i >= len) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_IndexError, "%s index out of range", type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_IndexError, "%s index out of range", qstr_str(type->name)));
         }
         return i;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "%s indices must be integers, not %s", type->name, mp_obj_get_type_str(index)));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 }
 

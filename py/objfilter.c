@@ -46,7 +46,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t filter_type = {
     { &mp_const_type },
-    "filter",
+    .name = MP_QSTR_filter,
     .make_new = filter_make_new,
     .getiter = mp_identity,
     .iternext = filter_iternext,

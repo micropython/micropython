@@ -195,7 +195,7 @@ static const mp_method_t test_methods[] = {
 
 static const mp_obj_type_t test_type = {
     { &mp_const_type },
-    "Test",
+    .name = MP_QSTR_Test,
     .print = test_print,
     .methods = test_methods,
 };
@@ -308,7 +308,7 @@ int main(int argc, char **argv) {
     // test_obj = TestClass()
     // test_obj.attr = 42
     mp_obj_t test_class_type, test_class_instance;
-    test_class_type = mp_obj_new_type("TestClass", mp_const_empty_tuple, mp_obj_new_dict(0));
+    test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
     rt_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
     rt_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
 

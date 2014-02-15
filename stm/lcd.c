@@ -287,7 +287,7 @@ static mp_obj_t pyb_lcd_init(void) {
     lcd_next_line = 0;
 
     // Micro Python interface
-    mp_obj_t o = mp_obj_new_type("LCD", mp_const_empty_tuple, mp_obj_new_dict(0));
+    mp_obj_t o = mp_obj_new_type(MP_QSTR_LCD, mp_const_empty_tuple, mp_obj_new_dict(0));
     rt_store_attr(o, qstr_from_str("lcd8"), rt_make_function_n(2, lcd_draw_pixel_8));
     rt_store_attr(o, qstr_from_str("clear"), rt_make_function_n(0, lcd_pix_clear));
     rt_store_attr(o, qstr_from_str("get"), rt_make_function_n(2, lcd_pix_get));

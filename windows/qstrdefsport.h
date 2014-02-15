@@ -5,3 +5,5 @@ Q(open)
 Q(stdin)
 Q(stdout)
 Q(stderr)
+
+Q(io.FileIO)

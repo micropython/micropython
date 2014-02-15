@@ -238,7 +238,7 @@ static const mp_method_t microsocket_type_methods[] = {
 
 static const mp_obj_type_t microsocket_type = {
     { &mp_const_type },
-    "socket",
+    .name = MP_QSTR_socket,
     .print = socket_print,
     .make_new = socket_make_new,
     .getiter = NULL,

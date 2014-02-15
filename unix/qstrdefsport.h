@@ -1,5 +1,7 @@
 // qstrs specific to this port
 
+Q(Test)
+
 Q(argv)
 Q(open)
 Q(stdin)
@@ -13,3 +15,5 @@ Q(inet_aton)
 Q(gethostbyname)
 Q(getaddrinfo)
 Q(microsocket)
+
+Q(io.FileIO)

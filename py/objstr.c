@@ -508,7 +508,7 @@ STATIC const mp_method_t str_type_methods[] = {
 
 const mp_obj_type_t str_type = {
     { &mp_const_type },
-    "str",
+    .name = MP_QSTR_str,
     .print = str_print,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_str_iterator,
@@ -518,7 +518,7 @@ const mp_obj_type_t str_type = {
 // Reuses most of methods from str
 const mp_obj_type_t bytes_type = {
     { &mp_const_type },
-    "bytes",
+    .name = MP_QSTR_bytes,
     .print = str_print,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_bytes_iterator,
@@ -668,7 +668,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t str_it_type = {
     { &mp_const_type },
-    "str_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = str_it_iternext,
 };
 
@@ -686,7 +686,7 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t bytes_it_type = {
     { &mp_const_type },
-    "bytes_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = bytes_it_iternext,
 };
 

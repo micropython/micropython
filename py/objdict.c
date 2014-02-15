@@ -113,7 +113,7 @@ mp_obj_t dict_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t dict_it_type = {
     { &mp_const_type },
-    "dict_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = dict_it_iternext,
 };
 
@@ -342,7 +342,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t dict_view_it_type = {
     { &mp_const_type },
-    "dict_view_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = dict_view_it_iternext,
     .methods = NULL,            /* set operations still to come */
 };
@@ -386,7 +386,7 @@ STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 STATIC const mp_obj_type_t dict_view_type = {
     { &mp_const_type },
-    "dict_view",
+    .name = MP_QSTR_dict_view,
     .print = dict_view_print,
     .binary_op = dict_view_binary_op,
     .getiter = dict_view_getiter,
@@ -441,7 +441,7 @@ STATIC const mp_method_t dict_type_methods[] = {
 
 const mp_obj_type_t dict_type = {
     { &mp_const_type },
-    "dict",
+    .name = MP_QSTR_dict,
     .print = dict_print,
     .make_new = dict_make_new,
     .unary_op = dict_unary_op,

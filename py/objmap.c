@@ -52,7 +52,7 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t map_type = {
     { &mp_const_type },
-    "map",
+    .name = MP_QSTR_map,
     .make_new = map_make_new,
     .getiter = map_getiter,
     .iternext = map_iternext,

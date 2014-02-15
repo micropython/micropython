@@ -39,7 +39,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
 
 const mp_obj_type_t gen_wrap_type = {
     { &mp_const_type },
-    "generator",
+    .name = MP_QSTR_generator,
     .call = gen_wrap_call,
 };
 
@@ -121,7 +121,7 @@ STATIC const mp_method_t gen_type_methods[] = {
 
 const mp_obj_type_t gen_instance_type = {
     { &mp_const_type },
-    "generator",
+    .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .getiter = gen_instance_getiter,
     .iternext = gen_instance_iternext,

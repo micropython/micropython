@@ -99,7 +99,7 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
 
 const mp_obj_type_t int_type = {
     { &mp_const_type },
-    "int",
+    .name = MP_QSTR_int,
     .print = int_print,
     .make_new = int_make_new,
     .unary_op = int_unary_op,

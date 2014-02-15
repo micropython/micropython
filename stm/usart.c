@@ -243,7 +243,7 @@ static const mp_method_t usart_methods[] = {
 
 static const mp_obj_type_t usart_obj_type = {
     { &mp_const_type },
-    "Usart",
+    .name = MP_QSTR_Usart,
     .print = usart_obj_print,
     .methods = usart_methods,
 };

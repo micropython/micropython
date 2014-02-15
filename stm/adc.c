@@ -333,7 +333,7 @@ static const mp_method_t adc_all_methods[] = {
 
 static const mp_obj_type_t adc_all_type = {
     { &mp_const_type },
-    "ADC_all",
+    .name = MP_QSTR_ADC,
     .print = adc_all_print,
     .methods = adc_all_methods,
 };
@@ -387,7 +387,7 @@ static const mp_method_t adc_methods[] = {
 
 static const mp_obj_type_t adc_type = {
     { &mp_const_type },
-    "ADC",
+    .name = MP_QSTR_ADC,
     .print = adc_print,
     .methods = adc_methods,
 };

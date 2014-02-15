@@ -90,7 +90,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
 
 const mp_obj_type_t fun_native_type = {
     { &mp_const_type },
-    "function",
+    .name = MP_QSTR_function,
     .call = fun_native_call,
 };
 
@@ -160,7 +160,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
 
 const mp_obj_type_t fun_bc_type = {
     { &mp_const_type },
-    "function",
+    .name = MP_QSTR_function,
     .call = fun_bc_call,
 };
 
@@ -277,7 +277,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 
 STATIC const mp_obj_type_t fun_asm_type = {
     { &mp_const_type },
-    "function",
+    .name = MP_QSTR_function,
     .call = fun_asm_call,
 };
 

@@ -63,7 +63,7 @@ STATIC mp_obj_t exception_call(mp_obj_t self_in, uint n_args, uint n_kw, const m
 
 const mp_obj_type_t exception_type = {
     { &mp_const_type },
-    "exception",
+    .name = MP_QSTR_, // TODO proper exception names
     .print = exception_print,
     .call = exception_call,
 };

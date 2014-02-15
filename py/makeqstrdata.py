@@ -8,6 +8,9 @@ if platform.python_version_tuple()[0] == '2':
 elif platform.python_version_tuple()[0] == '3':
     from html.entities import codepoint2name
 
+# add some custom names to map characters that aren't in HTML
+codepoint2name[ord('.')] = 'dot'
+
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
     hash = 0

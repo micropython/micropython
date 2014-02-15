@@ -52,7 +52,7 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t zip_type = {
     { &mp_const_type },
-    "zip",
+    .name = MP_QSTR_zip,
     .make_new = zip_make_new,
     .getiter = zip_getiter,
     .iternext = zip_iternext,

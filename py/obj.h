@@ -142,13 +142,19 @@ typedef struct _mp_stream_p_t {
 
 struct _mp_obj_type_t {
     mp_obj_base_t base;
-    const char *name;
+    qstr name;
     mp_print_fun_t print;
     mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_fun_t call;
     mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
     mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
+
+    mp_load_attr_fun_t load_attr;
+    mp_store_attr_fun_t store_attr;
+    // Implements container[index] = val; note that load_item is implemented
+    // by binary_op(RT_BINARY_OP_SUBSCR)
+    mp_store_item_fun_t store_item;
 
     mp_fun_1_t getiter;
     mp_fun_1_t iternext;
@@ -160,12 +166,6 @@ struct _mp_obj_type_t {
     mp_stream_p_t stream_p;
 
     const mp_method_t *methods;
-
-    mp_load_attr_fun_t load_attr;
-    mp_store_attr_fun_t store_attr;
-    // Implements container[index] = val; note that load_item is implemented
-    // by binary_op(RT_BINARY_OP_SUBSCR)
-    mp_store_item_fun_t store_item;
 
     // these are for dynamically created types (classes)
     mp_obj_t bases_tuple;
@@ -200,7 +200,7 @@ extern const mp_obj_t mp_const_stop_iteration; // special object indicating end 
 
 // General API for objects
 
-mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
+mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);

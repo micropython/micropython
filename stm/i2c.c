@@ -336,7 +336,7 @@ static const mp_method_t i2c_methods[] = {
 
 static const mp_obj_type_t i2c_obj_type = {
     { &mp_const_type },
-    "I2C",
+    .name = MP_QSTR_I2C,
     .print = i2c_obj_print,
     .methods = i2c_methods,
 };

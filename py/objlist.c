@@ -347,7 +347,7 @@ STATIC const mp_method_t list_type_methods[] = {
 
 const mp_obj_type_t list_type = {
     { &mp_const_type },
-    "list",
+    .name = MP_QSTR_list,
     .print = list_print,
     .make_new = list_make_new,
     .unary_op = list_unary_op,
@@ -409,7 +409,7 @@ mp_obj_t list_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t list_it_type = {
     { &mp_const_type },
-    "list_iterator",
+    .name = MP_QSTR_iterator,
     .iternext = list_it_iternext,
 };
 

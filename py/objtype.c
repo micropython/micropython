@@ -257,7 +257,7 @@ bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_type_t *self = self_in;
-    print(env, "<class '%s'>", self->name);
+    print(env, "<class '%s'>", qstr_str(self->name));
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -271,7 +271,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             // args[0] = name
             // args[1] = bases tuple
             // args[2] = locals dict
-            return mp_obj_new_type(mp_obj_str_get_str(args[0]), args[1], args[2]);
+            return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
 
         default:
             nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes 1 or 3 arguments"));
@@ -284,7 +284,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_type_t *self = self_in;
 
     if (self->make_new == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "cannot create '%s' instances", self->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
     }
 
     // make new instance
@@ -335,7 +335,7 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 
 const mp_obj_type_t mp_const_type = {
     { &mp_const_type },
-    "type",
+    .name = MP_QSTR_type,
     .print = type_print,
     .make_new = type_make_new,
     .call = type_call,
@@ -343,7 +343,7 @@ const mp_obj_type_t mp_const_type = {
     .store_attr = type_store_attr,
 };
 
-mp_obj_t mp_obj_new_type(const char *name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
+mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     assert(MP_OBJ_IS_TYPE(bases_tuple, &tuple_type)); // Micro Python restriction, for now
     assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
@@ -439,7 +439,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t super_type = {
     { &mp_const_type },
-    "super",
+    .name = MP_QSTR_super,
     .print = super_print,
     .make_new = super_make_new,
     .load_attr = super_load_attr,
@@ -521,12 +521,12 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint
 
 const mp_obj_type_t mp_type_staticmethod = {
     { &mp_const_type },
-    "staticmethod",
+    .name = MP_QSTR_staticmethod,
     .make_new = static_class_method_make_new
 };
 
 const mp_obj_type_t mp_type_classmethod = {
     { &mp_const_type },
-    "classmethod",
+    .name = MP_QSTR_classmethod,
     .make_new = static_class_method_make_new
 };

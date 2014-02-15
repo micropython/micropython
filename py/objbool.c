@@ -47,7 +47,7 @@ STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
 
 const mp_obj_type_t bool_type = {
     { &mp_const_type },
-    "bool",
+    .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,
     .unary_op = bool_unary_op,

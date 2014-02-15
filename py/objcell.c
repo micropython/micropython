@@ -26,7 +26,7 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
 
 const mp_obj_type_t cell_type = {
     { &mp_const_type },
-    "cell",
+    .name = MP_QSTR_, // should never need to print cell type
 };
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {

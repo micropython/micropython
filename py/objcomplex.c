@@ -87,7 +87,7 @@ STATIC mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 const mp_obj_type_t complex_type = {
     { &mp_const_type },
-    "complex",
+    .name = MP_QSTR_complex,
     .print = complex_print,
     .make_new = complex_make_new,
     .unary_op = complex_unary_op,
