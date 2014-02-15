@@ -162,7 +162,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t 
 
     // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
     if (self->traceback == MP_OBJ_NULL) {
-        self->traceback = mp_obj_new_list(3, NULL);
+        self->traceback = mp_obj_new_list(0, NULL);
     }
     mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
     mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
