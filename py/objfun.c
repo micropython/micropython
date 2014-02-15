@@ -150,10 +150,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     }
 
     uint use_def_args = self->n_args - n_args;
-    mp_map_t *old_globals = rt_globals_get();
-    rt_globals_set(self->globals);
-    mp_obj_t result = mp_execute_byte_code(self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state);
-    rt_globals_set(old_globals);
+    mp_obj_t result = mp_execute_byte_code(self->globals, self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state);
 
     return result;
 }

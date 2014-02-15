@@ -10,6 +10,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "map.h"
 #include "bc0.h"
 #include "bc.h"
 
@@ -47,7 +48,7 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state) {
+mp_obj_t mp_execute_byte_code(mp_map_t *globals, const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state) {
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -83,7 +84,7 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
     }
 
     // execute the byte code
-    if (mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp)) {
+    if (mp_execute_byte_code_2(globals, code, &ip, &state[n_state - 1], &sp)) {
         // it shouldn't yield
         assert(0);
     }
@@ -96,9 +97,13 @@ mp_obj_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_arg
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns true if bytecode yielded
-bool mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
+bool mp_execute_byte_code_2(mp_map_t *globals, const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
+    mp_map_t *old_globals = rt_globals_get();
+    if (globals != NULL) {
+        rt_globals_set(globals);
+    }
     const byte *ip = *ip_in_out;
     mp_obj_t *sp = *sp_in_out;
     machine_uint_t unum;
@@ -569,6 +574,7 @@ unwind_return:
                         nlr_pop();
                         *sp_in_out = sp;
                         assert(exc_sp == &exc_stack[0] - 1);
+                        rt_globals_set(old_globals);
                         return false;
 
                     case MP_BC_RAISE_VARARGS:
@@ -581,6 +587,7 @@ unwind_return:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
+                        rt_globals_set(old_globals);
                         return true;
 
                     case MP_BC_IMPORT_NAME:
@@ -653,6 +660,7 @@ unwind_return:
                 PUSH(nlr.ret_val); // TODO should be type(nlr.ret_val), I think...
 
             } else {
+                rt_globals_set(old_globals);
                 // re-raise exception to higher level
                 // TODO what to do if this is a generator??
                 nlr_jump(nlr.ret_val);
