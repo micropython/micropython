@@ -162,7 +162,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
         }
     }
 
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "object not in sequence"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "object not in sequence"));
 }
 
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value) {

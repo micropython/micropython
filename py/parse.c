@@ -302,7 +302,7 @@ STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule,
     push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr *exc_id_out, const char **exc_msg_out) {
+mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_parse_error_kind_t *parse_error_kind_out) {
 
     // allocate memory for the parser and its stacks
 
@@ -634,18 +634,17 @@ finished:
 
 syntax_error:
     if (mp_lexer_is_kind(lex, MP_TOKEN_INDENT)) {
-        *exc_id_out = MP_QSTR_IndentationError;
-        *exc_msg_out = "unexpected indent";
+        *parse_error_kind_out = MP_PARSE_ERROR_UNEXPECTED_INDENT;
     } else if (mp_lexer_is_kind(lex, MP_TOKEN_DEDENT_MISMATCH)) {
-        *exc_id_out = MP_QSTR_IndentationError;
-        *exc_msg_out = "unindent does not match any outer indentation level";
+        *parse_error_kind_out = MP_PARSE_ERROR_UNMATCHED_UNINDENT;
     } else {
-        *exc_id_out = MP_QSTR_SyntaxError;
-        *exc_msg_out = "invalid syntax";
+        *parse_error_kind_out = MP_PARSE_ERROR_INVALID_SYNTAX;
 #ifdef USE_RULE_NAME
         // debugging: print the rule name that failed and the token
-        mp_lexer_show_error_pythonic(lex, rule->rule_name);
+        printf("rule: %s\n", rule->rule_name);
+#if MICROPY_DEBUG_PRINTERS
         mp_token_show(mp_lexer_cur(lex));
+#endif
 #endif
     }
     result = MP_PARSE_NODE_NULL;

@@ -20,23 +20,23 @@
 
 STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
     if (n_kw && !self->is_kw) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError,
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "function does not take keyword arguments"));
     }
 
     if (self->n_args_min == self->n_args_max) {
         if (n_args != self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                      "function takes %d positional arguments but %d were given",
                                                      self->n_args_min, n_args));
         }
     } else {
         if (n_args < self->n_args_min) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                     "<fun name>() missing %d required positional arguments: <list of names of params>",
                                                     self->n_args_min - n_args));
         } else if (n_args > self->n_args_max) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                      "<fun name> expected at most %d arguments, got %d",
                                                      self->n_args_max, n_args));
         }
@@ -89,7 +89,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
 }
 
 const mp_obj_type_t fun_native_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
 };
@@ -143,10 +143,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     mp_obj_fun_bc_t *self = self_in;
 
     if (n_args < self->n_args - self->n_def_args || n_args > self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
     }
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
     uint use_def_args = self->n_args - n_args;
@@ -159,7 +159,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
 }
 
 const mp_obj_type_t fun_bc_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_bc_call,
 };
@@ -252,10 +252,10 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
     mp_obj_fun_asm_t *self = self_in;
 
     if (n_args != self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
     }
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
     machine_uint_t ret;
@@ -276,7 +276,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 }
 
 STATIC const mp_obj_type_t fun_asm_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
 };

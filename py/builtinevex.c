@@ -13,6 +13,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -28,14 +29,13 @@ STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse
     qstr source_name = mp_lexer_source_name(lex);
 
     // parse the string
-    qstr parse_exc_id;
-    const char *parse_exc_msg;
-    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_exc_id, &parse_exc_msg);
+    mp_parse_error_kind_t parse_error_kind;
+    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_error_kind);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; raise exception
-        nlr_jump(mp_obj_new_exception_msg(parse_exc_id, parse_exc_msg));
+        nlr_jump(mp_parse_make_exception(parse_error_kind));
     }
 
     // compile the string
@@ -74,6 +74,7 @@ STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
         rt_locals_set(mp_obj_dict_get_map(locals));
     }
     mp_obj_t res = parse_compile_execute(args[0], MP_PARSE_FILE_INPUT);
+    // TODO if the above call throws an exception, then we never get to reset the globals/locals
     rt_globals_set(old_globals);
     rt_locals_set(old_locals);
     return res;

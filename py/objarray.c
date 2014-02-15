@@ -82,7 +82,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args < 1 || n_args > 2) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "unexpected # of arguments, %d given", n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
     }
     // TODO check args
     uint l;
@@ -160,7 +160,7 @@ STATIC const mp_method_t array_type_methods[] = {
 };
 
 const mp_obj_type_t array_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_array,
     .print = array_print,
     .make_new = array_make_new,
@@ -222,7 +222,7 @@ mp_obj_t array_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t array_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = array_it_iternext,
 };

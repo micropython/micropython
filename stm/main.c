@@ -24,6 +24,7 @@
 #include "lexerfatfs.h"
 #include "parse.h"
 #include "obj.h"
+#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -404,15 +405,13 @@ void do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
-        qstr parse_exc_id;
-        const char *parse_exc_msg;
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_exc_id, &parse_exc_msg);
+        mp_parse_error_kind_t parse_error_kind;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_error_kind);
         qstr source_name = mp_lexer_source_name(lex);
 
         if (pn == MP_PARSE_NODE_NULL) {
             // parse error
-            mp_lexer_show_error_pythonic_prefix(lex);
-            printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+            mp_parse_show_exception(lex, parse_error_kind);
             mp_lexer_free(lex);
         } else {
             // parse okay
@@ -456,15 +455,13 @@ bool do_file(const char *filename) {
         return false;
     }
 
-    qstr parse_exc_id;
-    const char *parse_exc_msg;
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
+    mp_parse_error_kind_t parse_error_kind;
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
     qstr source_name = mp_lexer_source_name(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error
-        mp_lexer_show_error_pythonic_prefix(lex);
-        printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+        mp_parse_show_exception(lex, parse_error_kind);
         mp_lexer_free(lex);
         return false;
     }
@@ -536,7 +533,7 @@ mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     }
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %s does not exist", pin_name));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not exist", pin_name));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);

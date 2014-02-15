@@ -63,5 +63,11 @@ typedef enum {
     MP_PARSE_EVAL_INPUT,
 } mp_parse_input_kind_t;
 
-// returns MP_PARSE_NODE_NULL on error, and then exc_id_out and exc_msg_out are valid
-mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind, qstr *exc_id_out, const char **exc_msg_out);
+typedef enum {
+    MP_PARSE_ERROR_UNEXPECTED_INDENT,
+    MP_PARSE_ERROR_UNMATCHED_UNINDENT,
+    MP_PARSE_ERROR_INVALID_SYNTAX,
+} mp_parse_error_kind_t;
+
+// returns MP_PARSE_NODE_NULL on error, and then parse_error_kind_out is valid
+mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_parse_error_kind_t *parse_error_kind_out);

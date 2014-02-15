@@ -28,17 +28,17 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     const byte *bc_code;
     mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_n_state, &bc_code);
     if (n_args != bc_n_args) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes %d positional arguments but %d were given", bc_n_args, n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", bc_n_args, n_args));
     }
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "function does not take keyword arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
     return mp_obj_new_gen_instance(bc_code, bc_n_state, n_args, args);
 }
 
 const mp_obj_type_t gen_wrap_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
 };
@@ -77,7 +77,7 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     }
     if (self->sp == self->state - 1) {
         if (send_value != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "can't send non-None value to a just-started generator"));
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator"));
         }
     } else {
         *self->sp = send_value;
@@ -108,10 +108,12 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_next_send(self_in, send_value);
     if (ret == mp_const_stop_iteration) {
-        nlr_jump(mp_obj_new_exception(MP_QSTR_StopIteration));
+        nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
+    } else {
+        return ret;
     }
-    return ret;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 STATIC const mp_method_t gen_type_methods[] = {
@@ -120,7 +122,7 @@ STATIC const mp_method_t gen_type_methods[] = {
 };
 
 const mp_obj_type_t gen_instance_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .getiter = gen_instance_getiter,

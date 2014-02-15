@@ -26,7 +26,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
         return value;
     } else {
         // an exception was raised
-        if (MP_OBJ_IS_TYPE(nlr.ret_val, &exception_type) && mp_obj_exception_get_type(nlr.ret_val) == MP_QSTR_StopIteration) {
+        if (mp_obj_get_type(nlr.ret_val) == &mp_type_StopIteration) {
             // return mp_const_stop_iteration instead of raising StopIteration
             return mp_const_stop_iteration;
         } else {
@@ -37,7 +37,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = it_iternext
 };

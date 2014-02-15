@@ -60,7 +60,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // dict load
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 return elem->value;
             }
@@ -112,7 +112,7 @@ mp_obj_t dict_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t dict_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = dict_it_iternext,
 };
@@ -187,7 +187,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     if (elem == NULL || elem->value == NULL) {
         if (deflt == NULL) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "<value>"));
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 value = mp_const_none;
             }
@@ -246,7 +246,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
     mp_obj_dict_t *self = self_in;
     if (self->map.used == 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "popitem(): dictionary is empty"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
     }
     mp_obj_dict_it_t *iter = mp_obj_new_dict_iterator(self, 0);
 
@@ -276,7 +276,7 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
             || value == mp_const_stop_iteration
             || stop != mp_const_stop_iteration) {
             nlr_jump(mp_obj_new_exception_msg(
-                         MP_QSTR_ValueError,
+                         &mp_type_ValueError,
                          "dictionary update sequence has the wrong length"));
         } else {
             mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
@@ -341,7 +341,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t dict_view_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = dict_view_it_iternext,
     .methods = NULL,            /* set operations still to come */
@@ -385,7 +385,7 @@ STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 
 STATIC const mp_obj_type_t dict_view_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_dict_view,
     .print = dict_view_print,
     .binary_op = dict_view_binary_op,
@@ -440,7 +440,7 @@ STATIC const mp_method_t dict_type_methods[] = {
 };
 
 const mp_obj_type_t dict_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_dict,
     .print = dict_print,
     .make_new = dict_make_new,

@@ -39,7 +39,7 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "int takes at most 2 arguments, %d given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "int takes at most 2 arguments, %d given", n_args));
     }
 }
 
@@ -65,7 +65,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "long int not supported in this build"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
     return mp_const_none;
 }
 
@@ -75,7 +75,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "small int overflow"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
     return mp_const_none;
 }
 
@@ -83,7 +83,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     if (MP_OBJ_FITS_SMALL_INT(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OverflowError, "small int overflow"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
     return mp_const_none;
 }
 
@@ -98,7 +98,7 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 const mp_obj_type_t int_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_int,
     .print = int_print,
     .make_new = int_make_new,

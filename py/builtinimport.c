@@ -13,6 +13,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -77,7 +78,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
     }
 
     qstr source_name = mp_lexer_source_name(lex);
@@ -91,16 +92,15 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     rt_globals_set(mp_obj_module_get_globals(module_obj));
 
     // parse the imported script
-    qstr parse_exc_id;
-    const char *parse_exc_msg;
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
+    mp_parse_error_kind_t parse_error_kind;
+    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
     mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; clean up and raise exception
         rt_locals_set(old_locals);
         rt_globals_set(old_globals);
-        nlr_jump(mp_obj_new_exception_msg(parse_exc_id, parse_exc_msg));
+        nlr_jump(mp_parse_make_exception(parse_error_kind));
     }
 
     // compile the imported script
@@ -172,7 +172,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
+                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
             }
 
             module_obj = mp_obj_module_get(mod_name);

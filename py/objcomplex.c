@@ -66,7 +66,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "complex takes at most 2 arguments, %d given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "complex takes at most 2 arguments, %d given", n_args));
     }
 }
 
@@ -86,7 +86,7 @@ STATIC mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 const mp_obj_type_t complex_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_complex,
     .print = complex_print,
     .make_new = complex_make_new,

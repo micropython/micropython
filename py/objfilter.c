@@ -16,7 +16,7 @@ typedef struct _mp_obj_filter_t {
 
 STATIC mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args != 2 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "filter expected 2 arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "filter expected 2 arguments"));
     }
     assert(n_args == 2);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
@@ -45,7 +45,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
 }
 
 const mp_obj_type_t filter_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_filter,
     .make_new = filter_make_new,
     .getiter = mp_identity,

@@ -51,7 +51,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 
 // helper function to print an exception with traceback
 void mp_obj_print_exception(mp_obj_t exc) {
-    if (MP_OBJ_IS_TYPE(exc, &exception_type)) {
+    if (mp_obj_is_exception_instance(exc)) {
         machine_uint_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
@@ -133,7 +133,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             }
         }
 
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NotImplementedError,
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
             "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
         return false;
     }
@@ -160,7 +160,7 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
         return mp_obj_int_get_checked(arg);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -175,7 +175,7 @@ machine_float_t mp_obj_get_float(mp_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
         return mp_obj_float_get(arg);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -195,7 +195,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_TYPE(arg, &complex_type)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
     }
 }
 #endif
@@ -210,11 +210,11 @@ mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o_in, machine_int_t n) {
             mp_obj_list_get(o_in, &seq_len, &seq_items);
         }
         if (seq_len != n) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_IndexError, "requested length %d but object has length %d", n, seq_len));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", n, seq_len));
         }
         return seq_items;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o_in)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o_in)));
     }
 }
 
@@ -226,11 +226,11 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index)
             i += len;
         }
         if (i < 0 || i >= len) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_IndexError, "%s index out of range", qstr_str(type->name)));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
         }
         return i;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 }
 

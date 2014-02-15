@@ -51,6 +51,7 @@ bool str_strn_equal(const char *str, const char *strn, int len) {
     return i == len && *str == 0;
 }
 
+#ifdef MICROPY_DEBUG_PRINTERS
 void mp_token_show(const mp_token_t *tok) {
     printf("(%d:%d) kind:%d str:%p len:%d", tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
     if (tok->str != NULL && tok->len > 0) {
@@ -69,6 +70,7 @@ void mp_token_show(const mp_token_t *tok) {
     }
     printf("\n");
 }
+#endif
 
 #define CUR_CHAR(lex) ((lex)->chr0)
 
@@ -710,36 +712,4 @@ const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex) {
 
 bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
     return lex->tok_cur.kind == kind;
-}
-
-/*
-bool mp_lexer_is_str(mp_lexer_t *lex, const char *str) {
-    return mp_token_is_str(&lex->tok_cur, str);
-}
-
-bool mp_lexer_opt_kind(mp_lexer_t *lex, mp_token_kind_t kind) {
-    if (mp_lexer_is_kind(lex, kind)) {
-        mp_lexer_to_next(lex);
-        return true;
-    }
-    return false;
-}
-
-bool mp_lexer_opt_str(mp_lexer_t *lex, const char *str) {
-    if (mp_lexer_is_str(lex, str)) {
-        mp_lexer_to_next(lex);
-        return true;
-    }
-    return false;
-}
-*/
-
-bool mp_lexer_show_error_pythonic_prefix(mp_lexer_t *lex) {
-    printf("  File \"%s\", line %d column %d\n", qstr_str(lex->source_name), lex->tok_cur.src_line, lex->tok_cur.src_column);
-    return false;
-}
-
-bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg) {
-    printf("  File \"%s\", line %d column %d\n%s\n", qstr_str(lex->source_name), lex->tok_cur.src_line, lex->tok_cur.src_column, msg);
-    return false;
 }

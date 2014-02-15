@@ -30,6 +30,7 @@ Q(asm_thumb)
 Q(Ellipsis)
 Q(StopIteration)
 
+Q(BaseException)
 Q(AssertionError)
 Q(AttributeError)
 Q(ImportError)

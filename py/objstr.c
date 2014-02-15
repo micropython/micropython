@@ -124,7 +124,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             } else {
                 // Message doesn't match CPython, but we don't have so much bytes as they
                 // to spend them on verbose wording
-                nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "index must be int"));
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "index must be int"));
             }
 
         case RT_BINARY_OP_ADD:
@@ -235,7 +235,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_str_builder_end(joined_str);
 
 bad_arg:
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "?str.join expecting a list of str's"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "?str.join expecting a list of str's"));
 }
 
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
@@ -387,7 +387,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
             } else {
                 while (str < top && *str != '}') str++;
                 if (arg_i >= n_args) {
-                    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_IndexError, "tuple index out of range"));
+                    nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
                 // TODO: may be PRINT_REPR depending on formatting code
                 mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_STR);
@@ -507,7 +507,7 @@ STATIC const mp_method_t str_type_methods[] = {
 };
 
 const mp_obj_type_t str_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_str,
     .print = str_print,
     .binary_op = str_binary_op,
@@ -517,7 +517,7 @@ const mp_obj_type_t str_type = {
 
 // Reuses most of methods from str
 const mp_obj_type_t bytes_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_bytes,
     .print = str_print,
     .binary_op = str_binary_op,
@@ -589,7 +589,7 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
 
 void bad_implicit_conversion(mp_obj_t self_in) __attribute__((noreturn));
 void bad_implicit_conversion(mp_obj_t self_in) {
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(self_in)));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(self_in)));
 }
 
 uint mp_obj_str_get_hash(mp_obj_t self_in) {
@@ -667,7 +667,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t str_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = str_it_iternext,
 };
@@ -685,7 +685,7 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t bytes_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = bytes_it_iternext,
 };

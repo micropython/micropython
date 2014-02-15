@@ -38,7 +38,7 @@ STATIC bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 }
 
 const mp_obj_type_t module_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_module,
     .print = module_print,
     .load_attr = module_load_attr,

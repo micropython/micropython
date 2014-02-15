@@ -18,7 +18,7 @@ long strtonum(const char *restrict s, int base) {
 
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
     }
     // skip surrounded whitespace
     while (isspace((c = *(p++))));
@@ -84,7 +84,7 @@ done:
     return (found ^ neg) - neg;
 
 value_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "invalid literal for int() with base %d: '%s'", base, s));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, s));
 }
 
 #else /* defined(UNIX) */

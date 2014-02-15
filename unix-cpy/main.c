@@ -10,6 +10,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 
@@ -29,14 +30,12 @@ void do_file(const char *file) {
 
     } else {
         // parse
-        qstr parse_exc_id;
-        const char *parse_exc_msg;
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_exc_id, &parse_exc_msg);
+        mp_parse_error_kind_t parse_error_kind;
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
 
         if (pn == MP_PARSE_NODE_NULL) {
             // parse error
-            mp_lexer_show_error_pythonic_prefix(lex);
-            printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+            mp_parse_show_exception(lex, parse_error_kind);
             mp_lexer_free(lex);
             return;
         }

@@ -24,7 +24,7 @@ STATIC mp_obj_t range_getiter(mp_obj_t o_in) {
 }
 
 STATIC const mp_obj_type_t range_type = {
-    { &mp_const_type} ,
+    { &mp_type_type} ,
     .name = MP_QSTR_range,
     .getiter = range_getiter,
 };
@@ -62,7 +62,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 }
 
 STATIC const mp_obj_type_t range_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = range_it_iternext,
 };

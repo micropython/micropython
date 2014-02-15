@@ -11,6 +11,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
@@ -49,14 +50,12 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         return;
     }
 
-    qstr parse_exc_id;
-    const char *parse_exc_msg;
-    mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_exc_id, &parse_exc_msg);
+    mp_parse_error_kind_t parse_error_kind;
+    mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error
-        mp_lexer_show_error_pythonic_prefix(lex);
-        printf("%s: %s\n", qstr_str(parse_exc_id), parse_exc_msg);
+        mp_parse_show_exception(lex, parse_error_kind);
         mp_lexer_free(lex);
         return;
     }
@@ -194,7 +193,7 @@ static const mp_method_t test_methods[] = {
 };
 
 static const mp_obj_type_t test_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_Test,
     .print = test_print,
     .methods = test_methods,

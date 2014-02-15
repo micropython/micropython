@@ -46,7 +46,7 @@ typedef struct _mp_obj_fficallback_t {
     ffi_type *params[];
 } mp_obj_fficallback_t;
 
-static const mp_obj_type_t opaque_type;
+//static const mp_obj_type_t opaque_type;
 static const mp_obj_type_t ffimod_type;
 static const mp_obj_type_t ffifunc_type;
 static const mp_obj_type_t fficallback_type;
@@ -80,7 +80,7 @@ static ffi_type *get_ffi_type(mp_obj_t o_in)
     }
     // TODO: Support actual libffi type objects
 
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "Unknown type"));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unknown type"));
 }
 
 static mp_obj_t return_ffi_value(ffi_arg val, char type)
@@ -118,7 +118,7 @@ static mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
@@ -136,7 +136,7 @@ static mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "Error in ffi_prep_cif"));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
     }
 
     return o;
@@ -173,12 +173,12 @@ static mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "Error in ffi_prep_cif"));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, func_in, o->func);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "ffi_prep_closure_loc"));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ffi_prep_closure_loc"));
     }
 
     return o;
@@ -192,7 +192,7 @@ static mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
     o->base.type = &ffivar_type;
@@ -208,7 +208,7 @@ static mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
     o->base.type = type_in;
@@ -224,8 +224,8 @@ static const mp_method_t ffimod_type_methods[] = {
 };
 
 static const mp_obj_type_t ffimod_type = {
-    { &mp_const_type },
-    "ffimod",
+    { &mp_type_type },
+    .name = MP_QSTR_ffimod,
     .print = ffimod_print,
     .make_new = ffimod_make_new,
     .methods = ffimod_type_methods,
@@ -270,8 +270,8 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
 }
 
 static const mp_obj_type_t ffifunc_type = {
-    { &mp_const_type },
-    "ffifunc",
+    { &mp_type_type },
+    .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
     .call = ffifunc_call,
 };
@@ -284,8 +284,8 @@ static void fficallback_print(void (*print)(void *env, const char *fmt, ...), vo
 }
 
 static const mp_obj_type_t fficallback_type = {
-    { &mp_const_type },
-    "fficallback",
+    { &mp_type_type },
+    .name = MP_QSTR_fficallback,
     .print = fficallback_print,
 };
 
@@ -316,20 +316,21 @@ static const mp_method_t ffivar_type_methods[] = {
 };
 
 static const mp_obj_type_t ffivar_type = {
-    { &mp_const_type },
-    "ffivar",
+    { &mp_type_type },
+    .name = MP_QSTR_ffivar,
     .print = ffivar_print,
     .methods = ffivar_type_methods,
 };
 
-// Generic opaque storage object
+// Generic opaque storage object (unused)
 
+/*
 static const mp_obj_type_t opaque_type = {
-    { &mp_const_type },
-    "opaqueval",
+    { &mp_type_type },
+    .name = MP_QSTR_opaqueval,
 //    .print = opaque_print,
 };
-
+*/
 
 mp_obj_t mod_ffi_open(uint n_args, const mp_obj_t *args) {
     return ffimod_make_new((mp_obj_t)&ffimod_type, n_args, 0, args);

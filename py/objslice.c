@@ -22,7 +22,7 @@ void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, m
 }
 
 const mp_obj_type_t ellipsis_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_Ellipsis,
     .print = ellipsis_print,
 };
@@ -49,7 +49,7 @@ void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
 }
 
 const mp_obj_type_t slice_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
 };

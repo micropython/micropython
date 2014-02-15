@@ -41,7 +41,7 @@ void pyb_usb_dev_init(void) {
     dev_is_enabled = 1;
 
     // create an exception object for interrupting by VCP
-    mp_const_vcp_interrupt = mp_obj_new_exception(qstr_from_str("VCPInterrupt"));
+    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
 #endif
 }
 
@@ -66,6 +66,7 @@ void usb_vcp_receive(const char *buf, uint32_t len) {
             // catch special interrupt character
             if (buf[i] == interrupt_char) {
                 // raise exception when interrupts are finished
+                mp_obj_exception_clear_traceback(mp_const_vcp_interrupt);
                 pendsv_nlr_jump(mp_const_vcp_interrupt);
                 interrupt_char = VCP_CHAR_NONE;
                 continue;

@@ -202,7 +202,7 @@ static const mp_method_t sdcard_methods[] = {
 };
 
 static const mp_obj_type_t sdcard_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_SDcard,
     .methods = sdcard_methods,
 };

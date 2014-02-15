@@ -17,3 +17,7 @@ Q(getaddrinfo)
 Q(microsocket)
 
 Q(io.FileIO)
+Q(ffimod)
+Q(ffifunc)
+Q(fficallback)
+Q(ffivar)

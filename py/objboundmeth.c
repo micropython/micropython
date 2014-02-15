@@ -40,7 +40,7 @@ mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
 }
 
 const mp_obj_type_t bound_meth_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_bound_method,
     .call = bound_meth_call,
 };

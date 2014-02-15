@@ -70,7 +70,7 @@ static const mp_method_t led_methods[] = {
 };
 
 static const mp_obj_type_t led_obj_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_Led,
     .print = led_obj_print,
     .methods = led_methods,

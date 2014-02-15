@@ -67,12 +67,12 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "set takes at most 1 argument, %d given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
     }
 }
 
 const mp_obj_type_t set_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = set_it_iternext,
 };
@@ -310,7 +310,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
 
     if (self->set.used == 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_KeyError, "pop from an empty set"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
     }
     mp_obj_t obj = mp_set_lookup(&self->set, NULL,
                          MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_FIRST);
@@ -322,7 +322,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &set_type));
     mp_obj_set_t *self = self_in;
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(MP_QSTR_KeyError));
+        nlr_jump(mp_obj_new_exception(&mp_type_KeyError));
     }
     return mp_const_none;
 }
@@ -446,7 +446,7 @@ STATIC const mp_method_t set_type_methods[] = {
 };
 
 const mp_obj_type_t set_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_set,
     .print = set_print,
     .make_new = set_make_new,

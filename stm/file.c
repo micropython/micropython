@@ -60,7 +60,7 @@ static const mp_method_t file_methods[] = {
 };
 
 static const mp_obj_type_t file_obj_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_File,
     .print = file_obj_print,
     .methods = file_methods,

@@ -29,7 +29,7 @@ static const mp_obj_type_t microsocket_type;
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
-        { nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", error_val)); } }
+        { nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error_val)); } }
 
 static void get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
     mp_obj_base_t *o = (mp_obj_base_t *)obj;
@@ -43,7 +43,7 @@ static void get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
     return;
 
 error:
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "Operation not supported"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "Operation not supported"));
 }
 
 static mp_obj_socket_t *socket_new(int fd) {
@@ -237,7 +237,7 @@ static const mp_method_t microsocket_type_methods[] = {
 };
 
 static const mp_obj_type_t microsocket_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_socket,
     .print = socket_print,
     .make_new = socket_make_new,
@@ -260,7 +260,7 @@ static mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct in_addr addr;
     if (!inet_aton(s, &addr)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_OSError, "Invalid IP address"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_OSError, "Invalid IP address"));
     }
 
     return mp_obj_new_int(addr.s_addr);
@@ -273,7 +273,7 @@ static mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
@@ -305,7 +305,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr);
 
     if (res != 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[addrinfo error %d]", res));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
     }
     assert(addr);
 

@@ -189,7 +189,7 @@ static const mp_method_t servo_methods[] = {
  */
 
 static const mp_obj_type_t servo_obj_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_Servo,
     .print = servo_obj_print,
     .methods = servo_methods,
@@ -217,7 +217,7 @@ mp_obj_t pyb_Servo(void) {
         self->servo_id++;
     }
     m_del_obj(pyb_servo_obj_t, self);
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_ValueError, "No available servo ids"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "No available servo ids"));
     return mp_const_none;
 }
 

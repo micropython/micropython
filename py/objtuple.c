@@ -70,7 +70,7 @@ STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "tuple takes at most 1 argument, %d given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "tuple takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -174,7 +174,7 @@ STATIC const mp_method_t tuple_type_methods[] = {
 };
 
 const mp_obj_type_t tuple_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_tuple,
     .print = tuple_print,
     .make_new = tuple_make_new,
@@ -241,7 +241,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t tuple_it_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = tuple_it_iternext,
 };

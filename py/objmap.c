@@ -17,7 +17,7 @@ typedef struct _mp_obj_map_t {
 
 STATIC mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args < 2 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "map must have at least 2 arguments and no keyword arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "map must have at least 2 arguments and no keyword arguments"));
     }
     assert(n_args >= 2);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
@@ -51,7 +51,7 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 }
 
 const mp_obj_type_t map_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_map,
     .make_new = map_make_new,
     .getiter = map_getiter,

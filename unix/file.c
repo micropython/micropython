@@ -99,7 +99,7 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
     int fd = open(fname, mode, 0644);
     if (fd == -1) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_OSError, "[Errno %d]", errno));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     return fdfile_new(fd);
 }
@@ -115,7 +115,7 @@ static const mp_method_t rawfile_type_methods[] = {
 };
 
 static const mp_obj_type_t rawfile_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_io_dot_FileIO,
     .print = fdfile_print,
     .make_new = fdfile_make_new,

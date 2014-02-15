@@ -188,9 +188,27 @@ struct _mp_obj_type_t {
 
 typedef struct _mp_obj_type_t mp_obj_type_t;
 
+// Constant types, globally accessible
+
+extern const mp_obj_type_t mp_type_type;
+extern const mp_obj_type_t mp_type_BaseException;
+extern const mp_obj_type_t mp_type_AssertionError;
+extern const mp_obj_type_t mp_type_AttributeError;
+extern const mp_obj_type_t mp_type_ImportError;
+extern const mp_obj_type_t mp_type_IndentationError;
+extern const mp_obj_type_t mp_type_IndexError;
+extern const mp_obj_type_t mp_type_KeyError;
+extern const mp_obj_type_t mp_type_NameError;
+extern const mp_obj_type_t mp_type_SyntaxError;
+extern const mp_obj_type_t mp_type_TypeError;
+extern const mp_obj_type_t mp_type_ValueError;
+extern const mp_obj_type_t mp_type_OverflowError;
+extern const mp_obj_type_t mp_type_OSError;
+extern const mp_obj_type_t mp_type_NotImplementedError;
+extern const mp_obj_type_t mp_type_StopIteration;
+
 // Constant objects, globally accessible
 
-extern const mp_obj_type_t mp_const_type;
 extern const mp_obj_t mp_const_none;
 extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
@@ -213,9 +231,9 @@ mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
 mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
-mp_obj_t mp_obj_new_exception(qstr id);
-mp_obj_t mp_obj_new_exception_msg(qstr id, const char *msg);
-mp_obj_t mp_obj_new_exception_msg_varg(qstr id, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_range(int start, int stop, int step);
 mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step);
 mp_obj_t mp_obj_new_fun_bc(int n_args, mp_obj_t def_args, uint n_state, const byte *code);
@@ -235,6 +253,7 @@ mp_obj_t mp_obj_new_module(qstr module_name);
 
 mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in);
 const char *mp_obj_get_type_str(mp_obj_t o_in);
+bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
@@ -274,8 +293,9 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in);
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 
 // exception
-extern const mp_obj_type_t exception_type;
-qstr mp_obj_exception_get_type(mp_obj_t self_in);
+bool mp_obj_is_exception_type(mp_obj_t self_in);
+bool mp_obj_is_exception_instance(mp_obj_t self_in);
+void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values);
 

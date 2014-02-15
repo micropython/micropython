@@ -29,7 +29,7 @@ STATIC mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     switch (n_args) {
         case 0: return mp_const_false;
         case 1: if (rt_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }
-        default: nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "bool takes at most 1 argument, %d given", n_args));
+        default: nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bool takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -46,7 +46,7 @@ STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
 }
 
 const mp_obj_type_t bool_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,

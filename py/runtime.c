@@ -108,7 +108,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_set, (mp_obj_t)&set_type },
     { MP_QSTR_super, (mp_obj_t)&super_type },
     { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
-    { MP_QSTR_type, (mp_obj_t)&mp_const_type },
+    { MP_QSTR_type, (mp_obj_t)&mp_type_type },
     { MP_QSTR_zip, (mp_obj_t)&zip_type },
 
     { MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod },
@@ -144,6 +144,25 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
     { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
 
+    // built-in exceptions
+    { MP_QSTR_BaseException, (mp_obj_t)&mp_type_BaseException },
+    { MP_QSTR_AssertionError, (mp_obj_t)&mp_type_AssertionError },
+    { MP_QSTR_AttributeError, (mp_obj_t)&mp_type_AttributeError },
+    { MP_QSTR_ImportError, (mp_obj_t)&mp_type_ImportError },
+    { MP_QSTR_IndentationError, (mp_obj_t)&mp_type_IndentationError },
+    { MP_QSTR_IndexError, (mp_obj_t)&mp_type_IndexError },
+    { MP_QSTR_KeyError, (mp_obj_t)&mp_type_KeyError },
+    { MP_QSTR_NameError, (mp_obj_t)&mp_type_NameError },
+    { MP_QSTR_SyntaxError, (mp_obj_t)&mp_type_SyntaxError },
+    { MP_QSTR_TypeError, (mp_obj_t)&mp_type_TypeError },
+    { MP_QSTR_ValueError, (mp_obj_t)&mp_type_ValueError },
+    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
+    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
+    { MP_QSTR_OverflowError, (mp_obj_t)&mp_type_OverflowError },
+    { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
+    { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
+    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
+
     // Extra builtins as defined by a port
     MICROPY_EXTRA_BUILTINS
 
@@ -165,23 +184,6 @@ void rt_init(void) {
 
     // init loaded modules table
     mp_map_init(&map_loaded_modules, 3);
-
-    // built-in exceptions (TODO, make these proper classes, and const if possible)
-    mp_map_add_qstr(&map_builtins, MP_QSTR_AttributeError, mp_obj_new_exception(MP_QSTR_AttributeError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_ImportError, mp_obj_new_exception(MP_QSTR_ImportError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_IndexError, mp_obj_new_exception(MP_QSTR_IndexError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_KeyError, mp_obj_new_exception(MP_QSTR_KeyError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_NameError, mp_obj_new_exception(MP_QSTR_NameError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_TypeError, mp_obj_new_exception(MP_QSTR_TypeError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_SyntaxError, mp_obj_new_exception(MP_QSTR_SyntaxError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_ValueError, mp_obj_new_exception(MP_QSTR_ValueError));
-    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
-    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
-    mp_map_add_qstr(&map_builtins, MP_QSTR_OverflowError, mp_obj_new_exception(MP_QSTR_OverflowError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_OSError, mp_obj_new_exception(MP_QSTR_OSError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_AssertionError, mp_obj_new_exception(MP_QSTR_AssertionError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_NotImplementedError, mp_obj_new_exception(MP_QSTR_NotImplementedError));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_StopIteration, mp_obj_new_exception(MP_QSTR_StopIteration));
 
     // built-in objects
     mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
@@ -413,7 +415,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
         }
     }
     if (*s != 0) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_SyntaxError, "invalid syntax for number"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     if (exp_neg) {
         exp_val = -exp_val;
@@ -431,7 +433,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
         return mp_obj_new_float(dec_val);
     }
 #else
-    nlr_jump(mp_obj_new_exception_msg(MP_QSTR_SyntaxError, "decimal numbers not supported"));
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "decimal numbers not supported"));
 #endif
 }
 
@@ -470,7 +472,7 @@ mp_obj_t rt_load_global(qstr qstr) {
                     return e->fun;
                 }
             }
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_NameError, "name '%s' is not defined", qstr_str(qstr)));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
     return elem->value;
@@ -529,7 +531,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "bad operand type for unary operator: '%s'", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", type->name));
     }
 }
 
@@ -569,9 +571,13 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
     // deal with exception_match for all types
     if (op == RT_BINARY_OP_EXCEPTION_MATCH) {
-        // TODO properly! at the moment it just compares the exception identifier for equality
-        if (MP_OBJ_IS_TYPE(lhs, &exception_type) && MP_OBJ_IS_TYPE(rhs, &exception_type)) {
-            if (mp_obj_exception_get_type(lhs) == mp_obj_exception_get_type(rhs)) {
+        // rhs must be issubclass(rhs, BaseException)
+        if (mp_obj_is_exception_type(rhs)) {
+            // if lhs is an instance of an exception, then extract and use its type
+            if (mp_obj_is_exception_instance(lhs)) {
+                lhs = mp_obj_get_type(lhs);
+            }
+            if (mp_obj_is_subclass(lhs, rhs)) {
                 return mp_const_true;
             } else {
                 return mp_const_false;
@@ -673,7 +679,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
 
         nlr_jump(mp_obj_new_exception_msg_varg(
-                     MP_QSTR_TypeError, "'%s' object is not iterable",
+                     &mp_type_TypeError, "'%s' object is not iterable",
                      mp_obj_get_type_str(rhs)));
         return mp_const_none;
     }
@@ -690,7 +696,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError,
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     return mp_const_none;
@@ -772,7 +778,7 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     if (type->call != NULL) {
         return type->call(fun_in, n_args, n_kw, args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not callable", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
     }
 }
 
@@ -836,9 +842,9 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     return;
 
 too_short:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "need more than %d values to unpack", seq_len));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "need more than %d values to unpack", seq_len));
 too_long:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "too many values to unpack (expected %d)", num));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
 }
 
 mp_obj_t rt_build_map(int n_args) {
@@ -925,10 +931,10 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
         // following CPython, we give a more detailed error message for type objects
-        if (MP_OBJ_IS_TYPE(base, &mp_const_type)) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "type object '%s' has no attribute '%s'", ((mp_obj_type_t*)base)->name, qstr_str(attr)));
+        if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "type object '%s' has no attribute '%s'", ((mp_obj_type_t*)base)->name, qstr_str(attr)));
         } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
         }
     }
 }
@@ -941,7 +947,7 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             return;
         }
     }
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
@@ -961,7 +967,7 @@ void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             }
             // TODO: call base classes here?
         }
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
     }
 }
 
@@ -978,7 +984,7 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
             return mp_obj_new_getitem_iter(dest);
         } else {
             // object not iterable
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not iterable", type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", type->name));
         }
     }
 }
@@ -988,7 +994,22 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "'%s' object is not an iterator", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", type->name));
+    }
+}
+
+mp_obj_t rt_make_raise_obj(mp_obj_t o) {
+    DEBUG_printf("raise %p\n", o);
+    if (mp_obj_is_exception_type(o)) {
+        // o is an exception type (it is derived from BaseException (or is BaseException))
+        // create and return a new exception instance by calling o
+        return rt_call_function_n_kw(o, 0, 0, NULL);
+    } else if (mp_obj_is_exception_instance(o)) {
+        // o is an instance of an exception, so use it as the exception
+        return o;
+    } else {
+        // o cannot be used as an exception, so return a type error (which will be raised by the caller)
+        return mp_obj_new_exception_msg(&mp_type_TypeError, "exceptions must derive from BaseException");
     }
 }
 

@@ -40,6 +40,7 @@
 #endif
 
 // Whether to build functions that print debugging info:
+//   mp_token_show
 //   mp_byte_code_print
 //   mp_parse_node_print
 #ifndef MICROPY_DEBUG_PRINTERS

@@ -64,7 +64,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
             return NULL;
         }
         for (uint i = 0; i < len - 1; i++) {
-            assert(MP_OBJ_IS_TYPE(items[i], &mp_const_type));
+            assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
             mp_obj_t obj = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
             if (obj != MP_OBJ_NULL) {
                 return obj;
@@ -72,7 +72,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
         }
 
         // search last base (simple tail recursion elimination)
-        assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_const_type));
+        assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_type_type));
         type = (mp_obj_type_t*)items[len - 1];
     }
 }
@@ -82,7 +82,7 @@ STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *en
 }
 
 STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
     mp_obj_t o = mp_obj_new_class(self_in);
@@ -103,13 +103,13 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
         }
 
     } else {
         // TODO
         if (n_args != 0) {
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes 0 positional arguments but %d were given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 0 positional arguments but %d were given", n_args));
         }
     }
 
@@ -252,7 +252,7 @@ bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 /******************************************************************************/
 // type object
 //  - the struct is mp_obj_type_t and is defined in obj.h so const types can be made
-//  - there is a constant mp_obj_type_t (called mp_const_type) for the 'type' object
+//  - there is a constant mp_obj_type_t (called mp_type_type) for the 'type' object
 //  - creating a new class (a new type) creates a new mp_obj_type_t
 
 STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -274,7 +274,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
 
         default:
-            nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "type takes 1 or 3 arguments"));
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "type takes 1 or 3 arguments"));
     }
 }
 
@@ -284,7 +284,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_type_t *self = self_in;
 
     if (self->make_new == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
     }
 
     // make new instance
@@ -296,7 +296,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
 
 // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
     mp_obj_t member = mp_obj_class_lookup(self, attr);
     if (member != MP_OBJ_NULL) {
@@ -318,7 +318,7 @@ STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_const_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
     // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
@@ -333,8 +333,8 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     }
 }
 
-const mp_obj_type_t mp_const_type = {
-    { &mp_const_type },
+const mp_obj_type_t mp_type_type = {
+    { &mp_type_type },
     .name = MP_QSTR_type,
     .print = type_print,
     .make_new = type_make_new,
@@ -347,7 +347,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     assert(MP_OBJ_IS_TYPE(bases_tuple, &tuple_type)); // Micro Python restriction, for now
     assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
-    o->base.type = &mp_const_type;
+    o->base.type = &mp_type_type;
     o->name = name;
     o->print = class_print;
     o->make_new = class_make_new;
@@ -383,7 +383,7 @@ STATIC mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     if (n_args != 2 || n_kw != 0) {
         // 0 arguments are turned into 2 in the compiler
         // 1 argument is not yet implemented
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "super() requires 2 arguments"));
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "super() requires 2 arguments"));
     }
     return mp_obj_new_super(args[0], args[1]);
 }
@@ -393,7 +393,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &super_type));
     mp_obj_super_t *self = self_in;
 
-    assert(MP_OBJ_IS_TYPE(self->type, &mp_const_type));
+    assert(MP_OBJ_IS_TYPE(self->type, &mp_type_type));
 
     mp_obj_type_t *type = self->type;
 
@@ -406,7 +406,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_t *items;
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
     for (uint i = 0; i < len; i++) {
-        assert(MP_OBJ_IS_TYPE(items[i], &mp_const_type));
+        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
         if (member != MP_OBJ_NULL) {
             // XXX this and the code in class_load_attr need to be factored out
@@ -438,7 +438,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 const mp_obj_type_t super_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_super,
     .print = super_print,
     .make_new = super_make_new,
@@ -452,42 +452,42 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
 }
 
 /******************************************************************************/
-// built-ins specific to types
+// subclassing and built-ins specific to types
 
-STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
-    if (!MP_OBJ_IS_TYPE(object, &mp_const_type)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "issubclass() arg 1 must be a class"));
+bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
+    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
     }
 
     // TODO support a tuple of classes for second argument
-    if (!MP_OBJ_IS_TYPE(classinfo, &mp_const_type)) {
-        nlr_jump(mp_obj_new_exception_msg(MP_QSTR_TypeError, "issubclass() arg 2 must be a class"));
+    if (!MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class"));
     }
 
     for (;;) {
         if (object == classinfo) {
-            return mp_const_true;
+            return true;
         }
 
         // not equivalent classes, keep searching base classes
 
-        assert(MP_OBJ_IS_TYPE(object, &mp_const_type));
+        assert(MP_OBJ_IS_TYPE(object, &mp_type_type));
         mp_obj_type_t *self = object;
 
         // for a const struct, this entry might be NULL
         if (self->bases_tuple == MP_OBJ_NULL) {
-            return mp_const_false;
+            return false;
         }
 
         uint len;
         mp_obj_t *items;
         mp_obj_tuple_get(self->bases_tuple, &len, &items);
         if (len == 0) {
-            return mp_const_false;
+            return false;
         }
         for (uint i = 0; i < len - 1; i++) {
-            if (mp_builtin_issubclass(items[i], classinfo) == mp_const_true) {
-                return mp_const_true;
+            if (mp_obj_is_subclass(items[i], classinfo)) {
+                return true;
             }
         }
 
@@ -496,10 +496,14 @@ STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
     }
 }
 
+STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
+    return MP_BOOL(mp_obj_is_subclass(object, classinfo));
+}
+
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_builtin_issubclass);
 
 STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
-    return mp_builtin_issubclass(mp_obj_get_type(object), classinfo);
+    return MP_BOOL(mp_obj_is_subclass(mp_obj_get_type(object), classinfo));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
@@ -511,7 +515,7 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint
     assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
 
     if (n_args != 1 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "function takes 1 positional argument but %d were given", n_args));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 1 positional argument but %d were given", n_args));
     }
 
     mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);
@@ -520,13 +524,13 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint
 }
 
 const mp_obj_type_t mp_type_staticmethod = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_staticmethod,
     .make_new = static_class_method_make_new
 };
 
 const mp_obj_type_t mp_type_classmethod = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_classmethod,
     .make_new = static_class_method_make_new
 };

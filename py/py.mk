@@ -19,6 +19,7 @@ PY_O_BASENAME = \
 	lexerstr.o \
 	lexerunix.o \
 	parse.o \
+	parsehelper.o \
 	scope.o \
 	compile.o \
 	emitcommon.o \

@@ -27,7 +27,7 @@ STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 }
 
 const mp_obj_type_t enumerate_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_enumerate,
     .make_new = enumerate_make_new,
     .iternext = enumerate_iternext,

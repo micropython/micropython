@@ -40,7 +40,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
             }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_TypeError, "float takes at most 1 argument, %d given", n_args));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -64,7 +64,7 @@ STATIC mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 const mp_obj_type_t float_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,

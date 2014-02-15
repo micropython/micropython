@@ -24,7 +24,7 @@ STATIC mp_obj_t none_unary_op(int op, mp_obj_t o_in) {
 }
 
 const mp_obj_type_t none_type = {
-    { &mp_const_type },
+    { &mp_type_type },
     .name = MP_QSTR_NoneType,
     .print = none_print,
     .unary_op = none_unary_op,

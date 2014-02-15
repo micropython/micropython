@@ -371,7 +371,7 @@ unwind_jump:
                         // if TOS is None, just pops it and continues
                         // if TOS is an integer, does something else
                         // else error
-                        if (MP_OBJ_IS_TYPE(TOP(), &exception_type)) {
+                        if (mp_obj_is_exception_instance(TOP())) {
                             nlr_jump(TOP());
                         }
                         if (TOP() == mp_const_none) {
@@ -575,7 +575,7 @@ unwind_return:
                         unum = *ip++;
                         assert(unum == 1);
                         obj1 = POP();
-                        nlr_jump(obj1);
+                        nlr_jump(rt_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
                         nlr_pop();
@@ -613,7 +613,7 @@ unwind_return:
             // set file and line number that the exception occurred at
             // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
             // But consider how to handle nested exceptions.
-            if (MP_OBJ_IS_TYPE(nlr.ret_val, &exception_type)) {
+            if (mp_obj_is_exception_instance(nlr.ret_val)) {
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
