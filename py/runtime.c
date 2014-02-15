@@ -1003,6 +1003,8 @@ mp_obj_t rt_make_raise_obj(mp_obj_t o) {
     if (mp_obj_is_exception_type(o)) {
         // o is an exception type (it is derived from BaseException (or is BaseException))
         // create and return a new exception instance by calling o
+        // TODO could have an option to disable traceback, then builtin exceptions (eg TypeError)
+        // could have const instances in ROM which we return here instead
         return rt_call_function_n_kw(o, 0, 0, NULL);
     } else if (mp_obj_is_exception_instance(o)) {
         // o is an instance of an exception, so use it as the exception

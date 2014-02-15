@@ -66,30 +66,34 @@ const mp_obj_type_t mp_type_BaseException = {
     .make_new = mp_obj_exception_make_new,
 };
 
-#define MP_DEFINE_EXCEPTION(exc_name) \
-STATIC const mp_obj_tuple_t mp_type_ ## exc_name ## _bases_tuple = {{&tuple_type}, 1, {(mp_obj_t)&mp_type_BaseException}};\
+#define MP_DEFINE_EXCEPTION_BASE(base_name) \
+STATIC const mp_obj_tuple_t mp_type_ ## base_name ## _base_tuple = {{&tuple_type}, 1, {(mp_obj_t)&mp_type_ ## base_name}};\
+
+#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
 const mp_obj_type_t mp_type_ ## exc_name = { \
     { &mp_type_type }, \
     .name = MP_QSTR_ ## exc_name, \
     .print = mp_obj_exception_print, \
     .make_new = mp_obj_exception_make_new, \
-    .bases_tuple = (mp_obj_t)&mp_type_ ## exc_name ## _bases_tuple, \
+    .bases_tuple = (mp_obj_t)&mp_type_ ## base_name ## _base_tuple, \
 };
 
-MP_DEFINE_EXCEPTION(AssertionError)
-MP_DEFINE_EXCEPTION(AttributeError)
-MP_DEFINE_EXCEPTION(ImportError)
-MP_DEFINE_EXCEPTION(IndentationError)
-MP_DEFINE_EXCEPTION(IndexError)
-MP_DEFINE_EXCEPTION(KeyError)
-MP_DEFINE_EXCEPTION(NameError)
-MP_DEFINE_EXCEPTION(SyntaxError)
-MP_DEFINE_EXCEPTION(TypeError)
-MP_DEFINE_EXCEPTION(ValueError)
-MP_DEFINE_EXCEPTION(OverflowError)
-MP_DEFINE_EXCEPTION(OSError)
-MP_DEFINE_EXCEPTION(NotImplementedError)
-MP_DEFINE_EXCEPTION(StopIteration)
+MP_DEFINE_EXCEPTION_BASE(BaseException)
+
+MP_DEFINE_EXCEPTION(AssertionError, BaseException)
+MP_DEFINE_EXCEPTION(AttributeError, BaseException)
+MP_DEFINE_EXCEPTION(ImportError, BaseException)
+MP_DEFINE_EXCEPTION(IndentationError, BaseException)
+MP_DEFINE_EXCEPTION(IndexError, BaseException)
+MP_DEFINE_EXCEPTION(KeyError, BaseException)
+MP_DEFINE_EXCEPTION(NameError, BaseException)
+MP_DEFINE_EXCEPTION(SyntaxError, BaseException)
+MP_DEFINE_EXCEPTION(TypeError, BaseException)
+MP_DEFINE_EXCEPTION(ValueError, BaseException)
+MP_DEFINE_EXCEPTION(OverflowError, BaseException)
+MP_DEFINE_EXCEPTION(OSError, BaseException)
+MP_DEFINE_EXCEPTION(NotImplementedError, BaseException)
+MP_DEFINE_EXCEPTION(StopIteration, BaseException)
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     return mp_obj_new_exception_msg_varg(exc_type, NULL);
