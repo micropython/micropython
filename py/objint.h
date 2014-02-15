@@ -1,6 +1,6 @@
 typedef struct _mp_obj_int_t {
     mp_obj_base_t base;
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
     mp_longint_impl_t val;
 #endif
 } mp_obj_int_t;
@@ -9,6 +9,6 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 mp_obj_t int_unary_op(int op, mp_obj_t o_in);
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 mp_obj_t mp_obj_new_int_from_ll(long long val);
 #endif
