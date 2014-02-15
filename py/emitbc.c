@@ -242,7 +242,7 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_info_size + emit->byte_code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, (emit->scope->flags & SCOPE_FLAG_GENERATOR) != 0);
+        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base, emit->code_info_size + emit->byte_code_size, emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size, emit->scope->scope_flags);
     }
 }
 
@@ -779,7 +779,7 @@ STATIC void emit_bc_raise_varargs(emit_t *emit, int n_args) {
 STATIC void emit_bc_yield_value(emit_t *emit) {
     emit_pre(emit, 0);
     if (emit->pass == PASS_2) {
-        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     }
     emit_write_byte_code_byte(emit, MP_BC_YIELD_VALUE);
 }
@@ -787,7 +787,7 @@ STATIC void emit_bc_yield_value(emit_t *emit) {
 STATIC void emit_bc_yield_from(emit_t *emit) {
     emit_pre(emit, -1);
     if (emit->pass == PASS_2) {
-        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     }
     emit_write_byte_code_byte(emit, MP_BC_YIELD_FROM);
 }

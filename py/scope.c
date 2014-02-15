@@ -47,7 +47,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
     scope->id_info_len = 0;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);
 
-    scope->flags = 0;
+    scope->scope_flags = 0;
     scope->num_params = 0;
     /* not needed
     scope->num_default_params = 0;
@@ -244,7 +244,7 @@ void scope_print_info(scope_t *s) {
     }
     printf("\n");
     */
-    printf("     flags %04x\n", s->flags);
+    printf("     flags %04x\n", s->scope_flags);
     printf("     argcount %d\n", s->num_params);
     printf("     nlocals %d\n", s->num_locals);
     printf("     stacksize %d\n", s->stack_size);

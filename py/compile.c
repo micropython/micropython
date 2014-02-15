@@ -2595,11 +2595,11 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
                 //assert(comp->scope_cur->num_dict_params == 0);
             } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
                 // named star
-                comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
+                comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             } else if (allow_annotations && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)) {
                 // named star with annotation
-                comp->scope_cur->flags |= SCOPE_FLAG_VARARGS;
+                comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 pns = (mp_parse_node_struct_t*)pns->nodes[0];
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                 pn_annotation = pns->nodes[1];
@@ -2613,7 +2613,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
                 // this parameter has an annotation
                 pn_annotation = pns->nodes[1];
             }
-            comp->scope_cur->flags |= SCOPE_FLAG_VARKEYWORDS;
+            comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARKEYWORDS;
         } else {
             // TODO anything to implement?
             assert(0);
@@ -3032,19 +3032,19 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 #endif
     }
 
-    // compute flags
-    //scope->flags = 0; since we set some things in parameters
+    // compute scope_flags
+    //scope->scope_flags = 0; since we set some things in parameters
     if (scope->kind != SCOPE_MODULE) {
-        scope->flags |= SCOPE_FLAG_NEWLOCALS;
+        scope->scope_flags |= MP_SCOPE_FLAG_NEWLOCALS;
     }
     if (scope->kind == SCOPE_FUNCTION || scope->kind == SCOPE_LAMBDA || scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
         assert(scope->parent != NULL);
-        scope->flags |= SCOPE_FLAG_OPTIMISED;
+        scope->scope_flags |= MP_SCOPE_FLAG_OPTIMISED;
 
         // TODO possibly other ways it can be nested
         // Note that we don't actually use this information at the moment (for CPython compat only)
         if ((SCOPE_FUNCTION <= scope->parent->kind && scope->parent->kind <= SCOPE_SET_COMP) || (scope->parent->kind == SCOPE_CLASS && scope->parent->parent->kind == SCOPE_FUNCTION)) {
-            scope->flags |= SCOPE_FLAG_NESTED;
+            scope->scope_flags |= MP_SCOPE_FLAG_NESTED;
         }
     }
     int num_free = 0;
@@ -3055,7 +3055,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         }
     }
     if (num_free == 0) {
-        scope->flags |= SCOPE_FLAG_NOFREE;
+        scope->scope_flags |= MP_SCOPE_FLAG_NOFREE;
     }
 }
 

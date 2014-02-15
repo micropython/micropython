@@ -1,3 +1,17 @@
+// taken from python source, Include/code.h
+#define MP_SCOPE_FLAG_OPTIMISED    0x01
+#define MP_SCOPE_FLAG_NEWLOCALS    0x02
+#define MP_SCOPE_FLAG_VARARGS      0x04
+#define MP_SCOPE_FLAG_VARKEYWORDS  0x08
+#define MP_SCOPE_FLAG_NESTED       0x10
+#define MP_SCOPE_FLAG_GENERATOR    0x20
+/* The MP_SCOPE_FLAG_NOFREE flag is set if there are no free or cell variables.
+   This information is redundant, but it allows a single flag test
+   to determine whether there is any extra work to be done when the
+   call frame is setup.
+*/
+#define MP_SCOPE_FLAG_NOFREE       0x40
+
 typedef enum {
     RT_UNARY_OP_BOOL, // __bool__
     RT_UNARY_OP_LEN, // __len__
@@ -83,6 +97,6 @@ extern void *const rt_fun_table[RT_F_NUMBER_OF];
 void rt_init(void);
 void rt_deinit(void);
 uint rt_get_unique_code_id(void);
-void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator);
+void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, uint scope_flags);
 void rt_assign_native_code(uint unique_code_id, void *f, uint len, int n_args);
 void rt_assign_inline_asm_code(uint unique_code_id, void *f, uint len, int n_args);

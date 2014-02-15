@@ -46,7 +46,7 @@ typedef enum {
 typedef struct _mp_code_t {
     struct {
         mp_code_kind_t kind : 8;
-        bool is_generator : 1;
+        uint scope_flags : 8;
     };
     struct {
         uint n_args : 16;
@@ -242,12 +242,12 @@ STATIC void alloc_unique_codes(void) {
     }
 }
 
-void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, bool is_generator) {
+void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, uint scope_flags) {
     alloc_unique_codes();
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
-    unique_codes[unique_code_id].is_generator = is_generator;
+    unique_codes[unique_code_id].scope_flags = scope_flags;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_state = n_locals + n_stack;
     unique_codes[unique_code_id].u_byte.code = code;
@@ -275,7 +275,7 @@ void rt_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args)
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
-    unique_codes[unique_code_id].is_generator = false;
+    unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_native.fun = fun;
@@ -307,7 +307,7 @@ void rt_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_a
 
     assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
-    unique_codes[unique_code_id].is_generator = false;
+    unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
     unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
@@ -728,7 +728,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
     }
 
     // check for generator functions and if so wrap in generator object
-    if (c->is_generator) {
+    if ((c->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
         fun = mp_obj_new_gen_wrap(fun);
     }
 
