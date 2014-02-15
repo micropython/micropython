@@ -63,7 +63,7 @@ mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
         case 'I':
         case 'L':
             return mp_obj_new_int_from_uint(((uint32_t*)p)[index]);
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         case 'q':
         case 'Q':
             // TODO: Explode API more to cover signedness
