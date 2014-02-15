@@ -9,6 +9,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "map.h"
 #include "bc.h"
 
 /******************************************************************************/
@@ -82,7 +83,8 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     } else {
         *self->sp = send_value;
     }
-    bool yield = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
+    // TODO: globals == NULL is not correct, generator should capture defining namespace just like a func!
+    bool yield = mp_execute_byte_code_2(NULL, self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
     if (yield) {
         return *self->sp;
     } else {
