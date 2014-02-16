@@ -10,11 +10,11 @@
 #include "systick.h"
 #include "obj.h"
 #include "runtime.h"
-#include "mma.h"
+#include "accel.h"
 
-#define MMA_ADDR (0x4c)
+#define ACCEL_ADDR (0x4c)
 
-void mma_init(void) {
+void accel_init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C1
 
     //gpio_pin_init(GPIOB, 6 /* B6 is SCL */, 2 /* AF mode */, 1 /* open drain output */, 1 /* 25 MHz */, 0 /* no pull up or pull down */);
@@ -25,7 +25,7 @@ void mma_init(void) {
 
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    // PB5 is connected to AVDD; pull high to enable MMA device
+    // PB5 is connected to AVDD; pull high to enable MMA accel device
     GPIOB->BSRRH = GPIO_Pin_5; // PB5 low to start with
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -75,21 +75,21 @@ void mma_init(void) {
     // set START bit in CR1 to generate a start cond!
 
     // init the chip via I2C commands
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(0);
-    mma_stop();
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(0);
+    accel_stop();
 
     /*
     // read and print all 11 registers
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(0);
-    mma_restart(MMA_ADDR, 0);
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(0);
+    accel_restart(ACCEL_ADDR, 0);
     for (int i = 0; i <= 0xa; i++) {
         int data;
         if (i == 0xa) {
-            data = mma_read_nack();
+            data = accel_read_nack();
         } else {
-            data = mma_read_ack();
+            data = accel_read_ack();
         }
         printf(" %02x", data);
     }
@@ -97,26 +97,26 @@ void mma_init(void) {
     */
 
     // put into active mode
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(7); // mode
-    mma_send_byte(1); // active mode
-    mma_stop();
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(7); // mode
+    accel_send_byte(1); // active mode
+    accel_stop();
 
     /*
     // infinite loop to read values
     for (;;) {
         sys_tick_delay_ms(500);
 
-        mma_start(MMA_ADDR, 1);
-        mma_send_byte(0);
-        mma_restart(MMA_ADDR, 0);
+        accel_start(ACCEL_ADDR, 1);
+        accel_send_byte(0);
+        accel_restart(ACCEL_ADDR, 0);
         for (int i = 0; i <= 3; i++) {
             int data;
             if (i == 3) {
-                data = mma_read_nack();
+                data = accel_read_nack();
                 printf(" %02x\n", data);
             } else {
-                data = mma_read_ack() & 0x3f;
+                data = accel_read_ack() & 0x3f;
                 if (data & 0x20) {
                     data |= ~0x1f;
                 }
@@ -134,7 +134,7 @@ static uint32_t i2c_get_sr(void) {
     return (sr2 << 16) | sr1;
 }
 
-void mma_restart(uint8_t addr, int write) {
+void accel_restart(uint8_t addr, int write) {
     // send start condition
     I2C1->CR1 |= I2C_CR1_START;
 
@@ -142,7 +142,7 @@ void mma_restart(uint8_t addr, int write) {
     uint32_t timeout = 1000000;
     while ((i2c_get_sr() & 0x00030001) != 0x00030001) {
         if (--timeout == 0) {
-            printf("timeout in mma_restart\n");
+            printf("timeout in accel_restart\n");
             return;
         }
     }
@@ -154,7 +154,7 @@ void mma_restart(uint8_t addr, int write) {
         timeout = 1000000;
         while ((i2c_get_sr() & 0x00070082) != 0x00070082) {
             if (--timeout == 0) {
-                printf("timeout in mma_restart write\n");
+                printf("timeout in accel_restart write\n");
                 return;
             }
         }
@@ -165,48 +165,48 @@ void mma_restart(uint8_t addr, int write) {
         timeout = 1000000;
         while ((i2c_get_sr() & 0x00030002) != 0x00030002) {
             if (--timeout == 0) {
-                printf("timeout in mma_restart read\n");
+                printf("timeout in accel_restart read\n");
                 return;
             }
         }
     }
 }
 
-void mma_start(uint8_t addr, int write) {
+void accel_start(uint8_t addr, int write) {
     // wait until I2C is not busy
     uint32_t timeout = 1000000;
     while (I2C1->SR2 & I2C_SR2_BUSY) {
         if (--timeout == 0) {
-            printf("timeout in mma_start\n");
+            printf("timeout in accel_start\n");
             return;
         }
     }
 
     // do rest of start
-    mma_restart(addr, write);
+    accel_restart(addr, write);
 }
 
-void mma_send_byte(uint8_t data) {
+void accel_send_byte(uint8_t data) {
     // send byte
     I2C1->DR = data;
     // wait for TRA, BUSY, MSL, TXE and BTF (byte transmitted)
     uint32_t timeout = 1000000;
     while ((i2c_get_sr() & 0x00070084) != 0x00070084) {
         if (--timeout == 0) {
-            printf("timeout in mma_send_byte\n");
+            printf("timeout in accel_send_byte\n");
             return;
         }
     }
 }
 
-uint8_t mma_read_ack(void) {
+uint8_t accel_read_ack(void) {
     // enable ACK of received byte
     I2C1->CR1 |= I2C_CR1_ACK;
     // wait for BUSY, MSL and RXNE (byte received)
     uint32_t timeout = 1000000;
     while ((i2c_get_sr() & 0x00030040) != 0x00030040) {
         if (--timeout == 0) {
-            printf("timeout in mma_read_ack\n");
+            printf("timeout in accel_read_ack\n");
             break;
         }
     }
@@ -215,7 +215,7 @@ uint8_t mma_read_ack(void) {
     return data;
 }
 
-uint8_t mma_read_nack(void) {
+uint8_t accel_read_nack(void) {
     // disable ACK of received byte (to indicate end of receiving)
     I2C1->CR1 &= (uint16_t)~((uint16_t)I2C_CR1_ACK);
     // last byte should apparently also generate a stop condition
@@ -224,7 +224,7 @@ uint8_t mma_read_nack(void) {
     uint32_t timeout = 1000000;
     while ((i2c_get_sr() & 0x00030040) != 0x00030040) {
         if (--timeout == 0) {
-            printf("timeout in mma_read_nack\n");
+            printf("timeout in accel_read_nack\n");
             break;
         }
     }
@@ -233,7 +233,7 @@ uint8_t mma_read_nack(void) {
     return data;
 }
 
-void mma_stop(void) {
+void accel_stop(void) {
     // send stop condition
     I2C1->CR1 |= I2C_CR1_STOP;
 }
@@ -241,60 +241,60 @@ void mma_stop(void) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-int mma_buf[12];
+int accel_buf[12];
 
-mp_obj_t pyb_mma_read(void) {
+mp_obj_t pyb_accel_read(void) {
     for (int i = 0; i <= 6; i += 3) {
-        mma_buf[0 + i] = mma_buf[0 + i + 3];
-        mma_buf[1 + i] = mma_buf[1 + i + 3];
-        mma_buf[2 + i] = mma_buf[2 + i + 3];
+        accel_buf[0 + i] = accel_buf[0 + i + 3];
+        accel_buf[1 + i] = accel_buf[1 + i + 3];
+        accel_buf[2 + i] = accel_buf[2 + i + 3];
     }
 
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(0);
-    mma_restart(MMA_ADDR, 0);
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(0);
+    accel_restart(ACCEL_ADDR, 0);
     for (int i = 0; i <= 2; i++) {
-        int v = mma_read_ack() & 0x3f;
+        int v = accel_read_ack() & 0x3f;
         if (v & 0x20) {
             v |= ~0x1f;
         }
-        mma_buf[9 + i] = v;
+        accel_buf[9 + i] = v;
     }
-    int jolt_info = mma_read_nack();
+    int jolt_info = accel_read_nack();
 
     mp_obj_t data[4];
-    data[0] = mp_obj_new_int(mma_buf[0] + mma_buf[3] + mma_buf[6] + mma_buf[9]);
-    data[1] = mp_obj_new_int(mma_buf[1] + mma_buf[4] + mma_buf[7] + mma_buf[10]);
-    data[2] = mp_obj_new_int(mma_buf[2] + mma_buf[5] + mma_buf[8] + mma_buf[11]);
+    data[0] = mp_obj_new_int(accel_buf[0] + accel_buf[3] + accel_buf[6] + accel_buf[9]);
+    data[1] = mp_obj_new_int(accel_buf[1] + accel_buf[4] + accel_buf[7] + accel_buf[10]);
+    data[2] = mp_obj_new_int(accel_buf[2] + accel_buf[5] + accel_buf[8] + accel_buf[11]);
     data[3] = mp_obj_new_int(jolt_info);
 
     return rt_build_tuple(4, data);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_obj, pyb_mma_read);
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_obj, pyb_accel_read);
 
-mp_obj_t pyb_mma_read_all(void) {
+mp_obj_t pyb_accel_read_all(void) {
     mp_obj_t data[11];
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(0);
-    mma_restart(MMA_ADDR, 0);
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(0);
+    accel_restart(ACCEL_ADDR, 0);
     for (int i = 0; i <= 9; i++) {
-        data[i] = mp_obj_new_int(mma_read_ack());
+        data[i] = mp_obj_new_int(accel_read_ack());
     }
-    data[10] = mp_obj_new_int(mma_read_nack());
+    data[10] = mp_obj_new_int(accel_read_nack());
 
     return rt_build_tuple(11, data);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_mma_read_all_obj, pyb_mma_read_all);
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_all_obj, pyb_accel_read_all);
 
-mp_obj_t pyb_mma_write_mode(mp_obj_t o_int, mp_obj_t o_mode) {
-    mma_start(MMA_ADDR, 1);
-    mma_send_byte(6); // start at int
-    mma_send_byte(mp_obj_get_int(o_int));
-    mma_send_byte(mp_obj_get_int(o_mode));
-    mma_stop();
+mp_obj_t pyb_accel_write_mode(mp_obj_t o_int, mp_obj_t o_mode) {
+    accel_start(ACCEL_ADDR, 1);
+    accel_send_byte(6); // start at int
+    accel_send_byte(mp_obj_get_int(o_int));
+    accel_send_byte(mp_obj_get_int(o_mode));
+    accel_stop();
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_mma_write_mode_obj, pyb_mma_write_mode);
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_write_mode_obj, pyb_accel_write_mode);

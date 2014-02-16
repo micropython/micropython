@@ -38,7 +38,7 @@
 #include "lcd.h"
 #include "storage.h"
 #include "sdcard.h"
-#include "mma.h"
+#include "accel.h"
 #include "usart.h"
 #include "usb.h"
 #include "timer.h"
@@ -463,9 +463,9 @@ soft_reset:
 #endif
         rt_store_attr(m, MP_QSTR_pwm, rt_make_function_n(2, pyb_pwm_set));
 #if MICROPY_HW_HAS_MMA7660
-        rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_mma_read_obj);
-        rt_store_attr(m, MP_QSTR_mma_read, (mp_obj_t)&pyb_mma_read_all_obj);
-        rt_store_attr(m, MP_QSTR_mma_mode, (mp_obj_t)&pyb_mma_write_mode_obj);
+        rt_store_attr(m, MP_QSTR_accel, (mp_obj_t)&pyb_accel_read_obj);
+        rt_store_attr(m, MP_QSTR_accel_read, (mp_obj_t)&pyb_accel_read_all_obj);
+        rt_store_attr(m, MP_QSTR_accel_mode, (mp_obj_t)&pyb_accel_write_mode_obj);
 #endif
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
 #if MICROPY_HW_ENABLE_RTC
@@ -583,8 +583,8 @@ soft_reset:
 
     if (first_soft_reset) {
 #if MICROPY_HW_HAS_MMA7660
-        // MMA: init and reset address to zero
-        mma_init();
+        // MMA accel: init and reset address to zero
+        accel_init();
 #endif
     }
 
@@ -654,17 +654,17 @@ soft_reset:
         #else
             data[0] = 0x00;
         #endif
-            mma_start(0x4c /* MMA_ADDR */, 1);
-            mma_send_byte(0);
-            mma_restart(0x4c /* MMA_ADDR */, 0);
+            accel_start(0x4c /* ACCEL_ADDR */, 1);
+            accel_send_byte(0);
+            accel_restart(0x4c /* ACCEL_ADDR */, 0);
             for (int i = 0; i <= 1; i++) {
-                int v = mma_read_ack() & 0x3f;
+                int v = accel_read_ack() & 0x3f;
                 if (v & 0x20) {
                     v |= ~0x1f;
                 }
                 data[1 + i] = v;
             }
-            mma_read_nack();
+            accel_read_nack();
             usb_hid_send_report(data);
             sys_tick_delay_ms(15);
         }

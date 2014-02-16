@@ -55,7 +55,7 @@ SRC_C = \
 	servo.c \
 	flash.c \
 	storage.c \
-	mma.c \
+	accel.c \
 	usart.c \
 	usb.c \
 	timer.c \
