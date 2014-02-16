@@ -10,6 +10,7 @@
 #include "obj.h"
 #include "objtuple.h"
 #include "map.h"
+#include "runtime0.h"
 #include "runtime.h"
 #include "bc.h"
 
@@ -132,28 +133,52 @@ mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_map_t *globals;      // the context within which this function was defined
-    short n_args;           // number of arguments this function takes
-    short n_def_args;       // number of default arguments
+    struct {
+        machine_uint_t n_args : 15;         // number of arguments this function takes
+        machine_uint_t n_def_args : 15;     // number of default arguments
+        machine_uint_t takes_var_args : 1;  // set if this function takes variable args
+        machine_uint_t takes_kw_args : 1;   // set if this function takes keyword args
+    };
     uint n_state;           // total state size for the executing function (incl args, locals, stack)
     const byte *bytecode;   // bytecode for the function
-    mp_obj_t def_args[];    // values of default args, if any
+    mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args (if it takes them)
 } mp_obj_fun_bc_t;
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
-    if (n_args < self->n_args - self->n_def_args || n_args > self->n_args) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
+    mp_obj_t *extra_args = self->extra_args + self->n_def_args;
+    uint n_extra_args = 0;
+
+    if (n_args > self->n_args) {
+        // given more than enough arguments
+        if (!self->takes_var_args) {
+            goto arg_error;
+        }
+        // put extra arguments in varargs tuple
+        *extra_args = mp_obj_new_tuple(n_args - self->n_args, args + self->n_args);
+        n_extra_args = 1;
+        n_args = self->n_args;
+    } else if (n_args >= self->n_args - self->n_def_args) {
+        // given enough arguments, but may need to use some default arguments
+        if (self->takes_var_args) {
+            *extra_args = mp_const_empty_tuple;
+            n_extra_args = 1;
+        }
+        extra_args -= self->n_args - n_args;
+        n_extra_args += self->n_args - n_args;
+    } else {
+        goto arg_error;
     }
+
     if (n_kw != 0) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
-    uint use_def_args = self->n_args - n_args;
     mp_map_t *old_globals = rt_globals_get();
     rt_globals_set(self->globals);
     mp_obj_t result;
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, self->def_args + self->n_def_args - use_def_args, use_def_args, self->n_state, &result);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, self->n_state, &result);
     rt_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
@@ -161,6 +186,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     } else { // MP_VM_RETURN_EXCEPTION
         nlr_jump(result);
     }
+
+arg_error:
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
 const mp_obj_type_t fun_bc_type = {
@@ -169,21 +197,28 @@ const mp_obj_type_t fun_bc_type = {
     .call = fun_bc_call,
 };
 
-mp_obj_t mp_obj_new_fun_bc(int n_args, mp_obj_t def_args_in, uint n_state, const byte *code) {
-    int n_def_args = 0;
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, uint n_args, mp_obj_t def_args_in, uint n_state, const byte *code) {
+    uint n_def_args = 0;
+    uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
     if (def_args != MP_OBJ_NULL) {
         n_def_args = def_args->len;
+        n_extra_args = def_args->len;
     }
-    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_def_args);
+    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
+        n_extra_args += 1;
+    }
+    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
     o->base.type = &fun_bc_type;
     o->globals = rt_globals_get();
     o->n_args = n_args;
     o->n_def_args = n_def_args;
+    o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
+    o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->n_state = n_state;
     o->bytecode = code;
     if (def_args != MP_OBJ_NULL) {
-        memcpy(o->def_args, def_args->items, n_def_args * sizeof(*o->def_args));
+        memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
     }
     return o;
 }

@@ -714,7 +714,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
     mp_obj_t fun;
     switch (c->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->n_args, def_args, c->n_state, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(c->scope_flags, c->n_args, def_args, c->n_state, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
             fun = rt_make_function_n(c->n_args, c->u_native.fun);
