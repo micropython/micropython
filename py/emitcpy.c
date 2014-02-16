@@ -779,7 +779,7 @@ STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, int n_dict_param
 STATIC void emit_cpy_yield_value(emit_t *emit) {
     emit_pre(emit, 0, 1);
     if (emit->pass == PASS_2) {
-        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     }
     if (emit->pass == PASS_3) {
         printf("YIELD_VALUE\n");
@@ -789,7 +789,7 @@ STATIC void emit_cpy_yield_value(emit_t *emit) {
 STATIC void emit_cpy_yield_from(emit_t *emit) {
     emit_pre(emit, -1, 1);
     if (emit->pass == PASS_2) {
-        emit->scope->flags |= SCOPE_FLAG_GENERATOR;
+        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     }
     if (emit->pass == PASS_3) {
         printf("YIELD_FROM\n");
