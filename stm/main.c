@@ -34,6 +34,7 @@
 #include "pendsv.h"
 #include "pyexec.h"
 #include "led.h"
+#include "gpio.h"
 #include "servo.h"
 #include "lcd.h"
 #include "storage.h"
@@ -259,53 +260,6 @@ static mp_obj_t pyb_standby(void) {
     return mp_const_none;
 }
 
-mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
-    //assert(1 <= n_args && n_args <= 2);
-
-    const char *pin_name = mp_obj_str_get_str(args[0]);
-    GPIO_TypeDef *port;
-    switch (pin_name[0]) {
-        case 'A': case 'a': port = GPIOA; break;
-        case 'B': case 'b': port = GPIOB; break;
-        case 'C': case 'c': port = GPIOC; break;
-        default: goto pin_error;
-    }
-    uint pin_num = 0;
-    for (const char *s = pin_name + 1; *s; s++) {
-        if (!('0' <= *s && *s <= '9')) {
-            goto pin_error;
-        }
-        pin_num = 10 * pin_num + *s - '0';
-    }
-    if (!(0 <= pin_num && pin_num <= 15)) {
-        goto pin_error;
-    }
-
-    if (n_args == 1) {
-        // get pin
-        if ((port->IDR & (1 << pin_num)) != (uint32_t)Bit_RESET) {
-            return MP_OBJ_NEW_SMALL_INT(1);
-        } else {
-            return MP_OBJ_NEW_SMALL_INT(0);
-        }
-    } else {
-        // set pin
-        if (rt_is_true(args[1])) {
-            // set pin high
-            port->BSRRL = 1 << pin_num;
-        } else {
-            // set pin low
-            port->BSRRH = 1 << pin_num;
-        }
-        return mp_const_none;
-    }
-
-pin_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not exist", pin_name));
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
-
 mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
     uint8_t data[4];
@@ -479,11 +433,13 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(1, pyb_Servo));
 #endif
         rt_store_attr(m, MP_QSTR_I2C, rt_make_function_n(2, pyb_I2C));
-        rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
         rt_store_attr(m, MP_QSTR_Usart, rt_make_function_n(2, pyb_Usart));
         rt_store_attr(m, qstr_from_str("ADC_all"), (mp_obj_t)&pyb_ADC_all_obj);
         rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
         rt_store_attr(m, qstr_from_str("millis"), rt_make_function_n(0, pyb_millis));
+
+        gpio_init(m);
+
         rt_store_name(MP_QSTR_pyb, m);
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));

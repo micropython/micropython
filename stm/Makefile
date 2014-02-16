@@ -51,6 +51,7 @@ SRC_C = \
 	lexerfatfs.c \
 	pyexec.c \
 	led.c \
+	gpio.c \
 	lcd.c \
 	servo.c \
 	flash.c \
