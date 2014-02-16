@@ -293,7 +293,9 @@
 #elif defined (__ICCARM__)     /* IAR Compiler */
   #define __packed    __packed
 #elif defined   ( __GNUC__ )   /* GNU Compiler */                        
-  #define __packed    __attribute__ ((__packed__))
+  #ifndef __packed              /* dpgeorge: add check for already defined symbol, since some compilers define it in cdefs.h */
+    #define __packed    __attribute__ ((__packed__))
+  #endif
 #elif defined   (__TASKING__)  /* TASKING Compiler */
   #define __packed    __unaligned
 #endif /* __CC_ARM */
