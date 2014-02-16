@@ -23,8 +23,8 @@
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
-#define DEBUG_printf(args...) printf(args)
-#define DEBUG_OP_printf(args...) printf(args)
+#define DEBUG_printf DEBUG_printf
+#define DEBUG_OP_printf(args...) DEBUG_printf(args)
 #else // don't print debugging info
 #define DEBUG_printf(args...) (void)0
 #define DEBUG_OP_printf(args...) (void)0

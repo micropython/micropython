@@ -10,8 +10,7 @@
 // also probably need to include the length in the string data, to allow null bytes in the string
 
 #if 0 // print debugging info
-#include <stdio.h>
-#define DEBUG_printf(args...) printf(args)
+#define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(args...) (void)0
 #endif

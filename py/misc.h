@@ -117,4 +117,7 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 #endif
 
+// Debugging helpers
+int DEBUG_printf(const char *fmt, ...);
+
 #endif // _INCLUDED_MINILIB_H

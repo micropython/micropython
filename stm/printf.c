@@ -267,6 +267,17 @@ int vprintf(const char *fmt, va_list ap) {
     return pfenv_printf(&pfenv_stdout, fmt, ap);
 }
 
+#if MICROPY_DEBUG_PRINTERS
+int DEBUG_printf(const char *fmt, ...) {
+    (void)stream;
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = pfenv_printf(&pfenv_stdout, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;

@@ -6,7 +6,7 @@
 #include "mpconfig.h"
 
 #if 0 // print debugging info
-#define DEBUG_printf(args...) printf(args)
+#define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(args...) (void)0
 #endif
