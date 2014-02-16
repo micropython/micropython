@@ -1,4 +1,6 @@
 #define VCP_CHAR_NONE   (0)
+#define VCP_CHAR_CTRL_A (1)
+#define VCP_CHAR_CTRL_B (2)
 #define VCP_CHAR_CTRL_C (3)
 #define VCP_CHAR_CTRL_D (4)
 

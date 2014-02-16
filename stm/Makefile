@@ -49,6 +49,7 @@ SRC_C = \
 	pendsv.c \
 	gccollect.c \
 	lexerfatfs.c \
+	pyexec.c \
 	led.c \
 	lcd.c \
 	servo.c \
