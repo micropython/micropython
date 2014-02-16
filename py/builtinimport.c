@@ -139,18 +139,28 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     }
     */
 
+    uint mod_len;
+    const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
+
     // check if module already exists
     mp_obj_t module_obj = mp_obj_module_get(mp_obj_str_get_qstr(args[0]));
     if (module_obj != MP_OBJ_NULL) {
-        return module_obj;
+        // If it's not a package, return module right away
+        char *p = strchr(mod_str, '.');
+        if (p == NULL) {
+            return module_obj;
+        }
+        // Otherwise, we need to return top-level package
+        // TODO: subject to fromlist arg
+        qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
+        return mp_obj_module_get(pkg_name);
     }
-
-    uint mod_len;
-    const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
 
     uint last = 0;
     VSTR_FIXED(path, MICROPY_PATH_MAX)
     module_obj = MP_OBJ_NULL;
+    mp_obj_t top_module_obj = MP_OBJ_NULL;
+    mp_obj_t outer_module_obj = MP_OBJ_NULL;
     uint i;
     for (i = 1; i <= mod_len; i++) {
         if (i == mod_len || mod_str[i] == '.') {
@@ -168,7 +178,6 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
                 vstr_add_strn(&path, mod_str + last, i - last);
                 stat = stat_dir_or_file(&path);
             }
-            last = i + 1;
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
@@ -194,9 +203,21 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
                     vstr_cut_tail(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
-                    break;
+                    // TODO: We cannot just break here, at the very least, we must execute
+                    // trailer code below. But otherwise if there're remaining components,
+                    // that would be (??) object path within module, not modules path within FS.
+                    // break;
                 }
             }
+            if (outer_module_obj != MP_OBJ_NULL) {
+                qstr s = qstr_from_strn(mod_str + last, i - last);
+                rt_store_attr(outer_module_obj, s, module_obj);
+            }
+            outer_module_obj = module_obj;
+            if (top_module_obj == MP_OBJ_NULL) {
+                top_module_obj = module_obj;
+            }
+            last = i + 1;
         }
     }
 
@@ -206,7 +227,7 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
         assert(0);
     }
 
-    return module_obj;
+    return top_module_obj;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);
