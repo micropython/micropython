@@ -141,14 +141,17 @@ typedef struct _mp_obj_fun_bc_t {
     };
     uint n_state;           // total state size for the executing function (incl args, locals, stack)
     const byte *bytecode;   // bytecode for the function
-    mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args (if it takes them)
+    mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args and/or kw args (if it takes them)
 } mp_obj_fun_bc_t;
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
 
+    const mp_obj_t *kwargs = args + n_args;
     mp_obj_t *extra_args = self->extra_args + self->n_def_args;
     uint n_extra_args = 0;
+
+    // check positional arguments
 
     if (n_args > self->n_args) {
         // given more than enough arguments
@@ -171,8 +174,25 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
         goto arg_error;
     }
 
+    // check keyword arguments
+
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
+        // keyword arguments given
+        if (!self->takes_kw_args) {
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
+        }
+        mp_obj_t dict = mp_obj_new_dict(n_kw);
+        for (uint i = 0; i < n_kw; i++) {
+            mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
+        }
+        extra_args[n_extra_args] = dict;
+        n_extra_args += 1;
+    } else {
+        // no keyword arguments given
+        if (self->takes_kw_args) {
+            extra_args[n_extra_args] = mp_obj_new_dict(0);
+            n_extra_args += 1;
+        }
     }
 
     mp_map_t *old_globals = rt_globals_get();
@@ -206,6 +226,9 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, uint n_args, mp_obj_t def_args_in, 
         n_extra_args = def_args->len;
     }
     if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
+        n_extra_args += 1;
+    }
+    if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
         n_extra_args += 1;
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
