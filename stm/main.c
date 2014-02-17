@@ -54,7 +54,9 @@
 int errno;
 
 static FATFS fatfs0;
+#if MICROPY_HW_HAS_SDCARD
 static FATFS fatfs1;
+#endif
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {

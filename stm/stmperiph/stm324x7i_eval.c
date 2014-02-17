@@ -89,7 +89,6 @@ void SD_LowLevel_DeInit(void)
  * yet still detect when a card is inserted.
  */
 void SD_LowLevel_Init_Detect(void) {
-  GPIO_InitTypeDef  GPIO_InitStructure;
 
   /* Periph clock enable */
   RCC_AHB1PeriphClockCmd(SD_DETECT_GPIO_CLK, ENABLE);
@@ -97,6 +96,7 @@ void SD_LowLevel_Init_Detect(void) {
   /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
 #if defined(PYBOARD3)
   // dpgeorge: PYBv2-v3: switch is normally open, connected to VDD when card inserted
+  GPIO_InitTypeDef  GPIO_InitStructure;
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; // needs to be 2MHz due to restrictions on PC13
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
@@ -104,6 +104,7 @@ void SD_LowLevel_Init_Detect(void) {
   GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);
 #elif defined(PYBOARD4)
   // dpgeorge: PYBv4: switch is normally open, connected to GND when card inserted
+  GPIO_InitTypeDef  GPIO_InitStructure;
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
