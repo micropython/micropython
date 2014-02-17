@@ -37,8 +37,9 @@ The Unix version
 ----------------
 
 The "unix" part requires a standard Unix environment with gcc and GNU make.
-It works only for 64-bit machines due to a small piece of x86-64 assembler
-for the exception handling.
+x86 and x64 architectures are supported (i.e. x86 32- and 64-bit). ARM to
+be confirmed. Porting to other architectures require writing some assembly
+code for the exception handling.
 
 To build:
 
@@ -47,11 +48,12 @@ To build:
 
 Then to test it:
 
-    $ ./py
+    $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
-Ubuntu and Mint derivatives will require build-essentials and libreadline-dev
-packages installed.
+Debian/Ubuntu/Mint derivative Linux distros will require build-essentials and
+libreadline-dev packages installed. To build FFI (Foreign Function Interface)
+module (recommended, enable in unix/mpconfigport.mk), libffi-dev is required.
 
 The STM version
 ---------------
