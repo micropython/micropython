@@ -32,3 +32,7 @@ Q(Usart)
 Q(ADC)
 Q(open)
 Q(File)
+// Entries for sys.path
+Q(0:/)
+Q(0:/src)
+Q(0:/lib)
