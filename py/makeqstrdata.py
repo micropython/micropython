@@ -10,6 +10,8 @@ elif platform.python_version_tuple()[0] == '3':
 
 # add some custom names to map characters that aren't in HTML
 codepoint2name[ord('.')] = 'dot'
+codepoint2name[ord(':')] = 'colon'
+codepoint2name[ord('/')] = 'slash'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
