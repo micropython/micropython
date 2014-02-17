@@ -205,8 +205,10 @@ static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
 
 static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
     pyb_usart_obj_t *self = self_in;
-    if (self->is_enabled) {
-        usart_tx_char(self->usart_id, mp_obj_get_int(c));
+    uint len;
+    const char *str = mp_obj_str_get_data(c, &len);
+    if (len == 1 && self->is_enabled) {
+        usart_tx_char(self->usart_id, str[0]);
     }
     return mp_const_none;
 }
