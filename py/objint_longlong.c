@@ -148,7 +148,9 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     char *end;
     // TODO: this doesn't handle Python hacked 0o octal syntax
     v = strtoll(s, &end, 0);
-    assert(*end == 0);
+    if (*end != 0) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+    }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &int_type;
     o->val = v;
