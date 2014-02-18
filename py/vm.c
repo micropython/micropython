@@ -38,10 +38,31 @@ typedef enum {
     UNWIND_JUMP,
 } mp_unwind_reason_t;
 
-#define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
+#if 0
+uint decode_uint() {
+    uint val = 0;
+    do {
+        val = (val << 7) + (*ip & 0x7f);
+    } while ((*ip++ & 0x80) != 0);
+}
+#endif
+
+//#define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_UINT { \
+    unum = 0; \
+    do { \
+        unum = (unum << 7) + (*ip & 0x7f); \
+    } while ((*ip++ & 0x80) != 0); \
+}
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
-#define DECODE_QSTR do { qst = *ip++; if (qst > 127) { qst = ((qst & 0x3f) << 8) | (*ip++); } } while (0)
+//#define DECODE_QSTR do { qst = *ip++; if (qst > 127) { qst = ((qst & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_QSTR { \
+    qst = 0; \
+    do { \
+        qst = (qst << 7) + (*ip & 0x7f); \
+    } while ((*ip++ & 0x80) != 0); \
+}
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
 #define TOP() (*sp)
