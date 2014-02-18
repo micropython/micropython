@@ -108,6 +108,22 @@ STATIC void emit_write_byte_code_byte_byte(emit_t* emit, byte b1, uint b2) {
 }
 
 STATIC void emit_write_byte_code_uint(emit_t* emit, uint num) {
+    byte buf[10], *p = buf + sizeof(buf) - 1;
+    // We encode in little-ending order, but store in big-endian, to help decoding
+    while (num >= 0x80) {
+        *p-- = num & 0x7f;
+        num >>= 7;
+    }
+    // High bit == 0
+    *p = (byte)num;
+//printf("Encoded %x using %d bytes\n", num, buf + sizeof(buf) - p);
+    byte* c = emit_get_cur_to_write_byte_code(emit, buf + sizeof(buf) - p);
+    while (p != buf + sizeof(buf) - 1) {
+        *c++ = *p++ | 0x80;
+    }
+    *c = *p;
+
+#if 0
     if (num <= 127) { // fits in 0x7f
         // fit argument in single byte
         byte* c = emit_get_cur_to_write_byte_code(emit, 1);
@@ -121,6 +137,7 @@ STATIC void emit_write_byte_code_uint(emit_t* emit, uint num) {
         // larger numbers not implemented/supported
         assert(0);
     }
+#endif
 }
 
 // integers (for small ints) are stored as 24 bits, in excess
