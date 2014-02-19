@@ -28,43 +28,18 @@
 #include "runtime.h"
 #include "systick.h"
 #include "gpio.h"
-
-void parse_pin_name(mp_obj_t name, GPIO_TypeDef **port, uint *pin) {
-    const char *pin_name = mp_obj_str_get_str(name);
-    switch (pin_name[0]) {
-        case 'A': case 'a': *port = GPIOA; break;
-        case 'B': case 'b': *port = GPIOB; break;
-        case 'C': case 'c': *port = GPIOC; break;
-        case 'D': case 'd': *port = GPIOD; break;
-        default: goto pin_error;
-    }
-    *pin = 0;
-    for (const char *s = pin_name + 1; *s; s++) {
-        if (!('0' <= *s && *s <= '9')) {
-            goto pin_error;
-        }
-        *pin = 10 * (*pin) + *s - '0';
-    }
-    if (!(0 <= *pin && *pin <= 15)) {
-        goto pin_error;
-    }
-
-    return;
-
-pin_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not exist", pin_name));
-}
+#include "pin.h"
 
 mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     //assert(1 <= n_args && n_args <= 2);
 
-    GPIO_TypeDef *port;
-    uint pin;
-    parse_pin_name(args[0], &port, &pin);
+    const pin_obj_t *pin = pin_map_user_obj(args[0]);
+    GPIO_TypeDef *port = pin->gpio;
+    uint16_t pin_mask = pin->pin_mask;
 
     if (n_args == 1) {
         // get pin
-        if ((port->IDR & (1 << pin)) != (uint32_t)Bit_RESET) {
+        if ((port->IDR & pin_mask) != (uint32_t)Bit_RESET) {
             return MP_OBJ_NEW_SMALL_INT(1);
         } else {
             return MP_OBJ_NEW_SMALL_INT(0);
@@ -73,10 +48,10 @@ mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
         // set pin
         if (rt_is_true(args[1])) {
             // set pin high
-            port->BSRRL = 1 << pin;
+            port->BSRRL = pin_mask;
         } else {
             // set pin low
-            port->BSRRH = 1 << pin;
+            port->BSRRH = pin_mask;
         }
         return mp_const_none;
     }
@@ -84,13 +59,13 @@ mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
 
-mp_obj_t pyb_gpio_input(mp_obj_t arg_port_pin, mp_obj_t arg_mode) {
-    GPIO_TypeDef *port;
-    uint pin;
-    parse_pin_name(arg_port_pin, &port, &pin);
+mp_obj_t pyb_gpio_input(mp_obj_t arg_pin, mp_obj_t arg_mode) {
+    const pin_obj_t *pin = pin_map_user_obj(arg_pin);
+    GPIO_TypeDef *port = pin->gpio;
+    uint16_t pin_mask = pin->pin_mask;
 
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = 1 << pin;
+    GPIO_InitStructure.GPIO_Pin = pin_mask;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_PuPd = mp_obj_get_int(arg_mode);
     GPIO_Init(port, &GPIO_InitStructure);
@@ -100,13 +75,13 @@ mp_obj_t pyb_gpio_input(mp_obj_t arg_port_pin, mp_obj_t arg_mode) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_gpio_input_obj, pyb_gpio_input);
 
-mp_obj_t pyb_gpio_output(mp_obj_t arg_port_pin, mp_obj_t arg_mode) {
-    GPIO_TypeDef *port;
-    uint pin;
-    parse_pin_name(arg_port_pin, &port, &pin);
+mp_obj_t pyb_gpio_output(mp_obj_t arg_pin, mp_obj_t arg_mode) {
+    const pin_obj_t *pin = pin_map_user_obj(arg_pin);
+    GPIO_TypeDef *port = pin->gpio;
+    uint16_t pin_mask = pin->pin_mask;
 
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = 1 << pin;
+    GPIO_InitStructure.GPIO_Pin = pin_mask;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_Speed = GPIO_Fast_Speed;
     GPIO_InitStructure.GPIO_OType = mp_obj_get_int(arg_mode);

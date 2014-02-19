@@ -50,6 +50,7 @@
 #include "adc.h"
 #include "rtc.h"
 #include "file.h"
+#include "pin.h"
 
 int errno;
 
@@ -446,6 +447,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
         rt_store_attr(m, qstr_from_str("millis"), rt_make_function_n(0, pyb_millis));
 
+        pin_map_init(m);
         gpio_init(m);
 
         rt_store_name(MP_QSTR_pyb, m);

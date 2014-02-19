@@ -26,26 +26,30 @@
 // mp_obj_fun_native_t defined in obj.h
 
 STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
-    if (n_kw && !self->is_kw) {
+    rt_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
+}
+
+void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
+    if (n_kw && !is_kw) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "function does not take keyword arguments"));
     }
 
-    if (self->n_args_min == self->n_args_max) {
-        if (n_args != self->n_args_min) {
+    if (n_args_min == n_args_max) {
+        if (n_args != n_args_min) {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                      "function takes %d positional arguments but %d were given",
-                                                     self->n_args_min, n_args));
+                                                     n_args_min, n_args));
         }
     } else {
-        if (n_args < self->n_args_min) {
+        if (n_args < n_args_min) {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                     "<fun name>() missing %d required positional arguments: <list of names of params>",
-                                                    self->n_args_min - n_args));
-        } else if (n_args > self->n_args_max) {
+                                                    n_args_min - n_args));
+        } else if (n_args > n_args_max) {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                      "<fun name> expected at most %d arguments, got %d",
-                                                     self->n_args_max, n_args));
+                                                     n_args_max, n_args));
         }
     }
 }
