@@ -156,11 +156,18 @@ dispatch_loop:
                         PUSH(mp_const_ellipsis);
                         break;
 
-                    case MP_BC_LOAD_CONST_SMALL_INT:
-                        unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
-                        ip += 3;
-                        PUSH(MP_OBJ_NEW_SMALL_INT(unum));
+                    case MP_BC_LOAD_CONST_SMALL_INT: {
+                        int num = 0;
+                        if ((ip[0] & 0x40) != 0) {
+                            // Number is negative
+                            num--;
+                        }
+                        do {
+                            num = (num << 7) | (*ip & 0x7f);
+                        } while ((*ip++ & 0x80) != 0);
+                        PUSH(MP_OBJ_NEW_SMALL_INT(num));
                         break;
+                    }
 
                     case MP_BC_LOAD_CONST_INT:
                         DECODE_QSTR;
