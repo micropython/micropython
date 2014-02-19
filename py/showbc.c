@@ -57,11 +57,18 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_CONST_ELLIPSIS");
                 break;
 
-            case MP_BC_LOAD_CONST_SMALL_INT:
-                unum = (ip[0] | (ip[1] << 8) | (ip[2] << 16)) - 0x800000;
-                ip += 3;
-                printf("LOAD_CONST_SMALL_INT %d", (int)unum);
+            case MP_BC_LOAD_CONST_SMALL_INT: {
+                int num = 0;
+                if ((ip[0] & 0x40) != 0) {
+                    // Number is negative
+                    num--;
+                }
+                do {
+                    num = (num << 7) | (*ip & 0x7f);
+                } while ((*ip++ & 0x80) != 0);
+                printf("LOAD_CONST_SMALL_INT %d", num);
                 break;
+            }
 
             case MP_BC_LOAD_CONST_INT:
                 DECODE_QSTR;

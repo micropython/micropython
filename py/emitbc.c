@@ -108,30 +108,46 @@ STATIC void emit_write_byte_code_byte_byte(emit_t* emit, byte b1, uint b2) {
 }
 
 STATIC void emit_write_byte_code_uint(emit_t* emit, uint num) {
-    if (num <= 127) { // fits in 0x7f
-        // fit argument in single byte
-        byte* c = emit_get_cur_to_write_byte_code(emit, 1);
-        c[0] = num;
-    } else if (num <= 16383) { // fits in 0x3fff
-        // fit argument in two bytes
-        byte* c = emit_get_cur_to_write_byte_code(emit, 2);
-        c[0] = (num >> 8) | 0x80;
-        c[1] = num;
-    } else {
-        // larger numbers not implemented/supported
-        assert(0);
+    // We store each 7 bits in a separate byte, and that's how many bytes needed
+    byte buf[(BYTES_PER_WORD * 8 + 7) / 7];
+    byte *p = buf + sizeof(buf);
+    // We encode in little-ending order, but store in big-endian, to help decoding
+    do {
+        *--p = num & 0x7f;
+        num >>= 7;
+    } while (num != 0);
+    byte* c = emit_get_cur_to_write_byte_code(emit, buf + sizeof(buf) - p);
+    while (p != buf + sizeof(buf) - 1) {
+        *c++ = *p++ | 0x80;
     }
+    *c = *p;
 }
 
-// integers (for small ints) are stored as 24 bits, in excess
+// Similar to emit_write_byte_code_uint(), just some extra handling to encode sign
 STATIC void emit_write_byte_code_byte_int(emit_t* emit, byte b1, machine_int_t num) {
-    num += 0x800000;
-    assert(0 <= num && num <= 0xffffff);
-    byte* c = emit_get_cur_to_write_byte_code(emit, 4);
-    c[0] = b1;
-    c[1] = num;
-    c[2] = num >> 8;
-    c[3] = num >> 16;
+    emit_write_byte_code_byte(emit, b1);
+
+    // We store each 7 bits in a separate byte, and that's how many bytes needed
+    byte buf[(BYTES_PER_WORD * 8 + 7) / 7];
+    byte *p = buf + sizeof(buf);
+    // We encode in little-ending order, but store in big-endian, to help decoding
+    do {
+        *--p = num & 0x7f;
+        num >>= 7;
+    } while (num != 0 && num != -1);
+    // Make sure that highest bit we stored (mask 0x40) matches sign
+    // of the number. If not, store extra byte just to encode sign
+    if (num == -1 && (*p & 0x40) == 0) {
+        *--p = 0x7f;
+    } else if (num == 0 && (*p & 0x40) != 0) {
+        *--p = 0;
+    }
+
+    byte* c = emit_get_cur_to_write_byte_code(emit, buf + sizeof(buf) - p);
+    while (p != buf + sizeof(buf) - 1) {
+        *c++ = *p++ | 0x80;
+    }
+    *c = *p;
 }
 
 STATIC void emit_write_byte_code_byte_uint(emit_t* emit, byte b, uint num) {
