@@ -132,12 +132,17 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     /*
     printf("import:\n");
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n_args; i++) {
         printf("  ");
-        mp_obj_print(args[i]);
+        mp_obj_print(args[i], PRINT_REPR);
         printf("\n");
     }
     */
+
+    mp_obj_t fromtuple = mp_const_none;
+    if (n_args >= 4) {
+        fromtuple = args[3];
+    }
 
     uint mod_len;
     const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
@@ -150,8 +155,11 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
         if (p == NULL) {
             return module_obj;
         }
+        // If fromlist is not empty, return leaf module
+        if (fromtuple != mp_const_none) {
+            return module_obj;
+        }
         // Otherwise, we need to return top-level package
-        // TODO: subject to fromlist arg
         qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
         return mp_obj_module_get(pkg_name);
     }
@@ -227,6 +235,11 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
         assert(0);
     }
 
+    // If fromlist is not empty, return leaf module
+    if (fromtuple != mp_const_none) {
+        return module_obj;
+    }
+    // Otherwise, we need to return top-level package
     return top_module_obj;
 }
 
