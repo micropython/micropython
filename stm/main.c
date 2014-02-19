@@ -430,7 +430,8 @@ soft_reset:
 #endif
         rt_store_attr(m, MP_QSTR_hid, rt_make_function_n(1, pyb_hid_send_report));
 #if MICROPY_HW_ENABLE_RTC
-        rt_store_attr(m, MP_QSTR_time, rt_make_function_n(0, pyb_rtc_read));
+        rt_store_attr(m, MP_QSTR_time, (mp_obj_t)&pyb_rtc_read_obj);
+        rt_store_attr(m, qstr_from_str("rtc_info"), (mp_obj_t)&pyb_rtc_info_obj);
 #endif
 #if MICROPY_HW_ENABLE_RNG
         rt_store_attr(m, MP_QSTR_rand, rt_make_function_n(0, pyb_rng_get));
