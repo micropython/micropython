@@ -140,8 +140,17 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
     */
 
     mp_obj_t fromtuple = mp_const_none;
+    int level = 0;
     if (n_args >= 4) {
         fromtuple = args[3];
+        if (n_args >= 5) {
+            level = MP_OBJ_SMALL_INT_VALUE(args[4]);
+        }
+    }
+
+    if (level != 0) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+            "Relative import is not implemented"));
     }
 
     uint mod_len;
