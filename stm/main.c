@@ -51,6 +51,7 @@
 #include "rtc.h"
 #include "file.h"
 #include "pin.h"
+#include "exti.h"
 
 int errno;
 
@@ -346,9 +347,6 @@ int main(void) {
     led_state(PYB_LED_G1, 1);
 
     // more sub-system init
-#if MICROPY_HW_HAS_SWITCH
-    switch_init();
-#endif
 #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
 #endif
@@ -373,6 +371,11 @@ soft_reset:
     def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_src);
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
     sys_path = mp_obj_new_list(3, def_path);
+
+    exti_init_early();
+#if MICROPY_HW_HAS_SWITCH
+    switch_init();
+#endif
 
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
@@ -449,7 +452,7 @@ soft_reset:
 
         pin_map_init(m);
         gpio_init(m);
-
+        exti_init(m);
         rt_store_name(MP_QSTR_pyb, m);
 
         rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
