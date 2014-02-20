@@ -1187,10 +1187,12 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
             }
         } else {
             // TODO not implemented
+            // This covers relative imports starting with dot(s) like "from .foo import"
             assert(0);
         }
     } else {
         // TODO not implemented
+        // This covers relative imports with dots only like "from .. import"
         assert(0);
     }
 }
