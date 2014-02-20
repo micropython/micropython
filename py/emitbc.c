@@ -109,7 +109,7 @@ STATIC void emit_write_byte_code_byte_byte(emit_t* emit, byte b1, uint b2) {
 
 STATIC void emit_write_byte_code_uint(emit_t* emit, uint num) {
     // We store each 7 bits in a separate byte, and that's how many bytes needed
-    byte buf[(BYTES_PER_WORD * 8 + 7) / 7];
+    byte buf[(BYTES_PER_WORD * 8 + 6) / 7];
     byte *p = buf + sizeof(buf);
     // We encode in little-ending order, but store in big-endian, to help decoding
     do {
@@ -128,7 +128,7 @@ STATIC void emit_write_byte_code_byte_int(emit_t* emit, byte b1, machine_int_t n
     emit_write_byte_code_byte(emit, b1);
 
     // We store each 7 bits in a separate byte, and that's how many bytes needed
-    byte buf[(BYTES_PER_WORD * 8 + 7) / 7];
+    byte buf[(BYTES_PER_WORD * 8 + 6) / 7];
     byte *p = buf + sizeof(buf);
     // We encode in little-ending order, but store in big-endian, to help decoding
     do {
