@@ -279,7 +279,7 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
         }
         if (dec) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn(str, len));
-        } else if (small_int && !overflow && MP_FIT_SMALL_INT(int_val)) {
+        } else if (small_int && !overflow && MP_PARSE_FITS_SMALL_INT(int_val)) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));

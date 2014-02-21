@@ -117,7 +117,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                         assert(0);
                         res = 0;
                     }
-                    if (MP_FIT_SMALL_INT(res)) {
+                    if (MP_PARSE_FITS_SMALL_INT(res)) {
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, res);
                     }
                 }
