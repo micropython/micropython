@@ -11,10 +11,20 @@
 
 #if MICROPY_DEBUG_PRINTERS
 
-#define DECODE_UINT do { unum = *ip++; if (unum > 127) { unum = ((unum & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_UINT { \
+    unum = 0; \
+    do { \
+        unum = (unum << 7) + (*ip & 0x7f); \
+    } while ((*ip++ & 0x80) != 0); \
+}
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
-#define DECODE_QSTR do { qstr = *ip++; if (qstr > 127) { qstr = ((qstr & 0x3f) << 8) | (*ip++); } } while (0)
+#define DECODE_QSTR { \
+    qstr = 0; \
+    do { \
+        qstr = (qstr << 7) + (*ip & 0x7f); \
+    } while ((*ip++ & 0x80) != 0); \
+}
 
 void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
