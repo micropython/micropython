@@ -148,6 +148,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 break;
 
             case PN_factor_2:
+                // TODO: Handle specially incoded MP_PARSE_NODE_INT here too?
                 if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[1])) {
                     machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_PLUS)) {
@@ -2519,7 +2520,18 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: EMIT_ARG(load_id, arg); break;
             case MP_PARSE_NODE_SMALL_INT: EMIT_ARG(load_const_small_int, arg); break;
-            case MP_PARSE_NODE_INTEGER: EMIT_ARG(load_const_int, arg); break;
+            case MP_PARSE_NODE_INTEGER: {
+                const char *p = qstr_str(arg);
+                if (*p == 0) {
+                    // Specially encoded full-range small int
+                    machine_int_t val;
+                    memcpy(&val, p + 1, sizeof(val));
+                    EMIT_ARG(load_const_small_int, val);
+                } else {
+                    EMIT_ARG(load_const_int, arg);
+                }
+                break;
+            }
             case MP_PARSE_NODE_DECIMAL: EMIT_ARG(load_const_dec, arg); break;
             case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg, false); break;
             case MP_PARSE_NODE_BYTES: EMIT_ARG(load_const_str, arg, true); break;
