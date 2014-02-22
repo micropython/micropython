@@ -23,7 +23,7 @@
 
 void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(self_in));
+        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
     } else {
         mp_obj_int_t *self = self_in;
         print(env, "%lld" SUFFIX, self->val);

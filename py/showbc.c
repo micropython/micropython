@@ -68,7 +68,7 @@ void mp_byte_code_print(const byte *ip, int len) {
                 break;
 
             case MP_BC_LOAD_CONST_SMALL_INT: {
-                int num = 0;
+                machine_int_t num = 0;
                 if ((ip[0] & 0x40) != 0) {
                     // Number is negative
                     num--;
@@ -76,7 +76,7 @@ void mp_byte_code_print(const byte *ip, int len) {
                 do {
                     num = (num << 7) | (*ip & 0x7f);
                 } while ((*ip++ & 0x80) != 0);
-                printf("LOAD_CONST_SMALL_INT %d", num);
+                printf("LOAD_CONST_SMALL_INT " INT_FMT, num);
                 break;
             }
 

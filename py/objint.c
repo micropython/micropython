@@ -47,7 +47,7 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
 
 void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, "%d", (int)MP_OBJ_SMALL_INT_VALUE(self_in));
+        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
     }
 }
 
