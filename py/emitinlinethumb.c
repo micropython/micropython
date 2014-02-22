@@ -110,7 +110,7 @@ STATIC int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int 
         printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
         return 0;
     }
-    int i = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+    int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn_args[wanted_arg_num]);
     if ((i & (~fit_mask)) != 0) {
         printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", qstr_str(op), i, fit_mask);
         return 0;

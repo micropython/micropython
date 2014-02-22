@@ -125,7 +125,10 @@ STATIC void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *s
 }
 
 mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
-    return (mp_parse_node_t)(kind | (arg << 4));
+    if (kind == MP_PARSE_NODE_SMALL_INT) {
+        return (mp_parse_node_t)(kind | (arg << 1));
+    }
+    return (mp_parse_node_t)(kind | (arg << 5));
 }
 
 //int num_parse_nodes_allocated = 0;
@@ -171,11 +174,13 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
     }
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         printf("NULL\n");
+    } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        machine_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
+        printf("int(" INT_FMT ")\n", arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        machine_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_SMALL_INT: printf("int(" INT_FMT ")\n", arg); break;
             case MP_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
