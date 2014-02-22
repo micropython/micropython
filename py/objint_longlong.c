@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
 

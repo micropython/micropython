@@ -15,6 +15,7 @@ PY_O_BASENAME = \
 	qstr.o \
 	vstr.o \
 	unicode.o \
+	mpz.o \
 	lexer.o \
 	lexerstr.o \
 	lexerunix.o \
@@ -51,6 +52,7 @@ PY_O_BASENAME = \
 	objgetitemiter.o \
 	objint.o \
 	objint_longlong.o \
+	objint_mpz.o \
 	objlist.o \
 	objmap.o \
 	objmodule.o \

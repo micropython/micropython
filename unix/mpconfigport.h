@@ -14,7 +14,7 @@
 #define MICROPY_ENABLE_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_ENABLE_FLOAT        (1)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PATH_MAX            (PATH_MAX)
 
 // type definitions for the specific machine

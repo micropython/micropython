@@ -9,6 +9,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "parsenum.h"
+#include "mpz.h"
 #include "objint.h"
 
 // This dispatcher function is expected to be independent of the implementation
