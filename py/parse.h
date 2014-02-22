@@ -8,7 +8,7 @@ struct _mp_lexer_t;
 //  - xx...x00110: an integer; bits 5 and above are the qstr holding the value
 //  - xx...x01010: a decimal; bits 5 and above are the qstr holding the value
 //  - xx...x01110: a string; bits 5 and above are the qstr holding the value
-//  - xx...x10010: a string with triple quotes; bits 5 and above are the qstr holding the value
+//  - xx...x10010: a string of bytes; bits 5 and above are the qstr holding the value
 //  - xx...x10110: a token; bits 5 and above are mp_token_kind_t
 
 // TODO: these can now be unified with MP_OBJ_FITS_SMALL_INT(x)

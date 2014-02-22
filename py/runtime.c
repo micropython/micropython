@@ -13,6 +13,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "parsenum.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "map.h"
@@ -371,72 +372,11 @@ mp_obj_t rt_list_append(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_list_append(self_in, arg);
 }
 
-#define PARSE_DEC_IN_INTG (1)
-#define PARSE_DEC_IN_FRAC (2)
-#define PARSE_DEC_IN_EXP  (3)
-
 mp_obj_t rt_load_const_dec(qstr qstr) {
-#if MICROPY_ENABLE_FLOAT
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
-    const char *s = qstr_str(qstr);
-    int in = PARSE_DEC_IN_INTG;
-    mp_float_t dec_val = 0;
-    bool exp_neg = false;
-    int exp_val = 0;
-    int exp_extra = 0;
-    bool imag = false;
-    for (; *s; s++) {
-        int dig = *s;
-        if ('0' <= dig && dig <= '9') {
-            dig -= '0';
-            if (in == PARSE_DEC_IN_EXP) {
-                exp_val = 10 * exp_val + dig;
-            } else {
-                dec_val = 10 * dec_val + dig;
-                if (in == PARSE_DEC_IN_FRAC) {
-                    exp_extra -= 1;
-                }
-            }
-        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
-            in = PARSE_DEC_IN_FRAC;
-        } else if (in != PARSE_DEC_IN_EXP && (dig == 'E' || dig == 'e')) {
-            in = PARSE_DEC_IN_EXP;
-            if (s[1] == '+') {
-                s++;
-            } else if (s[1] == '-') {
-                s++;
-                exp_neg = true;
-            }
-        } else if (dig == 'J' || dig == 'j') {
-            s++;
-            imag = true;
-            break;
-        } else {
-            // unknown character
-            break;
-        }
-    }
-    if (*s != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
-    }
-    if (exp_neg) {
-        exp_val = -exp_val;
-    }
-    exp_val += exp_extra;
-    for (; exp_val > 0; exp_val--) {
-        dec_val *= 10;
-    }
-    for (; exp_val < 0; exp_val++) {
-        dec_val *= 0.1;
-    }
-    if (imag) {
-        return mp_obj_new_complex(0, dec_val);
-    } else {
-        return mp_obj_new_float(dec_val);
-    }
-#else
-    nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "decimal numbers not supported"));
-#endif
+    uint len;
+    const byte* data = qstr_data(qstr, &len);
+    return mp_parse_num_decimal((const char*)data, len);
 }
 
 mp_obj_t rt_load_const_str(qstr qstr) {

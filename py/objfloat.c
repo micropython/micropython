@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "parsenum.h"
 #include "runtime0.h"
 
 #if MICROPY_ENABLE_FLOAT
@@ -32,8 +33,12 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
             return mp_obj_new_float(0);
 
         case 1:
-            // TODO allow string as arg and parse it
-            if (MP_OBJ_IS_TYPE(args[0], &float_type)) {
+            if (MP_OBJ_IS_STR(args[0])) {
+                // a string, parse it
+                uint l;
+                const char *s = mp_obj_str_get_data(args[0], &l);
+                return mp_parse_num_decimal(s, l);
+            } else if (MP_OBJ_IS_TYPE(args[0], &float_type)) {
                 return args[0];
             } else {
                 return mp_obj_new_float(mp_obj_get_float(args[0]));

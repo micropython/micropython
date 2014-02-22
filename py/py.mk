@@ -31,9 +31,9 @@ PY_O_BASENAME = \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
+	parsenum.o \
 	runtime.o \
 	map.o \
-	strtonum.o \
 	obj.o \
 	objarray.o \
 	objbool.o \
