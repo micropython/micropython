@@ -5,6 +5,7 @@
 
 #include "nlr.h"
 #include "misc.h"
+#include "strtonum.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
@@ -24,7 +25,7 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
                 // a string, parse it
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
-                return MP_OBJ_NEW_SMALL_INT(strtonum(s, 0));
+                return MP_OBJ_NEW_SMALL_INT(mp_strtonum(s, 0));
             } else {
                 return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
             }
@@ -35,7 +36,7 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             // TODO proper error checking of argument types
             uint l;
             const char *s = mp_obj_str_get_data(args[0], &l);
-            return MP_OBJ_NEW_SMALL_INT(strtonum(s, mp_obj_get_int(args[1])));
+            return MP_OBJ_NEW_SMALL_INT(mp_strtonum(s, mp_obj_get_int(args[1])));
         }
 
         default:

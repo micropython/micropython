@@ -5,12 +5,13 @@
 #include <stdlib.h>
 
 #include "misc.h"
+#include "strtonum.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "nlr.h"
 #include "obj.h"
 
-long strtonum(const char *restrict s, int base) {
+long mp_strtonum(const char *restrict s, int base) {
     int c, neg = 0;
     const char *p = s;
     char *num;
@@ -89,7 +90,7 @@ value_error:
 
 #else /* defined(UNIX) */
 
-long strtonum(const char *restrict s, int base) {
+long mp_strtonum(const char *restrict s, int base) {
     // TODO port strtol to stm
     return 0;
 }
