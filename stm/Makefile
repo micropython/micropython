@@ -141,6 +141,7 @@ SRC_STMUSBH = $(addprefix $(STMUSBH_DIR)/,\
 SRC_FATFS = $(addprefix $(FATFS_DIR)/,\
 	ff.c \
 	diskio.c \
+	ccsbcs.c \
 	)
 
 SRC_CC3K = $(addprefix $(CC3K_DIR)/,\

@@ -9,6 +9,14 @@
 #define MICROPY_ENABLE_FLOAT        (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PATH_MAX            (128)
+/* Enable FatFS LFNs
+    0: Disable LFN feature.
+    1: Enable LFN with static working buffer on the BSS. Always NOT reentrant.
+    2: Enable LFN with dynamic working buffer on the STACK.
+    3: Enable LFN with dynamic working buffer on the HEAP.
+*/
+#define MICROPY_ENABLE_LFN          (0)
+#define MICROPY_LFN_CODE_PAGE       (1) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
 // type definitions for the specific machine
 
