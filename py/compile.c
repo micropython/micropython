@@ -86,8 +86,8 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
         switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
             case PN_shift_expr:
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    int arg0 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-                    int arg1 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
+                    int arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    int arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_LESS)) {
 #if MICROPY_EMIT_CPYTHON
                         // can overflow; enabled only to compare with CPython
@@ -105,8 +105,8 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
             case PN_arith_expr:
                 // overflow checking here relies on SMALL_INT being strictly smaller than machine_int_t
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
+                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     machine_int_t res;
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PLUS)) {
                         res = arg0 + arg1;
@@ -125,8 +125,8 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 
             case PN_term:
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    int arg0 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-                    int arg1 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
+                    int arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    int arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
 #if MICROPY_EMIT_CPYTHON
                         // can overflow; enabled only to compare with CPython
@@ -149,7 +149,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 
             case PN_factor_2:
                 if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[1])) {
-                    machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
+                    machine_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[1]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_PLUS)) {
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg);
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
@@ -169,10 +169,10 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     mp_parse_node_struct_t* pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
                     if (MP_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
-                        int power = MP_PARSE_NODE_LEAF_ARG(pns2->nodes[0]);
+                        int power = MP_PARSE_NODE_LEAF_SMALL_INT(pns2->nodes[0]);
                         if (power >= 0) {
                             int ans = 1;
-                            int base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                            int base = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
                             for (; power > 0; power--) {
                                 ans *= base;
                             }
@@ -320,10 +320,14 @@ STATIC void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
 
 STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
     assert(MP_PARSE_NODE_IS_LEAF(pn));
+    if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        vstr_printf(vstr, INT_FMT, MP_PARSE_NODE_LEAF_SMALL_INT(pn));
+        return;
+    }
+
     int arg = MP_PARSE_NODE_LEAF_ARG(pn);
     switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
         case MP_PARSE_NODE_ID: assert(0);
-        case MP_PARSE_NODE_SMALL_INT: vstr_printf(vstr, "%d", arg); break;
         case MP_PARSE_NODE_INTEGER: vstr_printf(vstr, "%s", qstr_str(arg)); break;
         case MP_PARSE_NODE_DECIMAL: vstr_printf(vstr, "%s", qstr_str(arg)); break;
         case MP_PARSE_NODE_STRING: cpython_c_print_quoted_str(vstr, arg, false); break;
@@ -421,11 +425,11 @@ void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC bool node_is_const_false(mp_parse_node_t pn) {
     return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE);
-    // untested: || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_ARG(pn) == 1);
+    // untested: || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
 }
 
 STATIC bool node_is_const_true(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE) || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_ARG(pn) == 1);
+    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE) || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 1);
 }
 
 #if MICROPY_EMIT_CPYTHON
@@ -1464,7 +1468,8 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     // compile: if var <cond> end: goto top
     compile_node(comp, pn_var);
     compile_node(comp, pn_end);
-    if (MP_PARSE_NODE_LEAF_ARG(pn_step) >= 0) {
+    assert(MP_PARSE_NODE_IS_SMALL_INT(pn_step));
+    if (MP_PARSE_NODE_LEAF_SMALL_INT(pn_step) >= 0) {
         EMIT_ARG(binary_op, RT_BINARY_OP_LESS);
     } else {
         EMIT_ARG(binary_op, RT_BINARY_OP_MORE);
@@ -2514,11 +2519,13 @@ STATIC compile_function_t compile_function[] = {
 void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // pass
+    } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        machine_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
+        EMIT_ARG(load_const_small_int, arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        machine_int_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        machine_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: EMIT_ARG(load_id, arg); break;
-            case MP_PARSE_NODE_SMALL_INT: EMIT_ARG(load_const_small_int, arg); break;
             case MP_PARSE_NODE_INTEGER: EMIT_ARG(load_const_int, arg); break;
             case MP_PARSE_NODE_DECIMAL: EMIT_ARG(load_const_dec, arg); break;
             case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg, false); break;
