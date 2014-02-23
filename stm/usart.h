@@ -5,6 +5,11 @@ typedef enum {
     PYB_USART_3 = 3,
     PYB_USART_6 = 4,
     PYB_USART_MAX = 4,
+
+    //PYB_USART_XA =  // USART4 on X1, X2 = PA0, PA1
+    PYB_USART_XB = 1, // USART1 on X9, X10 = PB6, PB7
+    PYB_USART_YA = 4, // USART6 on Y1, Y2 = PC6, PC7
+    PYB_USART_YB = 3, // USART3 on Y9, Y10 = PB10, PB11
 } pyb_usart_t;
 
 extern pyb_usart_t pyb_usart_global_debug;
