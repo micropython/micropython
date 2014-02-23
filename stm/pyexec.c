@@ -245,6 +245,24 @@ void pyexec_repl(void) {
     stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
+    // to test ctrl-C
+    /*
+    {
+        uint32_t x[4] = {0x424242, 0xdeaddead, 0x242424, 0xdeadbeef};
+        for (;;) {
+            nlr_buf_t nlr;
+            printf("pyexec_repl: %p\n", x);
+            usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C);
+            if (nlr_push(&nlr) == 0) {
+                for (;;) {
+                }
+            } else {
+                printf("break\n");
+            }
+        }
+    }
+    */
+
     vstr_t line;
     vstr_init(&line, 32);
 

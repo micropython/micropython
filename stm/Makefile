@@ -29,7 +29,7 @@ CFLAGS += -Iboards/$(BOARD)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -g
+CFLAGS += -g -DPENDSV_DEBUG
 COPT = -O0
 else
 COPT += -Os -DNDEBUG

@@ -355,7 +355,7 @@ int main(void) {
     storage_init();
 
     // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
-    //pyb_usart_global_debug = PYB_USART_3;
+    //pyb_usart_global_debug = PYB_USART_YA;
     //usart_init(pyb_usart_global_debug, 115200);
 
     int first_soft_reset = true;
