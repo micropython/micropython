@@ -28,12 +28,19 @@ static int rx_buf_out;
 static int interrupt_char = VCP_CHAR_NONE;
 mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 
-void pyb_usb_dev_init(void) {
+void pyb_usb_dev_init(int usb_dev_type) {
 #ifdef USE_DEVICE_MODE
     if (!dev_is_enabled) {
         // only init USB once in the device's power-lifetime
-        USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
-        //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
+        switch (usb_dev_type) {
+            case PYB_USB_DEV_VCP_MSC:
+                USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
+                break;
+
+            case PYB_USB_DEV_HID:
+                USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
+                break;
+        }
     }
     rx_buf_in = 0;
     rx_buf_out = 0;

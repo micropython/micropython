@@ -73,6 +73,11 @@
 #include "usbd_msc_bot.h"
 #include "usbd_msc_mem.h"
 
+// CDC VCP is the first interface
+// the option below is supposed to select between MSC (1) and HID (0) for the
+// second USB interface, but it does not work (only VCP+MSC works)
+// to use HID on its own (ie no VCP), the functions in usbd_pyb_core2.c can be
+// used, and selected in the call to pyb_usb_dev_init().
 #define USB_PYB_USE_MSC (1)
 
 #if USB_PYB_USE_MSC
@@ -314,7 +319,7 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
     0x01,   // bNumEndpoints
     0x03,   // bInterfaceClass: HID Class
     0x01,   // bInterfaceSubClass: 0=no boot, 1=BOOT
-    0x01,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
+    0x02,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
     0x00,   // iInterface:
 
     // Descriptor of Joystick Mouse HID
@@ -340,7 +345,7 @@ __ALIGN_BEGIN static uint8_t usbd_pyb_CfgDesc[USB_PYB_CONFIG_DESC_SIZ] __ALIGN_E
 #endif
 };
 
-#if 0
+#if !USB_PYB_USE_MSC
 __ALIGN_BEGIN static uint8_t HID_MOUSE_ReportDesc[HID_MOUSE_REPORT_DESC_SIZE] __ALIGN_END =
 {
   0x05,   0x01,
@@ -559,6 +564,28 @@ static uint8_t usbd_pyb_Setup(void *pdev, USB_SETUP_REQ *req) {
         // Standard Interface Request ------------------------------------------
         case (USB_REQ_TYPE_STANDARD | USB_REQ_RECIPIENT_INTERFACE):
             switch (req->bRequest) {
+                case USB_REQ_GET_DESCRIPTOR: // needed for HID; SU 0x81 0x06 0x2200 0x00 request
+                    // wIndex & 0xff is the interface
+                    if ((req->wIndex & 0xff) <= 1) {
+                        // CDC VCP
+                    } else {
+#if USB_PYB_USE_MSC
+#else
+                        uint16_t len = 0;
+                        uint8_t *pbuf = NULL;
+                        if (req->wValue >> 8 == HID_REPORT_DESC) {
+                            len = MIN(HID_MOUSE_REPORT_DESC_SIZE , req->wLength);
+                            pbuf = HID_MOUSE_ReportDesc;
+                            return USBD_CtlSendData(pdev, pbuf, len);
+                        } else if( req->wValue >> 8 == HID_DESCRIPTOR_TYPE) {
+                            pbuf = usbd_pyb_CfgDesc + /* skip VCP */ 0x09 + 0x08 + 0x09 + 0x05 + 0x05 + 0x04 + 0x05 + 0x07 + 0x09 + 0x07 + 0x07 + /* skip iface descr */ 0x09;
+                            len = MIN(0x09, req->wLength);
+                            return USBD_CtlSendData(pdev, pbuf, len);
+                        }
+#endif
+                    }
+                    break;
+
                 case USB_REQ_GET_INTERFACE:
                     // wIndex & 0xff is the interface
                     if ((req->wIndex & 0xff) <= 1) {

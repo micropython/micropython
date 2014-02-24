@@ -577,7 +577,7 @@ soft_reset:
     pyb_usb_host_init();
 #elif defined(USE_DEVICE_MODE)
     // USB device
-    pyb_usb_dev_init();
+    pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
 #endif
 
     // run main script
