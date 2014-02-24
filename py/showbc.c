@@ -192,6 +192,11 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("DELETE_FAST_N " UINT_FMT, unum);
                 break;
 
+            case MP_BC_DELETE_DEREF:
+                DECODE_UINT;
+                printf("MP_BC_DELETE_DEREF " UINT_FMT, unum);
+                break;
+
             case MP_BC_DELETE_NAME:
                 DECODE_QSTR;
                 printf("DELETE_NAME %s", qstr_str(qstr));

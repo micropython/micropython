@@ -21,7 +21,7 @@
 #include "objarray.h"
 #include "bc.h"
 
-#if 0 // print debugging info
+#if 1 // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
 #define DEBUG_printf DEBUG_printf
@@ -443,9 +443,19 @@ void rt_store_name(qstr qstr, mp_obj_t obj) {
     mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
 }
 
+void rt_delete_name(qstr qstr) {
+    DEBUG_OP_printf("delete name %s \n", qstr_str(qstr));
+    mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+}
+
 void rt_store_global(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
     mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
+}
+
+void rt_delete_global(qstr qstr) {
+    DEBUG_OP_printf("delete global %s \n", qstr_str(qstr));
+    mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 
 mp_obj_t rt_unary_op(int op, mp_obj_t arg) {

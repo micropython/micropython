@@ -284,6 +284,24 @@ dispatch_loop:
                         sp -= 3;
                         break;
 
+                    case MP_BC_DELETE_FAST_N:
+                        DECODE_UINT;
+                        fastn[-unum] = MP_OBJ_NULL;
+                        break;
+
+                    case MP_BC_DELETE_DEREF:
+                        DECODE_UINT;
+                        if (rt_get_cell(fastn[-unum]) != MP_OBJ_NULL) {
+                            rt_set_cell(fastn[-unum], MP_OBJ_NULL);
+                        } else {
+                            assert(0);
+                        }
+                        break;
+                    case MP_BC_DELETE_NAME:
+                        DECODE_QSTR;
+                        rt_delete_name(qst);
+                        break;
+
                     case MP_BC_DUP_TOP:
                         obj1 = TOP();
                         PUSH(obj1);
