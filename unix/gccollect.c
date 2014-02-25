@@ -54,11 +54,11 @@ void gc_collect(void) {
     // this traces .data and .bss sections
     extern char __bss_start, _end;
     //printf(".bss: %p-%p\n", &__bss_start, &_end);
-    gc_collect_root((void**)&__bss_start, ((uint32_t)&_end - (uint32_t)&__bss_start) / sizeof(uint32_t));
+    gc_collect_root((void**)&__bss_start, ((machine_uint_t)&_end - (machine_uint_t)&__bss_start) / sizeof(machine_uint_t));
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
-    gc_collect_root((void**)&regs, ((uint32_t)stack_top - (uint32_t)&regs) / sizeof(uint32_t));
+    gc_collect_root((void**)&regs, ((machine_uint_t)stack_top - (machine_uint_t)&regs) / sizeof(machine_uint_t));
     gc_collect_end();
 
     //printf("-----\n");

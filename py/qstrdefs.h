@@ -27,6 +27,7 @@ Q(native)
 Q(viper)
 Q(asm_thumb)
 
+Q(object)
 Q(Ellipsis)
 Q(StopIteration)
 

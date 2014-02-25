@@ -1,6 +1,6 @@
 // options to control how Micro Python is built
 
-#define MICROPY_RUNTIME_DEBUG       (1)
+#define MICROPY_RUNTIME_DEBUG       (0)
 
 // Linking with GNU readline causes binary to be licensed under GPL
 #ifndef MICROPY_USE_READLINE
