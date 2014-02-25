@@ -735,6 +735,64 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     }
 }
 
+// args contains, eg: arg0  arg1  key0  value0  key1  value1 vargs kwargs
+mp_obj_t rt_call_function_n_var_kw(mp_obj_t fun_in, uint n_args, uint n_kw, uint flags, const mp_obj_t *args) {
+    DEBUG_OP_printf("calling function_var_kw %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
+
+    mp_obj_type_t *type = mp_obj_get_type(fun_in);
+    if (type->call != NULL) {
+        uint new_args_size = n_args + n_kw * 2; 
+        uint new_n_args = n_args;
+        uint new_n_kw = n_kw;       
+        if (flags & MP_CALL_FLAG_VAR) {
+            const mp_obj_t *vargs = args + n_args + n_kw * 2;
+            int len = mp_obj_int_get(mp_obj_len_maybe(*vargs));
+            DEBUG_OP_printf("vargs len=%d vargs=%p\n", len, vargs);
+
+            new_args_size += len;
+
+            new_n_args += len;
+        }
+        if (flags & MP_CALL_FLAG_KW) {
+            const mp_obj_t *kwargs = args + n_args + n_kw * 2 + 1;
+            int len = mp_obj_int_get(mp_obj_len_maybe(*kwargs));
+            DEBUG_OP_printf("vargs len=%d kwargs=%p\n", len, kwargs);
+
+            new_args_size += (len * 2);
+            new_n_kw += len;
+        }
+
+        mp_obj_t *new_args = malloc(new_args_size * sizeof(mp_obj_t));
+
+        for (int i = new_args_size - 1; i >= 0; i--) {
+            new_args[i] = MP_OBJ_NULL;
+        }
+
+        memcpy(new_args, args, sizeof(mp_obj_t) * n_args);
+
+        if (flags & MP_CALL_FLAG_VAR) {
+            mp_obj_t *seq_items;
+            uint seq_len;
+            const mp_obj_t *vargs = args + n_args + n_kw * 2;
+            if (MP_OBJ_IS_TYPE(vargs, &tuple_type)) {
+                mp_obj_tuple_get(*vargs, &seq_len, &seq_items);
+            } else {
+                mp_obj_list_get(*vargs, &seq_len, &seq_items);
+            }
+            for (uint i = 0; i < seq_len; i++) {
+                new_args[n_args+i] = seq_items[i];
+            }
+        }
+        if (flags & MP_CALL_FLAG_KW) {
+
+        }
+
+        return type->call(fun_in, new_n_args, new_n_kw, new_args);
+    } else {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
+    }
+}
+
 // args contains: fun  self/NULL  arg(0)  ...  arg(n_args-2)  arg(n_args-1)  kw_key(0)  kw_val(0)  ... kw_key(n_kw-1)  kw_val(n_kw-1)
 // if n_args==0 and n_kw==0 then there are only fun and self/NULL
 mp_obj_t rt_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args) {

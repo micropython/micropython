@@ -585,6 +585,24 @@ unwind_jump:
                         SET_TOP(rt_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                         break;
 
+                    case MP_BC_CALL_FUNCTION_VAR:
+                    case MP_BC_CALL_FUNCTION_KW:
+                    case MP_BC_CALL_FUNCTION_VAR_KW:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+
+                        uint flags = (op - MP_BC_CALL_FUNCTION) & 3;
+                        if (flags & MP_CALL_FLAG_VAR) {
+                            sp--;
+                        }
+                        if (flags & MP_CALL_FLAG_KW) {
+                            sp--;
+                        }
+                        SET_TOP(rt_call_function_n_var_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, flags, sp + 1));
+                        break;
+
                     case MP_BC_CALL_METHOD:
                         DECODE_UINT;
                         // unum & 0xff == n_positional

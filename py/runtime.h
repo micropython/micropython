@@ -1,3 +1,7 @@
+// for bit flags using in function rt_call_function_n_var_kw 
+#define MP_CALL_FLAG_VAR           1
+#define MP_CALL_FLAG_KW            2
+
 void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw);
 
 int rt_is_true(mp_obj_t arg);
@@ -25,6 +29,7 @@ mp_obj_t rt_call_function_1(mp_obj_t fun, mp_obj_t arg);
 mp_obj_t rt_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
 mp_obj_t rt_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args);
 mp_obj_t rt_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t rt_call_function_n_var_kw(mp_obj_t fun, uint n_args, uint n_kw, uint flags, const mp_obj_t *args);
 mp_obj_t rt_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t rt_build_tuple(int n_args, mp_obj_t *items);
 mp_obj_t rt_build_list(int n_args, mp_obj_t *items);
