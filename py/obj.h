@@ -189,7 +189,7 @@ struct _mp_obj_type_t {
 typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant types, globally accessible
-
+extern const mp_obj_type_t mp_type_object;
 extern const mp_obj_type_t mp_type_type;
 extern const mp_obj_type_t mp_type_BaseException;
 extern const mp_obj_type_t mp_type_AssertionError;

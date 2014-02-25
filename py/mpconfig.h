@@ -47,6 +47,11 @@
 #define MICROPY_DEBUG_PRINTERS (0)
 #endif
 
+// Whether to enable runtime debug message
+#ifndef MICROPY_RUNTIME_DEBUG
+#define MICROPY_RUNTIME_DEBUG (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python features                                         */
 

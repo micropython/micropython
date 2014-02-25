@@ -22,3 +22,7 @@
 # Build directory
 ######################
 build/
+*.vpj
+*.vpw
+*.vpwhist
+*.vtg

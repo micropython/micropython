@@ -361,6 +361,14 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     return o;
 }
 
+
+const mp_obj_type_t mp_type_object = {
+    { &mp_type_type },
+    .name = MP_QSTR_object,
+    .print = class_print,
+    .make_new = class_make_new,
+};
+
 /******************************************************************************/
 // super object
 

@@ -21,7 +21,7 @@
 #include "objarray.h"
 #include "bc.h"
 
-#if 1 // print debugging info
+#if MICROPY_RUNTIME_DEBUG  // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
 #define DEBUG_printf DEBUG_printf
@@ -146,6 +146,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
     { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
 
+    { MP_QSTR_object, (mp_obj_t)&mp_type_object },
     // built-in exceptions
     { MP_QSTR_BaseException, (mp_obj_t)&mp_type_BaseException },
     { MP_QSTR_AssertionError, (mp_obj_t)&mp_type_AssertionError },
