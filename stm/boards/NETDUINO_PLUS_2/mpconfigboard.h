@@ -25,21 +25,14 @@
 #define USRSW_PRESSED       (1)
 
 /* LED */
-#define PYB_LED1_PORT   (GPIOA)         // Blue LED
-#define PYB_LED1_PIN    (GPIO_Pin_10)
-
-#define PYB_LED2_PORT   (GPIOC)         // White LED (aka Power)
-#define PYB_LED2_PIN    (GPIO_Pin_13)
-
-#define PYB_LED3_PORT   (GPIOA)         // Same as Led(1)
-#define PYB_LED3_PIN    (GPIO_Pin_10)
-
-#define PYB_LED4_PORT   (GPIOC)         // Same as Led(2)
-#define PYB_LED4_PIN    (GPIO_Pin_13)
+#define PYB_LED1        (pin_A10)   // Blue LED
+#define PYB_LED2        (pin_C13)   // White LED (aka Power)
+#define PYB_LED3        (pin_A10)   // Same as Led(1)
+#define PYB_LED4        (pin_C13)   // Same as Led(2)
 
 #define PYB_OTYPE       (GPIO_OType_PP)
 
-#define PYB_LED_ON(port, pin)  (port->BSRRL = pin)
-#define PYB_LED_OFF(port, pin) (port->BSRRH = pin)
+#define PYB_LED_ON(pin)  (pin->gpio->BSRRL = pin->pin_mask)
+#define PYB_LED_OFF(pin) (pin->gpio->BSRRH = pin->pin_mask)
 
 #define HSE_VALUE (25000000)
