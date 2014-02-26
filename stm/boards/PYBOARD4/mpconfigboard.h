@@ -14,14 +14,11 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_AUDIO     (0)
 
-#define USRSW_PORT          (GPIOB)
-#define USRSW_PIN           (GPIO_Pin_3)
+// USRSW has no pullup or pulldown, and pressing the switch makes the input go low
+#define USRSW_PIN           (pin_B3)
 #define USRSW_PUPD          (GPIO_PuPd_UP)
-#define USRSW_EXTI_PIN      (EXTI_PinSource3)
-#define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOB)
-#define USRSW_EXTI_LINE     (EXTI_Line3)
-#define USRSW_EXTI_IRQN     (EXTI3_IRQn)
-#define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
+#define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
+#define USRSW_PRESSED       (0)
 
 /* LED */
 #define PYB_LED1_PORT   (GPIOA)

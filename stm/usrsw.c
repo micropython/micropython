@@ -1,78 +1,67 @@
-#include <stm_misc.h>
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_exti.h>
-#include <stm32f4xx_syscfg.h>
-#include <stm32f4xx_rcc.h>
+#include <stdio.h>
+#include <stm32f4xx.h>
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "usrsw.h"
 
+#include "exti.h"
+#include "gpio.h"
+#include "pin.h"
+#include "build/pins.h"
+
+// Usage Model:
+//
+// pyb.switch() returns True if the user switch is pressed, False otherwise.
+//
+// pyb.switch(callback) will register a callback to be called when the user
+//                      switch is pressed.
+// pyb.switch(None) will remove the callback.
+//
+// Example:
+//
+// def callback():
+//     print("User Switch pressed")
+//
+// pyb.switch(callback)
+
+static mp_obj_t switch_user_callback_obj;
+
+static mp_obj_t switch_callback(mp_obj_t line, mp_obj_t param) {
+    if (switch_user_callback_obj != mp_const_none) {
+        rt_call_function_0(switch_user_callback_obj);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(switch_callback_obj, switch_callback);
+
 void switch_init(void) {
-    // make it an input with pull-up
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin  = USRSW_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd = USRSW_PUPD;
-    GPIO_Init(USRSW_PORT, &GPIO_InitStructure);
-
-    // the rest does the EXTI interrupt
-
-    /* Enable SYSCFG clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-
-    /* Connect EXTI Line to GPIO pin */
-    SYSCFG_EXTILineConfig(USRSW_EXTI_PORT, USRSW_EXTI_PIN);
-
-    /* Configure EXTI Line */
-    EXTI_InitTypeDef EXTI_InitStructure;
-    EXTI_InitStructure.EXTI_Line = USRSW_EXTI_LINE;
-    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = USRSW_EXTI_EDGE;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-
-    /* Enable and set EXTI15_10 Interrupt to the lowest priority */
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = USRSW_EXTI_IRQN;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    switch_user_callback_obj = mp_const_none;
+    exti_register((mp_obj_t)&USRSW_PIN,
+                  MP_OBJ_NEW_SMALL_INT(EXTI_Mode_Interrupt),
+                  MP_OBJ_NEW_SMALL_INT(USRSW_EXTI_EDGE),
+                  (mp_obj_t)&switch_callback_obj,
+                  mp_const_none);
+    pyb_gpio_input((mp_obj_t)&USRSW_PIN, MP_OBJ_NEW_SMALL_INT(USRSW_PUPD));
 }
 
 int switch_get(void) {
-#if defined (PYBOARD3) || defined (PYBOARD4)
-    if (USRSW_PORT->IDR & USRSW_PIN) {
-        // pulled high, so switch is not pressed
-        return 0;
-    } else {
-        // pulled low, so switch is pressed
-        return 1;
-    }
-#elif defined (STM32F4DISC) || defined(NETDUINO_PLUS_2)
-    /* switch pulled down */
-    if (USRSW_PORT->IDR & USRSW_PIN) {
-        // pulled high, so switch is pressed
-        return 1;
-    } else {
-        // pulled low, so switch is not pressed
-        return 0;
-    }
-#endif
+    int val = ((USRSW_PIN.gpio->IDR & USRSW_PIN.pin_mask) != 0);
+    return val == USRSW_PRESSED;
 }
 
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-static mp_obj_t pyb_switch(void) {
-    if (switch_get()) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
+static mp_obj_t pyb_switch(uint n_args, mp_obj_t *args) {
+    if (n_args == 0) {
+        return switch_get() ? mp_const_true : mp_const_false;
     }
+    switch_user_callback_obj = args[0];
+    return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_switch_obj, pyb_switch);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_switch_obj, 0, 1, pyb_switch);
