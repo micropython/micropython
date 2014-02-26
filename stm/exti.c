@@ -382,6 +382,27 @@ void EXTI15_10_IRQHandler(void) {
     Handle_EXTI_Irq(13);
     Handle_EXTI_Irq(14);
     Handle_EXTI_Irq(15);
+
+#if 0
+    // for CC3000 support, needs to be re-written to use new EXTI code 
+    if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
+        led_toggle(PYB_LED_G2);
+        /* these are needed for CC3000 support
+        extern void SpiIntGPIOHandler(void);
+        extern uint32_t exti14_enabled;
+        extern uint32_t exti14_missed;
+        //printf("-> EXTI14 en=%lu miss=%lu\n", exti14_enabled, exti14_missed);
+        if (exti14_enabled) {
+            exti14_missed = 0;
+            SpiIntGPIOHandler(); // CC3000 interrupt
+        } else {
+            exti14_missed = 1;
+        }
+        */
+        EXTI_ClearITPendingBit(EXTI_Line14);
+        //printf("<- EXTI14 done\n");
+    }
+#endif
 }
 
 void PVD_IRQHandler(void) {
