@@ -199,7 +199,7 @@ class Pins(object):
         self.print_named('board', self.board_pins)
 
     def print_header(self, hdr_filename):
-        with open(hdr_filename, 'wb') as hdr_file:
+        with open(hdr_filename, 'wt') as hdr_file:
             for pin in self.pins:
                 if pin.board_name:
                     pin.print_header(hdr_file)
