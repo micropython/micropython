@@ -121,7 +121,7 @@ mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
     o->base.type = &fun_native_type;
     o->is_kw = false;
     o->n_args_min = n_args_min;
-    o->n_args_max = ~((machine_uint_t)0);
+    o->n_args_max = MP_OBJ_FUN_ARGS_MAX;
     o->fun = fun;
     return o;
 }
