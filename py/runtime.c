@@ -791,6 +791,8 @@ mp_obj_t rt_call_function_n_var_kw(mp_obj_t fun_in, uint n_args, uint n_kw, uint
         mp_obj_list_get(new_args_list, &len, &new_args);
         mp_obj_t result = type->call(fun_in, new_n_args, new_n_kw, new_args);
 
+        m_del(mp_obj_t, new_args, len);
+        m_del_obj(mp_obj_t, (mp_obj_t *)&new_args_list);
         return result;
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
