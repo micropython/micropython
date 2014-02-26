@@ -75,7 +75,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // Need to declare this here so we are not dependent on map.h
 struct _mp_map_t;
 struct _mp_map_elem_t;
-enum _mp_map_lookup_kind_t;
 
 // Type definitions for methods
 
