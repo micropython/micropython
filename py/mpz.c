@@ -113,7 +113,7 @@ uint mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t 
         borrow >>= DIG_SIZE;
     }
 
-    for (; jlen > 0; --jlen, ++idig, ++kdig) {
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
         borrow += *jdig;
         *idig = borrow & DIG_MASK;
         borrow >>= DIG_SIZE;
@@ -315,7 +315,7 @@ void mpn_div(mpz_dig_t *num_dig, machine_uint_t *num_len, mpz_dig_t *den_dig, ma
 
 #define MIN_ALLOC (4)
 #define ALIGN_ALLOC (2)
-#define NUM_DIG_FOR_INT (sizeof(int) * 8 / DIG_SIZE + 1)
+#define NUM_DIG_FOR_INT (sizeof(machine_int_t) * 8 / DIG_SIZE + 1)
 
 static const uint log_base2_floor[] = {
     0,
@@ -329,7 +329,7 @@ static const uint log_base2_floor[] = {
     4, 4, 4, 5
 };
 
-bool mpz_int_is_sml_int(int i) {
+bool mpz_int_is_sml_int(machine_int_t i) {
     return -(1 << DIG_SIZE) < i && i < (1 << DIG_SIZE);
 }
 
@@ -497,7 +497,7 @@ int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
     return cmp;
 }
 
-int mpz_cmp_sml_int(const mpz_t *z, int sml_int) {
+int mpz_cmp_sml_int(const mpz_t *z, machine_int_t sml_int) {
     int cmp;
     if (z->neg == 0) {
         if (sml_int < 0) return 1;
@@ -885,13 +885,13 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 }
 #endif
 
-int mpz_as_int(const mpz_t *i) {
-    int val = 0;
+machine_int_t mpz_as_int(const mpz_t *i) {
+    machine_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig)
     {
-        int oldval = val;
+        machine_int_t oldval = val;
         val = (val << DIG_SIZE) | *d;
         if (val < oldval)
         {

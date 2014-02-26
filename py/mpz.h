@@ -11,7 +11,7 @@ typedef struct _mpz_t {
     mpz_dig_t *dig;
 } mpz_t;
 
-bool mpz_int_is_sml_int(int i);
+bool mpz_int_is_sml_int(machine_int_t i);
 
 void mpz_init_zero(mpz_t *z);
 void mpz_init_from_int(mpz_t *z, machine_int_t val);
@@ -35,7 +35,7 @@ bool mpz_is_odd(const mpz_t *z);
 bool mpz_is_even(const mpz_t *z);
 
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
-int mpz_cmp_sml_int(const mpz_t *lhs, int sml_int);
+int mpz_cmp_sml_int(const mpz_t *lhs, machine_int_t sml_int);
 
 mpz_t *mpz_abs(const mpz_t *z);
 mpz_t *mpz_neg(const mpz_t *z);
@@ -58,7 +58,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 mpz_t *mpz_div(const mpz_t *lhs, const mpz_t *rhs);
 mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs);
 
-int mpz_as_int(const mpz_t *z);
+machine_int_t mpz_as_int(const mpz_t *z);
 machine_float_t mpz_as_float(const mpz_t *z);
 uint mpz_as_str_size(const mpz_t *z, uint base);
 char *mpz_as_str(const mpz_t *z, uint base);

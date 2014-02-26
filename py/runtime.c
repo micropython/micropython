@@ -735,59 +735,63 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     }
 }
 
-// args contains, eg: arg0  arg1  key0  value0  key1  value1 vargs kwargs
+// args contains, eg: arg0  arg1  key0  value0  key1  value1 ext_vargs ext_kwargs
 mp_obj_t rt_call_function_n_var_kw(mp_obj_t fun_in, uint n_args, uint n_kw, uint flags, const mp_obj_t *args) {
     DEBUG_OP_printf("calling function_var_kw %p(n_args=%d, n_kw=%d, args=%p)\n", fun_in, n_args, n_kw, args);
 
     mp_obj_type_t *type = mp_obj_get_type(fun_in);
+
     if (type->call != NULL) {
-        uint new_args_size = n_args + n_kw * 2; 
-        uint new_n_args = n_args;
-        uint new_n_kw = n_kw;       
+        mp_obj_t new_args_list = rt_build_list(n_args, (mp_obj_t *)args);
+        uint offset = n_args + n_kw * 2;
+
         if (flags & MP_CALL_FLAG_VAR) {
-            const mp_obj_t *vargs = args + n_args + n_kw * 2;
-            int len = mp_obj_int_get(mp_obj_len_maybe(*vargs));
-            DEBUG_OP_printf("vargs len=%d vargs=%p\n", len, vargs);
+            const mp_obj_t *ext_vargs =  args + offset;
+            mp_obj_t iterable = rt_getiter(*ext_vargs);
 
-            new_args_size += len;
-
-            new_n_args += len;
+            while (1) {
+                mp_obj_t el = rt_iternext(iterable);
+                if (el == mp_const_stop_iteration) {
+                    break;
+                }
+                mp_obj_list_append(new_args_list, el);
+            }
+            offset++;
         }
+
+        uint new_n_args = mp_obj_int_get(mp_obj_len_maybe(new_args_list));;
+
+        uint new_n_kw = n_kw;
+        if (n_kw > 0) {
+            const mp_obj_t *kwargs = args + n_args;
+            for (uint i = 0; i < n_kw; i++) {
+                mp_obj_list_append(new_args_list, *(kwargs + i * 2));
+                mp_obj_list_append(new_args_list, *(kwargs + i * 2 + 1));
+            }
+        }
+
         if (flags & MP_CALL_FLAG_KW) {
-            const mp_obj_t *kwargs = args + n_args + n_kw * 2 + 1;
-            int len = mp_obj_int_get(mp_obj_len_maybe(*kwargs));
-            DEBUG_OP_printf("vargs len=%d kwargs=%p\n", len, kwargs);
-
-            new_args_size += (len * 2);
-            new_n_kw += len;
-        }
-
-        mp_obj_t *new_args = malloc(new_args_size * sizeof(mp_obj_t));
-
-        for (int i = new_args_size - 1; i >= 0; i--) {
-            new_args[i] = MP_OBJ_NULL;
-        }
-
-        memcpy(new_args, args, sizeof(mp_obj_t) * n_args);
-
-        if (flags & MP_CALL_FLAG_VAR) {
-            mp_obj_t *seq_items;
-            uint seq_len;
-            const mp_obj_t *vargs = args + n_args + n_kw * 2;
-            if (MP_OBJ_IS_TYPE(vargs, &tuple_type)) {
-                mp_obj_tuple_get(*vargs, &seq_len, &seq_items);
+            const mp_obj_t *ext_kwargs = args + offset;
+            if (MP_OBJ_IS_TYPE(*ext_kwargs, &dict_type)) {
+                mp_map_t *ext_map = mp_obj_dict_get_map(*ext_kwargs);
+                for (uint i = 0; i < ext_map->alloc; i++) {
+                    if (ext_map->table[i].key != MP_OBJ_NULL) {
+                        mp_obj_list_append(new_args_list, ext_map->table[i].key);
+                        mp_obj_list_append(new_args_list, ext_map->table[i].value);
+                        new_n_kw++;
+                    }
+                }
             } else {
-                mp_obj_list_get(*vargs, &seq_len, &seq_items);
-            }
-            for (uint i = 0; i < seq_len; i++) {
-                new_args[n_args+i] = seq_items[i];
+                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not dict type", type->name));
             }
         }
-        if (flags & MP_CALL_FLAG_KW) {
 
-        }
+        uint len;
+        mp_obj_t *new_args;
+        mp_obj_list_get(new_args_list, &len, &new_args);
+        mp_obj_t result = type->call(fun_in, new_n_args, new_n_kw, new_args);
 
-        return type->call(fun_in, new_n_args, new_n_kw, new_args);
+        return result;
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
     }

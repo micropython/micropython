@@ -73,6 +73,11 @@ typedef struct _compiler_t {
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
 } compiler_t;
 
+void compile_error(compiler_t *comp, mp_parse_node_struct_t *pns, const char* msg) {
+    printf("Compile Error in File \"%s\", line %d\n\n  %s\n", qstr_str(comp->source_file), pns->source_line, msg);
+    comp->had_error = true;
+}
+
 mp_parse_node_t fold_constants(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -219,6 +224,9 @@ STATIC int list_len(mp_parse_node_t pn, int pn_kind) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) != pn_kind) {
+            if(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_classdef_2 ) {
+                return 0;
+            } 
             return 1;
         } else {
             return MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -2447,9 +2455,63 @@ void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(store_id, cname);
 }
 
+void compile_classdef_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    // do nothing
+}
+
+void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+
+    int first_keyword_pos = -1;
+    int star_arg_pos = -1;
+    int dbl_star_arg_pos = -1;
+
+    for (int i = 0; i < num_nodes; i++) {
+        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
+            if (first_keyword_pos != -1) {
+                if (i > first_keyword_pos) {
+                    compile_error(comp, pns, "SyntaxError: non-keyword arg after keyword arg");
+                    return;
+                }
+            }
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_argument)) {
+            if (first_keyword_pos == -1) {
+                first_keyword_pos = i;
+            }
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_arglist_star)) {
+            if (star_arg_pos == -1) {
+                star_arg_pos = i;
+            } else {
+                compile_error(comp, pns, "SyntaxError: can't have multiple *expression");
+                return;    
+            }
+
+            continue;    // skip compile here, wait for last arg
+
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_arglist_dbl_star)) {
+            // dbl_star must be the last one
+            if (i < num_nodes - 1) {
+                compile_error(comp, pns, "SyntaxError: **expression must be the last one");
+                return;
+            }
+            dbl_star_arg_pos = i;
+
+            continue;  // skip compile here, wait for last arg
+        } 
+        compile_node(comp, pns->nodes[i]);       
+    }
+
+    if (star_arg_pos != -1) {
+        compile_node(comp, pns->nodes[star_arg_pos]);
+    }
+    if (dbl_star_arg_pos != -1) {
+        compile_node(comp, pns->nodes[dbl_star_arg_pos]);
+    }
+}
+
 void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->have_star_arg) {
-        printf("SyntaxError?: can't have multiple *x\n");
+        compile_error(comp, pns, "SyntaxError: can't have multiple *expression");
         return;
     }
     comp->have_star_arg = true;
@@ -2458,7 +2520,7 @@ void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_arglist_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->have_dbl_star_arg) {
-        printf("SyntaxError?: can't have multiple **x\n");
+        compile_error(comp, pns, "SyntaxError: can't have multiple **expression");
         return;
     }
     comp->have_dbl_star_arg = true;
