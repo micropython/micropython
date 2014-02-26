@@ -17,7 +17,7 @@
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
-#define DEBUG_printf(args...) (void)0
+#define DEBUG_printf(...) (void)0
 #endif
 
 /******************************************************************************/
