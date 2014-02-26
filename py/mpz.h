@@ -3,10 +3,8 @@ typedef uint32_t mpz_dbl_dig_t;
 typedef int32_t mpz_dbl_dig_signed_t;
 
 typedef struct _mpz_t {
-    struct {
-        machine_uint_t neg : 1;
-        machine_uint_t alloc : 31;
-    };
+    machine_uint_t neg : 1;
+    machine_uint_t alloc : 31;
     machine_uint_t len;
     mpz_dig_t *dig;
 } mpz_t;

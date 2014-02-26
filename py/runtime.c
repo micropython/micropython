@@ -45,14 +45,10 @@ typedef enum {
 } mp_code_kind_t;
 
 typedef struct _mp_code_t {
-    struct {
-        mp_code_kind_t kind : 8;
-        uint scope_flags : 8;
-    };
-    struct {
-        uint n_args : 16;
-        uint n_state : 16;
-    };
+    mp_code_kind_t kind : 8;
+    uint scope_flags : 8;
+    uint n_args : 16;
+    uint n_state : 16;
     union {
         struct {
             byte *code;
