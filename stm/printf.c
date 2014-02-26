@@ -219,9 +219,19 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 mp_float_t d = va_arg(args, double);
                 int left = (int)d;
                 int right = (int)((d - (mp_float_t)(int)d) * 1000000.0);
-                chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width);
-                chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
-                chrs += pfenv_print_int(pfenv, right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
+                if (right < 0) {
+                    if (left == 0) {
+                        chrs += pfenv_print_strn(pfenv, "-0", 2, flags, width);
+                    } else {
+                        chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width); 
+                    }
+                    chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
+                    chrs += pfenv_print_int(pfenv, -right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
+                } else {
+                    chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width); 
+                    chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
+                    chrs += pfenv_print_int(pfenv, right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
+                }
                 break;
             }
             default:
