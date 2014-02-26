@@ -35,6 +35,35 @@ int mpn_cmp(const mpz_dig_t *idig, uint ilen, const mpz_dig_t *jdig, uint jlen) 
     return 0;
 }
 
+/* computes i = j << n
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j
+   can have i, j pointing to same memory
+*/
+/* unfinished
+uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
+    uint n_whole = n / DIG_SIZE;
+    uint n_part = n % DIG_SIZE;
+
+    idig += jlen + n_whole + 1;
+
+    for (uint i = jlen; i > 0; --i, ++idig, ++jdig) {
+        mpz_dbl_dig_t d = *jdig;
+        if (i > 1) {
+            d |= jdig[1] << DIG_SIZE;
+        }
+        d <<= n_part;
+        *idig = d & DIG_MASK;
+    }
+
+    if (idig[-1] == 0) {
+        --jlen;
+    }
+
+    return jlen;
+}
+*/
+
 /* computes i = j >> n
    returns number of digits in i
    assumes enough memory in i; assumes normalised j
@@ -53,8 +82,9 @@ uint mpn_shr(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
 
     for (uint i = jlen; i > 0; --i, ++idig, ++jdig) {
         mpz_dbl_dig_t d = *jdig;
-        if (i > 1)
+        if (i > 1) {
             d |= jdig[1] << DIG_SIZE;
+        }
         d >>= n_part;
         *idig = d & DIG_MASK;
     }
@@ -525,42 +555,6 @@ int mpz_cmp_sml_int(const mpz_t *z, machine_int_t sml_int) {
     return 0;
 }
 
-/* not finished
-mpz_t *mpz_shl(mpz_t *dest, const mpz_t *lhs, int rhs)
-{
-    if (dest != lhs)
-        dest = mpz_set(dest, lhs);
-
-    if (dest.len == 0 || rhs == 0)
-        return dest;
-
-    if (rhs < 0)
-        return mpz_shr(dest, dest, -rhs);
-
-    printf("mpz_shl: not implemented\n");
-
-    return dest;
-}
-
-mpz_t *mpz_shr(mpz_t *dest, const mpz_t *lhs, int rhs)
-{
-    if (dest != lhs)
-        dest = mpz_set(dest, lhs);
-
-    if (dest.len == 0 || rhs == 0)
-        return dest;
-
-    if (rhs < 0)
-        return mpz_shl(dest, dest, -rhs);
-
-    dest.len = mpn_shr(dest.len, dest.dig, rhs);
-    dest.dig[dest.len .. dest->alloc] = 0;
-
-    return dest;
-}
-*/
-
-
 #if 0
 these functions are unused
 
@@ -637,6 +631,51 @@ void mpz_neg_inpl(mpz_t *dest, const mpz_t *z) {
     dest->neg = 1 - dest->neg;
 }
 
+#if 0
+not finished
+/* computes dest = lhs << rhs
+   can have dest, lhs the same
+*/
+void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs) {
+    if (dest != lhs) {
+        mpz_set(dest, lhs);
+    }
+
+    if (dest.len == 0 || rhs == 0) {
+        return dest;
+    }
+
+    if (rhs < 0) {
+        dest->len = mpn_shr(dest->len, dest->dig, -rhs);
+    } else {
+        dest->len = mpn_shl(dest->len, dest->dig, rhs);
+    }
+
+    return dest;
+}
+
+/* computes dest = lhs >> rhs
+   can have dest, lhs the same
+*/
+void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs) {
+    if (dest != lhs) {
+        mpz_set(dest, lhs);
+    }
+
+    if (dest.len == 0 || rhs == 0) {
+        return dest;
+    }
+
+    if (rhs < 0) {
+        dest->len = mpn_shl(dest->len, dest->dig, -rhs);
+    } else {
+        dest->len = mpn_shr(dest->len, dest->dig, rhs);
+    }
+
+    return dest;
+}
+#endif
+
 /* computes dest = lhs + rhs
    can have dest, lhs, rhs the same
 */
@@ -692,7 +731,8 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs)
 {
     if (lhs->len == 0 || rhs->len == 0) {
-        return mpz_set_from_int(dest, 0);
+        mpz_set_from_int(dest, 0);
+        return;
     }
 
     mpz_t *temp = NULL;
@@ -723,11 +763,13 @@ void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs)
 */
 void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (lhs->len == 0 || rhs->neg != 0) {
-        return mpz_set_from_int(dest, 0);
+        mpz_set_from_int(dest, 0);
+        return;
     }
 
     if (rhs->len == 0) {
-        return mpz_set_from_int(dest, 1);
+        mpz_set_from_int(dest, 1);
+        return;
     }
 
     mpz_t *x = mpz_clone(lhs);
