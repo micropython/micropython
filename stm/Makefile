@@ -25,6 +25,9 @@ CFLAGS += -I$(FATFS_DIR)
 #CFLAGS += -I$(CC3K_DIR)
 
 BOARD ?= PYBOARD4
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
 CFLAGS += -Iboards/$(BOARD)
 
 #Debugging/Optimization
