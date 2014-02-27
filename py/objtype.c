@@ -454,16 +454,7 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
 /******************************************************************************/
 // subclassing and built-ins specific to types
 
-bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
-    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
-    }
-
-    // TODO support a tuple of classes for second argument
-    if (!MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class"));
-    }
-
+bool mp_obj_is_subclass_fast(mp_obj_t object, mp_obj_t classinfo) {
     for (;;) {
         if (object == classinfo) {
             return true;
@@ -494,6 +485,19 @@ bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
         // search last base (simple tail recursion elimination)
         object = items[len - 1];
     }
+}
+
+bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
+    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
+    }
+
+    // TODO support a tuple of classes for second argument
+    if (!MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class"));
+    }
+
+    return mp_obj_is_subclass_fast(object, classinfo);
 }
 
 STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
