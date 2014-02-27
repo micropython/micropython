@@ -5,7 +5,13 @@ T = namedtuple("Tup", "foo bar")
 #print(T)
 t = T(1, 2)
 print(t)
+print(t[0], t[1])
 print(t.foo, t.bar)
+
+print(len(t))
+print(bool(t))
+print(t + t)
+print(t * 3)
 
 print(isinstance(t, tuple))
 
