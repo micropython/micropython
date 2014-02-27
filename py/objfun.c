@@ -248,9 +248,9 @@ continue2:;
         // Now fill in defaults
         mp_obj_t *d = &flat_args[self->n_args - 1];
         mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
-        for (int i = self->n_def_args; i > 0; i--) {
-            if (*d != MP_OBJ_NULL) {
-                *d-- = *s--;
+        for (int i = self->n_def_args; i > 0; i--, d--, s--) {
+            if (*d == MP_OBJ_NULL) {
+                *d = *s;
             }
         }
         DEBUG_printf("Args after filling defaults: ");
