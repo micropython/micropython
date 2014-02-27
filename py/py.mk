@@ -58,6 +58,7 @@ PY_O_BASENAME = \
 	objmap.o \
 	objmodule.o \
 	objnone.o \
+	objnamedtuple.o \
 	objrange.o \
 	objset.o \
 	objslice.o \
