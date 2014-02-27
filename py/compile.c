@@ -2474,6 +2474,12 @@ void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     return;
                 }
             }
+            if (star_arg_pos != -1) {
+                if (i > star_arg_pos) {
+                    compile_error(comp, pns, "SyntaxError: only named arguments may follow *expression");
+                    return;
+                }
+            }
         } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_argument)) {
             if (first_keyword_pos == -1) {
                 first_keyword_pos = i;
