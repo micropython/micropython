@@ -7,12 +7,22 @@
 #include "qstr.h"
 #include "obj.h"
 #include "led.h"
+#include "pin.h"
+#include "build/pins.h"
 
-/* LED numbers, used internally */
-#define PYB_LED_1   (1)
-#define PYB_LED_2   (2)
-#define PYB_LED_3   (3)
-#define PYB_LED_4   (4)
+static const pin_obj_t *gLed[] = {
+    &PYB_LED1,
+#if defined(PYB_LED2)
+    &PYB_LED2,
+#if defined(PYB_LED3)
+    &PYB_LED3,
+#if defined(PYB_LED4)
+    &PYB_LED4,
+#endif
+#endif
+#endif
+};
+#define NUM_LEDS (sizeof(gLed) / sizeof(gLed[0]))
 
 void led_init(void) {
     /* GPIO structure */
@@ -24,92 +34,43 @@ void led_init(void) {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_OType = PYB_OTYPE;
 
-    /* Turn off LEDs */
-    PYB_LED_OFF(PYB_LED1_PORT, PYB_LED1_PIN);
-    PYB_LED_OFF(PYB_LED2_PORT, PYB_LED2_PIN);
-    PYB_LED_OFF(PYB_LED3_PORT, PYB_LED3_PIN);
-    PYB_LED_OFF(PYB_LED4_PORT, PYB_LED4_PIN);
-
-    /* Initialize LEDs */
-    GPIO_InitStructure.GPIO_Pin = PYB_LED1_PIN;
-    GPIO_Init(PYB_LED1_PORT, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = PYB_LED2_PIN;
-    GPIO_Init(PYB_LED2_PORT, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = PYB_LED3_PIN;
-    GPIO_Init(PYB_LED3_PORT, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = PYB_LED4_PIN;
-    GPIO_Init(PYB_LED4_PORT, &GPIO_InitStructure);
+    /* Turn off LEDs and initialize */
+    for (int led = 0; led < NUM_LEDS; led++) {
+        PYB_LED_OFF(gLed[led]); 
+        GPIO_InitStructure.GPIO_Pin = gLed[led]->pin_mask;
+        GPIO_Init(gLed[led]->gpio, &GPIO_InitStructure);
+    }
 }
 
 void led_state(pyb_led_t led, int state) {
-    GPIO_TypeDef *port;
-    uint32_t pin;
-
-    switch (led) {
-        case PYB_LED_1:
-            pin  = PYB_LED1_PIN;
-            port = PYB_LED1_PORT;
-            break;
-        case PYB_LED_2:
-            pin  = PYB_LED2_PIN;
-            port = PYB_LED2_PORT;
-            break;
-        case PYB_LED_3:
-            pin  = PYB_LED3_PIN;
-            port = PYB_LED3_PORT;
-            break;
-        case PYB_LED_4:
-            pin  = PYB_LED4_PIN;
-            port = PYB_LED4_PORT;
-            break;
-        default:
-            return;
+    if (led < 1 || led > NUM_LEDS) {
+        return;
     }
-
+    const pin_obj_t *led_pin = gLed[led - 1];
     if (state == 0) {
         // turn LED off
-        PYB_LED_OFF(port, pin);
+        PYB_LED_OFF(led_pin);
     } else {
         // turn LED on
-        PYB_LED_ON(port, pin);
+        PYB_LED_ON(led_pin);
     }
 }
 
 void led_toggle(pyb_led_t led) {
-    GPIO_TypeDef *port;
-    uint32_t pin;
-
-    switch (led) {
-        case PYB_LED_1:
-            pin  = PYB_LED1_PIN;
-            port = PYB_LED1_PORT;
-            break;
-        case PYB_LED_2:
-            pin  = PYB_LED2_PIN;
-            port = PYB_LED2_PORT;
-            break;
-        case PYB_LED_3:
-            pin  = PYB_LED3_PIN;
-            port = PYB_LED3_PORT;
-            break;
-        case PYB_LED_4:
-            pin  = PYB_LED4_PIN;
-            port = PYB_LED4_PORT;
-            break;
-        default:
-            return;
+    if (led < 1 || led > NUM_LEDS) {
+        return;
     }
+    const pin_obj_t *led_pin = gLed[led - 1];
+    GPIO_TypeDef *gpio = led_pin->gpio;
 
-    // XXX this assumes LED is driven by a high MCU output (false for PYBv3, true for PYBv4)
-    if (port->ODR & pin) {
-        // turn LED off
-        PYB_LED_OFF(port, pin);
+    // We don't know if we're turning the LED on or off, but we don't really
+    // care. Just invert the state.
+    if (gpio->ODR & led_pin->pin_mask) {
+        // pin is high, make it low
+        gpio->BSRRH = led_pin->pin_mask;
     } else {
-        // turn LED on (output low)
-        PYB_LED_ON(port, pin);
+        // pin is low, make it high
+        gpio->BSRRL = led_pin->pin_mask;
     }
 }
 
@@ -138,12 +99,20 @@ mp_obj_t led_obj_off(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+mp_obj_t led_obj_toggle(mp_obj_t self_in) {
+    pyb_led_obj_t *self = self_in;
+    led_toggle(self->led_id);
+    return mp_const_none;
+}
+
 static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
 static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 
 static const mp_method_t led_methods[] = {
     { "on", &led_obj_on_obj },
     { "off", &led_obj_off_obj },
+    { "toggle", &led_obj_toggle_obj },
     { NULL, NULL },
 };
 

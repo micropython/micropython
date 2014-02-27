@@ -14,29 +14,19 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_AUDIO     (0)
 
-#define USRSW_PORT          (GPIOA)
-#define USRSW_PIN           (GPIO_Pin_13)
+// USRSW has no pullup or pulldown, and pressing the switch makes the input go low
+#define USRSW_PIN           (pin_A13)
 #define USRSW_PUPD          (GPIO_PuPd_UP)
-#define USRSW_EXTI_PIN      (EXTI_PinSource13)
-#define USRSW_EXTI_PORT     (EXTI_PortSourceGPIOA)
-#define USRSW_EXTI_LINE     (EXTI_Line13)
-#define USRSW_EXTI_IRQN     (EXTI15_10_IRQn)
-#define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
+#define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
+#define USRSW_PRESSED       (0)
 
 /* LED */
-#define PYB_LED1_PORT   (GPIOA)
-#define PYB_LED1_PIN    (GPIO_Pin_8)
+#define PYB_LED1        (pin_A8)  // R1 - red
+#define PYB_LED2        (pin_A10) // R2 - red
+#define PYB_LED3        (pin_C4)  // G1 - green
+#define PYB_LED4        (pin_C5)  // G2 - green
 
-#define PYB_LED2_PORT   (GPIOA)
-#define PYB_LED2_PIN    (GPIO_Pin_10)
+#define PYB_OTYPE       (GPIO_OType_PP)
 
-#define PYB_LED3_PORT   (GPIOC)
-#define PYB_LED3_PIN    (GPIO_Pin_4)
-
-#define PYB_LED4_PORT   (GPIOC)
-#define PYB_LED4_PIN    (GPIO_Pin_5)
-
-#define PYB_OTYPE       (GPIO_OType_OD)
-
-#define PYB_LED_ON(port, pin)  (port->BSRRH = pin)
-#define PYB_LED_OFF(port, pin) (port->BSRRL = pin)
+#define PYB_LED_ON(pin)  (pin->gpio->BSRRH = pin->pin_mask)
+#define PYB_LED_OFF(pin) (pin->gpio->BSRRL = pin->pin_mask)

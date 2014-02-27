@@ -133,6 +133,13 @@ class Pin(object):
             self.alt_fn_count, self.alt_fn_name()))
         print('')
 
+    def print_header(self, hdr_file):
+        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.
+                       format(self.pin_name()))
+        if self.alt_fn_count > 0:
+            hdr_file.write('extern const pin_af_obj_t pin_{:s}_af[];\n'.
+                           format(self.pin_name()))
+
 
 class Pins(object):
 
@@ -191,6 +198,12 @@ class Pins(object):
         print('')
         self.print_named('board', self.board_pins)
 
+    def print_header(self, hdr_filename):
+        with open(hdr_filename, 'wt') as hdr_file:
+            for pin in self.pins:
+                if pin.board_name:
+                    pin.print_header(hdr_file)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -215,6 +228,12 @@ def main():
         help="Specifies beginning portion of generated pins file",
         default="stm32f4xx-prefix.c"
     )
+    parser.add_argument(
+        "-r", "--hdr",
+        dest="hdr_filename",
+        help="Specifies name of generated pin header file",
+        default="build/pins.h"
+    )
     args = parser.parse_args(sys.argv[1:])
 
     pins = Pins()
@@ -235,6 +254,7 @@ def main():
         with open(args.prefix_filename, 'r') as prefix_file:
             print(prefix_file.read())
     pins.print()
+    pins.print_header(args.hdr_filename)
 
 
 if __name__ == "__main__":

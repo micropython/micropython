@@ -2571,7 +2571,7 @@ STATIC compile_function_t compile_function[] = {
     NULL,
 #define nc NULL
 #define c(f) compile_##f
-#define DEF_RULE(rule, comp, kind, arg...) comp,
+#define DEF_RULE(rule, comp, kind, ...) comp,
 #include "grammar.h"
 #undef nc
 #undef c

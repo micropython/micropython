@@ -13,7 +13,7 @@
 #include "runtime0.h"
 #include "emit.h"
 
-#define EMIT(fun, arg...) (emit_method_table->fun(emit, ##arg))
+#define EMIT(fun, ...) (emit_method_table->fun(emit, __VA_ARGS__))
 
 void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qstr) {
     // assumes pass is greater than 1, ie that all identifiers are defined in the scope

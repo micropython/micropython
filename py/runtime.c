@@ -25,10 +25,10 @@
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
 #define DEBUG_printf DEBUG_printf
-#define DEBUG_OP_printf(args...) DEBUG_printf(args)
+#define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
 #else // don't print debugging info
-#define DEBUG_printf(args...) (void)0
-#define DEBUG_OP_printf(args...) (void)0
+#define DEBUG_printf(...) (void)0
+#define DEBUG_OP_printf(...) (void)0
 #endif
 
 // locals and globals need to be pointers because they can be the same in outer module scope
@@ -45,14 +45,10 @@ typedef enum {
 } mp_code_kind_t;
 
 typedef struct _mp_code_t {
-    struct {
-        mp_code_kind_t kind : 8;
-        uint scope_flags : 8;
-    };
-    struct {
-        uint n_args : 16;
-        uint n_state : 16;
-    };
+    mp_code_kind_t kind : 8;
+    uint scope_flags : 8;
+    uint n_args : 16;
+    uint n_state : 16;
     union {
         struct {
             byte *code;
