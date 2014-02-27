@@ -16,7 +16,7 @@
 void exti_init_early(void);
 void exti_init(mp_obj_t mod);
 
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, mp_obj_t param_obj);
+uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, void *param);
 
 void exti_enable(uint line);
 void exti_disable(uint line);
@@ -24,6 +24,6 @@ void exti_swint(uint line);
 
 typedef struct {
   mp_obj_t callback;
-  mp_obj_t param;
+  void *param;
 } exti_t;
 
