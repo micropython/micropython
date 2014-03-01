@@ -10,6 +10,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "lexer.h"
+#include "parsenumbase.h"
 #include "parse.h"
 
 #define RULE_ACT_KIND_MASK      (0xf0)
@@ -241,23 +242,8 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
         machine_int_t int_val = 0;
         int len = tok->len;
         const char *str = tok->str;
-        int base = 10;
-        int i = 0;
-        if (len >= 3 && str[0] == '0') {
-            if (str[1] == 'o' || str[1] == 'O') {
-                // octal
-                base = 8;
-                i = 2;
-            } else if (str[1] == 'x' || str[1] == 'X') {
-                // hexadecimal
-                base = 16;
-                i = 2;
-            } else if (str[1] == 'b' || str[1] == 'B') {
-                // binary
-                base = 2;
-                i = 2;
-            }
-        }
+        int base = 0;
+        int i = mp_parse_num_base(str, len, &base);
         bool overflow = false;
         for (; i < len; i++) {
             machine_int_t old_val = int_val;

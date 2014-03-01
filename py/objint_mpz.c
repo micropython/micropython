@@ -7,6 +7,7 @@
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
+#include "parsenumbase.h"
 #include "obj.h"
 #include "mpz.h"
 #include "objint.h"
@@ -39,17 +40,20 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
         case RT_UNARY_OP_POSITIVE: return o_in;
         case RT_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
-        //case RT_UNARY_OP_INVERT: ~ not implemented for mpz
+        case RT_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
         default: return NULL; // op not supported
     }
 }
 
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mpz_t *zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
-    mpz_t *zrhs;
+    const mpz_t *zrhs;
+    mpz_t z_int;
+    mpz_dig_t z_int_dig[MPZ_NUM_DIG_FOR_INT];
 
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
-        zrhs = mpz_from_int(MP_OBJ_SMALL_INT_VALUE(rhs_in));
+        mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
+        zrhs = &z_int;
     } else if (MP_OBJ_IS_TYPE(rhs_in, &int_type)) {
         zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
     } else {
@@ -95,10 +99,22 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             //case RT_BINARY_OP_XOR:
             //case RT_BINARY_OP_INPLACE_XOR:
 
-            //case RT_BINARY_OP_LSHIFT:
-            //case RT_BINARY_OP_INPLACE_LSHIFT:
-            //case RT_BINARY_OP_RSHIFT:
-            //case RT_BINARY_OP_INPLACE_RSHIFT:
+            case RT_BINARY_OP_LSHIFT:
+            case RT_BINARY_OP_INPLACE_LSHIFT:
+            case RT_BINARY_OP_RSHIFT:
+            case RT_BINARY_OP_INPLACE_RSHIFT: {
+                // TODO check conversion overflow
+                machine_int_t irhs = mpz_as_int(zrhs);
+                if (irhs < 0) {
+                    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                }
+                if (op == RT_BINARY_OP_LSHIFT || op == RT_BINARY_OP_INPLACE_LSHIFT) {
+                    mpz_shl_inpl(&res->mpz, zlhs, irhs);
+                } else {
+                    mpz_shr_inpl(&res->mpz, zlhs, irhs);
+                }
+                break;
+            }
 
             case RT_BINARY_OP_POWER:
             case RT_BINARY_OP_INPLACE_POWER:
@@ -158,7 +174,11 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
 mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     uint len = strlen(str);
-    uint n = mpz_set_from_str(&o->mpz, str, len, false, 10);
+    int base = 0;
+    int skip = mp_parse_num_base(str, len, &base);
+    str += skip;
+    len -= skip;
+    uint n = mpz_set_from_str(&o->mpz, str, len, false, base);
     if (n != len) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }

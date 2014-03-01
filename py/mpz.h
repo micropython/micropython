@@ -4,15 +4,21 @@ typedef int32_t mpz_dbl_dig_signed_t;
 
 typedef struct _mpz_t {
     machine_uint_t neg : 1;
-    machine_uint_t alloc : 31;
+    machine_uint_t fixed_dig : 1;
+    machine_uint_t alloc : 30;
     machine_uint_t len;
     mpz_dig_t *dig;
 } mpz_t;
 
-bool mpz_int_is_sml_int(machine_int_t i);
+#define MPZ_DIG_SIZE (15) // see mpn_div for why this needs to be at most 15
+#define MPZ_NUM_DIG_FOR_INT (sizeof(machine_int_t) * 8 / MPZ_DIG_SIZE + 1)
+
+// convenience macro to declare an mpz with a digit array from the stack, initialised by an integer
+#define MPZ_CONST_INT(z, val) mpz_t z; mpz_dig_t z ## _digits[MPZ_NUM_DIG_FOR_INT]; mpz_init_fixed_from_int(&z, z_digits, MPZ_NUM_DIG_FOR_INT, val);
 
 void mpz_init_zero(mpz_t *z);
 void mpz_init_from_int(mpz_t *z, machine_int_t val);
+void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, uint dig_alloc, machine_int_t val);
 void mpz_deinit(mpz_t *z);
 
 mpz_t *mpz_zero();
@@ -33,7 +39,6 @@ bool mpz_is_odd(const mpz_t *z);
 bool mpz_is_even(const mpz_t *z);
 
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
-int mpz_cmp_sml_int(const mpz_t *lhs, machine_int_t sml_int);
 
 mpz_t *mpz_abs(const mpz_t *z);
 mpz_t *mpz_neg(const mpz_t *z);
@@ -44,8 +49,9 @@ mpz_t *mpz_pow(const mpz_t *lhs, const mpz_t *rhs);
 
 void mpz_abs_inpl(mpz_t *dest, const mpz_t *z);
 void mpz_neg_inpl(mpz_t *dest, const mpz_t *z);
-//void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs);
-//void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs);
+void mpz_not_inpl(mpz_t *dest, const mpz_t *z);
+void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs);
+void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs);
 void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
