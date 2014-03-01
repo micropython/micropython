@@ -2,7 +2,7 @@
 /* thumb callee save: bx, bp, sp, r12, r14, r14, r15 */
 
     .syntax unified
-    .cpu cortex-m4
+    /*.cpu cortex-m4*/
     .thumb
     .text
     .align  2
