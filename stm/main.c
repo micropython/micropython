@@ -675,6 +675,9 @@ double sqrt(double x) {
 }
 
 machine_float_t machine_sqrt(machine_float_t x) {
-    // TODO
+    asm volatile (
+            "vsqrt.f32  %[r], %[x]\n"
+            : [r] "=t" (x)
+            : [x] "t"  (x));
     return x;
 }
