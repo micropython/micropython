@@ -189,6 +189,9 @@ void rt_init(void) {
     mp_obj_t m_array = mp_obj_new_module(MP_QSTR_array);
     rt_store_attr(m_array, MP_QSTR_array, (mp_obj_t)&array_type);
 
+    mp_obj_t m_collections = mp_obj_new_module(MP_QSTR_collections);
+    rt_store_attr(m_collections, MP_QSTR_namedtuple, (mp_obj_t)&mp_namedtuple_obj);
+
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);

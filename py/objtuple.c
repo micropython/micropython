@@ -86,7 +86,7 @@ STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
-STATIC mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
+mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
         case RT_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
@@ -95,7 +95,7 @@ STATIC mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
@@ -116,7 +116,7 @@ STATIC mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         case RT_BINARY_OP_ADD:
         {
-            if (!MP_OBJ_IS_TYPE(rhs, &tuple_type)) {
+            if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&tuple_type)) {
                 return NULL;
             }
             mp_obj_tuple_t *p = rhs;
