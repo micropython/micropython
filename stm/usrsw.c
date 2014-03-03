@@ -19,24 +19,25 @@
 //
 // pyb.switch(callback) will register a callback to be called when the user
 //                      switch is pressed.
+//
 // pyb.switch(None) will remove the callback.
 //
 // Example:
 //
-// def callback():
+// def switch_pressed():
 //     print("User Switch pressed")
 //
-// pyb.switch(callback)
+// pyb.switch(switch_pressed)
 
 static mp_obj_t switch_user_callback_obj;
 
-static mp_obj_t switch_callback(mp_obj_t line, mp_obj_t param) {
+static mp_obj_t switch_callback(mp_obj_t line) {
     if (switch_user_callback_obj != mp_const_none) {
         rt_call_function_0(switch_user_callback_obj);
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(switch_callback_obj, switch_callback);
+static MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 
 void switch_init(void) {
     switch_user_callback_obj = mp_const_none;
@@ -44,7 +45,7 @@ void switch_init(void) {
                   MP_OBJ_NEW_SMALL_INT(EXTI_Mode_Interrupt),
                   MP_OBJ_NEW_SMALL_INT(USRSW_EXTI_EDGE),
                   (mp_obj_t)&switch_callback_obj,
-                  mp_const_none);
+                  NULL);
     pyb_gpio_input((mp_obj_t)&USRSW_PIN, MP_OBJ_NEW_SMALL_INT(USRSW_PUPD));
 }
 

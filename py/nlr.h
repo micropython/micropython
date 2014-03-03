@@ -3,23 +3,19 @@
 
 #include <limits.h>
 
-//#ifndef __WORDSIZE
-//#error __WORDSIZE needs to be defined
-//#endif
-
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
     // the entries here must all be machine word size
     nlr_buf_t *prev;
     void *ret_val;
-#if __WORDSIZE == 32
+#if defined(__i386__)
     void *regs[6];
-#elif __WORDSIZE == 64
+#elif defined(__x86_64__)
     void *regs[8];
-#else
-    // hack for thumb
+#elif defined(__thumb2__)
     void *regs[10];
-//#error Unsupported __WORDSIZE
+#else
+#error Unknown arch in nlr.h
 #endif
 };
 

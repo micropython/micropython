@@ -24,8 +24,8 @@
 // arbitrary port. So line 0 can map to Px0 where x is A, B, C, ... and
 // line 1 can map to Px1 where x is A, B, C, ...
 //
-// def callback(line, param):
-//     print("line =", line, "param =", param)
+// def callback(line):
+//     print("line =", line)
 //
 // # Configure the pin as a GPIO input.
 // pin = pyb.Pin.board.X1
@@ -84,7 +84,7 @@ typedef struct {
 
 typedef struct {
   mp_obj_t callback_obj;
-  mp_obj_t param_obj;
+  void *param;
   EXTIMode_TypeDef mode;
 } exti_vector_t;
 
@@ -98,7 +98,9 @@ static const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     OTG_HS_WKUP_IRQn, TAMP_STAMP_IRQn, RTC_WKUP_IRQn
 };
 
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, mp_obj_t param_obj) {
+// NOTE: param is for C callers. Python can use closure to get an object bound
+//       with the function.
+uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, void *param) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -145,13 +147,12 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp
         SYSCFG_EXTILineConfig(pin->port, v_line);
     }
     v->callback_obj = callback_obj;
-    v->param_obj = param_obj;
+    v->param = param;
     v->mode = mode;
 
     if (v->callback_obj != mp_const_none) {
         // The EXTI_Init function isn't atomic. It uses |= and &=.
         // We use bit band operations to make it atomic.
-        exti_disable(v_line);
         EXTI_EDGE_BB(EXTI_Trigger_Rising, v_line) =
             trigger == EXTI_Trigger_Rising || trigger == EXTI_Trigger_Rising_Falling;
         EXTI_EDGE_BB(EXTI_Trigger_Falling, v_line) =
@@ -276,12 +277,12 @@ static void exti_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
     }
 }
 
-// line_obj = pyb.Exti(pin, mode, trigger, callback, [param])
+// line_obj = pyb.Exti(pin, mode, trigger, callback)
 
 static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
-    rt_check_nargs(n_args, 4, 5, n_kw, 0);
+    rt_check_nargs(n_args, 4, 4, n_kw, 0);
 
     exti_obj_t *self = m_new_obj(exti_obj_t);
     self->base.type = type_in;
@@ -289,11 +290,7 @@ static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_t mode_obj = args[1];
     mp_obj_t trigger_obj = args[2];
     mp_obj_t callback_obj = args[3];
-    mp_obj_t param_obj = mp_const_none;
-    if (n_args > 4) {
-        param_obj = args[4];
-    }
-    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, param_obj);
+    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, NULL);
 
     return self;
 }
@@ -326,7 +323,7 @@ static const mp_obj_type_t exti_obj_type = {
 void exti_init_early(void) {
     for (exti_vector_t *v = exti_vector; v < &exti_vector[EXTI_NUM_VECTORS]; v++) {
         v->callback_obj = mp_const_none;
-        v->param_obj = mp_const_none;
+        v->param = NULL;
         v->mode = EXTI_Mode_Interrupt;
     }
 }
@@ -341,7 +338,7 @@ static void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
-                rt_call_function_2(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line), v->param_obj);
+                rt_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
             }
         }
     }

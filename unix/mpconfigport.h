@@ -8,6 +8,7 @@
 #endif
 
 #define MICROPY_ENABLE_GC           (1)
+
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)

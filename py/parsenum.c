@@ -5,6 +5,7 @@
 #include "qstr.h"
 #include "nlr.h"
 #include "obj.h"
+#include "parsenumbase.h"
 #include "parsenum.h"
 
 #if defined(UNIX)
@@ -33,37 +34,14 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     // preced sign
     if (c == '+' || c == '-') {
         neg = - (c == '-');
-        c = *(p++);
-    }
-
-    // find real radix base, and strip preced '0x', '0o' and '0b'
-    // TODO somehow merge with similar code in parse.c
-    if ((base == 0 || base == 16) && c == '0') {
-        c = *(p++);
-        if ((c | 32) == 'x') {
-            base = 16;
-        } else if (base == 0 && (c | 32) == 'o') {
-            base = 8;
-        } else if (base == 0 && (c | 32) == 'b') {
-            base = 2;
-        } else {
-            base = 10;
-            p -= 2;
-        }
-    } else if (base == 8 && c == '0') {
-        c = *(p++);
-        if ((c | 32) != 'o') {
-            p -= 2;
-        }
-    } else if (base == 2 && c == '0') {
-        c = *(p++);
-        if ((c | 32) != 'b') {
-            p -= 2;
-        }
     } else {
-        if (base == 0) base = 10;
         p--;
     }
+
+    len -= p - str;
+    int skip = mp_parse_num_base(p, len, &base);
+    p += skip;
+    len -= skip;
 
     errno = 0;
     found = strtol(p, &num, base);

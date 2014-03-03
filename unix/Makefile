@@ -20,6 +20,12 @@ else
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
  endif
 
+ifeq ($(MICROPY_USE_READLINE),1)
+CFLAGS_MOD += -DMICROPY_USE_READLINE=1
+LDFLAGS_MOD += -lreadline
+# the following is needed for BSD
+#LDFLAGS_MOD += -ltermcap
+endif
 ifeq ($(MICROPY_MOD_TIME),1)
 CFLAGS_MOD += -DMICROPY_MOD_TIME=1
 SRC_MOD += time.c
@@ -48,9 +54,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-LIB = -lreadline
-# the following is needed for BSD
-#LIB += -ltermcap
 
 include ../py/mkrules.mk
 

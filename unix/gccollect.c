@@ -47,6 +47,33 @@ void gc_helper_get_regs(regs_t arr) {
 }
 #endif
 
+#ifdef __thumb2__
+typedef machine_uint_t regs_t[10];
+
+void gc_helper_get_regs(regs_t arr) {
+    register long r4 asm ("r4");
+    register long r5 asm ("r5");
+    register long r6 asm ("r6");
+    register long r7 asm ("r7");
+    register long r8 asm ("r8");
+    register long r9 asm ("r9");
+    register long r10 asm ("r10");
+    register long r11 asm ("r11");
+    register long r12 asm ("r12");
+    register long r13 asm ("r13");
+    arr[0] = r4;
+    arr[1] = r5;
+    arr[2] = r6;
+    arr[3] = r7;
+    arr[4] = r8;
+    arr[5] = r9;
+    arr[6] = r10;
+    arr[7] = r11;
+    arr[8] = r12;
+    arr[9] = r13;
+}
+#endif
+
 void gc_collect(void) {
     //gc_dump_info();
 
