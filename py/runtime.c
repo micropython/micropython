@@ -518,7 +518,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             if (mp_obj_is_exception_instance(lhs)) {
                 lhs = mp_obj_get_type(lhs);
             }
-            if (mp_obj_is_subclass(lhs, rhs)) {
+            if (mp_obj_is_subclass_fast(lhs, rhs)) {
                 return mp_const_true;
             } else {
                 return mp_const_false;
