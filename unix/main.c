@@ -209,7 +209,7 @@ mp_obj_t test_obj_new(int value) {
 }
 
 int usage(void) {
-    printf("usage: py [-c <command>] [<filename>]\n");
+    printf("usage: py [-c <command>] [-X <heap size>] [<filename>]\n");
     return 1;
 }
 
