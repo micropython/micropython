@@ -462,16 +462,9 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
 /******************************************************************************/
 // subclassing and built-ins specific to types
 
-bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
-    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
-    }
-
-    // TODO support a tuple of classes for second argument
-    if (!MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class"));
-    }
-
+// object and classinfo should be type objects
+// (but the function will fail gracefully if they are not)
+bool mp_obj_is_subclass_fast(mp_obj_t object, mp_obj_t classinfo) {
     for (;;) {
         if (object == classinfo) {
             return true;
@@ -479,7 +472,11 @@ bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
 
         // not equivalent classes, keep searching base classes
 
-        assert(MP_OBJ_IS_TYPE(object, &mp_type_type));
+        // object should always be a type object, but just return false if it's not
+        if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+            return false;
+        }
+
         mp_obj_type_t *self = object;
 
         // for a const struct, this entry might be NULL
@@ -487,14 +484,17 @@ bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
             return false;
         }
 
+        // get the base objects (they should be type objects)
         uint len;
         mp_obj_t *items;
         mp_obj_tuple_get(self->bases_tuple, &len, &items);
         if (len == 0) {
             return false;
         }
+
+        // iterate through the base objects
         for (uint i = 0; i < len - 1; i++) {
-            if (mp_obj_is_subclass(items[i], classinfo)) {
+            if (mp_obj_is_subclass_fast(items[i], classinfo)) {
                 return true;
             }
         }
@@ -504,14 +504,37 @@ bool mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     }
 }
 
+STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
+    uint len;
+    mp_obj_t *items;
+    if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
+        len = 1;
+        items = &classinfo;
+    } else if (MP_OBJ_IS_TYPE(classinfo, &tuple_type)) {
+        mp_obj_tuple_get(classinfo, &len, &items);
+    } else {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));
+    }
+
+    for (uint i = 0; i < len; i++) {
+        if (mp_obj_is_subclass_fast(object, items[i])) {
+            return mp_const_true;
+        }
+    }
+    return mp_const_false;
+}
+
 STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
-    return MP_BOOL(mp_obj_is_subclass(object, classinfo));
+    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
+    }
+    return mp_obj_is_subclass(object, classinfo);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_issubclass_obj, mp_builtin_issubclass);
 
 STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
-    return MP_BOOL(mp_obj_is_subclass(mp_obj_get_type(object), classinfo));
+    return mp_obj_is_subclass(mp_obj_get_type(object), classinfo);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
