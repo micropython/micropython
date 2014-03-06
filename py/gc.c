@@ -328,7 +328,7 @@ machine_uint_t gc_nbytes(void *ptr_in) {
 
 void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
     void *ptr_out = NULL;
-    machine_uint_t block =0;
+    machine_uint_t block = 0;
     machine_uint_t ptr = (machine_uint_t)ptr_in;
 
     if (ptr_in == NULL) {
@@ -345,7 +345,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 
         /* get the number of consecutive tail blocks and
            the number of free blocks after last tail block */
-        do  {
+        do {
             block_type = ATB_GET_KIND(block + n_blocks + n_free);
             switch (block_type) {
                 case AT_FREE: n_free++; break;
@@ -361,11 +361,9 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         /* check if realloc'ing to a smaller size */
         if (n_bytes <= n_existing) {
             ptr_out = ptr_in;
-            /* TODO should free remaining tail blocks ? */
-            machine_uint_t last_block = block + n_blocks;
-            while (ATB_GET_KIND(last_block) == AT_TAIL) {
-                ATB_ANY_TO_FREE(last_block);
-                  last_block++;
+            /* free unneeded tail blocks */
+            for (machine_uint_t bl = block + n_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
+                ATB_ANY_TO_FREE(bl);
             }
 
         /* check if we can expand in place */
@@ -378,14 +376,14 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
                     n_existing/BYTES_PER_BLOCK, n_existing, n_existing/BYTES_PER_BLOCK+n_diff, n_existing + n_diff*BYTES_PER_BLOCK);
 
             /* mark rest of blocks as used tail */
-            for (machine_uint_t bl = block+n_blocks; bl < (block+n_blocks+n_diff); bl++) {
+            for (machine_uint_t bl = block + n_blocks; bl < (block + n_blocks + n_diff); bl++) {
                 ATB_FREE_TO_TAIL(bl);
             }
             ptr_out = ptr_in;
 
         /* try to find a new contiguous chain */
         } else if ((ptr_out = gc_alloc(n_bytes)) != NULL) {
-            printf("gc_realloc: allocated new block \n");
+            DEBUG_printf("gc_realloc: allocated new block \n");
             memcpy(ptr_out, ptr_in, n_existing);
             gc_free(ptr_in);
         }
