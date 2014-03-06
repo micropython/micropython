@@ -345,6 +345,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 
         /* get the number of consecutive tail blocks and
            the number of free blocks after last tail block */
+        // XXX make sure we stop if we get to end of heap
         do {
             block_type = ATB_GET_KIND(block + n_blocks + n_free);
             switch (block_type) {
@@ -353,6 +354,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
                 default: break;
             }
         /* stop as soon as we find enough blocks for n_bytes */
+        // XXX check for n_bytes is wrong since we don't include n_free
         } while (block_type != AT_HEAD && (n_bytes > (n_blocks * BYTES_PER_BLOCK)));
 
         /* number of allocated bytes */
@@ -367,8 +369,10 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
             }
 
         /* check if we can expand in place */
-        } else if (n_bytes <= (n_existing + (n_free * BYTES_PER_BLOCK))) {
+        // XXX disabled for now
+        } else if (0 && n_bytes <= (n_existing + (n_free * BYTES_PER_BLOCK))) {
             /* number of blocks needed to expand +1 if there's a remainder */
+            // XXX this has a bug, but don't know why; try: l=[i for i in range(1000)]; for i in l: print(i/3)
             machine_uint_t n_diff = ( n_bytes - n_existing)/BYTES_PER_BLOCK+
                                     ((n_bytes - n_existing)%BYTES_PER_BLOCK!=0);
 
