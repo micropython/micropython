@@ -73,8 +73,9 @@ typedef struct _compiler_t {
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
 } compiler_t;
 
-void compile_error(compiler_t *comp, mp_parse_node_struct_t *pns, const char* msg) {
-    printf("Compile Error in File \"%s\", line %d\n\n  %s\n", qstr_str(comp->source_file), pns->source_line, msg);
+STATIC void compile_syntax_error(compiler_t *comp, const char *msg) {
+    // TODO store the error message to a variable in compiler_t instead of printing it
+    printf("SyntaxError: %s\n", msg);
     comp->had_error = true;
 }
 
@@ -582,7 +583,7 @@ void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign_kind_t
             pns1 = (mp_parse_node_struct_t*)pns1->nodes[n - 1];
         }
         if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_paren) {
-            printf("SyntaxError: can't assign to function call\n");
+            compile_syntax_error(comp, "can't assign to function call");
             return;
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
             if (assign_kind == ASSIGN_AUG_STORE) {
@@ -632,7 +633,7 @@ void c_assign_tuple(compiler_t *comp, int n, mp_parse_node_t *nodes) {
                 EMIT_ARG(unpack_ex, i, n - i - 1);
                 have_star_index = i;
             } else {
-                printf("SyntaxError: two starred expressions in assignment\n");
+                compile_syntax_error(comp, "two starred expressions in assignment");
                 return;
             }
         }
@@ -667,7 +668,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                     break;
             }
         } else {
-            printf("SyntaxError: can't assign to literal\n");
+            compile_syntax_error(comp, "can't assign to literal");
             return;
         }
     } else {
@@ -691,7 +692,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 // lhs is something in parenthesis
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty tuple
-                    printf("SyntaxError: can't assign to ()\n");
+                    compile_syntax_error(comp, "can't assign to ()");
                     return;
                 } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
@@ -760,7 +761,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
     return;
 
     bad_aug:
-    printf("SyntaxError: illegal expression for augmented assignment\n");
+    compile_syntax_error(comp, "illegal expression for augmented assignment");
 }
 
 // stuff for lambda and comprehensions and generators
@@ -800,30 +801,73 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
 }
 
 void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        if (!MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
-            // this parameter has a default value
-            // in CPython, None (and True, False?) as default parameters are loaded with LOAD_NAME; don't understandy why
-            if (comp->have_bare_star) {
-                comp->param_pass_num_dict_params += 1;
-                if (comp->param_pass == 1) {
-                    EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
-                    compile_node(comp, pns->nodes[2]);
-                }
-            } else {
-                comp->param_pass_num_default_params += 1;
-                if (comp->param_pass == 2) {
-                    compile_node(comp, pns->nodes[2]);
-                }
-            }
-        }
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)) {
+    if (comp->have_dbl_star_arg) {
+        compile_syntax_error(comp, "**argument must be the last one");
+        return;
+    }
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
             // bare star
             comp->have_bare_star = true;
         }
+
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_dbl_star)) {
+        // TODO do we need to do anything with this?
+        comp->have_dbl_star_arg = true;
+    } else {
+        mp_parse_node_t pn_id;
+        mp_parse_node_t pn_colon;
+        mp_parse_node_t pn_equal;
+        if (MP_PARSE_NODE_IS_ID(pn)) {
+            // this parameter is just an id
+
+            pn_id = pn;
+            pn_colon = MP_PARSE_NODE_NULL;
+            pn_equal = MP_PARSE_NODE_NULL;
+
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
+            // this parameter has a colon and/or equal specifier
+
+            mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+            pn_id = pns->nodes[0];
+            pn_colon = pns->nodes[1];
+            pn_equal = pns->nodes[2];
+
+        } else {
+            assert(0);
+            return;
+        }
+
+        if (MP_PARSE_NODE_IS_NULL(pn_equal)) {
+            // this parameter does not have a default value
+
+            // check for non-default parameters given after default parameters (allowed by parser, but not syntactically valid)
+            if (!comp->have_bare_star && comp->param_pass_num_default_params != 0) {
+                compile_syntax_error(comp, "non-default argument follows default argument");
+                return;
+            }
+
+        } else {
+            // this parameter has a default value
+            // in CPython, None (and True, False?) as default parameters are loaded with LOAD_NAME; don't understandy why
+
+            if (comp->have_bare_star) {
+                comp->param_pass_num_dict_params += 1;
+                if (comp->param_pass == 1) {
+                    EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pn_id));
+                    compile_node(comp, pn_equal);
+                }
+            } else {
+                comp->param_pass_num_default_params += 1;
+                if (comp->param_pass == 2) {
+                    compile_node(comp, pn_equal);
+                }
+            }
+        }
+
+        // TODO pn_colon not implemented
+        (void)pn_colon;
     }
 }
 
@@ -839,18 +883,29 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
 
     // save variables (probably don't need to do this, since we can't have nested definitions..?)
     bool old_have_bare_star = comp->have_bare_star;
+    bool old_have_dbl_star_arg = comp->have_dbl_star_arg;
     int old_param_pass = comp->param_pass;
     int old_param_pass_num_dict_params = comp->param_pass_num_dict_params;
     int old_param_pass_num_default_params = comp->param_pass_num_default_params;
 
     // compile default parameters
+
+    // pass 1 does any default parameters after bare star
     comp->have_bare_star = false;
-    comp->param_pass = 1; // pass 1 does any default parameters after bare star
+    comp->have_dbl_star_arg = false;
+    comp->param_pass = 1;
     comp->param_pass_num_dict_params = 0;
     comp->param_pass_num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
+
+    if (comp->had_error) {
+        return MP_QSTR_NULL;
+    }
+
+    // pass 2 does any default parameters before bare star
     comp->have_bare_star = false;
-    comp->param_pass = 2; // pass 2 does any default parameters before bare star
+    comp->have_dbl_star_arg = false;
+    comp->param_pass = 2;
     comp->param_pass_num_dict_params = 0;
     comp->param_pass_num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
@@ -863,6 +918,7 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
 
     // restore variables
     comp->have_bare_star = old_have_bare_star;
+    comp->have_dbl_star_arg = old_have_dbl_star_arg;
     comp->param_pass = old_param_pass;
     comp->param_pass_num_dict_params = old_param_pass_num_dict_params;
     comp->param_pass_num_default_params = old_param_pass_num_default_params;
@@ -907,7 +963,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     }
 
     if (name_len != 2) {
-        printf("SyntaxError: invalid micropython decorator\n");
+        compile_syntax_error(comp, "invalid micropython decorator");
         return true;
     }
 
@@ -925,7 +981,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
         *emit_options = EMIT_OPT_ASM_THUMB;
 #endif
     } else {
-        printf("SyntaxError: invalid micropython decorator '%s'\n", qstr_str(attr));
+        compile_syntax_error(comp, "invalid micropython decorator");
     }
 
     return true;
@@ -1102,8 +1158,7 @@ void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION) {
-        printf("SyntaxError: 'return' outside function\n");
-        comp->had_error = true;
+        compile_syntax_error(comp, "'return' outside function");
         return;
     }
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
@@ -1601,7 +1656,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
         if (MP_PARSE_NODE_IS_NULL(pns_except->nodes[0])) {
             // this is a catch all exception handler
             if (i + 1 != n_except) {
-                printf("SyntaxError: default 'except:' must be last\n");
+                compile_syntax_error(comp, "default 'except:' must be last");
                 return;
             }
         } else {
@@ -2171,7 +2226,7 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
         if (i == 0) {
             string_kind = pn_kind;
         } else if (pn_kind != string_kind) {
-            printf("SyntaxError: cannot mix bytes and nonbytes literals\n");
+            compile_syntax_error(comp, "cannot mix bytes and nonbytes literals");
             return;
         }
         n_bytes += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
@@ -2331,13 +2386,13 @@ void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     compile_node(comp, pn);
                     if (is_dict) {
                         if (!is_key_value) {
-                            printf("SyntaxError?: expecting key:value for dictionary");
+                            compile_syntax_error(comp, "?expecting key:value for dictiona");
                             return;
                         }
                         EMIT(store_map);
                     } else {
                         if (is_key_value) {
-                            printf("SyntaxError?: expecting just a value for set");
+                            compile_syntax_error(comp, "?expecting just a value for s");
                             return;
                         }
                     }
@@ -2456,7 +2511,7 @@ void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_classdef_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // do nothing
+    //do nothing
 }
 
 void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2470,13 +2525,13 @@ void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
             if (first_keyword_pos != -1) {
                 if (i > first_keyword_pos) {
-                    compile_error(comp, pns, "SyntaxError: non-keyword arg after keyword arg");
+                    compile_syntax_error(comp, "non-keyword arg after keyword arg");
                     return;
                 }
             }
             if (star_arg_pos != -1) {
                 if (i > star_arg_pos) {
-                    compile_error(comp, pns, "SyntaxError: only named arguments may follow *expression");
+                    compile_syntax_error(comp, "only named arguments may follow *expression");
                     return;
                 }
             }
@@ -2488,7 +2543,7 @@ void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
             if (star_arg_pos == -1) {
                 star_arg_pos = i;
             } else {
-                compile_error(comp, pns, "SyntaxError: can't have multiple *expression");
+                compile_syntax_error(comp, "can't have multiple *expression");
                 return;    
             }
 
@@ -2497,7 +2552,7 @@ void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_arglist_dbl_star)) {
             // dbl_star must be the last one
             if (i < num_nodes - 1) {
-                compile_error(comp, pns, "SyntaxError: **expression must be the last one");
+                compile_syntax_error(comp, "**expression must be the last one");
                 return;
             }
             dbl_star_arg_pos = i;
@@ -2517,7 +2572,7 @@ void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->have_star_arg) {
-        compile_error(comp, pns, "SyntaxError: can't have multiple *expression");
+        compile_syntax_error(comp, "?can't have multiple *x");
         return;
     }
     comp->have_star_arg = true;
@@ -2526,7 +2581,7 @@ void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_arglist_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->have_dbl_star_arg) {
-        compile_error(comp, pns, "SyntaxError: can't have multiple **expression");
+        compile_syntax_error(comp, "?can't have multiple **x");
         return;
     }
     comp->have_dbl_star_arg = true;
@@ -2538,7 +2593,7 @@ void compile_argument(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[1];
     if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_argument_3) {
         if (!MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
-            printf("SyntaxError?: lhs of keyword argument must be an id\n");
+            compile_syntax_error(comp, "?lhs of keyword argument must be an id");
             return;
         }
         EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
@@ -2554,7 +2609,7 @@ void compile_argument(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION) {
-        printf("SyntaxError: 'yield' outside function\n");
+        compile_syntax_error(comp, "'yield' outside function");
         return;
     }
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
@@ -2704,7 +2759,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
         bool added;
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, &added);
         if (!added) {
-            printf("SyntaxError?: same name used for parameter; %s\n", qstr_str(param_name));
+            compile_syntax_error(comp, "?same name used for parameter");
             return;
         }
         id_info->param = true;
@@ -3009,7 +3064,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
         // emit instructions
         if (strcmp(qstr_str(op), "label") == 0) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_ID(pn_arg[0]))) {
-                printf("SyntaxError: inline assembler 'label' requires 1 argument\n");
+                compile_syntax_error(comp, "inline assembler 'label' requires 1 argument");
                 return;
             }
             int lab = comp_next_label(comp);
