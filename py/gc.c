@@ -326,6 +326,24 @@ machine_uint_t gc_nbytes(void *ptr_in) {
     return 0;
 }
 
+// use this realloc for now, one below is broken
+void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
+    machine_uint_t n_existing = gc_nbytes(ptr);
+    if (n_bytes <= n_existing) {
+        return ptr;
+    } else {
+        // TODO check if we can grow inplace
+        void *ptr2 = gc_alloc(n_bytes);
+        if (ptr2 == NULL) {
+            return ptr2;
+        }
+        memcpy(ptr2, ptr, n_existing);
+        gc_free(ptr);
+        return ptr2;
+    }
+}
+
+#if 0
 void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
     void *ptr_out = NULL;
     machine_uint_t block = 0;
@@ -395,6 +413,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 
     return ptr_out;
 }
+#endif
 
 void gc_dump_info() {
     gc_info_t info;
