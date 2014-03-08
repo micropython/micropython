@@ -142,9 +142,8 @@ static const pin_map_obj_t pin_map_obj_init = {
 
 pin_map_obj_t pin_map_obj;
 
-void pin_map_init(mp_obj_t mod) {
+void pin_map_init(void) {
     pin_map_obj = pin_map_obj_init;
-    rt_store_attr(mod, MP_QSTR_Pin, (mp_obj_t)&pin_map_obj);
 }
 
 // C API used to convert a user-supplied pin name  into an ordinal pin number.

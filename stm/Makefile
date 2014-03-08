@@ -79,6 +79,7 @@ SRC_C = \
 	pin_map.c \
 	exti.c \
 	usrsw.c \
+	pybmodule.c \
 #	pybwlan.c \
 
 SRC_S = \

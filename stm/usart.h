@@ -20,4 +20,4 @@ int usart_rx_char(pyb_usart_t usart_id);
 void usart_tx_str(pyb_usart_t usart_id, const char *str);
 void usart_tx_strn_cooked(pyb_usart_t usart_id, const char *str, int len);
 
-mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate);
+MP_DECLARE_CONST_FUN_OBJ(pyb_Usart_obj);
