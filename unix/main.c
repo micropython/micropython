@@ -209,7 +209,12 @@ mp_obj_t test_obj_new(int value) {
 }
 
 int usage(void) {
-    printf("usage: py [-c <command>] [-X <heap size>] [<filename>]\n");
+    printf(
+"usage: py [-X <opt>] [-c <command>] [<filename>]\n"
+"\n"
+"Implementation specific options:\n"
+"  heapsize=<n> -- set the heap size for the GC\n"
+);
     return 1;
 }
 
@@ -242,11 +247,14 @@ void pre_process_options(int argc, char **argv) {
                 if (a + 1 >= argc) {
                     exit(usage());
                 }
+                if (0) {
 #if MICROPY_ENABLE_GC
-                if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
+                } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, NULL, 0);
-                }
 #endif
+                } else {
+                    exit(usage());
+                }
                 a++;
             }
         }
