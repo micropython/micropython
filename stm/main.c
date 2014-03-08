@@ -666,28 +666,3 @@ soft_reset:
     first_soft_reset = false;
     goto soft_reset;
 }
-
-// these 2 functions seem to actually work... no idea why
-// replacing with libgcc does not work (probably due to wrong calling conventions)
-double __aeabi_f2d(float x) {
-    // TODO
-    return 0.0;
-}
-
-float __aeabi_d2f(double x) {
-    // TODO
-    return 0.0;
-}
-
-double sqrt(double x) {
-    // TODO
-    return 0.0;
-}
-
-machine_float_t machine_sqrt(machine_float_t x) {
-    asm volatile (
-            "vsqrt.f32  %[r], %[x]\n"
-            : [r] "=t" (x)
-            : [x] "t"  (x));
-    return x;
-}

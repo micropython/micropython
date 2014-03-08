@@ -1,5 +1,6 @@
 // All the qstr definitions in this file are available as constants.
-// That is, they are in ROM and you can reference them simple as MP_QSTR_xxxx.
+// That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
+// TODO make it so we can use #defines here to select only those words that will be used
 
 Q(__build_class__)
 Q(__class__)
@@ -114,6 +115,32 @@ Q(generator)
 Q(iterator)
 Q(module)
 Q(slice)
+
+Q(math)
+Q(pi)
+Q(sqrt)
+Q(pow)
+Q(exp)
+Q(log)
+Q(log2)
+Q(log10)
+Q(cosh)
+Q(sinh)
+Q(tanh)
+Q(acosh)
+Q(asinh)
+Q(atanh)
+Q(cos)
+Q(sin)
+Q(tan)
+Q(acos)
+Q(asin)
+Q(atan)
+Q(atan2)
+
+Q(mem_total)
+Q(mem_current)
+Q(mem_peak)
 
 Q(<module>)
 Q(<lambda>)

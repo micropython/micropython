@@ -383,12 +383,6 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-// for sqrt
-#include <math.h>
-machine_float_t machine_sqrt(machine_float_t x) {
-    return sqrt(x);
-}
-
 #include <sys/stat.h>
 
 uint mp_import_stat(const char *path) {

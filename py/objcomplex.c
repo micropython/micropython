@@ -39,7 +39,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
 
         case 1:
             // TODO allow string as first arg and parse it
-            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
                 return args[0];
             } else {
                 return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
@@ -48,13 +48,13 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
         case 2:
         {
             mp_float_t real, imag;
-            if (MP_OBJ_IS_TYPE(args[0], &complex_type)) {
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
                 mp_obj_complex_get(args[0], &real, &imag);
             } else {
                 real = mp_obj_get_float(args[0]);
                 imag = 0;
             }
-            if (MP_OBJ_IS_TYPE(args[1], &complex_type)) {
+            if (MP_OBJ_IS_TYPE(args[1], &mp_type_complex)) {
                 mp_float_t real2, imag2;
                 mp_obj_complex_get(args[1], &real2, &imag2);
                 real -= imag2;
@@ -85,7 +85,7 @@ STATIC mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
 }
 
-const mp_obj_type_t complex_type = {
+const mp_obj_type_t mp_type_complex = {
     { &mp_type_type },
     .name = MP_QSTR_complex,
     .print = complex_print,
@@ -96,14 +96,14 @@ const mp_obj_type_t complex_type = {
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
     mp_obj_complex_t *o = m_new_obj(mp_obj_complex_t);
-    o->base.type = &complex_type;
+    o->base.type = &mp_type_complex;
     o->real = real;
     o->imag = imag;
     return o;
 }
 
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
-    assert(MP_OBJ_IS_TYPE(self_in, &complex_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_complex));
     mp_obj_complex_t *self = self_in;
     *real = self->real;
     *imag = self->imag;

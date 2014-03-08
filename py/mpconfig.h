@@ -84,8 +84,24 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_SOURCE_LINE (0)
 #endif
 
-// Whether to support float and complex types
-#ifndef MICROPY_ENABLE_FLOAT
+// Float and complex implementation
+#define MICROPY_FLOAT_IMPL_NONE (0)
+#define MICROPY_FLOAT_IMPL_FLOAT (1)
+#define MICROPY_FLOAT_IMPL_DOUBLE (2)
+
+#ifndef MICROPY_FLOAT_IMPL
+#define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_NONE)
+#endif
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define MICROPY_ENABLE_FLOAT (1)
+#define MICROPY_FLOAT_C_FUN(fun) fun##f
+typedef float mp_float_t;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define MICROPY_ENABLE_FLOAT (1)
+#define MICROPY_FLOAT_C_FUN(fun) fun
+typedef double mp_float_t;
+#else
 #define MICROPY_ENABLE_FLOAT (0)
 #endif
 

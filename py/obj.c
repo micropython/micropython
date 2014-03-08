@@ -165,14 +165,14 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
 }
 
 #if MICROPY_ENABLE_FLOAT
-machine_float_t mp_obj_get_float(mp_obj_t arg) {
+mp_float_t mp_obj_get_float(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         return mp_obj_float_get(arg);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
@@ -189,10 +189,10 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         *real = MP_OBJ_SMALL_INT_VALUE(arg);
         *imag = 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &float_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &complex_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
