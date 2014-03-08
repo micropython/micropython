@@ -300,7 +300,7 @@ static mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
     pyb_obj_adc_all_t *self = self_in;
 
     if (self->is_enabled) {
-        float data  = adc_read_core_vbat();
+        float data = adc_read_core_vbat();
         return mp_obj_new_float(data);
     } else {
         return mp_const_none;

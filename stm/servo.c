@@ -124,7 +124,11 @@ static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void
 
 static mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
     pyb_servo_obj_t *self = self_in;
+#if MICROPY_ENABLE_FLOAT
     machine_int_t v = 152 + 85.0 * mp_obj_get_float(angle) / 90.0;
+#else
+    machine_int_t v = 152 + 85 * mp_obj_get_int(angle) / 90;
+#endif
     if (v < 65) { v = 65; }
     if (v > 210) { v = 210; }
     switch (self->servo_id) {
