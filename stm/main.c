@@ -110,6 +110,16 @@ mp_obj_t pyb_delay(mp_obj_t count) {
     return mp_const_none;
 }
 
+mp_obj_t pyb_udelay(mp_obj_t usec) {
+    uint32_t count = 0;
+    const uint32_t utime = (168 * mp_obj_get_int(usec) / 5);
+    for (;;) {
+        if (++count > utime) {
+            return mp_const_none;
+        }
+    }
+}
+
 void fatality(void) {
     led_state(PYB_LED_R1, 1);
     led_state(PYB_LED_G1, 1);
@@ -415,6 +425,7 @@ soft_reset:
         rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
         rt_store_attr(m, MP_QSTR_sync, rt_make_function_n(0, pyb_sync));
         rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
+        rt_store_attr(m, MP_QSTR_udelay, rt_make_function_n(1, pyb_udelay));
 #if MICROPY_HW_HAS_SWITCH
         rt_store_attr(m, MP_QSTR_switch, (mp_obj_t)&pyb_switch_obj);
 #endif
