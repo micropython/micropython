@@ -1001,8 +1001,9 @@ machine_int_t mpz_as_int(const mpz_t *i) {
     return val;
 }
 
-machine_float_t mpz_as_float(const mpz_t *i) {
-    machine_float_t val = 0;
+#if MICROPY_ENABLE_FLOAT
+mp_float_t mpz_as_float(const mpz_t *i) {
+    mp_float_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig) {
@@ -1015,6 +1016,7 @@ machine_float_t mpz_as_float(const mpz_t *i) {
 
     return val;
 }
+#endif
 
 uint mpz_as_str_size(const mpz_t *i, uint base) {
     if (base < 2 || base > 32) {
