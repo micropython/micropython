@@ -387,11 +387,6 @@ soft_reset:
     servo_init();
 #endif
 
-#if MICROPY_HW_ENABLE_AUDIO
-    // audio
-    audio_init();
-#endif
-
 #if MICROPY_HW_ENABLE_TIMER
     // timer
     timer_init();
@@ -449,6 +444,10 @@ soft_reset:
         rt_store_attr(m, qstr_from_str("ADC_all"), (mp_obj_t)&pyb_ADC_all_obj);
         rt_store_attr(m, MP_QSTR_ADC, (mp_obj_t)&pyb_ADC_obj);
         rt_store_attr(m, qstr_from_str("millis"), rt_make_function_n(0, pyb_millis));
+
+#if MICROPY_HW_ENABLE_AUDIO
+        rt_store_attr(m, qstr_from_str("Audio"), (mp_obj_t)&pyb_Audio_obj);
+#endif
 
         pin_map_init(m);
         gpio_init(m);
