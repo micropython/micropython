@@ -487,6 +487,20 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     return mp_obj_str_builder_end(replaced_str);
 }
 
+STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
+    if (flags == BUFFER_READ) {
+        GET_STR_DATA_LEN(self_in, str_data, str_len);
+        bufinfo->buf = (void*)str_data;
+        bufinfo->len = str_len;
+        return 0;
+    } else {
+        // can't write to a string
+        bufinfo->buf = NULL;
+        bufinfo->len = 0;
+        return 1;
+    }
+}
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
@@ -513,6 +527,7 @@ const mp_obj_type_t str_type = {
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_str_iterator,
     .methods = str_type_methods,
+    .buffer_p = { .get_buffer = str_get_buffer },
 };
 
 // Reuses most of methods from str
