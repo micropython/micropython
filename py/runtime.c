@@ -474,7 +474,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -721,7 +721,7 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     if (type->call != NULL) {
         return type->call(fun_in, n_args, n_kw, args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
     }
 }
 
@@ -927,7 +927,7 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
             return mp_obj_new_getitem_iter(dest);
         } else {
             // object not iterable
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
         }
     }
 }
@@ -937,7 +937,7 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
     }
 }
 
