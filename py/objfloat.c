@@ -12,12 +12,21 @@
 #include "runtime0.h"
 
 #if MICROPY_ENABLE_FLOAT
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#include "format-float.h"
+#endif
 
 mp_obj_t mp_obj_new_float(mp_float_t value);
 
 STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_float_t *o = o_in;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    char buf[32];
+    format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
+    print(env, "%s", buf);
+#else
     print(env, "%.8g", (double) o->value);
+#endif
 }
 
 STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
