@@ -1,25 +1,25 @@
-/*********************************************************************** 
- 
-  format-float.c  - Ruutine for converting a single-precision floating
+/***********************************************************************
+
+  formatfloat.c  - Ruutine for converting a single-precision floating
                     point number into a string.
- 
+
   The code in this funcion was inspired from Fred Bayer's pdouble.c.
   Since pdouble.c was released as Public Domain, I'm releasing this
   code as public domain as well.
- 
+
   The original code can be found in https://github.com/dhylands/format-float
- 
+
   Dave Hylands
- 
+
 ***********************************************************************/
 
-#include <stdint.h> 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "mpconfig.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#include "format-float.h"
+#include "formatfloat.h"
 
 // 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 // exponent values 0 and 255 are reserved, exponent can be 1 to 254.

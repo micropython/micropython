@@ -7,7 +7,6 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_FLOAT        (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PATH_MAX            (128)
 /* Enable FatFS LFNs

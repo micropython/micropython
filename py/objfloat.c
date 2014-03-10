@@ -12,8 +12,9 @@
 #include "runtime0.h"
 
 #if MICROPY_ENABLE_FLOAT
+
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#include "format-float.h"
+#include "formatfloat.h"
 #endif
 
 mp_obj_t mp_obj_new_float(mp_float_t value);
@@ -120,4 +121,4 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
     return mp_obj_new_float(lhs_val);
 }
 
-#endif
+#endif // MICROPY_ENABLE_FLOAT

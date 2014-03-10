@@ -11,8 +11,9 @@
 #include "lcd.h"
 #include "usart.h"
 #include "usb.h"
+
 #if MICROPY_ENABLE_FLOAT
-#include "format-float.h"
+#include "formatfloat.h"
 #endif
 
 #define PF_FLAG_LEFT_ADJUST (0x01)
