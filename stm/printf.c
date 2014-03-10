@@ -11,6 +11,9 @@
 #include "lcd.h"
 #include "usart.h"
 #include "usb.h"
+#if MICROPY_ENABLE_FLOAT
+#include "format-float.h"
+#endif
 
 #define PF_FLAG_LEFT_ADJUST (0x01)
 #define PF_FLAG_SHOW_SIGN   (0x02)
@@ -210,29 +213,40 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, width);
                 break;
 #if MICROPY_ENABLE_FLOAT
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
             case 'g':
+            case 'G':
             {
-                // This is a very hacky approach to printing floats. Micropython
-                // uses %g when using print, and I just wanted to see somthing
-                // usable. I expect that this will be replaced with something
-                // more appropriate.
-                char dot = '.';
-                mp_float_t d = va_arg(args, double);
-                int left = (int)d;
-                int right = (int)((d - (mp_float_t)(int)d) * 1000000.0);
-                if (right < 0) {
-                    if (left == 0) {
-                        chrs += pfenv_print_strn(pfenv, "-0", 2, flags, width);
-                    } else {
-                        chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width); 
-                    }
-                    chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
-                    chrs += pfenv_print_int(pfenv, -right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
-                } else {
-                    chrs += pfenv_print_int(pfenv, left, 1, 10, 'a', flags, width); 
-                    chrs += pfenv_print_strn(pfenv, &dot, 1, flags, width);
-                    chrs += pfenv_print_int(pfenv, right, 0, 10, 'a', PF_FLAG_ZERO_PAD, 6);
+                char buf[32];
+                char sign = '\0';
+
+                if (flags & PF_FLAG_SHOW_SIGN) {
+                    sign = '+';
                 }
+                else
+                if (flags & PF_FLAG_SPACE_SIGN) {
+                    sign = ' ';
+                }
+                float f = va_arg(args, double);
+                int len = format_float(f, buf, sizeof(buf), *fmt, prec, sign);
+                char *s = buf;
+
+                // buf[0] < '0' returns true if the first character is space, + or -
+                // buf[1] < '9' matches a digit, and doesn't match when we get back +nan or +inf
+                if (buf[0] < '0' && buf[1] <= '9' && (flags & PF_FLAG_ZERO_PAD)) {
+                    chrs += pfenv_print_strn(pfenv, &buf[0], 1, 0, 1);
+                    s++;
+                    width--;
+                    len--;
+                }
+                if (*s < '0' || *s >= '9') {
+                    // For inf or nan, we don't want to zero pad.
+                    flags &= ~PF_FLAG_ZERO_PAD;
+                }
+                chrs += pfenv_print_strn(pfenv, s, len, flags, width); 
                 break;
             }
 #endif

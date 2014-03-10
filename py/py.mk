@@ -32,6 +32,7 @@ PY_O_BASENAME = \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
+	format-float.o \
 	parsenumbase.o \
 	parsenum.o \
 	runtime.o \
