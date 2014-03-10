@@ -60,10 +60,13 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return MP_OBJ_NULL;
     }
 
-    if (op == RT_BINARY_OP_TRUE_DIVIDE || op == RT_BINARY_OP_INPLACE_TRUE_DIVIDE) {
-        machine_float_t flhs = mpz_as_float(zlhs);
-        machine_float_t frhs = mpz_as_float(zrhs);
+    if (0) {
+#if MICROPY_ENABLE_FLOAT
+    } else if (op == RT_BINARY_OP_TRUE_DIVIDE || op == RT_BINARY_OP_INPLACE_TRUE_DIVIDE) {
+        mp_float_t flhs = mpz_as_float(zlhs);
+        mp_float_t frhs = mpz_as_float(zrhs);
         return mp_obj_new_float(flhs / frhs);
+#endif
 
     } else if (op <= RT_BINARY_OP_POWER) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();

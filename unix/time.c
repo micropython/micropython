@@ -28,7 +28,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 static mp_obj_t mod_time_sleep(mp_obj_t arg) {
 #if MICROPY_ENABLE_FLOAT
     struct timeval tv;
-    machine_float_t val = mp_obj_get_float(arg);
+    mp_float_t val = mp_obj_get_float(arg);
     double ipart;
     tv.tv_usec = round(modf(val, &ipart) * 1000000);
     tv.tv_sec = ipart;

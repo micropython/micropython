@@ -47,6 +47,7 @@ LIBS =
 SRC_C = \
 	main.c \
 	printf.c \
+	math.c \
 	system_stm32f4xx.c \
 	stm32fxxx_it.c \
 	string0.c \
@@ -78,6 +79,7 @@ SRC_C = \
 	pin_map.c \
 	exti.c \
 	usrsw.c \
+	pybmodule.c \
 #	pybwlan.c \
 
 SRC_S = \

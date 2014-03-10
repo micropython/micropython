@@ -34,4 +34,5 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_str_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 
-void mp_module_micropython_init(void);
+extern const mp_obj_module_t mp_module_math;
+extern const mp_obj_module_t mp_module_micropython;

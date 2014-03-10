@@ -90,7 +90,7 @@ void servo_init(void) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
+STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     int p = mp_obj_get_int(port);
     int v = mp_obj_get_int(value);
     if (v < 50) { v = 50; }
@@ -104,7 +104,9 @@ mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     return mp_const_none;
 }
 
-mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_servo_set_obj, pyb_servo_set);
+
+STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
     int pe = mp_obj_get_int(period);
     int pu = mp_obj_get_int(pulse);
     TIM2->ARR = pe;
@@ -112,19 +114,25 @@ mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
     return mp_const_none;
 }
 
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
+
 typedef struct _pyb_servo_obj_t {
     mp_obj_base_t base;
     uint servo_id;
 } pyb_servo_obj_t;
 
-static void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
     print(env, "<Servo %lu>", self->servo_id);
 }
 
-static mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
+STATIC mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
     pyb_servo_obj_t *self = self_in;
+#if MICROPY_ENABLE_FLOAT
     machine_int_t v = 152 + 85.0 * mp_obj_get_float(angle) / 90.0;
+#else
+    machine_int_t v = 152 + 85 * mp_obj_get_int(angle) / 90;
+#endif
     if (v < 65) { v = 65; }
     if (v > 210) { v = 210; }
     switch (self->servo_id) {
@@ -136,23 +144,25 @@ static mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
 
-static const mp_method_t servo_methods[] = {
+STATIC const mp_method_t servo_methods[] = {
     { "angle", &servo_obj_angle_obj },
     { NULL, NULL },
 };
 
-static const mp_obj_type_t servo_obj_type = {
+STATIC const mp_obj_type_t servo_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_Servo,
     .print = servo_obj_print,
     .methods = servo_methods,
 };
 
-mp_obj_t pyb_Servo(mp_obj_t servo_id) {
+STATIC mp_obj_t pyb_Servo(mp_obj_t servo_id) {
     pyb_servo_obj_t *o = m_new_obj(pyb_servo_obj_t);
     o->base.type = &servo_obj_type;
     o->servo_id = mp_obj_get_int(servo_id);
     return o;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_Servo_obj, pyb_Servo);

@@ -73,6 +73,7 @@ PY_O_BASENAME = \
 	builtinimport.o \
 	builtinevex.o \
 	builtinmp.o \
+	builtinmath.o \
 	vm.o \
 	showbc.o \
 	repl.o \

@@ -313,23 +313,19 @@ static const mp_obj_type_t exti_meta_obj_type = {
     .load_attr = exti_load_attr,
 };
 
-static const mp_obj_type_t exti_obj_type = {
+const mp_obj_type_t exti_obj_type = {
     { &exti_meta_obj_type },
     .name = MP_QSTR_Exti,
     .print = exti_obj_print,
     .methods = exti_methods,
 };
 
-void exti_init_early(void) {
+void exti_init(void) {
     for (exti_vector_t *v = exti_vector; v < &exti_vector[EXTI_NUM_VECTORS]; v++) {
         v->callback_obj = mp_const_none;
         v->param = NULL;
         v->mode = EXTI_Mode_Interrupt;
     }
-}
-
-void exti_init(mp_obj_t mod) {
-    rt_store_attr(mod, MP_QSTR_Exti, (mp_obj_t)&exti_obj_type);
 }
 
 static void Handle_EXTI_Irq(uint32_t line) {

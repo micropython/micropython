@@ -92,14 +92,3 @@ mp_obj_t pyb_gpio_output(mp_obj_t arg_pin, mp_obj_t arg_mode) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_gpio_output_obj, pyb_gpio_output);
-
-void gpio_init(mp_obj_t mod) {
-    rt_store_attr(mod, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
-    rt_store_attr(mod, MP_QSTR_gpio_in, (mp_obj_t)&pyb_gpio_input_obj);
-    rt_store_attr(mod, MP_QSTR_gpio_out, (mp_obj_t)&pyb_gpio_output_obj);
-    rt_store_attr(mod, qstr_from_str("PULL_NONE"), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_NOPULL));
-    rt_store_attr(mod, qstr_from_str("PULL_UP"), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_UP));
-    rt_store_attr(mod, qstr_from_str("PULL_DOWN"), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_DOWN));
-    rt_store_attr(mod, qstr_from_str("PUSH_PULL"), MP_OBJ_NEW_SMALL_INT(GPIO_OType_PP));
-    rt_store_attr(mod, qstr_from_str("OPEN_DRAIN"), MP_OBJ_NEW_SMALL_INT(GPIO_OType_OD));
-}

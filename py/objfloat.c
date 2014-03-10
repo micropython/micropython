@@ -13,11 +13,6 @@
 
 #if MICROPY_ENABLE_FLOAT
 
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
-
 mp_obj_t mp_obj_new_float(mp_float_t value);
 
 STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -38,7 +33,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l);
-            } else if (MP_OBJ_IS_TYPE(args[0], &float_type)) {
+            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
                 return args[0];
             } else {
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
@@ -61,14 +56,14 @@ STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
 
 STATIC mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_float_t *lhs = lhs_in;
-    if (MP_OBJ_IS_TYPE(rhs_in, &complex_type)) {
+    if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs->value, 0, rhs_in);
     } else {
         return mp_obj_float_binary_op(op, lhs->value, rhs_in);
     }
 }
 
-const mp_obj_type_t float_type = {
+const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
     .name = MP_QSTR_float,
     .print = float_print,
@@ -79,13 +74,13 @@ const mp_obj_type_t float_type = {
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {
     mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
-    o->base.type = &float_type;
+    o->base.type = &mp_type_float;
     o->value = value;
     return (mp_obj_t)o;
 }
 
 mp_float_t mp_obj_float_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &float_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_float));
     mp_obj_float_t *self = self_in;
     return self->value;
 }

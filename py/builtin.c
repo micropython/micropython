@@ -15,6 +15,10 @@
 #include "map.h"
 #include "builtin.h"
 
+#if MICROPY_ENABLE_FLOAT
+#include <math.h>
+#endif
+
 // args[0] is function from class body
 // args[1] is class name
 // args[2:] are base objects
@@ -79,7 +83,7 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         }
         return MP_OBJ_NEW_SMALL_INT(val);
 #if MICROPY_ENABLE_FLOAT
-    } else if (MP_OBJ_IS_TYPE(o_in, &float_type)) {
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_float)) {
         mp_float_t value = mp_obj_float_get(o_in);
         // TODO check for NaN etc
         if (value < 0) {
@@ -87,10 +91,10 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         } else {
             return o_in;
         }
-    } else if (MP_OBJ_IS_TYPE(o_in, &complex_type)) {
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_complex_get(o_in, &real, &imag);
-        return mp_obj_new_float(machine_sqrt(real*real + imag*imag));
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
 #endif
     } else {
         assert(0);
@@ -158,7 +162,7 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     } else { // n_args == 1
         // make a list of names in the given object
         mp_obj_type_t *type = mp_obj_get_type(args[0]);
-        if (type == &module_type) {
+        if (type == &mp_type_module) {
             map = mp_obj_module_get_globals(args[0]);
         } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
             map = mp_obj_dict_get_map(type->locals_dict);

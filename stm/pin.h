@@ -110,7 +110,7 @@ extern const pin_named_pins_obj_t pin_cpu_pins_obj;
 const pin_obj_t *pin_find_named_pin(const pin_named_pin_t *pins, const char *name);
 const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit, uint8_t pin_type);
 
-void pin_map_init(mp_obj_t mod);
+void pin_map_init(void);
 
 // C function for mapping python pin identifier into an ordinal pin number.
 const pin_obj_t *pin_map_user_obj(mp_obj_t user_obj);

@@ -13,8 +13,7 @@
 
 #define EXTI_NUM_VECTORS  23
 
-void exti_init_early(void);
-void exti_init(mp_obj_t mod);
+void exti_init(void);
 
 uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, void *param);
 
@@ -27,3 +26,4 @@ typedef struct {
   void *param;
 } exti_t;
 
+extern const mp_obj_type_t exti_obj_type;

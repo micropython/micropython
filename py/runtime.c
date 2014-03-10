@@ -92,13 +92,13 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     // built-in types
     { MP_QSTR_bool, (mp_obj_t)&bool_type },
 #if MICROPY_ENABLE_FLOAT
-    { MP_QSTR_complex, (mp_obj_t)&complex_type },
+    { MP_QSTR_complex, (mp_obj_t)&mp_type_complex },
 #endif
     { MP_QSTR_dict, (mp_obj_t)&dict_type },
     { MP_QSTR_enumerate, (mp_obj_t)&enumerate_type },
     { MP_QSTR_filter, (mp_obj_t)&filter_type },
 #if MICROPY_ENABLE_FLOAT
-    { MP_QSTR_float, (mp_obj_t)&float_type },
+    { MP_QSTR_float, (mp_obj_t)&mp_type_float },
 #endif
     { MP_QSTR_int, (mp_obj_t)&int_type },
     { MP_QSTR_list, (mp_obj_t)&list_type },
@@ -204,7 +204,9 @@ void rt_init(void) {
     //sys_path = mp_obj_new_list(0, NULL);
     //rt_store_attr(m_sys, MP_QSTR_path, sys_path);
 
-    mp_module_micropython_init();
+    // we pre-import the micropython module
+    // probably shouldn't do this, so we are compatible with CPython
+    rt_store_name(MP_QSTR_micropython, (mp_obj_t)&mp_module_micropython);
 
     // TODO: wastes one mp_code_t structure in mem
     next_unique_code_id = 1; // 0 indicates "no code"
@@ -483,7 +485,7 @@ mp_obj_t rt_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -597,9 +599,9 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             return mp_obj_new_int(lhs_val);
 #if MICROPY_ENABLE_FLOAT
-        } else if (MP_OBJ_IS_TYPE(rhs, &float_type)) {
+        } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
             return mp_obj_float_binary_op(op, lhs_val, rhs);
-        } else if (MP_OBJ_IS_TYPE(rhs, &complex_type)) {
+        } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_complex)) {
             return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
 #endif
         }
@@ -730,7 +732,7 @@ mp_obj_t rt_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     if (type->call != NULL) {
         return type->call(fun_in, n_args, n_kw, args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
     }
 }
 
@@ -1000,7 +1002,7 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
             return mp_obj_new_getitem_iter(dest);
         } else {
             // object not iterable
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", type->name));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
         }
     }
 }
@@ -1010,7 +1012,7 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", type->name));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
     }
 }
 

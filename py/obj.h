@@ -9,12 +9,6 @@ typedef machine_const_ptr_t mp_const_obj_t;
 
 typedef machine_int_t mp_small_int_t;
 
-// The machine floating-point type used for float and complex numbers
-
-#if MICROPY_ENABLE_FLOAT
-typedef machine_float_t mp_float_t;
-#endif
-
 // Anything that wants to be a Micro Python object must have
 // mp_obj_base_t as its first member (except NULL and small ints)
 
@@ -318,12 +312,16 @@ extern const mp_obj_type_t bytes_type;
 
 #if MICROPY_ENABLE_FLOAT
 // float
-extern const mp_obj_type_t float_type;
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
+extern const mp_obj_type_t mp_type_float;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs);
 
 // complex
-extern const mp_obj_type_t complex_type;
+extern const mp_obj_type_t mp_type_complex;
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in);
 #endif
@@ -398,7 +396,12 @@ extern const mp_obj_type_t super_type;
 extern const mp_obj_type_t gen_instance_type;
 
 // module
-extern const mp_obj_type_t module_type;
+typedef struct _mp_obj_module_t {
+    mp_obj_base_t base;
+    qstr name;
+    struct _mp_map_t *globals;
+} mp_obj_module_t;
+extern const mp_obj_type_t mp_type_module;
 mp_obj_t mp_obj_new_module(qstr module_name);
 mp_obj_t mp_obj_module_get(qstr module_name);
 struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
