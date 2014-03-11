@@ -202,25 +202,182 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
 }
 
 // TODO make this conform to CPython's definition of sort
+
+// Non-Recursive QuickSort
+#define MAX_SORT_STACK_POSITIONS  (50)
+#define INSERTION_SORT_SIZE       (8)
+
+STATIC mp_obj_t get_value(mp_obj_t *data, int position, mp_obj_t key_fn) {
+    mp_obj_t value;
+    if (key_fn == NULL) {
+        value = data[position];
+    } else {
+        value = rt_call_function_1(key_fn, data[position]);
+    }
+    return value;
+}
+
+STATIC bool compare(mp_obj_t *data, int position, mp_obj_t value, int op, mp_obj_t key_fn) { 
+    mp_obj_t cmp_value = get_value(data, position, key_fn);
+    
+    return rt_binary_op(op, cmp_value, value) == mp_const_true;
+}
+
+STATIC bool compare_by_pos(mp_obj_t *data, int pos1, int pos2, int op, mp_obj_t key_fn) {
+    mp_obj_t val1 = get_value(data, pos1, key_fn);
+    mp_obj_t val2 = get_value(data, pos2, key_fn);
+
+    return rt_binary_op(op, val1, val2) == mp_const_true;
+}
+
+STATIC void swap_data(mp_obj_t *data, int pos1, int pos2) {
+    mp_obj_t val = data[pos1];
+    data[pos1] = data[pos2];
+    data[pos2] = val;
+}
+
 STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool reversed) {
-    int op = reversed ? RT_BINARY_OP_MORE : RT_BINARY_OP_LESS;
-    while (head < tail) {
-        mp_obj_t *h = head - 1;
-        mp_obj_t *t = tail;
-        mp_obj_t v = key_fn == NULL ? tail[0] : rt_call_function_1(key_fn, tail[0]); // get pivot using key_fn
-        for (;;) {
-            do ++h; while (rt_binary_op(op, key_fn == NULL ? h[0] : rt_call_function_1(key_fn, h[0]), v) == mp_const_true);
-            do --t; while (h < t && rt_binary_op(op, v, key_fn == NULL ? t[0] : rt_call_function_1(key_fn, t[0])) == mp_const_true);
-            if (h >= t) break;
-            mp_obj_t x = h[0];
-            h[0] = t[0];
-            t[0] = x;
+    int op = reversed ? RT_BINARY_OP_LESS : RT_BINARY_OP_MORE;
+    int stack[MAX_SORT_STACK_POSITIONS];
+    
+    int low;
+    int high;
+    int mid;
+    int left;
+    int right;
+
+    int stack_top = 0;
+    
+    mp_obj_t separate_value;
+    mp_obj_t separate_value_for_compare;    // value after key_fn
+    mp_obj_t *data = head;
+    
+
+    // We need sort from first point to last point.
+    stack[stack_top++] = 0;
+    stack[stack_top++] = (tail - head + 1) - 1;
+
+    // Repeat until all sorting is done (i.e., the sort position stack is empty).
+    while (stack_top > 0) {
+
+        // Get the starting/ending positions of the aray to be sorted.
+        high = stack[--stack_top];
+        low  = stack[--stack_top];
+
+        // If the number of items to sort is small or if there isn't enough space on the sort stack
+        // use an insertion sort to sort this array.
+        // For a array length of 8 or less this is faster than partitioning.
+        if ( ((high - low) <= INSERTION_SORT_SIZE) ||
+             (stack_top >= (MAX_SORT_STACK_POSITIONS - 4)) ) {
+
+            for ( right =  (low + 1); right <= high; right ++ ) {
+                // Get the item to insert.
+                separate_value = get_value(data, right, NULL);
+                separate_value_for_compare = get_value(data, right, key_fn);
+                left = right;
+                
+                // Find the location to insert it by moving up all values larger than item.
+                while ( (left > low) &&
+                        compare(data, left - 1, separate_value_for_compare, op, key_fn) ) {
+                    data[left] = data[left - 1];
+                    left--;
+                }
+                
+                data[left] = separate_value;
+            }
+        } else {
+            // PartitionSort
+
+            // The point here is to separate the array into 2 arrays, and any data
+            // in one array must <= any data of another array. To reduce the loop
+            // number and test time, the lengths of these 2 arrays should be as close
+            // as possible
+
+            // First, sort the array so that 1st, 2nd, and last will be in order.
+            // To have more chance to get 2 arrayes with close lengths, here we choose
+            // 3 data at the original positions First, Middle, and Last.
+
+            // Swap the 2nd and middle data.
+            mid = (low + high) >> 1;
+            swap_data(data, low + 1, mid);
+
+            // Sort 1st and last.
+            if ( compare_by_pos(data, low, high, op, key_fn)) {
+                swap_data(data, low, high);
+            }
+
+            // Sort 2nd and last.
+            if ( compare_by_pos(data, low + 1, high, op, key_fn)) {
+                swap_data(data, low + 1, high);
+            }
+
+            // Sort 1st and 2nd.
+            if ( compare_by_pos(data, low, low + 1, op, key_fn)) {
+                swap_data(data, low, low + 1);
+            }
+           
+            // At this point, 1st, 2nd, and last data are in order.
+            // (Note: here we only sort 3 data, it does not means the 1st data is the
+            // least one of the array. The 1st one is only the least one of these 3 data.)
+
+            // Separate the array into 2 arrays, the value to separate them is the
+            // 2nd data.
+            left = low + 1;
+            right = high;
+            separate_value = get_value(data, left, NULL); 
+            separate_value_for_compare = get_value(data, left, key_fn);
+
+            while (1) {
+                // Search the whole range forward to find the first position whose value is
+                // greater than or equal to the SeparateValue, and assign the position into
+                // 'left'. Since Last data >= SeparateValue, we are guaranteed to have
+                // one valid position.
+                while ( !compare(data, ++left, separate_value_for_compare, op, key_fn) ) {
+                };
+
+                // Search the whole range backword to find the first position whose value is
+                // less than or equal to the SeparateValue, and assign it into 'right'.
+                // We can at least find 2 (i.e., 1st and 2nd).
+                while ( compare(data, --right, separate_value_for_compare, op, key_fn) ) {
+                };
+
+                if (left < right) {
+                    // since data at 'left' is larger than or equal to data at 'right', swap them
+                    // to make sure smaller value is before the larger value.
+                    swap_data(data, left, right);
+                } else {
+                    // Finished searching the whole array.
+                    break;
+                }
+            }
+
+            // At this point, all values before (and at) right should <= SeparateValue, and
+            // all values after it should >= SeparateValue.
+
+            // Swap the 2nd position and right so that the data at right will
+            // be the largest value from low to right, and it also will be the smallest
+            // value from right to high.
+            data[low + 1] = data[right];
+            data[right] = separate_value;
+
+
+            // Therefore, we can separate the array into 2 arrays. First is from low to right - 1,
+            // and the second is from right + 1 to high. right itself needs not be included
+            // in these 2 arrays.
+
+            // Always sort the shorter segment first to saves stack space.
+              if ( (right - low) < (high - right) ) {
+                stack[stack_top++] = right + 1;
+                stack[stack_top++] = high;
+                stack[stack_top++] = low;
+                stack[stack_top++] = right - 1;
+            } else {
+                stack[stack_top++] = low;
+                stack[stack_top++] = right - 1;
+                stack[stack_top++] = right + 1;
+                stack[stack_top++] = high;
+            }
         }
-        mp_obj_t x = h[0];
-        h[0] = tail[0];
-        tail[0] = x;
-        mp_quicksort(head, t, key_fn, reversed);
-        head = h + 1;
     }
 }
 
