@@ -353,22 +353,22 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         return gc_alloc(n_bytes);
     }
 
-    if (VERIFY_PTR(ptr)                         /* verify pointer */
-        && (block = BLOCK_FROM_PTR(ptr))        /* get first block */
-        && ATB_GET_KIND(block) == AT_HEAD) {    /* make sure it's a HEAD block */
+    if (VERIFY_PTR(ptr)                         // verify pointer
+        && (block = BLOCK_FROM_PTR(ptr))        // get first block
+        && ATB_GET_KIND(block) == AT_HEAD) {    // make sure it's a HEAD block
 
         byte block_type;
         machine_uint_t n_free   = 0;
-        machine_uint_t n_blocks = 1; /* counting HEAD block */
+        machine_uint_t n_blocks = 1; // counting HEAD block
         machine_uint_t max_block = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
 
-        /* get the number of consecutive tail blocks and
-           the number of free blocks after last tail block */
-        /* stop if we reach (or are at) end of heap */
+        // get the number of consecutive tail blocks and
+        // the number of free blocks after last tail block
+        // stop if we reach (or are at) end of heap
         while ((block + n_blocks + n_free) < max_block
-                /* stop as soon as we find enough blocks for n_bytes */
+                // stop as soon as we find enough blocks for n_bytes
                 && (n_bytes > ((n_blocks+n_free) * BYTES_PER_BLOCK))
-                /* stop if block is HEAD */
+                // stop if block is HEAD
                 && (block_type = ATB_GET_KIND(block + n_blocks + n_free)) != AT_HEAD) {
             switch (block_type) {
                 case AT_FREE: n_free++; break;
@@ -376,36 +376,35 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
                 default: break;
             }
         }
-        /* number of allocated bytes */
+        // number of allocated bytes
         machine_uint_t n_existing = n_blocks * BYTES_PER_BLOCK;
 
-        /* check if realloc'ing to a smaller size */
+        // check if realloc'ing to a smaller size
         if (n_bytes <= n_existing) {
             ptr_out = ptr_in;
-            /* free unneeded tail blocks */
+            // free unneeded tail blocks
             for (machine_uint_t bl = block + n_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
                 ATB_ANY_TO_FREE(bl);
             }
 
-        /* check if we can expand in place */
+        // check if we can expand in place
         } else if (n_bytes <= (n_existing + (n_free * BYTES_PER_BLOCK))) {
-            /* number of blocks needed to expand +1 if there's a remainder */
-            // XXX this has a bug, but don't know why; try: l=[i for i in range(1000)]; for i in l: print(i/3)
+            // number of blocks needed to expand +1 if there's a remainder
             machine_uint_t n_diff = ( n_bytes - n_existing)/BYTES_PER_BLOCK+
                                     ((n_bytes - n_existing)%BYTES_PER_BLOCK!=0);
 
             DEBUG_printf("gc_realloc: expanding " UINT_FMT " blocks (" UINT_FMT " bytes) to " UINT_FMT " blocks (" UINT_FMT " bytes)\n",
                     n_existing/BYTES_PER_BLOCK, n_existing, n_existing/BYTES_PER_BLOCK+n_diff, n_existing + n_diff*BYTES_PER_BLOCK);
 
-           /* mark rest of blocks as used tail */
+            // mark rest of blocks as used tail
             for (machine_uint_t bl = block + n_blocks; bl < (block + n_blocks + n_diff); bl++) {
                 ATB_FREE_TO_TAIL(bl);
             }
             ptr_out = ptr_in;
 
-        /* try to find a new contiguous chain */
+        // try to find a new contiguous chain
         } else if ((ptr_out = gc_alloc(n_bytes)) != NULL) {
-            DEBUG_printf("gc_realloc: allocating new block \n");
+            DEBUG_printf("gc_realloc: allocating new block\n");
             memcpy(ptr_out, ptr_in, n_existing);
             gc_free(ptr_in);
         }
