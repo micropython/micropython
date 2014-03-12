@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/sync.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_sync</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_sync</h2>
+<p>The f_sync function flushes the cached information of a writing file.</p>
+<pre>
+FRESULT f_sync (
+  FIL* <span class="arg">fp</span>     <span class="c">/* [IN] File object */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>Pointer to the open file object to be flushed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_sync()</tt> function performs the same process as <tt>f_close()</tt> function but the file is left opened and can continue read/write/seek operations to the file. This is suitable for the applications that open files for a long time in write mode, such as data logger. Performing <tt>f_sync()</tt> function of periodic or immediataly after <tt>f_write()</tt> function can minimize the risk of data loss due to a sudden blackout or an unintentional media removal. For more information, refer to <a href="appnote.html#critical">application note</a>.</p>
+<p>However the <tt>f_sync()</tt> function immediataly before <tt>f_close()</tt> function  has no advantage because it performs <tt>f_sync()</tt> function in it. In other words, the differnce between those functions is that the file object is invalidated or not.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_READONLY == 0</tt>.</p>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="close.html">f_close</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

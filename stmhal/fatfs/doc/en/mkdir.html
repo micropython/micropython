@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/mkdir.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_mkdir</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_mkdir</h2>
+<p>The f_mkdir function creates a new directory.</p>
+<pre>
+FRESULT f_mkdir (
+  const TCHAR* <span class="arg">path</span> <span class="c">/* [IN] Directory name */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Pointer to the null-terminated string that specifies the <a href="filename.html">directory name</a> to create. </dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Value</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#ex">FR_EXIST</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>This function creates a new directory.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_READONLY == 0</tt> and <tt>_FS_MINIMIZE == 0</tt>.</p>
+</div>
+
+
+<div class="para use">
+<h4>Example</h4>
+<pre>
+    res = f_mkdir("sub1");
+    if (res) die(res);
+    res = f_mkdir("sub1/sub2");
+    if (res) die(res);
+    res = f_mkdir("sub1/sub2/sub3");
+    if (res) die(res);
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

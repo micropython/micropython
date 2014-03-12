@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dstat.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_status</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_status</h2>
+<p>The disk_status function returns the current disk status.</p>
+<pre>
+DSTATUS disk_status (
+  BYTE <span class="arg">pdrv</span>     <span class="c">/* [IN] Physical drive number */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Specifies the physical drive number to be confirmed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>The disk status is returned in combination of following flags. FatFs refers only <tt>STA_NOINIT</tt> and <tt>STA_PROTECTED</tt>.</p>
+<dl class="ret">
+<dt>STA_NOINIT</dt>
+<dd>Indicates that the disk drive is not initialized. This flag is set on system reset, media removal or failure of <tt>disk_initialize()</tt> function. It is cleared on <tt>disk_initialize()</tt> function succeeded. Media change that occurs asynchronously must be captured and reflect it to the status flags, or auto-mount feature will not work correctly. When media change detection feature is not supported, application program needs to de-initialize the file system object with <tt>f_mount()</tt> function after the media change.</dd>
+<dt>STA_NODISK</dt>
+<dd>Indicates that no medium in the drive. This is always cleared on fixed disk drive. Note that FatFs does not refer this flag.</dd>
+<dt>STA_PROTECTED</dt>
+<dd>Indicates that the medium is write protected. This is always cleared on the drive that does not support write protect notch. Not valid while no medium in the drive.</dd>
+</dl>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

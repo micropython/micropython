@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dioctl.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_ioctl</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_ioctl</h2>
+<p>The disk_ioctl function cntrols device specific features and miscellaneous functions other than generic read/write.</p>
+<pre>
+DRESULT disk_ioctl (
+  BYTE <span class="arg">pdrv</span>,     <span class="c">/* [IN] Drive number */</span>
+  BYTE <span class="arg">cmd</span>,      <span class="c">/* [IN] Control command code */</span>
+  void* <span class="arg">buff</span>     <span class="c">/* [I/O] Parameter and data buffer */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Specifies the drive number (0-9).</dd>
+<dt>cmd</dt>
+<dd>Specifies the command code.</dd>
+<dt>buff</dt>
+<dd>Pointer to the parameter buffer depends on the command code. Set NULL if not used.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Value</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any error occured.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid command code or parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The disk drive has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The FatFs module uses only device independent commands described below. Any device dependent function is not used.</p>
+<table class="lst">
+<tr><th>Command</th><th>Description</th></tr>
+<tr><td>CTRL_SYNC</td><td>Make sure that the disk drive has finished pending write process. When the disk I/O module has a write back cache, flush the dirty sector immediately. This command is not used in read-only configuration.</td></tr>
+<tr><td>GET_SECTOR_SIZE</td><td>Returns sector size of the drive into the <tt>WORD</tt> variable pointed by <tt class="arg">buff</tt>. This command is not used in fixed sector size configuration, <tt>_MAX_SS</tt> is 512.</td></tr>
+<tr><td>GET_SECTOR_COUNT</td><td>Returns number of available sectors on the drive into the <tt>DWORD</tt> variable pointed by <tt class="arg">buff</tt>. This command is used by only <tt>f_mkfs()</tt> function to determine the volume size to be created.</td></tr>
+<tr><td>GET_BLOCK_SIZE</td><td>Returns erase block size of the flash memory in unit of sector into the <tt>DWORD</tt> variable pointed by <tt class="arg">buff</tt>. The allowable value is 1 to 32768 in power of 2. Return 1 if the erase block size is unknown or disk devices. This command is used by only <tt>f_mkfs()</tt> function and it attempts to align data area to the erase block boundary.</td></tr>
+<tr><td>CTRL_ERASE_SECTOR</td><td>Erases a part of the flash memory specified by a <tt>DWORD</tt> array {&lt;start sector&gt;, &lt;end sector&gt;} pointed by <tt class="arg">buff</tt>. This is similar command to Trim command of ATA command set. When this feature is not supported or not a flash memory media, this command has no effect. The FatFs does not check the result code and the file function is not affected even if the sectors are not erased well. This command is called on removing a cluster chain when <tt>_USE_ERASE</tt> is 1.</td></tr>
+</table>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

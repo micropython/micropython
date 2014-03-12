@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/eof.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_eof</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_eof</h2>
+<p>The f_eof function tests for end-of-file on a file.</p>
+<pre>
+int f_eof (
+  FIL* <span class="arg">fp</span>   <span class="c">/* [IN] File object */</span>
+);
+</pre>
+</div>
+
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>Pointer to the open file object structure.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>The <tt>f_eof()</tt> function returns a non-zero value if the read/write pointer has reached end of the file; otherwise it returns a zero.</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>In this revision, this function is implemented as a macro.</p>
+<pre>
+<span class="k">#define</span> f_eof(fp) (((fp)->fptr) == ((fp)->fsize) ? 1 : 0)
+</pre>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Always available.</p>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="lseek.html">f_lseek</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

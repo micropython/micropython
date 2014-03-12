@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/write.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_write</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_write</h2>
+<p>ファイルにデータを書き込みます。</p>
+<pre>
+FRESULT f_write (
+  FIL* <span class="arg">fp</span>,           <span class="c">/* [IN] ファイル・オブジェクト */</span>
+  const void* <span class="arg">buff</span>,  <span class="c">/* [IN] 書き込みデータ */</span>
+  UINT <span class="arg">btw</span>,          <span class="c">/* [IN] 書き込むバイト数 */</span>
+  UINT* <span class="arg">bw</span>           <span class="c">/* [OUT] 書き込まれたバイト数 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>ファイル・オブジェクト構造体へのポインタを指定します。</dd>
+<dt>buff</dt>
+<dd>書き込むデータを格納したバッファを指すポインタを指定します。</dd>
+<dt>btw</dt>
+<dd>書き込むバイト数(0～<tt>UINT</tt>型の最大値)を指定します。</dd>
+<dt>bw</dt>
+<dd>書き込まれたバイト数を格納する変数を指すポインタを指定します。戻り値は関数の成否にかかわらず常に有効です。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>書き込み開始位置は、リード/ライト・ポインタの位置からになります。リード/ライト・ポインタは実際に書き込まれたバイト数だけ進みます。関数が正常終了した後、要求したバイト数が書き込まれたかどうか<tt class="arg">*bw</tt>をチェックすべきです。<tt class="arg">*bw</tt>が<tt class="arg">btw</tt>より小さいときは、ディスク・フルを意味します。ディスク・フルが発生しているときまたはそれに近いときは、制御が帰るまで時間がかかる場合があります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="read.html">f_read</a>, <a href="putc.html">fputc</a>, <a href="puts.html">fputs</a>, <a href="printf.html">fprintf</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

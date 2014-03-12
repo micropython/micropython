@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/stat.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_stat</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_stat</h2>
+<p>The f_stat function checks the existence of a file or sub-directory.</p>
+<pre>
+FRESULT f_stat (
+  const TCHAR* <span class="arg">path</span>,  <span class="c">/* [IN] Object name */</span>
+  FILINFO* <span class="arg">fno</span>        <span class="c">/* [OUT] FILINFO structure */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Pointer to the null-terminated string that specifies the <a href="filename.html">object</a> to get its information.</dd>
+<dt>fno</dt>
+<dd>Pointer to the blank <tt>FILINFO</tt> structure to store the information of the object. Set null pointer if it is not needed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_stat()</tt> function checks the existence of a file or sub-directory. If exist, the function returns with <tt>FR_OK</tt> and the information of the object is stored to the file information structure. If not exist, the function returns with <tt>FR_NO_FILE</tt>. For details, refer to the <tt>FILINFO</tt> structure and <a href="readdir.html"><tt>f_readdir()</tt></a> function.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_MINIMIZE == 0</tt>.</p>
+</div>
+
+
+<div class="para ref">
+<h4>References</h4>
+<p><tt><a href="opendir.html">f_opendir</a>, <a href="readdir.html">f_readdir</a>, <a href="sfileinfo.html">FILINFO</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

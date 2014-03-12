@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/getfree.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_getfree</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_getfree</h2>
+<p>The f_getfree function gets number of the free clusters.</p>
+<pre>
+FRESULT f_getfree (
+  const TCHAR* <span class="arg">path</span>,  <span class="c">/* [IN] Logical drive number */</span>
+  DWORD* <span class="arg">nclst</span>,       <span class="c">/* [OUT] Number of free clusters */</span>
+  FATFS** <span class="arg">fatfs</span>       <span class="c">/* [OUT] Corresponding file system object */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Pinter to the null-terminated string that specifies the <a href="filename.html">logical drive</a>. A null-string means the default drive.</dd>
+<dt>nclst</dt>
+<dd>Pointer to the <tt>DWORD</tt> variable to store number of free clusters.</dd>
+<dt>fatfs</dt>
+<dd>Pointer to pointer that to store a pointer to the corresponding file system object.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Descriptions</h4>
+<p>The <tt>f_getfree()</tt> function gets number of free clusters on the volume. The member <tt>csize</tt> in the file system object indicates number of sectors per cluster, so that the free space in unit of sector can be calcurated with this information. When FSINFO structure on the FAT32 volume is not in sync, this function can return an incorrect free cluster count. To avoid this problem, FatFs can be forced full FAT scan by <tt>_FS_NOFSINFO</tt> option.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_READONLY == 0</tt> and <tt>_FS_MINIMIZE == 0</tt>.</p>
+</div>
+
+
+<div class="para use">
+<h4>Example</h4>
+<pre>
+    FATFS *fs;
+    DWORD fre_clust, fre_sect, tot_sect;
+
+
+    <span class="c">/* Get volume information and free clusters of drive 1 */</span>
+    res = f_getfree("1:", &amp;fre_clust, &amp;fs);
+    if (res) die(res);
+
+    <span class="c">/* Get total sectors and free sectors */</span>
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
+
+    <span class="c">/* Print the free space (assuming 512 bytes/sector) */</span>
+    printf("%10lu KiB total drive space.\n%10lu KiB available.\n",
+           tot_sect / 2, fre_sect / 2);
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

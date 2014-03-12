@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/lseek.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_lseek</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_lseek</h2>
+<p>The f_lseek function moves the file read/write pointer of an open file object. It can also be used to expand the file size (cluster pre-allocation). </p>
+
+<pre>
+FRESULT f_lseek (
+  FIL* <span class="arg">fp</span>,   <span class="c">/* [IN] File object */</span>
+  DWORD <span class="arg">ofs</span>  <span class="c">/* [IN] File read/write pointer */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>Pointer to the open file object.</dd>
+<dt>ofs</dt>
+<dd>Byte offset from top of the file.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_lseek()</tt> function moves the file read/write pointer of an open file. The offset can be specified in only origin from top of the file. When an offset beyond the file size is specified in write mode, the file size is expanded to the specified offset. The file data in the expanded area is undefined because no data is written to the file. This is suitable to pre-allocate a cluster chain quickly, for fast write operation. After the <tt>f_lseek()</tt> function succeeded, the current read/write pointer should be checked in order to make sure the read/write pointer has been moved correctry. In case of the current read/write pointer is not the expected value, either of followings has been occured.</p>
+<ul>
+<li>End of file. The specified <tt class="arg">ofs</tt> was clipped at end of the file because the file has been opened in read-only mode.</li>
+<li>Disk full. There is insufficient free space on the volume to expand the file.</li>
+</ul>
+<p>Fast seek feature is enabled when <tt>_USE_FASTSEEK</tt> is set to 1 and the member <tt>cltbl</tt> in the file object is not NULL. This feature enables fast backward/long seek operations without FAT access by using cluster link map table (CLMT). It is also applied to <tt>f_read()/f_write()</tt> function. In this mode, the file cannot be expanded by <tt>f_write()/f_lseek()</tt> function.</p>
+<p>The CLMT must be created in the user defined <tt>DWORD</tt> array prior to use the fast seek feature. To create the CLMT, set address of the <tt>DWORD</tt> array to the member <tt>cltbl</tt> in the file object, set the array size in unit of items into the first item and call the <tt>f_lseek()</tt> function with <tt class="arg">ofs</tt><tt> = CREATE_LINKMAP</tt>. After the function succeeded and CLMT is created, no FAT access is occured in subsequent <tt>f_read()/f_write()/f_lseek()</tt> function to the file. If the function failed with <tt>FR_NOT_ENOUGH_CORE</tt>, the given array size is insufficient for the file and number of items required is returned into the first item of the array. The required array size is (number of fragments + 1) * 2 items. For example, when the file is fragmented in 5, 12 items will be required for the CLMT.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_MINIMIZE &lt;= 2</tt>.</p>
+</div>
+
+
+<div class="para use">
+<h4>Example</h4>
+<pre>
+    <span class="c">/* Open file */</span>
+    fp = malloc(sizeof (FIL));
+    res = f_open(fp, "file.dat", FA_READ|FA_WRITE);
+    if (res) ...
+
+    <span class="c">/* Move to offset of 5000 from top of the file */</span>
+    res = f_lseek(fp, 5000);
+
+    <span class="c">/* Move to end of the file to append data */</span>
+    res = f_lseek(fp, f_size(fp));
+
+    <span class="c">/* Forward 3000 bytes */</span>
+    res = f_lseek(fp, f_tell(fp) + 3000);
+
+    <span class="c">/* Rewind 2000 bytes (take care on wraparound) */</span>
+    res = f_lseek(fp, f_tell(fp) - 2000);
+</pre>
+<pre>
+<span class="c">/* Cluster pre-allocation (to prevent buffer overrun on streaming write) */</span>
+
+    res = f_open(fp, recfile, FA_CREATE_NEW | FA_WRITE);   <span class="c">/* Create a file */</span>
+
+    res = f_lseek(fp, PRE_SIZE);             <span class="c">/* Expand file size (cluster pre-allocation) */</span>
+    if (res || f_tell(fp) != PRE_SIZE) ...   <span class="c">/* Check if the file has been expanded */</span>
+
+    res = f_lseek(fp, DATA_START);           <span class="c">/* Record data stream WITHOUT cluster allocation delay */</span>
+    ...                                      <span class="c">/* DATA_START and write block size should be aligned to sector boundary */</span>
+
+    res = f_truncate(fp);                    <span class="c">/* Truncate unused area */</span>
+    res = f_lseek(fp, 0);                    <span class="c">/* Put file header */</span>
+    ...
+
+    res = f_close(fp);
+</pre>
+<pre>
+<span class="c">/* Using fast seek feature */</span>
+
+    DWORD clmt[SZ_TBL];                    <span class="c">/* Cluster link map table buffer */</span>
+
+    res = f_lseek(fp, ofs1);               <span class="c">/* This is normal seek (cltbl member is nulled on file open) */</span>
+
+    fp-&gt;cltbl = clmt;                      <span class="c">/* Enable fast seek feature */</span>
+    clmt[0] = SZ_TBL;                      <span class="c">/* Set table size */</span>
+    res = f_lseek(fp, CREATE_LINKMAP);     <span class="c">/* Create CLMT */</span>
+    ...
+
+    res = f_lseek(fp, ofs2);               <span class="c">/* This is fast seek */</span>
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="truncate.html">f_truncate</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

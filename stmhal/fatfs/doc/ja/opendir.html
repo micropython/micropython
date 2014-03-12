@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/opendir.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_opendir</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_opendir</h2>
+<p>ディレクトリを開きます。</p>
+<pre>
+FRESULT f_opendir (
+  DIR* <span class="arg">dp</span>,           <span class="c">/* [OUT] ディレクトリ・ブジェクト構造体へのポインタ */</span>
+  const TCHAR* <span class="arg">path</span>  <span class="c">/* [IN] ディレクトリ名へのポインタ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>dp</dt>
+<dd>空のディレクトリ・オブジェクト構造体へのポインタを指定します。</dd>
+<dt>path</dt>
+<dd>オープンするディレクトリの<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>ディレクトリを開きます。正常終了したら、作成された<tt>DIR</tt>構造体を使ってこのディレクトリの項目を順次読み出せます。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_MINIMIZE &lt;= 1</tt>のとき使用可能になります。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="readdir.html">f_readdir</a>, <a href="closedir.html">f_closedir</a>, <a href="sdir.html">DIR</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

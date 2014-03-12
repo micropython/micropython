@@ -1,0 +1,60 @@
+* {margin: 0; padding: 0; border-width: 0;}
+body {margin: 8px; background-color: #e0ffff; font-color: black; font-family: serif; line-height: 133%; max-width: 1024px;}
+a:link {color: blue;}
+a:visited {color: darkmagenta;}
+a:hover {background-color: #a0ffff;}
+a:active {color: darkmagenta; overflow: hidden; outline:none; position: relative; top: 1px; left: 1px;}
+abbr {border-width: 1px;}
+
+p {margin: 0 0 0.3em 1em;}
+em {font-style: normal; font-weight: bold; margin: 0 0.1em;}
+strong {}
+pre {border: 1px dashed gray; margin: 0.5em 1em; padding: 0.5em; line-height: 1.2em; font-size: 85%; font-family: "Consolas", "Courier New", monospace; background-color: white;}
+pre span.c {color: green;}
+pre span.k {color: blue;}
+pre span.arg {font-style: italic;}
+tt {margin: 0 0.2em; font-size: 0.85em; font-family: "Consolas", "Courier New", monospace; }
+tt.arg {font-style: italic;}
+ol {margin: 0.5em 2.5em;}
+ul {margin: 0.5em 2em;}
+dl {margin: 0.5em 1em;}
+dd {margin: 0 2em;}
+dt {font-size: 0.85em; font-family: "Consolas", "Courier New", monospace;}
+dl.par dt {margin: 0.5em 0 0 0 ; font-style: italic; }
+dl.ret dt {margin: 0.5em 0 0 0 ; font-size: 0.85em; font-family: "Consolas", "Courier New", monospace;}
+hr {border-width: 1px; margin: 1em;}
+div.abst {font-family: sans-serif;}
+div.para {clear: both; font-family: serif;}
+div.ret a {font-size: 0.85em; font-family: "Consolas", "Courier New", monospace; }
+.equ {text-indent: 0; margin: 1em 2em 1em;}
+.indent {margin-left: 2em;}
+.rset {float: right; margin: 0 0 0.5em 0.5em;}
+.lset {float: left; margin: 0 0.5em 0.5em 0.5em;}
+ul.flat li {list-style-type: none; margin: 0;}
+a.imglnk img {border: 1px solid;}
+.iequ {white-space: nowrap; font-weight: bold;}
+.clr {clear: both;}
+.it {font-style: italic;}
+.mfd {font-size: 0.7em; padding: 0 1px; border: 1px solid; white-space : nowrap}
+
+h1 {line-height: 1em; font-size: 2em; font-family: sans-serif; padding: 0.3em 0 0.3em;}
+p.hdd {float: right; text-align: right; margin-top: 0.5em;}
+hr.hds {clear: both; margin-bottom: 1em;}
+
+h2 {font-size: 2em; font-family: sans-serif; background-color: #d8d8FF; padding: 0.5em 0.5em; margin: 0 0 0.5em;}
+h3 {font-size: 1.5em; font-family: sans-serif; margin: 1.5em 0 0.5em;}
+h4 {font-size: 1.2em; font-family: sans-serif; margin: 1em 0 0.2em;}
+h5 {font-size: 1em; font-family: sans-serif; margin: 0.5em 0 0em;}
+small {font-size: 80%;}
+.indent {margin-left: 2em;}
+
+/* Tables */
+table {margin: 0.5em 1em; border-collapse: collapse; border: 2px solid black; }
+th {background-color: white; border-style: solid; border-width: 1px 1px 2px; border-color: black; padding: 0 3px; vertical-align: top; white-space: nowrap;}
+td {background-color: white; border: 1px solid black; padding: 0 3px; vertical-align: top; line-height: 1.3em;}
+table.lst td:first-child {font-size: 0.85em; font-family: "Consolas", "Courier New", monospace;}
+table.lst2 td {font-size: 0.85em; font-family: "Consolas", "Courier New", monospace;}
+table caption {font-family: sans-serif; font-weight: bold;}
+tr.lst3 td { border-width: 2px 1px 1px; }
+
+p.foot {clear: both; text-indent: 0; margin: 1em 0.5em 1em;}

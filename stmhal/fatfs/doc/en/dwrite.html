@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dwrite.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_write</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_write</h2>
+<p>The disk_write writes sector(s) to the disk.</p>
+<pre>
+DRESULT disk_write (
+  BYTE <span class="arg">drv</span>,         <span class="c">/* [IN] Physical drive number */</span>
+  const BYTE* <span class="arg">buff</span>, <span class="c">/* [IN] Write data (may be non aligned) */</span>
+  DWORD <span class="arg">sector</span>,     <span class="c">/* [IN] Sector number to write */</span>
+  UINT <span class="arg">count</span>        <span class="c">/* [IN] Number of sectors to write */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Specifies the physical drive number.</dd>
+<dt>buff</dt>
+<dd>Pointer to the <em>byte array</em> to be written.</dd>
+<dt>sector</dt>
+<dd>Specifies the start sector number in logical block address (LBA).</dd>
+<dt>count</dt>
+<dd>Specifies the number of sectors to write. FatFs specifis 1 to 128. Generally, a multiple sector transfer request must not be split into single sector transactions to the device, or you will never get good write performance.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any hard error occured during the write operation and could not recover it.</dd>
+<dt>RES_WRPRT</dt>
+<dd>The medium is write protected.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The disk drive has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>This function is not required in read only configuration. The specified memory address is not that always aligned to word boundary because the type of pointer is defined as <tt>BYTE</tt>. For more information, read <a href="dread.html">description in disk_read function</a>.</p>
+<p><em>Application program MUST NOT call this function while FatFs is in use, or FAT structure on the volume can be corrapted.</em></p>
+</div>
+
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

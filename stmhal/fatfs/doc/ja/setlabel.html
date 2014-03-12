@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/setlabel.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_setlabel</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_setlabel</h2>
+<p>ボリューム・ラベルを書き込みます。</p>
+<pre>
+FRESULT f_setlabel (
+  const TCHAR* <span class="arg">name</span>  <span class="c">/* [IN] 設定するボリューム名へのポインタ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>name</dt>
+<dd>設定するボリューム名を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>文字列の先頭にドライブ番号を含む場合は、その論理ドライブに設定されます。含まない場合は、デフォルト・ドライブに設定されます。ボリューム名を削除するときは、ヌル文字列を指定します。名前のフォーマットは、短いファイル名とほぼ同じですが、次の点が異なります。</p>
+<ul>
+<li>ローカル・コード換算で11バイト以下。</li>
+<li>ピリオドを含むことはできない。</li>
+<li>任意の位置にスペースを置くことができる。ただし、最後尾のスペースは除去される。</li>
+</ul>
+</div>
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_USE_LABEL == 1</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    <span class="c">/* デフォルト・ドライブにボリューム名を設定 */</span>
+    f_setlabel("DATA DISK");
+
+    <span class="c">/* ドライブ2にボリューム名を設定 */</span>
+    f_setlabel("2:DISK 3 OF 4");
+
+    <span class="c">/* ドライブ2のボリューム名を削除 */</span>
+    f_setlabel("2:");
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<tt><a href="getlabel.html">f_getlabel</a></tt>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

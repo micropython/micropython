@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/dioctl.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_ioctl</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_ioctl</h2>
+<p>セクタの読み書き以外のディスク・ドライブ自体に対する様々な制御をします。</p>
+<pre>
+DRESULT disk_ioctl (
+  BYTE <span class="arg">pdrv</span>,    <span class="c">/* [IN] 物理ドライブ番号 */</span>
+  BYTE <span class="arg">cmd</span>,     <span class="c">/* [IN] 制御コマンド */</span>
+  void* <span class="arg">buff</span>    <span class="c">/* [I/O] データ受け渡しバッファ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>物理ドライブ番号(0-9)が指定されます。</dd>
+<dt>cmd</dt>
+<dd>制御コマンド・コードが指定されます。</dd>
+<dt>buff</dt>
+<dd>制御コマンドに依存したパラメータを授受するバッファを指すポインタが指定されます。データの授受のないコマンドの場合は、値に意味はありません。</dd>
+</dl>
+</div>
+
+<div class="para ret">
+<h4>戻り値</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>正常終了。</dd>
+<dt>RES_ERROR</dt>
+<dd>何らかのエラーが発生した。</dd>
+<dt>RES_PARERR</dt>
+<dd>コマンドが不正。</dd>
+<dt>RES_NOTRDY</dt>
+<dd>ドライブが動作可能状態ではない、または初期化されていない。</dd>
+</dl>
+</div>
+
+<div class="para desc">
+<h4>解説</h4>
+<p>物理ドライブの種類によりサポートされるコマンドは異なりますが、FatFsモジュールでは、次の汎用コマンドのみ使用し、特定のハードウェアに依存した制御は行いません。</p>
+<table class="lst">
+<tr><th>コマンド</th><th>解説</th></tr>
+<tr><td>CTRL_SYNC</td><td>ドライブ内のデータ書き込み処理の完了待ち。ライト・バック・キャッシュなどが存在する場合は、書き込まれていないデータを即時書き戻します。リード・オンリー構成では使用されません。</td></tr>
+<tr><td>GET_SECTOR_SIZE</td><td><tt class="arg">buff</tt>の指す<tt>WORD</tt>型変数にドライブのセクタ・サイズ(バイト単位)を返します。セクタ・サイズが固定(<tt>_MAX_SS</tt>が512)のときはこのコマンドは使われません。</td></tr>
+<tr><td>GET_SECTOR_COUNT</td><td><tt class="arg">buff</tt>の指す<tt>DWORD</tt>型変数にドライブ上の総セクタ数を返します。<tt>f_mkfs()</tt>内で呼び出され、作成するボリュームのサイズを決定するために使用されます。</td></tr>
+<tr><td>GET_BLOCK_SIZE</td><td><tt class="arg">buff</tt>の指す<tt>DWORD</tt>型変数にフラッシュ・メモリの消去ブロック・サイズ(セクタ単位)を返します。1から32768の範囲で2の累乗の値でなければなりません。不明な場合またはフラッシュ・メモリ以外のメディアでは1を返します。<tt>f_mkfs()</tt>内でのみ使用され、ボリュームのデータ領域はこの境界にアライメントされます。</td></tr>
+<tr><td>CTRL_ERASE_SECTOR</td><td>フラッシュ・メモリ上の指定領域の消去。<tt class="arg">buff</tt>の指す<tt>DWORD</tt>型配列には消去する領域 {開始セクタ,終了セクタ} を指定して呼び出されます。<tt>_USE_ERASE</tt>が1のとき、クラスタが解放されるときに呼び出されます。これは、ATAコマンド・セットのTrimコマンドと等価で、この機能をサポートしない場合は何もする必要はありません。また、戻り値はチェックされず、消去が完全に行われなかったとしてもFatFsの動作には影響ありません。</td></tr>
+</table>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>
