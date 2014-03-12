@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/open.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_open</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_open</h2>
+<p>ファイルをオープンまたは作成します。</p>
+<pre>
+FRESULT f_open (
+  FIL* <span class="arg">fp</span>,           <span class="c">/* [OUT] 空のファイル・オブジェクト構造体へのポインタ */</span>
+  const TCHAR* <span class="arg">path</span>, <span class="c">/* [IN] ファイルのフルパス名へのポインタ */</span>
+  BYTE <span class="arg">mode</span>          <span class="c">/* [IN] モードフラグ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>新しく作成するファイル・オブジェクト構造体へのポインタを指定します。以降、そのファイルを閉じるまでこのファイル・オブジェクトを使用してファイル操作をします。</dd>
+<dt>path</dt>
+<dd>開く(または作成する)ファイルの <a href="filename.html">ファイル名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。</dd>
+<dt>mode</dt>
+<dd>ファイルのアクセス方法やオープン方法を決めるフラグです。このパラメータには次の組み合わせを指定します。<br>
+<table class="lst">
+<tr><th>値</th><th>意味</th></tr>
+<tr><td>FA_READ</td><td>読み出しモードで開きます。読み書きする場合は<tt>FA_WRITE</tt>と共に指定します。</td></tr>
+<tr><td>FA_WRITE</td><td>書き込みモードで開きます。読み書きする場合は<tt>FA_READ</tt>と共に指定します。</td></tr>
+<tr><td>FA_OPEN_EXISTING</td><td>既存のファイルを開きます。ファイルが無いときはエラーになります。(デフォルト)</td></tr>
+<tr><td>FA_OPEN_ALWAYS</td><td>既存のファイルを開きます。ファイルが無いときはファイルを作成します。追記の場合は、この方法でオープンした後、<a href="lseek.html"><tt>f_lseek()</tt></a>でファイルの最後尾に移動してください。</td></tr>
+<tr><td>FA_CREATE_NEW</td><td>ファイルを作成します。同名のファイルがある場合は、<tt>FR_EXIST</tt>で失敗します。</td></tr>
+<tr><td>FA_CREATE_ALWAYS</td><td>ファイルを作成します。同名のファイルがある場合は、サイズを0にしてから開きます。</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#ex">FR_EXIST</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#lo">FR_LOCKED</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>,
+<a href="rc.html#tf">FR_TOO_MANY_OPEN_FILES</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>既存のファイルを開いたり、新しいファイルを作成します。関数が成功するとファイル・オブジェクトが作成され、以降そのファイルに対するアクセスに使用します。ファイルを閉じるときは、<a href="close.html"><tt>f_close()</tt></a>を使用します。何らかの変更が行われたファイルがその後正しく閉じられなかった場合、そのファイルが破損する場合があります。</p>
+<p>既に開かれているファイルを開く必要がある場合は、<a href="appnote.html#dup">多重アクセス制御</a>を参照してください。しかし、一つのファイルに対する書き込みモードを含む重複オープンは常に禁止です。</p>
+<p>ファイル・アクセスを開始する前に、<a href="mount.html"><tt>f_mount()</tt></a>を使ってそれぞれの論理ドライブにワーク・エリア(ファイル・システム・オブジェクト)を与える必要があります。この初期化の後、その論理ドライブに対して全てのファイル関数が使えるようになります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p>全ての構成で使用可能です。<tt>_FS_READONLY == 1</tt>のときは、<tt>FA_WRITE, FA_CREATE_ALWAYS, FA_CREATE_NEW, FA_OPEN_ALWAYS</tt>の各フラグはサポートされません。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+<span class="c">/* テキストファイルを読み出して表示 */</span>
+
+FATFS FatFs;   <span class="c">/* 論理ドライブのワーク・エリア(ファイル・システム・オブジェクト) */</span>
+
+int main (void)
+{
+    FIL fil;       <span class="c">/* ファイル・オブジェクト */</span>
+    char line[82]; <span class="c">/* 行バッファ */</span>
+    FRESULT fr;    <span class="c">/* 戻り値 */</span>
+
+
+    <span class="c">/* デフォルト・ドライブにワークエリアを与える */</span>
+    f_mount(&amp;FatFs, "", 0);
+
+    <span class="c">/* テキスト・ファイルを開く */</span>
+    fr = f_open(&fil, "message.txt", FA_READ);
+    if (fr) return (int)fr;
+
+    <span class="c">/* 1行ずつ読み出して表示 */</span>
+    while (f_gets(line, sizeof line, &fil))
+        printf(line);
+
+    <span class="c">/* ファイルを閉じる */</span>
+    f_close(&fil);
+
+    return 0;
+}
+</pre>
+<pre>
+<span class="c">/* ドライブ1のファイル "file.bin" をドライブ0へコピー */</span>
+
+int main (void)
+{
+    FATFS fs[2];         <span class="c">/* 論理ドライブのワークエリア(ファイル・システム・オブジェクト) */</span>
+    FIL fsrc, fdst;      <span class="c">/* ファイル・オブジェクト */</span>
+    BYTE buffer[4096];   <span class="c">/* File copy buffer */</span>
+    FRESULT fr;          <span class="c">/* FatFs function common result code */</span>
+    UINT br, bw;         <span class="c">/* File R/W count */</span>
+
+    <span class="c">/* ドライブ0,1にワーク・エリアを与える */</span>
+    f_mount(&amp;fs[0], "0:", 0);
+    f_mount(&amp;fs[1], "1:", 0);
+
+    <span class="c">/* ドライブ1のコピー元ファイルを開く */</span>
+    res = f_open(&amp;fsrc, "1:file.dat", FA_OPEN_EXISTING | FA_READ);
+    if (fr) return (int)fr;
+
+    <span class="c">/* ドライブ0にコピー先ファイルを作成する */</span>
+    res = f_open(&amp;fdst, "0:file.dat", FA_CREATE_ALWAYS | FA_WRITE);
+    if (fr) return (int)fr;
+
+    <span class="c">/* コピー元からコピー先にデータ転送する */</span>
+    for (;;) {
+        res = f_read(&amp;fsrc, buffer, sizeof buffer, &amp;br); <span class="c">/* コピー元からから読み出す */</span>
+        if (res || br == 0) break;   <span class="c">/* エラーかファイル終端 */</span>
+        res = f_write(&amp;fdst, buffer, br, &amp;bw);           <span class="c">/* それをコピー先に書き込む */</span>
+        if (res || bw &lt; br) break;   <span class="c">/* エラーかディスク満杯 */</span>
+    }
+
+    <span class="c">/* 全てのファイルを閉じる */</span>
+    f_close(&amp;fsrc);
+    f_close(&amp;fdst);
+
+    <span class="c">/* ワーク・エリアを開放する */</span>
+    f_mount(NULL, "0:", 0);
+    f_mount(NULL, "1:", 0);
+
+    return (int)fr;
+}
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="read.html">f_read</a>, <a href="write.html">f_write</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

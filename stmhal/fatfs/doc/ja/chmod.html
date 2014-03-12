@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/chmod.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_chmod</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_chmod</h2>
+<p>ファイルまたはサブ・ディレクトリの属性を変更します。</p>
+<pre>
+FRESULT f_chmod (
+  const TCHAR* <span class="arg">path</span>, <span class="c">/* [IN] オブジェクト名へのポインタ */</span>
+  BYTE <span class="arg">attr</span>,         <span class="c">/* [IN] 設定値 */</span>
+  BYTE <span class="arg">mask</span>          <span class="c">/* [IN] 変更マスク */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>属性変更対象のオブジェクトの<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列を指定します。</dd>
+<dt>attr</dt>
+<dd>設定する属性。指定可能な属性は次の通りで、これらの組み合わせで指定します。指定されなかった属性は解除されます。<br>
+<table class="lst">
+<tr><th>値</th><th>意味</th></tr>
+<tr><td>AM_RDO</td><td>リード・オンリー</td></tr>
+<tr><td>AM_ARC</td><td>アーカイブ</td></tr>
+<tr><td>AM_SYS</td><td>システム</td></tr>
+<tr><td>AM_HID</td><td>ヒドゥン</td></tr>
+</table>
+</dd>
+<dt>mask</dt>
+<dd>変更する属性のマスク。指定した属性が設定または解除され、指定されなかった属性は状態が保持されます。<tt class="arg">attr</tt>と同じ値を使います。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#lo">FR_LOCKED</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_FS_MINIMIZE == 0</tt>のとき使用可能です。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    <span class="c">/* リードオンリーをセット、アーカイブをクリア、その他は変更しない */</span>
+    f_chmod("file.txt", AM_RDO, AM_RDO | AM_ARC);
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

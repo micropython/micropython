@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/dread.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_read</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_read</h2>
+<p>ドライブからセクタを読み出します。</p>
+<pre>
+DRESULT disk_read (
+  BYTE <span class="arg">pdrv</span>,     <span class="c">/* [IN] 物理ドライブ番号 */</span>
+  BYTE* <span class="arg">buff</span>,    <span class="c">/* [OUT] 読み出しバッファへのポインタ */</span>
+  DWORD <span class="arg">sector</span>,  <span class="c">/* [IN] 読み出し開始セクタ番号 */</span>
+  UINT <span class="arg">count</span>     <span class="c">/* [IN] 読み出すセクタ数 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>物理ドライブ番号(0-9)が指定されます。</dd>
+<dt>buff</dt>
+<dd>ディスクから読み出したデータを格納する<em>バイト配列</em>で、読み出されるバイト数分のサイズが必要です。</dd>
+<dt>sector</dt>
+<dd>読み出しを開始するセクタ番号。LBAで指定されます。</dd>
+<dt>count</dt>
+<dd>読み出すセクタ数。 1～128の範囲の値で指定されます。一般的に、複数セクタの転送要求はデバイスに対して可能な限りマルチ・セクタ転送しなければなりません。複数のシングル・セクタ読み出しに分解した場合、スループットが低下することがあります。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>正常終了。</dd>
+<dt>RES_ERROR</dt>
+<dd>読み込み中にエラーが発生し、その回復にも失敗した。</dd>
+<dt>RES_PARERR</dt>
+<dd>パラメータが不正。</dd>
+<dt>RES_NOTRDY</dt>
+<dd>ドライブが動作可能状態ではない（初期化されていない）。</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p><tt class="arg">buff</tt>は<tt>BYTE</tt>型なので、指定されるアドレスは<em>常にワード・アライメントされているとは限りません</em>。非アライメント・アドレスへの転送は、<a href="appnote.html#fs1">直接転送</a>において発生することがあります。もしも、ハードウェア上の制約でそのような転送が不可能なときは、この関数内で二段転送するなどして解決するか、または別の方法で対応しなければなりません。次にいくつかの対応方法を示します(いずれか一つでOK)。</p>
+<ul>
+<li>この関数内で解決する - 推奨</li>
+<li><tt>f_read()</tt>において、セクタ全体を含む転送を避ける - 直接転送が発生しない</li>
+<li><tt>f_read(fp, buff, btr, &amp;br)</tt>において、<tt>(((UINT)buff &amp; 3) == (f_tell(fp) &amp; 3))</tt>を満足させる - <tt class="arg">buff</tt>のワード・アライメントが保証される</li>
+</ul>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

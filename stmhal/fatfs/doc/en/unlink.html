@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/unlink.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_unlink</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_unlink</h2>
+<p>The f_unlink function removes a file or sub-directory.</p>
+<pre>
+FRESULT f_unlink (
+  const TCHAR* <span class="arg">path</span>  <span class="c">/* [IN] Object name */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Pointer to the null-terminated string that specifies an <a href="filename.html">object</a> to be removed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#ex">FR_EXIST</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#lo">FR_LOCKED</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>
+If condition of the object to be removed is applicable to the following terms, the function will be rejected.<ul>
+<li>The object must not have read-only attribute (<tt>AM_RDO</tt>) or the function will be rejected with <tt>FR_DENIED</tt>.</li>
+<li>The sub-directory must be empty and must not be current directory or the function will be rejected with <tt>FR_DENIED</tt>.</li>
+<li>The file or directory must not have been opened or the <em>FAT volume can be collapted</em>. It will able to be rejected with <tt>FR_LOCKED</tt> when <a href="appnote.html#dup">file lock feature</a> is enabled.</li>
+</ul>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_READONLY == 0</tt> and <tt>_FS_MINIMIZE == 0</tt>.</p>
+</div>
+
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

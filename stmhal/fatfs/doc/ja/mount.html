@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/mount.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_mount</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_mount</h2>
+<p>論理ドライブにファイル・システム・オブジェクトを登録・抹消します。</p>
+<pre>
+FRESULT f_mount (
+  FATFS*       <span class="arg">fatfs</span>,  <span class="c">/* [IN] ファイル・システム・オブジェクト */</span>
+  const TCHAR* <span class="arg">path</span>,   <span class="c">/* [IN] 論理ドライブ番号 */</span>
+  BYTE         <span class="arg">opt</span>     <span class="c">/* [IN] オプション */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fatfs</dt>
+<dd>登録するファイル・システム・オブジェクトへのポインタ。</dd>
+<dt>path</dt>
+<dd>対象となる論理ドライブの<a href="filename.html">パス名</a>を示すヌル文字'\0'終端の文字列へのポインタを指定します。ドライブ番号を含まない場合は、デフォルト・ドライブを指定したことになります。</dd>
+<dt>opt</dt>
+<dd>ファイル・システム・オブジェクトの登録と同時にマウント動作を行うかどうかを指定するフラグ。登録抹消のときは意味を持ちません。</dd>
+</dl>
+</div>
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>FatFsモジュールでは、それぞれの論理ドライブに<em>ファイル・システム・オブジェクト</em>というワーク・エリアが必要です。この関数は論理ドライブにファイル・システム・オブジェクトを登録したり抹消したりします。何らかのファイル関数を使用する前に、この関数でその論理ドライブのファイル・システム・オブジェクトを与えておかなければなりません。<tt class="arg">fatfs</tt>にヌル・ポインタを指定すると、その論理ドライブのファイル・システム・オブジェクトの登録は抹消されるだけです。登録抹消されたファイル・システム・オブジェクトのメモリは解放できます。操作対象の論理ドライブ上に開かれているファイルやディレクトリがあった場合、それらは全て無効になります。この関数の内部処理は次のような順に行われます。</p>
+<ol>
+<li>対象の論理ドライブを<tt class="arg">path</tt>から得る。</li>
+<li>既に登録されているファイル・システム・オブジェクトはクリアし、登録を解除する。</li>
+<li><tt class="arg">fatfs</tt>が有効なポインタのときは、そのファイル・システム・オブジェクトをクリアし登録する。</li>
+<li>マウント動作が指定されているときは、それを実行する。</li>
+</ol>
+<p><tt class="arg">opt</tt>に0を指定すると、マウント動作(物理ドライブの初期化、FATボリュームの検索、BPBを解析しファイル・システム・オブジェクトを初期化)は行われず、関数は物理ドライブの状態に関わらず常に成功します。関数内では下位レイヤへのアクセスは発生せず、指定されたファイル・システム・オブジェクトをクリア(無効化)し、そのアドレスを内部配列に登録するだけです。単に登録済みのファイル・システム・オブジェクトをクリアする目的にも使えます。そして、続いてボリュームへのアクセスが行われたとき次のうちいずれかでも真の場合は、実際のマウント動作が行われます。</p>
+<ul>
+<li>ファイル・システム・オブジェクトがクリア(無効)状態(<tt>f_mount()</tt>の実行による)</li>
+<li>物理ドライブが未初期化状態(システム・リセットやメディアの取り外しによる)</li>
+</ul>
+<p><tt class="arg">opt</tt>に1を指定すると、登録に続いてマウント動作が行われます。マウントに失敗すると対応するエラーを返しますが、登録は有効なので続くボリュームへのアクセスで再びマウント動作が実行されます。<p>
+<p>下位レイヤの実装上メディア交換の検出がサポートされない(<tt>disk_status()</tt>に反映されない)ときは、アプリケーションはメディア交換の後この関数でファイル・システム・オブジェクトを明示的にクリアして再マウントが正常に行えるようにする必要があります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p>全ての構成で使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a></tt>, <tt><a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>
