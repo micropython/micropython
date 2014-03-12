@@ -23,6 +23,7 @@ STATIC const mp_obj_float_t mp_math_pi_obj = {{&mp_type_float}, M_PI};
 MATH_FUN_1(sqrt, sqrt)
 MATH_FUN_2(pow, pow)
 MATH_FUN_1(exp, exp)
+MATH_FUN_1(expm1, expm1)
 MATH_FUN_1(log, log)
 MATH_FUN_1(log2, log2)
 MATH_FUN_1(log10, log10)
@@ -46,6 +47,7 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&mp_math_sqrt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pow), (mp_obj_t)&mp_math_pow_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&mp_math_exp_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&mp_math_expm1_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&mp_math_log_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&mp_math_log2_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&mp_math_log10_obj },
