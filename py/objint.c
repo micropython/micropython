@@ -71,6 +71,12 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     return mp_const_none;
 }
 
+// This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
+mp_obj_t mp_obj_new_int_from_ll(long long val) {
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    return mp_const_none;
+}
+
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     // SMALL_INT accepts only signed numbers, of one bit less size
     // then word size, which totals 2 bits less for unsigned numbers.
