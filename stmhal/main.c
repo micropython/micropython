@@ -243,6 +243,10 @@ static void SystemClock_Config(void) {
     for (;;) {
     }
   }
+
+    // Make SysTick interrupt have the highest priority
+    // This is needed so that SysTick runs in all ISRs.
+    NVIC_SetPriority(SysTick_IRQn, 0);
 }
 
 int main(void) {
@@ -283,18 +287,9 @@ int main(void) {
     }
 
 #if 0
-
-    // update the SystemCoreClock variable
-    SystemCoreClockUpdate();
-
-    // set interrupt priority config to use all 4 bits for pre-empting
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-    // enable the CCM RAM and the GPIO's
-    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
-
     _fatal_error("done");
 #endif
+
 #if 0
 #if MICROPY_HW_HAS_SDCARD
     {
