@@ -12,6 +12,7 @@ typedef struct _mpz_t {
 
 #define MPZ_DIG_SIZE (15) // see mpn_div for why this needs to be at most 15
 #define MPZ_NUM_DIG_FOR_INT (sizeof(machine_int_t) * 8 / MPZ_DIG_SIZE + 1)
+#define MPZ_NUM_DIG_FOR_LL (sizeof(long long) * 8 / MPZ_DIG_SIZE + 1)
 
 // convenience macro to declare an mpz with a digit array from the stack, initialised by an integer
 #define MPZ_CONST_INT(z, val) mpz_t z; mpz_dig_t z ## _digits[MPZ_NUM_DIG_FOR_INT]; mpz_init_fixed_from_int(&z, z_digits, MPZ_NUM_DIG_FOR_INT, val);
@@ -23,6 +24,7 @@ void mpz_deinit(mpz_t *z);
 
 mpz_t *mpz_zero();
 mpz_t *mpz_from_int(machine_int_t i);
+mpz_t *mpz_from_ll(long long i);
 mpz_t *mpz_from_str(const char *str, uint len, bool neg, uint base);
 void mpz_free(mpz_t *z);
 
@@ -30,6 +32,7 @@ mpz_t *mpz_clone(const mpz_t *src);
 
 void mpz_set(mpz_t *dest, const mpz_t *src);
 void mpz_set_from_int(mpz_t *z, machine_int_t src);
+void mpz_set_from_ll(mpz_t *z, long long i);
 uint mpz_set_from_str(mpz_t *z, const char *str, uint len, bool neg, uint base);
 
 bool mpz_is_zero(const mpz_t *z);
