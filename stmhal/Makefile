@@ -55,10 +55,11 @@ LIBS =
 SRC_C = \
 	main.c \
 	system_stm32f4xx.c \
+	stm32f4xx_it.c \
+	stm32f4xx_hal_msp.c \
 
 #	printf.c \
 #	math.c \
-#	stm32fxxx_it.c \
 #	string0.c \
 #	malloc0.c \
 #	systick.c  \
@@ -99,6 +100,8 @@ SRC_S = \
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal.c \
 	stm32f4xx_hal_cortex.c \
+	stm32f4xx_hal_rcc.c \
+	stm32f4xx_hal_gpio.c \
 	)
 
 SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\

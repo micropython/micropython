@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <stm32f4xx_hal.h>
+#include <stm32f4xx_hal_gpio.h>
 #if 0
 #include <stm32f4xx.h>
 #include <stm32f4xx_rcc.h>
@@ -162,6 +163,88 @@ static mp_obj_t pyb_help(void) {
 }
 #endif
 
+void led_init(void) {
+    /* GPIO structure */
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    /* Configure I/O speed, mode, output type and pull */
+    GPIO_InitStructure.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+    GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStructure.Alternate = 0; // unused
+
+    /* initialize */
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+}
+
+void led_state(int led_id, int state) {
+    HAL_GPIO_WritePin(GPIOA, 1 << (13 + led_id), state);
+}
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 168000000
+  *            HCLK(Hz)                       = 168000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 336
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  * @param  None
+  * @retval None
+  */
+static void SystemClock_Config(void) {
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  
+  /* Enable Power Control clock */
+  __PWR_CLK_ENABLE();
+  
+  /* The voltage scaling allows optimizing the power consumption when the device is 
+     clocked below the maximum system frequency, to update the voltage scaling value 
+     regarding system frequency refer to product datasheet.  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  /* Enable HSE Oscillator and activate PLL with HSE as source */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    /* Initialization Error */
+    for (;;) {
+    }
+  }
+  
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
+     clocks dividers */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
+  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
+    /* Initialization Error */
+    for (;;) {
+    }
+  }
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -172,6 +255,32 @@ int main(void) {
          - Global MSP (MCU Support Package) initialization
        */
     HAL_Init();
+
+    // set the system clock to be HSE
+    SystemClock_Config();
+
+    // enable GPIO clocks
+    __GPIOA_CLK_ENABLE();
+    __GPIOB_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
+    __GPIOD_CLK_ENABLE();
+
+    // enable the CCM RAM
+    __CCMDATARAMEN_CLK_ENABLE();
+
+    // some test code to flash LEDs
+    led_init();
+
+    led_state(0, 1);
+    led_state(1, 0);
+    led_state(2, 1);
+
+    for (;;) {
+        HAL_Delay(500);
+        led_state(1, 1);
+        HAL_Delay(500);
+        led_state(1, 0);
+    }
 
 #if 0
 
