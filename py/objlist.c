@@ -104,7 +104,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 return res;
             }
 #endif
-            uint index = mp_get_index(o->base.type, o->len, rhs);
+            uint index = mp_get_index(o->base.type, o->len, rhs, false);
             return o->items[index];
         }
         case RT_BINARY_OP_ADD:
@@ -190,7 +190,7 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     if (self->len == 0) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
     }
-    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1]);
+    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
@@ -383,7 +383,7 @@ void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
 
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_list_t *self = self_in;
-    uint i = mp_get_index(self->base.type, self->len, index);
+    uint i = mp_get_index(self->base.type, self->len, index, false);
     self->items[i] = value;
 }
 

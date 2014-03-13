@@ -218,20 +218,32 @@ mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o_in, machine_int_t n) {
     }
 }
 
-uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index) {
-    // TODO False and True are considered 0 and 1 for indexing purposes
+// is_slice determines whether the index is a slice index
+uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice) {
+    int i;
     if (MP_OBJ_IS_SMALL_INT(index)) {
-        int i = MP_OBJ_SMALL_INT_VALUE(index);
-        if (i < 0) {
-            i += len;
-        }
-        if (i < 0 || i >= len) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
-        }
-        return i;
+        i = MP_OBJ_SMALL_INT_VALUE(index);
+    } else if (MP_OBJ_IS_TYPE(index, &bool_type)) {
+	i = index == mp_const_true ? 1 : 0;
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
+
+    if (i < 0) {
+	i += len;
+    }
+    if (is_slice) {
+	if (i < 0) {
+	    i = 0;
+	} else if (i > len) {
+	    i = len;
+	}
+    } else {
+	if (i < 0 || i >= len) {
+	    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
+	}
+    }
+    return i;
 }
 
 // may return MP_OBJ_NULL

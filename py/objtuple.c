@@ -111,7 +111,7 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 return res;
             }
 #endif
-            uint index = mp_get_index(o->base.type, o->len, rhs);
+            uint index = mp_get_index(o->base.type, o->len, rhs, false);
             return o->items[index];
         }
         case RT_BINARY_OP_ADD:
