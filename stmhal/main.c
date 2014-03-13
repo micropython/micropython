@@ -15,19 +15,18 @@
 #include <stm32f4xx_usart.h>
 #include <stm32f4xx_rng.h>
 #include <usbd_storage_msd.h>
-#include <stm_misc.h>
 #endif
 #include "std.h"
 
-#if 0
 #include "misc.h"
-#include "ff.h"
+#include "systick.h"
+#include "led.h"
+#include "usart.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
-#include "lexerfatfs.h"
 #include "parse.h"
 #include "obj.h"
 #include "parsehelper.h"
@@ -36,10 +35,12 @@
 #include "runtime.h"
 #include "gc.h"
 #include "gccollect.h"
-#include "systick.h"
-#include "pendsv.h"
 #include "pyexec.h"
-#include "led.h"
+#include "pybmodule.h"
+#if 0
+#include "ff.h"
+#include "lexerfatfs.h"
+#include "pendsv.h"
 #include "servo.h"
 #include "lcd.h"
 #include "storage.h"
@@ -53,8 +54,10 @@
 #include "file.h"
 #include "pin.h"
 #include "exti.h"
-#include "pybmodule.h"
 #endif
+
+void SystemClock_Config(void);
+
 
 int errno;
 
@@ -65,7 +68,6 @@ static FATFS fatfs1;
 #endif
 #endif
 
-#if 0
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_R1, 1);
@@ -87,9 +89,7 @@ void __fatal_error(const char *msg) {
         flash_error(1);
     }
 }
-#endif
 
-#if 0
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 
@@ -161,93 +161,6 @@ static mp_obj_t pyb_help(void) {
     printf("%s", help_text);
     return mp_const_none;
 }
-#endif
-
-void led_init(void) {
-    /* GPIO structure */
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    /* Configure I/O speed, mode, output type and pull */
-    GPIO_InitStructure.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Alternate = 0; // unused
-
-    /* initialize */
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-}
-
-void led_state(int led_id, int state) {
-    HAL_GPIO_WritePin(GPIOA, 1 << (13 + led_id), state);
-}
-
-/**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 168000000
-  *            HCLK(Hz)                       = 168000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 4
-  *            APB2 Prescaler                 = 2
-  *            HSE Frequency(Hz)              = 8000000
-  *            PLL_M                          = 8
-  *            PLL_N                          = 336
-  *            PLL_P                          = 2
-  *            PLL_Q                          = 7
-  *            VDD(V)                         = 3.3
-  *            Main regulator output voltage  = Scale1 mode
-  *            Flash Latency(WS)              = 5
-  * @param  None
-  * @retval None
-  */
-static void SystemClock_Config(void) {
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  
-  /* Enable Power Control clock */
-  __PWR_CLK_ENABLE();
-  
-  /* The voltage scaling allows optimizing the power consumption when the device is 
-     clocked below the maximum system frequency, to update the voltage scaling value 
-     regarding system frequency refer to product datasheet.  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
-  /* Enable HSE Oscillator and activate PLL with HSE as source */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    /* Initialization Error */
-    for (;;) {
-    }
-  }
-  
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
-     clocks dividers */
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
-  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-  {
-    /* Initialization Error */
-    for (;;) {
-    }
-  }
-
-    // Make SysTick interrupt have the highest priority
-    // This is needed so that SysTick runs in all ISRs.
-    NVIC_SetPriority(SysTick_IRQn, 0);
-}
 
 int main(void) {
     // TODO disable JTAG
@@ -279,15 +192,13 @@ int main(void) {
     led_state(1, 0);
     led_state(2, 1);
 
+#if 0
     for (;;) {
         HAL_Delay(500);
         led_state(1, 1);
         HAL_Delay(500);
         led_state(1, 0);
     }
-
-#if 0
-    _fatal_error("done");
 #endif
 
 #if 0
@@ -329,28 +240,56 @@ int main(void) {
         GPIO_WriteBit(GPIOB, GPIO_Pin_2, Bit_SET);
     }
 #endif
+#endif
 
     // basic sub-system init
     sys_tick_init();
+#if 0
     pendsv_init();
+#endif
     led_init();
 
+#if 0
 #if MICROPY_HW_ENABLE_RTC
     rtc_init();
+#endif
 #endif
 
     // turn on LED to indicate bootup
     led_state(PYB_LED_G1, 1);
 
+#if 0
     // more sub-system init
 #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
 #endif
     storage_init();
+#endif
 
     // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
-    //pyb_usart_global_debug = PYB_USART_YA;
-    //usart_init(pyb_usart_global_debug, 115200);
+    pyb_usart_global_debug = PYB_USART_YA;
+    usart_init(pyb_usart_global_debug, 115200);
+
+#if 0
+    pyb_led_t led = 1;
+    while (1) {
+        led_state(led, 1);
+        usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
+        sys_tick_delay_ms(100);
+        led_state(led, 0);
+        usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
+        sys_tick_delay_ms(100);
+        led_state(led, 1);
+        usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
+        sys_tick_delay_ms(100);
+        led_state(led, 0);
+        usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
+        sys_tick_delay_ms(700);
+
+        led = (led % 4) + 1;
+    }
+    __fatal_error("done");
+#endif
 
     int first_soft_reset = true;
 
@@ -368,6 +307,7 @@ soft_reset:
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
     sys_path = mp_obj_new_list(3, def_path);
 
+#if 0
     exti_init();
 
 #if MICROPY_HW_HAS_SWITCH
@@ -396,15 +336,19 @@ soft_reset:
 #endif
 
     pin_map_init();
+#endif
 
     // add some functions to the builtin Python namespace
     rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
+#if 0
     rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
+#endif
 
     // we pre-import the pyb module
     // probably shouldn't do this, so we are compatible with CPython
     rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
+#if 0
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
 #if MICROPY_HW_HAS_SWITCH
@@ -497,16 +441,20 @@ soft_reset:
         flash_error(4);
     }
 
+#endif
     if (first_soft_reset) {
+#if 0
 #if MICROPY_HW_HAS_MMA7660
         // MMA accel: init and reset address to zero
         accel_init();
+#endif
 #endif
     }
 
     // turn boot-up LED off
     led_state(PYB_LED_G1, 0);
 
+#if 0
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on 1:/
     if (sdcard_is_present()) {
@@ -592,15 +540,17 @@ soft_reset:
     pyb_wlan_init();
     pyb_wlan_start();
 #endif
+#endif
 
     pyexec_repl();
 
+#if 0
     printf("PYB: sync filesystems\n");
     storage_flush();
+#endif
 
     printf("PYB: soft reboot\n");
 
     first_soft_reset = false;
     goto soft_reset;
-#endif
 }
