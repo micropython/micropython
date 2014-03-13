@@ -204,7 +204,6 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
 // TODO make this conform to CPython's definition of sort
 
 // Non-Recursive QuickSort
-#define MAX_SORT_STACK_POSITIONS  (50)
 #define INSERTION_SORT_SIZE       (8)
 
 STATIC mp_obj_t get_value(mp_obj_t *data, int position, mp_obj_t key_fn) {
@@ -236,9 +235,26 @@ STATIC void swap_data(mp_obj_t *data, int pos1, int pos2) {
     data[pos2] = val;
 }
 
+STATIC uint32_t log2_uint32(uint32_t val) {
+    const uint32_t b[5] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
+    const uint32_t S[5] = {1, 2, 4, 8, 16};
+    
+    uint32_t result = 0;
+    
+    for(int i = 4; i >= 0; i--) 
+    {
+      if (val & b[i])
+      {
+        val >>= S[i];
+        result |= S[i];
+      } 
+    }
+    
+    return result;
+}
+
 STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool reversed) {
     int op = reversed ? RT_BINARY_OP_LESS : RT_BINARY_OP_MORE;
-    int stack[MAX_SORT_STACK_POSITIONS];
     
     int low;
     int high;
@@ -247,15 +263,20 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     int right;
 
     int stack_top = 0;
+    int length = (tail - head + 1);
+
+    assert(length >= 0);
     
     mp_obj_t separate_value;
     mp_obj_t separate_value_for_compare;    // value after key_fn
     mp_obj_t *data = head;
     
+    int stack_size = (log2_uint32(length / INSERTION_SORT_SIZE )) * 4;
+    int *stack = m_malloc( stack_size * sizeof(int) );
 
     // We need sort from first point to last point.
     stack[stack_top++] = 0;
-    stack[stack_top++] = (tail - head + 1) - 1;
+    stack[stack_top++] = length - 1;
 
     // Repeat until all sorting is done (i.e., the sort position stack is empty).
     while (stack_top > 0) {
@@ -268,7 +289,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
         // use an insertion sort to sort this array.
         // For a array length of 8 or less this is faster than partitioning.
         if ( ((high - low) <= INSERTION_SORT_SIZE) ||
-             (stack_top >= (MAX_SORT_STACK_POSITIONS - 4)) ) {
+             (stack_top >= (stack_size - 4)) ) {
 
             for ( right =  (low + 1); right <= high; right ++ ) {
                 // Get the item to insert.
@@ -379,6 +400,8 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
             }
         }
     }
+    
+    m_free(stack, stack_size * sizeof(int));
 }
 
 mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
