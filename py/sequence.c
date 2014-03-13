@@ -149,9 +149,9 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
     uint stop = len;
 
     if (n_args >= 3) {
-        start = mp_get_index(type, len, args[2]);
+        start = mp_get_index(type, len, args[2], true);
         if (n_args >= 4) {
-            stop = mp_get_index(type, len, args[3]);
+            stop = mp_get_index(type, len, args[3], true);
         }
     }
 

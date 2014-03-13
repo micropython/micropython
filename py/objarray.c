@@ -113,7 +113,7 @@ STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case RT_BINARY_OP_SUBSCR:
         {
-            uint index = mp_get_index(o->base.type, o->len, rhs);
+            uint index = mp_get_index(o->base.type, o->len, rhs, false);
             return mp_binary_get_val(o->typecode, o->items, index);
         }
 
@@ -140,7 +140,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
 STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_array_t *o = self_in;
-    uint index = mp_get_index(o->base.type, o->len, index_in);
+    uint index = mp_get_index(o->base.type, o->len, index_in, false);
     mp_binary_set_val(o->typecode, o->items, index, value);
     return true;
 }
