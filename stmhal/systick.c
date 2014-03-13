@@ -5,16 +5,10 @@
 void sys_tick_init(void) {
     // SysTick_Config is now called from HAL_RCC_ClockConfig, which is called
     // from SystemClock_Config
-    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0); // make it highest priority
-}
 
-// called on SysTick interrupt
-void SysTick_Handler(void) {
-    HAL_IncTick();
-    HAL_SYSTICK_IRQHandler();
-    // hack!
-    //void audio_drain(void);
-    //audio_drain();
+    // SysTick_Config sets the SysTick_IRQn to be the lowest priority, but
+    // we want it to be the highest priority, so fix things here.
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 void sys_tick_delay_ms(uint32_t delay_ms) {
