@@ -19,7 +19,6 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I$(PY_SRC)
-INC += -I$(CMSIS_DIR)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
@@ -32,7 +31,6 @@ INC += -I$(HAL_DIR)/inc
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
 
-BOARD = STM32F4DISC
 BOARD ?= PYBOARD4
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
@@ -225,11 +223,6 @@ GEN_PINS_HDR = $(BUILD)/pins.h
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
 $(OBJ): | $(BUILD)/pins.h
-
-# temp hack
-$(PY_BUILD):
-	mkdir -p $@
-$(OBJ): | $(PY_BUILD) $(PY_BUILD)/qstrdefs.generated.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
