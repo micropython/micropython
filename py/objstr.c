@@ -495,8 +495,8 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
 
-    size_t start = 0;
-    size_t end = haystack_len;
+    machine_uint_t start = 0;
+    machine_uint_t end = haystack_len;
     /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
         start = mp_get_index(&str_type, haystack_len, args[2], true);
@@ -505,13 +505,13 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
         end = mp_get_index(&str_type, haystack_len, args[3], true);
     }
 
-    machine_int_t num_occurrences = 0;
-
-    // needle won't exist in haystack if it's longer, so nothing to count
-    if (needle_len > haystack_len) {
-        MP_OBJ_NEW_SMALL_INT(0);
+    // if needle_len is zero then we count each gap between characters as an occurrence
+    if (needle_len == 0) {
+        return MP_OBJ_NEW_SMALL_INT(end - start + 1);
     }
 
+    // count the occurrences
+    machine_int_t num_occurrences = 0;
     for (machine_uint_t haystack_index = start; haystack_index + needle_len <= end; haystack_index++) {
         if (memcmp(&haystack[haystack_index], needle, needle_len) == 0) {
             num_occurrences++;
