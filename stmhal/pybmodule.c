@@ -116,7 +116,7 @@ STATIC mp_obj_t pyb_millis(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
 STATIC mp_obj_t pyb_delay(mp_obj_t count) {
-    sys_tick_delay_ms(mp_obj_get_int(count));
+    HAL_Delay(mp_obj_get_int(count));
     return mp_const_none;
 }
 
