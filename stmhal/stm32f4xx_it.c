@@ -151,6 +151,7 @@ void PendSV_Handler(void)
 {
 }
 
+#if 0 // defined in systick.c
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
@@ -160,6 +161,7 @@ void SysTick_Handler(void)
 {
   HAL_IncTick();
 }
+#endif
 
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */

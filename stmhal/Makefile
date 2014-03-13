@@ -19,6 +19,7 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I$(PY_SRC)
+INC += -I$(CMSIS_DIR)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
@@ -54,28 +55,30 @@ LIBS =
 
 SRC_C = \
 	main.c \
+	string0.c \
 	system_stm32f4xx.c \
 	stm32f4xx_it.c \
 	stm32f4xx_hal_msp.c \
+	systick.c  \
+	led.c \
+	pin.c \
+	usart.c \
+	printf.c \
+	math.c \
+	malloc0.c \
+	gccollect.c \
+	pyexec.c \
+	pybmodule.c \
+	import.c \
+	lexerfatfs.c \
 
-#	printf.c \
-#	math.c \
-#	string0.c \
-#	malloc0.c \
-#	systick.c  \
 #	pendsv.c \
-#	gccollect.c \
-#	lexerfatfs.c \
-#	import.c \
-#	pyexec.c \
-#	led.c \
 #	gpio.c \
 #	lcd.c \
 #	servo.c \
 #	flash.c \
 #	storage.c \
 #	accel.c \
-#	usart.c \
 #	usb.c \
 #	timer.c \
 #	audio.c \
@@ -84,24 +87,23 @@ SRC_C = \
 #	adc.c \
 #	rtc.c \
 #	file.c \
-#	pin.c \
 #	pin_named_pins.c \
 #	pin_map.c \
 #	exti.c \
 #	usrsw.c \
-#	pybmodule.c \
 #	pybwlan.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
-
-#	gchelper.s \
+	gchelper.s \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal.c \
 	stm32f4xx_hal_cortex.c \
-	stm32f4xx_hal_rcc.c \
+	stm32f4xx_hal_dma.c \
 	stm32f4xx_hal_gpio.c \
+	stm32f4xx_hal_rcc.c \
+	stm32f4xx_hal_uart.c \
 	)
 
 SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\
@@ -182,7 +184,7 @@ SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 	)
 
 OBJ =
-#OBJ += $(PY_O)
+OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
@@ -191,7 +193,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBH:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
-#OBJ += $(BUILD)/pins_$(BOARD).o
+OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/flash.dfu
 
@@ -222,7 +224,12 @@ GEN_PINS_HDR = $(BUILD)/pins.h
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-#$(OBJ): | $(BUILD)/pins.h
+$(OBJ): | $(BUILD)/pins.h
+
+# temp hack
+$(PY_BUILD):
+	mkdir -p $@
+$(OBJ): | $(PY_BUILD) $(PY_BUILD)/qstrdefs.generated.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h

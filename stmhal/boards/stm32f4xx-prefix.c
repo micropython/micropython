@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stm32f4xx.h>
+#include <stm32f4xx_hal.h>
 
 #include "misc.h"
 #include "mpconfig.h"
