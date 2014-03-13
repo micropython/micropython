@@ -23,6 +23,32 @@
 #define PATH_SEP_CHAR '/'
 
 mp_obj_t sys_path;
+vstr_t current_path;
+char vstr_current_path_buf[MICROPY_PATH_MAX];
+
+int find_last_pos(const char* str, char c) {
+    int i = strlen(str) - 1;
+    for(; i >=0; i--) {
+        if (str[i] == c) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void set_current_path(const char* path) {
+    if (current_path.alloc == 0 ) {
+        vstr_init_fixed_buf(&current_path, MICROPY_PATH_MAX, vstr_current_path_buf);
+    }
+    vstr_reset(&current_path);
+    
+    int pos = find_last_pos(path, PATH_SEP_CHAR);
+    if (pos >= 0) {
+        vstr_add_strn(&current_path, path, pos+1);
+    } else {
+        vstr_add_str(&current_path, path);
+    }
+}
 
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
@@ -38,7 +64,26 @@ mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
+mp_import_stat_t find_in_current_path(const char *file_str, uint file_len, vstr_t *dest) {
+    if (current_path.len > 0) {
+        vstr_t *new_path = vstr_new();
+        vstr_add_str(new_path, vstr_str(&current_path));
+        vstr_add_strn(new_path, file_str, file_len);
+        
+        mp_import_stat_t stat = stat_dir_or_file(new_path);
+
+        vstr_add_str(dest, vstr_str(new_path));
+        vstr_free(new_path);
+        return stat;
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
+}
+
 mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
+    mp_import_stat_t stat = find_in_current_path(file_str, file_len, dest);
+    if ( stat != MP_IMPORT_STAT_NO_EXIST) {
+        return stat;
+    }
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
@@ -117,6 +162,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     // complied successfully, execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        set_current_path(vstr_str(file));
         rt_call_function_0(module_fun);
         nlr_pop();
     } else {

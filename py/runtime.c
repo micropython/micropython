@@ -1051,13 +1051,53 @@ mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
 mp_obj_t rt_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
-    mp_obj_t x = rt_load_attr(module, name);
-    /* TODO convert AttributeError to ImportError
-    if (fail) {
-        (ImportError, "cannot import name %s", qstr_str(name), NULL)
+    mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    
+    mp_obj_type_t *module_type = mp_obj_get_type(module);
+    if (module_type->load_attr != NULL) {
+        module_type->load_attr(module, name, dest);
     }
-    */
-    return x;
+    
+    if (dest[0] == MP_OBJ_NULL) {
+        dest[0] = rt_import_module_from(module, name);
+        
+        if (dest[0] == MP_OBJ_NULL) {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, 
+                    "cannot import name '%s' from module '%s'", name, qstr_str(module_type->name)));
+        }
+        
+        return dest[0];
+        
+    } else {
+        if (dest[1] == MP_OBJ_NULL) {
+            // load_method returned just a normal attribute
+            return dest[0];
+        } else {
+            // load_method returned a method, so build a bound method object
+            return mp_obj_new_bound_meth(dest[0], dest[1]);
+        }
+    }
+}
+
+mp_obj_t rt_import_module_from(mp_obj_t module, qstr name) {
+    DEBUG_printf("import module %s from %p \n", qstr_str(name), module);
+    
+    vstr_t *new_name = vstr_new();
+    vstr_printf(new_name, "%s.%s", qstr_str(((mp_obj_module_t *)module)->name), qstr_str(name));
+    
+    mp_obj_t args[5];
+    args[0] = MP_OBJ_NEW_QSTR( qstr_from_str(vstr_str(new_name)) );
+    args[1] = mp_const_none; 
+    args[2] = mp_const_none; 
+    args[3] = mp_const_empty_tuple;
+    args[4] = 0; // must be 0; we don't yet support other values
+    
+    mp_obj_t m = mp_builtin___import__(5, args);
+    
+    vstr_free(new_name);
+    
+    return m;
+    
 }
 
 void rt_import_all(mp_obj_t module) {
