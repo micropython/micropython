@@ -14,6 +14,7 @@ print("aaaa".count('a', 0, 4))
 print("aaaa".count('a', 0, 5))
 print("aaaa".count('a', 1, 5))
 print("aaaa".count('a', -1, 5))
+print("abbabba".count("abba"))
 
 def t():
     return True

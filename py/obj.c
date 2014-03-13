@@ -224,24 +224,24 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index,
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (MP_OBJ_IS_TYPE(index, &bool_type)) {
-	i = index == mp_const_true ? 1 : 0;
+        i = (index == mp_const_true ? 1 : 0);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 
     if (i < 0) {
-	i += len;
+        i += len;
     }
     if (is_slice) {
-	if (i < 0) {
-	    i = 0;
-	} else if (i > len) {
-	    i = len;
-	}
+        if (i < 0) {
+            i = 0;
+        } else if (i > len) {
+            i = len;
+        }
     } else {
-	if (i < 0 || i >= len) {
-	    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
-	}
+        if (i < 0 || i >= len) {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
+        }
     }
     return i;
 }

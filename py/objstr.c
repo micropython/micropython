@@ -509,19 +509,14 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 
     // needle won't exist in haystack if it's longer, so nothing to count
     if (needle_len > haystack_len) {
-	MP_OBJ_NEW_SMALL_INT(0);
+        MP_OBJ_NEW_SMALL_INT(0);
     }
 
-    for (machine_uint_t haystack_index = start; haystack_index <= end; haystack_index++) {
-	for (machine_uint_t needle_index = 0; needle_index < needle_len; needle_index++) {
-	    if ((haystack_index + needle_len) > end) {
-		return MP_OBJ_NEW_SMALL_INT(num_occurrences);
-	    }
-	    if (haystack[haystack_index + needle_index] == needle[needle_index] && needle_index == (needle_len - 1)) {
-		num_occurrences++;
-	    }
-
-	}
+    for (machine_uint_t haystack_index = start; haystack_index + needle_len <= end; haystack_index++) {
+        if (memcmp(&haystack[haystack_index], needle, needle_len) == 0) {
+            num_occurrences++;
+            haystack_index += needle_len - 1;
+        }
     }
 
     return MP_OBJ_NEW_SMALL_INT(num_occurrences);
