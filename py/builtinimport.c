@@ -50,6 +50,10 @@ void set_current_path(const char* path) {
     }
 }
 
+mp_obj_t get_current_path() {
+    return mp_obj_new_str((byte *)vstr_str(&current_path), current_path.len, 0);
+}
+
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_str(path));
@@ -159,18 +163,22 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
         return;
     }
 
+    mp_obj_t saved_cur_path = get_current_path();
+    set_current_path(vstr_str(file));
+
     // complied successfully, execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        set_current_path(vstr_str(file));
         rt_call_function_0(module_fun);
         nlr_pop();
     } else {
         // exception; restore context and re-raise same exception
+        set_current_path(mp_obj_str_get_str(saved_cur_path));
         rt_locals_set(old_locals);
         rt_globals_set(old_globals);
         nlr_jump(nlr.ret_val);
     }
+    set_current_path(mp_obj_str_get_str(saved_cur_path));
     rt_locals_set(old_locals);
     rt_globals_set(old_globals);
 }
