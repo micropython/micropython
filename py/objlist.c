@@ -271,7 +271,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     mp_obj_t separate_value_for_compare;    // value after key_fn
     mp_obj_t *data = head;
     
-    int stack_size = (log2_uint32(length / INSERTION_SORT_SIZE )) * 4;
+    int stack_size = (log2_uint32(length / INSERTION_SORT_SIZE ) + 1) * 4 + 2;
     int *stack = m_malloc( stack_size * sizeof(int) );
 
     // We need sort from first point to last point.
