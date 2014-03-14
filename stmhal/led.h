@@ -20,6 +20,4 @@ void led_init(void);
 void led_state(pyb_led_t led, int state);
 void led_toggle(pyb_led_t led);
 
-#if 0
 MP_DECLARE_CONST_FUN_OBJ(pyb_Led_obj);
-#endif

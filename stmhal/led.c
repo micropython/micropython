@@ -29,7 +29,7 @@ void led_init(void) {
 
     /* Configure I/O speed, mode, output type and pull */
     GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Mode = PYB_OTYPE;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
 
     /* Turn off LEDs and initialize */
@@ -45,6 +45,7 @@ void led_state(pyb_led_t led, int state) {
         return;
     }
     const pin_obj_t *led_pin = gLed[led - 1];
+//printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
         // turn LED off
         PYB_LED_OFF(led_pin);
@@ -72,7 +73,6 @@ void led_toggle(pyb_led_t led) {
     }
 }
 
-#if 0
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
@@ -130,4 +130,3 @@ static mp_obj_t pyb_Led(mp_obj_t led_id) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_Led_obj, pyb_Led);
-#endif

@@ -26,7 +26,7 @@
 #define PYB_LED3        (pin_C4)  // G1 - green
 #define PYB_LED4        (pin_C5)  // G2 - green
 
-#define PYB_OTYPE       (GPIO_OType_PP)
+#define PYB_OTYPE       (GPIO_MODE_OUTPUT_PP)
 
 #define PYB_LED_ON(pin)  (pin->gpio->BSRRH = pin->pin_mask)
 #define PYB_LED_OFF(pin) (pin->gpio->BSRRL = pin->pin_mask)

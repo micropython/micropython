@@ -30,9 +30,8 @@
 #define PYB_LED3        (pin_A10)   // Same as Led(1)
 #define PYB_LED4        (pin_C13)   // Same as Led(2)
 
-#define PYB_OTYPE       (GPIO_OType_PP)
+#define PYB_OTYPE       (GPIO_MODE_OUTPUT_PP)
 
 #define PYB_LED_ON(pin)  (pin->gpio->BSRRL = pin->pin_mask)
 #define PYB_LED_OFF(pin) (pin->gpio->BSRRH = pin->pin_mask)
 
-#define HSE_VALUE (25000000)

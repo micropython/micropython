@@ -15,6 +15,7 @@
 #include "gccollect.h"
 #include "systick.h"
 #include "pyexec.h"
+#include "led.h"
 #if 0
 #include "rtc.h"
 #include "servo.h"
@@ -23,7 +24,6 @@
 #include "usrsw.h"
 #include "sdcard.h"
 #include "accel.h"
-#include "led.h"
 #include "i2c.h"
 #include "usart.h"
 #include "adc.h"
@@ -268,8 +268,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
-
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_Led_obj },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_Usart_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },

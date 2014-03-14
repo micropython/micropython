@@ -182,25 +182,28 @@ void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-#ifdef USE_USB_FS
-void OTG_FS_IRQHandler(void)
+#if defined(USE_USB_FS)
+#define OTG_XX_IRQHandler      OTG_FS_IRQHandler
+#define OTG_XX_WKUP_IRQHandler OTG_FS_WKUP_IRQHandler
 #elif defined(USE_USB_HS)
-void OTG_HS_IRQHandler(void)
+#define OTG_XX_IRQHandler      OTG_HS_IRQHandler
+#define OTG_XX_WKUP_IRQHandler OTG_HS_WKUP_IRQHandler
 #endif
+
+#if defined(OTG_XX_IRQHandler)
+void OTG_XX_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd);
 }
+#endif
 
 /**
   * @brief  This function handles USB OTG FS or HS Wakeup IRQ Handler.
   * @param  None
   * @retval None
   */
-#ifdef USE_USB_FS
-void OTG_FS_WKUP_IRQHandler(void)
-#elif defined(USE_USB_HS)
-void OTG_HS_WKUP_IRQHandler(void)
-#endif
+#if defined(OTG_XX_WKUP_IRQHandler)
+void OTG_XX_WKUP_IRQHandler(void)
 {
  
   if((&hpcd)->Init.low_power_enable)
@@ -242,6 +245,7 @@ void OTG_HS_WKUP_IRQHandler(void)
 #endif
   
 }
+#endif
 
 /**
   * @brief  This function handles PPP interrupt request.
