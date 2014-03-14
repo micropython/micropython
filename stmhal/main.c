@@ -72,10 +72,10 @@ void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_R1, 1);
         led_state(PYB_LED_R2, 0);
-        sys_tick_delay_ms(250);
+        HAL_Delay(250);
         led_state(PYB_LED_R1, 0);
         led_state(PYB_LED_R2, 1);
-        sys_tick_delay_ms(250);
+        HAL_Delay(250);
     }
     led_state(PYB_LED_R2, 0);
 }
@@ -242,8 +242,6 @@ int main(void) {
 #endif
 #endif
 
-    // basic sub-system init
-    sys_tick_init();
 #if 0
     pendsv_init();
 #endif
@@ -275,16 +273,16 @@ int main(void) {
     while (1) {
         led_state(led, 1);
         usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
-        sys_tick_delay_ms(100);
+        HAL_Delay(100);
         led_state(led, 0);
         usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
-        sys_tick_delay_ms(100);
+        HAL_Delay(100);
         led_state(led, 1);
         usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
-        sys_tick_delay_ms(100);
+        HAL_Delay(100);
         led_state(led, 0);
         usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
-        sys_tick_delay_ms(700);
+        HAL_Delay(700);
 
         led = (led % 4) + 1;
     }
@@ -359,7 +357,7 @@ soft_reset:
                 reset_filesystem = false;
                 break;
             }
-            sys_tick_delay_ms(10);
+            HAL_Delay(10);
         }
     }
 #endif
@@ -375,7 +373,7 @@ soft_reset:
 
             // LED on to indicate creation of LFS
             led_state(PYB_LED_R2, 1);
-            uint32_t stc = sys_tick_counter;
+            uint32_t start_tick = HAL_GetTick();
 
             res = f_mkfs("0:", 0, 0);
             if (res == FR_OK) {
@@ -397,7 +395,7 @@ soft_reset:
             f_close(&fp);
 
             // keep LED on for at least 200ms
-            sys_tick_wait_at_least(stc, 200);
+            sys_tick_wait_at_least(start_tick, 200);
             led_state(PYB_LED_R2, 0);
         } else {
             __fatal_error("could not access LFS");
@@ -421,7 +419,7 @@ soft_reset:
 
             // LED on to indicate creation of boot.py
             led_state(PYB_LED_R2, 1);
-            uint32_t stc = sys_tick_counter;
+            uint32_t start_tick = HAL_GetTick();
 
             FIL fp;
             f_open(&fp, "0:/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
@@ -431,7 +429,7 @@ soft_reset:
             f_close(&fp);
 
             // keep LED on for at least 200ms
-            sys_tick_wait_at_least(stc, 200);
+            sys_tick_wait_at_least(start_tick, 200);
             led_state(PYB_LED_R2, 0);
         }
     }
@@ -530,7 +528,7 @@ soft_reset:
             }
             accel_read_nack();
             usb_hid_send_report(data);
-            sys_tick_delay_ms(15);
+            HAL_Delay(15);
         }
     }
 #endif

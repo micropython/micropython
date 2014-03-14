@@ -281,11 +281,13 @@ uint32_t HAL_GetTick(void)
   */
 void HAL_Delay(__IO uint32_t Delay)
 {
-  uint32_t timingdelay;
-  
-  timingdelay = HAL_GetTick() + Delay;
-  while(HAL_GetTick() < timingdelay)
-  {
+  uint32_t start = HAL_GetTick();
+
+  // Note that the following works (due to the magic of 2's complement numbers)
+  // even when Delay causes wraparound.
+
+  while (HAL_GetTick() - start <= Delay) {
+    __WFI();  // enter sleep mode, waiting for interrupt
   }
 }
 
