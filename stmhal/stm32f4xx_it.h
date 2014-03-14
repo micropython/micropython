@@ -58,6 +58,11 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
+#ifdef USE_USB_FS
+void OTG_FS_IRQHandler(void);
+#elif defined(USE_USB_HS)
+void OTG_HS_IRQHandler(void);
+#endif
 
 #ifdef __cplusplus
 }

@@ -56,6 +56,9 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
+extern void fatality();
+extern PCD_HandleTypeDef hpcd;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -82,6 +85,7 @@ void HardFault_Handler(void)
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {
+    fatality();
   }
 }
 
@@ -95,6 +99,7 @@ void MemManage_Handler(void)
   /* Go to infinite loop when Memory Manage exception occurs */
   while (1)
   {
+    fatality();
   }
 }
 
@@ -108,6 +113,7 @@ void BusFault_Handler(void)
   /* Go to infinite loop when Bus Fault exception occurs */
   while (1)
   {
+    fatality();
   }
 }
 
@@ -121,6 +127,7 @@ void UsageFault_Handler(void)
   /* Go to infinite loop when Usage Fault exception occurs */
   while (1)
   {
+    fatality();
   }
 }
 
@@ -149,6 +156,8 @@ void DebugMon_Handler(void)
   */
 void PendSV_Handler(void)
 {
+    extern void pendsv_isr_handler(void);
+    pendsv_isr_handler();
 }
 
 /**
@@ -158,7 +167,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  HAL_IncTick();
+    HAL_IncTick();
 }
 
 /******************************************************************************/
@@ -167,6 +176,72 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
+
+/**
+  * @brief  This function handles USB-On-The-Go FS global interrupt request.
+  * @param  None
+  * @retval None
+  */
+#ifdef USE_USB_FS
+void OTG_FS_IRQHandler(void)
+#elif defined(USE_USB_HS)
+void OTG_HS_IRQHandler(void)
+#endif
+{
+    HAL_PCD_IRQHandler(&hpcd);
+}
+
+/**
+  * @brief  This function handles USB OTG FS or HS Wakeup IRQ Handler.
+  * @param  None
+  * @retval None
+  */
+#ifdef USE_USB_FS
+void OTG_FS_WKUP_IRQHandler(void)
+#elif defined(USE_USB_HS)
+void OTG_HS_WKUP_IRQHandler(void)
+#endif
+{
+ 
+  if((&hpcd)->Init.low_power_enable)
+  {
+    /* Reset SLEEPDEEP bit of Cortex System Control Register */
+    SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));  
+    
+    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select 
+    PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+    
+    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    
+    /* Wait till HSE is ready */  
+    while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
+    {}
+    
+    /* Enable the main PLL. */
+    __HAL_RCC_PLL_ENABLE();
+    
+    /* Wait till PLL is ready */  
+    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
+    {}
+    
+    /* Select PLL as SYSCLK */
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+    
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
+    {}
+    
+    /* ungate PHY clock */
+     __HAL_PCD_UNGATE_PHYCLOCK((&hpcd)); 
+  }
+#ifdef USE_USB_FS
+  /* Clear EXTI pending Bit*/
+  __HAL_USB_FS_EXTI_CLEAR_FLAG();
+#elif defined(USE_USB_HS)
+    /* Clear EXTI pending Bit*/
+  __HAL_USB_HS_EXTI_CLEAR_FLAG();
+#endif
+  
+}
 
 /**
   * @brief  This function handles PPP interrupt request.

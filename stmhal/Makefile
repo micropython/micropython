@@ -8,9 +8,8 @@ include ../py/py.mk
 
 CMSIS_DIR=cmsis
 HAL_DIR=hal
-#STMUSB_DIR=stmusb
-#STMUSBD_DIR=stmusbd
-#STMUSBH_DIR=stmusbh
+USBDEV_DIR=usbdev
+#USBHOST_DIR=usbhost
 #FATFS_DIR=fatfs
 #CC3K_DIR=cc3k
 DFU=../tools/dfu.py
@@ -22,9 +21,8 @@ INC += -I$(PY_SRC)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
-#INC += -I$(STMUSB_DIR)
-#INC += -I$(STMUSBD_DIR)
-#INC += -I$(STMUSBH_DIR)
+INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc/inc
+#INC += -I$(USBHOST_DIR)
 #INC += -I$(FATFS_DIR)
 #INC += -I$(CC3K_DIR)
 
@@ -57,10 +55,15 @@ SRC_C = \
 	system_stm32f4xx.c \
 	stm32f4xx_it.c \
 	stm32f4xx_hal_msp.c \
+	usbd_conf.c \
+	usbd_desc.c \
+	usbd_cdc_interface.c \
+	pendsv.c \
 	systick.c  \
 	led.c \
 	pin.c \
 	usart.c \
+	usb.c \
 	printf.c \
 	math.c \
 	malloc0.c \
@@ -70,14 +73,12 @@ SRC_C = \
 	import.c \
 	lexerfatfs.c \
 
-#	pendsv.c \
 #	gpio.c \
 #	lcd.c \
 #	servo.c \
 #	flash.c \
 #	storage.c \
 #	accel.c \
-#	usb.c \
 #	timer.c \
 #	audio.c \
 #	sdcard.c \
@@ -100,8 +101,10 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_cortex.c \
 	stm32f4xx_hal_dma.c \
 	stm32f4xx_hal_gpio.c \
+	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_uart.c \
+	stm32f4xx_ll_usb.c \
 	)
 
 SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\
@@ -136,8 +139,14 @@ SRC_STMUSB = $(addprefix $(STMUSB_DIR)/,\
 	)
 #	usb_otg.c \
 
-SRC_STMUSBD = $(addprefix $(STMUSBD_DIR)/,\
-	usbd_core.c \
+SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
+	core/src/usbd_core.c \
+	core/src/usbd_ctlreq.c \
+	core/src/usbd_ioreq.c \
+	class/cdc/src/usbd_cdc.c \
+	)
+
+#	usbd_core.c \
 	usbd_ioreq.c \
 	usbd_req.c \
 	usbd_usr.c \
@@ -186,7 +195,7 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBD:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBH:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))

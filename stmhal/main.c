@@ -20,6 +20,7 @@
 
 #include "misc.h"
 #include "systick.h"
+#include "pendsv.h"
 #include "led.h"
 #include "usart.h"
 #include "mpconfig.h"
@@ -37,16 +38,15 @@
 #include "gccollect.h"
 #include "pyexec.h"
 #include "pybmodule.h"
+#include "usb.h"
 #if 0
 #include "ff.h"
 #include "lexerfatfs.h"
-#include "pendsv.h"
 #include "servo.h"
 #include "lcd.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
-#include "usb.h"
 #include "timer.h"
 #include "pybwlan.h"
 #include "usrsw.h"
@@ -82,8 +82,10 @@ void flash_error(int n) {
 
 void __fatal_error(const char *msg) {
 #if MICROPY_HW_HAS_LCD
+#if 0
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
+#endif
 #endif
     for (;;) {
         flash_error(1);
@@ -116,6 +118,9 @@ void fatality(void) {
     led_state(PYB_LED_G1, 1);
     led_state(PYB_LED_R2, 1);
     led_state(PYB_LED_G2, 1);
+    for (;;) {
+        flash_error(1);
+    }
 }
 
 static const char fresh_boot_py[] =
@@ -244,9 +249,7 @@ int main(void) {
 
     // basic sub-system init
     sys_tick_init();
-#if 0
     pendsv_init();
-#endif
     led_init();
 
 #if 0
@@ -469,6 +472,7 @@ soft_reset:
         }
     }
 #endif
+#endif
 
 #ifdef USE_HOST_MODE
     // USB host
@@ -478,6 +482,22 @@ soft_reset:
     pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
 #endif
 
+#if 0
+    // test USB CDC
+    extern uint8_t UserTxBuffer[];/* Received Data over UART (CDC interface) are stored in this buffer */
+    extern uint32_t UserTxBufPtrOut; /* Increment this pointer or roll it back to
+                                        start address when data are sent over USB */
+    for (;;) {
+        UserTxBuffer[UserTxBufPtrOut++] = 'a';
+        UserTxBuffer[UserTxBufPtrOut++] = 'b';
+        UserTxBuffer[UserTxBufPtrOut++] = 'c';
+        UserTxBuffer[UserTxBufPtrOut++] = 'd';
+        HAL_Delay(500);
+        led_toggle(PYB_LED_BLUE);
+    }
+#endif
+
+#if 0
     // run main script
     {
         vstr_t *vstr = vstr_new();
