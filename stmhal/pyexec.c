@@ -59,7 +59,7 @@ int stdin_rx_chr(void) {
         if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
             return usart_rx_char(pyb_usart_global_debug);
         }
-        sys_tick_delay_ms(1);
+        HAL_Delay(1);
 #if 0
         if (storage_needs_flush()) {
             storage_flush();
@@ -142,7 +142,7 @@ int readline(vstr_t *line, const char *prompt) {
         } else {
             escape = 0;
         }
-        sys_tick_delay_ms(1);
+        HAL_Delay(1);
     }
 }
 
