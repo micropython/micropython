@@ -227,11 +227,10 @@ char *vstr_ins_blank_bytes(vstr_t *vstr, uint byte_pos, uint byte_len) {
         if (!vstr_ensure_extra(vstr, byte_len)) {
             return NULL;
         }
-        // copy up the string to make room for the new bytes
-        memmove(vstr->buf + l - 1 + byte_len, vstr->buf + l - 1, l - byte_pos);
+        // copy up the string to make room for the new bytes; +1 for the null byte
+        memmove(vstr->buf + byte_pos + byte_len, vstr->buf + byte_pos, l - byte_pos + 1);
         // increase the length
         vstr->len += byte_len;
-        vstr->buf[vstr->len] = 0;
     }
     return vstr->buf + byte_pos;
 }
@@ -243,9 +242,9 @@ void vstr_ins_byte(vstr_t *vstr, uint byte_pos, byte b) {
     }
 }
 
-void vstr_ins_char(vstr_t *vstr, uint pos, unichar chr) {
+void vstr_ins_char(vstr_t *vstr, uint char_pos, unichar chr) {
     // TODO UNICODE
-    char *s = vstr_ins_blank_bytes(vstr, pos, 1);
+    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
     if (s != NULL) {
         *s = chr;
     }
