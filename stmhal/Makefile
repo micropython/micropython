@@ -62,6 +62,8 @@ SRC_C = \
 	systick.c  \
 	led.c \
 	pin.c \
+	pin_map.c \
+	pin_named_pins.c \
 	usart.c \
 	usb.c \
 	printf.c \
@@ -72,8 +74,10 @@ SRC_C = \
 	pybmodule.c \
 	import.c \
 	lexerfatfs.c \
+	gpio.c \
+	exti.c \
+	usrsw.c \
 
-#	gpio.c \
 #	lcd.c \
 #	servo.c \
 #	flash.c \
@@ -86,10 +90,6 @@ SRC_C = \
 #	adc.c \
 #	rtc.c \
 #	file.c \
-#	pin_named_pins.c \
-#	pin_map.c \
-#	exti.c \
-#	usrsw.c \
 #	pybwlan.c \
 
 SRC_S = \

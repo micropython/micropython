@@ -16,8 +16,8 @@
 
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define USRSW_PIN           (pin_A13)
-#define USRSW_PUPD          (GPIO_PuPd_UP)
-#define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
+#define USRSW_PULL          (GPIO_PULLUP)
+#define USRSW_EXTI_MODE     (GPIO_MODE_IT_FALLING)
 #define USRSW_PRESSED       (0)
 
 /* LED */

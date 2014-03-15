@@ -38,6 +38,8 @@
 #include "pyexec.h"
 #include "pybmodule.h"
 #include "led.h"
+#include "exti.h"
+#include "usrsw.h"
 #include "usb.h"
 #if 0
 #include "ff.h"
@@ -49,11 +51,9 @@
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
-#include "usrsw.h"
 #include "rtc.h"
 #include "file.h"
 #include "pin.h"
-#include "exti.h"
 #endif
 
 void SystemClock_Config(void);
@@ -309,13 +309,13 @@ soft_reset:
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
     sys_path = mp_obj_new_list(3, def_path);
 
-#if 0
     exti_init();
 
 #if MICROPY_HW_HAS_SWITCH
     switch_init();
 #endif
 
+#if 0
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();

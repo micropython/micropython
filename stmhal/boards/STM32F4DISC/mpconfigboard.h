@@ -16,8 +16,8 @@
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define USRSW_PIN           (pin_A0)
-#define USRSW_PUPD          (GPIO_PuPd_NOPULL)
-#define USRSW_EXTI_EDGE     (EXTI_Trigger_Rising)
+#define USRSW_PULL          (GPIO_NOPULL)
+#define USRSW_EXTI_MODE     (GPIO_MODE_IT_RISING)
 #define USRSW_PRESSED       (1)
 
 /* LED */
