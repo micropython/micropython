@@ -64,6 +64,7 @@
 
 extern void fatality();
 extern PCD_HandleTypeDef hpcd;
+extern TIM_HandleTypeDef USBD_CDC_TimHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -346,6 +347,11 @@ void TAMP_STAMP_IRQHandler(void) {
 
 void RTC_WKUP_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
+}
+
+void TIM3_IRQHandler(void) {
+    // USBD CDC timer is TIM3
+    HAL_TIM_IRQHandler(&USBD_CDC_TimHandle);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

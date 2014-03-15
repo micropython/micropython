@@ -251,14 +251,14 @@ int main(void) {
     pendsv_init();
     led_init();
 
+    // turn on LED to indicate bootup
+    led_state(PYB_LED_GREEN, 1);
+
 #if 0
 #if MICROPY_HW_ENABLE_RTC
     rtc_init();
 #endif
 #endif
-
-    // turn on LED to indicate bootup
-    led_state(PYB_LED_G1, 1);
 
 #if 0
     // more sub-system init
@@ -454,7 +454,7 @@ soft_reset:
     }
 
     // turn boot-up LED off
-    led_state(PYB_LED_G1, 0);
+    led_state(PYB_LED_GREEN, 0);
 
 #if 0
 #if MICROPY_HW_HAS_SDCARD
@@ -479,21 +479,6 @@ soft_reset:
 #elif defined(USE_DEVICE_MODE)
     // USB device
     pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
-#endif
-
-#if 0
-    // test USB CDC
-    extern uint8_t UserTxBuffer[];/* Received Data over UART (CDC interface) are stored in this buffer */
-    extern uint32_t UserTxBufPtrOut; /* Increment this pointer or roll it back to
-                                        start address when data are sent over USB */
-    for (;;) {
-        UserTxBuffer[UserTxBufPtrOut++] = 'a';
-        UserTxBuffer[UserTxBufPtrOut++] = 'b';
-        UserTxBuffer[UserTxBufPtrOut++] = 'c';
-        UserTxBuffer[UserTxBufPtrOut++] = 'd';
-        HAL_Delay(500);
-        led_toggle(PYB_LED_BLUE);
-    }
 #endif
 
 #if 0

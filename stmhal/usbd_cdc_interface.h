@@ -30,55 +30,29 @@
 #define __USBD_CDC_IF_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_cdc.h"
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-/* User can use this section to tailor USARTx/UARTx instance used and associated 
-   resources */
-/* Definition for USARTx clock resources */
-#define USARTx                           USART3
-#define USARTx_CLK_ENABLE()              __USART3_CLK_ENABLE();
-#define DMAx_CLK_ENABLE()                __DMA1_CLK_ENABLE()
-#define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE() 
-
-#define USARTx_FORCE_RESET()             __USART3_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART3_RELEASE_RESET()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_10
-#define USARTx_TX_GPIO_PORT              GPIOC  
-#define USARTx_TX_AF                     GPIO_AF7_USART3
-#define USARTx_RX_PIN                    GPIO_PIN_11
-#define USARTx_RX_GPIO_PORT              GPIOC 
-#define USARTx_RX_AF                     GPIO_AF7_USART3
-
-/* Definition for USARTx's NVIC: used for receiving data over Rx pin */
-#define USARTx_IRQn                      USART3_IRQn
-#define USARTx_IRQHandler                USART3_IRQHandler
-
-/* Definition for USARTx's DMA: used for transmitting data over Tx pin */
-#define USARTx_TX_DMA_CHANNEL            DMA_CHANNEL_4
-#define USARTx_TX_DMA_STREAM             DMA1_Stream3  
-#define USARTx_DMA_TX_IRQHandler         DMA1_Stream3_IRQHandler
-#define USARTx_DMA_TX_IRQn               DMA1_Stream3_IRQn
 
 /* Definition for TIMx clock resources */
-#define TIMx                             TIM3
-#define TIMx_CLK_ENABLE                  __TIM3_CLK_ENABLE
-#define TIMx_FORCE_RESET()               __USART3_FORCE_RESET()
-#define TIMx_RELEASE_RESET()             __USART3_RELEASE_RESET()
+#define USBD_CDC_TIMx                             TIM3
+#define USBD_CDC_TIMx_CLK_ENABLE                  __TIM3_CLK_ENABLE
+#define USBD_CDC_TIMx_FORCE_RESET()               __USART3_FORCE_RESET()
+#define USBD_CDC_TIMx_RELEASE_RESET()             __USART3_RELEASE_RESET()
 
 /* Definition for TIMx's NVIC */
-#define TIMx_IRQn                        TIM3_IRQn
-#define TIMx_IRQHandler                  TIM3_IRQHandler
+#define USBD_CDC_TIMx_IRQn                        TIM3_IRQn
+//#define USBD_CDC_TIMx_IRQHandler                  TIM3_IRQHandler // this is hard coded in stm32f4xx_it.c
 
 /* Periodically, the state of the buffer "UserTxBuffer" is checked.
-   The period depends on CDC_POLLING_INTERVAL */
-#define CDC_POLLING_INTERVAL             5 /* in ms. The max is 65 and the min is 1 */
+   The period depends on USBD_CDC_POLLING_INTERVAL */
+#define USBD_CDC_POLLING_INTERVAL             10 /* in ms. The max is 65 and the min is 1 */
 
-extern USBD_CDC_ItfTypeDef  USBD_CDC_fops;
+extern USBD_CDC_ItfTypeDef USBD_CDC_fops;
+
+void USBD_CDC_SetInterrupt(int chr, void *data);
+void USBD_CDC_Tx(const char *str, uint32_t len);
+int USBD_CDC_RxAny(void);
+int USBD_CDC_RxGet(void);
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

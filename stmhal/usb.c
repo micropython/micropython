@@ -15,20 +15,15 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "pendsv.h"
+//#include "pendsv.h"
 #include "usb.h"
 
 #ifdef USE_DEVICE_MODE
-//extern CDC_IF_Prop_TypeDef VCP_fops;
 USBD_HandleTypeDef hUSBDDevice;
 #endif
 
 static int dev_is_enabled = 0;
 uint32_t APP_dev_is_connected = 0; /* used by usbd_cdc_vcp */
-static char rx_buf[64];
-static int rx_buf_in;
-static int rx_buf_out;
-static int interrupt_char = VCP_CHAR_NONE;
 mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 
 void pyb_usb_dev_init(int usb_dev_type) {
@@ -52,9 +47,6 @@ void pyb_usb_dev_init(int usb_dev_type) {
                 break;
         }
     }
-    rx_buf_in = 0;
-    rx_buf_out = 0;
-    interrupt_char = VCP_CHAR_NONE;
     dev_is_enabled = 1;
 
     // create an exception object for interrupting by VCP
@@ -72,54 +64,19 @@ bool usb_vcp_is_connected(void) {
 
 void usb_vcp_set_interrupt_char(int c) {
     if (dev_is_enabled) {
-        interrupt_char = c;
-    }
-}
-
-void usb_vcp_receive(const char *buf, uint32_t len) {
-    if (dev_is_enabled) {
-        for (int i = 0; i < len; i++) {
-
-            // catch special interrupt character
-            if (buf[i] == interrupt_char) {
-                // raise exception when interrupts are finished
-                mp_obj_exception_clear_traceback(mp_const_vcp_interrupt);
-                pendsv_nlr_jump(mp_const_vcp_interrupt);
-                interrupt_char = VCP_CHAR_NONE;
-                continue;
-            }
-
-            rx_buf[rx_buf_in++] = buf[i];
-            if (rx_buf_in >= sizeof(rx_buf)) {
-                rx_buf_in = 0;
-            }
-            if (rx_buf_in == rx_buf_out) {
-                rx_buf_out = rx_buf_in + 1;
-                if (rx_buf_out >= sizeof(rx_buf)) {
-                    rx_buf_out = 0;
-                }
-            }
+        if (c != VCP_CHAR_NONE) {
+            mp_obj_exception_clear_traceback(mp_const_vcp_interrupt);
         }
+        USBD_CDC_SetInterrupt(c, mp_const_vcp_interrupt);
     }
 }
 
 int usb_vcp_rx_any(void) {
-    if (rx_buf_in >= rx_buf_out) {
-        return rx_buf_in - rx_buf_out;
-    } else {
-        return rx_buf_in + sizeof(rx_buf) - rx_buf_out;
-    }
+    return USBD_CDC_RxAny();
 }
 
 char usb_vcp_rx_get(void) {
-    while (rx_buf_out == rx_buf_in) {
-    }
-    char c = rx_buf[rx_buf_out];
-    rx_buf_out += 1;
-    if (rx_buf_out >= sizeof(rx_buf)) {
-        rx_buf_out = 0;
-    }
-    return c;
+    return USBD_CDC_RxGet();
 }
 
 void usb_vcp_send_str(const char *str) {
@@ -129,39 +86,22 @@ void usb_vcp_send_str(const char *str) {
 void usb_vcp_send_strn(const char *str, int len) {
 #ifdef USE_DEVICE_MODE
     if (dev_is_enabled) {
-        #if 0
-        USBD_CDC_fops.pIf_DataTx((const uint8_t*)str, len);
-        #endif
+        USBD_CDC_Tx(str, len);
     }
 #endif
 }
 
-#include "usbd_conf.h"
-
-/* These are external variables imported from CDC core to be used for IN 
-   transfer management. */
-#ifdef USE_DEVICE_MODE
-extern uint8_t UserRxBuffer[];/* Received Data over USB are stored in this buffer */
-extern uint8_t UserTxBuffer[];/* Received Data over UART (CDC interface) are stored in this buffer */
-extern uint32_t BuffLength;
-extern uint32_t UserTxBufPtrIn;/* Increment this pointer or roll it back to
-                                  start address when data are received over USART */
-extern uint32_t UserTxBufPtrOut; /* Increment this pointer or roll it back to
-                                    start address when data are sent over USB */
-#endif
-
 void usb_vcp_send_strn_cooked(const char *str, int len) {
 #ifdef USE_DEVICE_MODE
-    #if 0
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            APP_Rx_Buffer[APP_Rx_ptr_in] = '\r';
-            APP_Rx_ptr_in = (APP_Rx_ptr_in + 1) & (APP_RX_DATA_SIZE - 1);
+    if (dev_is_enabled) {
+        for (const char *top = str + len; str < top; str++) {
+            if (*str == '\n') {
+                USBD_CDC_Tx("\r\n", 2);
+            } else {
+                USBD_CDC_Tx(str, 1);
+            }
         }
-        APP_Rx_Buffer[APP_Rx_ptr_in] = *str;
-        APP_Rx_ptr_in = (APP_Rx_ptr_in + 1) & (APP_RX_DATA_SIZE - 1);
     }
-    #endif
 #endif
 }
 

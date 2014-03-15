@@ -47,6 +47,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_interface.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
@@ -73,11 +75,11 @@
   * @param  None
   * @retval None
   */
-void HAL_MspInit(void)
-{
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */ 
+void HAL_MspInit(void) {
+    // set up the timer for USBD CDC
+    USBD_CDC_TIMx_CLK_ENABLE();
+    HAL_NVIC_SetPriority(USBD_CDC_TIMx_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(USBD_CDC_TIMx_IRQn);
 }
 
 /**
@@ -85,11 +87,10 @@ void HAL_MspInit(void)
   * @param  None  
   * @retval None
   */
-void HAL_MspDeInit(void)
-{
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */
+void HAL_MspDeInit(void) {
+    // reset USBD CDC timer
+    USBD_CDC_TIMx_FORCE_RESET();
+    USBD_CDC_TIMx_RELEASE_RESET();
 }
 
 /**

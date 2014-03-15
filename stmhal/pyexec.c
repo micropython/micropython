@@ -22,8 +22,8 @@
 #include "pyexec.h"
 #if 0
 #include "storage.h"
-#include "usb.h"
 #endif
+#include "usb.h"
 #include "usart.h"
 
 static bool repl_display_debugging_info = 0;
@@ -35,9 +35,7 @@ void stdout_tx_str(const char *str) {
 #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_str(str);
 #endif
-#if 0
     usb_vcp_send_str(str);
-#endif
 }
 
 int stdin_rx_chr(void) {
@@ -51,12 +49,9 @@ int stdin_rx_chr(void) {
         }
 #endif
 #endif
-#if 0
         if (usb_vcp_rx_any() != 0) {
             return usb_vcp_rx_get();
-        } else
-#endif
-        if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
+        } else if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
             return usart_rx_char(pyb_usart_global_debug);
         }
         HAL_Delay(1);
@@ -79,13 +74,6 @@ char *str_dup(const char *str) {
 #define READLINE_HIST_SIZE (8)
 
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-
-#if 0
-#else
-#define VCP_CHAR_CTRL_A (1)
-#define VCP_CHAR_CTRL_C (3)
-#define VCP_CHAR_CTRL_D (4)
-#endif
 
 int readline(vstr_t *line, const char *prompt) {
     stdout_tx_str(prompt);
@@ -173,21 +161,15 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
     bool ret;
     uint32_t start = HAL_GetTick();
     if (nlr_push(&nlr) == 0) {
-#if 0
         usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
-#endif
         rt_call_function_0(module_fun);
-#if 0
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
-#endif
         nlr_pop();
         ret = true;
     } else {
         // uncaught exception
         // FIXME it could be that an interrupt happens just before we disable it here
-#if 0
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
-#endif
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         ret = false;
     }

@@ -26,8 +26,12 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
 #include "stm32f4xx_hal.h"
+#include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
+#include "pendsv.h"
+#include "usb.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
@@ -40,33 +44,32 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE  2048
-#define APP_TX_DATA_SIZE  2048
+#define APP_RX_DATA_SIZE  2048 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE
+#define APP_TX_DATA_SIZE  2048 // I think this can be any value
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-USBD_CDC_LineCodingTypeDef LineCoding =
-  {
-    115200, /* baud rate*/
-    0x00,   /* stop bits-1*/
-    0x00,   /* parity - none*/
-    0x08    /* nb. of bits 8*/
-  };
 
 uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
+uint32_t UserRxBufLen; // counts number of valid characters in UserRxBuffer
+
 uint8_t UserTxBuffer[APP_TX_DATA_SIZE];/* Received Data over UART (CDC interface) are stored in this buffer */
-uint32_t BuffLength;
 uint32_t UserTxBufPtrIn = 0;/* Increment this pointer or roll it back to
                                start address when data are received over USART */
 uint32_t UserTxBufPtrOut = 0; /* Increment this pointer or roll it back to
                                  start address when data are sent over USB */
 
+static int user_interrupt_char = VCP_CHAR_NONE;
+static void *user_interrupt_data = NULL;
+
+#if 0
 /* UART handler declaration */
 UART_HandleTypeDef UartHandle;
+#endif
 /* TIM handler declaration */
-TIM_HandleTypeDef    TimHandle;
+TIM_HandleTypeDef USBD_CDC_TimHandle;
 /* USB handler declaration */
-extern USBD_HandleTypeDef  hUSBDDevice;
+extern USBD_HandleTypeDef hUSBDDevice;
 
 /* Private function prototypes -----------------------------------------------*/
 static int8_t CDC_Itf_Init     (void);
@@ -75,8 +78,8 @@ static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
 
 static void Error_Handler(void);
-static void ComPort_Config(void);
-//static void TIM_Config(void);
+//static void ComPort_Config(void);
+static void TIM_Config(void);
 
 USBD_CDC_ItfTypeDef USBD_CDC_fops = 
 {
@@ -126,23 +129,27 @@ static int8_t CDC_Itf_Init(void)
     /* Transfer error in reception process */
     Error_Handler();
   }
+#endif
   
   /*##-3- Configure the TIM Base generation  #################################*/
   TIM_Config();
   
   /*##-4- Start the TIM Base generation in interrupt mode ####################*/
   /* Start Channel1 */
-  if(HAL_TIM_Base_Start_IT(&TimHandle) != HAL_OK)
+  if(HAL_TIM_Base_Start_IT(&USBD_CDC_TimHandle) != HAL_OK)
   {
     /* Starting Error */
     Error_Handler();
   }
-#endif
   
   /*##-5- Set Application Buffers ############################################*/
   USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
   USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
+  UserRxBufLen = 0;
   
+    user_interrupt_char = VCP_CHAR_NONE;
+    user_interrupt_data = NULL;
+
   return (USBD_OK);
 }
 
@@ -198,6 +205,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
   case CDC_SET_LINE_CODING:
+    #if 0
     LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
                             (pbuf[2] << 16) | (pbuf[3] << 24));
     LineCoding.format     = pbuf[4];
@@ -206,9 +214,11 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     
     /* Set the new configuration */
     ComPort_Config();
+    #endif
     break;
 
   case CDC_GET_LINE_CODING:
+    #if 0
     pbuf[0] = (uint8_t)(LineCoding.bitrate);
     pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
     pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
@@ -216,8 +226,16 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     pbuf[4] = LineCoding.format;
     pbuf[5] = LineCoding.paritytype;
     pbuf[6] = LineCoding.datatype;     
+    #endif
     
     /* Add your code here */
+    pbuf[0] = (uint8_t)(115200);
+    pbuf[1] = (uint8_t)(115200 >> 8);
+    pbuf[2] = (uint8_t)(115200 >> 16);
+    pbuf[3] = (uint8_t)(115200 >> 24);
+    pbuf[4] = 0; // stop bits (1)
+    pbuf[5] = 0; // parity (none)
+    pbuf[6] = 8; // number of bits (8)
     break;
 
   case CDC_SET_CONTROL_LINE_STATE:
@@ -271,6 +289,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
+#if 0
 /**
   * @brief  Rx Transfer completed callback
   * @param  huart: UART handle
@@ -290,21 +309,91 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* Start another reception: provide the buffer pointer with offset and the buffer size */
   HAL_UART_Receive_IT(huart, (uint8_t *)(UserTxBuffer + UserTxBufPtrIn), 1);
 }
+#endif
 
 /**
   * @brief  CDC_Itf_DataRx
-  *         Data received over USB OUT endpoint are sent over CDC interface 
-  *         through this function.
-  * @param  Buf: Buffer of data to be transmitted
+  *         Data received over USB OUT endpoint is processed here.
+  * @param  Buf: Buffer of data received
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
+  * @note   The buffer we are passed here is just UserRxBuffer, so we are
+  *         free to modify it.
   */
-static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len)
-{
-  HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
-  return (USBD_OK);
+static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
+#if 0
+    // this sends the data over the UART using DMA
+    HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
+#endif
+
+    if (user_interrupt_char == VCP_CHAR_NONE) {
+        // no special interrupt character
+        UserRxBufLen = *Len;
+
+    } else {
+        // filter out sepcial interrupt character from the buffer
+        bool char_found = false;
+        uint8_t *dest = Buf;
+        uint8_t *src = Buf;
+        uint8_t *buf_top = Buf + *Len;
+        for (; src < buf_top; src++) {
+            if (*src == user_interrupt_char) {
+                char_found = true;
+            } else {
+                if (char_found) {
+                    *dest = *src;
+                }
+                dest++;
+            }
+        }
+
+        // set length of remaining characters
+        UserRxBufLen = dest - Buf;
+
+        if (char_found) {
+            // raise exception when interrupts are finished
+            user_interrupt_char = VCP_CHAR_NONE;
+            pendsv_nlr_jump(user_interrupt_data);
+        }
+    }
+
+    if (UserRxBufLen == 0) {
+        // initiate next USB packet transfer now that UserRxBuffer has been drained
+        USBD_CDC_ReceivePacket(&hUSBDDevice);
+    }
+
+    return (USBD_OK);
 }
 
+void USBD_CDC_SetInterrupt(int chr, void *data) {
+    user_interrupt_char = chr;
+    user_interrupt_data = data;
+}
+
+void USBD_CDC_Tx(const char *str, uint32_t len) {
+    for (int i = 0; i < len; i++) {
+        UserTxBuffer[UserTxBufPtrIn] = str[i];
+        UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
+    }
+}
+
+int USBD_CDC_RxAny(void) {
+    return UserRxBufLen;
+}
+
+int USBD_CDC_RxGet(void) {
+    while (UserRxBufLen == 0) {
+        __WFI();
+    }
+    int c = UserRxBuffer[--UserRxBufLen];
+    if (UserRxBufLen == 0) {
+        // initiate next USB packet transfer now that UserRxBuffer has been drained
+        USBD_CDC_ReceivePacket(&hUSBDDevice);
+    }
+    return c;
+}
+
+#if 0
 /**
   * @brief  Tx Transfer completed callback
   * @param  huart: UART handle
@@ -398,17 +487,17 @@ static void ComPort_Config(void)
   /* Start reception: provide the buffer pointer with offset and the buffer size */
   HAL_UART_Receive_IT(&UartHandle, (uint8_t *)(UserTxBuffer + UserTxBufPtrIn), 1);
 }
+#endif
 
 /**
   * @brief  TIM_Config: Configure TIMx timer
   * @param  None.
   * @retval None.
   */
-#if 0
 static void TIM_Config(void)
 {  
   /* Set TIMx instance */
-  TimHandle.Instance = TIMx;
+  USBD_CDC_TimHandle.Instance = USBD_CDC_TIMx;
   
   /* Initialize TIM3 peripheral as follow:
        + Period = 10000 - 1
@@ -416,18 +505,18 @@ static void TIM_Config(void)
        + ClockDivision = 0
        + Counter direction = Up
   */
-  TimHandle.Init.Period = (CDC_POLLING_INTERVAL*1000) - 1;
-  TimHandle.Init.Prescaler = 84-1;
-  TimHandle.Init.ClockDivision = 0;
-  TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&TimHandle) != HAL_OK)
+  USBD_CDC_TimHandle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
+  USBD_CDC_TimHandle.Init.Prescaler = 84-1;
+  USBD_CDC_TimHandle.Init.ClockDivision = 0;
+  USBD_CDC_TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+  if(HAL_TIM_Base_Init(&USBD_CDC_TimHandle) != HAL_OK)
   {
     /* Initialization Error */
     Error_Handler();
   }
 }
-#endif
 
+#if 0
 /**
   * @brief  UART error callbacks
   * @param  UartHandle: UART handle
@@ -438,6 +527,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
   /* Transfer error occured in reception and/or transmission process */
   Error_Handler();
 }
+#endif
 
 /**
   * @brief  This function is executed in case of error occurrence.

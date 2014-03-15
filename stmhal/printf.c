@@ -12,9 +12,7 @@
 #include "lcd.h"
 #endif
 #include "usart.h"
-#if 0
 #include "usb.h"
-#endif
 
 #if MICROPY_ENABLE_FLOAT
 #include "formatfloat.h"
@@ -273,12 +271,10 @@ void stdout_print_strn(void *data, const char *str, unsigned int len) {
         usart_tx_strn_cooked(pyb_usart_global_debug, str, len);
         any = true;
     }
-#if 0
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
         any = true;
     }
-#endif
     if (!any) {
 #if 0
 #if MICROPY_HW_HAS_LCD

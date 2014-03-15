@@ -103,6 +103,8 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_gpio.c \
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
+	stm32f4xx_hal_tim.c \
+	stm32f4xx_hal_tim_ex.c \
 	stm32f4xx_hal_uart.c \
 	stm32f4xx_ll_usb.c \
 	)
