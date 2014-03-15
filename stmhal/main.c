@@ -21,7 +21,6 @@
 #include "misc.h"
 #include "systick.h"
 #include "pendsv.h"
-#include "led.h"
 #include "usart.h"
 #include "mpconfig.h"
 #include "qstr.h"
@@ -38,6 +37,9 @@
 #include "gccollect.h"
 #include "pyexec.h"
 #include "pybmodule.h"
+#include "led.h"
+#include "exti.h"
+#include "usrsw.h"
 #include "usb.h"
 #if 0
 #include "ff.h"
@@ -49,11 +51,9 @@
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
-#include "usrsw.h"
 #include "rtc.h"
 #include "file.h"
 #include "pin.h"
-#include "exti.h"
 #endif
 
 void SystemClock_Config(void);
@@ -274,7 +274,8 @@ int main(void) {
 
 #if 0
     pyb_led_t led = 1;
-    while (1) {
+    for (int i = 0; i < 24; i++) {
+    //while (1) {
         led_state(led, 1);
         usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
         HAL_Delay(100);
@@ -290,7 +291,6 @@ int main(void) {
 
         led = (led % 4) + 1;
     }
-    __fatal_error("done");
 #endif
 
     int first_soft_reset = true;
@@ -309,13 +309,13 @@ soft_reset:
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
     sys_path = mp_obj_new_list(3, def_path);
 
-#if 0
     exti_init();
 
 #if MICROPY_HW_HAS_SWITCH
     switch_init();
 #endif
 
+#if 0
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();
@@ -473,7 +473,7 @@ soft_reset:
 #endif
 #endif
 
-#ifdef USE_HOST_MODE
+#if defined(USE_HOST_MODE)
     // USB host
     pyb_usb_host_init();
 #elif defined(USE_DEVICE_MODE)

@@ -15,22 +15,22 @@
 #include "gccollect.h"
 #include "systick.h"
 #include "pyexec.h"
+#include "led.h"
+#include "gpio.h"
+#include "pin.h"
+#include "exti.h"
+#include "usrsw.h"
 #if 0
 #include "rtc.h"
 #include "servo.h"
 #include "storage.h"
 #include "usb.h"
-#include "usrsw.h"
 #include "sdcard.h"
 #include "accel.h"
-#include "led.h"
 #include "i2c.h"
 #include "usart.h"
 #include "adc.h"
 #include "audio.h"
-#include "pin.h"
-#include "gpio.h"
-#include "exti.h"
 #endif
 #include "pybmodule.h"
 
@@ -252,11 +252,13 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_servo), (mp_obj_t)&pyb_servo_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Servo), (mp_obj_t)&pyb_Servo_obj },
 #endif
+#endif
 
 #if MICROPY_HW_HAS_SWITCH
     { MP_OBJ_NEW_QSTR(MP_QSTR_switch), (mp_obj_t)&pyb_switch_obj },
 #endif
 
+#if 0
 #if MICROPY_HW_HAS_SDCARD
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pyb_sdcard_obj },
 #endif
@@ -268,8 +270,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
-
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_Led_obj },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_Usart_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
@@ -277,6 +280,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
 #if MICROPY_HW_ENABLE_AUDIO
     { MP_OBJ_NEW_QSTR(MP_QSTR_Audio), (mp_obj_t)&pyb_Audio_obj },
+#endif
 #endif
 
     // pin mapper
@@ -286,15 +290,14 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_gpio), (mp_obj_t)&pyb_gpio_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_in), (mp_obj_t)&pyb_gpio_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_out), (mp_obj_t)&pyb_gpio_output_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_NOPULL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_UP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PuPd_DOWN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PUSH_PULL), MP_OBJ_NEW_SMALL_INT(GPIO_OType_PP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_OType_OD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_NOPULL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP), MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PUSH_PULL), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_PP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_OD) },
 
     // EXTI bindings
     { MP_OBJ_NEW_QSTR(MP_QSTR_Exti), (mp_obj_t)&exti_obj_type },
-#endif
 };
 
 STATIC const mp_map_t pyb_module_globals = {

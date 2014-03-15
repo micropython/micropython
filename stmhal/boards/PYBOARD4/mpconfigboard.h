@@ -16,8 +16,8 @@
 
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define USRSW_PIN           (pin_B3)
-#define USRSW_PUPD          (GPIO_PuPd_UP)
-#define USRSW_EXTI_EDGE     (EXTI_Trigger_Falling)
+#define USRSW_PULL          (GPIO_PULLUP)
+#define USRSW_EXTI_MODE     (GPIO_MODE_IT_FALLING)
 #define USRSW_PRESSED       (0)
 
 /* LED */
@@ -26,7 +26,7 @@
 #define PYB_LED3        (pin_A15) // yellow
 #define PYB_LED4        (pin_B4)  // blue
 
-#define PYB_OTYPE       (GPIO_OType_PP)
+#define PYB_OTYPE       (GPIO_MODE_OUTPUT_PP)
 
 #define PYB_LED_ON(pin)  (pin->gpio->BSRRL = pin->pin_mask)
 #define PYB_LED_OFF(pin) (pin->gpio->BSRRH = pin->pin_mask)

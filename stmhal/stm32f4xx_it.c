@@ -43,6 +43,12 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal.h"
 
+#include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "obj.h"
+#include "exti.h"
+
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
   */
@@ -182,25 +188,28 @@ void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-#ifdef USE_USB_FS
-void OTG_FS_IRQHandler(void)
+#if defined(USE_USB_FS)
+#define OTG_XX_IRQHandler      OTG_FS_IRQHandler
+#define OTG_XX_WKUP_IRQHandler OTG_FS_WKUP_IRQHandler
 #elif defined(USE_USB_HS)
-void OTG_HS_IRQHandler(void)
+#define OTG_XX_IRQHandler      OTG_HS_IRQHandler
+#define OTG_XX_WKUP_IRQHandler OTG_HS_WKUP_IRQHandler
 #endif
+
+#if defined(OTG_XX_IRQHandler)
+void OTG_XX_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd);
 }
+#endif
 
 /**
   * @brief  This function handles USB OTG FS or HS Wakeup IRQ Handler.
   * @param  None
   * @retval None
   */
-#ifdef USE_USB_FS
-void OTG_FS_WKUP_IRQHandler(void)
-#elif defined(USE_USB_HS)
-void OTG_HS_WKUP_IRQHandler(void)
-#endif
+#if defined(OTG_XX_WKUP_IRQHandler)
+void OTG_XX_WKUP_IRQHandler(void)
 {
  
   if((&hpcd)->Init.low_power_enable)
@@ -242,6 +251,7 @@ void OTG_HS_WKUP_IRQHandler(void)
 #endif
   
 }
+#endif
 
 /**
   * @brief  This function handles PPP interrupt request.
@@ -252,13 +262,90 @@ void OTG_HS_WKUP_IRQHandler(void)
 {
 }*/
 
-
 /**
-  * @}
-  */ 
-
-/**
-  * @}
+  * @brief  These functions handle the EXTI interrupt requests.
+  * @param  None
+  * @retval None
   */
+void EXTI0_IRQHandler(void) {
+    Handle_EXTI_Irq(0);
+}
+
+void EXTI1_IRQHandler(void) {
+    Handle_EXTI_Irq(1);
+}
+
+void EXTI2_IRQHandler(void) {
+    Handle_EXTI_Irq(2);
+}
+
+void EXTI3_IRQHandler(void) {
+    Handle_EXTI_Irq(3);
+}
+
+void EXTI4_IRQHandler(void) {
+    Handle_EXTI_Irq(4);
+}
+
+void EXTI9_5_IRQHandler(void) {
+    Handle_EXTI_Irq(5);
+    Handle_EXTI_Irq(6);
+    Handle_EXTI_Irq(7);
+    Handle_EXTI_Irq(8);
+    Handle_EXTI_Irq(9);
+}
+
+void EXTI15_10_IRQHandler(void) {
+    Handle_EXTI_Irq(10);
+    Handle_EXTI_Irq(11);
+    Handle_EXTI_Irq(12);
+    Handle_EXTI_Irq(13);
+    Handle_EXTI_Irq(14);
+    Handle_EXTI_Irq(15);
+
+#if 0
+    // for CC3000 support, needs to be re-written to use new EXTI code 
+    if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
+        led_toggle(PYB_LED_G2);
+        /* these are needed for CC3000 support
+        extern void SpiIntGPIOHandler(void);
+        extern uint32_t exti14_enabled;
+        extern uint32_t exti14_missed;
+        //printf("-> EXTI14 en=%lu miss=%lu\n", exti14_enabled, exti14_missed);
+        if (exti14_enabled) {
+            exti14_missed = 0;
+            SpiIntGPIOHandler(); // CC3000 interrupt
+        } else {
+            exti14_missed = 1;
+        }
+        */
+        EXTI_ClearITPendingBit(EXTI_Line14);
+        //printf("<- EXTI14 done\n");
+    }
+#endif
+}
+
+void PVD_IRQHandler(void) {
+    Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
+}
+
+void RTC_Alarm_IRQHandler(void) {
+    Handle_EXTI_Irq(EXTI_RTC_ALARM);
+}
+
+
+#if defined(ETH)    // The 407 has ETH, the 405 doesn't
+void ETH_WKUP_IRQHandler(void)  {
+    Handle_EXTI_Irq(EXTI_ETH_WAKEUP);
+}
+#endif
+
+void TAMP_STAMP_IRQHandler(void) {
+    Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP);
+}
+
+void RTC_WKUP_IRQHandler(void) {
+    Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

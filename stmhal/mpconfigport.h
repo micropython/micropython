@@ -38,14 +38,14 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 #define free gc_free
 #define realloc gc_realloc
 
-// board specific definitions
-
-#include "mpconfigboard.h"
-
 #define STM32F40_41xxx
 #define USE_STDPERIPH_DRIVER
+#define USE_DEVICE_MODE
+//#define USE_HOST_MODE
+
+// board specific definitions
+#include "mpconfigboard.h"
+
 #if !defined(HSE_VALUE)
 #define HSE_VALUE (8000000)
 #endif
-#define USE_DEVICE_MODE
-//#define USE_HOST_MODE
