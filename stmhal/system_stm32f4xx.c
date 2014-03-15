@@ -116,7 +116,6 @@ void __fatal_error(const char *msg);
                variable is updated automatically.
   */
   uint32_t SystemCoreClock = 16000000;
-  __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /**
   * @}
@@ -210,6 +209,10 @@ void SystemInit(void)
   * @param  None
   * @retval None
   */
+#if 0
+// dpgeorge: I think this function is obsolete now with the new HAL library.
+
+__I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 void SystemCoreClockUpdate(void)
 {
   uint32_t tmp = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
@@ -257,6 +260,7 @@ void SystemCoreClockUpdate(void)
   /* HCLK frequency */
   SystemCoreClock >>= tmp;
 }
+#endif
 
 /**
   * @brief  System Clock Configuration
