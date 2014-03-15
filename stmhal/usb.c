@@ -71,8 +71,8 @@ void usb_vcp_set_interrupt_char(int c) {
     }
 }
 
-int usb_vcp_rx_any(void) {
-    return USBD_CDC_RxAny();
+int usb_vcp_rx_num(void) {
+    return USBD_CDC_RxNum();
 }
 
 char usb_vcp_rx_get(void) {

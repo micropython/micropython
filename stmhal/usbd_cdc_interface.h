@@ -51,7 +51,7 @@ extern USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
 void USBD_CDC_SetInterrupt(int chr, void *data);
 void USBD_CDC_Tx(const char *str, uint32_t len);
-int USBD_CDC_RxAny(void);
+int USBD_CDC_RxNum(void);
 int USBD_CDC_RxGet(void);
 
 /* Exported macro ------------------------------------------------------------*/

@@ -44,28 +44,23 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE  2048 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE
-#define APP_TX_DATA_SIZE  2048 // I think this can be any value
+#define APP_RX_DATA_SIZE  1024 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE (was 2048)
+#define APP_TX_DATA_SIZE  1024 // I think this can be any value (was 2048)
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
-uint32_t UserRxBufLen; // counts number of valid characters in UserRxBuffer
+static uint8_t UserRxBuffer[APP_RX_DATA_SIZE]; // received data from USB OUT endpoint is stored in this buffer
+static uint16_t UserRxBufCur = 0; // points to next available character in UserRxBuffer
+static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRxBuffer
 
-uint8_t UserTxBuffer[APP_TX_DATA_SIZE];/* Received Data over UART (CDC interface) are stored in this buffer */
-uint32_t UserTxBufPtrIn = 0;/* Increment this pointer or roll it back to
-                               start address when data are received over USART */
-uint32_t UserTxBufPtrOut = 0; /* Increment this pointer or roll it back to
-                                 start address when data are sent over USB */
+static uint8_t UserTxBuffer[APP_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
+static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA_SIZE when new data is available
+static uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
 
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
 
-#if 0
-/* UART handler declaration */
-UART_HandleTypeDef UartHandle;
-#endif
 /* TIM handler declaration */
 TIM_HandleTypeDef USBD_CDC_TimHandle;
 /* USB handler declaration */
@@ -145,7 +140,9 @@ static int8_t CDC_Itf_Init(void)
   /*##-5- Set Application Buffers ############################################*/
   USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
   USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
-  UserRxBufLen = 0;
+
+    UserRxBufCur = 0;
+    UserRxBufLen = 0;
   
     user_interrupt_char = VCP_CHAR_NONE;
     user_interrupt_data = NULL;
@@ -357,6 +354,9 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
         }
     }
 
+    // there are new characters at the start of the buffer, so point there
+    UserRxBufCur = 0;
+
     if (UserRxBufLen == 0) {
         // initiate next USB packet transfer now that UserRxBuffer has been drained
         USBD_CDC_ReceivePacket(&hUSBDDevice);
@@ -377,16 +377,19 @@ void USBD_CDC_Tx(const char *str, uint32_t len) {
     }
 }
 
-int USBD_CDC_RxAny(void) {
-    return UserRxBufLen;
+int USBD_CDC_RxNum(void) {
+    return UserRxBufLen - UserRxBufCur;
 }
 
 int USBD_CDC_RxGet(void) {
-    while (UserRxBufLen == 0) {
+    // wait for buffer to have at least 1 character in it
+    while (USBD_CDC_RxNum() == 0) {
         __WFI();
     }
-    int c = UserRxBuffer[--UserRxBufLen];
-    if (UserRxBufLen == 0) {
+
+    // get next character
+    int c = UserRxBuffer[UserRxBufCur++];
+    if (UserRxBufCur >= UserRxBufLen) {
         // initiate next USB packet transfer now that UserRxBuffer has been drained
         USBD_CDC_ReceivePacket(&hUSBDDevice);
     }

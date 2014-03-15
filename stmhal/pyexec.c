@@ -49,7 +49,7 @@ int stdin_rx_chr(void) {
         }
 #endif
 #endif
-        if (usb_vcp_rx_any() != 0) {
+        if (usb_vcp_rx_num() != 0) {
             return usb_vcp_rx_get();
         } else if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
             return usart_rx_char(pyb_usart_global_debug);
@@ -78,14 +78,16 @@ static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, 
 int readline(vstr_t *line, const char *prompt) {
     stdout_tx_str(prompt);
     int len = vstr_len(line);
-    int escape = 0;
+    int escape_seq = 0;
     int hist_num = 0;
     for (;;) {
         int c = stdin_rx_chr();
-        if (escape == 0) {
+        if (escape_seq == 0) {
             if (VCP_CHAR_CTRL_A <= c && c <= VCP_CHAR_CTRL_D && vstr_len(line) == len) {
+                // control character with empty line
                 return c;
             } else if (c == '\r') {
+                // newline
                 stdout_tx_str("\r\n");
                 for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
                     readline_hist[i] = readline_hist[i - 1];
@@ -93,24 +95,27 @@ int readline(vstr_t *line, const char *prompt) {
                 readline_hist[0] = str_dup(vstr_str(line));
                 return 0;
             } else if (c == 27) {
-                escape = true;
+                // escape sequence
+                escape_seq = 1;
             } else if (c == 127) {
+                // backspace
                 if (vstr_len(line) > len) {
                     vstr_cut_tail(line, 1);
                     stdout_tx_str("\b \b");
                 }
             } else if (32 <= c && c <= 126) {
+                // printable character
                 vstr_add_char(line, c);
                 stdout_tx_str(line->buf + line->len - 1);
             }
-        } else if (escape == 1) {
+        } else if (escape_seq == 1) {
             if (c == '[') {
-                escape = 2;
+                escape_seq = 2;
             } else {
-                escape = 0;
+                escape_seq = 0;
             }
-        } else if (escape == 2) {
-            escape = 0;
+        } else if (escape_seq == 2) {
+            escape_seq = 0;
             if (c == 'A') {
                 // up arrow
                 if (hist_num < READLINE_HIST_SIZE && readline_hist[hist_num] != NULL) {
@@ -128,7 +133,7 @@ int readline(vstr_t *line, const char *prompt) {
                 }
             }
         } else {
-            escape = 0;
+            escape_seq = 0;
         }
         HAL_Delay(1);
     }
