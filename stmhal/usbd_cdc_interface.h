@@ -47,7 +47,7 @@
    The period depends on USBD_CDC_POLLING_INTERVAL */
 #define USBD_CDC_POLLING_INTERVAL             10 /* in ms. The max is 65 and the min is 1 */
 
-extern USBD_CDC_ItfTypeDef USBD_CDC_fops;
+extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
 void USBD_CDC_SetInterrupt(int chr, void *data);
 void USBD_CDC_Tx(const char *str, uint32_t len);

@@ -76,12 +76,11 @@ static void Error_Handler(void);
 //static void ComPort_Config(void);
 static void TIM_Config(void);
 
-USBD_CDC_ItfTypeDef USBD_CDC_fops = 
-{
-  CDC_Itf_Init,
-  CDC_Itf_DeInit,
-  CDC_Itf_Control,
-  CDC_Itf_Receive
+const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
+    CDC_Itf_Init,
+    CDC_Itf_DeInit,
+    CDC_Itf_Control,
+    CDC_Itf_Receive
 };
 
 /* Private functions ---------------------------------------------------------*/

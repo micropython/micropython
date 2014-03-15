@@ -36,7 +36,7 @@ void pyb_usb_dev_init(int usb_dev_type) {
                 // so the memory is invalid after a soft reset (which resets the GC).
                 USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
                 USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);
-                USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
+                USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
                 USBD_Start(&hUSBDDevice);
                 //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
                 break;
