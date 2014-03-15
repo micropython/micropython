@@ -516,7 +516,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
         }
 
         // cut off the end quotes from the token text
-        vstr_cut_tail(&lex->vstr, n_closing);
+        vstr_cut_tail_bytes(&lex->vstr, n_closing);
 
     } else if (is_head_of_identifier(lex)) {
         tok->kind = MP_TOKEN_NAME;
