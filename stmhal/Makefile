@@ -77,6 +77,7 @@ SRC_C = \
 	gpio.c \
 	exti.c \
 	usrsw.c \
+	rtc.c \
 
 #	lcd.c \
 #	servo.c \
@@ -88,7 +89,6 @@ SRC_C = \
 #	sdcard.c \
 #	i2c.c \
 #	adc.c \
-#	rtc.c \
 #	file.c \
 #	pybwlan.c \
 
@@ -103,43 +103,14 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_gpio.c \
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
+	stm32f4xx_hal_rcc_ex.c \
+	stm32f4xx_hal_rtc.c \
+	stm32f4xx_hal_rtc_ex.c \
 	stm32f4xx_hal_tim.c \
 	stm32f4xx_hal_tim_ex.c \
 	stm32f4xx_hal_uart.c \
 	stm32f4xx_ll_usb.c \
 	)
-
-SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\
-	stm_misc.c \
-	stm32f4xx_rcc.c \
-	stm32f4xx_syscfg.c \
-	stm32f4xx_flash.c \
-	stm32f4xx_dma.c \
-	stm32f4xx_gpio.c \
-	stm32f4xx_exti.c \
-	stm32f4xx_tim.c \
-	stm32f4xx_sdio.c \
-	stm32f4xx_pwr.c \
-	stm32f4xx_rtc.c \
-	stm32f4xx_usart.c \
-	stm32f4xx_spi.c \
-	stm32f4xx_dac.c \
-	stm32f4xx_rng.c \
-	stm32f4xx_i2c.c \
-	stm32f4xx_adc.c \
-	stm324x7i_eval.c \
-	stm324x7i_eval_sdio_sd.c \
-	)
-
-SRC_STMUSB = $(addprefix $(STMUSB_DIR)/,\
-	usb_core.c \
-	usb_bsp.c \
-	usb_dcd.c \
-	usb_dcd_int.c \
-	usb_hcd.c \
-	usb_hcd_int.c \
-	)
-#	usb_otg.c \
 
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
@@ -160,17 +131,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	usbd_msc_data.c \
 	usbd_msc_scsi.c \
 	usbd_storage_msd.c \
-	)
-
-SRC_STMUSBH = $(addprefix $(STMUSBH_DIR)/,\
-	usbh_core.c \
-	usbh_hcs.c \
-	usbh_stdreq.c \
-	usbh_ioreq.c \
-	usbh_usr.c \
-	usbh_hid_core.c \
-	usbh_hid_mouse.c \
-	usbh_hid_keybd.c \
 	)
 
 SRC_FATFS = $(addprefix $(FATFS_DIR)/,\

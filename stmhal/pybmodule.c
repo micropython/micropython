@@ -20,8 +20,8 @@
 #include "pin.h"
 #include "exti.h"
 #include "usrsw.h"
-#if 0
 #include "rtc.h"
+#if 0
 #include "servo.h"
 #include "storage.h"
 #include "usb.h"
@@ -241,12 +241,12 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rand), (mp_obj_t)&pyb_rng_get_obj },
 #endif
 
-#if 0
 #if MICROPY_HW_ENABLE_RTC
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&pyb_rtc_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rtc_info), (mp_obj_t)&pyb_rtc_info_obj },
 #endif
 
+#if 0
 #if MICROPY_HW_ENABLE_SERVO
     { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_pwm_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servo), (mp_obj_t)&pyb_servo_set_obj },

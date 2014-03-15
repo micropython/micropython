@@ -3,19 +3,6 @@
 
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_gpio.h>
-#if 0
-#include <stm32f4xx.h>
-#include <stm32f4xx_rcc.h>
-#include <stm32f4xx_syscfg.h>
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_exti.h>
-#include <stm32f4xx_tim.h>
-#include <stm32f4xx_pwr.h>
-#include <stm32f4xx_rtc.h>
-#include <stm32f4xx_usart.h>
-#include <stm32f4xx_rng.h>
-#include <usbd_storage_msd.h>
-#endif
 #include "std.h"
 
 #include "misc.h"
@@ -41,6 +28,7 @@
 #include "exti.h"
 #include "usrsw.h"
 #include "usb.h"
+#include "rtc.h"
 #if 0
 #include "ff.h"
 #include "lexerfatfs.h"
@@ -51,7 +39,6 @@
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
-#include "rtc.h"
 #include "file.h"
 #include "pin.h"
 #endif
@@ -254,10 +241,8 @@ int main(void) {
     // turn on LED to indicate bootup
     led_state(PYB_LED_GREEN, 1);
 
-#if 0
 #if MICROPY_HW_ENABLE_RTC
     rtc_init();
-#endif
 #endif
 
 #if 0
