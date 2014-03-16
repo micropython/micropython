@@ -8,7 +8,6 @@
 #include "misc.h"
 #include "systick.h"
 #include "pendsv.h"
-#include "usart.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "nlr.h"
@@ -24,6 +23,7 @@
 #include "gccollect.h"
 #include "pyexec.h"
 #include "pybmodule.h"
+#include "usart.h"
 #include "led.h"
 #include "exti.h"
 #include "usrsw.h"
@@ -253,37 +253,21 @@ int main(void) {
     storage_init();
 #endif
 
-    // uncomment these 2 lines if you want REPL on USART_6 (or another usart) as well as on USB VCP
-    pyb_usart_global_debug = PYB_USART_YA;
-    usart_init(pyb_usart_global_debug, 115200);
-
-#if 0
-    pyb_led_t led = 1;
-    for (int i = 0; i < 24; i++) {
-    //while (1) {
-        led_state(led, 1);
-        usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
-        HAL_Delay(100);
-        led_state(led, 0);
-        usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
-        HAL_Delay(100);
-        led_state(led, 1);
-        usart_tx_strn_cooked(pyb_usart_global_debug, "on\n", 3);
-        HAL_Delay(100);
-        led_state(led, 0);
-        usart_tx_strn_cooked(pyb_usart_global_debug, "off\n", 4);
-        HAL_Delay(700);
-
-        led = (led % 4) + 1;
-    }
-#endif
-
     int first_soft_reset = true;
 
 soft_reset:
 
     // GC init
     gc_init(&_heap_start, &_heap_end);
+
+    // Change #if 0 to #if 1 if you want REPL on USART_6 (or another usart)
+    // as well as on USB VCP
+#if 0
+    pyb_usart_global_debug = pyb_Usart(MP_OBJ_NEW_SMALL_INT(PYB_USART_YA),
+                                       MP_OBJ_NEW_SMALL_INT(115200));
+#else
+    pyb_usart_global_debug = NULL;
+#endif
 
     // Micro Python init
     qstr_init();

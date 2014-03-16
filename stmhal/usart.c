@@ -8,47 +8,23 @@
 #include "obj.h"
 #include "usart.h"
 
-pyb_usart_t pyb_usart_global_debug = PYB_USART_NONE;
+struct _pyb_usart_obj_t {
+    mp_obj_base_t base;
+    pyb_usart_t usart_id;
+    bool is_enabled;
+    UART_HandleTypeDef handle;
+};
 
-#if 0
-#else
-// This needs to be fixed. Right now its just a hack to get REPL working
-static UART_HandleTypeDef UartHandle;
-#endif
+pyb_usart_obj_t *pyb_usart_global_debug = NULL;
 
-#if 0
-static USART_TypeDef *usart_get_base(pyb_usart_t usart_id) {
-    USART_TypeDef *USARTx=NULL;
-
-    switch (usart_id) {
-        case PYB_USART_NONE:
-            break;
-        case PYB_USART_1:
-            USARTx = USART1;
-            break;
-        case PYB_USART_2:
-            USARTx = USART2;
-            break;
-        case PYB_USART_3:
-            USARTx = USART3;
-            break;
-        case PYB_USART_6:
-            USARTx = USART6;
-            break;
-    }
-
-    return USARTx;
-}
-#endif
-
-void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
+void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
     USART_TypeDef *USARTx=NULL;
 
     uint32_t GPIO_Pin=0;
     uint8_t  GPIO_AF_USARTx=0;
     GPIO_TypeDef* GPIO_Port=NULL;
 
-    switch (usart_id) {
+    switch (usart_obj->usart_id) {
         case PYB_USART_NONE:
             return;
 
@@ -105,88 +81,63 @@ void usart_init(pyb_usart_t usart_id, uint32_t baudrate) {
     GPIO_InitStructure.Alternate = GPIO_AF_USARTx;
     HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
 
-    memset(&UartHandle, 0, sizeof(UartHandle));
-    UartHandle.Instance = USARTx;
-    UartHandle.Init.BaudRate = baudrate;
-    UartHandle.Init.WordLength = USART_WORDLENGTH_8B;
-    UartHandle.Init.StopBits = USART_STOPBITS_1;
-    UartHandle.Init.Parity = USART_PARITY_NONE;
-    UartHandle.Init.Mode = USART_MODE_TX_RX;
-    UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    UartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
-    HAL_UART_Init(&UartHandle);
+    UART_HandleTypeDef *uh = &usart_obj->handle;
+    memset(uh, 0, sizeof(*uh));
+    uh->Instance = USARTx;
+    uh->Init.BaudRate = baudrate;
+    uh->Init.WordLength = USART_WORDLENGTH_8B;
+    uh->Init.StopBits = USART_STOPBITS_1;
+    uh->Init.Parity = USART_PARITY_NONE;
+    uh->Init.Mode = USART_MODE_TX_RX;
+    uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    uh->Init.OverSampling = UART_OVERSAMPLING_16;
+    HAL_UART_Init(uh);
 }
 
-bool usart_rx_any(pyb_usart_t usart_id) {
-#if 0
-    USART_TypeDef *USARTx = usart_get_base(usart_id);
-    return USART_GetFlagStatus(USARTx, USART_FLAG_RXNE) == SET;
-#else
-    return __HAL_UART_GET_FLAG(&UartHandle, USART_FLAG_RXNE);
-#endif
+bool usart_rx_any(pyb_usart_obj_t *usart_obj) {
+    return __HAL_UART_GET_FLAG(&usart_obj->handle, USART_FLAG_RXNE);
 }
 
-int usart_rx_char(pyb_usart_t usart_id) {
-#if 0
-    USART_TypeDef *USARTx = usart_get_base(usart_id);
-    return USART_ReceiveData(USARTx);
-#else
+int usart_rx_char(pyb_usart_obj_t *usart_obj) {
     uint8_t ch;
-    if (HAL_UART_Receive(&UartHandle, &ch, 1, 0) != HAL_OK) {
+    if (HAL_UART_Receive(&usart_obj->handle, &ch, 1, 0) != HAL_OK) {
         ch = 0;
     }
     return ch;
-#endif
 }
 
-void usart_tx_char(pyb_usart_t usart_id, int c) {
-#if 0
-    USART_TypeDef *USARTx = usart_get_base(usart_id);
-    // wait until the end of any previous transmission
-    uint32_t timeout = 100000;
-    while (USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET && --timeout > 0) {
-    }
-    USART_SendData(USARTx, c);
-#else
+void usart_tx_char(pyb_usart_obj_t *usart_obj, int c) {
     uint8_t ch = c;
-    HAL_UART_Transmit(&UartHandle, &ch, 1, 100000);
-#endif
+    HAL_UART_Transmit(&usart_obj->handle, &ch, 1, 100000);
 }
 
-void usart_tx_str(pyb_usart_t usart_id, const char *str) {
+void usart_tx_str(pyb_usart_obj_t *usart_obj, const char *str) {
     for (; *str; str++) {
-        usart_tx_char(usart_id, *str);
+        usart_tx_char(usart_obj, *str);
     }
 }
 
-void usart_tx_strn(pyb_usart_t usart_id, const char *str, uint len) {
+void usart_tx_strn(pyb_usart_obj_t *usart_obj, const char *str, uint len) {
     for (; len > 0; str++, len--) {
-        usart_tx_char(usart_id, *str);
+        usart_tx_char(usart_obj, *str);
     }
 }
 
-void usart_tx_strn_cooked(pyb_usart_t usart_id, const char *str, uint len) {
+void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len) {
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
-            usart_tx_char(usart_id, '\r');
+            usart_tx_char(usart_obj, '\r');
         }
-        usart_tx_char(usart_id, *str);
+        usart_tx_char(usart_obj, *str);
     }
 }
 
-#if 0
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-typedef struct _pyb_usart_obj_t {
-    mp_obj_base_t base;
-    pyb_usart_t usart_id;
-    bool is_enabled;
-} pyb_usart_obj_t;
-
 static mp_obj_t usart_obj_status(mp_obj_t self_in) {
     pyb_usart_obj_t *self = self_in;
-    if (usart_rx_any(self->usart_id)) {
+    if (usart_rx_any(self)) {
         return mp_const_true;
     } else {
         return mp_const_false;
@@ -198,7 +149,7 @@ static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
     pyb_usart_obj_t *self = self_in;
 
     if (self->is_enabled) {
-        ret =  mp_obj_new_int(usart_rx_char(self->usart_id));
+        ret =  mp_obj_new_int(usart_rx_char(self));
     }
     return ret;
 }
@@ -208,7 +159,7 @@ static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
     uint len;
     const char *str = mp_obj_str_get_data(c, &len);
     if (len == 1 && self->is_enabled) {
-        usart_tx_char(self->usart_id, str[0]);
+        usart_tx_char(self, str[0]);
     }
     return mp_const_none;
 }
@@ -219,7 +170,7 @@ static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
         if (MP_OBJ_IS_STR(s)) {
             uint len;
             const char *data = mp_obj_str_get_data(s, &len);
-            usart_tx_strn(self->usart_id, data, len);
+            usart_tx_strn(self, data, len);
         }
     }
     return mp_const_none;
@@ -250,20 +201,20 @@ STATIC const mp_obj_type_t usart_obj_type = {
     .methods = usart_methods,
 };
 
-STATIC mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate) {
-    if (mp_obj_get_int(usart_id)>PYB_USART_MAX) {
+mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate) {
+    if (mp_obj_get_int(usart_id) > PYB_USART_MAX) {
         return mp_const_none;
     }
-
-    /* init USART */
-    usart_init(mp_obj_get_int(usart_id), mp_obj_get_int(baudrate));
 
     pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
     o->base.type = &usart_obj_type;
     o->usart_id = mp_obj_get_int(usart_id);
     o->is_enabled = true;
+
+    /* init USART */
+    usart_init(o, mp_obj_get_int(baudrate));
+
     return o;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_Usart_obj, pyb_Usart);
-#endif
