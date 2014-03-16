@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
 
 #include "nlr.h"
 #include "misc.h"

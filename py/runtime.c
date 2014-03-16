@@ -2,8 +2,6 @@
 // mp_xxx functions are safer and can be called by anyone
 // note that rt_assign_xxx are called only from emit*, and maybe we can rename them to reflect this
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
