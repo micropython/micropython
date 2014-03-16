@@ -21,6 +21,8 @@ Q(__getitem__)
 Q(__setitem__)
 Q(__add__)
 Q(__sub__)
+Q(__repr__)
+Q(__str__)
 
 Q(micropython)
 Q(byte_code)
