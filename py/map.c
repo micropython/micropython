@@ -1,6 +1,4 @@
-#include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "misc.h"
 #include "mpconfig.h"
