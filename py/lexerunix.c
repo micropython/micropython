@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -10,6 +9,9 @@
 #include "lexerunix.h"
 
 #if MICROPY_ENABLE_LEXER_UNIX
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     int fd = open(filename, O_RDONLY);
