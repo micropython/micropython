@@ -21,6 +21,7 @@
 #include "exti.h"
 #include "usrsw.h"
 #include "rtc.h"
+#include "usart.h"
 #if 0
 #include "servo.h"
 #include "storage.h"
@@ -28,7 +29,6 @@
 #include "sdcard.h"
 #include "accel.h"
 #include "i2c.h"
-#include "usart.h"
 #include "adc.h"
 #include "audio.h"
 #endif
@@ -274,7 +274,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_Led_obj },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_Usart_obj },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_ADC_obj },
 
