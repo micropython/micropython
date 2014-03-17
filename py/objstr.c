@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
@@ -286,8 +284,8 @@ STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
 
-    size_t start = 0;
-    size_t end = haystack_len;
+    machine_uint_t start = 0;
+    machine_uint_t end = haystack_len;
     /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
         start = mp_get_index(&str_type, haystack_len, args[2], true);
@@ -320,8 +318,8 @@ STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
     return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
 }
 
-STATIC bool chr_in_str(const byte* const str, const size_t str_len, int c) {
-    for (size_t i = 0; i < str_len; i++) {
+STATIC bool chr_in_str(const byte* const str, const machine_uint_t str_len, int c) {
+    for (machine_uint_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
             return true;
         }
@@ -349,10 +347,10 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
 
     GET_STR_DATA_LEN(args[0], orig_str, orig_str_len);
 
-    size_t first_good_char_pos = 0;
+    machine_uint_t first_good_char_pos = 0;
     bool first_good_char_pos_set = false;
-    size_t last_good_char_pos = 0;
-    for (size_t i = 0; i < orig_str_len; i++) {
+    machine_uint_t last_good_char_pos = 0;
+    for (machine_uint_t i = 0; i < orig_str_len; i++) {
         if (!chr_in_str(chars_to_del, chars_to_del_len, orig_str[i])) {
             last_good_char_pos = i;
             if (!first_good_char_pos_set) {
@@ -369,7 +367,7 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
 
     assert(last_good_char_pos >= first_good_char_pos);
     //+1 to accomodate the last character
-    size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
+    machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
 }
 

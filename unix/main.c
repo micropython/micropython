@@ -1,8 +1,11 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -390,8 +393,6 @@ int main(int argc, char **argv) {
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;
 }
-
-#include <sys/stat.h>
 
 uint mp_import_stat(const char *path) {
     struct stat st;

@@ -1,5 +1,3 @@
-#include <stdint.h>
-#include <stdio.h>
 
 #include "misc.h"
 #include "mpconfig.h"

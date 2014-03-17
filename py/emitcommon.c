@@ -1,7 +1,5 @@
 #include <unistd.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 #include <assert.h>
 
 #include "misc.h"

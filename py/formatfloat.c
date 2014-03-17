@@ -13,7 +13,6 @@
 
 ***********************************************************************/
 
-#include <stdint.h>
 #include <stdlib.h>
 
 #include "mpconfig.h"
