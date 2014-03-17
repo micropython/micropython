@@ -29,13 +29,13 @@
 #include "usrsw.h"
 #include "usb.h"
 #include "rtc.h"
+#include "storage.h"
 #include "sdcard.h"
 #if 0
 #include "ff.h"
 #include "lexerfatfs.h"
 #include "servo.h"
 #include "lcd.h"
-#include "storage.h"
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
@@ -232,9 +232,7 @@ int main(void) {
 #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
 #endif
-#if 0
     storage_init();
-#endif
 
     int first_soft_reset = true;
 
