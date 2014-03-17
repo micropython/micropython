@@ -78,6 +78,7 @@ SRC_C = \
 	exti.c \
 	usrsw.c \
 	rtc.c \
+	sdcard.c \
 
 #	lcd.c \
 #	servo.c \
@@ -86,7 +87,6 @@ SRC_C = \
 #	accel.c \
 #	timer.c \
 #	audio.c \
-#	sdcard.c \
 #	i2c.c \
 #	adc.c \
 #	file.c \
@@ -106,9 +106,11 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_rcc_ex.c \
 	stm32f4xx_hal_rtc.c \
 	stm32f4xx_hal_rtc_ex.c \
+	stm32f4xx_hal_sd.c \
 	stm32f4xx_hal_tim.c \
 	stm32f4xx_hal_tim_ex.c \
 	stm32f4xx_hal_uart.c \
+	stm32f4xx_ll_sdmmc.c \
 	stm32f4xx_ll_usb.c \
 	)
 

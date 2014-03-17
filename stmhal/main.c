@@ -29,13 +29,13 @@
 #include "usrsw.h"
 #include "usb.h"
 #include "rtc.h"
+#include "sdcard.h"
 #if 0
 #include "ff.h"
 #include "lexerfatfs.h"
 #include "servo.h"
 #include "lcd.h"
 #include "storage.h"
-#include "sdcard.h"
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
@@ -194,23 +194,6 @@ int main(void) {
 #endif
 
 #if 0
-#if MICROPY_HW_HAS_SDCARD
-    {
-        // configure SDIO pins to be high to start with (apparently makes it more robust)
-        // FIXME this is not making them high, it just makes them outputs...
-        GPIO_InitTypeDef GPIO_InitStructure;
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-        GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-        // Configure PD.02 CMD line
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-        GPIO_Init(GPIOD, &GPIO_InitStructure);
-    }
-#endif
 #if defined(NETDUINO_PLUS_2)
     {
         GPIO_InitTypeDef GPIO_InitStructure;
@@ -245,11 +228,11 @@ int main(void) {
     rtc_init();
 #endif
 
-#if 0
     // more sub-system init
 #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
 #endif
+#if 0
     storage_init();
 #endif
 
