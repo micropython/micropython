@@ -20,9 +20,7 @@
 #include "gccollect.h"
 #include "systick.h"
 #include "pyexec.h"
-#if 0
 #include "storage.h"
-#endif
 #include "usb.h"
 #include "usart.h"
 
@@ -65,11 +63,9 @@ int stdin_rx_chr(void) {
             return usart_rx_char(pyb_usart_global_debug);
         }
         HAL_Delay(1);
-#if 0
         if (storage_needs_flush()) {
             storage_flush();
         }
-#endif
     }
 }
 

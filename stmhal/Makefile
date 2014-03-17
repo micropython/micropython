@@ -10,7 +10,7 @@ CMSIS_DIR=cmsis
 HAL_DIR=hal
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
-#FATFS_DIR=fatfs
+FATFS_DIR=fatfs
 #CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 
@@ -23,7 +23,7 @@ INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc/inc
 #INC += -I$(USBHOST_DIR)
-#INC += -I$(FATFS_DIR)
+INC += -I$(FATFS_DIR)/src
 #INC += -I$(CC3K_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
@@ -80,7 +80,9 @@ SRC_C = \
 	rtc.c \
 	flash.c \
 	storage.c \
+	file.c \
 	sdcard.c \
+	diskio.c \
 
 #	lcd.c \
 #	servo.c \
@@ -89,7 +91,6 @@ SRC_C = \
 #	audio.c \
 #	i2c.c \
 #	adc.c \
-#	file.c \
 #	pybwlan.c \
 
 SRC_S = \
@@ -137,10 +138,9 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	usbd_storage_msd.c \
 	)
 
-SRC_FATFS = $(addprefix $(FATFS_DIR)/,\
+SRC_FATFS = $(addprefix $(FATFS_DIR)/src/,\
 	ff.c \
-	diskio.c \
-	ccsbcs.c \
+	option/ccsbcs.c \
 	)
 
 SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
@@ -162,9 +162,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBD:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_STMUSBH:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 #OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 

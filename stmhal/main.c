@@ -31,28 +31,23 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
-#if 0
 #include "ff.h"
-#include "lexerfatfs.h"
+#if 0
 #include "servo.h"
 #include "lcd.h"
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
-#include "file.h"
 #include "pin.h"
 #endif
 
 void SystemClock_Config(void);
 
-
 int errno;
 
-#if 0
 static FATFS fatfs0;
 #if MICROPY_HW_HAS_SDCARD
 static FATFS fatfs1;
-#endif
 #endif
 
 void flash_error(int n) {
@@ -292,15 +287,11 @@ soft_reset:
 
     // add some functions to the builtin Python namespace
     rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
-#if 0
-    rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
-#endif
 
     // we pre-import the pyb module
     // probably shouldn't do this, so we are compatible with CPython
     rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
-#if 0
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
 #if MICROPY_HW_HAS_SWITCH
@@ -393,7 +384,6 @@ soft_reset:
         flash_error(4);
     }
 
-#endif
     if (first_soft_reset) {
 #if 0
 #if MICROPY_HW_HAS_MMA7660
@@ -406,7 +396,6 @@ soft_reset:
     // turn boot-up LED off
     led_state(PYB_LED_GREEN, 0);
 
-#if 0
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on 1:/
     if (sdcard_is_present()) {
@@ -416,11 +405,12 @@ soft_reset:
         } else {
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
+#if 0
                 usbd_storage_select_medium(USBD_STORAGE_MEDIUM_SDCARD);
+#endif
             }
         }
     }
-#endif
 #endif
 
 #if defined(USE_HOST_MODE)
@@ -431,7 +421,6 @@ soft_reset:
     pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
 #endif
 
-#if 0
     // run main script
     {
         vstr_t *vstr = vstr_new();
@@ -453,7 +442,7 @@ soft_reset:
         vstr_free(vstr);
     }
 
-
+#if 0
 #if MICROPY_HW_HAS_MMA7660
     // HID example
     if (0) {

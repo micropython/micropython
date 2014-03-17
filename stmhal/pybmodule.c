@@ -4,9 +4,6 @@
 #include <stm32f4xx_hal.h>
 
 #include "misc.h"
-#if 0
-#include "ff.h"
-#endif
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
@@ -22,10 +19,10 @@
 #include "usrsw.h"
 #include "rtc.h"
 #include "usart.h"
+#include "storage.h"
 #include "sdcard.h"
 #if 0
 #include "servo.h"
-#include "storage.h"
 #include "usb.h"
 #include "accel.h"
 #include "i2c.h"
@@ -33,6 +30,7 @@
 #include "audio.h"
 #endif
 #include "pybmodule.h"
+#include "ff.h"
 
 // get lots of info about the board
 STATIC mp_obj_t pyb_info(void) {
@@ -84,7 +82,6 @@ STATIC mp_obj_t pyb_info(void) {
         printf("  1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
     }
 
-#if 0
     // free space on flash
     {
         DWORD nclst;
@@ -92,7 +89,6 @@ STATIC mp_obj_t pyb_info(void) {
         f_getfree("0:", &nclst, &fatfs);
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
-#endif
 
     return mp_const_none;
 }
@@ -101,9 +97,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_info_obj, pyb_info);
 
 // sync all file systems
 STATIC mp_obj_t pyb_sync(void) {
-#if 0
     storage_flush();
-#endif
     return mp_const_none;
 }
 
