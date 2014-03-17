@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <assert.h>
 
 #include "misc.h"
