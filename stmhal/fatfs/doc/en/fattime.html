@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/fattime.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - get_fattime</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>get_fattime</h2>
+<p>The get_fattime function gets current time.</p>
+<pre>
+DWORD get_fattime (void);
+</pre>
+</div>
+
+
+<div class="para ret">
+<h4>Return Value</h4>
+<p>Currnet time is returned with packed into a <tt>DWORD</tt> value. The bit field is as follows:</p>
+<dl class="ret">
+<dt>bit31:25</dt>
+<dd>Year from 1980 (0..127)</dd>
+<dt>bit24:21</dt>
+<dd>Month (1..12)</dd>
+<dt>bit20:16</dt>
+<dd>Day in month(1..31)</dd>
+<dt>bit15:11</dt>
+<dd>Hour (0..23)</dd>
+<dt>bit10:5</dt>
+<dd>Minute (0..59)</dd>
+<dt>bit4:0</dt>
+<dd>Second / 2 (0..29)</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>get_fattime()</tt> function must return any valid time even if the system does not support a real time clock. If a zero is returned, the file will not have a valid time. This fucntion is not required in read only configuration.</p>
+</div>
+
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

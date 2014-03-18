@@ -29,6 +29,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 //  - xxxx...xx00: a pointer to an mp_obj_base_t
 
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
+#define MP_SMALL_INT_MIN ((mp_small_int_t)(((machine_int_t)WORD_MSBIT_HIGH) >> 1))
+#define MP_SMALL_INT_MAX ((mp_small_int_t)(~(MP_SMALL_INT_MIN)))
 #define MP_OBJ_FITS_SMALL_INT(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
 #define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
@@ -218,9 +220,7 @@ mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
 mp_obj_t mp_obj_new_int_from_long_str(const char *s);
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-mp_obj_t mp_obj_new_int_from_ll(long long val);
-#endif
+mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
 #if MICROPY_ENABLE_FLOAT
@@ -267,7 +267,7 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 //qstr mp_obj_get_qstr(mp_obj_t arg);
 mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o, machine_int_t n);
-uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index);
+uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 
 // none

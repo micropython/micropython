@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
@@ -107,7 +105,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // TODO: need predicate to check for int-like type (bools are such for example)
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in);
+                uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in, false);
                 if (MP_OBJ_IS_TYPE(lhs_in, &bytes_type)) {
                     return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
                 } else {
@@ -286,14 +284,14 @@ STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
 
-    size_t start = 0;
-    size_t end = haystack_len;
+    machine_uint_t start = 0;
+    machine_uint_t end = haystack_len;
     /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
-        start = mp_get_index(&str_type, haystack_len, args[2]);
+        start = mp_get_index(&str_type, haystack_len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = mp_get_index(&str_type, haystack_len, args[3]);
+        end = mp_get_index(&str_type, haystack_len, args[3], true);
     }
 
     const byte *p = find_subbytes(haystack + start, haystack_len - start, needle, needle_len);
@@ -320,8 +318,8 @@ STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
     return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
 }
 
-STATIC bool chr_in_str(const byte* const str, const size_t str_len, int c) {
-    for (size_t i = 0; i < str_len; i++) {
+STATIC bool chr_in_str(const byte* const str, const machine_uint_t str_len, int c) {
+    for (machine_uint_t i = 0; i < str_len; i++) {
         if (str[i] == c) {
             return true;
         }
@@ -349,10 +347,10 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
 
     GET_STR_DATA_LEN(args[0], orig_str, orig_str_len);
 
-    size_t first_good_char_pos = 0;
+    machine_uint_t first_good_char_pos = 0;
     bool first_good_char_pos_set = false;
-    size_t last_good_char_pos = 0;
-    for (size_t i = 0; i < orig_str_len; i++) {
+    machine_uint_t last_good_char_pos = 0;
+    for (machine_uint_t i = 0; i < orig_str_len; i++) {
         if (!chr_in_str(chars_to_del, chars_to_del_len, orig_str[i])) {
             last_good_char_pos = i;
             if (!first_good_char_pos_set) {
@@ -369,7 +367,7 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
 
     assert(last_good_char_pos >= first_good_char_pos);
     //+1 to accomodate the last character
-    size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
+    machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
 }
 
@@ -487,6 +485,41 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     return mp_obj_str_builder_end(replaced_str);
 }
 
+STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
+    assert(2 <= n_args && n_args <= 4);
+    assert(MP_OBJ_IS_STR(args[0]));
+    assert(MP_OBJ_IS_STR(args[1]));
+
+    GET_STR_DATA_LEN(args[0], haystack, haystack_len);
+    GET_STR_DATA_LEN(args[1], needle, needle_len);
+
+    machine_uint_t start = 0;
+    machine_uint_t end = haystack_len;
+    /* TODO use a non-exception-throwing mp_get_index */
+    if (n_args >= 3 && args[2] != mp_const_none) {
+        start = mp_get_index(&str_type, haystack_len, args[2], true);
+    }
+    if (n_args >= 4 && args[3] != mp_const_none) {
+        end = mp_get_index(&str_type, haystack_len, args[3], true);
+    }
+
+    // if needle_len is zero then we count each gap between characters as an occurrence
+    if (needle_len == 0) {
+        return MP_OBJ_NEW_SMALL_INT(end - start + 1);
+    }
+
+    // count the occurrences
+    machine_int_t num_occurrences = 0;
+    for (machine_uint_t haystack_index = start; haystack_index + needle_len <= end; haystack_index++) {
+        if (memcmp(&haystack[haystack_index], needle, needle_len) == 0) {
+            num_occurrences++;
+            haystack_index += needle_len - 1;
+        }
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(num_occurrences);
+}
+
 STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
     if (flags == BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
@@ -508,6 +541,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 
 STATIC const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
@@ -517,6 +551,7 @@ STATIC const mp_method_t str_type_methods[] = {
     { "strip", &str_strip_obj },
     { "format", &str_format_obj },
     { "replace", &str_replace_obj },
+    { "count", &str_count_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 

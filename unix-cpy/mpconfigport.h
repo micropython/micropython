@@ -2,7 +2,7 @@
 
 #define MICROPY_EMIT_CPYTHON        (1)
 #define MICROPY_ENABLE_LEXER_UNIX   (1)
-#define MICROPY_ENABLE_FLOAT        (1)
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 
 // type definitions for the specific machine
 

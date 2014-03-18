@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/sfatfs.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - FATFS</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FATFS</h2>
+<p><tt>FATFS</tt>構造体(ファイル・システム・オブジェクト)は、個々の論理ドライブのダイナミック・ワーク・エリアを保持し、<tt>f_mount()</tt>でFatFsモジュールに登録されます。初期化が行われるタイミングは、<tt>f_mount()</tt>またはメディア交換の後の最初のファイル・アクセスの時です。アプリケーションは、この構造体のメンバを書き換えてはなりません。</p>
+
+<pre>
+<span class="k">typedef</span> <span class="k">struct</span> {
+    BYTE    fs_type;      <span class="c">/* FATタイプ */</span>
+    BYTE    drv;          <span class="c">/* 物理ドライブ番号 */</span>
+    BYTE    csize;        <span class="c">/* クラスタ当たりのセクタ数 (1,2,4,8,...,128)*/</span>
+    BYTE    n_fats;       <span class="c">/* FATの多重化数 (1,2) */</span>
+    BYTE    wflag;        <span class="c">/* win[]ダーティ・フラグ */</span>
+    BYTE    fsi_flag;     <span class="c">/* FSINFOフラグ (b7:Disabled, b0:Dirty)*/</span>
+    WORD    id;           <span class="c">/* ファイル・システム・マウントID */</span>
+    WORD    n_rootdir;    <span class="c">/* ルート・ディレクトリのエントリ数 (FAT12/16) */</span>
+<span class="k">#if</span> _MAX_SS != 512
+    WORD    ssize;        <span class="c">/* セクタ・サイズ (512, 1024, 2048 or 4096) */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> _FS_REENTRANT
+    _SYNC_t sobj;         <span class="c">/* 同期オブジェクトID */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> !_FS_READONLY
+    DWORD   last_clust;   <span class="c">/* FSINFO: 最後に割り当てられたクラスタ番号 */</span>
+    DWORD   free_clust;   <span class="c">/* FSINFO: 空きクラスタ数 */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> _FS_RPATH
+    DWORD   cdir;         <span class="c">/* カレント・ディレクトリのクラスタ (0:ルート) */</span>
+<span class="k">#endif</span>
+    DWORD   n_fatent;     <span class="c">/* FATエントリ数 (総クラスタ数 + 2) */</span>
+    DWORD   fsize;        <span class="c">/* FAT 1個のセクタ数 */</span>
+    DWORD   volbase;      <span class="c">/* ボリューム開始セクタ */</span>
+    DWORD   fatbase;      <span class="c">/* FAT領域開始セクタ */</span>
+    DWORD   dirbase;      <span class="c">/* ルート・ディレクトリ領域開始セクタ(クラスタ) */</span>
+    DWORD   database;     <span class="c">/* データ領域開始セクタ */</span>
+    DWORD   winsect;      <span class="c">/* win[]に現れているセクタ番号 */</span>
+    BYTE    win[_MAX_SS]; <span class="c">/* ディスク・アクセス・ウィンドウ */</span>
+} FATFS;
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

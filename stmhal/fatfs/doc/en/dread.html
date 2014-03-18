@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dread.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_read</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_read</h2>
+<p>The disk_read function reads sector(s) from the disk drive.</p>
+<pre>
+DRESULT disk_read (
+  BYTE <span class="arg">pdrv</span>,     <span class="c">/* [IN] Physical drive number */</span>
+  BYTE* <span class="arg">buff</span>,    <span class="c">/* [OUT] Pointer to the read data buffer */</span>
+  DWORD <span class="arg">sector</span>,  <span class="c">/* [IN] Start sector number */</span>
+  UINT <span class="arg">count</span>     <span class="c">/* [IN] Number of sectros to read */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Specifies the physical drive number.</dd>
+<dt>buff</dt>
+<dd>Pointer to the <em>byte array</em> to store the read data. The size of buffer must be in sector size * sector count.</dd>
+<dt>sector</dt>
+<dd>Specifies the start sector number in logical block address (LBA).</dd>
+<dt>count</dt>
+<dd>Specifies number of sectors to read. FatFs specifis with 1 to 128. Generally, a multiple sector transfer request must not be split into single sector transactions to the device, or you may not get good read performance.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Value</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any hard error occured during the read operation and could not recover it.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The disk drive has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The memory address specified by <tt class="arg">buff</tt> is not that always aligned to word boundary because the type of argument is defined as <tt>BYTE*</tt>. The misaligned read/write request can occure at <a href="appnote.html#fs1">direct transfer</a>. If the bus architecture, especially DMA controller, does not allow misaligned memory access, it should be solved in this function. There are some workarounds described below to avoid this issue.</p>
+<ul>
+<li>Convert word transfer to byte transfer in this function. - Recommended.</li>
+<li>For <tt>f_read()</tt>, avoid long read request that includes a whole of sector. - Direct transfer will never occure.</li>
+<li>For <tt>f_read(fp, buff, btr, &amp;br)</tt>, make sure that <tt>(((UINT)buff &amp; 3) == (f_tell(fp) &amp; 3))</tt> is true. - Word aligned direct transfer is guaranteed.</li>
+</ul>
+</div>
+
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

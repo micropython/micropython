@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -159,12 +160,12 @@ char *vstr_add_len(vstr_t *vstr, int len) {
     return buf;
 }
 
-void vstr_add_byte(vstr_t *vstr, byte v) {
+void vstr_add_byte(vstr_t *vstr, byte b) {
     byte *buf = (byte*)vstr_add_len(vstr, 1);
     if (buf == NULL) {
         return;
     }
-    buf[0] = v;
+    buf[0] = b;
 }
 
 void vstr_add_char(vstr_t *vstr, unichar c) {
@@ -214,7 +215,47 @@ void vstr_add_le32(vstr_t *vstr, unsigned int v) {
 }
 */
 
-void vstr_cut_tail(vstr_t *vstr, int len) {
+char *vstr_ins_blank_bytes(vstr_t *vstr, uint byte_pos, uint byte_len) {
+    if (vstr->had_error) {
+        return NULL;
+    }
+    uint l = vstr->len;
+    if (byte_pos > l) {
+        byte_pos = l;
+    }
+    if (byte_len > 0) {
+        // ensure room for the new bytes
+        if (!vstr_ensure_extra(vstr, byte_len)) {
+            return NULL;
+        }
+        // copy up the string to make room for the new bytes; +1 for the null byte
+        memmove(vstr->buf + byte_pos + byte_len, vstr->buf + byte_pos, l - byte_pos + 1);
+        // increase the length
+        vstr->len += byte_len;
+    }
+    return vstr->buf + byte_pos;
+}
+
+void vstr_ins_byte(vstr_t *vstr, uint byte_pos, byte b) {
+    char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
+    if (s != NULL) {
+        *s = b;
+    }
+}
+
+void vstr_ins_char(vstr_t *vstr, uint char_pos, unichar chr) {
+    // TODO UNICODE
+    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+    if (s != NULL) {
+        *s = chr;
+    }
+}
+
+void vstr_cut_head_bytes(vstr_t *vstr, uint bytes_to_cut) {
+    vstr_cut_out_bytes(vstr, 0, bytes_to_cut);
+}
+
+void vstr_cut_tail_bytes(vstr_t *vstr, uint len) {
     if (vstr->had_error) {
         return;
     }
@@ -224,6 +265,19 @@ void vstr_cut_tail(vstr_t *vstr, int len) {
         vstr->len -= len;
     }
     vstr->buf[vstr->len] = 0;
+}
+
+void vstr_cut_out_bytes(vstr_t *vstr, uint byte_pos, uint bytes_to_cut) {
+    if (vstr->had_error || byte_pos >= vstr->len) {
+        return;
+    } else if (byte_pos + bytes_to_cut >= vstr->len) {
+        vstr->len = byte_pos;
+        vstr->buf[vstr->len] = 0;
+    } else {
+        // move includes +1 for null byte at the end
+        memmove(vstr->buf + byte_pos, vstr->buf + byte_pos + bytes_to_cut, vstr->len - byte_pos - bytes_to_cut + 1);
+        vstr->len -= bytes_to_cut;
+    }
 }
 
 void vstr_printf(vstr_t *vstr, const char *fmt, ...) {

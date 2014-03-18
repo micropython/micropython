@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/sfile.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - FIL</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FIL</h2>
+<p><tt>FIL</tt>構造体(ファイル・オブジェクト)は、<tt>f_open()</tt>で初期化され、以後そのファイルの状態を保持します。また、<tt>f_close()</tt>でファイルが閉じられると無効化されます。アプリケーションは、この構造体のメンバを書き換えてはなりません(<tt>cltbl</tt>は例外)。非タイニー構成では、内部にセクタ・バッファが確保されるので、占有サイズに注意が必要です。</p>
+
+<pre>
+<span class="k">typedef</span> <span class="k">struct</span> {
+    FATFS*  fs;           <span class="c">/* 親ファイル・システム・オブジェクトへのポインタ */</span>
+    WORD    id;           <span class="c">/* 親ファイル・システム・オブジェクトのマウントID */</span>
+    BYTE    flag;         <span class="c">/* ファイル・ステータス・フラグ */</span>
+    BYTE    err;          <span class="c">/* エラー中断フラグ */</span>
+    DWORD   fptr;         <span class="c">/* ファイル読み書きポインタ (ファイル先頭からのバイト・オフセット) */</span>
+    DWORD   fsize;        <span class="c">/* ファイル・サイズ(バイト単位) */</span>
+    DWORD   sclust;       <span class="c">/* ファイル開始クラスタ番号 (0:割り当て無し) */</span>
+    DWORD   clust;        <span class="c">/* 現在のクラスタ */</span>
+    DWORD   dsect;        <span class="c">/* 現在のデータ・セクタ */</span>
+<span class="k">#if</span> !_FS_READONLY
+    DWORD   dir_sect;     <span class="c">/* このファイルのディレクトリ・エントリのあるセクタ */</span>
+    BYTE*   dir_ptr;      <span class="c">/* このファイルのディレクトリへのポインタ */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> _USE_FASTSEEK
+    DWORD*  cltbl;        <span class="c">/* ファイルのクラスタ・リンク情報へのポインタ (オープン時にNULLがセットされる) */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> _FS_LOCK
+    UINT    lockid;       <span class="c">/* ファイル・ロックID */</span>
+<span class="k">#endif</span>
+<span class="k">#if</span> !_FS_TINY
+    BYTE    buf[_MAX_SS]; <span class="c">/* ファイル・プライベート・データ転送バッファ */</span>
+<span class="k">#endif</span>
+} FIL;
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

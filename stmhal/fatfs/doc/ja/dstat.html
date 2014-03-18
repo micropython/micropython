@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/dstat.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_status</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_status</h2>
+<p>ディスク・ドライブの状態を取得します。</p>
+<pre>
+DSTATUS disk_status (
+  BYTE <span class="arg">pdrv</span>           <span class="c">/* [IN] 物理ドライブ番号 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>ステータスを取得する物理ドライブ番号が指定されます。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>物理ドライブの状態を次のフラグの組み合わせ値で返します。</p>
+<dl class="ret">
+<dt>STA_NOINIT</dt>
+<dd>ドライブが初期化されていないことを示すフラグ。システム・リセットやメディアの取り外し等でセットされ、<tt>disk_initialize()</tt>の正常終了でクリア、失敗でセットされます。メディア交換は非同期に発生するイベントなので、過去にメディア交換があった場合もこのフラグに反映させる必要があります。FatFsモジュールは、このフラグを参照して自動マウント動作を行うかどうかを判断します。</dd>
+<dt>STA_NODISK</dt>
+<dd>メディアが存在しないことを示すフラグ。メディアが取り外されている間はセットされ、セットされている間はクリアされます。固定ディスクでは常にクリアします。なお、このフラグはFatFsモジュールでは参照されません。</dd>
+<dt>STA_PROTECTED</dt>
+<dd>メディアがライト・プロテクトされていることを示すフラグ。ライト・プロテクト機能をサポートしないときは、常にクリアします。リード・オンリ構成では参照されません。</dd>
+</dl>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# this script waits for a DFU device to be attached and then flashes it
+# it then waits until the DFU mode is exited, and then loops
+
+while true; do
+    echo "waiting for DFU device..."
+    while true; do
+        if lsusb | grep -q DFU; then
+            break
+        fi
+        sleep 1s
+    done
+    echo "found DFU device, flashing"
+    dfu-util -a 0 -D build/flash.dfu
+    echo "waiting for DFU to exit..."
+    while true; do
+        if lsusb | grep -q DFU; then
+            sleep 1s
+            continue
+        fi
+        break
+    done
+done

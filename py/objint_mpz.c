@@ -1,7 +1,5 @@
-#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -161,7 +159,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_int(&o->mpz, val);
+    mpz_set_from_ll(&o->mpz, val);
     return o;
 }
 

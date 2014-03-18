@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/chdrive.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_chdrive</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_chdrive</h2>
+<p>カレント・ドライブを変更します。</p>
+<pre>
+FRESULT f_chdrive (
+  const TCHAR* <span class="arg">path</span>  <span class="c">/* [IN] 対象ドライブを指定します */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>カレント・ドライブに設定する<a href="filename.html">論理ドライブ番号</a>を指定するパス名を指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>カレント・ドライブを変更します。システム起動時の初期値は0です。この設定はFatFsモジュールの静的変数に記録されるため、全てのタスクに対して影響を与えます。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_RPATH == 1</tt>のときに使用可能となります。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="chdir.html">f_chdir</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">Return</a></p>
+</body>
+</html>

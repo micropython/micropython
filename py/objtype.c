@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 
@@ -78,6 +76,21 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
 }
 
 STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_obj_class_t *self = self_in;
+    qstr meth = (kind == PRINT_STR) ? MP_QSTR___str__ : MP_QSTR___repr__;
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, meth);
+    if (member == MP_OBJ_NULL && kind == PRINT_STR) {
+        // If there's no __str__, fall back to __repr__
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___repr__);
+    }
+
+    if (member != MP_OBJ_NULL) {
+        mp_obj_t r = rt_call_function_1(member, self_in);
+        mp_obj_print_helper(print, env, r, PRINT_STR);
+        return;
+    }
+
+    // TODO: CPython prints fully-qualified type name
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 

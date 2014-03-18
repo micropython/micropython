@@ -45,6 +45,10 @@ vpath %.c . $(TOP)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
+$(BUILD)/%.pp: %.c
+	$(ECHO) "PreProcess $<"
+	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
+
 # The following rule uses | to create an order only prereuisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
 # checkng to be performed.

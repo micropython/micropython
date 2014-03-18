@@ -88,7 +88,7 @@ int readline(vstr_t *line, const char *prompt) {
                 escape = true;
             } else if (c == 127) {
                 if (vstr_len(line) > len) {
-                    vstr_cut_tail(line, 1);
+                    vstr_cut_tail_bytes(line, 1);
                     stdout_tx_str("\b \b");
                 }
             } else if (32 <= c && c <= 126) {

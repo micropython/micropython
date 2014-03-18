@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/getcwd.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_getcwd</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_getcwd</h2>
+<p>The f_getcwd function retrieves the current directory.</p>
+<pre>
+FRESULT f_getcwd (
+  TCHAR* <span class="arg">buff</span>, <span class="c">/* [OUT] Buffer to return path name */</span>
+  UINT <span class="arg">len</span>     <span class="c">/* [IN] The length of the buffer */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>Pointer to the buffer to receive the current directory string.</dd>
+<dt>len</dt>
+<dd>Size of the buffer in unit of TCHAR.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_getcwd()</tt> function retrieves full path name of the current directory of the current drive. When <tt>_VOLUMES</tt> is larger than 1, a logical drive number is added to top of the path name.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_RPATH == 2</tt>.</p>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="chdrive.html">f_chdrive</a>, <a href="chdir.html">f_chdir</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 
@@ -265,13 +264,13 @@ mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
-                        vstr_cut_tail(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
+                        vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
                             "Per PEP-420 a dir without __init__.py (%s) is a namespace package; "
                             "namespace packages are not supported", vstr_str(&path)));
                     }
                     do_load(module_obj, &path);
-                    vstr_cut_tail(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
+                    vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute

@@ -51,6 +51,9 @@ STATIC int mpn_cmp(const mpz_dig_t *idig, uint ilen, const mpz_dig_t *jdig, uint
 STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
     uint n_whole = (n + DIG_SIZE - 1) / DIG_SIZE;
     uint n_part = n % DIG_SIZE;
+    if (n_part == 0) {
+        n_part = DIG_SIZE;
+    }
 
     // start from the high end of the digit arrays
     idig += jlen + n_whole - 1;
@@ -67,7 +70,7 @@ STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
     // store remaining bits
     *idig = d >> (DIG_SIZE - n_part);
     idig -= n_whole - 1;
-    memset(idig, 0, n_whole - 1);
+    memset(idig, 0, (n_whole - 1) * sizeof(mpz_dig_t));
 
     // work out length of result
     jlen += n_whole;
@@ -412,6 +415,12 @@ mpz_t *mpz_from_int(machine_int_t val) {
     return z;
 }
 
+mpz_t *mpz_from_ll(long long val) {
+    mpz_t *z = mpz_zero();
+    mpz_set_from_ll(z, val);
+    return z;
+}
+
 mpz_t *mpz_from_str(const char *str, uint len, bool neg, uint base) {
     mpz_t *z = mpz_zero();
     mpz_set_from_str(z, str, len, neg, base);
@@ -469,17 +478,38 @@ void mpz_set(mpz_t *dest, const mpz_t *src) {
 void mpz_set_from_int(mpz_t *z, machine_int_t val) {
     mpz_need_dig(z, MPZ_NUM_DIG_FOR_INT);
 
+    machine_uint_t uval;
     if (val < 0) {
         z->neg = 1;
-        val = -val;
+        uval = -val;
     } else {
         z->neg = 0;
+        uval = val;
     }
 
     z->len = 0;
-    while (val > 0) {
-        z->dig[z->len++] = val & DIG_MASK;
-        val >>= DIG_SIZE;
+    while (uval > 0) {
+        z->dig[z->len++] = uval & DIG_MASK;
+        uval >>= DIG_SIZE;
+    }
+}
+
+void mpz_set_from_ll(mpz_t *z, long long val) {
+    mpz_need_dig(z, MPZ_NUM_DIG_FOR_LL);
+
+    unsigned long long uval;
+    if (val < 0) {
+        z->neg = 1;
+        uval = -val;
+    } else {
+        z->neg = 0;
+        uval = val;
+    }
+
+    z->len = 0;
+    while (uval > 0) {
+        z->dig[z->len++] = uval & DIG_MASK;
+        uval >>= DIG_SIZE;
     }
 }
 

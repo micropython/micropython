@@ -1,9 +1,6 @@
-#include <unistd.h>
-#include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include <assert.h>
 
 #include "misc.h"

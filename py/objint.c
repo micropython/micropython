@@ -1,6 +1,4 @@
-#include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -68,6 +66,12 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
+    return mp_const_none;
+}
+
+// This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
+mp_obj_t mp_obj_new_int_from_ll(long long val) {
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
     return mp_const_none;
 }
 
