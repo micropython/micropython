@@ -83,8 +83,8 @@ SRC_C = \
 	file.c \
 	sdcard.c \
 	diskio.c \
+	lcd.c \
 
-#	lcd.c \
 #	servo.c \
 #	accel.c \
 #	timer.c \

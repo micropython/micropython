@@ -32,9 +32,9 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "ff.h"
+#include "lcd.h"
 #if 0
 #include "servo.h"
-#include "lcd.h"
 #include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
@@ -64,10 +64,8 @@ void flash_error(int n) {
 
 void __fatal_error(const char *msg) {
 #if MICROPY_HW_HAS_LCD
-#if 0
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
-#endif
 #endif
     for (;;) {
         flash_error(1);
@@ -260,12 +258,12 @@ soft_reset:
     switch_init();
 #endif
 
-#if 0
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();
 #endif
 
+#if 0
 #if MICROPY_HW_ENABLE_SERVO
     // servo
     servo_init();
