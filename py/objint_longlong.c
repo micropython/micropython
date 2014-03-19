@@ -45,6 +45,9 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_int_t *rhs = rhs_in;
     long long rhs_val;
 
+    // TODO it can be that lhs is a small int (eg 1 + longlong)
+    // TODO inplace operations should not modify the int!
+
     if (MP_OBJ_IS_SMALL_INT(rhs)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
     } else if (MP_OBJ_IS_TYPE(rhs, &int_type)) {
