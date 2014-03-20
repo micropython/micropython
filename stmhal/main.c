@@ -33,9 +33,9 @@
 #include "sdcard.h"
 #include "ff.h"
 #include "lcd.h"
+#include "accel.h"
 #if 0
 #include "servo.h"
-#include "accel.h"
 #include "timer.h"
 #include "pybwlan.h"
 #include "pin.h"
@@ -169,22 +169,6 @@ int main(void) {
 
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();
-
-    // some test code to flash LEDs
-    led_init();
-
-    led_state(0, 1);
-    led_state(1, 0);
-    led_state(2, 1);
-
-#if 0
-    for (;;) {
-        HAL_Delay(500);
-        led_state(1, 1);
-        HAL_Delay(500);
-        led_state(1, 0);
-    }
-#endif
 
 #if 0
 #if defined(NETDUINO_PLUS_2)
@@ -348,6 +332,11 @@ soft_reset:
     // make sure we have a /boot.py
     {
         FILINFO fno;
+#if _USE_LFN
+        fno.lfname = NULL;
+        fno.lfsize = 0;
+#endif
+        led_debug(0, 500);
         FRESULT res = f_stat("0:/boot.py", &fno);
         if (res == FR_OK) {
             if (fno.fattrib & AM_DIR) {
@@ -382,15 +371,6 @@ soft_reset:
         flash_error(4);
     }
 
-    if (first_soft_reset) {
-#if 0
-#if MICROPY_HW_HAS_MMA7660
-        // MMA accel: init and reset address to zero
-        accel_init();
-#endif
-#endif
-    }
-
     // turn boot-up LED off
     led_state(PYB_LED_GREEN, 0);
 
@@ -417,6 +397,11 @@ soft_reset:
 #elif defined(USE_DEVICE_MODE)
     // USB device
     pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
+#endif
+
+#if MICROPY_HW_HAS_MMA7660
+    // MMA accel: init and reset
+    accel_init();
 #endif
 
     // run main script

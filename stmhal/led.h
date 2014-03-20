@@ -19,5 +19,6 @@ typedef enum {
 void led_init(void);
 void led_state(pyb_led_t led, int state);
 void led_toggle(pyb_led_t led);
+void led_debug(int value, int delay);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_Led_obj);

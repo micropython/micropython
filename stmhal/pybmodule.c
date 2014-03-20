@@ -21,10 +21,10 @@
 #include "usart.h"
 #include "storage.h"
 #include "sdcard.h"
+#include "accel.h"
 #if 0
 #include "servo.h"
 #include "usb.h"
-#include "accel.h"
 #include "i2c.h"
 #include "adc.h"
 #include "audio.h"
@@ -256,13 +256,13 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pyb_sdcard_obj },
 #endif
 
-#if 0
 #if MICROPY_HW_HAS_MMA7660
     { MP_OBJ_NEW_QSTR(MP_QSTR_accel), (mp_obj_t)&pyb_accel_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_accel_read), (mp_obj_t)&pyb_accel_read_all_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_accel_mode), (mp_obj_t)&pyb_accel_write_mode_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_accel_read), (mp_obj_t)&pyb_accel_read_all_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_accel_mode), (mp_obj_t)&pyb_accel_write_mode_obj },
 #endif
 
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_Led_obj },

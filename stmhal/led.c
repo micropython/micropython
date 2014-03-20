@@ -73,6 +73,14 @@ void led_toggle(pyb_led_t led) {
     }
 }
 
+void led_debug(int n, int delay) {
+    led_state(1, n & 1);
+    led_state(2, n & 2);
+    led_state(3, n & 4);
+    led_state(4, n & 8);
+    HAL_Delay(delay);
+}
+
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 

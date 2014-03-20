@@ -84,9 +84,9 @@ SRC_C = \
 	sdcard.c \
 	diskio.c \
 	lcd.c \
+	accel.c \
 
 #	servo.c \
-#	accel.c \
 #	timer.c \
 #	audio.c \
 #	i2c.c \
@@ -104,6 +104,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_flash.c \
 	stm32f4xx_hal_flash_ex.c \
 	stm32f4xx_hal_gpio.c \
+	stm32f4xx_hal_i2c.c \
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
