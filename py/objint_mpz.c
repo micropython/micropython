@@ -100,9 +100,14 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_deinit(&rem);
                 break;
             }
-
-            //case RT_BINARY_OP_MODULO:
-            //case RT_BINARY_OP_INPLACE_MODULO:
+            case RT_BINARY_OP_MODULO:
+            case RT_BINARY_OP_INPLACE_MODULO: {
+                // TODO check that this operation matches the CPython operation
+                mpz_t quo; mpz_init_zero(&quo);
+                mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
+                mpz_deinit(&quo);
+                break;
+            }
 
             //case RT_BINARY_OP_AND:
             //case RT_BINARY_OP_INPLACE_AND:
