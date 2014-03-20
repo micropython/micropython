@@ -158,6 +158,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
     { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
     { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
+    { MP_QSTR_ZeroDivisionError, (mp_obj_t)&mp_type_ZeroDivisionError },
 
     // Extra builtins as defined by a port
     MICROPY_EXTRA_BUILTINS

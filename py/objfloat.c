@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -105,8 +106,12 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
         */
         case RT_BINARY_OP_TRUE_DIVIDE:
-        case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: lhs_val /= rhs_val; break;
-
+        case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: 
+            lhs_val /= rhs_val; 
+            if (isinf(lhs_val)){ // check for division by zero
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
+            }
+            break;
         case RT_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
         case RT_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
         case RT_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);

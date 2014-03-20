@@ -93,6 +93,7 @@ MP_DEFINE_EXCEPTION(OverflowError, BaseException)
 MP_DEFINE_EXCEPTION(OSError, BaseException)
 MP_DEFINE_EXCEPTION(NotImplementedError, BaseException)
 MP_DEFINE_EXCEPTION(StopIteration, BaseException)
+MP_DEFINE_EXCEPTION(ZeroDivisionError, BaseException)
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     return mp_obj_new_exception_msg_varg(exc_type, NULL);

@@ -47,6 +47,7 @@ Q(SyntaxError)
 Q(TypeError)
 Q(ValueError)
 Q(OverflowError)
+Q(ZeroDivisionError)
 
 Q(NoneType)
 

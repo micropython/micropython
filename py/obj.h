@@ -201,6 +201,7 @@ extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_OSError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_StopIteration;
+extern const mp_obj_type_t mp_type_ZeroDivisionError;
 
 // Constant objects, globally accessible
 
