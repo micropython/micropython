@@ -14,7 +14,7 @@ typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
     machine_uint_t hash : 16; // XXX here we assume the hash size is 16 bits (it is at the moment; see qstr.c)
     machine_uint_t len : 16; // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
-    byte data[];
+    const byte *data;
 } mp_obj_str_t;
 
 // use this macro to extract the string hash
@@ -636,10 +636,12 @@ const mp_obj_type_t bytes_type = {
 };
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
-    mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
+    mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
-    *data = o->data;
+    byte *p = m_new(byte, len + 1);
+    o->data = p;
+    *data = p;
     return o;
 }
 
@@ -647,17 +649,22 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     assert(MP_OBJ_IS_STR(o_in));
     mp_obj_str_t *o = o_in;
     o->hash = qstr_compute_hash(o->data, o->len);
-    o->data[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    byte *p = (byte*)o->data;
+    p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
     return o;
 }
 
 STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
-    mp_obj_str_t *o = m_new_obj_var(mp_obj_str_t, byte, len + 1);
+    mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
-    o->hash = qstr_compute_hash(data, len);
     o->len = len;
-    memcpy(o->data, data, len * sizeof(byte));
-    o->data[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    if (data) {
+        o->hash = qstr_compute_hash(data, len);
+        byte *p = m_new(byte, len + 1);
+        o->data = p;
+        memcpy(p, data, len * sizeof(byte));
+        p[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    }
     return o;
 }
 
