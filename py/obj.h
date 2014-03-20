@@ -330,6 +330,7 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
 extern const mp_obj_type_t tuple_type;
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
+machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
 extern const mp_obj_type_t list_type;

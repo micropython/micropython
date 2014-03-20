@@ -81,9 +81,16 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &none_type)) {
         return (machine_int_t)o_in;
+    } else if (MP_OBJ_IS_TYPE(o_in, &fun_native_type) || MP_OBJ_IS_TYPE(o_in, &fun_bc_type)) {
+        return (machine_int_t)o_in;
+    } else if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
+        return mp_obj_tuple_hash(o_in);
+
+    // TODO hash class and instances
+    // TODO delegate to __hash__ method if it exists
+
     } else {
-        assert(0);
-        return 0;
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unhashable type: '%s'", mp_obj_get_type_str(o_in)));
     }
 }
 

@@ -218,6 +218,17 @@ void mp_obj_tuple_del(mp_obj_t self_in) {
     m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
 }
 
+machine_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    mp_obj_tuple_t *self = self_in;
+    // start hash with pointer to empty tuple, to make it fairly unique
+    machine_int_t hash = (machine_int_t)mp_const_empty_tuple;
+    for (uint i = 0; i < self->len; i++) {
+        hash += mp_obj_hash(self->items[i]);
+    }
+    return hash;
+}
+
 /******************************************************************************/
 /* tuple iterator                                                             */
 
