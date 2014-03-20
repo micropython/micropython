@@ -50,13 +50,7 @@ MATH_FUN_1(isfinite, isfinite)
 MATH_FUN_1(isinf, isinf)
 MATH_FUN_1(isnan, isnan)
 MATH_FUN_1(trunc, trunc)
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
-//MATH_FUN_1(, )
+
 //TODO: factorial, fsum, frexp, ldexp, modf
 
 STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
@@ -93,14 +87,6 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_isinf), (mp_obj_t)&mp_math_isinf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isnan), (mp_obj_t)&mp_math_isnan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_), (mp_obj_t)&mp_math__obj },
 };
 
 STATIC const mp_map_t mp_module_math_globals = {
