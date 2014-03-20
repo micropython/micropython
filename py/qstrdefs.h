@@ -119,6 +119,7 @@ Q(module)
 Q(slice)
 
 Q(math)
+Q(e)
 Q(pi)
 Q(sqrt)
 Q(pow)
