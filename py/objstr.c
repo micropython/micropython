@@ -520,6 +520,46 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
     return MP_OBJ_NEW_SMALL_INT(num_occurrences);
 }
 
+STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, bool rpartition) {
+    assert(MP_OBJ_IS_STR(self_in));
+    if (!MP_OBJ_IS_STR(arg)) {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                                               "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(arg)));
+    }
+    GET_STR_DATA_LEN(self_in, str, str_len);
+    GET_STR_DATA_LEN(arg, sep, sep_len);
+    mp_obj_t result[] = {MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)};
+
+    if (sep_len == 0) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "empty separator"));
+    }
+    if (rpartition) {
+        result[2] = mp_obj_new_str(str, str_len, false);
+    } else {
+        result[0] = mp_obj_new_str(str, str_len, false);
+    }
+
+    for (machine_uint_t str_index = 0; str_index + sep_len <= str_len; str_index++) {
+        if (memcmp(&str[str_index], sep, sep_len) == 0) {
+            result[0] = mp_obj_new_str(str, str_index, false);
+            result[1] = arg;
+            result[2] = mp_obj_new_str(str + str_index + sep_len, str_len - str_index - sep_len, false);
+            if (!rpartition) {
+                break;
+            }
+        }
+    }
+    return mp_obj_new_tuple(3, result);
+}
+
+STATIC mp_obj_t str_partition(mp_obj_t self_in, mp_obj_t arg, bool partition) {
+    return str_partitioner(self_in, arg, false);
+}
+
+STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg, bool partition) {
+    return str_partitioner(self_in, arg, true);
+}
+
 STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
     if (flags == BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
@@ -542,6 +582,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, str_format);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 
 STATIC const mp_method_t str_type_methods[] = {
     { "find", &str_find_obj },
@@ -552,6 +594,8 @@ STATIC const mp_method_t str_type_methods[] = {
     { "format", &str_format_obj },
     { "replace", &str_replace_obj },
     { "count", &str_count_obj },
+    { "partition", &str_partition_obj },
+    { "rpartition", &str_rpartition_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 
