@@ -1,0 +1,2 @@
+extern const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops;
+extern const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops;

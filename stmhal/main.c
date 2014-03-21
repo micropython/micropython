@@ -374,6 +374,10 @@ soft_reset:
     // turn boot-up LED off
     led_state(PYB_LED_GREEN, 0);
 
+#if defined(USE_DEVICE_MODE)
+    usbd_storage_medium_kind_t usbd_medium_kind = USBD_STORAGE_MEDIUM_FLASH;
+#endif
+
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on 1:/
     if (sdcard_is_present()) {
@@ -383,8 +387,8 @@ soft_reset:
         } else {
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
-#if 0
-                usbd_storage_select_medium(USBD_STORAGE_MEDIUM_SDCARD);
+#if defined(USE_DEVICE_MODE)
+                usbd_medium_kind = USBD_STORAGE_MEDIUM_SDCARD;
 #endif
             }
         }
@@ -396,7 +400,7 @@ soft_reset:
     pyb_usb_host_init();
 #elif defined(USE_DEVICE_MODE)
     // USB device
-    pyb_usb_dev_init(PYB_USB_DEV_VCP_MSC);
+    pyb_usb_dev_init(USBD_DEVICE_MSC, usbd_medium_kind);
 #endif
 
 #if MICROPY_HW_HAS_MMA7660
