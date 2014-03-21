@@ -520,44 +520,60 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
     return MP_OBJ_NEW_SMALL_INT(num_occurrences);
 }
 
-STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, bool rpartition) {
+STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, machine_int_t direction) {
     assert(MP_OBJ_IS_STR(self_in));
     if (!MP_OBJ_IS_STR(arg)) {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(arg)));
     }
+
     GET_STR_DATA_LEN(self_in, str, str_len);
     GET_STR_DATA_LEN(arg, sep, sep_len);
-    mp_obj_t result[] = {MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)};
 
     if (sep_len == 0) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "empty separator"));
     }
-    if (rpartition) {
-        result[2] = mp_obj_new_str(str, str_len, false);
+
+    mp_obj_t result[] = {MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)};
+
+    if (direction > 0) {
+        result[0] = self_in;
     } else {
-        result[0] = mp_obj_new_str(str, str_len, false);
+        result[2] = self_in;
     }
 
-    for (machine_uint_t str_index = 0; str_index + sep_len <= str_len; str_index++) {
-        if (memcmp(&str[str_index], sep, sep_len) == 0) {
-            result[0] = mp_obj_new_str(str, str_index, false);
-            result[1] = arg;
-            result[2] = mp_obj_new_str(str + str_index + sep_len, str_len - str_index - sep_len, false);
-            if (!rpartition) {
+    if (str_len >= sep_len) {
+        machine_uint_t str_index, str_index_end;
+        if (direction > 0) {
+            str_index = 0;
+            str_index_end = str_len - sep_len;
+        } else {
+            str_index = str_len - sep_len;
+            str_index_end = 0;
+        }
+        for (;;) {
+            if (memcmp(&str[str_index], sep, sep_len) == 0) {
+                result[0] = mp_obj_new_str(str, str_index, false);
+                result[1] = arg;
+                result[2] = mp_obj_new_str(str + str_index + sep_len, str_len - str_index - sep_len, false);
                 break;
             }
+            if (str_index == str_index_end) {
+                break;
+            }
+            str_index += direction;
         }
     }
+
     return mp_obj_new_tuple(3, result);
 }
 
-STATIC mp_obj_t str_partition(mp_obj_t self_in, mp_obj_t arg, bool partition) {
-    return str_partitioner(self_in, arg, false);
+STATIC mp_obj_t str_partition(mp_obj_t self_in, mp_obj_t arg) {
+    return str_partitioner(self_in, arg, 1);
 }
 
-STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg, bool partition) {
-    return str_partitioner(self_in, arg, true);
+STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
+    return str_partitioner(self_in, arg, -1);
 }
 
 STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
