@@ -41,6 +41,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 
     // string should be an integer number
     machine_int_t int_val = 0;
+    const char *restrict str_val_start = str;
     for (; str < top; str++) {
         machine_int_t old_val = int_val;
         int dig = *str;
@@ -69,6 +70,11 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
         }
     }
 
+    // check we parsed something
+    if (str == str_val_start) {
+        goto value_error;
+    }
+
     // negate value if needed
     if (neg) {
         int_val = -int_val;
@@ -80,11 +86,14 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 
     // check we reached the end of the string
     if (str != top) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+        goto value_error;
     }
 
     // return the object
     return MP_OBJ_NEW_SMALL_INT(int_val);
+
+value_error:
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, str));
 
 overflow:
     // TODO reparse using bignum
