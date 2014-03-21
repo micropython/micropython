@@ -9,6 +9,10 @@
 #include "parsenumbase.h"
 #include "parsenum.h"
 
+#if MICROPY_ENABLE_FLOAT
+#include <math.h>
+#endif
+
 #if defined(UNIX)
 
 #include <ctype.h>
@@ -84,64 +88,120 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 #define PARSE_DEC_IN_FRAC (2)
 #define PARSE_DEC_IN_EXP  (3)
 
-mp_obj_t mp_parse_num_decimal(const char *str, uint len) {
+mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag) {
 #if MICROPY_ENABLE_FLOAT
-    int in = PARSE_DEC_IN_INTG;
-    mp_float_t dec_val = 0;
-    bool exp_neg = false;
-    int exp_val = 0;
-    int exp_extra = 0;
-    bool imag = false;
     const char *top = str + len;
-    for (; str < top; str++) {
-        int dig = *str;
-        if ('0' <= dig && dig <= '9') {
-            dig -= '0';
-            if (in == PARSE_DEC_IN_EXP) {
-                exp_val = 10 * exp_val + dig;
-            } else {
-                dec_val = 10 * dec_val + dig;
-                if (in == PARSE_DEC_IN_FRAC) {
-                    exp_extra -= 1;
-                }
-            }
-        } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
-            in = PARSE_DEC_IN_FRAC;
-        } else if (in != PARSE_DEC_IN_EXP && (dig == 'E' || dig == 'e')) {
-            in = PARSE_DEC_IN_EXP;
-            if (str[1] == '+') {
-                str++;
-            } else if (str[1] == '-') {
-                str++;
-                exp_neg = true;
-            }
-        } else if (dig == 'J' || dig == 'j') {
+    mp_float_t dec_val = 0;
+    bool dec_neg = false;
+    bool imag = false;
+
+    // skip leading space
+    for (; str < top && isspace(*str); str++) {
+    }
+
+    // get optional sign
+    if (str < top) {
+        if (*str == '+') {
             str++;
-            imag = true;
-            break;
-        } else {
-            // unknown character
-            break;
+        } else if (*str == '-') {
+            str++;
+            dec_neg = true;
         }
     }
-    if (*str != 0) {
+
+    // determine what the string is
+    if (str < top && (str[0] | 0x20) == 'i') {
+        // string starts with 'i', should be 'inf' or 'infinity' (case insensitive)
+        if (str + 2 < top && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
+            // inf
+            str += 3;
+            dec_val = INFINITY;
+            if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
+                // infinity
+                str += 5;
+            }
+        }
+    } else if (str < top && (str[0] | 0x20) == 'n') {
+        // string starts with 'n', should be 'nan' (case insensitive)
+        if (str + 2 < top && (str[1] | 0x20) == 'a' && (str[2] | 0x20) == 'n') {
+            // NaN
+            str += 3;
+            dec_val = MICROPY_FLOAT_C_FUN(nan)("");
+        }
+    } else {
+        // parse the digits
+        int in = PARSE_DEC_IN_INTG;
+        bool exp_neg = false;
+        int exp_val = 0;
+        int exp_extra = 0;
+        for (; str < top; str++) {
+            int dig = *str;
+            if ('0' <= dig && dig <= '9') {
+                dig -= '0';
+                if (in == PARSE_DEC_IN_EXP) {
+                    exp_val = 10 * exp_val + dig;
+                } else {
+                    dec_val = 10 * dec_val + dig;
+                    if (in == PARSE_DEC_IN_FRAC) {
+                        exp_extra -= 1;
+                    }
+                }
+            } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
+                in = PARSE_DEC_IN_FRAC;
+            } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
+                in = PARSE_DEC_IN_EXP;
+                if (str[1] == '+') {
+                    str++;
+                } else if (str[1] == '-') {
+                    str++;
+                    exp_neg = true;
+                }
+            } else if (allow_imag && (dig | 0x20) == 'j') {
+                str++;
+                imag = true;
+                break;
+            } else {
+                // unknown character
+                break;
+            }
+        }
+
+        // work out the exponent
+        if (exp_neg) {
+            exp_val = -exp_val;
+        }
+        exp_val += exp_extra;
+
+        // apply the exponent
+        for (; exp_val > 0; exp_val--) {
+            dec_val *= 10;
+        }
+        for (; exp_val < 0; exp_val++) {
+            dec_val *= 0.1;
+        }
+    }
+
+    // negate value if needed
+    if (dec_neg) {
+        dec_val = -dec_val;
+    }
+
+    // skip trailing space
+    for (; str < top && isspace(*str); str++) {
+    }
+
+    // check we reached the end of the string
+    if (str != top) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
-    if (exp_neg) {
-        exp_val = -exp_val;
-    }
-    exp_val += exp_extra;
-    for (; exp_val > 0; exp_val--) {
-        dec_val *= 10;
-    }
-    for (; exp_val < 0; exp_val++) {
-        dec_val *= 0.1;
-    }
+
+    // return the object
     if (imag) {
         return mp_obj_new_complex(0, dec_val);
     } else {
         return mp_obj_new_float(dec_val);
     }
+
 #else
     nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "decimal numbers not supported"));
 #endif
