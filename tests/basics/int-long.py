@@ -37,3 +37,10 @@ a <<= 5
 print(a)
 a >>= 1
 print(a)
+
+# Test referential integrity of long ints
+a = 0x1ffffffff
+b = a
+a += 1
+print(a)
+print(b)
