@@ -13,76 +13,83 @@
 #include <math.h>
 #endif
 
-#if defined(UNIX)
-
-#include <ctype.h>
-#include <errno.h>
-
 mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
-    // TODO at the moment we ignore len; we should honour it!
-    // TODO detect integer overflow and return bignum
-
-    int c, neg = 0;
-    const char *p = str;
-    char *num;
-    long found;
+    const char *restrict top = str + len;
+    bool neg = false;
 
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
     }
-    // skip surrounded whitespace
-    while (isspace((c = *(p++))));
-    if (c == 0) {
-        goto value_error;
-    }
-    // preced sign
-    if (c == '+' || c == '-') {
-        neg = - (c == '-');
-    } else {
-        p--;
+
+    // skip leading space
+    for (; str < top && unichar_isspace(*str); str++) {
     }
 
-    len -= p - str;
-    int skip = mp_parse_num_base(p, len, &base);
-    p += skip;
-    len -= skip;
-
-    errno = 0;
-    found = strtol(p, &num, base);
-    if (errno) {
-        goto value_error;
-    } else if (found && *(num) == 0) {
-        goto done;
-    } else if (found || num != p) {
-        goto check_tail_space;
-    } else {
-        goto value_error;
-    }
-
-check_tail_space:
-    if (*(num) != 0) {
-        while (isspace((c = *(num++))));
-        if (c != 0) {
-            goto value_error;
+    // parse optional sign
+    if (str < top) {
+        if (*str == '+') {
+            str++;
+        } else if (*str == '-') {
+            str++;
+            neg = true;
         }
     }
 
-done:
-    return MP_OBJ_NEW_SMALL_INT((found ^ neg) - neg);
+    // parse optional base prefix
+    str += mp_parse_num_base(str, top - str, &base);
 
-value_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, str));
+    // string should be an integer number
+    machine_int_t int_val = 0;
+    for (; str < top; str++) {
+        machine_int_t old_val = int_val;
+        int dig = *str;
+        if (unichar_isdigit(dig) && dig - '0' < base) {
+            // 0-9 digit
+            int_val = base * int_val + dig - '0';
+        } else if (base == 16) {
+            dig |= 0x20;
+            if ('a' <= dig && dig <= 'f') {
+                // a-f hex digit
+                int_val = base * int_val + dig - 'a' + 10;
+            } else {
+                // unknown character
+                break;
+            }
+        } else {
+            // unknown character
+            break;
+        }
+        if (int_val < old_val) {
+            // If new value became less than previous, it's overflow
+            goto overflow;
+        } else if ((old_val ^ int_val) & WORD_MSBIT_HIGH) {
+            // If signed number changed sign - it's overflow
+            goto overflow;
+        }
+    }
+
+    // negate value if needed
+    if (neg) {
+        int_val = -int_val;
+    }
+
+    // skip trailing space
+    for (; str < top && unichar_isspace(*str); str++) {
+    }
+
+    // check we reached the end of the string
+    if (str != top) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+    }
+
+    // return the object
+    return MP_OBJ_NEW_SMALL_INT(int_val);
+
+overflow:
+    // TODO reparse using bignum
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "overflow parsing integer"));
 }
-
-#else /* defined(UNIX) */
-
-mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
-    // TODO port strtol to stm
-    return MP_OBJ_NEW_SMALL_INT(0);
-}
-
-#endif /* defined(UNIX) */
 
 #define PARSE_DEC_IN_INTG (1)
 #define PARSE_DEC_IN_FRAC (2)
@@ -96,10 +103,10 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool f
     bool imag = false;
 
     // skip leading space
-    for (; str < top && isspace(*str); str++) {
+    for (; str < top && unichar_isspace(*str); str++) {
     }
 
-    // get optional sign
+    // parse optional sign
     if (str < top) {
         if (*str == '+') {
             str++;
@@ -187,7 +194,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool f
     }
 
     // skip trailing space
-    for (; str < top && isspace(*str); str++) {
+    for (; str < top && unichar_isspace(*str); str++) {
     }
 
     // check we reached the end of the string
