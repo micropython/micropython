@@ -28,6 +28,7 @@ typedef struct _mp_obj_str_t {
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
+STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -75,6 +76,40 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
             print(env, "b");
         }
         mp_str_print_quoted(print, env, str_data, str_len);
+    }
+}
+
+STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    switch (n_args) {
+        case 0:
+            return MP_OBJ_NEW_QSTR(MP_QSTR_);
+
+        case 1:
+        {
+            vstr_t *vstr = vstr_new();
+            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[0], PRINT_STR);
+            mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+            vstr_free(vstr);
+            return s;
+        }
+
+        case 2:
+        case 3:
+        {
+            // TODO: validate 2nd/3rd args
+            if (!MP_OBJ_IS_TYPE(args[0], &bytes_type)) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "bytes expected"));
+            }
+            GET_STR_DATA_LEN(args[0], str_data, str_len);
+            GET_STR_HASH(args[0], str_hash);
+            mp_obj_str_t *o = str_new(&str_type, NULL, str_len);
+            o->data = str_data;
+            o->hash = str_hash;
+            return o;
+        }
+
+        default:
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "str takes at most 3 arguments"));
     }
 }
 
@@ -619,6 +654,7 @@ const mp_obj_type_t str_type = {
     { &mp_type_type },
     .name = MP_QSTR_str,
     .print = str_print,
+    .make_new = str_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_str_iterator,
     .methods = str_type_methods,

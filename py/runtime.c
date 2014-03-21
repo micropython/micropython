@@ -102,6 +102,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_list, (mp_obj_t)&list_type },
     { MP_QSTR_map, (mp_obj_t)&map_type },
     { MP_QSTR_set, (mp_obj_t)&set_type },
+    { MP_QSTR_str, (mp_obj_t)&str_type },
     { MP_QSTR_super, (mp_obj_t)&super_type },
     { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
     { MP_QSTR_type, (mp_obj_t)&mp_type_type },
@@ -137,7 +138,6 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj },
     { MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj },
     { MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj },
-    { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
     { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
 
     // built-in exceptions
