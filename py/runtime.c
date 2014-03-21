@@ -375,7 +375,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
     uint len;
     const byte* data = qstr_data(qstr, &len);
-    return mp_parse_num_decimal((const char*)data, len, true);
+    return mp_parse_num_decimal((const char*)data, len, true, false);
 }
 
 mp_obj_t rt_load_const_str(qstr qstr) {

@@ -88,7 +88,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 #define PARSE_DEC_IN_FRAC (2)
 #define PARSE_DEC_IN_EXP  (3)
 
-mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag) {
+mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool force_complex) {
 #if MICROPY_ENABLE_FLOAT
     const char *top = str + len;
     mp_float_t dec_val = 0;
@@ -129,7 +129,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag) {
             dec_val = MICROPY_FLOAT_C_FUN(nan)("");
         }
     } else {
-        // parse the digits
+        // string should be a decimal number
         int in = PARSE_DEC_IN_INTG;
         bool exp_neg = false;
         int exp_val = 0;
@@ -198,6 +198,8 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag) {
     // return the object
     if (imag) {
         return mp_obj_new_complex(0, dec_val);
+    } else if (force_complex) {
+        return mp_obj_new_complex(dec_val, 0);
     } else {
         return mp_obj_new_float(dec_val);
     }

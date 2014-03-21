@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "parsenum.h"
 #include "runtime0.h"
 #include "map.h"
 
@@ -36,15 +37,20 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
             return mp_obj_new_complex(0, 0);
 
         case 1:
-            // TODO allow string as first arg and parse it
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+            if (MP_OBJ_IS_STR(args[0])) {
+                // a string, parse it
+                uint l;
+                const char *s = mp_obj_str_get_data(args[0], &l);
+                return mp_parse_num_decimal(s, l, true, true);
+            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+                // a complex, just return it
                 return args[0];
             } else {
+                // something else, try to cast it to a complex
                 return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
             }
 
-        case 2:
-        {
+        case 2: {
             mp_float_t real, imag;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
                 mp_obj_complex_get(args[0], &real, &imag);
