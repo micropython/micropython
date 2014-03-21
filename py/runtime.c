@@ -89,6 +89,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
 
     // built-in types
     { MP_QSTR_bool, (mp_obj_t)&bool_type },
+    { MP_QSTR_bytes, (mp_obj_t)&bytes_type },
 #if MICROPY_ENABLE_FLOAT
     { MP_QSTR_complex, (mp_obj_t)&mp_type_complex },
 #endif
@@ -115,7 +116,6 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj },
     { MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj },
     { MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj },
-    { MP_QSTR_bytes, (mp_obj_t)&mp_builtin_bytes_obj },
     { MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj },
     { MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj },
     { MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj },

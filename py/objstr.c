@@ -17,6 +17,8 @@ typedef struct _mp_obj_str_t {
     const byte *data;
 } mp_obj_str_t;
 
+const mp_obj_t mp_const_empty_bytes;
+
 // use this macro to extract the string hash
 #define GET_STR_HASH(str_obj_in, str_hash) uint str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)str_obj_in)->hash; }
 
@@ -111,6 +113,75 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         default:
             nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "str takes at most 3 arguments"));
     }
+}
+
+STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_const_empty_bytes;
+    }
+
+    if (MP_OBJ_IS_STR(args[0])) {
+        if (n_args < 2 || n_args > 3) {
+            goto wrong_args;
+        }
+        GET_STR_DATA_LEN(args[0], str_data, str_len);
+        GET_STR_HASH(args[0], str_hash);
+        mp_obj_str_t *o = str_new(&bytes_type, NULL, str_len);
+        o->data = str_data;
+        o->hash = str_hash;
+        return o;
+    }
+
+    if (n_args > 1) {
+        goto wrong_args;
+    }
+
+    if (MP_OBJ_IS_SMALL_INT(args[0])) {
+        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        byte *data;
+
+        mp_obj_t o = mp_obj_str_builder_start(&bytes_type, len, &data);
+        memset(data, 0, len);
+        return mp_obj_str_builder_end(o);
+    }
+
+    int len;
+    byte *data;
+    vstr_t *vstr = NULL;
+    mp_obj_t o = NULL;
+    // Try to create array of exact len if initializer len is known
+    mp_obj_t len_in = mp_obj_len_maybe(args[0]);
+    if (len_in == MP_OBJ_NULL) {
+        len = -1;
+        vstr = vstr_new();
+    } else {
+        len = MP_OBJ_SMALL_INT_VALUE(len_in);
+        o = mp_obj_str_builder_start(&bytes_type, len, &data);
+    }
+
+    mp_obj_t iterable = rt_getiter(args[0]);
+    mp_obj_t item;
+    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+        if (len == -1) {
+            vstr_add_char(vstr, MP_OBJ_SMALL_INT_VALUE(item));
+        } else {
+            *data++ = MP_OBJ_SMALL_INT_VALUE(item);
+        }
+    }
+
+    if (len == -1) {
+        vstr_shrink(vstr);
+        // TODO: Optimize, borrow buffer from vstr
+        len = vstr_len(vstr);
+        o = mp_obj_str_builder_start(&bytes_type, len, &data);
+        memcpy(data, vstr_str(vstr), len);
+        vstr_free(vstr);
+    }
+
+    return mp_obj_str_builder_end(o);
+
+wrong_args:
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "wrong number of arguments"));
 }
 
 // like strstr but with specified length and allows \0 bytes
@@ -666,10 +737,15 @@ const mp_obj_type_t bytes_type = {
     { &mp_type_type },
     .name = MP_QSTR_bytes,
     .print = str_print,
+    .make_new = bytes_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_bytes_iterator,
     .methods = str_type_methods,
 };
+
+// the zero-length bytes
+STATIC const mp_obj_str_t empty_bytes_obj = {{&bytes_type}, 0, 0, NULL};
+const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
@@ -682,7 +758,6 @@ mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **da
 }
 
 mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
-    assert(MP_OBJ_IS_STR(o_in));
     mp_obj_str_t *o = o_in;
     o->hash = qstr_compute_hash(o->data, o->len);
     byte *p = (byte*)o->data;
