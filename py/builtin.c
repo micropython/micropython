@@ -375,28 +375,6 @@ STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
-STATIC mp_obj_t mp_builtin_str(mp_obj_t o_in) {
-    vstr_t *vstr = vstr_new();
-    mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, o_in, PRINT_STR);
-    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
-    vstr_free(vstr);
-    return s;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_str_obj, mp_builtin_str);
-
-// TODO: This should be type, this is just quick CPython compat hack
-STATIC mp_obj_t mp_builtin_bytes(uint n_args, const mp_obj_t *args) {
-    if (!MP_OBJ_IS_QSTR(args[0]) && !MP_OBJ_IS_TYPE(args[0], &str_type)) {
-        assert(0);
-    }
-    // Currently, MicroPython strings are mix between CPython byte and unicode
-    // strings. So, conversion is null so far.
-    return args[0];
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_bytes_obj, 1, 3, mp_builtin_bytes);
-
 STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
     return mp_obj_new_int((machine_int_t)o_in);
 }
