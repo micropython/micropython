@@ -44,6 +44,10 @@ float acosf(float x) { return 0.0; }
 float asinf(float x) { return 0.0; }
 float atanf(float x) { return 0.0; }
 float atan2f(float x, float y) { return 0.0; }
+float ceilf(float x) { return 0.0; }
+float floorf(float x) { return 0.0; }
+float truncf(float x) { return 0.0; }
+float fmodf(float x, float y) { return 0.0; }
 
 /*****************************************************************************/
 // from musl-0.9.15 libm.h
