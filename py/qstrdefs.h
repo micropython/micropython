@@ -91,6 +91,10 @@ Q(ValueError)
 Q(Warning)
 Q(ZeroDivisionError)
 
+Q(None)
+Q(False)
+Q(True)
+Q(object)
 
 Q(NoneType)
 

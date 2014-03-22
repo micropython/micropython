@@ -104,6 +104,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_int, (mp_obj_t)&int_type },
     { MP_QSTR_list, (mp_obj_t)&list_type },
     { MP_QSTR_map, (mp_obj_t)&map_type },
+    { MP_QSTR_object, (mp_obj_t)&mp_type_object },
     { MP_QSTR_set, (mp_obj_t)&set_type },
     { MP_QSTR_str, (mp_obj_t)&str_type },
     { MP_QSTR_super, (mp_obj_t)&super_type },

@@ -315,6 +315,9 @@ mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o, machine_int_t n);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 
+// object
+extern const mp_obj_type_t mp_type_object;
+
 // none
 extern const mp_obj_type_t none_type;
 
