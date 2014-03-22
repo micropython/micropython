@@ -17,6 +17,7 @@
 #include "pin.h"
 #include "exti.h"
 #include "usrsw.h"
+#include "rng.h"
 #include "rtc.h"
 #include "usart.h"
 #include "storage.h"
@@ -128,16 +129,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-STATIC mp_obj_t pyb_rng_get(void) {
-#if 0
-    return mp_obj_new_int(RNG_GetRandomNumber() >> 16);
-#else
-    return mp_obj_new_int(0);
-#endif
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
-
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
@@ -232,7 +223,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
 
 #if MICROPY_HW_ENABLE_RNG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rand), (mp_obj_t)&pyb_rng_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rng), (mp_obj_t)&pyb_rng_get_obj },
 #endif
 
 #if MICROPY_HW_ENABLE_RTC

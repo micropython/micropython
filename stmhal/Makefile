@@ -29,7 +29,7 @@ INC += -I$(FATFS_DIR)/src
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
 
-BOARD ?= PYBOARD4
+BOARD ?= PYBv10
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -78,6 +78,7 @@ SRC_C = \
 	gpio.c \
 	exti.c \
 	usrsw.c \
+	rng.c \
 	rtc.c \
 	flash.c \
 	storage.c \
@@ -109,6 +110,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
+	stm32f4xx_hal_rng.c \
 	stm32f4xx_hal_rtc.c \
 	stm32f4xx_hal_rtc_ex.c \
 	stm32f4xx_hal_sd.c \

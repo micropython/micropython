@@ -28,6 +28,7 @@
 #include "exti.h"
 #include "usrsw.h"
 #include "usb.h"
+#include "rng.h"
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
@@ -247,6 +248,11 @@ soft_reset:
     lcd_init();
 #endif
 
+#if MICROPY_HW_ENABLE_RNG
+    // RNG
+    rng_init();
+#endif
+
 #if 0
 #if MICROPY_HW_ENABLE_SERVO
     // servo
@@ -257,13 +263,9 @@ soft_reset:
     // timer
     timer_init();
 #endif
-
-#if MICROPY_HW_ENABLE_RNG
-    // RNG
-    RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
-    RNG_Cmd(ENABLE);
 #endif
 
+#if 0
     pin_map_init();
 #endif
 
