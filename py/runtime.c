@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -661,7 +662,11 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     break;
                 }
                 case RT_BINARY_OP_FLOOR_DIVIDE:
-                case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: lhs_val /= rhs_val; break;
+                case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+                {
+                    lhs_val = python_floor_divide(lhs_val, rhs_val);
+                    break;
+                }
                 #if MICROPY_ENABLE_FLOAT
                 case RT_BINARY_OP_TRUE_DIVIDE:
                 case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
