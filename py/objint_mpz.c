@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -97,6 +98,12 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
+		        if (zlhs->neg != zrhs->neg) {
+                    if (!mpz_is_zero(&rem)) {
+                        mpz_t mpzone; mpz_init_from_int(&mpzone, -1);
+                        mpz_add_inpl(&res->mpz, &res->mpz, &mpzone);
+                    }
+                }
                 mpz_deinit(&rem);
                 break;
             }
@@ -105,8 +112,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
-		// Check signs and do Python style modulo
-		if (zlhs->neg != zrhs->neg) {
+		        // Check signs and do Python style modulo
+		        if (zlhs->neg != zrhs->neg) {
                     mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
                 }
                 break;
