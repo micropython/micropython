@@ -78,6 +78,7 @@ PY_O_BASENAME = \
 	vm.o \
 	showbc.o \
 	repl.o \
+	intdivmod.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
