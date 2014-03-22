@@ -56,8 +56,10 @@ typedef struct _mp_obj_gen_instance_t {
     const byte *code_info;
     const byte *ip;
     mp_obj_t *sp;
+    mp_exc_stack *exc_sp;
     uint n_state;
-    mp_obj_t state[];
+    mp_obj_t state[0];          // Variable-length
+    mp_exc_stack exc_state[0];  // Variable-length
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -80,7 +82,8 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
     } else {
         *self->sp = send_value;
     }
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(self->code_info, &self->ip, &self->state[self->n_state - 1], &self->sp);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
+        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack*)(self->state + self->n_state), &self->exc_sp);
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
             // Explicitly mark generator as completed. If we don't do this,
@@ -137,11 +140,13 @@ const mp_obj_type_t gen_instance_type = {
 };
 
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, mp_obj_t, n_state);
+    // TODO: 4 is hardcoded number from vm.c, calc exc stack size instead.
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + 4 * sizeof(mp_exc_stack));
     o->base.type = &gen_instance_type;
     o->code_info = bytecode;
     o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
+    o->exc_sp = (mp_exc_stack*)(o->state + n_state) - 1;
     o->n_state = n_state;
 
     // copy args to end of state array, in reverse (that's how mp_execute_byte_code_2 needs it)
