@@ -394,6 +394,10 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("YIELD_VALUE");
                 break;
 
+            case MP_BC_YIELD_FROM:
+                printf("YIELD_FROM");
+                break;
+
             case MP_BC_IMPORT_NAME:
                 DECODE_QSTR;
                 printf("IMPORT_NAME %s", qstr_str(qstr));
