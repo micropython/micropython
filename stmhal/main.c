@@ -399,7 +399,7 @@ soft_reset:
     pyb_usb_host_init();
 #elif defined(USE_DEVICE_MODE)
     // USB device
-    pyb_usb_dev_init(USBD_DEVICE_MSC, usbd_medium_kind);
+    pyb_usb_dev_init(USBD_DEVICE_CDC_MSC, usbd_medium_kind);
 #endif
 
 #if MICROPY_HW_HAS_MMA7660

@@ -49,6 +49,7 @@
 
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
+int USBD_CDC_IsConnected(void);
 void USBD_CDC_SetInterrupt(int chr, void *data);
 void USBD_CDC_Tx(const char *str, uint32_t len);
 int USBD_CDC_RxNum(void);

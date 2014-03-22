@@ -52,6 +52,8 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
+static uint8_t dev_is_connected = 0; // indicates if we are connected
+
 static uint8_t UserRxBuffer[APP_RX_DATA_SIZE]; // received data from USB OUT endpoint is stored in this buffer
 static uint16_t UserRxBufCur = 0; // points to next available character in UserRxBuffer
 static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRxBuffer
@@ -174,76 +176,73 @@ static int8_t CDC_Itf_DeInit(void)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
-{ 
-  switch (cmd)
-  {
-  case CDC_SEND_ENCAPSULATED_COMMAND:
-    /* Add your code here */
-    break;
+static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
+    switch (cmd) {
+        case CDC_SEND_ENCAPSULATED_COMMAND:
+            /* Add your code here */
+            break;
 
-  case CDC_GET_ENCAPSULATED_RESPONSE:
-    /* Add your code here */
-    break;
+        case CDC_GET_ENCAPSULATED_RESPONSE:
+            /* Add your code here */
+            break;
 
-  case CDC_SET_COMM_FEATURE:
-    /* Add your code here */
-    break;
+        case CDC_SET_COMM_FEATURE:
+            /* Add your code here */
+            break;
 
-  case CDC_GET_COMM_FEATURE:
-    /* Add your code here */
-    break;
+        case CDC_GET_COMM_FEATURE:
+            /* Add your code here */
+            break;
 
-  case CDC_CLEAR_COMM_FEATURE:
-    /* Add your code here */
-    break;
+        case CDC_CLEAR_COMM_FEATURE:
+            /* Add your code here */
+            break;
 
-  case CDC_SET_LINE_CODING:
-    #if 0
-    LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
-                            (pbuf[2] << 16) | (pbuf[3] << 24));
-    LineCoding.format     = pbuf[4];
-    LineCoding.paritytype = pbuf[5];
-    LineCoding.datatype   = pbuf[6];
-    
-    /* Set the new configuration */
-    #endif
-    break;
+        case CDC_SET_LINE_CODING:
+            #if 0
+            LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
+                                    (pbuf[2] << 16) | (pbuf[3] << 24));
+            LineCoding.format     = pbuf[4];
+            LineCoding.paritytype = pbuf[5];
+            LineCoding.datatype   = pbuf[6];
+            /* Set the new configuration */
+            #endif
+            break;
 
-  case CDC_GET_LINE_CODING:
-    #if 0
-    pbuf[0] = (uint8_t)(LineCoding.bitrate);
-    pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
-    pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
-    pbuf[3] = (uint8_t)(LineCoding.bitrate >> 24);
-    pbuf[4] = LineCoding.format;
-    pbuf[5] = LineCoding.paritytype;
-    pbuf[6] = LineCoding.datatype;     
-    #endif
-    
-    /* Add your code here */
-    pbuf[0] = (uint8_t)(115200);
-    pbuf[1] = (uint8_t)(115200 >> 8);
-    pbuf[2] = (uint8_t)(115200 >> 16);
-    pbuf[3] = (uint8_t)(115200 >> 24);
-    pbuf[4] = 0; // stop bits (1)
-    pbuf[5] = 0; // parity (none)
-    pbuf[6] = 8; // number of bits (8)
-    break;
+        case CDC_GET_LINE_CODING:
+            #if 0
+            pbuf[0] = (uint8_t)(LineCoding.bitrate);
+            pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
+            pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
+            pbuf[3] = (uint8_t)(LineCoding.bitrate >> 24);
+            pbuf[4] = LineCoding.format;
+            pbuf[5] = LineCoding.paritytype;
+            pbuf[6] = LineCoding.datatype;
+            #endif
 
-  case CDC_SET_CONTROL_LINE_STATE:
-    /* Add your code here */
-    break;
+            /* Add your code here */
+            pbuf[0] = (uint8_t)(115200);
+            pbuf[1] = (uint8_t)(115200 >> 8);
+            pbuf[2] = (uint8_t)(115200 >> 16);
+            pbuf[3] = (uint8_t)(115200 >> 24);
+            pbuf[4] = 0; // stop bits (1)
+            pbuf[5] = 0; // parity (none)
+            pbuf[6] = 8; // number of bits (8)
+            break;
 
-  case CDC_SEND_BREAK:
-     /* Add your code here */
-    break;    
-    
-  default:
-    break;
-  }
-  
-  return (USBD_OK);
+        case CDC_SET_CONTROL_LINE_STATE:
+            dev_is_connected = length & 1; // wValue is passed in Len (bit of a hack)
+            break;
+
+        case CDC_SEND_BREAK:
+            /* Add your code here */
+            break;
+
+        default:
+            break;
+    }
+
+    return USBD_OK;
 }
 
 /**
@@ -337,6 +336,10 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
     }
 
     return (USBD_OK);
+}
+
+int USBD_CDC_IsConnected(void) {
+    return dev_is_connected;
 }
 
 void USBD_CDC_SetInterrupt(int chr, void *data) {

@@ -287,30 +287,33 @@ static uint8_t USBD_CDC_MSC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
 
-  /* Class request */
-  case USB_REQ_TYPE_CLASS :
-      // req->wIndex is the recipient interface number
-      if (0) {
+        // Class request
+        case USB_REQ_TYPE_CLASS:
+            // req->wIndex is the recipient interface number
+            if (0) {
 #if USE_CDC
-      } else if (req->wIndex == CDC_IFACE_NUM) {
-          // CDC component
-            if (req->wLength) {
-              if (req->bmRequest & 0x80)
-              {
-                CDC_fops->Control(req->bRequest, (uint8_t *)CDC_ClassData.data, req->wLength);
-                  USBD_CtlSendData (pdev, (uint8_t *)CDC_ClassData.data, req->wLength);
-              }
-              else
-              {
-                CDC_ClassData.CmdOpCode = req->bRequest;
-                CDC_ClassData.CmdLength = req->wLength;
-                USBD_CtlPrepareRx (pdev, (uint8_t *)CDC_ClassData.data, req->wLength);
-              }
-              break;
-            }
+            } else if (req->wIndex == CDC_IFACE_NUM) {
+                // CDC component
+                if (req->wLength) {
+                    if (req->bmRequest & 0x80) {
+                        // device-to-host request
+                        CDC_fops->Control(req->bRequest, (uint8_t*)CDC_ClassData.data, req->wLength);
+                        USBD_CtlSendData(pdev, (uint8_t*)CDC_ClassData.data, req->wLength);
+                    } else {
+                        // host-to-device request
+                        CDC_ClassData.CmdOpCode = req->bRequest;
+                        CDC_ClassData.CmdLength = req->wLength;
+                        USBD_CtlPrepareRx(pdev, (uint8_t*)CDC_ClassData.data, req->wLength);
+                    }
+                } else {
+                    // Not a Data request
+                    // Transfer the command to the interface layer
+                    return CDC_fops->Control(req->bRequest, NULL, req->wValue);
+                }
+                break;
 #endif
 #if USE_MSC
-      } else if (req->wIndex == MSC_IFACE_NUM) {
+             } else if (req->wIndex == MSC_IFACE_NUM) {
           // MSC component
         switch (req->bRequest) {
         case BOT_GET_MAX_LUN :

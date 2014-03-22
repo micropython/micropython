@@ -5,8 +5,7 @@
 #define VCP_CHAR_CTRL_D (4)
 
 typedef enum {
-    USBD_DEVICE_CDC,
-    USBD_DEVICE_MSC,
+    USBD_DEVICE_CDC_MSC,
     USBD_DEVICE_HID,
 } usbd_device_kind_t;
 
