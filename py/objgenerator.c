@@ -70,7 +70,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
+STATIC mp_obj_t gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value) {
     mp_obj_gen_instance_t *self = self_in;
     if (self->ip == 0) {
         return mp_const_stop_iteration;
@@ -83,7 +83,8 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
         *self->sp = send_value;
     }
     mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
-        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack*)(self->state + self->n_state), &self->exc_sp);
+        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack*)(self->state + self->n_state),
+        &self->exc_sp, throw_value);
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
             // Explicitly mark generator as completed. If we don't do this,
@@ -113,11 +114,11 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
 }
 
 mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
-    return gen_next_send(self_in, mp_const_none);
+    return gen_resume(self_in, mp_const_none, MP_OBJ_NULL);
 }
 
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
-    mp_obj_t ret = gen_next_send(self_in, send_value);
+    mp_obj_t ret = gen_resume(self_in, send_value, MP_OBJ_NULL);
     if (ret == mp_const_stop_iteration) {
         nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
@@ -127,8 +128,21 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
+STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
+    mp_obj_t ret = gen_resume(args[0], mp_const_none, n_args == 2 ? args[1] : args[2]);
+    if (ret == mp_const_stop_iteration) {
+        nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
+    } else {
+        return ret;
+    }
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
+
+
 STATIC const mp_method_t gen_type_methods[] = {
     { "send", &gen_instance_send_obj },
+    { "throw", &gen_instance_throw_obj },
     { NULL, NULL }, // end-of-list sentinel
 };
 

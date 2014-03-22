@@ -29,3 +29,25 @@ try:
     print(next(g))
 except StopIteration:
     print("StopIteration")
+
+
+# Test throwing exception into generator
+def gen3():
+    yield 1
+    try:
+        yield 2
+    except ValueError:
+        print("ValueError received")
+        yield 3
+    yield 4
+    yield 5
+
+g = gen3()
+print(next(g))
+print(next(g))
+print("out of throw:", g.throw(ValueError))
+print(next(g))
+try:
+    print("out of throw2:", g.throw(ValueError))
+except ValueError:
+    print("Boomerang ValueError caught")
