@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -18,6 +19,7 @@
 #include "builtin.h"
 #include "objarray.h"
 #include "bc.h"
+#include "intdivmod.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -142,22 +144,49 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
 
     // built-in exceptions
     { MP_QSTR_BaseException, (mp_obj_t)&mp_type_BaseException },
+    { MP_QSTR_ArithmeticError, (mp_obj_t)&mp_type_ArithmeticError },
     { MP_QSTR_AssertionError, (mp_obj_t)&mp_type_AssertionError },
     { MP_QSTR_AttributeError, (mp_obj_t)&mp_type_AttributeError },
+    { MP_QSTR_BufferError, (mp_obj_t)&mp_type_BufferError },
+    { MP_QSTR_BytesWarning, (mp_obj_t)&mp_type_BytesWarning },
+    { MP_QSTR_DeprecationWarning, (mp_obj_t)&mp_type_DeprecationWarning },
+    { MP_QSTR_EOFError, (mp_obj_t)&mp_type_EOFError },
+    { MP_QSTR_EnvironmentError, (mp_obj_t)&mp_type_EnvironmentError },
+    { MP_QSTR_Exception, (mp_obj_t)&mp_type_Exception },
+    { MP_QSTR_FloatingPointError, (mp_obj_t)&mp_type_FloatingPointError },
+    { MP_QSTR_FutureWarning, (mp_obj_t)&mp_type_FutureWarning },
+    { MP_QSTR_GeneratorExit, (mp_obj_t)&mp_type_GeneratorExit },
+    { MP_QSTR_IOError, (mp_obj_t)&mp_type_IOError },
     { MP_QSTR_ImportError, (mp_obj_t)&mp_type_ImportError },
+    { MP_QSTR_ImportWarning, (mp_obj_t)&mp_type_ImportWarning },
     { MP_QSTR_IndentationError, (mp_obj_t)&mp_type_IndentationError },
     { MP_QSTR_IndexError, (mp_obj_t)&mp_type_IndexError },
     { MP_QSTR_KeyError, (mp_obj_t)&mp_type_KeyError },
+    { MP_QSTR_LookupError, (mp_obj_t)&mp_type_LookupError },
+    { MP_QSTR_MemoryError, (mp_obj_t)&mp_type_MemoryError },
     { MP_QSTR_NameError, (mp_obj_t)&mp_type_NameError },
+    { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
+    { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
+    { MP_QSTR_OverflowError, (mp_obj_t)&mp_type_OverflowError },
+    { MP_QSTR_PendingDeprecationWarning, (mp_obj_t)&mp_type_PendingDeprecationWarning },
+    { MP_QSTR_ReferenceError, (mp_obj_t)&mp_type_ReferenceError },
+    { MP_QSTR_ResourceWarning, (mp_obj_t)&mp_type_ResourceWarning },
+    { MP_QSTR_RuntimeError, (mp_obj_t)&mp_type_RuntimeError },
+    { MP_QSTR_RuntimeWarning, (mp_obj_t)&mp_type_RuntimeWarning },
     { MP_QSTR_SyntaxError, (mp_obj_t)&mp_type_SyntaxError },
+    { MP_QSTR_SyntaxWarning, (mp_obj_t)&mp_type_SyntaxWarning },
+    { MP_QSTR_SystemError, (mp_obj_t)&mp_type_SystemError },
+    { MP_QSTR_SystemExit, (mp_obj_t)&mp_type_SystemExit },
+    { MP_QSTR_TabError, (mp_obj_t)&mp_type_TabError },
     { MP_QSTR_TypeError, (mp_obj_t)&mp_type_TypeError },
+    { MP_QSTR_UnboundLocalError, (mp_obj_t)&mp_type_UnboundLocalError },
+    { MP_QSTR_UserWarning, (mp_obj_t)&mp_type_UserWarning },
     { MP_QSTR_ValueError, (mp_obj_t)&mp_type_ValueError },
+    { MP_QSTR_Warning, (mp_obj_t)&mp_type_Warning },
+    { MP_QSTR_ZeroDivisionError, (mp_obj_t)&mp_type_ZeroDivisionError },
+    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
     // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
     // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
-    { MP_QSTR_OverflowError, (mp_obj_t)&mp_type_OverflowError },
-    { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
-    { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
-    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
 
     // Extra builtins as defined by a port
     MICROPY_EXTRA_BUILTINS
@@ -633,16 +662,22 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     break;
                 }
                 case RT_BINARY_OP_FLOOR_DIVIDE:
-                case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: lhs_val /= rhs_val; break;
+                case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+                {
+                    lhs_val = python_floor_divide(lhs_val, rhs_val);
+                    break;
+                }
                 #if MICROPY_ENABLE_FLOAT
                 case RT_BINARY_OP_TRUE_DIVIDE:
                 case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
                 #endif
 
-                // TODO implement modulo as specified by Python
                 case RT_BINARY_OP_MODULO:
-                case RT_BINARY_OP_INPLACE_MODULO: lhs_val %= rhs_val; break;
-
+                case RT_BINARY_OP_INPLACE_MODULO:
+                {
+                    lhs_val = python_modulo(lhs_val, rhs_val);
+                    break;
+                }
                 case RT_BINARY_OP_POWER:
                 case RT_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {
