@@ -44,11 +44,22 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
 }
 
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mpz_t *zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
+    const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;
     mpz_dig_t z_int_dig[MPZ_NUM_DIG_FOR_INT];
 
+    // lhs could be a small int (eg small-int + mpz)
+    if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
+        mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
+        zlhs = &z_int;
+    } else if (MP_OBJ_IS_TYPE(lhs_in, &int_type)) {
+        zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
+    } else {
+        return MP_OBJ_NULL;
+    }
+
+    // if rhs is small int, then lhs was not (otherwise rt_binary_op handles it)
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
@@ -89,9 +100,14 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_deinit(&rem);
                 break;
             }
-
-            //case RT_BINARY_OP_MODULO:
-            //case RT_BINARY_OP_INPLACE_MODULO:
+            case RT_BINARY_OP_MODULO:
+            case RT_BINARY_OP_INPLACE_MODULO: {
+                // TODO check that this operation matches the CPython operation
+                mpz_t quo; mpz_init_zero(&quo);
+                mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
+                mpz_deinit(&quo);
+                break;
+            }
 
             //case RT_BINARY_OP_AND:
             //case RT_BINARY_OP_INPLACE_AND:

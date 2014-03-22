@@ -89,6 +89,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
 
     // built-in types
     { MP_QSTR_bool, (mp_obj_t)&bool_type },
+    { MP_QSTR_bytes, (mp_obj_t)&bytes_type },
 #if MICROPY_ENABLE_FLOAT
     { MP_QSTR_complex, (mp_obj_t)&mp_type_complex },
 #endif
@@ -102,6 +103,7 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_list, (mp_obj_t)&list_type },
     { MP_QSTR_map, (mp_obj_t)&map_type },
     { MP_QSTR_set, (mp_obj_t)&set_type },
+    { MP_QSTR_str, (mp_obj_t)&str_type },
     { MP_QSTR_super, (mp_obj_t)&super_type },
     { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
     { MP_QSTR_type, (mp_obj_t)&mp_type_type },
@@ -114,7 +116,6 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj },
     { MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj },
     { MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj },
-    { MP_QSTR_bytes, (mp_obj_t)&mp_builtin_bytes_obj },
     { MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj },
     { MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj },
     { MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj },
@@ -137,7 +138,6 @@ STATIC const mp_builtin_elem_t builtin_table[] = {
     { MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj },
     { MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj },
     { MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj },
-    { MP_QSTR_str, (mp_obj_t)&mp_builtin_str_obj },
     { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
 
     { MP_QSTR_object, (mp_obj_t)&mp_type_object },
@@ -376,7 +376,7 @@ mp_obj_t rt_load_const_dec(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
     uint len;
     const byte* data = qstr_data(qstr, &len);
-    return mp_parse_num_decimal((const char*)data, len);
+    return mp_parse_num_decimal((const char*)data, len, true, false);
 }
 
 mp_obj_t rt_load_const_str(qstr qstr) {

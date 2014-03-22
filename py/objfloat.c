@@ -38,10 +38,12 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
                 // a string, parse it
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l);
+                return mp_parse_num_decimal(s, l, false, false);
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
+                // a float, just return it
                 return args[0];
             } else {
+                // something else, try to cast it to a float
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
             }
 

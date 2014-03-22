@@ -41,77 +41,71 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
 }
 
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_obj_int_t *lhs = lhs_in;
-    mp_obj_int_t *rhs = rhs_in;
+    long long lhs_val;
     long long rhs_val;
 
-    if (MP_OBJ_IS_SMALL_INT(rhs)) {
-        rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
-    } else if (MP_OBJ_IS_TYPE(rhs, &int_type)) {
-        rhs_val = rhs->val;
+    if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
+        lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
+    } else if (MP_OBJ_IS_TYPE(lhs_in, &int_type)) {
+        lhs_val = ((mp_obj_int_t*)lhs_in)->val;
+    } else {
+        return MP_OBJ_NULL;
+    }
+
+    if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
+        rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &int_type)) {
+        rhs_val = ((mp_obj_int_t*)rhs_in)->val;
     } else {
         return MP_OBJ_NULL;
     }
 
     switch (op) {
         case RT_BINARY_OP_ADD:
-            return mp_obj_new_int_from_ll(lhs->val + rhs_val);
-        case RT_BINARY_OP_SUBTRACT:
-            return mp_obj_new_int_from_ll(lhs->val - rhs_val);
-        case RT_BINARY_OP_MULTIPLY:
-            return mp_obj_new_int_from_ll(lhs->val * rhs_val);
-        case RT_BINARY_OP_FLOOR_DIVIDE:
-            return mp_obj_new_int_from_ll(lhs->val / rhs_val);
-        case RT_BINARY_OP_MODULO:
-            return mp_obj_new_int_from_ll(lhs->val % rhs_val);
-
         case RT_BINARY_OP_INPLACE_ADD:
-            lhs->val += rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val + rhs_val);
+        case RT_BINARY_OP_SUBTRACT:
         case RT_BINARY_OP_INPLACE_SUBTRACT:
-            lhs->val -= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val - rhs_val);
+        case RT_BINARY_OP_MULTIPLY:
         case RT_BINARY_OP_INPLACE_MULTIPLY:
-            lhs->val *= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val * rhs_val);
+        case RT_BINARY_OP_FLOOR_DIVIDE:
         case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            lhs->val /= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val / rhs_val);
+        case RT_BINARY_OP_MODULO:
         case RT_BINARY_OP_INPLACE_MODULO:
-            lhs->val %= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val % rhs_val);
 
         case RT_BINARY_OP_AND:
-            return mp_obj_new_int_from_ll(lhs->val & rhs_val);
-        case RT_BINARY_OP_OR:
-            return mp_obj_new_int_from_ll(lhs->val | rhs_val);
-        case RT_BINARY_OP_XOR:
-            return mp_obj_new_int_from_ll(lhs->val ^ rhs_val);
-
         case RT_BINARY_OP_INPLACE_AND:
-            lhs->val &= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val & rhs_val);
+        case RT_BINARY_OP_OR:
         case RT_BINARY_OP_INPLACE_OR:
-            lhs->val |= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val | rhs_val);
+        case RT_BINARY_OP_XOR:
         case RT_BINARY_OP_INPLACE_XOR:
-            lhs->val ^= rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val ^ rhs_val);
 
         case RT_BINARY_OP_LSHIFT:
-            return mp_obj_new_int_from_ll(lhs->val << (int)rhs_val);
-        case RT_BINARY_OP_RSHIFT:
-            return mp_obj_new_int_from_ll(lhs->val >> (int)rhs_val);
-
         case RT_BINARY_OP_INPLACE_LSHIFT:
-            lhs->val <<= (int)rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val << (int)rhs_val);
+        case RT_BINARY_OP_RSHIFT:
         case RT_BINARY_OP_INPLACE_RSHIFT:
-            lhs->val >>= (int)rhs_val; return lhs;
+            return mp_obj_new_int_from_ll(lhs_val >> (int)rhs_val);
 
         case RT_BINARY_OP_LESS:
-            return MP_BOOL(lhs->val < rhs_val);
+            return MP_BOOL(lhs_val < rhs_val);
         case RT_BINARY_OP_MORE:
-            return MP_BOOL(lhs->val > rhs_val);
+            return MP_BOOL(lhs_val > rhs_val);
         case RT_BINARY_OP_LESS_EQUAL:
-            return MP_BOOL(lhs->val <= rhs_val);
+            return MP_BOOL(lhs_val <= rhs_val);
         case RT_BINARY_OP_MORE_EQUAL:
-            return MP_BOOL(lhs->val >= rhs_val);
+            return MP_BOOL(lhs_val >= rhs_val);
         case RT_BINARY_OP_EQUAL:
-            return MP_BOOL(lhs->val == rhs_val);
+            return MP_BOOL(lhs_val == rhs_val);
         case RT_BINARY_OP_NOT_EQUAL:
-            return MP_BOOL(lhs->val != rhs_val);
+            return MP_BOOL(lhs_val != rhs_val);
 
         default:
             // op not supported
