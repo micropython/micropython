@@ -48,6 +48,14 @@ float ceilf(float x) { return 0.0; }
 float floorf(float x) { return 0.0; }
 float truncf(float x) { return 0.0; }
 float fmodf(float x, float y) { return 0.0; }
+float gammaf(float x) { return 0.0; }
+float lgammaf(float x) { return 0.0; }
+float erff(float x) { return 0.0; }
+float erfcf(float x) { return 0.0; }
+float modff(float x, float *y) { return 0.0; }
+float frexpf(float x, int *exp) { return 0.0; }
+float ldexpf(float x, int exp) { return 0.0; }
+int __fpclassifyf(float x) { return 0; }
 
 /*****************************************************************************/
 // from musl-0.9.15 libm.h
