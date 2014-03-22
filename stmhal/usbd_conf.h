@@ -36,7 +36,6 @@
 #include <string.h>
 
 #include "mpconfig.h"
-#include "gc.h" // for gc_alloc and gc_free
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -47,17 +46,18 @@
 #define USBD_SUPPORT_USER_STRING              0
 #define USBD_SELF_POWERED                     0
 #define USBD_DEBUG_LEVEL                      0
- 
-// for MSC device
-#define MSC_MEDIA_PACKET                      8192
 
 /* Exported macro ------------------------------------------------------------*/
 /* Memory management macros */
+/*
+these should not be used because the GC is reset on a soft reset but the usb is not
+#include "gc.h"
 #define USBD_malloc               gc_alloc
 #define USBD_free                 gc_free
 #define USBD_memset               memset
 #define USBD_memcpy               memcpy
-    
+*/
+
 /* DEBUG macros */
 #if (USBD_DEBUG_LEVEL > 0)
 #define  USBD_UsrLog(...)   printf(__VA_ARGS__);\

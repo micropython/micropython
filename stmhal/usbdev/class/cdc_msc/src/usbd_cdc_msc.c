@@ -3,17 +3,9 @@
 
 #define USB_DESC_TYPE_ASSOCIATION (0x0b)
 
-/* currently unused
-#define CDC_SEND_ENCAPSULATED_COMMAND               0x00
-#define CDC_GET_ENCAPSULATED_RESPONSE               0x01
-#define CDC_SET_COMM_FEATURE                        0x02
-#define CDC_GET_COMM_FEATURE                        0x03
-#define CDC_CLEAR_COMM_FEATURE                      0x04
-#define CDC_SET_LINE_CODING                         0x20
-#define CDC_GET_LINE_CODING                         0x21
-#define CDC_SET_CONTROL_LINE_STATE                  0x22
-#define CDC_SEND_BREAK                              0x23
-*/
+#define CDC_CMD_PACKET_SIZE                  8  // Control Endpoint Packet size
+#define CDC_DATA_FS_IN_PACKET_SIZE                CDC_DATA_FS_MAX_PACKET_SIZE
+#define CDC_DATA_FS_OUT_PACKET_SIZE               CDC_DATA_FS_MAX_PACKET_SIZE
 
 #define BOT_GET_MAX_LUN              0xFE
 #define BOT_RESET                    0xFF

@@ -47,7 +47,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_msc.h"
 #include "usbd_cdc_interface.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver

@@ -28,10 +28,21 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_msc.h"
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
 #include "usb.h"
+
+// CDC control commands
+#define CDC_SEND_ENCAPSULATED_COMMAND               0x00
+#define CDC_GET_ENCAPSULATED_RESPONSE               0x01
+#define CDC_SET_COMM_FEATURE                        0x02
+#define CDC_GET_COMM_FEATURE                        0x03
+#define CDC_CLEAR_COMM_FEATURE                      0x04
+#define CDC_SET_LINE_CODING                         0x20
+#define CDC_GET_LINE_CODING                         0x21
+#define CDC_SET_CONTROL_LINE_STATE                  0x22
+#define CDC_SEND_BREAK                              0x23
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

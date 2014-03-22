@@ -5,11 +5,9 @@
 #include  "usbd_msc_scsi.h"
 #include  "usbd_ioreq.h"
 
-// CDC endpoint parameters
-#define CDC_DATA_FS_MAX_PACKET_SIZE         64  // Endpoint IN & OUT Packet size
-#define CDC_CMD_PACKET_SIZE                  8  // Control Endpoint Packet size
-#define CDC_DATA_FS_IN_PACKET_SIZE                CDC_DATA_FS_MAX_PACKET_SIZE
-#define CDC_DATA_FS_OUT_PACKET_SIZE               CDC_DATA_FS_MAX_PACKET_SIZE
+// CDC and MSC packet sizes
+#define CDC_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
+#define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
 
 #if 0
 // CDC
@@ -34,7 +32,7 @@
 #define MSC_IFACE_NUM (0)
 #define MSC_IN_EP (0x81)
 #define MSC_OUT_EP (0x01)
-#elif 0
+#elif 1
 // CDC + MSC
 #define USB_CDC_MSC_CONFIG_DESC_SIZ (98)
 #define NUM_INTERFACES (3)
