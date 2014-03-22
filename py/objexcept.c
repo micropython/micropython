@@ -107,23 +107,23 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION_BASE(NameError)
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
   MP_DEFINE_EXCEPTION(OSError, Exception)
+    MP_DEFINE_EXCEPTION_BASE(OSError)
     // Probably don't need these
-    /*MP_DEFINE_EXCEPTION_BASE(OSError)
-    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
+    /*MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(ConnectionError, OSError)
       MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
-    MP_DEFINE_EXCEPTION(FileExistsError, OSError)
-    MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
     MP_DEFINE_EXCEPTION(InterruptedError, OSError)
     MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(PermissionError, OSError)
     MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
     MP_DEFINE_EXCEPTION(TimeoutError, OSError)*/
+    MP_DEFINE_EXCEPTION(FileExistsError, OSError)
+    MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
   MP_DEFINE_EXCEPTION(ReferenceError, Exception)
   MP_DEFINE_EXCEPTION(RuntimeError, Exception)
     MP_DEFINE_EXCEPTION_BASE(RuntimeError)
@@ -137,6 +137,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
   MP_DEFINE_EXCEPTION(TypeError, Exception)
   MP_DEFINE_EXCEPTION(ValueError, Exception)
     //TODO: Implement UnicodeErrors which take arguments
+  /*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION_BASE(Warning)
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
@@ -149,6 +150,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnicodeWarning, Warning)
     MP_DEFINE_EXCEPTION(BytesWarning, Warning)
     MP_DEFINE_EXCEPTION(ResourceWarning, Warning)
+    */
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     return mp_obj_new_exception_msg_varg(exc_type, NULL);
