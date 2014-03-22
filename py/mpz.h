@@ -59,6 +59,9 @@ void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
+void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
+void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
+void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 
 mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2);
 mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2);

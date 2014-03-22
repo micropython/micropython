@@ -173,6 +173,69 @@ STATIC uint mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
     return idig + 1 - oidig;
 }
 
+/* computes i = j & k
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
+   can have i, j, k pointing to same memory
+*/
+STATIC uint mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+    mpz_dig_t *oidig = idig;
+
+    jlen -= klen;
+
+    for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
+        *idig = *jdig & *kdig;
+    }
+
+    for (; jlen > 0; --jlen, ++idig) {
+        *idig = 0;
+    }
+
+    return idig - oidig;
+}
+
+/* computes i = j | k
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
+   can have i, j, k pointing to same memory
+*/
+STATIC uint mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+    mpz_dig_t *oidig = idig;
+
+    jlen -= klen;
+
+    for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
+        *idig = *jdig | *kdig;
+    }
+
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
+        *idig = *jdig;
+    }
+
+    return idig - oidig;
+}
+
+/* computes i = j ^ k
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
+   can have i, j, k pointing to same memory
+*/
+STATIC uint mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+    mpz_dig_t *oidig = idig;
+
+    jlen -= klen;
+
+    for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
+        *idig = *jdig ^ *kdig;
+    }
+
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
+        *idig = *jdig;
+    }
+
+    return idig - oidig;
+}
+
 /* computes i = i * d1 + d2
    returns number of digits in i
    assumes enough memory in i; assumes normalised i; assumes dmul != 0
@@ -803,6 +866,75 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         dest->neg = lhs->neg;
     }
+}
+
+/* computes dest = lhs & rhs
+   can have dest, lhs, rhs the same
+*/
+void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+        const mpz_t *temp = lhs;
+        lhs = rhs;
+        rhs = temp;
+    }
+
+    if (lhs->neg == rhs->neg) {
+        mpz_need_dig(dest, lhs->len);
+        dest->len = mpn_and(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    } else {
+        mpz_need_dig(dest, lhs->len);
+        // TODO
+        assert(0);
+//        dest->len = mpn_and_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    }
+
+    dest->neg = lhs->neg;
+}
+
+/* computes dest = lhs | rhs
+   can have dest, lhs, rhs the same
+*/
+void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+        const mpz_t *temp = lhs;
+        lhs = rhs;
+        rhs = temp;
+    }
+
+    if (lhs->neg == rhs->neg) {
+        mpz_need_dig(dest, lhs->len);
+        dest->len = mpn_or(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    } else {
+        mpz_need_dig(dest, lhs->len);
+        // TODO
+        assert(0);
+//        dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    }
+
+    dest->neg = lhs->neg;
+}
+
+/* computes dest = lhs ^ rhs
+   can have dest, lhs, rhs the same
+*/
+void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+        const mpz_t *temp = lhs;
+        lhs = rhs;
+        rhs = temp;
+    }
+
+    if (lhs->neg == rhs->neg) {
+        mpz_need_dig(dest, lhs->len);
+        dest->len = mpn_xor(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    } else {
+        mpz_need_dig(dest, lhs->len);
+        // TODO
+        assert(0);
+//        dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+    }
+
+    dest->neg = 0;
 }
 
 /* computes dest = lhs * rhs

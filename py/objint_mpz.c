@@ -78,7 +78,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return mp_obj_new_float(flhs / frhs);
 #endif
 
-    } else if (op <= RT_BINARY_OP_POWER) {
+    } else if (op <= RT_BINARY_OP_INPLACE_POWER) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
 
         switch (op) {
@@ -119,12 +119,18 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
             }
 
-            //case RT_BINARY_OP_AND:
-            //case RT_BINARY_OP_INPLACE_AND:
-            //case RT_BINARY_OP_OR:
-            //case RT_BINARY_OP_INPLACE_OR:
-            //case RT_BINARY_OP_XOR:
-            //case RT_BINARY_OP_INPLACE_XOR:
+            case RT_BINARY_OP_AND:
+            case RT_BINARY_OP_INPLACE_AND:
+                mpz_and_inpl(&res->mpz, zlhs, zrhs);
+                break;
+            case RT_BINARY_OP_OR:
+            case RT_BINARY_OP_INPLACE_OR:
+                mpz_or_inpl(&res->mpz, zlhs, zrhs);
+                break;
+            case RT_BINARY_OP_XOR:
+            case RT_BINARY_OP_INPLACE_XOR:
+                mpz_xor_inpl(&res->mpz, zlhs, zrhs);
+                break;
 
             case RT_BINARY_OP_LSHIFT:
             case RT_BINARY_OP_INPLACE_LSHIFT:
