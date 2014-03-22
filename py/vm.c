@@ -17,16 +17,6 @@
 // top element.
 // Exception stack also grows up, top element is also pointed at.
 
-// Exception stack entry
-typedef struct _mp_exc_stack {
-    const byte *handler;
-    // bit 0 is saved currently_in_except_block value
-    machine_uint_t val_sp;
-    // We might only have 2 interesting cases here: SETUP_EXCEPT & SETUP_FINALLY,
-    // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
-    byte opcode;
-} mp_exc_stack;
-
 // Exception stack unwind reasons (WHY_* in CPython-speak)
 // TODO perhaps compress this to RETURN=0, JUMP>0, with number of unwinds
 // left to do encoded in the JUMP number
@@ -89,8 +79,10 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
         }
     }
 
+    mp_exc_stack exc_stack[4];
+    mp_exc_stack *exc_sp = &exc_stack[0] - 1;
     // execute the byte code
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
 
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
@@ -113,7 +105,10 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out) {
+mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out,
+                                           mp_obj_t *fastn, mp_obj_t **sp_in_out,
+                                           mp_exc_stack *exc_stack, mp_exc_stack **exc_sp_in_out,
+                                           volatile mp_obj_t inject_exc) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
     const byte *ip = *ip_in_out;
@@ -123,14 +118,21 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     mp_obj_t obj1, obj2;
     nlr_buf_t nlr;
 
-    volatile machine_uint_t currently_in_except_block = 0; // 0 or 1, to detect nested exceptions
-    mp_exc_stack exc_stack[4];
-    mp_exc_stack *volatile exc_sp = &exc_stack[0] - 1; // stack grows up, exc_sp points to top of stack
+    volatile machine_uint_t currently_in_except_block = (int)*exc_sp_in_out & 1; // 0 or 1, to detect nested exceptions
+    mp_exc_stack *volatile exc_sp = (void*)((int)*exc_sp_in_out & ~1); // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
     for (;;) {
         if (nlr_push(&nlr) == 0) {
+            // If we have exception to inject, now that we finish setting up
+            // execution context, raise it. This works as if RAISE_VARARGS
+            // bytecode was executed.
+            if (inject_exc != MP_OBJ_NULL) {
+                mp_obj_t t = inject_exc;
+                inject_exc = MP_OBJ_NULL;
+                nlr_jump(rt_make_raise_obj(t));
+            }
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
@@ -434,7 +436,7 @@ unwind_jump:
                     // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
                     case MP_BC_POP_BLOCK:
                         // we are exiting an exception handler, so pop the last one of the exception-stack
-                        assert(exc_sp >= &exc_stack[0]);
+                        assert(exc_sp >= exc_stack);
                         currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
                         exc_sp--; // pop back to previous exception handler
                         break;
@@ -443,7 +445,7 @@ unwind_jump:
                     case MP_BC_POP_EXCEPT:
                         // TODO need to work out how blocks work etc
                         // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
-                        assert(exc_sp >= &exc_stack[0]);
+                        assert(exc_sp >= exc_stack);
                         assert(currently_in_except_block);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
@@ -592,7 +594,7 @@ unwind_return:
                         }
                         nlr_pop();
                         *sp_in_out = sp;
-                        assert(exc_sp == &exc_stack[0] - 1);
+                        assert(exc_sp == exc_stack - 1);
                         return MP_VM_RETURN_NORMAL;
 
                     case MP_BC_RAISE_VARARGS:
@@ -605,6 +607,7 @@ unwind_return:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
+                        *exc_sp_in_out = (void*)((int)exc_sp | currently_in_except_block);
                         return MP_VM_RETURN_YIELD;
 
                     case MP_BC_IMPORT_NAME:
@@ -654,7 +657,7 @@ unwind_return:
             while (currently_in_except_block) {
                 // nested exception
 
-                assert(exc_sp >= &exc_stack[0]);
+                assert(exc_sp >= exc_stack);
 
                 // TODO make a proper message for nested exception
                 // at the moment we are just raising the very last exception (the one that caused the nested exception)
@@ -664,7 +667,7 @@ unwind_return:
                 exc_sp--; // pop back to previous exception handler
             }
 
-            if (exc_sp >= &exc_stack[0]) {
+            if (exc_sp >= exc_stack) {
                 // set flag to indicate that we are now handling an exception
                 currently_in_except_block = 1;
 
