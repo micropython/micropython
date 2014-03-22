@@ -50,7 +50,7 @@ void set_current_path(const char* path) {
 }
 
 mp_obj_t get_current_path() {
-    return mp_obj_new_str((byte *)vstr_str(&current_path), current_path.len, 0);
+    return mp_obj_new_str((byte *)vstr_str(&current_path), current_path.len, 1);
 }
 
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
