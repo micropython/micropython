@@ -176,6 +176,8 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
+        return mp_obj_int_as_float(arg);
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         return mp_obj_float_get(arg);
     } else {

@@ -215,14 +215,26 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
 machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        return mpz_as_int(&self->mpz);
     }
-    mp_obj_int_t *self = self_in;
-    return mpz_as_int(&self->mpz);
 }
 
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
     // TODO: Check overflow
     return mp_obj_int_get(self_in);
 }
+
+#if MICROPY_ENABLE_FLOAT
+mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        return mpz_as_float(&self->mpz);
+    }
+}
+#endif
 
 #endif

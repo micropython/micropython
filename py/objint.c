@@ -101,6 +101,12 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
+#if MICROPY_ENABLE_FLOAT
+mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+#endif
+
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 const mp_obj_type_t int_type = {
