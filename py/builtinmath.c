@@ -62,37 +62,36 @@ MATH_FUN_1(lgamma, lgamma)
 //TODO: factorial, fsum
 
 // Functions that return a tuple
-mp_obj_t mp_math_frexp(mp_obj_t x_obj){
-  machine_int_t int_exponent = 0;
-  mp_float_t significand = frexp(mp_obj_get_float(x_obj), &int_exponent);
-  mp_obj_t tuple[2];
-  tuple[0] = mp_obj_new_float(significand);
-  tuple[1] = mp_obj_new_int(int_exponent);
-  return mp_obj_new_tuple(2, tuple);
+mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
+    int int_exponent = 0;
+    mp_float_t significand = MICROPY_FLOAT_C_FUN(frexp)(mp_obj_get_float(x_obj), &int_exponent);
+    mp_obj_t tuple[2];
+    tuple[0] = mp_obj_new_float(significand);
+    tuple[1] = mp_obj_new_int(int_exponent);
+    return mp_obj_new_tuple(2, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 
-mp_obj_t mp_math_modf(mp_obj_t x_obj){
-  mp_float_t int_part = 0.0;
-  mp_float_t fractional_part = modf(mp_obj_get_float(x_obj), &int_part);
-  mp_obj_t tuple[2];
-  tuple[0] = mp_obj_new_float(fractional_part);
-  tuple[1] = mp_obj_new_float(int_part);
-  return mp_obj_new_tuple(2, tuple);
+mp_obj_t mp_math_modf(mp_obj_t x_obj) {
+    mp_float_t int_part = 0.0;
+    mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(mp_obj_get_float(x_obj), &int_part);
+    mp_obj_t tuple[2];
+    tuple[0] = mp_obj_new_float(fractional_part);
+    tuple[1] = mp_obj_new_float(int_part);
+    return mp_obj_new_tuple(2, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_modf_obj, mp_math_modf);
 
 // Angular conversions
-mp_obj_t mp_math_radians(mp_obj_t x_obj){
-  return mp_obj_new_float(mp_obj_get_float(x_obj) * M_PI / 180.0);
+mp_obj_t mp_math_radians(mp_obj_t x_obj) {
+    return mp_obj_new_float(mp_obj_get_float(x_obj) * M_PI / 180.0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_radians_obj, mp_math_radians);
 
-mp_obj_t mp_math_degrees(mp_obj_t x_obj){
-  return mp_obj_new_float(mp_obj_get_float(x_obj) * 180.0 / M_PI);
+mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
+    return mp_obj_new_float(mp_obj_get_float(x_obj) * 180.0 / M_PI);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
-
 
 STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_math) },
