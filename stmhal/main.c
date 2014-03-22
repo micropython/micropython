@@ -10,7 +10,6 @@
 #include "pendsv.h"
 #include "mpconfig.h"
 #include "qstr.h"
-#include "nlr.h"
 #include "misc.h"
 #include "lexer.h"
 #include "parse.h"
@@ -23,6 +22,7 @@
 #include "gccollect.h"
 #include "pyexec.h"
 #include "pybmodule.h"
+#include "osmodule.h"
 #include "usart.h"
 #include "led.h"
 #include "exti.h"
@@ -276,6 +276,10 @@ soft_reset:
     // probably shouldn't do this, so we are compatible with CPython
     rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
+    // pre-import the os module
+    // TODO don't do this! (need a way of registering builtin modules...)
+    rt_store_name(MP_QSTR_os, (mp_obj_t)&os_module);
+
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;
 #if MICROPY_HW_HAS_SWITCH
@@ -475,10 +479,8 @@ soft_reset:
 
     pyexec_repl();
 
-#if 0
     printf("PYB: sync filesystems\n");
     storage_flush();
-#endif
 
     printf("PYB: soft reboot\n");
 

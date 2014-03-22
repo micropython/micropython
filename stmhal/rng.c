@@ -14,6 +14,10 @@ void rng_init(void) {
     HAL_RNG_Init(&RngHandle);
 }
 
+uint32_t rng_get(void) {
+    return HAL_RNG_GetRandomNumber(&RngHandle);
+}
+
 STATIC mp_obj_t pyb_rng_get(void) {
     return mp_obj_new_int(HAL_RNG_GetRandomNumber(&RngHandle) >> 2);
 }

@@ -73,6 +73,7 @@ SRC_C = \
 	gccollect.c \
 	pyexec.c \
 	pybmodule.c \
+	osmodule.c \
 	import.c \
 	lexerfatfs.c \
 	gpio.c \
