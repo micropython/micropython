@@ -15,6 +15,7 @@
 #include "obj.h"
 #include "compile.h"
 #include "runtime.h"
+#include "intdivmod.h"
 
 // TODO need to mangle __attr names
 
@@ -141,7 +142,8 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                         ; // pass
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
                         // XXX implement this properly as Python's % operator acts differently to C's
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 % arg1);
+                        //pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 % arg1);
+                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_modulo(arg0, arg1));
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
                         // XXX implement this properly as Python's // operator acts differently to C's
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 / arg1);

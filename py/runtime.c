@@ -18,6 +18,7 @@
 #include "builtin.h"
 #include "objarray.h"
 #include "bc.h"
+#include "intdivmod.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -666,10 +667,12 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
                 #endif
 
-                // TODO implement modulo as specified by Python
                 case RT_BINARY_OP_MODULO:
-                case RT_BINARY_OP_INPLACE_MODULO: lhs_val %= rhs_val; break;
-
+                case RT_BINARY_OP_INPLACE_MODULO:
+                {
+                    lhs_val = python_modulo(lhs_val, rhs_val);
+                    break;
+                }
                 case RT_BINARY_OP_POWER:
                 case RT_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {

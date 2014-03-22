@@ -102,10 +102,13 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             case RT_BINARY_OP_MODULO:
             case RT_BINARY_OP_INPLACE_MODULO: {
-                // TODO check that this operation matches the CPython operation
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
+		// Check signs and do Python style modulo
+		if (zlhs->neg != zrhs->neg) {
+                    mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
+                }
                 break;
             }
 
