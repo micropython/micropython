@@ -75,7 +75,9 @@ mp_import_stat_t find_in_current_path(const char *file_str, uint file_len, vstr_
         
         mp_import_stat_t stat = stat_dir_or_file(new_path);
 
-        vstr_add_str(dest, vstr_str(new_path));
+        if (stat != MP_IMPORT_STAT_NO_EXIST) {
+            vstr_add_str(dest, vstr_str(new_path));
+        }
         vstr_free(new_path);
         return stat;
     }
@@ -95,6 +97,7 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     }
 
     if (path_num == 0) {
+        vstr_reset(dest);
         // sys_path is empty, so just use the given file name
         vstr_add_strn(dest, file_str, file_len);
         return stat_dir_or_file(dest);
