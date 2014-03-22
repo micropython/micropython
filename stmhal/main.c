@@ -23,6 +23,7 @@
 #include "pyexec.h"
 #include "pybmodule.h"
 #include "osmodule.h"
+#include "timemodule.h"
 #include "usart.h"
 #include "led.h"
 #include "exti.h"
@@ -276,9 +277,10 @@ soft_reset:
     // probably shouldn't do this, so we are compatible with CPython
     rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
-    // pre-import the os module
+    // pre-import the os and time modules
     // TODO don't do this! (need a way of registering builtin modules...)
     rt_store_name(MP_QSTR_os, (mp_obj_t)&os_module);
+    rt_store_name(MP_QSTR_time, (mp_obj_t)&time_module);
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;

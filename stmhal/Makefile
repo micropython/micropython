@@ -74,6 +74,7 @@ SRC_C = \
 	pyexec.c \
 	pybmodule.c \
 	osmodule.c \
+	timemodule.c \
 	import.c \
 	lexerfatfs.c \
 	gpio.c \

@@ -66,3 +66,7 @@ Q(rmdir)
 Q(unlink)
 Q(sep)
 Q(urandom)
+
+// for time module
+Q(time)
+Q(sleep)
