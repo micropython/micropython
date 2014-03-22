@@ -352,8 +352,7 @@ void RTC_WKUP_IRQHandler(void) {
 }
 
 void TIM2_IRQHandler(void) {
-    // servo timer is TIM2
-    HAL_TIM_IRQHandler(&servo_TIM2_Handle);
+    HAL_TIM_IRQHandler(&TIM2_Handle);
 }
 
 void TIM3_IRQHandler(void) {

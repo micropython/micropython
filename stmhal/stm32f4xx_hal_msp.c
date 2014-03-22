@@ -149,7 +149,7 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim == &TIM3_Handle) {
         USBD_CDC_HAL_TIM_PeriodElapsedCallback();
-    } else if (htim == &servo_TIM2_Handle) {
+    } else if (htim == &TIM2_Handle) {
         servo_timer_irq_callback();
     }
 }

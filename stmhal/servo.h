@@ -1,4 +1,4 @@
-extern TIM_HandleTypeDef servo_TIM2_Handle;
+extern TIM_HandleTypeDef TIM2_Handle;
 
 void servo_init(void);
 void servo_timer_irq_callback(void);

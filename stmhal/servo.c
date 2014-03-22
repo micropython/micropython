@@ -29,7 +29,7 @@ STATIC const mp_obj_type_t servo_obj_type;
 
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
-TIM_HandleTypeDef servo_TIM2_Handle;
+TIM_HandleTypeDef TIM2_Handle;
 
 void servo_init(void) {
     // TIM2 clock enable
@@ -40,12 +40,12 @@ void servo_init(void) {
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
 
     // PWM clock configuration
-    servo_TIM2_Handle.Instance = TIM2;
-    servo_TIM2_Handle.Init.Period = 2000; // timer cycles at 50Hz
-    servo_TIM2_Handle.Init.Prescaler = ((SystemCoreClock / 2) / 100000) - 1; // timer runs at 100kHz
-    servo_TIM2_Handle.Init.ClockDivision = 0;
-    servo_TIM2_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    HAL_TIM_PWM_Init(&servo_TIM2_Handle);
+    TIM2_Handle.Instance = TIM2;
+    TIM2_Handle.Init.Period = 2000; // timer cycles at 50Hz
+    TIM2_Handle.Init.Prescaler = ((SystemCoreClock / 2) / 100000) - 1; // timer runs at 100kHz
+    TIM2_Handle.Init.ClockDivision = 0;
+    TIM2_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_PWM_Init(&TIM2_Handle);
 
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
@@ -83,9 +83,9 @@ void servo_timer_irq_callback(void) {
         }
     }
     if (need_it) {
-        __HAL_TIM_ENABLE_IT(&servo_TIM2_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_ENABLE_IT(&TIM2_Handle, TIM_IT_UPDATE);
     } else {
-        __HAL_TIM_DISABLE_IT(&servo_TIM2_Handle, TIM_IT_UPDATE);
+        __HAL_TIM_DISABLE_IT(&TIM2_Handle, TIM_IT_UPDATE);
     }
 }
 
@@ -115,10 +115,10 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     oc_init.Pulse = s->pulse_cur; // units of 10us
     oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
     oc_init.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&servo_TIM2_Handle, &oc_init, channel);
+    HAL_TIM_PWM_ConfigChannel(&TIM2_Handle, &oc_init, channel);
 
     // start PWM
-    HAL_TIM_PWM_Start(&servo_TIM2_Handle, channel);
+    HAL_TIM_PWM_Start(&TIM2_Handle, channel);
 }
 
 /******************************************************************************/
