@@ -103,8 +103,10 @@ STATIC mp_obj_t gen_next_send(mp_obj_t self_in, mp_obj_t send_value) {
             return *self->sp;
 
         case MP_VM_RETURN_EXCEPTION:
+            self->ip = 0;
+            nlr_jump(self->state[self->n_state - 1]);
+
         default:
-            // TODO
             assert(0);
             return mp_const_none;
     }
