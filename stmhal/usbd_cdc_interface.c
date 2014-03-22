@@ -66,7 +66,7 @@ static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
 
 /* TIM handler declaration */
-TIM_HandleTypeDef USBD_CDC_TimHandle;
+TIM_HandleTypeDef USBD_CDC_TIM3_Handle;
 /* USB handler declaration */
 extern USBD_HandleTypeDef hUSBDDevice;
 
@@ -132,7 +132,7 @@ static int8_t CDC_Itf_Init(void)
   
   /*##-4- Start the TIM Base generation in interrupt mode ####################*/
   /* Start Channel1 */
-  if(HAL_TIM_Base_Start_IT(&USBD_CDC_TimHandle) != HAL_OK)
+  if(HAL_TIM_Base_Start_IT(&USBD_CDC_TIM3_Handle) != HAL_OK)
   {
     /* Starting Error */
   }
@@ -250,8 +250,7 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
   * @param  htim: TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
   uint32_t buffptr;
   uint32_t buffsize;
   
@@ -388,7 +387,7 @@ int USBD_CDC_RxGet(void) {
 static void TIM_Config(void)
 {  
   /* Set TIMx instance */
-  USBD_CDC_TimHandle.Instance = USBD_CDC_TIMx;
+  USBD_CDC_TIM3_Handle.Instance = USBD_CDC_TIMx;
   
   /* Initialize TIM3 peripheral as follow:
        + Period = 10000 - 1
@@ -396,11 +395,11 @@ static void TIM_Config(void)
        + ClockDivision = 0
        + Counter direction = Up
   */
-  USBD_CDC_TimHandle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
-  USBD_CDC_TimHandle.Init.Prescaler = 84-1;
-  USBD_CDC_TimHandle.Init.ClockDivision = 0;
-  USBD_CDC_TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&USBD_CDC_TimHandle) != HAL_OK)
+  USBD_CDC_TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
+  USBD_CDC_TIM3_Handle.Init.Prescaler = 84-1;
+  USBD_CDC_TIM3_Handle.Init.ClockDivision = 0;
+  USBD_CDC_TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+  if(HAL_TIM_Base_Init(&USBD_CDC_TIM3_Handle) != HAL_OK)
   {
     /* Initialization Error */
   }

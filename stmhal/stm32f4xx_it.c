@@ -42,12 +42,15 @@
 
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal.h"
+#include "usbd_cdc_msc.h"
+#include "usbd_cdc_interface.h"
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "exti.h"
+#include "servo.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -64,7 +67,6 @@
 
 extern void fatality();
 extern PCD_HandleTypeDef hpcd;
-extern TIM_HandleTypeDef USBD_CDC_TimHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -349,9 +351,14 @@ void RTC_WKUP_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
 }
 
+void TIM2_IRQHandler(void) {
+    // servo timer is TIM2
+    HAL_TIM_IRQHandler(&servo_TIM2_Handle);
+}
+
 void TIM3_IRQHandler(void) {
     // USBD CDC timer is TIM3
-    HAL_TIM_IRQHandler(&USBD_CDC_TimHandle);
+    HAL_TIM_IRQHandler(&USBD_CDC_TIM3_Handle);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

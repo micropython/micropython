@@ -50,6 +50,12 @@
 #include "usbd_cdc_msc.h"
 #include "usbd_cdc_interface.h"
 
+#include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "obj.h"
+#include "servo.h"
+
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
   */
@@ -153,6 +159,14 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 {
   /*##-1- Reset peripherals ##################################################*/
    __HAL_RCC_RTC_DISABLE();
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    if (htim == &USBD_CDC_TIM3_Handle) {
+        USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+    } else if (htim == &servo_TIM2_Handle) {
+        servo_timer_irq_callback();
+    }
 }
 
 /**
