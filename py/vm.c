@@ -118,8 +118,8 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     mp_obj_t obj1, obj2;
     nlr_buf_t nlr;
 
-    volatile machine_uint_t currently_in_except_block = (machine_uint_t)*exc_sp_in_out & 1; // 0 or 1, to detect nested exceptions
-    mp_exc_stack *volatile exc_sp = (void*)((machine_uint_t)*exc_sp_in_out & ~1); // stack grows up, exc_sp points to top of stack
+    volatile bool currently_in_except_block = MP_TAGPTR_TAG(*exc_sp_in_out); // 0 or 1, to detect nested exceptions
+    mp_exc_stack *volatile exc_sp = MP_TAGPTR_PTR(*exc_sp_in_out); // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
@@ -387,7 +387,7 @@ unwind_jump:
                         ++exc_sp;
                         exc_sp->opcode = op;
                         exc_sp->handler = ip + unum;
-                        exc_sp->val_sp = (((machine_uint_t)sp) | currently_in_except_block);
+                        exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block);
                         currently_in_except_block = 0; // in a try block now
                         break;
 
@@ -437,7 +437,7 @@ unwind_jump:
                     case MP_BC_POP_BLOCK:
                         // we are exiting an exception handler, so pop the last one of the exception-stack
                         assert(exc_sp >= exc_stack);
-                        currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                        currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
                         exc_sp--; // pop back to previous exception handler
                         break;
 
@@ -449,7 +449,7 @@ unwind_jump:
                         assert(currently_in_except_block);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
-                        currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                        currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
                         exc_sp--; // pop back to previous exception handler
                         //sp -= 3; // pop 3 exception values
                         break;
@@ -607,7 +607,7 @@ unwind_return:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
-                        *exc_sp_in_out = (void*)((machine_uint_t)exc_sp | currently_in_except_block);
+                        *exc_sp_in_out = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
                         return MP_VM_RETURN_YIELD;
 
                     case MP_BC_IMPORT_NAME:
@@ -663,7 +663,7 @@ unwind_return:
                 // at the moment we are just raising the very last exception (the one that caused the nested exception)
 
                 // move up to previous exception handler
-                currently_in_except_block = (exc_sp->val_sp & 1); // restore previous state
+                currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
                 exc_sp--; // pop back to previous exception handler
             }
 
@@ -672,7 +672,7 @@ unwind_return:
                 currently_in_except_block = 1;
 
                 // catch exception and pass to byte code
-                sp = (mp_obj_t*)(exc_sp->val_sp & (~((machine_uint_t)1)));
+                sp = MP_TAGPTR_PTR(exc_sp->val_sp);
                 ip = exc_sp->handler;
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
