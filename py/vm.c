@@ -118,8 +118,8 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     mp_obj_t obj1, obj2;
     nlr_buf_t nlr;
 
-    volatile machine_uint_t currently_in_except_block = (int)*exc_sp_in_out & 1; // 0 or 1, to detect nested exceptions
-    mp_exc_stack *volatile exc_sp = (void*)((int)*exc_sp_in_out & ~1); // stack grows up, exc_sp points to top of stack
+    volatile machine_uint_t currently_in_except_block = (machine_uint_t)*exc_sp_in_out & 1; // 0 or 1, to detect nested exceptions
+    mp_exc_stack *volatile exc_sp = (void*)((machine_uint_t)*exc_sp_in_out & ~1); // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
@@ -607,7 +607,7 @@ unwind_return:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
-                        *exc_sp_in_out = (void*)((int)exc_sp | currently_in_except_block);
+                        *exc_sp_in_out = (void*)((machine_uint_t)exc_sp | currently_in_except_block);
                         return MP_VM_RETURN_YIELD;
 
                     case MP_BC_IMPORT_NAME:
