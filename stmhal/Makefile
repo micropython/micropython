@@ -21,7 +21,7 @@ INC += -I$(PY_SRC)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
-INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc/inc -I$(USBDEV_DIR)/class/msc/inc
+INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(FATFS_DIR)/src
 #INC += -I$(CC3K_DIR)
@@ -56,9 +56,8 @@ SRC_C = \
 	stm32f4xx_it.c \
 	stm32f4xx_hal_msp.c \
 	usbd_conf.c \
-	usbd_desc_vcp.c \
+	usbd_desc_cdc_msc.c \
 	usbd_cdc_interface.c \
-	usbd_desc_msc.c \
 	usbd_msc_storage.c \
 	pendsv.c \
 	systick.c  \
@@ -124,13 +123,14 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \
 	core/src/usbd_ioreq.c \
-	class/cdc/src/usbd_cdc.c \
-	class/msc/src/usbd_msc.c \
-	class/msc/src/usbd_msc_bot.c \
-	class/msc/src/usbd_msc_scsi.c \
-	class/msc/src/usbd_msc_data.c \
+	class/cdc_msc/src/usbd_cdc_msc.c \
+	class/cdc_msc/src/usbd_msc_bot.c \
+	class/cdc_msc/src/usbd_msc_scsi.c \
+	class/cdc_msc/src/usbd_msc_data.c \
 	)
 
+#	class/cdc/src/usbd_cdc.c \
+	class/msc/src/usbd_msc.c \
 #	usbd_core.c \
 	usbd_ioreq.c \
 	usbd_req.c \

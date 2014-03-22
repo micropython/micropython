@@ -336,7 +336,6 @@ soft_reset:
         fno.lfname = NULL;
         fno.lfsize = 0;
 #endif
-        led_debug(0, 500);
         FRESULT res = f_stat("0:/boot.py", &fno);
         if (res == FR_OK) {
             if (fno.fattrib & AM_DIR) {

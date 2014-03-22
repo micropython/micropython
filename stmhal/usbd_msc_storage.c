@@ -27,7 +27,7 @@
   ******************************************************************************
   */
 
-#include "usbd_msc.h"
+#include "usbd_cdc_msc.h"
 #include "usbd_msc_storage.h"
 
 #include "misc.h"

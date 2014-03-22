@@ -2,9 +2,8 @@
 
 #include "usbd_core.h"
 #include "usbd_desc.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_msc.h"
 #include "usbd_cdc_interface.h"
-#include "usbd_msc.h"
 #include "usbd_msc_storage.h"
 
 #include "misc.h"
@@ -26,6 +25,7 @@ void pyb_usb_dev_init(usbd_device_kind_t device_kind, usbd_storage_medium_kind_t
     if (!dev_is_enabled) {
         // only init USB once in the device's power-lifetime
         switch (device_kind) {
+                #if 0
             case USBD_DEVICE_CDC:
                 // XXX USBD_CDC_Init (called by one of these functions below) uses malloc,
                 // so the memory is invalid after a soft reset (which resets the GC).
@@ -48,6 +48,21 @@ void pyb_usb_dev_init(usbd_device_kind_t device_kind, usbd_storage_medium_kind_t
                 }
                 USBD_Start(&hUSBDDevice);
                 break;
+                #endif
+
+            case USBD_DEVICE_CDC:
+            case USBD_DEVICE_MSC:
+                USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
+                USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC);
+                USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+                if (medium_kind == USBD_STORAGE_MEDIUM_FLASH) {
+                    USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+                } else {
+                    USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+                }
+                USBD_Start(&hUSBDDevice);
+                break;
+
 
             case USBD_DEVICE_HID:
                 //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
