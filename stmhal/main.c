@@ -37,10 +37,10 @@
 #include "lcd.h"
 #include "accel.h"
 #include "servo.h"
+#include "pin.h"
 #if 0
 #include "timer.h"
 #include "pybwlan.h"
-#include "pin.h"
 #endif
 
 void SystemClock_Config(void);
@@ -266,9 +266,7 @@ soft_reset:
 #endif
 #endif
 
-#if 0
     pin_map_init();
-#endif
 
     // add some functions to the builtin Python namespace
     rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));

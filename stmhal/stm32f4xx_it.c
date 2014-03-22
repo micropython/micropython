@@ -357,8 +357,7 @@ void TIM2_IRQHandler(void) {
 }
 
 void TIM3_IRQHandler(void) {
-    // USBD CDC timer is TIM3
-    HAL_TIM_IRQHandler(&USBD_CDC_TIM3_Handle);
+    HAL_TIM_IRQHandler(&TIM3_Handle);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

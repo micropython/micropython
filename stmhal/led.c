@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stm32f4xx_hal.h>
+#include "usbd_cdc_msc.h"
+#include "usbd_cdc_interface.h"
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "led.h"
 #include "pin.h"
 #include "build/pins.h"
@@ -38,10 +41,41 @@ void led_init(void) {
         GPIO_InitStructure.Pin = gLed[led]->pin_mask;
         HAL_GPIO_Init(gLed[led]->gpio, &GPIO_InitStructure);
     }
+
+    // LED4 (blue) is on PB4 which is TIM3_CH1
+    // we use PWM on this channel to fade the LED
+
+    // GPIO configuration
+    GPIO_InitStructure.Pin = GPIO_PIN_4;
+    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+    GPIO_InitStructure.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    // PWM mode configuration
+    TIM_OC_InitTypeDef oc_init;
+    oc_init.OCMode = TIM_OCMODE_PWM1;
+    oc_init.Pulse = 0; // off
+    oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
+    oc_init.OCFastMode = TIM_OCFAST_DISABLE;
+    HAL_TIM_PWM_ConfigChannel(&TIM3_Handle, &oc_init, TIM_CHANNEL_1);
+
+    // start PWM
+    TIM_CCxChannelCmd(TIM3, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+    //HAL_TIM_PWM_Start(&USBD_CDC_TIM3_Handle, TIM_CHANNEL_1);
 }
 
 void led_state(pyb_led_t led, int state) {
     if (led < 1 || led > NUM_LEDS) {
+        return;
+    }
+    if (led == 4) {
+        if (state) {
+            TIM3->CCR1 = 0xffff;
+        } else {
+            TIM3->CCR1 = 0;
+        }
         return;
     }
     const pin_obj_t *led_pin = gLed[led - 1];
@@ -70,6 +104,23 @@ void led_toggle(pyb_led_t led) {
     } else {
         // pin is low, make it high
         gpio->BSRRL = led_pin->pin_mask;
+    }
+}
+
+int led_get_state(pyb_led_t led) {
+    if (led < 1 || led > NUM_LEDS) {
+        return 0;
+    }
+    const pin_obj_t *led_pin = gLed[led - 1];
+    GPIO_TypeDef *gpio = led_pin->gpio;
+
+    // TODO convert high/low to on/off depending on board
+    if (gpio->ODR & led_pin->pin_mask) {
+        // pin is high
+        return 1;
+    } else {
+        // pin is low
+        return 0;
     }
 }
 
@@ -112,25 +163,47 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
-static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
-static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
+mp_obj_t led_obj_state(uint n_args, const mp_obj_t *args) {
+    pyb_led_obj_t *self = args[0];
+    if (n_args == 0) {
+        return MP_BOOL(led_get_state(self->led_id));
+    } else {
+        led_state(self->led_id, rt_is_true(args[1]));
+        return mp_const_none;
+    }
+}
 
-static const mp_method_t led_methods[] = {
+mp_obj_t led_obj_intensity(mp_obj_t self_in, mp_obj_t intensity) {
+    pyb_led_obj_t *self = self_in;
+    if (self->led_id == 4) {
+        TIM3->CCR1 = mp_obj_get_int(intensity);
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_state_obj, 1, 2, led_obj_state);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(led_obj_intensity_obj, led_obj_intensity);
+
+STATIC const mp_method_t led_methods[] = {
     { "on", &led_obj_on_obj },
     { "off", &led_obj_off_obj },
     { "toggle", &led_obj_toggle_obj },
+    { "state", &led_obj_state_obj },
+    { "intensity", &led_obj_intensity_obj },
     { NULL, NULL },
 };
 
-static const mp_obj_type_t led_obj_type = {
+STATIC const mp_obj_type_t led_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_Led,
     .print = led_obj_print,
     .methods = led_methods,
 };
 
-static mp_obj_t pyb_Led(mp_obj_t led_id) {
+STATIC mp_obj_t pyb_Led(mp_obj_t led_id) {
     pyb_led_obj_t *o = m_new_obj(pyb_led_obj_t);
     o->base.type = &led_obj_type;
     o->led_id = mp_obj_get_int(led_id);

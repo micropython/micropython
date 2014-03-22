@@ -65,8 +65,6 @@ static uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DAT
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
 
-/* TIM handler declaration */
-TIM_HandleTypeDef USBD_CDC_TIM3_Handle;
 /* USB handler declaration */
 extern USBD_HandleTypeDef hUSBDDevice;
 
@@ -75,8 +73,6 @@ static int8_t CDC_Itf_Init     (void);
 static int8_t CDC_Itf_DeInit   (void);
 static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
-
-static void TIM_Config(void);
 
 const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
     CDC_Itf_Init,
@@ -125,21 +121,19 @@ static int8_t CDC_Itf_Init(void)
     /* Transfer error in reception process */
     Error_Handler();
   }
-#endif
   
   /*##-3- Configure the TIM Base generation  #################################*/
+  now done in HAL_MspInit
   TIM_Config();
+#endif
   
-  /*##-4- Start the TIM Base generation in interrupt mode ####################*/
-  /* Start Channel1 */
-  if(HAL_TIM_Base_Start_IT(&USBD_CDC_TIM3_Handle) != HAL_OK)
-  {
-    /* Starting Error */
-  }
+    /*##-4- Start the TIM Base generation in interrupt mode ####################*/
+    /* Start Channel1 */
+    __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
   
-  /*##-5- Set Application Buffers ############################################*/
-  USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
-  USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
+    /*##-5- Set Application Buffers ############################################*/
+    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
 
     UserRxBufCur = 0;
     UserRxBufLen = 0;
@@ -147,7 +141,7 @@ static int8_t CDC_Itf_Init(void)
     user_interrupt_char = VCP_CHAR_NONE;
     user_interrupt_data = NULL;
 
-  return (USBD_OK);
+    return (USBD_OK);
 }
 
 /**
@@ -377,30 +371,4 @@ int USBD_CDC_RxGet(void) {
         USBD_CDC_ReceivePacket(&hUSBDDevice);
     }
     return c;
-}
-
-/**
-  * @brief  TIM_Config: Configure TIMx timer
-  * @param  None.
-  * @retval None.
-  */
-static void TIM_Config(void)
-{  
-  /* Set TIMx instance */
-  USBD_CDC_TIM3_Handle.Instance = USBD_CDC_TIMx;
-  
-  /* Initialize TIM3 peripheral as follow:
-       + Period = 10000 - 1
-       + Prescaler = ((SystemCoreClock/2)/10000) - 1
-       + ClockDivision = 0
-       + Counter direction = Up
-  */
-  USBD_CDC_TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
-  USBD_CDC_TIM3_Handle.Init.Prescaler = 84-1;
-  USBD_CDC_TIM3_Handle.Init.ClockDivision = 0;
-  USBD_CDC_TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&USBD_CDC_TIM3_Handle) != HAL_OK)
-  {
-    /* Initialization Error */
-  }
 }

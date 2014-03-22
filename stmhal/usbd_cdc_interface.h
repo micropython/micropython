@@ -33,21 +33,11 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/* Definition for TIMx clock resources */
-#define USBD_CDC_TIMx                             TIM3
-#define USBD_CDC_TIMx_CLK_ENABLE                  __TIM3_CLK_ENABLE
-#define USBD_CDC_TIMx_FORCE_RESET()               __TIM3_FORCE_RESET()
-#define USBD_CDC_TIMx_RELEASE_RESET()             __TIM3_RELEASE_RESET()
-
-/* Definition for TIMx's NVIC */
-#define USBD_CDC_TIMx_IRQn                        TIM3_IRQn
-//#define USBD_CDC_TIMx_IRQHandler                  TIM3_IRQHandler // this is hard coded in stm32f4xx_it.c
-
 /* Periodically, the state of the buffer "UserTxBuffer" is checked.
    The period depends on USBD_CDC_POLLING_INTERVAL */
 #define USBD_CDC_POLLING_INTERVAL             10 /* in ms. The max is 65 and the min is 1 */
 
-extern TIM_HandleTypeDef USBD_CDC_TIM3_Handle;
+extern TIM_HandleTypeDef TIM3_Handle;
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
 void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
