@@ -1,18 +1,49 @@
 #include <stdint.h>
-#include <math.h>
+typedef float float_t;
+typedef union {
+    float f;
+    struct {
+        uint64_t m : 23;
+        uint64_t e : 8;
+        uint64_t s : 1;
+    };
+} float_s_t;
 
-// these 2 functions seem to actually work... no idea why
-// replacing with libgcc does not work (probably due to wrong calling conventions)
-double __aeabi_f2d(float x) {
-    // TODO
-    return 0.0;
+typedef union {
+    double d;
+    struct {
+        uint64_t m : 52;
+        uint64_t e : 11;
+        uint64_t s : 1;
+    };
+} double_s_t;
+
+double __attribute__((pcs("aapcs"))) __aeabi_f2d(float x) {
+    float_s_t fx={0};
+    double_s_t dx={0};
+
+    fx.f = x;
+    dx.s = (fx.s);
+    dx.e = (fx.e-127+1023) & 0x7FF;
+    dx.m = fx.m;
+    dx.m <<=(52-23); // left justify
+    return dx.d;
 }
 
-float __aeabi_d2f(double x) {
-    // TODO
-    return 0.0;
-}
+float __attribute__((pcs("aapcs"))) __aeabi_d2f(double x) {
+    float_s_t fx={0};
+    double_s_t dx={0};
 
+    dx.d = x;
+    fx.s = (dx.s);
+    fx.e = (dx.e-1023+127) & 0xFF;
+    fx.m = (dx.m>>(52-23)); // right justify
+    return fx.f;
+}
+double __aeabi_dmul(double x , double y) {
+    return 0.0;
+
+}
 /*
 double sqrt(double x) {
     // TODO
