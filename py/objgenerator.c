@@ -56,10 +56,13 @@ typedef struct _mp_obj_gen_instance_t {
     const byte *code_info;
     const byte *ip;
     mp_obj_t *sp;
+    // bit 0 is saved currently_in_except_block value
     mp_exc_stack *exc_sp;
     uint n_state;
-    mp_obj_t state[0];          // Variable-length
-    mp_exc_stack exc_state[0];  // Variable-length
+    // Variable-length
+    mp_obj_t state[0];
+    // Variable-length, never accessed by name, only as (void*)(state + n_state)
+    mp_exc_stack exc_state[0];
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
