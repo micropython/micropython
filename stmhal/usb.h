@@ -4,10 +4,18 @@
 #define VCP_CHAR_CTRL_C (3)
 #define VCP_CHAR_CTRL_D (4)
 
-#define PYB_USB_DEV_VCP_MSC (0)
-#define PYB_USB_DEV_HID (1)
+typedef enum {
+    USBD_DEVICE_CDC,
+    USBD_DEVICE_MSC,
+    USBD_DEVICE_HID,
+} usbd_device_kind_t;
 
-void pyb_usb_dev_init(int usb_dev_type);
+typedef enum {
+    USBD_STORAGE_MEDIUM_FLASH,
+    USBD_STORAGE_MEDIUM_SDCARD,
+} usbd_storage_medium_kind_t;
+
+void pyb_usb_dev_init(usbd_device_kind_t device_kind, usbd_storage_medium_kind_t medium_kind);
 bool usb_vcp_is_enabled(void);
 bool usb_vcp_is_connected(void);
 void usb_vcp_set_interrupt_char(int c);

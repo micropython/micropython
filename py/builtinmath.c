@@ -46,9 +46,9 @@ MATH_FUN_1(fabs, fabs)
 MATH_FUN_1(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
 MATH_FUN_2(fmod, fmod)
 //MATH_FUN_1(frexp, frexp)
-MATH_FUN_1(isfinite, isfinite)
-MATH_FUN_1(isinf, isinf)
-MATH_FUN_1(isnan, isnan)
+//MATH_FUN_1(isfinite, isfinite)
+//MATH_FUN_1(isinf, isinf)
+//MATH_FUN_1(isnan, isnan)
 MATH_FUN_1(trunc, trunc)
 
 //TODO: factorial, fsum, frexp, ldexp, modf
@@ -83,9 +83,9 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_floor), (mp_obj_t)&mp_math_floor_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fmod), (mp_obj_t)&mp_math_fmod_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_frexp), (mp_obj_t)&mp_math_frexp_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isfinite), (mp_obj_t)&mp_math_isfinite_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isinf), (mp_obj_t)&mp_math_isinf_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isnan), (mp_obj_t)&mp_math_isnan_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isfinite), (mp_obj_t)&mp_math_isfinite_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isinf), (mp_obj_t)&mp_math_isinf_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isnan), (mp_obj_t)&mp_math_isnan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
 };
 

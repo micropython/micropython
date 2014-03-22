@@ -48,6 +48,9 @@
 #define USBD_SELF_POWERED                     0
 #define USBD_DEBUG_LEVEL                      0
  
+// for MSC device
+#define MSC_MEDIA_PACKET                      8192
+
 /* Exported macro ------------------------------------------------------------*/
 /* Memory management macros */
 #define USBD_malloc               gc_alloc

@@ -21,7 +21,7 @@ INC += -I$(PY_SRC)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
-INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc/inc
+INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc/inc -I$(USBDEV_DIR)/class/msc/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(FATFS_DIR)/src
 #INC += -I$(CC3K_DIR)
@@ -56,8 +56,10 @@ SRC_C = \
 	stm32f4xx_it.c \
 	stm32f4xx_hal_msp.c \
 	usbd_conf.c \
-	usbd_desc.c \
+	usbd_desc_vcp.c \
 	usbd_cdc_interface.c \
+	usbd_desc_msc.c \
+	usbd_msc_storage.c \
 	pendsv.c \
 	systick.c  \
 	led.c \
@@ -84,9 +86,9 @@ SRC_C = \
 	sdcard.c \
 	diskio.c \
 	lcd.c \
+	accel.c \
 
 #	servo.c \
-#	accel.c \
 #	timer.c \
 #	audio.c \
 #	i2c.c \
@@ -104,6 +106,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_flash.c \
 	stm32f4xx_hal_flash_ex.c \
 	stm32f4xx_hal_gpio.c \
+	stm32f4xx_hal_i2c.c \
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
@@ -122,6 +125,10 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_ctlreq.c \
 	core/src/usbd_ioreq.c \
 	class/cdc/src/usbd_cdc.c \
+	class/msc/src/usbd_msc.c \
+	class/msc/src/usbd_msc_bot.c \
+	class/msc/src/usbd_msc_scsi.c \
+	class/msc/src/usbd_msc_data.c \
 	)
 
 #	usbd_core.c \
