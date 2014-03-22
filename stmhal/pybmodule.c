@@ -196,11 +196,19 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
 #if 0
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_I2C_obj, pyb_I2C); // TODO put this in i2c.c
 #endif
+
+extern int stdin_rx_chr(void);
+
+STATIC mp_obj_t pyb_input(void ) {
+    return mp_obj_new_int(stdin_rx_chr());
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_input_obj, pyb_input);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
@@ -267,6 +275,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Audio), (mp_obj_t)&pyb_Audio_obj },
 #endif
 #endif
+
+    // input
+    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&pyb_input_obj },
 
     // pin mapper
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_map_obj },

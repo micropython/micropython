@@ -19,8 +19,10 @@
 #define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
 // extra built in names to add to the global namespace
+extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_EXTRA_BUILTINS \
+    { MP_QSTR_input, (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_QSTR_open, (mp_obj_t)&mp_builtin_open_obj },
 
 // type definitions for the specific machine

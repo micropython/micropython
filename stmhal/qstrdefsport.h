@@ -70,3 +70,6 @@ Q(urandom)
 // for time module
 Q(time)
 Q(sleep)
+
+// for input
+Q(input)

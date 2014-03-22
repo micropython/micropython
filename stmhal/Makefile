@@ -72,6 +72,7 @@ SRC_C = \
 	malloc0.c \
 	gccollect.c \
 	pyexec.c \
+	input.c \
 	pybmodule.c \
 	osmodule.c \
 	timemodule.c \
