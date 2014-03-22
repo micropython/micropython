@@ -5,8 +5,6 @@ from math import *
 test_values = [-100., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 100.]
 p_test_values = [0.1, 0.5, 1.23456]
 unit_range_test_values = [-1., -0.75, -0.5, -0.25, 0., 0.25, 0.5, 0.75, 1.]
-#IEEE_test_values = [1, 0, float('NaN'), float('Inf'), -float('NaN'), -float('Inf')]
-#TODO: float('NaN')
 
 functions = [(sqrt, p_test_values),
              (exp, test_values),
@@ -30,7 +28,6 @@ functions = [(sqrt, p_test_values),
              (fabs, test_values),
              (floor, test_values),
              #(frexp, test_values),
-             #(isfinite, [1, 0, float('NaN'), float('Inf')])
              (trunc, test_values)
             ]
 
@@ -42,8 +39,8 @@ binary_functions = [(copysign, [(23., 42.), (-23., 42.), (23., -42.),
                                 (-23., -42.), (1., 0.0), (1., -0.0)])
                    ]
 
-#for function, test_vals in binary_functions:
-#    for value1, value2 in test_vals:
-#        print("{:8.7f}".format(function(value1, value2)))
+for function, test_vals in binary_functions:
+    for value1, value2 in test_vals:
+        print("{:8.7f}".format(function(value1, value2)))
 
 
