@@ -184,9 +184,53 @@ struct _mp_obj_type_t {
 typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant types, globally accessible
-
 extern const mp_obj_type_t mp_type_type;
+
+// Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
+extern const mp_obj_type_t mp_type_ArithmeticError;
+extern const mp_obj_type_t mp_type_AssertionError;
+extern const mp_obj_type_t mp_type_AttributeError;
+extern const mp_obj_type_t mp_type_BufferError;
+extern const mp_obj_type_t mp_type_BytesWarning;
+extern const mp_obj_type_t mp_type_DeprecationWarning;
+extern const mp_obj_type_t mp_type_EOFError;
+extern const mp_obj_type_t mp_type_EnvironmentError;
+extern const mp_obj_type_t mp_type_Exception;
+extern const mp_obj_type_t mp_type_FloatingPointError;
+extern const mp_obj_type_t mp_type_FutureWarning;
+extern const mp_obj_type_t mp_type_GeneratorExit;
+extern const mp_obj_type_t mp_type_IOError;
+extern const mp_obj_type_t mp_type_ImportError;
+extern const mp_obj_type_t mp_type_ImportWarning;
+extern const mp_obj_type_t mp_type_IndentationError;
+extern const mp_obj_type_t mp_type_IndexError;
+extern const mp_obj_type_t mp_type_KeyError;
+extern const mp_obj_type_t mp_type_LookupError;
+extern const mp_obj_type_t mp_type_MemoryError;
+extern const mp_obj_type_t mp_type_NameError;
+extern const mp_obj_type_t mp_type_NotImplementedError;
+extern const mp_obj_type_t mp_type_OSError;
+extern const mp_obj_type_t mp_type_OverflowError;
+extern const mp_obj_type_t mp_type_PendingDeprecationWarning;
+extern const mp_obj_type_t mp_type_ReferenceError;
+extern const mp_obj_type_t mp_type_ResourceWarning;
+extern const mp_obj_type_t mp_type_RuntimeError;
+extern const mp_obj_type_t mp_type_RuntimeWarning;
+extern const mp_obj_type_t mp_type_SyntaxError;
+extern const mp_obj_type_t mp_type_SyntaxWarning;
+extern const mp_obj_type_t mp_type_SystemError;
+extern const mp_obj_type_t mp_type_SystemExit;
+extern const mp_obj_type_t mp_type_TabError;
+extern const mp_obj_type_t mp_type_TypeError;
+extern const mp_obj_type_t mp_type_UnboundLocalError;
+extern const mp_obj_type_t mp_type_UserWarning;
+extern const mp_obj_type_t mp_type_ValueError;
+extern const mp_obj_type_t mp_type_Warning;
+extern const mp_obj_type_t mp_type_ZeroDivisionError;
+
+extern const mp_obj_type_t mp_type_StopIteration;
+/*extern const mp_obj_type_t mp_type_BaseException;
 extern const mp_obj_type_t mp_type_AssertionError;
 extern const mp_obj_type_t mp_type_AttributeError;
 extern const mp_obj_type_t mp_type_ImportError;
@@ -201,7 +245,7 @@ extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_OSError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_StopIteration;
-extern const mp_obj_type_t mp_type_ZeroDivisionError;
+extern const mp_obj_type_t mp_type_ZeroDivisionError;*/
 
 // Constant objects, globally accessible
 
