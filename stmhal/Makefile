@@ -89,8 +89,8 @@ SRC_C = \
 	diskio.c \
 	lcd.c \
 	accel.c \
+	servo.c \
 
-#	servo.c \
 #	timer.c \
 #	audio.c \
 #	i2c.c \

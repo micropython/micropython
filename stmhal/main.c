@@ -36,8 +36,8 @@
 #include "ff.h"
 #include "lcd.h"
 #include "accel.h"
-#if 0
 #include "servo.h"
+#if 0
 #include "timer.h"
 #include "pybwlan.h"
 #include "pin.h"
@@ -254,12 +254,12 @@ soft_reset:
     rng_init();
 #endif
 
-#if 0
 #if MICROPY_HW_ENABLE_SERVO
     // servo
     servo_init();
 #endif
 
+#if 0
 #if MICROPY_HW_ENABLE_TIMER
     // timer
     timer_init();

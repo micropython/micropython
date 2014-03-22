@@ -23,8 +23,8 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
-#if 0
 #include "servo.h"
+#if 0
 #include "usb.h"
 #include "i2c.h"
 #include "adc.h"
@@ -231,12 +231,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rtc_info), (mp_obj_t)&pyb_rtc_info_obj },
 #endif
 
-#if 0
 #if MICROPY_HW_ENABLE_SERVO
     { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_pwm_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servo), (mp_obj_t)&pyb_servo_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Servo), (mp_obj_t)&pyb_Servo_obj },
-#endif
 #endif
 
 #if MICROPY_HW_HAS_SWITCH
