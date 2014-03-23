@@ -151,7 +151,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
-    mp_map_t *map;
+    mp_map_t *map = NULL;
+    const mp_method_t *meth = NULL;
     if (n_args == 0) {
         // make a list of names in the local name space
         map = rt_locals_get();
@@ -162,15 +163,23 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
             map = mp_obj_module_get_globals(args[0]);
         } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
             map = mp_obj_dict_get_map(type->locals_dict);
-        } else {
-            return mp_obj_new_list(0, NULL);
+        }
+        if (type->methods != NULL) {
+            meth = type->methods;
         }
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
-    for (uint i = 0; i < map->alloc; i++) {
-        if (map->table[i].key != MP_OBJ_NULL) {
-            mp_obj_list_append(dir, map->table[i].key);
+    if (map != NULL) {
+        for (uint i = 0; i < map->alloc; i++) {
+            if (map->table[i].key != MP_OBJ_NULL) {
+                mp_obj_list_append(dir, map->table[i].key);
+            }
+        }
+    }
+    if (meth != NULL) {
+        for (; meth->name != NULL; meth++) {
+            mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(qstr_from_str(meth->name)));
         }
     }
     return dir;
