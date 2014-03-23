@@ -551,6 +551,8 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 return mp_const_false;
             }
         }
+        assert(0);
+        return mp_const_false;
     }
 
     if (MP_OBJ_IS_SMALL_INT(lhs)) {
