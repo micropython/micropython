@@ -79,7 +79,7 @@ float ceilf(float x) { return 0.0; }
 float floorf(float x) { return 0.0; }
 float truncf(float x) { return 0.0; }
 float fmodf(float x, float y) { return 0.0; }
-float gammaf(float x) { return 0.0; }
+float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }
 float erff(float x) { return 0.0; }
 float erfcf(float x) { return 0.0; }
