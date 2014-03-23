@@ -57,9 +57,7 @@ void servo_init(void) {
     }
 }
 
-#include "led.h"
 void servo_timer_irq_callback(void) {
-    led_toggle(1);
     bool need_it = false;
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
         pyb_servo_obj_t *s = &pyb_servo_obj[i];
