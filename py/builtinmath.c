@@ -57,7 +57,7 @@ MATH_FUN_1(trunc, trunc)
 MATH_FUN_2(ldexp, ldexp)
 MATH_FUN_1(erf, erf)
 MATH_FUN_1(erfc, erfc)
-MATH_FUN_1(gamma, gamma)
+MATH_FUN_1(gamma, tgamma)
 MATH_FUN_1(lgamma, lgamma)
 //TODO: factorial, fsum
 
