@@ -41,7 +41,7 @@
 static const int8_t FLASH_STORAGE_Inquirydata[] = { // 36 bytes
     // LUN 0
     0x00,
-    0x00, // 0x00 for a fixed drive, 0x80 for a removable drive
+    0x80, // 0x00 for a fixed drive, 0x80 for a removable drive
     0x02,
     0x02,
     (STANDARD_INQUIRY_DATA_LEN - 5),
