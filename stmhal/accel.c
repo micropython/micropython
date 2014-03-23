@@ -11,7 +11,12 @@
 #include "accel.h"
 
 #define MMA_ADDR (0x98)
+#define MMA_REG_X (0)
+#define MMA_REG_Y (1)
+#define MMA_REG_Z (2)
+#define MMA_REG_TILT (3)
 #define MMA_REG_MODE (7)
+#define MMA_AXIS_SIGNED_VALUE(i) (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
 
 STATIC I2C_HandleTypeDef I2cHandle;
 
@@ -25,11 +30,6 @@ void accel_init(void) {
     GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    // wait 20ms, then turn on AVDD, then wait 20ms again
-    HAL_Delay(20);
-    GPIOB->BSRRL = GPIO_PIN_5;
-    HAL_Delay(20);
 
     // PB6=SCL, PB7=SDA
     GPIO_InitStructure.Pin = GPIO_PIN_6 | GPIO_PIN_7;
@@ -59,6 +59,14 @@ void accel_init(void) {
         printf("accel_init: HAL_I2C_Init failed\n");
         return;
     }
+}
+
+STATIC void accel_init_device(void) {
+    // turn off AVDD, wait 20ms, turn on AVDD, wait 20ms again
+    GPIOB->BSRRH = GPIO_PIN_5; // turn off
+    HAL_Delay(20);
+    GPIOB->BSRRL = GPIO_PIN_5; // turn on
+    HAL_Delay(20);
 
     HAL_StatusTypeDef status;
 
@@ -81,57 +89,109 @@ void accel_init(void) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-int accel_buf[12];
+#define NUM_AXIS (3)
+#define FILT_DEPTH (4)
 
-mp_obj_t pyb_accel_read(void) {
-    for (int i = 0; i <= 6; i += 3) {
-        accel_buf[0 + i] = accel_buf[0 + i + 3];
-        accel_buf[1 + i] = accel_buf[1 + i + 3];
-        accel_buf[2 + i] = accel_buf[2 + i + 3];
-    }
+typedef struct _pyb_accel_obj_t {
+    mp_obj_base_t base;
+    int16_t buf[NUM_AXIS * FILT_DEPTH];
+} pyb_accel_obj_t;
 
-    uint8_t data_[4];
-    HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, 0, I2C_MEMADD_SIZE_8BIT, data_, 4, 200);
-    accel_buf[9] = data_[0] & 0x3f; if (accel_buf[9] & 0x20) accel_buf[9] |= ~0x1f;
-    accel_buf[10] = data_[1] & 0x3f; if (accel_buf[10] & 0x20) accel_buf[10] |= ~0x1f;
-    accel_buf[11] = data_[2] & 0x3f; if (accel_buf[11] & 0x20) accel_buf[11] |= ~0x1f;
-    int jolt_info = data_[3];
+STATIC pyb_accel_obj_t pyb_accel_obj;
 
-    mp_obj_t data[4];
-    data[0] = mp_obj_new_int(accel_buf[0] + accel_buf[3] + accel_buf[6] + accel_buf[9]);
-    data[1] = mp_obj_new_int(accel_buf[1] + accel_buf[4] + accel_buf[7] + accel_buf[10]);
-    data[2] = mp_obj_new_int(accel_buf[2] + accel_buf[5] + accel_buf[8] + accel_buf[11]);
-    data[3] = mp_obj_new_int(jolt_info);
-
-    return rt_build_tuple(4, data);
+STATIC mp_obj_t read_axis(int axis) {
+    uint8_t data[1];
+    HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_obj, pyb_accel_read);
-
-/*
-mp_obj_t pyb_accel_read_all(void) {
-    mp_obj_t data[11];
-    accel_start(MMA_ADDR, 1);
-    accel_send_byte(0);
-    accel_restart(MMA_ADDR, 0);
-    for (int i = 0; i <= 9; i++) {
-        data[i] = mp_obj_new_int(accel_read_ack());
-    }
-    data[10] = mp_obj_new_int(accel_read_nack());
-
-    return rt_build_tuple(11, data);
+STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
+    return read_axis(MMA_REG_X);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_all_obj, pyb_accel_read_all);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
 
-mp_obj_t pyb_accel_write_mode(mp_obj_t o_int, mp_obj_t o_mode) {
-    accel_start(MMA_ADDR, 1);
-    accel_send_byte(6); // start at int
-    accel_send_byte(mp_obj_get_int(o_int));
-    accel_send_byte(mp_obj_get_int(o_mode));
-    accel_stop();
+STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
+    return read_axis(MMA_REG_Y);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
+
+STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
+    return read_axis(MMA_REG_Z);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
+
+STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
+    uint8_t data[1];
+    HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    return mp_obj_new_int(data[0]);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
+
+STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
+    pyb_accel_obj_t *self = self_in;
+
+    memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
+
+    uint8_t data[NUM_AXIS];
+    HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
+
+    mp_obj_t tuple[NUM_AXIS];
+    for (int i = 0; i < NUM_AXIS; i++) {
+        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = MMA_AXIS_SIGNED_VALUE(data[i]);
+        int32_t val = 0;
+        for (int j = 0; j < FILT_DEPTH; j++) {
+            val += self->buf[i + NUM_AXIS * j];
+        }
+        tuple[i] = mp_obj_new_int(val);
+    }
+
+    return rt_build_tuple(3, tuple);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
+
+STATIC mp_obj_t pyb_accel_read_reg(mp_obj_t self_in, mp_obj_t reg) {
+    uint8_t data[1];
+    HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    return mp_obj_new_int(data[0]);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_reg_obj, pyb_accel_read_reg);
+
+STATIC mp_obj_t pyb_accel_write_reg(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
+    uint8_t data[1];
+    data[0] = mp_obj_get_int(val);
+    HAL_I2C_Mem_Write(&I2cHandle, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_write_mode_obj, pyb_accel_write_mode);
-*/
+MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_reg_obj, pyb_accel_write_reg);
+
+STATIC const mp_method_t accel_methods[] = {
+    { "x", &pyb_accel_x_obj },
+    { "y", &pyb_accel_y_obj },
+    { "z", &pyb_accel_z_obj },
+    { "tilt", &pyb_accel_tilt_obj },
+    { "filtered_xyz", &pyb_accel_filtered_xyz_obj },
+    { "read_reg", &pyb_accel_read_reg_obj },
+    { "write_reg", &pyb_accel_write_reg_obj },
+    { NULL, NULL },
+};
+
+STATIC const mp_obj_type_t accel_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Accel,
+    .methods = accel_methods,
+};
+
+STATIC mp_obj_t pyb_Accel(void) {
+    pyb_accel_obj.base.type = &accel_obj_type;
+    accel_init_device();
+    return &pyb_accel_obj;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_Accel_obj, pyb_Accel);

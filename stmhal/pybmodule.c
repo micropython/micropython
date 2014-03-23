@@ -254,9 +254,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
 #if MICROPY_HW_HAS_MMA7660
-    { MP_OBJ_NEW_QSTR(MP_QSTR_accel), (mp_obj_t)&pyb_accel_read_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_accel_read), (mp_obj_t)&pyb_accel_read_all_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_accel_mode), (mp_obj_t)&pyb_accel_write_mode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_Accel_obj },
 #endif
 
 #if 0
