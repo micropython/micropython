@@ -5,7 +5,7 @@
     .text
 
 /* uint nlr_push(rdi=nlr_buf_t *nlr) */
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_push
     .type   nlr_push, @function
 nlr_push:
@@ -27,12 +27,12 @@ _nlr_push:
     movq    %rdi, nlr_top(%rip)     # stor new nlr_buf (to make linked list)
     xorq    %rax, %rax              # return 0, normal return
     ret                             # return
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_push, .-nlr_push
 #endif
 
 /* void nlr_pop() */
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_pop
     .type   nlr_pop, @function
 nlr_pop:
@@ -44,12 +44,12 @@ _nlr_pop:
     movq    (%rax), %rax            # load prev nlr_buf
     movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
     ret                             # return
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_pop, .-nlr_pop
 #endif
 
 /* void nlr_jump(rdi=uint val) */
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_jump
     .type   nlr_jump, @function
 nlr_jump:
@@ -74,11 +74,11 @@ nlr_jump:
     xorq    %rax, %rax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_jump, .-nlr_jump
 #endif
 
-#ifndef __apple_build_version__
+#if !(defined(__APPLE__) && defined(__MACH__))
     .local  nlr_top
 #endif
     .comm   nlr_top,8,8
