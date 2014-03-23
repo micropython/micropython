@@ -46,7 +46,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE  1024 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE (was 2048)
+#define APP_RX_DATA_SIZE  1024 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE=64 (APP_RX_DATA_SIZE was 2048)
 #define APP_TX_DATA_SIZE  1024 // I think this can be any value (was 2048)
 
 /* Private macro -------------------------------------------------------------*/
@@ -138,8 +138,13 @@ static int8_t CDC_Itf_Init(void)
     UserRxBufCur = 0;
     UserRxBufLen = 0;
   
+    /* NOTE: we cannot reset these here, because USBD_CDC_SetInterrupt
+     * may be called before this init function to set these values.
+     * This can happen if the USB enumeration occurs after the call to
+     * USBD_CDC_SetInterrupt.
     user_interrupt_char = VCP_CHAR_NONE;
     user_interrupt_data = NULL;
+    */
 
     return (USBD_OK);
 }
@@ -252,7 +257,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
   {
     if(UserTxBufPtrOut > UserTxBufPtrIn) /* rollback */
     {
-      buffsize = APP_RX_DATA_SIZE - UserTxBufPtrOut;
+      buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOut;
     }
     else 
     {
@@ -266,7 +271,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
     if(USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK)
     {
       UserTxBufPtrOut += buffsize;
-      if (UserTxBufPtrOut == APP_RX_DATA_SIZE)
+      if (UserTxBufPtrOut == APP_TX_DATA_SIZE)
       {
         UserTxBufPtrOut = 0;
       }
@@ -289,9 +294,20 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
     HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
 #endif
 
+    // TODO improve this function to implement a circular buffer
+
+    // if we have processed all the characters, reset the buffer counters
+    if (UserRxBufCur > 0 && UserRxBufCur >= UserRxBufLen) {
+        memmove(UserRxBuffer, UserRxBuffer + UserRxBufLen, *Len);
+        UserRxBufCur = 0;
+        UserRxBufLen = 0;
+    }
+
+    uint32_t delta_len;
+
     if (user_interrupt_char == VCP_CHAR_NONE) {
         // no special interrupt character
-        UserRxBufLen = *Len;
+        delta_len = *Len;
 
     } else {
         // filter out sepcial interrupt character from the buffer
@@ -310,25 +326,29 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
             }
         }
 
-        // set length of remaining characters
-        UserRxBufLen = dest - Buf;
-
         if (char_found) {
             // raise exception when interrupts are finished
             user_interrupt_char = VCP_CHAR_NONE;
             pendsv_nlr_jump(user_interrupt_data);
         }
+
+        // length of remaining characters
+        delta_len = dest - Buf;
     }
 
-    // there are new characters at the start of the buffer, so point there
-    UserRxBufCur = 0;
-
-    if (UserRxBufLen == 0) {
-        // initiate next USB packet transfer now that UserRxBuffer has been drained
-        USBD_CDC_ReceivePacket(&hUSBDDevice);
+    if (UserRxBufLen + delta_len + CDC_DATA_FS_MAX_PACKET_SIZE > APP_RX_DATA_SIZE) {
+        // if we keep this data then the buffer can overflow on the next USB rx
+        // so we don't increment the length, and throw this data away
+    } else {
+        // data fits, leaving room for another CDC_DATA_FS_OUT_PACKET_SIZE
+        UserRxBufLen += delta_len;
     }
 
-    return (USBD_OK);
+    // initiate next USB packet transfer, to append to existing data in buffer
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer + UserRxBufLen);
+    USBD_CDC_ReceivePacket(&hUSBDDevice);
+
+    return USBD_OK;
 }
 
 int USBD_CDC_IsConnected(void) {
@@ -366,9 +386,6 @@ int USBD_CDC_RxGet(void) {
 
     // get next character
     int c = UserRxBuffer[UserRxBufCur++];
-    if (UserRxBufCur >= UserRxBufLen) {
-        // initiate next USB packet transfer now that UserRxBuffer has been drained
-        USBD_CDC_ReceivePacket(&hUSBDDevice);
-    }
+
     return c;
 }
