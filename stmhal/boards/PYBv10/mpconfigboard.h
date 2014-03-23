@@ -1,4 +1,4 @@
-#define PYBOARD4
+#define PYBv10
 
 #define MICROPY_HW_BOARD_NAME       "PYBv1.0"
 

@@ -37,21 +37,22 @@ void led_init(void) {
 
     /* Turn off LEDs and initialize */
     for (int led = 0; led < NUM_LEDS; led++) {
-        PYB_LED_OFF(gLed[led]); 
+        PYB_LED_OFF(gLed[led]);
         GPIO_InitStructure.Pin = gLed[led]->pin_mask;
         HAL_GPIO_Init(gLed[led]->gpio, &GPIO_InitStructure);
     }
 
+#if defined(PYBOARD4) || defined(PYBv10)
     // LED4 (blue) is on PB4 which is TIM3_CH1
     // we use PWM on this channel to fade the LED
 
     // GPIO configuration
-    GPIO_InitStructure.Pin = GPIO_PIN_4;
+    GPIO_InitStructure.Pin = PYB_LED4.pin_mask;
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     GPIO_InitStructure.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+    HAL_GPIO_Init(PYB_LED4.gpio, &GPIO_InitStructure);
 
     // PWM mode configuration
     TIM_OC_InitTypeDef oc_init;
@@ -63,13 +64,14 @@ void led_init(void) {
 
     // start PWM
     TIM_CCxChannelCmd(TIM3, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-    //HAL_TIM_PWM_Start(&USBD_CDC_TIM3_Handle, TIM_CHANNEL_1);
+#endif
 }
 
 void led_state(pyb_led_t led, int state) {
     if (led < 1 || led > NUM_LEDS) {
         return;
     }
+#if defined(PYBOARD4) || defined(PYBv10)
     if (led == 4) {
         if (state) {
             TIM3->CCR1 = 0xffff;
@@ -78,8 +80,9 @@ void led_state(pyb_led_t led, int state) {
         }
         return;
     }
+#endif
     const pin_obj_t *led_pin = gLed[led - 1];
-//printf("led_state(%d,%d)\n", led, state);
+    //printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
         // turn LED off
         PYB_LED_OFF(led_pin);
@@ -93,6 +96,18 @@ void led_toggle(pyb_led_t led) {
     if (led < 1 || led > NUM_LEDS) {
         return;
     }
+
+#if defined(PYBOARD4) || defined(PYBv10)
+    if (led == 4) {
+        if (TIM3->CCR1 == 0) {
+            TIM3->CCR1 = 0xffff;
+        } else {
+            TIM3->CCR1 = 0;
+        }
+        return;
+    }
+#endif
+
     const pin_obj_t *led_pin = gLed[led - 1];
     GPIO_TypeDef *gpio = led_pin->gpio;
 
@@ -107,21 +122,52 @@ void led_toggle(pyb_led_t led) {
     }
 }
 
-int led_get_state(pyb_led_t led) {
+int led_get_intensity(pyb_led_t led) {
     if (led < 1 || led > NUM_LEDS) {
         return 0;
     }
+
+#if defined(PYBOARD4) || defined(PYBv10)
+    if (led == 4) {
+        machine_uint_t i = TIM3->CCR1 * 255 / ((USBD_CDC_POLLING_INTERVAL*1000) - 1);
+        if (i > 255) {
+            i = 255;
+        }
+        return i;
+    }
+#endif
+
     const pin_obj_t *led_pin = gLed[led - 1];
     GPIO_TypeDef *gpio = led_pin->gpio;
 
     // TODO convert high/low to on/off depending on board
     if (gpio->ODR & led_pin->pin_mask) {
         // pin is high
-        return 1;
+        return 255;
     } else {
         // pin is low
         return 0;
     }
+}
+
+void led_set_intensity(pyb_led_t led, machine_int_t intensity) {
+#if defined(PYBOARD4) || defined(PYBv10)
+    if (led == 4) {
+        // set intensity using PWM pulse width
+        if (intensity < 0) {
+            intensity = 0;
+        } else if (intensity >= 255) {
+            intensity = 0xffff;
+        } else {
+            intensity = intensity * ((USBD_CDC_POLLING_INTERVAL*1000) - 1) / 255;
+        }
+        TIM3->CCR1 = intensity;
+        return;
+    }
+#endif
+
+    // intensity not supported for this LED; just turn it on/off
+    led_state(led, intensity > 0);
 }
 
 void led_debug(int n, int delay) {
@@ -163,35 +209,25 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-mp_obj_t led_obj_state(uint n_args, const mp_obj_t *args) {
+mp_obj_t led_obj_intensity(uint n_args, const mp_obj_t *args) {
     pyb_led_obj_t *self = args[0];
-    if (n_args == 0) {
-        return MP_BOOL(led_get_state(self->led_id));
+    if (n_args == 1) {
+        return mp_obj_new_int(led_get_intensity(self->led_id));
     } else {
-        led_state(self->led_id, rt_is_true(args[1]));
+        led_set_intensity(self->led_id, mp_obj_get_int(args[1]));
         return mp_const_none;
     }
-}
-
-mp_obj_t led_obj_intensity(mp_obj_t self_in, mp_obj_t intensity) {
-    pyb_led_obj_t *self = self_in;
-    if (self->led_id == 4) {
-        TIM3->CCR1 = mp_obj_get_int(intensity);
-    }
-    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_state_obj, 1, 2, led_obj_state);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(led_obj_intensity_obj, led_obj_intensity);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
 
 STATIC const mp_method_t led_methods[] = {
     { "on", &led_obj_on_obj },
     { "off", &led_obj_off_obj },
     { "toggle", &led_obj_toggle_obj },
-    { "state", &led_obj_state_obj },
     { "intensity", &led_obj_intensity_obj },
     { NULL, NULL },
 };

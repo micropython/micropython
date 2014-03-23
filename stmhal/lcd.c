@@ -23,7 +23,7 @@
 #define PYB_LCD_A0_PIN      (GPIO_PIN_2)
 #define PYB_LCD_SCL_PIN     (GPIO_PIN_3)
 #define PYB_LCD_SI_PIN      (GPIO_PIN_4)
-#elif defined(PYBOARD4)
+#elif defined(PYBOARD4) || defined(PYBv10)
 // X position
 #define PYB_LCD_PORT       (GPIOA)
 #define PYB_LCD_CS1_PIN    (GPIO_PIN_2) // X3
