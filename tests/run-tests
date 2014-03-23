@@ -12,6 +12,10 @@ else:
     CPYTHON3 = 'python3.3'
     MP_PY = '../unix/micropython'
 
+def rm_f(fname):
+    if os.path.exists(fname):
+        os.remove(fname)
+
 test_count = 0
 testcase_count = 0
 passed_count = 0
@@ -30,14 +34,20 @@ for test_file in tests:
     try:
         output_mupy = subprocess.check_output([MP_PY, test_file])
     except subprocess.CalledProcessError:
-        output_mupy = 'CRASH'
+        output_mupy = b'CRASH'
 
     testcase_count += len(output_expected.splitlines())
 
     if output_expected == output_mupy:
         print("pass ", test_file)
         passed_count += 1
+        rm_f(os.path.basename(test_file + ".exp"))
+        rm_f(os.path.basename(test_file + ".out"))
     else:
+        with open(os.path.basename(test_file + ".exp"), "w") as f:
+            f.write(str(output_expected, "ascii"))
+        with open(os.path.basename(test_file + ".out"), "w") as f:
+            f.write(str(output_mupy, "ascii"))
         print("FAIL ", test_file)
         failed_tests.append(test_name)
 
