@@ -121,34 +121,6 @@ static const char fresh_main_py[] =
 "# main.py -- put your code here!\n"
 ;
 
-static const char *help_text =
-"Welcome to Micro Python!\n\n"
-"This is a *very* early version of Micro Python and has minimal functionality.\n\n"
-"Specific commands for the board:\n"
-"    pyb.info()     -- print some general information\n"
-"    pyb.gc()       -- run the garbage collector\n"
-"    pyb.repl_info(<val>) -- enable/disable printing of info after each command\n"
-"    pyb.delay(<n>) -- wait for n milliseconds\n"
-"    pyb.udelay(<n>) -- wait for n microseconds\n"
-"    pyb.Led(<n>)   -- create Led object for LED n (n=1,2)\n"
-"                      Led methods: on(), off()\n"
-"    pyb.Servo(<n>) -- create Servo object for servo n (n=1,2,3,4)\n"
-"                      Servo methods: angle(<x>)\n"
-"    pyb.switch()   -- return True/False if switch pressed or not\n"
-"    pyb.accel()    -- get accelerometer values\n"
-"    pyb.rand()     -- get a 16-bit random number\n"
-"    pyb.gpio(<port>)           -- get port value (port='A4' for example)\n"
-"    pyb.gpio(<port>, <val>)    -- set port value, True or False, 1 or 0\n"
-"    pyb.ADC(<port>) -- make an analog port object (port='C0' for example)\n"
-"                       ADC methods: read()\n"
-;
-
-// get some help about available functions
-static mp_obj_t pyb_help(void) {
-    printf("%s", help_text);
-    return mp_const_none;
-}
-
 int main(void) {
     // TODO disable JTAG
 
@@ -267,9 +239,6 @@ soft_reset:
 #endif
 
     pin_map_init();
-
-    // add some functions to the builtin Python namespace
-    rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
 
     // we pre-import the pyb module
     // probably shouldn't do this, so we are compatible with CPython
