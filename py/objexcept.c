@@ -53,9 +53,23 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
     o->base.type = type;
     o->traceback = MP_OBJ_NULL;
     o->msg = NULL;
+    o->args.base.type = &tuple_type;
     o->args.len = n_args;
     memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
     return o;
+}
+
+STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_exception_t *self = self_in;
+    if (attr == MP_QSTR_args) {
+        dest[0] = &self->args;
+    } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
+        if (self->args.len == 0) {
+            dest[0] = mp_const_none;
+        } else {
+            dest[0] = self->args.items[0];
+        }
+    }
 }
 
 const mp_obj_type_t mp_type_BaseException = {
@@ -63,6 +77,7 @@ const mp_obj_type_t mp_type_BaseException = {
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
+    .load_attr = exception_load_attr,
 };
 
 #define MP_DEFINE_EXCEPTION_BASE(base_name) \
@@ -74,6 +89,7 @@ const mp_obj_type_t mp_type_ ## exc_name = { \
     .name = MP_QSTR_ ## exc_name, \
     .print = mp_obj_exception_print, \
     .make_new = mp_obj_exception_make_new, \
+    .load_attr = exception_load_attr, \
     .bases_tuple = (mp_obj_t)&mp_type_ ## base_name ## _base_tuple, \
 };
 
