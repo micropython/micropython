@@ -175,7 +175,6 @@ struct _mp_obj_type_t {
     abs             float complex
     hash            bool int none str
     equal           int str
-    get_array_n     tuple list
 
     unpack seq      list tuple
     */
@@ -311,7 +310,8 @@ mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 //qstr mp_obj_get_qstr(mp_obj_t arg);
-mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o, machine_int_t n);
+void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
+void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 

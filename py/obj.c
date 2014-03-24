@@ -206,21 +206,29 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 }
 #endif
 
-mp_obj_t *mp_obj_get_array_fixed_n(mp_obj_t o_in, machine_int_t n) {
-    if (MP_OBJ_IS_TYPE(o_in, &tuple_type) || MP_OBJ_IS_TYPE(o_in, &list_type)) {
-        uint seq_len;
-        mp_obj_t *seq_items;
-        if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
-            mp_obj_tuple_get(o_in, &seq_len, &seq_items);
-        } else {
-            mp_obj_list_get(o_in, &seq_len, &seq_items);
-        }
-        if (seq_len != n) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", n, seq_len));
-        }
-        return seq_items;
+void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
+    if (MP_OBJ_IS_TYPE(o, &tuple_type)) {
+        mp_obj_tuple_get(o, len, items);
+    } else if (MP_OBJ_IS_TYPE(o, &list_type)) {
+        mp_obj_list_get(o, len, items);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o_in)));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
+    }
+}
+
+void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
+    if (MP_OBJ_IS_TYPE(o, &tuple_type) || MP_OBJ_IS_TYPE(o, &list_type)) {
+        uint seq_len;
+        if (MP_OBJ_IS_TYPE(o, &tuple_type)) {
+            mp_obj_tuple_get(o, &seq_len, items);
+        } else {
+            mp_obj_list_get(o, &seq_len, items);
+        }
+        if (seq_len != len) {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", len, seq_len));
+        }
+    } else {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
     }
 }
 

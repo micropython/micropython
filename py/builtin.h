@@ -1,4 +1,4 @@
-mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args);
+mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___import___obj);
@@ -6,7 +6,6 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin___repl_print___obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_abs_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_all_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_any_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_bytes_obj); // Temporary hack
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_callable_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_chr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_dir_obj);
@@ -30,7 +29,6 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_range_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_str_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 

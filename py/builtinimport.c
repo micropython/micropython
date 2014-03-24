@@ -128,7 +128,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     rt_globals_set(old_globals);
 }
 
-mp_obj_t mp_builtin___import__(int n_args, mp_obj_t *args) {
+mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     /*
     printf("import:\n");
     for (int i = 0; i < n_args; i++) {
