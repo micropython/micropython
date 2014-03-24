@@ -392,7 +392,6 @@ STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
 
     machine_uint_t start = 0;
     machine_uint_t end = haystack_len;
-    /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
         start = mp_get_index(&str_type, haystack_len, args[2], true);
     }
@@ -601,7 +600,6 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 
     machine_uint_t start = 0;
     machine_uint_t end = haystack_len;
-    /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
         start = mp_get_index(&str_type, haystack_len, args[2], true);
     }
