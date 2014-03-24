@@ -21,7 +21,7 @@
     .af_fn = (af_ptr) \
 }
 
-#define PIN(p_port, p_pin, p_num_af, p_af) \
+#define PIN(p_port, p_pin, p_num_af, p_af, p_adc_num, p_adc_channel) \
 { \
     { &pin_obj_type }, \
     .name = #p_port #p_pin, \
@@ -31,4 +31,6 @@
     .pin_mask = (1 << ((p_pin) & 0x0f)), \
     .gpio = GPIO ## p_port, \
     .af = p_af, \
+    .adc_num = p_adc_num, \
+    .adc_channel = p_adc_channel, \
 }

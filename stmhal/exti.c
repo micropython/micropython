@@ -26,9 +26,7 @@
 // def callback(line):
 //     print("line =", line)
 //
-// # Configure the pin as a GPIO input.
-// pin = pyb.Pin.board.X1
-// pyb.gpio_in(pin, pyb.PULL_UP)
+// # Note: Exti will automatically configure the gpio line as an input.
 // exti = pyb.Exti(pin, pyb.Exti.MODE_IRQ_FALLING, pyb.PULLUP, callback)
 //
 // Now every time a falling edge is seen on the X1 pin, the callback will be

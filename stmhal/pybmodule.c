@@ -20,6 +20,7 @@
 #include "rng.h"
 #include "rtc.h"
 #include "usart.h"
+#include "adc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
@@ -28,7 +29,6 @@
 #if 0
 #include "usb.h"
 #include "i2c.h"
-#include "adc.h"
 #endif
 #include "pybmodule.h"
 #include "ff.h"
@@ -265,10 +265,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_Usart_obj },
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_ADC_obj },
-#endif
 
 #if MICROPY_HW_ENABLE_DAC
     { MP_OBJ_NEW_QSTR(MP_QSTR_DAC), (mp_obj_t)&pyb_dac_type },
