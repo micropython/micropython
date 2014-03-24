@@ -446,7 +446,19 @@ soft_reset:
 #endif
 #endif
 
-    pyexec_repl();
+    // enter REPL
+    // REPL mode can change, or it can request a soft reset
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
 
     printf("PYB: sync filesystems\n");
     storage_flush();

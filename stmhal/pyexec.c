@@ -24,7 +24,8 @@
 #include "usb.h"
 #include "usart.h"
 
-static bool repl_display_debugging_info = 0;
+pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+STATIC bool repl_display_debugging_info = 0;
 
 void stdout_tx_str(const char *str) {
     if (pyb_usart_global_debug != PYB_USART_NONE) {
@@ -279,12 +280,12 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
     return ret;
 }
 
-void pyexec_raw_repl(void) {
+int pyexec_raw_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
 
 raw_repl_reset:
-    stdout_tx_str("raw REPL; CTRL-C to exit\r\n");
+    stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
 
     for (;;) {
         vstr_reset(&line);
@@ -292,11 +293,19 @@ raw_repl_reset:
         for (;;) {
             char c = stdin_rx_chr();
             if (c == VCP_CHAR_CTRL_A) {
+                // reset raw REPL
                 goto raw_repl_reset;
+            } else if (c == VCP_CHAR_CTRL_B) {
+                // change to friendly REPL
+                stdout_tx_str("\r\n");
+                vstr_clear(&line);
+                pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+                return 0;
             } else if (c == VCP_CHAR_CTRL_C) {
+                // clear line
                 vstr_reset(&line);
-                break;
             } else if (c == VCP_CHAR_CTRL_D) {
+                // input finished
                 break;
             } else if (c == '\r') {
                 vstr_add_char(&line, '\n');
@@ -305,30 +314,35 @@ raw_repl_reset:
             }
         }
 
+        // indicate reception of command
         stdout_tx_str("OK");
 
-        if (vstr_len(&line) == 0) {
-            // finished
-            break;
+        if (line.len == 0) {
+            // exit for a soft reset
+            stdout_tx_str("\r\n");
+            vstr_clear(&line);
+            return 1;
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, 0);
         parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
 
+        // indicate end of output with EOF character
         stdout_tx_str("\004");
     }
-
-    vstr_clear(&line);
-    stdout_tx_str("\r\n");
 }
 
-void pyexec_repl(void) {
+int pyexec_friendly_repl(void) {
+    vstr_t line;
+    vstr_init(&line, 32);
+
 #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     // in host mode, we enable the LCD for the repl
     mp_obj_t lcd_o = rt_call_function_0(rt_load_name(qstr_from_str("LCD")));
     rt_call_function_1(rt_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
 #endif
 
+friendly_repl_reset:
     stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
@@ -350,22 +364,29 @@ void pyexec_repl(void) {
     }
     */
 
-    vstr_t line;
-    vstr_init(&line, 32);
-
     for (;;) {
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
 
         if (ret == VCP_CHAR_CTRL_A) {
-            pyexec_raw_repl();
-            continue;
+            // change to raw REPL
+            stdout_tx_str("\r\n");
+            vstr_clear(&line);
+            pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+            return 0;
+        } else if (ret == VCP_CHAR_CTRL_B) {
+            // reset friendly REPL
+            stdout_tx_str("\r\n");
+            goto friendly_repl_reset;
         } else if (ret == VCP_CHAR_CTRL_C) {
+            // break
             stdout_tx_str("\r\n");
             continue;
         } else if (ret == VCP_CHAR_CTRL_D) {
-            // EOF
-            break;
+            // exit for a soft reset
+            stdout_tx_str("\r\n");
+            vstr_clear(&line);
+            return 1;
         } else if (vstr_len(&line) == 0) {
             continue;
         }
@@ -385,8 +406,6 @@ void pyexec_repl(void) {
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
         parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
     }
-
-    stdout_tx_str("\r\n");
 }
 
 bool pyexec_file(const char *filename) {
