@@ -283,6 +283,11 @@ dispatch_loop:
                         sp -= 3;
                         break;
 
+                    case MP_BC_DELETE_NAME:
+                        DECODE_QSTR;
+                        rt_delete_name(qst);
+                        break;
+
                     case MP_BC_DUP_TOP:
                         obj1 = TOP();
                         PUSH(obj1);
