@@ -12,7 +12,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
-#define MICROPY_HW_ENABLE_AUDIO     (1)
+#define MICROPY_HW_ENABLE_DAC       (1)
 
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define USRSW_PIN           (pin_B3)

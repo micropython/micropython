@@ -33,7 +33,7 @@ Q(gpio_out)
 Q(Usart)
 Q(ADC)
 Q(ADC_all)
-Q(Audio)
+Q(DAC)
 Q(open)
 Q(File)
 // Entries for sys.path

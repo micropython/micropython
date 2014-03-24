@@ -92,9 +92,9 @@ SRC_C = \
 	lcd.c \
 	accel.c \
 	servo.c \
+	dac.c \
 
 #	timer.c \
-#	audio.c \
 #	i2c.c \
 #	adc.c \
 #	pybwlan.c \
@@ -106,6 +106,8 @@ SRC_S = \
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal.c \
 	stm32f4xx_hal_cortex.c \
+	stm32f4xx_hal_dac.c \
+	stm32f4xx_hal_dac_ex.c \
 	stm32f4xx_hal_dma.c \
 	stm32f4xx_hal_flash.c \
 	stm32f4xx_hal_flash_ex.c \

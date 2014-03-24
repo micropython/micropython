@@ -24,11 +24,11 @@
 #include "sdcard.h"
 #include "accel.h"
 #include "servo.h"
+#include "dac.h"
 #if 0
 #include "usb.h"
 #include "i2c.h"
 #include "adc.h"
-#include "audio.h"
 #endif
 #include "pybmodule.h"
 #include "ff.h"
@@ -268,10 +268,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_ADC_obj },
-
-#if MICROPY_HW_ENABLE_AUDIO
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Audio), (mp_obj_t)&pyb_Audio_obj },
 #endif
+
+#if MICROPY_HW_ENABLE_DAC
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DAC), (mp_obj_t)&pyb_dac_type },
 #endif
 
     // input

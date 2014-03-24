@@ -37,6 +37,7 @@
 #include "lcd.h"
 #include "accel.h"
 #include "servo.h"
+#include "dac.h"
 #include "pin.h"
 #if 0
 #include "timer.h"
@@ -236,6 +237,11 @@ soft_reset:
     // timer
     timer_init();
 #endif
+#endif
+
+#if MICROPY_HW_ENABLE_DAC
+    // DAC
+    dac_init();
 #endif
 
     pin_map_init();
