@@ -363,7 +363,7 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
 void USBD_CDC_Tx(const char *str, uint32_t len) {
     for (int i = 0; i < len; i++) {
         uint timeout = 200;
-        while (UserTxBufPtrIn + 1 == UserTxBufPtrOut) {
+        while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut) {
             if (timeout-- == 0) {
                 break;
             }
