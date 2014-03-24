@@ -272,9 +272,8 @@ soft_reset:
     rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
     rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
 
-    // we pre-import the pyb module
-    // probably shouldn't do this, so we are compatible with CPython
-    rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
+    // load the pyb module
+    mp_obj_module_register(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;

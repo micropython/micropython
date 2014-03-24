@@ -82,6 +82,11 @@ mp_obj_t mp_obj_module_get(qstr module_name) {
     return MP_OBJ_NULL;
 }
 
+void mp_obj_module_register(qstr qstr, mp_obj_t module)
+{
+    mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+}
+
 mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
     mp_obj_module_t *self = self_in;
