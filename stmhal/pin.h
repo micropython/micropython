@@ -50,6 +50,12 @@ enum {
   AF_PIN_TYPE_SPI_NSS,
 };
 
+enum {
+  PIN_ADC1  = (1 << 0),
+  PIN_ADC2  = (1 << 1),
+  PIN_ADC3  = (1 << 2),
+};
+
 typedef struct {
   mp_obj_base_t base;
   uint8_t idx;
@@ -70,9 +76,11 @@ typedef struct {
 typedef struct {
   mp_obj_base_t base;
   const char *name;
-  uint16_t  port   : 4;
-  uint16_t  pin    : 4;
-  uint16_t  num_af : 4;
+  uint16_t port   : 4;
+  uint16_t pin    : 4;
+  uint16_t num_af : 4;
+  uint16_t adc_channel : 4;
+  uint16_t adc_num  : 3;  // 1 bit per ADC
   uint16_t pin_mask;
   GPIO_TypeDef *gpio;
   const pin_af_obj_t *af;
