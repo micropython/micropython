@@ -13,21 +13,22 @@ changes.  The software will not start to mature until March 2014 at the
 earliest.
 
 See the repository www.github.com/micropython/pyboard for the Micro
-Python board.  At the moment, finalising the design of the board is
-the top priority.
+Python board.
 
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
-- stm/ -- a version of Micro Python that runs on the Micro Python board
-  with an STM32F405RG.
+- stmhal/ -- a version of Micro Python that runs on the Micro Python board
+  with an STM32F405RG (using ST's new Cube HAL drivers).
+- stm/ -- obsolete version of Micro Python for the Micro Python board
+  that uses ST's old peripheral drivers.
 - teensy/ -- a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 
 Additional components:
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
 - tests/ -- test framework and test scripts.
-- tools/ -- various tools.
+- tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
@@ -58,17 +59,21 @@ module (recommended, enable in unix/mpconfigport.mk), libffi-dev is required.
 The STM version
 ---------------
 
-The "stm" part requires an ARM compiler, arm-none-eabi-gcc, and associated
+The "stmhal" part requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
 arm-none-eabi-gcc packages from the AUR.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
 
-    $ cd stm
+    $ cd stmhal
     $ make
 
-Then to flash it via USB DFU to your device:
+You then need to get your board into DFU mode.  On the pyboard, connect the
+3V3 pin to the P1/DFU pin with a wire (on PYBv1.0 they are next to each other
+on the bottom left of the board, second row from the bottom).
+
+Then to flash the code via USB DFU to your device:
 
     $ dfu-util -a 0 -D build/flash.dfu
 
