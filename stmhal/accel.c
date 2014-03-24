@@ -3,6 +3,7 @@
 
 #include <stm32f4xx_hal.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
@@ -99,6 +100,19 @@ typedef struct _pyb_accel_obj_t {
 
 STATIC pyb_accel_obj_t pyb_accel_obj;
 
+STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    if (!(n_args == 0 && n_kw == 0)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Accel accepts no arguments"));
+    }
+
+    // init accel object
+    pyb_accel_obj.base.type = &pyb_accel_type;
+    accel_init_device();
+
+    return &pyb_accel_obj;
+}
+
 STATIC mp_obj_t read_axis(int axis) {
     uint8_t data[1];
     HAL_I2C_Mem_Read(&I2cHandle, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
@@ -171,7 +185,7 @@ STATIC mp_obj_t pyb_accel_write_reg(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val
 
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_reg_obj, pyb_accel_write_reg);
 
-STATIC const mp_method_t accel_methods[] = {
+STATIC const mp_method_t pyb_accel_methods[] = {
     { "x", &pyb_accel_x_obj },
     { "y", &pyb_accel_y_obj },
     { "z", &pyb_accel_z_obj },
@@ -182,16 +196,9 @@ STATIC const mp_method_t accel_methods[] = {
     { NULL, NULL },
 };
 
-STATIC const mp_obj_type_t accel_obj_type = {
+const mp_obj_type_t pyb_accel_type = {
     { &mp_type_type },
     .name = MP_QSTR_Accel,
-    .methods = accel_methods,
+    .make_new = pyb_accel_make_new,
+    .methods = pyb_accel_methods,
 };
-
-STATIC mp_obj_t pyb_Accel(void) {
-    pyb_accel_obj.base.type = &accel_obj_type;
-    accel_init_device();
-    return &pyb_accel_obj;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_Accel_obj, pyb_Accel);

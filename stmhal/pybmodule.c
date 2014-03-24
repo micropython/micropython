@@ -242,7 +242,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_ENABLE_SERVO
     { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_pwm_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servo), (mp_obj_t)&pyb_servo_set_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Servo), (mp_obj_t)&pyb_Servo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Servo), (mp_obj_t)&pyb_servo_type },
 #endif
 
 #if MICROPY_HW_HAS_SWITCH
@@ -254,13 +254,13 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
 #if MICROPY_HW_HAS_MMA7660
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_Accel_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_accel_type },
 #endif
 
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_Led_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_led_type },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
 #endif

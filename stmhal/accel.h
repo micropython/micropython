@@ -1,3 +1,3 @@
 void accel_init(void);
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_Accel_obj);
+extern const mp_obj_type_t pyb_accel_type;

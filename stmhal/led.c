@@ -3,6 +3,7 @@
 #include "usbd_cdc_msc.h"
 #include "usbd_cdc_interface.h"
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
@@ -183,12 +184,43 @@ void led_debug(int n, int delay) {
 
 typedef struct _pyb_led_obj_t {
     mp_obj_base_t base;
-    uint led_id;
+    machine_uint_t led_id;
 } pyb_led_obj_t;
+
+STATIC const pyb_led_obj_t pyb_led_obj[NUM_LEDS] = {
+    {{&pyb_led_type}, 1},
+#if defined(PYB_LED2)
+    {{&pyb_led_type}, 2},
+#if defined(PYB_LED3)
+    {{&pyb_led_type}, 3},
+#if defined(PYB_LED4)
+    {{&pyb_led_type}, 4},
+#endif
+#endif
+#endif
+};
 
 void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
     print(env, "<LED %lu>", self->led_id);
+}
+
+STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    if (!(n_args == 1 && n_kw == 0)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Led accepts 1 argument"));
+    }
+
+    // get led number
+    machine_int_t led_id = mp_obj_get_int(args[0]) - 1;
+
+    // check led number
+    if (!(0 <= led_id && led_id < NUM_LEDS)) {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Led %d does not exist", led_id));
+    }
+
+    // return static led object
+    return (mp_obj_t)&pyb_led_obj[led_id];
 }
 
 mp_obj_t led_obj_on(mp_obj_t self_in) {
@@ -232,18 +264,10 @@ STATIC const mp_method_t led_methods[] = {
     { NULL, NULL },
 };
 
-STATIC const mp_obj_type_t led_obj_type = {
+const mp_obj_type_t pyb_led_type = {
     { &mp_type_type },
     .name = MP_QSTR_Led,
     .print = led_obj_print,
+    .make_new = led_obj_make_new,
     .methods = led_methods,
 };
-
-STATIC mp_obj_t pyb_Led(mp_obj_t led_id) {
-    pyb_led_obj_t *o = m_new_obj(pyb_led_obj_t);
-    o->base.type = &led_obj_type;
-    o->led_id = mp_obj_get_int(led_id);
-    return o;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_Led_obj, pyb_Led);

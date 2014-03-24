@@ -148,12 +148,35 @@ STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
-STATIC void servo_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
     print(env, "<Servo %lu at %lu>", self->servo_id, self->pulse_cur);
 }
 
-STATIC mp_obj_t servo_obj_angle(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    if (!(n_args == 1 && n_kw == 0)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Servo accepts 1 argument"));
+    }
+
+    // get servo number
+    machine_int_t servo_id = mp_obj_get_int(args[0]) - 1;
+
+    // check servo number
+    if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo %d does not exist", servo_id));
+    }
+
+    // get and init servo object
+    pyb_servo_obj_t *s = &pyb_servo_obj[servo_id];
+    s->pulse_dest = s->pulse_cur;
+    s->time_left = 0;
+    servo_init_channel(s);
+
+    return s;
+}
+
+STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get angle
@@ -180,31 +203,17 @@ STATIC mp_obj_t servo_obj_angle(uint n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(servo_obj_angle_obj, 1, 3, servo_obj_angle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
-STATIC const mp_method_t servo_methods[] = {
-    { "angle", &servo_obj_angle_obj },
+STATIC const mp_method_t pyb_servo_methods[] = {
+    { "angle", &pyb_servo_angle_obj },
     { NULL, NULL },
 };
 
-STATIC const mp_obj_type_t servo_obj_type = {
+const mp_obj_type_t pyb_servo_type = {
     { &mp_type_type },
     .name = MP_QSTR_Servo,
-    .print = servo_obj_print,
-    .methods = servo_methods,
+    .print = pyb_servo_print,
+    .make_new = pyb_servo_make_new,
+    .methods = pyb_servo_methods,
 };
-
-STATIC mp_obj_t pyb_Servo(mp_obj_t servo_id_o) {
-    machine_int_t servo_id = mp_obj_get_int(servo_id_o) - 1;
-    if (0 <= servo_id && servo_id < PYB_SERVO_NUM) {
-        pyb_servo_obj_t *s = &pyb_servo_obj[servo_id];
-        s->pulse_dest = s->pulse_cur;
-        s->time_left = 0;
-        servo_init_channel(s);
-        return s;
-    } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo %d does not exist", servo_id));
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_Servo_obj, pyb_Servo);
