@@ -265,6 +265,9 @@ STATIC const mp_method_t pyb_dac_methods[] = {
     { "triangle", &pyb_dac_triangle_obj },
     { "write", &pyb_dac_write_obj },
     { "dma", &pyb_dac_dma_obj },
+    // TODO add function that does double buffering:
+    //  dma2(freq, buf1, buf2, callback)
+    //  where callback is called when the buffer has been drained
     { NULL, NULL },
 };
 
