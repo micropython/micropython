@@ -1001,7 +1001,8 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         // no attribute/method called attr
         // following CPython, we give a more detailed error message for type objects
         if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "type object '%s' has no attribute '%s'", ((mp_obj_type_t*)base)->name, qstr_str(attr)));
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                "type object '%s' has no attribute '%s'", qstr_str(((mp_obj_type_t*)base)->name), qstr_str(attr)));
         } else {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
         }

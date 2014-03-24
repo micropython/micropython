@@ -26,3 +26,8 @@ print(type(()) == tuple)
 print(type([]) == list)
 print(type({None}) == set)
 print(type({}) == dict)
+
+try:
+    bool.foo
+except AttributeError:
+    print("AttributeError")
