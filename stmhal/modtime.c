@@ -6,7 +6,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "map.h"
-#include "timemodule.h"
+#include "modtime.h"
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 #if MICROPY_ENABLE_FLOAT

@@ -6,9 +6,12 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objmodule.h"
 #include "runtime.h"
 #include "map.h"
-#include "builtin.h"
+#include "builtintables.h"
+
+STATIC mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules
 
 STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_module_t *self = self_in;
@@ -39,7 +42,7 @@ const mp_obj_type_t mp_type_module = {
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
-    mp_map_elem_t *el = mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     // We could error out if module already exists, but let C extensions
     // add new members to existing modules.
     if (el->value != MP_OBJ_NULL) {
@@ -62,9 +65,27 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     return o;
 }
 
-mp_obj_t mp_obj_module_get(qstr module_name) {
+mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
+    mp_obj_module_t *self = self_in;
+    return self->globals;
+}
+
+/******************************************************************************/
+// Global module table and related functions
+
+void mp_module_init(void) {
+    mp_map_init(&mp_loaded_modules_map, 3);
+}
+
+void mp_module_deinit(void) {
+    mp_map_deinit(&mp_loaded_modules_map);
+}
+
+// returns MP_OBJ_NULL if not found
+mp_obj_t mp_module_get(qstr module_name) {
     // lookup module
-    mp_map_elem_t *el = mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
     // module found, return it
     if (el != NULL) {
@@ -72,23 +93,10 @@ mp_obj_t mp_obj_module_get(qstr module_name) {
     }
 
     // module not found, look for builtin module names
-#if MICROPY_ENABLE_FLOAT
-    if (module_name == MP_QSTR_math) {
-        return (mp_obj_t)&mp_module_math;
-    }
-#endif
-
-    // no module found, return NULL object
-    return MP_OBJ_NULL;
+    // it will return MP_OBJ_NULL if nothing found
+    return mp_builtin_tables_lookup_module(module_name);
 }
 
-void mp_obj_module_register(qstr qstr, mp_obj_t module)
-{
-    mp_map_lookup(rt_loaded_modules_get(), MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
-}
-
-mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
-    mp_obj_module_t *self = self_in;
-    return self->globals;
+void mp_module_register(qstr qstr, mp_obj_t module) {
+    mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }

@@ -125,10 +125,16 @@ typedef double mp_float_t;
 #define MICROPY_PATH_MAX (512)
 #endif
 
-// Additional builtin function definitions - see runtime.c:builtin_table for format.
+// Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
 #ifndef MICROPY_EXTRA_BUILTINS
 #define MICROPY_EXTRA_BUILTINS
 #endif
+
+// Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
+#ifndef MICROPY_EXTRA_BUILTIN_MODULES
+#define MICROPY_EXTRA_BUILTIN_MODULES
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

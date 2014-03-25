@@ -32,5 +32,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 
+extern const mp_obj_module_t mp_module_array;
+extern const mp_obj_module_t mp_module_collections;
 extern const mp_obj_module_t mp_module_math;
 extern const mp_obj_module_t mp_module_micropython;

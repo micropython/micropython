@@ -10,7 +10,7 @@
 #include "rng.h"
 #include "storage.h"
 #include "ff.h"
-#include "osmodule.h"
+#include "modos.h"
 
 #if _USE_LFN
 static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */

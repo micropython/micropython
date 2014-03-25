@@ -12,12 +12,13 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objmodule.h"
 #include "parsenum.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "map.h"
 #include "builtin.h"
-#include "objarray.h"
+#include "builtintables.h"
 #include "bc.h"
 #include "intdivmod.h"
 
@@ -35,7 +36,6 @@
 STATIC mp_map_t *map_locals;
 STATIC mp_map_t *map_globals;
 STATIC mp_map_t map_builtins;
-STATIC mp_map_t map_loaded_modules; // TODO: expose as sys.modules
 
 typedef enum {
     MP_CODE_NONE,
@@ -72,119 +72,6 @@ STATIC mp_code_t *unique_codes = NULL;
 FILE *fp_write_code = NULL;
 #endif
 
-// builtins
-// we put this table in ROM because it's always needed and takes up quite a bit of room in RAM
-// in fact, it uses less ROM here in table form than the equivalent in code form initialising a dynamic mp_map_t object in RAM
-// at the moment it's a linear table, but we could convert it to a const mp_map_t table with a simple preprocessing script
-// if we wanted to allow dynamic modification of the builtins, we could provide an mp_map_t object which is searched before this one
-
-typedef struct _mp_builtin_elem_t {
-    qstr qstr;
-    mp_obj_t fun;
-} mp_builtin_elem_t;
-
-STATIC const mp_builtin_elem_t builtin_table[] = {
-    // built-in core functions
-    { MP_QSTR___build_class__, (mp_obj_t)&mp_builtin___build_class___obj },
-    { MP_QSTR___import__, (mp_obj_t)&mp_builtin___import___obj },
-    { MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj },
-
-    // built-in types
-    { MP_QSTR_bool, (mp_obj_t)&bool_type },
-    { MP_QSTR_bytes, (mp_obj_t)&bytes_type },
-#if MICROPY_ENABLE_FLOAT
-    { MP_QSTR_complex, (mp_obj_t)&mp_type_complex },
-#endif
-    { MP_QSTR_dict, (mp_obj_t)&dict_type },
-    { MP_QSTR_enumerate, (mp_obj_t)&enumerate_type },
-    { MP_QSTR_filter, (mp_obj_t)&filter_type },
-#if MICROPY_ENABLE_FLOAT
-    { MP_QSTR_float, (mp_obj_t)&mp_type_float },
-#endif
-    { MP_QSTR_int, (mp_obj_t)&int_type },
-    { MP_QSTR_list, (mp_obj_t)&list_type },
-    { MP_QSTR_map, (mp_obj_t)&map_type },
-    { MP_QSTR_object, (mp_obj_t)&mp_type_object },
-    { MP_QSTR_set, (mp_obj_t)&set_type },
-    { MP_QSTR_str, (mp_obj_t)&str_type },
-    { MP_QSTR_super, (mp_obj_t)&super_type },
-    { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
-    { MP_QSTR_type, (mp_obj_t)&mp_type_type },
-    { MP_QSTR_zip, (mp_obj_t)&zip_type },
-
-    { MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod },
-    { MP_QSTR_staticmethod, (mp_obj_t)&mp_type_staticmethod },
-
-    // built-in user functions
-    { MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj },
-    { MP_QSTR_all, (mp_obj_t)&mp_builtin_all_obj },
-    { MP_QSTR_any, (mp_obj_t)&mp_builtin_any_obj },
-    { MP_QSTR_callable, (mp_obj_t)&mp_builtin_callable_obj },
-    { MP_QSTR_chr, (mp_obj_t)&mp_builtin_chr_obj },
-    { MP_QSTR_dir, (mp_obj_t)&mp_builtin_dir_obj },
-    { MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj },
-    { MP_QSTR_eval, (mp_obj_t)&mp_builtin_eval_obj },
-    { MP_QSTR_exec, (mp_obj_t)&mp_builtin_exec_obj },
-    { MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj },
-    { MP_QSTR_id, (mp_obj_t)&mp_builtin_id_obj },
-    { MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj },
-    { MP_QSTR_issubclass, (mp_obj_t)&mp_builtin_issubclass_obj },
-    { MP_QSTR_iter, (mp_obj_t)&mp_builtin_iter_obj },
-    { MP_QSTR_len, (mp_obj_t)&mp_builtin_len_obj },
-    { MP_QSTR_max, (mp_obj_t)&mp_builtin_max_obj },
-    { MP_QSTR_min, (mp_obj_t)&mp_builtin_min_obj },
-    { MP_QSTR_next, (mp_obj_t)&mp_builtin_next_obj },
-    { MP_QSTR_ord, (mp_obj_t)&mp_builtin_ord_obj },
-    { MP_QSTR_pow, (mp_obj_t)&mp_builtin_pow_obj },
-    { MP_QSTR_print, (mp_obj_t)&mp_builtin_print_obj },
-    { MP_QSTR_range, (mp_obj_t)&mp_builtin_range_obj },
-    { MP_QSTR_repr, (mp_obj_t)&mp_builtin_repr_obj },
-    { MP_QSTR_sorted, (mp_obj_t)&mp_builtin_sorted_obj },
-    { MP_QSTR_sum, (mp_obj_t)&mp_builtin_sum_obj },
-    { MP_QSTR_bytearray, (mp_obj_t)&mp_builtin_bytearray_obj },
-
-    // built-in exceptions
-    { MP_QSTR_BaseException, (mp_obj_t)&mp_type_BaseException },
-    { MP_QSTR_ArithmeticError, (mp_obj_t)&mp_type_ArithmeticError },
-    { MP_QSTR_AssertionError, (mp_obj_t)&mp_type_AssertionError },
-    { MP_QSTR_AttributeError, (mp_obj_t)&mp_type_AttributeError },
-    { MP_QSTR_BufferError, (mp_obj_t)&mp_type_BufferError },
-    { MP_QSTR_EOFError, (mp_obj_t)&mp_type_EOFError },
-    { MP_QSTR_EnvironmentError, (mp_obj_t)&mp_type_EnvironmentError },
-    { MP_QSTR_Exception, (mp_obj_t)&mp_type_Exception },
-    { MP_QSTR_FloatingPointError, (mp_obj_t)&mp_type_FloatingPointError },
-    { MP_QSTR_GeneratorExit, (mp_obj_t)&mp_type_GeneratorExit },
-    { MP_QSTR_IOError, (mp_obj_t)&mp_type_IOError },
-    { MP_QSTR_ImportError, (mp_obj_t)&mp_type_ImportError },
-    { MP_QSTR_IndentationError, (mp_obj_t)&mp_type_IndentationError },
-    { MP_QSTR_IndexError, (mp_obj_t)&mp_type_IndexError },
-    { MP_QSTR_KeyError, (mp_obj_t)&mp_type_KeyError },
-    { MP_QSTR_LookupError, (mp_obj_t)&mp_type_LookupError },
-    { MP_QSTR_MemoryError, (mp_obj_t)&mp_type_MemoryError },
-    { MP_QSTR_NameError, (mp_obj_t)&mp_type_NameError },
-    { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
-    { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
-    { MP_QSTR_OverflowError, (mp_obj_t)&mp_type_OverflowError },
-    { MP_QSTR_ReferenceError, (mp_obj_t)&mp_type_ReferenceError },
-    { MP_QSTR_RuntimeError, (mp_obj_t)&mp_type_RuntimeError },
-    { MP_QSTR_SyntaxError, (mp_obj_t)&mp_type_SyntaxError },
-    { MP_QSTR_SystemError, (mp_obj_t)&mp_type_SystemError },
-    { MP_QSTR_SystemExit, (mp_obj_t)&mp_type_SystemExit },
-    { MP_QSTR_TabError, (mp_obj_t)&mp_type_TabError },
-    { MP_QSTR_TypeError, (mp_obj_t)&mp_type_TypeError },
-    { MP_QSTR_UnboundLocalError, (mp_obj_t)&mp_type_UnboundLocalError },
-    { MP_QSTR_ValueError, (mp_obj_t)&mp_type_ValueError },
-    { MP_QSTR_ZeroDivisionError, (mp_obj_t)&mp_type_ZeroDivisionError },
-    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
-    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
-    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
-
-    // Extra builtins as defined by a port
-    MICROPY_EXTRA_BUILTINS
-
-    { MP_QSTR_, MP_OBJ_NULL }, // end of list sentinel
-};
-
 // a good optimising compiler will inline this if necessary
 STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
     mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
@@ -193,22 +80,16 @@ STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
 void rt_init(void) {
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     map_locals = map_globals = mp_map_new(1);
-    mp_map_add_qstr(map_globals, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // init built-in hash table
     mp_map_init(&map_builtins, 3);
 
-    // init loaded modules table
-    mp_map_init(&map_loaded_modules, 3);
+    // init global module stuff
+    mp_module_init();
 
-    // built-in objects
+    // add some builtins that can't be done in ROM
+    mp_map_add_qstr(map_globals, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
     mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
-
-    mp_obj_t m_array = mp_obj_new_module(MP_QSTR_array);
-    rt_store_attr(m_array, MP_QSTR_array, (mp_obj_t)&array_type);
-
-    mp_obj_t m_collections = mp_obj_new_module(MP_QSTR_collections);
-    rt_store_attr(m_collections, MP_QSTR_namedtuple, (mp_obj_t)&mp_namedtuple_obj);
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
@@ -220,10 +101,6 @@ void rt_init(void) {
     // for efficiency, left to platform-specific startup code
     //sys_path = mp_obj_new_list(0, NULL);
     //rt_store_attr(m_sys, MP_QSTR_path, sys_path);
-
-    // we pre-import the micropython module
-    // probably shouldn't do this, so we are compatible with CPython
-    rt_store_name(MP_QSTR_micropython, (mp_obj_t)&mp_module_micropython);
 
     // TODO: wastes one mp_code_t structure in mem
     next_unique_code_id = 1; // 0 indicates "no code"
@@ -238,8 +115,8 @@ void rt_init(void) {
 void rt_deinit(void) {
     m_del(mp_code_t, unique_codes, unique_codes_alloc);
     mp_map_free(map_globals);
-    mp_map_deinit(&map_loaded_modules);
     mp_map_deinit(&map_builtins);
+    mp_module_deinit();
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fclose(fp_write_code);
@@ -428,10 +305,9 @@ mp_obj_t rt_load_global(qstr qstr) {
     if (elem == NULL) {
         elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            for (const mp_builtin_elem_t *e = &builtin_table[0]; e->qstr != MP_QSTR_; e++) {
-                if (e->qstr == qstr) {
-                    return e->fun;
-                }
+            mp_obj_t o = mp_builtin_tables_lookup_object(qstr);
+            if (o != MP_OBJ_NULL) {
+                return o;
             }
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
@@ -441,10 +317,13 @@ mp_obj_t rt_load_global(qstr qstr) {
 
 mp_obj_t rt_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
+    // lookup __build_class__ in dynamic table of builtins first
     mp_map_elem_t *elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
     if (elem != NULL) {
+        // found user-defined __build_class__, return it
         return elem->value;
     } else {
+        // no user-defined __build_class__, return builtin one
         return (mp_obj_t)&mp_builtin___build_class___obj;
     }
 }
@@ -1139,10 +1018,6 @@ mp_map_t *rt_globals_get(void) {
 void rt_globals_set(mp_map_t *m) {
     DEBUG_OP_printf("rt_globals_set(%p)\n", m);
     map_globals = m;
-}
-
-mp_map_t *rt_loaded_modules_get(void) {
-    return &map_loaded_modules;
 }
 
 // these must correspond to the respective enum

@@ -30,7 +30,7 @@
 #include "usb.h"
 #include "i2c.h"
 #endif
-#include "pybmodule.h"
+#include "modpyb.h"
 #include "ff.h"
 
 // get lots of info about the board

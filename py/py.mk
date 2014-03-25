@@ -74,8 +74,11 @@ PY_O_BASENAME = \
 	builtin.o \
 	builtinimport.o \
 	builtinevex.o \
-	builtinmp.o \
-	builtinmath.o \
+	builtintables.o \
+	modarray.o \
+	modcollections.o \
+	modmath.o \
+	modmicropython.o \
 	vm.o \
 	showbc.o \
 	repl.o \

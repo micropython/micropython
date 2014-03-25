@@ -12,6 +12,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "objmodule.h"
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
@@ -156,7 +157,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
 
     // check if module already exists
-    mp_obj_t module_obj = mp_obj_module_get(mp_obj_str_get_qstr(args[0]));
+    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(args[0]));
     if (module_obj != MP_OBJ_NULL) {
         // If it's not a package, return module right away
         char *p = strchr(mod_str, '.');
@@ -169,7 +170,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         }
         // Otherwise, we need to return top-level package
         qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
-        return mp_obj_module_get(pkg_name);
+        return mp_module_get(pkg_name);
     }
 
     uint last = 0;
@@ -200,7 +201,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                 nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
             }
 
-            module_obj = mp_obj_module_get(mod_name);
+            module_obj = mp_module_get(mod_name);
             if (module_obj == MP_OBJ_NULL) {
                 // module not already loaded, so load it!
 

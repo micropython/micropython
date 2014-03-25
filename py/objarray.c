@@ -121,7 +121,7 @@ STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 }
 
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(self_in, &array_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
         int item_sz = mp_binary_get_size(self->typecode);
@@ -154,7 +154,7 @@ STATIC const mp_method_t array_type_methods[] = {
     { NULL, NULL },
 };
 
-const mp_obj_type_t array_type = {
+const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
     .name = MP_QSTR_array,
     .print = array_print,
@@ -169,7 +169,7 @@ const mp_obj_type_t array_type = {
 
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
-    o->base.type = &array_type;
+    o->base.type = &mp_type_array;
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
@@ -190,7 +190,7 @@ mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
 // Create bytearray which references specified memory area
 mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
-    o->base.type = &array_type;
+    o->base.type = &mp_type_array;
     o->typecode = BYTEARRAY_TYPECODE;
     o->free = 0;
     o->len = n;
@@ -207,7 +207,7 @@ typedef struct _mp_obj_array_it_t {
     machine_uint_t cur;
 } mp_obj_array_it_t;
 
-mp_obj_t array_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     mp_obj_array_it_t *self = self_in;
     if (self->cur < self->array->len) {
         return mp_binary_get_val(self->array->typecode, self->array->items, self->cur++);
@@ -222,7 +222,7 @@ STATIC const mp_obj_type_t array_it_type = {
     .iternext = array_it_iternext,
 };
 
-mp_obj_t array_iterator_new(mp_obj_t array_in) {
+STATIC mp_obj_t array_iterator_new(mp_obj_t array_in) {
     mp_obj_array_t *array = array_in;
     mp_obj_array_it_t *o = m_new_obj(mp_obj_array_it_t);
     o->base.type = &array_it_type;

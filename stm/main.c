@@ -24,6 +24,7 @@
 #include "lexerfatfs.h"
 #include "parse.h"
 #include "obj.h"
+#include "objmodule.h"
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
@@ -273,7 +274,7 @@ soft_reset:
     rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
 
     // load the pyb module
-    mp_obj_module_register(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
+    mp_module_register(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;

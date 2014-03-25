@@ -181,7 +181,8 @@ STATIC mp_obj_t pyb_standby(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
 STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
-    mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
+    mp_obj_t *items;
+    mp_obj_get_array_fixed_n(arg, 4, &items);
     uint8_t data[4];
     data[0] = mp_obj_get_int(items[0]);
     data[1] = mp_obj_get_int(items[1]);

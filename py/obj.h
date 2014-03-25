@@ -417,7 +417,7 @@ void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *sto
 extern const mp_obj_type_t zip_type;
 
 // array
-extern const mp_obj_type_t array_type;
+extern const mp_obj_type_t mp_type_array;
 uint mp_obj_array_len(mp_obj_t self_in);
 mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items);
 
@@ -454,9 +454,6 @@ typedef struct _mp_obj_module_t {
     struct _mp_map_t *globals;
 } mp_obj_module_t;
 extern const mp_obj_type_t mp_type_module;
-mp_obj_t mp_obj_new_module(qstr module_name);
-mp_obj_t mp_obj_module_get(qstr module_name);
-void mp_obj_module_register(qstr qstr, mp_obj_t module); //use for loading statically allocated modules
 struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
