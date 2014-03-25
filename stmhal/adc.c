@@ -187,10 +187,10 @@ typedef struct _pyb_obj_adc_all_t {
 void adc_init_all(pyb_obj_adc_all_t *adc_all, uint32_t resolution) {
 
     switch (resolution) {
-        case 6:     resolution = ADC_RESOLUTION6b;  break;
-        case 8:     resolution = ADC_RESOLUTION8b;  break;
-        case 10:    resolution = ADC_RESOLUTION10b; break;
-        case 12:    resolution = ADC_RESOLUTION12b; break;
+        case 6:  resolution = ADC_RESOLUTION6b;  break;
+        case 8:  resolution = ADC_RESOLUTION8b;  break;
+        case 10: resolution = ADC_RESOLUTION10b; break;
+        case 12: resolution = ADC_RESOLUTION12b; break;
         default:
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "resolution %d not supported", resolution));
@@ -238,18 +238,44 @@ uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t chan
     return adc_read_channel(adcHandle);
 }
 
+int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
+    uint32_t res_reg = __HAL_ADC_GET_RESOLUTION(adcHandle);
+
+    switch (res_reg) {
+        case ADC_RESOLUTION6b:  return 6;
+        case ADC_RESOLUTION8b:  return 8;
+        case ADC_RESOLUTION10b: return 10;
+    }
+    return 12;
+}
+
 int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
     int32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_TEMPSENSOR);
+
+    // Note: constants assume 12-bit resolution, so we scale the raw value to
+    //       be 12-bits.
+    raw_value <<= (12 - adc_get_resolution(adcHandle));
+
     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
 }
 
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
+
+    // Note: constants assume 12-bit resolution, so we scale the raw value to
+    //       be 12-bits.
+    raw_value <<= (12 - adc_get_resolution(adcHandle));
+
     return raw_value * VBAT_DIV / 4096.0f * 3.3f;
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VREFINT);
+
+    // Note: constants assume 12-bit resolution, so we scale the raw value to
+    //       be 12-bits.
+    raw_value <<= (12 - adc_get_resolution(adcHandle));
+
     return raw_value * VBAT_DIV / 4096.0f * 3.3f;
 }
 
