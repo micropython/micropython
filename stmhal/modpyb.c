@@ -26,9 +26,9 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
+#include "i2c.h"
 #if 0
 #include "usb.h"
-#include "i2c.h"
 #endif
 #include "modpyb.h"
 #include "ff.h"
@@ -261,9 +261,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_led_type },
-#if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_I2C_obj },
-#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_Usart_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },

@@ -32,6 +32,7 @@
 #include "sdcard.h"
 #include "ff.h"
 #include "lcd.h"
+#include "i2c.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
@@ -374,6 +375,8 @@ soft_reset:
     // USB device
     pyb_usb_dev_init(USBD_DEVICE_CDC_MSC, usbd_medium_kind);
 #endif
+
+    i2c_init();
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset

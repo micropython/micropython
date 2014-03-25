@@ -94,9 +94,9 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	i2c.c \
 
 #	timer.c \
-#	i2c.c \
 #	pybwlan.c \
 
 SRC_S = \
