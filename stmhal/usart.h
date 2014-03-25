@@ -15,6 +15,7 @@ typedef enum {
 typedef struct _pyb_usart_obj_t pyb_usart_obj_t;
 
 extern pyb_usart_obj_t *pyb_usart_global_debug;
+extern const mp_obj_type_t pyb_usart_type;
 
 void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate);
 bool usart_rx_any(pyb_usart_obj_t *usart_obj);
@@ -23,6 +24,3 @@ void usart_tx_str(pyb_usart_obj_t *usart_obj, const char *str);
 void usart_tx_strn(pyb_usart_obj_t *usart_obj, const char *str, uint len);
 void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len);
 
-mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate);
-
-MP_DECLARE_CONST_FUN_OBJ(pyb_Usart_obj);

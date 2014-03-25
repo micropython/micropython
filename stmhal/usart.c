@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include <stm32f4xx_hal.h>
 
+#include "stm32f4xx_hal.h"
+
+#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
@@ -71,8 +73,8 @@ void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
             break;
     }
 
-    /* Initialize USARTx */
-    
+    // Initialize USARTx
+
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Pin = GPIO_Pin;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
@@ -135,7 +137,33 @@ void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len)
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-static mp_obj_t usart_obj_status(mp_obj_t self_in) {
+STATIC void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    pyb_usart_obj_t *self = self_in;
+    print(env, "<Usart %lu>", self->usart_id);
+}
+
+STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    if (!(n_args == 2 && n_kw == 0)) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Usart accepts 2 arguments"));
+    }
+
+    if (mp_obj_get_int(args[0]) > PYB_USART_MAX) {
+        return mp_const_none;
+    }
+
+    pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
+    o->base.type = &pyb_usart_type;
+    o->usart_id = mp_obj_get_int(args[0]);
+    o->is_enabled = true;
+
+    /* init USART */
+    usart_init(o, mp_obj_get_int(args[1]));
+
+    return o;
+}
+
+STATIC mp_obj_t usart_obj_status(mp_obj_t self_in) {
     pyb_usart_obj_t *self = self_in;
     if (usart_rx_any(self)) {
         return mp_const_true;
@@ -144,7 +172,7 @@ static mp_obj_t usart_obj_status(mp_obj_t self_in) {
     }
 }
 
-static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
+STATIC mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
     mp_obj_t ret = mp_const_none;
     pyb_usart_obj_t *self = self_in;
 
@@ -154,7 +182,7 @@ static mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
     return ret;
 }
 
-static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
+STATIC mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
     pyb_usart_obj_t *self = self_in;
     uint len;
     const char *str = mp_obj_str_get_data(c, &len);
@@ -164,7 +192,7 @@ static mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
     return mp_const_none;
 }
 
-static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
+STATIC mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     pyb_usart_obj_t *self = self_in;
     if (self->is_enabled) {
         if (MP_OBJ_IS_STR(s)) {
@@ -176,15 +204,10 @@ static mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
     return mp_const_none;
 }
 
-static void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_usart_obj_t *self = self_in;
-    print(env, "<Usart %lu>", self->usart_id);
-}
-
-static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_status_obj, usart_obj_status);
-static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
-static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
-static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_status_obj, usart_obj_status);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
 
 STATIC const mp_method_t usart_methods[] = {
     { "status", &usart_obj_status_obj },
@@ -194,27 +217,10 @@ STATIC const mp_method_t usart_methods[] = {
     { NULL, NULL },
 };
 
-STATIC const mp_obj_type_t usart_obj_type = {
+const mp_obj_type_t pyb_usart_type = {
     { &mp_type_type },
     .name = MP_QSTR_Usart,
     .print = usart_obj_print,
+    .make_new = usart_obj_make_new,
     .methods = usart_methods,
 };
-
-mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate) {
-    if (mp_obj_get_int(usart_id) > PYB_USART_MAX) {
-        return mp_const_none;
-    }
-
-    pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
-    o->base.type = &usart_obj_type;
-    o->usart_id = mp_obj_get_int(usart_id);
-    o->is_enabled = true;
-
-    /* init USART */
-    usart_init(o, mp_obj_get_int(baudrate));
-
-    return o;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_Usart_obj, pyb_Usart);
