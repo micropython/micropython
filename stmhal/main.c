@@ -26,12 +26,12 @@
 #include "exti.h"
 #include "usrsw.h"
 #include "usb.h"
-#include "rng.h"
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "ff.h"
 #include "lcd.h"
+#include "rng.h"
 #include "i2c.h"
 #include "accel.h"
 #include "servo.h"
@@ -221,28 +221,6 @@ soft_reset:
     lcd_init();
 #endif
 
-#if MICROPY_HW_ENABLE_RNG
-    // RNG
-    rng_init();
-#endif
-
-#if MICROPY_HW_ENABLE_SERVO
-    // servo
-    servo_init();
-#endif
-
-#if 0
-#if MICROPY_HW_ENABLE_TIMER
-    // timer
-    timer_init();
-#endif
-#endif
-
-#if MICROPY_HW_ENABLE_DAC
-    // DAC
-    dac_init();
-#endif
-
     pin_map_init();
 
     // check if user switch held (initiates reset of filesystem)
@@ -376,11 +354,34 @@ soft_reset:
     pyb_usb_dev_init(USBD_DEVICE_CDC_MSC, usbd_medium_kind);
 #endif
 
+#if MICROPY_HW_ENABLE_RNG
+    // RNG
+    rng_init();
+#endif
+
+    // I2C
     i2c_init();
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
     accel_init();
+#endif
+
+#if MICROPY_HW_ENABLE_SERVO
+    // servo
+    servo_init();
+#endif
+
+#if 0
+#if MICROPY_HW_ENABLE_TIMER
+    // timer
+    timer_init();
+#endif
+#endif
+
+#if MICROPY_HW_ENABLE_DAC
+    // DAC
+    dac_init();
 #endif
 
     // run main script
