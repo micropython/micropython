@@ -18,9 +18,9 @@ codepoint2name[ord('/')] = 'slash'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
-    hash = 0
+    hash = 5381
     for char in qstr:
-        hash += ord(char)
+        hash = (hash * 33) ^ ord(char)
     return hash & 0xffff
 
 def do_work(infiles):
