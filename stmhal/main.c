@@ -373,6 +373,9 @@ soft_reset:
             }
         }
     }
+#else
+    // Get rid of compiler warning if no SDCARD is configured.
+    (void)first_soft_reset;
 #endif
 
 #if defined(USE_HOST_MODE)
