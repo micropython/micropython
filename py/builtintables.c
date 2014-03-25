@@ -85,7 +85,6 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_AttributeError, (mp_obj_t)&mp_type_AttributeError },
     { MP_QSTR_BufferError, (mp_obj_t)&mp_type_BufferError },
     { MP_QSTR_EOFError, (mp_obj_t)&mp_type_EOFError },
-    { MP_QSTR_EnvironmentError, (mp_obj_t)&mp_type_EnvironmentError },
     { MP_QSTR_Exception, (mp_obj_t)&mp_type_Exception },
     { MP_QSTR_FloatingPointError, (mp_obj_t)&mp_type_FloatingPointError },
     { MP_QSTR_GeneratorExit, (mp_obj_t)&mp_type_GeneratorExit },
@@ -100,17 +99,14 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_NotImplementedError, (mp_obj_t)&mp_type_NotImplementedError },
     { MP_QSTR_OSError, (mp_obj_t)&mp_type_OSError },
     { MP_QSTR_OverflowError, (mp_obj_t)&mp_type_OverflowError },
-    { MP_QSTR_ReferenceError, (mp_obj_t)&mp_type_ReferenceError },
     { MP_QSTR_RuntimeError, (mp_obj_t)&mp_type_RuntimeError },
+    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
     { MP_QSTR_SyntaxError, (mp_obj_t)&mp_type_SyntaxError },
     { MP_QSTR_SystemError, (mp_obj_t)&mp_type_SystemError },
-    { MP_QSTR_SystemExit, (mp_obj_t)&mp_type_SystemExit },
-    { MP_QSTR_TabError, (mp_obj_t)&mp_type_TabError },
     { MP_QSTR_TypeError, (mp_obj_t)&mp_type_TypeError },
     { MP_QSTR_UnboundLocalError, (mp_obj_t)&mp_type_UnboundLocalError },
     { MP_QSTR_ValueError, (mp_obj_t)&mp_type_ValueError },
     { MP_QSTR_ZeroDivisionError, (mp_obj_t)&mp_type_ZeroDivisionError },
-    { MP_QSTR_StopIteration, (mp_obj_t)&mp_type_StopIteration },
     // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
     // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
 
