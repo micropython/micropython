@@ -261,14 +261,14 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_dma_obj, 3, pyb_dac_dma);
 
 STATIC const mp_method_t pyb_dac_methods[] = {
-    { "noise", &pyb_dac_noise_obj },
-    { "triangle", &pyb_dac_triangle_obj },
-    { "write", &pyb_dac_write_obj },
-    { "dma", &pyb_dac_dma_obj },
+    { MP_QSTR_noise, &pyb_dac_noise_obj },
+    { MP_QSTR_triangle, &pyb_dac_triangle_obj },
+    { MP_QSTR_write, &pyb_dac_write_obj },
+    { MP_QSTR_dma, &pyb_dac_dma_obj },
     // TODO add function that does double buffering:
     //  dma2(freq, buf1, buf2, callback)
     //  where callback is called when the buffer has been drained
-    { NULL, NULL },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_dac_type = {

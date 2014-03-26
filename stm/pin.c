@@ -35,10 +35,10 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pin_obj_port_obj, pin_obj_port);
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_obj_pin_obj, pin_obj_pin);
 
 static const mp_method_t pin_methods[] = {
-    { "name", &pin_obj_name_obj },
-    { "port", &pin_obj_port_obj },
-    { "pin", &pin_obj_pin_obj },
-    { NULL, NULL },
+    { MP_QSTR_name, &pin_obj_name_obj },
+    { MP_QSTR_port, &pin_obj_port_obj },
+    { MP_QSTR_pin, &pin_obj_pin_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pin_obj_type = {

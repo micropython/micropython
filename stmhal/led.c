@@ -257,11 +257,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
 
 STATIC const mp_method_t led_methods[] = {
-    { "on", &led_obj_on_obj },
-    { "off", &led_obj_off_obj },
-    { "toggle", &led_obj_toggle_obj },
-    { "intensity", &led_obj_intensity_obj },
-    { NULL, NULL },
+    { MP_QSTR_on, &led_obj_on_obj },
+    { MP_QSTR_off, &led_obj_off_obj },
+    { MP_QSTR_toggle, &led_obj_toggle_obj },
+    { MP_QSTR_intensity, &led_obj_intensity_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_led_type = {

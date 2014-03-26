@@ -53,10 +53,10 @@ static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 // TODO gc hook to close the file if not already closed
 
 static const mp_method_t file_methods[] = {
-    { "read", &file_obj_read_obj },
-    { "write", &file_obj_write_obj },
-    { "close", &file_obj_close_obj },
-    {NULL, NULL},
+    { MP_QSTR_read, &file_obj_read_obj },
+    { MP_QSTR_write, &file_obj_write_obj },
+    { MP_QSTR_close, &file_obj_close_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t file_obj_type = {

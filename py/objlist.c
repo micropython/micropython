@@ -329,18 +329,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 0, mp_obj_list_sort);
 
 STATIC const mp_method_t list_type_methods[] = {
-    { "append", &list_append_obj },
-    { "clear", &list_clear_obj },
-    { "copy", &list_copy_obj },
-    { "count", &list_count_obj },
-    { "extend", &list_extend_obj },
-    { "index", &list_index_obj },
-    { "insert", &list_insert_obj },
-    { "pop", &list_pop_obj },
-    { "remove", &list_remove_obj },
-    { "reverse", &list_reverse_obj },
-    { "sort", &list_sort_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_append, &list_append_obj },
+    { MP_QSTR_clear, &list_clear_obj },
+    { MP_QSTR_copy, &list_copy_obj },
+    { MP_QSTR_count, &list_count_obj },
+    { MP_QSTR_extend, &list_extend_obj },
+    { MP_QSTR_index, &list_index_obj },
+    { MP_QSTR_insert, &list_insert_obj },
+    { MP_QSTR_pop, &list_pop_obj },
+    { MP_QSTR_remove, &list_remove_obj },
+    { MP_QSTR_reverse, &list_reverse_obj },
+    { MP_QSTR_sort, &list_sort_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t list_type = {

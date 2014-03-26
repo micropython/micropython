@@ -424,24 +424,24 @@ STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
 
 STATIC const mp_method_t set_type_methods[] = {
-    { "add", &set_add_obj },
-    { "clear", &set_clear_obj },
-    { "copy", &set_copy_obj },
-    { "discard", &set_discard_obj },
-    { "difference", &set_diff_obj },
-    { "difference_update", &set_diff_update_obj },
-    { "intersection", &set_intersect_obj },
-    { "intersection_update", &set_intersect_update_obj },
-    { "isdisjoint", &set_isdisjoint_obj },
-    { "issubset", &set_issubset_obj },
-    { "issuperset", &set_issuperset_obj },
-    { "pop", &set_pop_obj },
-    { "remove", &set_remove_obj },
-    { "symmetric_difference", &set_symmetric_difference_obj },
-    { "symmetric_difference_update", &set_symmetric_difference_update_obj },
-    { "union", &set_union_obj },
-    { "update", &set_update_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_add, &set_add_obj },
+    { MP_QSTR_clear, &set_clear_obj },
+    { MP_QSTR_copy, &set_copy_obj },
+    { MP_QSTR_discard, &set_discard_obj },
+    { MP_QSTR_difference, &set_diff_obj },
+    { MP_QSTR_difference_update, &set_diff_update_obj },
+    { MP_QSTR_intersection, &set_intersect_obj },
+    { MP_QSTR_intersection_update, &set_intersect_update_obj },
+    { MP_QSTR_isdisjoint, &set_isdisjoint_obj },
+    { MP_QSTR_issubset, &set_issubset_obj },
+    { MP_QSTR_issuperset, &set_issuperset_obj },
+    { MP_QSTR_pop, &set_pop_obj },
+    { MP_QSTR_remove, &set_remove_obj },
+    { MP_QSTR_symmetric_difference, &set_symmetric_difference_obj },
+    { MP_QSTR_symmetric_difference_update, &set_symmetric_difference_update_obj },
+    { MP_QSTR_union, &set_union_obj },
+    { MP_QSTR_update, &set_update_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t set_type = {

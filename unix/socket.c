@@ -218,25 +218,25 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 }
 
 static const mp_method_t microsocket_type_methods[] = {
-        { "fileno", &socket_fileno_obj },
-        { "makefile", &mp_identity_obj },
-        { "read", &mp_stream_read_obj },
-        { "readall", &mp_stream_readall_obj },
-        { "readline", &mp_stream_unbuffered_readline_obj},
-        { "write", &mp_stream_write_obj },
-        { "connect", &socket_connect_obj },
-        { "bind", &socket_bind_obj },
-        { "listen", &socket_listen_obj },
-        { "accept", &socket_accept_obj },
-        { "recv", &socket_recv_obj },
-        { "send", &socket_send_obj },
-        { "setsockopt", &socket_setsockopt_obj },
-        { "close", &socket_close_obj },
+    { MP_QSTR_fileno, &socket_fileno_obj },
+    { MP_QSTR_makefile, &mp_identity_obj },
+    { MP_QSTR_read, &mp_stream_read_obj },
+    { MP_QSTR_readall, &mp_stream_readall_obj },
+    { MP_QSTR_readline, &mp_stream_unbuffered_readline_obj},
+    { MP_QSTR_write, &mp_stream_write_obj },
+    { MP_QSTR_connect, &socket_connect_obj },
+    { MP_QSTR_bind, &socket_bind_obj },
+    { MP_QSTR_listen, &socket_listen_obj },
+    { MP_QSTR_accept, &socket_accept_obj },
+    { MP_QSTR_recv, &socket_recv_obj },
+    { MP_QSTR_send, &socket_send_obj },
+    { MP_QSTR_setsockopt, &socket_setsockopt_obj },
+    { MP_QSTR_close, &socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
-        { "recv", &mp_stream_read_obj },
-        { "send", &mp_stream_write_obj },
+    { MP_QSTR_recv, &mp_stream_read_obj },
+    { MP_QSTR_send, &mp_stream_write_obj },
 #endif
-        { NULL, NULL },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t microsocket_type = {

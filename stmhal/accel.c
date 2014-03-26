@@ -141,32 +141,32 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
-STATIC mp_obj_t pyb_accel_read_reg(mp_obj_t self_in, mp_obj_t reg) {
+STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1];
     HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_reg_obj, pyb_accel_read_reg);
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
-STATIC mp_obj_t pyb_accel_write_reg(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
+STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     uint8_t data[1];
     data[0] = mp_obj_get_int(val);
     HAL_I2C_Mem_Write(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_reg_obj, pyb_accel_write_reg);
+MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
 STATIC const mp_method_t pyb_accel_methods[] = {
-    { "x", &pyb_accel_x_obj },
-    { "y", &pyb_accel_y_obj },
-    { "z", &pyb_accel_z_obj },
-    { "tilt", &pyb_accel_tilt_obj },
-    { "filtered_xyz", &pyb_accel_filtered_xyz_obj },
-    { "read_reg", &pyb_accel_read_reg_obj },
-    { "write_reg", &pyb_accel_write_reg_obj },
-    { NULL, NULL },
+    { MP_QSTR_x, &pyb_accel_x_obj },
+    { MP_QSTR_y, &pyb_accel_y_obj },
+    { MP_QSTR_z, &pyb_accel_z_obj },
+    { MP_QSTR_tilt, &pyb_accel_tilt_obj },
+    { MP_QSTR_filtered_xyz, &pyb_accel_filtered_xyz_obj },
+    { MP_QSTR_read, &pyb_accel_read_obj },
+    { MP_QSTR_write, &pyb_accel_write_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_accel_type = {

@@ -96,7 +96,7 @@ typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value)
 typedef bool (*mp_store_item_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value); // return true if store succeeded
 
 typedef struct _mp_method_t {
-    const char *name;
+    qstr name;
     mp_const_obj_t fun;
 } mp_method_t;
 

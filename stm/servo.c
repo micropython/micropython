@@ -147,8 +147,8 @@ STATIC mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
 
 STATIC const mp_method_t servo_methods[] = {
-    { "angle", &servo_obj_angle_obj },
-    { NULL, NULL },
+    { MP_QSTR_angle, &servo_obj_angle_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 STATIC const mp_obj_type_t servo_obj_type = {

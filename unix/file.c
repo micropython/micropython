@@ -106,13 +106,13 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 }
 
 static const mp_method_t rawfile_type_methods[] = {
-        { "fileno", &fdfile_fileno_obj },
-        { "read", &mp_stream_read_obj },
-        { "readall", &mp_stream_readall_obj },
-        { "readline", &mp_stream_unbuffered_readline_obj},
-        { "write", &mp_stream_write_obj },
-        { "close", &fdfile_close_obj },
-        { NULL, NULL },
+    { MP_QSTR_fileno, &fdfile_fileno_obj },
+    { MP_QSTR_read, &mp_stream_read_obj },
+    { MP_QSTR_readall, &mp_stream_readall_obj },
+    { MP_QSTR_readline, &mp_stream_unbuffered_readline_obj},
+    { MP_QSTR_write, &mp_stream_write_obj },
+    { MP_QSTR_close, &fdfile_close_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t rawfile_type = {

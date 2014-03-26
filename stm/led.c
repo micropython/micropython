@@ -110,10 +110,10 @@ static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
 static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 
 static const mp_method_t led_methods[] = {
-    { "on", &led_obj_on_obj },
-    { "off", &led_obj_off_obj },
-    { "toggle", &led_obj_toggle_obj },
-    { NULL, NULL },
+    { MP_QSTR_on, &led_obj_on_obj },
+    { MP_QSTR_off, &led_obj_off_obj },
+    { MP_QSTR_toggle, &led_obj_toggle_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t led_obj_type = {

@@ -41,8 +41,8 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
         } else if (type->methods != NULL) {
             // search methods (the const set of methods)
 
-            for (const mp_method_t *meth = type->methods; meth->name != NULL; meth++) {
-                if (strcmp(meth->name, qstr_str(attr)) == 0) {
+            for (const mp_method_t *meth = type->methods; meth->name != MP_QSTR_NULL; meth++) {
+                if (meth->name == attr) {
                     return (mp_obj_t)meth->fun;
                 }
             }

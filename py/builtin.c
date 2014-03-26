@@ -178,8 +178,8 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
         }
     }
     if (meth != NULL) {
-        for (; meth->name != NULL; meth++) {
-            mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(qstr_from_str(meth->name)));
+        for (; meth->name != MP_QSTR_NULL; meth++) {
+            mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(meth->name));
         }
     }
     return dir;

@@ -206,8 +206,8 @@ STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
 STATIC const mp_method_t pyb_servo_methods[] = {
-    { "angle", &pyb_servo_angle_obj },
-    { NULL, NULL },
+    { MP_QSTR_angle, &pyb_servo_angle_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_servo_type = {

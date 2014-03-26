@@ -170,10 +170,10 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_mem_write_obj, 4, 4, pyb_i2c_mem_write);
 
 STATIC const mp_method_t pyb_i2c_methods[] = {
-    { "is_ready", &pyb_i2c_is_ready_obj },
-    { "mem_read", &pyb_i2c_mem_read_obj },
-    { "mem_write", &pyb_i2c_mem_write_obj },
-    { NULL, NULL },
+    { MP_QSTR_is_ready, &pyb_i2c_is_ready_obj },
+    { MP_QSTR_mem_read, &pyb_i2c_mem_read_obj },
+    { MP_QSTR_mem_write, &pyb_i2c_mem_write_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_i2c_type = {

@@ -192,9 +192,9 @@ static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
 static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
 static const mp_method_t test_methods[] = {
-    { "get", &test_get_obj },
-    { "set", &test_set_obj },
-    { NULL, NULL },
+    { MP_QSTR_get, &test_get_obj },
+    { MP_QSTR_set, &test_set_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t test_type = {

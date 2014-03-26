@@ -195,10 +195,10 @@ static mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
 static MP_DEFINE_CONST_FUN_OBJ_2(sd_read_obj, sd_read);
 
 static const mp_method_t sdcard_methods[] = {
-    { "present", &sd_present_obj },
-    { "power", &sd_power_obj },
-    { "read", &sd_read_obj },
-    { NULL, NULL },
+    { MP_QSTR_present, &sd_present_obj },
+    { MP_QSTR_power, &sd_power_obj },
+    { MP_QSTR_read, &sd_read_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static const mp_obj_type_t sdcard_type = {

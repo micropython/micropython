@@ -847,8 +847,8 @@ STATIC void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             // this is a lookup in the object (ie not class or type)
             const mp_method_t *meth = type->methods;
             if (meth != NULL) {
-                for (; meth->name != NULL; meth++) {
-                    if (strcmp(meth->name, qstr_str(attr)) == 0) {
+                for (; meth->name != MP_QSTR_NULL; meth++) {
+                    if (meth->name == attr) {
                         // check if the methods are functions, static or class methods
                         // see http://docs.python.org/3.3/howto/descriptor.html
                         if (MP_OBJ_IS_TYPE(meth->fun, &mp_type_staticmethod)) {

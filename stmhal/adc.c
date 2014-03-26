@@ -164,8 +164,8 @@ STATIC mp_obj_t adc_read(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
 STATIC const mp_method_t adc_methods[] = {
-    { "read", &adc_read_obj},
-    { NULL, NULL },
+    { MP_QSTR_read, &adc_read_obj},
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_adc_type = {
@@ -321,11 +321,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_v
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
 STATIC const mp_method_t adc_all_methods[] = {
-    { "read_channel",   &adc_all_read_channel_obj},
-    { "read_core_temp", &adc_all_read_core_temp_obj},
-    { "read_core_vbat", &adc_all_read_core_vbat_obj},
-    { "read_core_vref", &adc_all_read_core_vref_obj},
-    { NULL, NULL },
+    { MP_QSTR_read_channel,   &adc_all_read_channel_obj},
+    { MP_QSTR_read_core_temp, &adc_all_read_core_temp_obj},
+    { MP_QSTR_read_core_vbat, &adc_all_read_core_vbat_obj},
+    { MP_QSTR_read_core_vref, &adc_all_read_core_vref_obj},
+    { MP_QSTR_NULL, NULL },
 };
 
 STATIC const mp_obj_type_t adc_all_type = {

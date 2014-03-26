@@ -38,14 +38,10 @@ STATIC const char *help_text =
 "  CTRL-D       -- on a blank line, do a soft reset of the board\n"
 ;
 
-STATIC void pyb_help_print_info_about_object(mp_obj_t name_o, const char *name_str, mp_obj_t value) {
-    if (name_o != MP_OBJ_NULL) {
-        printf("  ");
-        mp_obj_print(name_o, PRINT_STR);
-        printf(" -- ");
-    } else {
-        printf("  %s -- ", name_str);
-    }
+STATIC void pyb_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
+    printf("  ");
+    mp_obj_print(name_o, PRINT_STR);
+    printf(" -- ");
     mp_obj_print(value, PRINT_STR);
     printf("\n");
 }
@@ -72,14 +68,14 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
         if (map != NULL) {
             for (uint i = 0; i < map->alloc; i++) {
                 if (map->table[i].key != MP_OBJ_NULL) {
-                    pyb_help_print_info_about_object(map->table[i].key, NULL, map->table[i].value);
+                    pyb_help_print_info_about_object(map->table[i].key, map->table[i].value);
                 }
             }
         }
 
         if (type->methods != NULL) {
-            for (const mp_method_t *meth = type->methods; meth->name != NULL; meth++) {
-                pyb_help_print_info_about_object(MP_OBJ_NULL, meth->name, (mp_obj_t)meth->fun);
+            for (const mp_method_t *meth = type->methods; meth->name != MP_QSTR_NULL; meth++) {
+                pyb_help_print_info_about_object(MP_OBJ_NEW_QSTR(meth->name), (mp_obj_t)meth->fun);
             }
         }
     }

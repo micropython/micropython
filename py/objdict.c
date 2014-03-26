@@ -424,18 +424,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 /* dict constructors & public C API                                           */
 
 STATIC const mp_method_t dict_type_methods[] = {
-    { "clear", &dict_clear_obj },
-    { "copy", &dict_copy_obj },
-    { "fromkeys", &dict_fromkeys_obj },
-    { "get", &dict_get_obj },
-    { "items", &dict_items_obj },
-    { "keys", &dict_keys_obj },
-    { "pop", &dict_pop_obj },
-    { "popitem", &dict_popitem_obj },
-    { "setdefault", &dict_setdefault_obj },
-    { "update", &dict_update_obj },
-    { "values", &dict_values_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_clear, &dict_clear_obj },
+    { MP_QSTR_copy, &dict_copy_obj },
+    { MP_QSTR_fromkeys, &dict_fromkeys_obj },
+    { MP_QSTR_get, &dict_get_obj },
+    { MP_QSTR_items, &dict_items_obj },
+    { MP_QSTR_keys, &dict_keys_obj },
+    { MP_QSTR_pop, &dict_pop_obj },
+    { MP_QSTR_popitem, &dict_popitem_obj },
+    { MP_QSTR_setdefault, &dict_setdefault_obj },
+    { MP_QSTR_update, &dict_update_obj },
+    { MP_QSTR_values, &dict_values_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t dict_type = {

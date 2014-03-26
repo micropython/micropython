@@ -210,11 +210,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
 
 STATIC const mp_method_t usart_methods[] = {
-    { "status", &usart_obj_status_obj },
-    { "recv_chr", &usart_obj_rx_char_obj },
-    { "send_chr", &usart_obj_tx_char_obj },
-    { "send", &usart_obj_tx_str_obj },
-    { NULL, NULL },
+    { MP_QSTR_status, &usart_obj_status_obj },
+    { MP_QSTR_recv_chr, &usart_obj_rx_char_obj },
+    { MP_QSTR_send_chr, &usart_obj_tx_char_obj },
+    { MP_QSTR_send, &usart_obj_tx_str_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 const mp_obj_type_t pyb_usart_type = {

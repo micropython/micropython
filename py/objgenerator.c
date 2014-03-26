@@ -193,10 +193,10 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
 STATIC const mp_method_t gen_type_methods[] = {
-    { "close", &gen_instance_close_obj },
-    { "send", &gen_instance_send_obj },
-    { "throw", &gen_instance_throw_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_close, &gen_instance_close_obj },
+    { MP_QSTR_send, &gen_instance_send_obj },
+    { MP_QSTR_throw, &gen_instance_throw_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t gen_instance_type = {

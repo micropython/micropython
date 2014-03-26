@@ -194,11 +194,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_audio_dac_obj, pyb_audio_dac);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_audio_dma_obj, 3, pyb_audio_dma);
 
 STATIC const mp_method_t pyb_audio_methods[] = {
-    { "noise", &pyb_audio_noise_obj },
-    { "triangle", &pyb_audio_triangle_obj },
-    { "dac", &pyb_audio_dac_obj },
-    { "dma", &pyb_audio_dma_obj },
-    { NULL, NULL },
+    { MP_QSTR_noise, &pyb_audio_noise_obj },
+    { MP_QSTR_triangle, &pyb_audio_triangle_obj },
+    { MP_QSTR_dac, &pyb_audio_dac_obj },
+    { MP_QSTR_dma, &pyb_audio_dma_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 STATIC const mp_obj_type_t pyb_audio_type = {

@@ -694,18 +694,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 
 STATIC const mp_method_t str_type_methods[] = {
-    { "find", &str_find_obj },
-    { "rfind", &str_rfind_obj },
-    { "join", &str_join_obj },
-    { "split", &str_split_obj },
-    { "startswith", &str_startswith_obj },
-    { "strip", &str_strip_obj },
-    { "format", &str_format_obj },
-    { "replace", &str_replace_obj },
-    { "count", &str_count_obj },
-    { "partition", &str_partition_obj },
-    { "rpartition", &str_rpartition_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_find, &str_find_obj },
+    { MP_QSTR_rfind, &str_rfind_obj },
+    { MP_QSTR_join, &str_join_obj },
+    { MP_QSTR_split, &str_split_obj },
+    { MP_QSTR_startswith, &str_startswith_obj },
+    { MP_QSTR_strip, &str_strip_obj },
+    { MP_QSTR_format, &str_format_obj },
+    { MP_QSTR_replace, &str_replace_obj },
+    { MP_QSTR_count, &str_count_obj },
+    { MP_QSTR_partition, &str_partition_obj },
+    { MP_QSTR_rpartition, &str_rpartition_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t str_type = {

@@ -166,9 +166,9 @@ STATIC mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
 STATIC const mp_method_t tuple_type_methods[] = {
-    { "count", &tuple_count_obj },
-    { "index", &tuple_index_obj },
-    { NULL, NULL }, // end-of-list sentinel
+    { MP_QSTR_count, &tuple_count_obj },
+    { MP_QSTR_index, &tuple_index_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t tuple_type = {

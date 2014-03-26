@@ -150,8 +150,8 @@ STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int
 }
 
 STATIC const mp_method_t array_type_methods[] = {
-    { "append", &array_append_obj },
-    { NULL, NULL },
+    { MP_QSTR_append, &array_append_obj },
+    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
 };
 
 const mp_obj_type_t mp_type_array = {

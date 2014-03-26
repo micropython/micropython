@@ -229,11 +229,11 @@ static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_disable_obj, exti_obj_disable);
 static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_swint_obj,   exti_obj_swint);
 
 static const mp_method_t exti_methods[] = {
-    { "line",  &exti_obj_line_obj },
-    { "enable",  &exti_obj_enable_obj },
-    { "disable",  &exti_obj_disable_obj },
-    { "swint",  &exti_obj_swint_obj },
-    { NULL, NULL },
+    { MP_QSTR_line,  &exti_obj_line_obj },
+    { MP_QSTR_enable,  &exti_obj_enable_obj },
+    { MP_QSTR_disable,  &exti_obj_disable_obj },
+    { MP_QSTR_swint,  &exti_obj_swint_obj },
+    { MP_QSTR_NULL, NULL },
 };
 
 static mp_obj_t exti_regs(void) {
