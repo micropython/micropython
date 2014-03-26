@@ -645,15 +645,16 @@ yield:
                     {
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
+#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_jump(t); }
                         mp_vm_return_kind_t ret_kind;
                         obj1 = POP();
-                        mp_obj_t t = MP_OBJ_NULL;
+                        mp_obj_t t_exc = MP_OBJ_NULL;
                         if (inject_exc != MP_OBJ_NULL) {
-                            t = inject_exc;
+                            t_exc = inject_exc;
                             inject_exc = MP_OBJ_NULL;
-                            obj2 = mp_obj_gen_resume(TOP(), mp_const_none, t, &ret_kind);
+                            ret_kind = mp_obj_gen_resume(TOP(), mp_const_none, t_exc, &obj2);
                         } else {
-                            obj2 = mp_obj_gen_resume(TOP(), obj1, MP_OBJ_NULL, &ret_kind);
+                            ret_kind = mp_obj_gen_resume(TOP(), obj1, MP_OBJ_NULL, &obj2);
                         }
 
                         if (ret_kind == MP_VM_RETURN_YIELD) {
@@ -672,19 +673,19 @@ yield:
                                 PUSH(obj2);
                             }
 
-                            // if it swallowed it, we re-raise GeneratorExit
-                            if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) {
-                                nlr_jump(t);
-                            }
-
+                            // If we injected GeneratorExit downstream, then even
+                            // if it was swallowed, we re-raise GeneratorExit
+                            GENERATOR_EXIT_IF_NEEDED(t_exc);
                             break;
                         }
                         if (ret_kind == MP_VM_RETURN_EXCEPTION) {
                             // Pop exhausted gen
                             sp--;
                             if (EXC_MATCH(obj2, &mp_type_StopIteration)) {
-                                printf("Generator explicitly raised StopIteration\n");
-                                PUSH(mp_const_none);
+                                PUSH(mp_obj_exception_get_value(obj2));
+                                // If we injected GeneratorExit downstream, then even
+                                // if it was swallowed, we re-raise GeneratorExit
+                                GENERATOR_EXIT_IF_NEEDED(t_exc);
                                 break;
                             } else {
                                 nlr_jump(obj2);
