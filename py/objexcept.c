@@ -8,6 +8,8 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "runtime.h"
+#include "runtime0.h"
 
 // This is unified class for C-level and Python-level exceptions
 // Python-level exceptions have empty ->msg and all arguments are in
@@ -172,6 +174,11 @@ mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     return mp_obj_new_exception_msg_varg(exc_type, NULL);
 }
 
+mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args) {
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return exc_type->make_new((mp_obj_t)exc_type, n_args, 0, args);
+}
+
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
     return mp_obj_new_exception_msg_varg(exc_type, msg);
 }
@@ -216,6 +223,13 @@ bool mp_obj_is_exception_type(mp_obj_t self_in) {
 // return true if the given object is an instance of an exception type
 bool mp_obj_is_exception_instance(mp_obj_t self_in) {
     return mp_obj_is_exception_type(mp_obj_get_type(self_in));
+}
+
+// return true if exception (type or instance) is a subclass of given
+// exception type.
+bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type) {
+    // TODO: move implementation from RT_BINARY_OP_EXCEPTION_MATCH here.
+    return rt_binary_op(RT_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
 }
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
