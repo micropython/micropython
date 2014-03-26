@@ -89,13 +89,13 @@ typedef struct {
   uint32_t mode;
 } exti_vector_t;
 
-static exti_vector_t exti_vector[EXTI_NUM_VECTORS];
+STATIC exti_vector_t exti_vector[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // The 405 doesn't have ETH, but we want a value to put in our table
 #endif
 
-static const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
+STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     EXTI0_IRQn,     EXTI1_IRQn,     EXTI2_IRQn,     EXTI3_IRQn,     EXTI4_IRQn,
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
@@ -201,44 +201,30 @@ void exti_swint(uint line) {
     EXTI->SWIER = (1 << line);
 }
 
-static mp_obj_t exti_obj_line(mp_obj_t self_in) {
+STATIC mp_obj_t exti_obj_line(mp_obj_t self_in) {
     exti_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(self->line);
 }
 
-static mp_obj_t exti_obj_enable(mp_obj_t self_in) {
+STATIC mp_obj_t exti_obj_enable(mp_obj_t self_in) {
     exti_obj_t *self = self_in;
     exti_enable(self->line);
     return mp_const_none;
 }
 
-static mp_obj_t exti_obj_disable(mp_obj_t self_in) {
+STATIC mp_obj_t exti_obj_disable(mp_obj_t self_in) {
     exti_obj_t *self = self_in;
     exti_disable(self->line);
     return mp_const_none;
 }
 
-static mp_obj_t exti_obj_swint(mp_obj_t self_in) {
+STATIC mp_obj_t exti_obj_swint(mp_obj_t self_in) {
     exti_obj_t *self = self_in;
     exti_swint(self->line);
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_line_obj,    exti_obj_line);
-static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_enable_obj,  exti_obj_enable);
-static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_disable_obj, exti_obj_disable);
-static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_swint_obj,   exti_obj_swint);
-
-STATIC const mp_map_elem_t exti_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t) &exti_obj_line_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t) &exti_obj_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t) &exti_obj_disable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_swint), (mp_obj_t) &exti_obj_swint_obj },
-};
-
-STATIC MP_DEFINE_CONST_DICT(exti_locals_dict, exti_locals_dict_table);
-
-static mp_obj_t exti_regs(void) {
+STATIC mp_obj_t exti_regs(void) {
     printf("EXTI_IMR   %08lx\n", EXTI->IMR);
     printf("EXTI_EMR   %08lx\n", EXTI->EMR);
     printf("EXTI_RTSR  %08lx\n", EXTI->RTSR);
@@ -247,44 +233,33 @@ static mp_obj_t exti_regs(void) {
     printf("EXTI_PR    %08lx\n", EXTI->PR);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(exti_regs_obj, exti_regs);
 
-typedef struct {
-    const char *name;
-    uint val;
-} exti_const_t;
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_line_obj,    exti_obj_line);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_enable_obj,  exti_obj_enable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_disable_obj, exti_obj_disable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_swint_obj,   exti_obj_swint);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(exti_regs_fun_obj,    exti_regs);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(exti_regs_obj, (mp_obj_t)&exti_regs_fun_obj);
 
-static const exti_const_t exti_const[] = {
-    { "MODE_IRQ_RISING",            GPIO_MODE_IT_RISING },
-    { "MODE_IRQ_FALLING",           GPIO_MODE_IT_FALLING },
-    { "MODE_IRQ_RISING_FALLING",    GPIO_MODE_IT_RISING_FALLING },
-    { "MODE_EVT_RISING",            GPIO_MODE_EVT_RISING },
-    { "MODE_EVT_FALLING",           GPIO_MODE_EVT_FALLING },
-    { "MODE_EVT_RISING_FALLING",    GPIO_MODE_EVT_RISING_FALLING },
+STATIC const mp_map_elem_t exti_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_line),    (mp_obj_t)&exti_obj_line_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),  (mp_obj_t)&exti_obj_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&exti_obj_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_swint),   (mp_obj_t)&exti_obj_swint_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_regs),    (mp_obj_t)&exti_regs_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_IRQ_RISING),         MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_IRQ_FALLING),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_FALLING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_IRQ_RISING_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING_FALLING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_EVT_RISING),         MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_RISING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_EVT_FALLING),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_FALLING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_EVT_RISING_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_RISING_FALLING) },
 };
-#define EXTI_NUM_CONST  (sizeof(exti_const) / sizeof(exti_const[0]))
 
-static void exti_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
-    (void)self_in;
-    const char *attr = qstr_str(attr_qstr);
-
-    if (strcmp(attr, "regs") == 0) {
-        dest[0] = (mp_obj_t)&exti_regs_obj;
-        return;
-    }
-    const exti_const_t *entry = &exti_const[0];
-    for (; entry < &exti_const[EXTI_NUM_CONST]; entry++) {
-        if (strcmp(attr, entry->name) == 0) {
-            dest[0] = MP_OBJ_NEW_SMALL_INT(entry->val);
-            dest[1] = MP_OBJ_NULL;
-            return;
-        }
-    }
-}
+STATIC MP_DEFINE_CONST_DICT(exti_locals_dict, exti_locals_dict_table);
 
 // line_obj = pyb.Exti(pin, mode, trigger, callback)
 
-static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t exti_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
     rt_check_nargs(n_args, 4, 4, n_kw, 0);
@@ -300,28 +275,16 @@ static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj
     return self;
 }
 
-static void exti_meta_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    (void)  self_in;
-    print(env, "<Exti meta>");
-}
-
-static void exti_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void exti_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     exti_obj_t *self = self_in;
     print(env, "<Exti line=%u>", self->line);
 }
 
-static const mp_obj_type_t exti_meta_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ExtiMeta,
-    .print = exti_meta_obj_print,
-    .call = exti_call,
-    .load_attr = exti_load_attr,
-};
-
 const mp_obj_type_t exti_obj_type = {
-    { &exti_meta_obj_type },
+    { &mp_type_type },
     .name = MP_QSTR_Exti,
     .print = exti_obj_print,
+    .make_new = exti_make_new,
     .locals_dict = (mp_obj_t)&exti_locals_dict,
 };
 

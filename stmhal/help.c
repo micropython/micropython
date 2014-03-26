@@ -58,12 +58,19 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
         mp_obj_print(args[0], PRINT_STR);
         printf(" is of type %s\n", mp_obj_get_type_str(args[0]));
 
-        mp_obj_type_t *type = mp_obj_get_type(args[0]);
         mp_map_t *map = NULL;
-        if (type == &mp_type_module) {
+        if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
             map = mp_obj_module_get_globals(args[0]);
-        } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
+        } else {
+            mp_obj_type_t *type;
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+                type = args[0];
+            } else {
+                type = mp_obj_get_type(args[0]);
+            }
+            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
+                map = mp_obj_dict_get_map(type->locals_dict);
+            }
         }
         if (map != NULL) {
             for (uint i = 0; i < map->alloc; i++) {
