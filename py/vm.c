@@ -9,6 +9,7 @@
 #include "runtime.h"
 #include "bc0.h"
 #include "bc.h"
+#include "objgenerator.h"
 
 // Value stack grows up (this makes it incompatible with native C stack, but
 // makes sure that arguments to functions are in natural order arg1..argN
@@ -138,7 +139,9 @@ outer_dispatch_loop:
             // If we have exception to inject, now that we finish setting up
             // execution context, raise it. This works as if RAISE_VARARGS
             // bytecode was executed.
-            if (inject_exc != MP_OBJ_NULL) {
+            // Injecting exc into yield from generator is a special case,
+            // handled by MP_BC_YIELD_FROM itself
+            if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
                 mp_obj_t t = inject_exc;
                 inject_exc = MP_OBJ_NULL;
                 nlr_jump(rt_make_raise_obj(t));
@@ -631,11 +634,63 @@ unwind_return:
                         nlr_jump(rt_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
+yield:
                         nlr_pop();
                         *ip_in_out = ip;
                         *sp_in_out = sp;
                         *exc_sp_in_out = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
                         return MP_VM_RETURN_YIELD;
+
+                    case MP_BC_YIELD_FROM:
+                    {
+//#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
+#define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
+                        mp_vm_return_kind_t ret_kind;
+                        obj1 = POP();
+                        mp_obj_t t = MP_OBJ_NULL;
+                        if (inject_exc != MP_OBJ_NULL) {
+                            t = inject_exc;
+                            inject_exc = MP_OBJ_NULL;
+                            obj2 = mp_obj_gen_resume(TOP(), mp_const_none, t, &ret_kind);
+                        } else {
+                            obj2 = mp_obj_gen_resume(TOP(), obj1, MP_OBJ_NULL, &ret_kind);
+                        }
+
+                        if (ret_kind == MP_VM_RETURN_YIELD) {
+                            ip--;
+                            PUSH(obj2);
+                            goto yield;
+                        }
+                        if (ret_kind == MP_VM_RETURN_NORMAL) {
+                            // Pop exhausted gen
+                            sp--;
+                            if (obj2 == MP_OBJ_NULL) {
+                                // Optimize StopIteration
+                                // TODO: get StopIteration's value
+                                PUSH(mp_const_none);
+                            } else {
+                                PUSH(obj2);
+                            }
+
+                            // if it swallowed it, we re-raise GeneratorExit
+                            if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) {
+                                nlr_jump(t);
+                            }
+
+                            break;
+                        }
+                        if (ret_kind == MP_VM_RETURN_EXCEPTION) {
+                            // Pop exhausted gen
+                            sp--;
+                            if (EXC_MATCH(obj2, &mp_type_StopIteration)) {
+                                printf("Generator explicitly raised StopIteration\n");
+                                PUSH(mp_const_none);
+                                break;
+                            } else {
+                                nlr_jump(obj2);
+                            }
+                        }
+                    }
 
                     case MP_BC_IMPORT_NAME:
                         DECODE_QSTR;
