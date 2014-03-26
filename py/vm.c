@@ -561,7 +561,13 @@ unwind_jump:
 
                     case MP_BC_MAKE_CLOSURE:
                         DECODE_UINT;
-                        SET_TOP(rt_make_closure_from_id(unum, TOP()));
+                        SET_TOP(rt_make_closure_from_id(unum, TOP(), MP_OBJ_NULL));
+                        break;
+
+                    case MP_BC_MAKE_CLOSURE_DEFARGS:
+                        DECODE_UINT;
+                        obj1 = POP();
+                        SET_TOP(rt_make_closure_from_id(unum, obj1, TOP()));
                         break;
 
                     case MP_BC_CALL_FUNCTION:

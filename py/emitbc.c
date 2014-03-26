@@ -722,16 +722,20 @@ STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, int n_dict_param
         emit_pre(emit, 1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
     } else {
-        emit_bc_build_tuple(emit, n_default_params);
         emit_pre(emit, 0);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
     }
 }
 
 STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
-    assert(n_default_params == 0 && n_dict_params == 0);
-    emit_pre(emit, 0);
-    emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
+    assert(n_dict_params == 0);
+    if (n_default_params == 0) {
+        emit_pre(emit, 0);
+        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
+    } else {
+        emit_pre(emit, -1);
+        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);
+    }
 }
 
 STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
