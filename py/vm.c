@@ -605,8 +605,14 @@ unwind_return:
 
                     case MP_BC_RAISE_VARARGS:
                         unum = *ip++;
-                        assert(unum == 1);
-                        obj1 = POP();
+                        assert(unum <= 1);
+                        if (unum == 0) {
+                            // This assumes that nlr.ret_val holds last raised
+                            // exception and is not overwritten since then.
+                            obj1 = nlr.ret_val;
+                        } else {
+                            obj1 = POP();
+                        }
                         nlr_jump(rt_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
