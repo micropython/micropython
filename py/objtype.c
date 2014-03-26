@@ -469,7 +469,7 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
 
 // object and classinfo should be type objects
 // (but the function will fail gracefully if they are not)
-bool mp_obj_is_subclass_fast(mp_obj_t object, mp_obj_t classinfo) {
+bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
     for (;;) {
         if (object == classinfo) {
             return true;
@@ -482,7 +482,7 @@ bool mp_obj_is_subclass_fast(mp_obj_t object, mp_obj_t classinfo) {
             return false;
         }
 
-        mp_obj_type_t *self = object;
+        const mp_obj_type_t *self = object;
 
         // for a const struct, this entry might be NULL
         if (self->bases_tuple == MP_OBJ_NULL) {

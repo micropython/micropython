@@ -202,44 +202,48 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 }
 
 // return true if the given object is an exception type
-// TODO make this work for user defined exceptions
 bool mp_obj_is_exception_type(mp_obj_t self_in) {
     if (MP_OBJ_IS_TYPE(self_in, &mp_type_type)) {
+        // optimisation when self_in is a builtin exception
         mp_obj_type_t *self = self_in;
-        return self->make_new == mp_obj_exception_make_new;
-    } else {
-        return false;
+        if (self->make_new == mp_obj_exception_make_new) {
+            return true;
+        }
     }
+    return mp_obj_is_subclass_fast(self_in, &mp_type_BaseException);
 }
 
 // return true if the given object is an instance of an exception type
-// TODO make this work for user defined exceptions
 bool mp_obj_is_exception_instance(mp_obj_t self_in) {
-    return mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new;
+    return mp_obj_is_exception_type(mp_obj_get_type(self_in));
 }
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     // make sure self_in is an exception instance
-    assert(mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new);
-    mp_obj_exception_t *self = self_in;
+    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
+    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new) {
+        mp_obj_exception_t *self = self_in;
 
-    // just set the traceback to the null object
-    // we don't want to call any memory management functions here
-    self->traceback = MP_OBJ_NULL;
+        // just set the traceback to the null object
+        // we don't want to call any memory management functions here
+        self->traceback = MP_OBJ_NULL;
+    }
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
     // make sure self_in is an exception instance
-    assert(mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new);
-    mp_obj_exception_t *self = self_in;
+    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
+    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new) {
+        mp_obj_exception_t *self = self_in;
 
-    // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
-    if (self->traceback == MP_OBJ_NULL) {
-        self->traceback = mp_obj_new_list(0, NULL);
+        // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
+        if (self->traceback == MP_OBJ_NULL) {
+            self->traceback = mp_obj_new_list(0, NULL);
+        }
+        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
+        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
+        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
     }
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values) {

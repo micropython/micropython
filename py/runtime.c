@@ -925,15 +925,21 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
     if (type->getiter != NULL) {
         return type->getiter(o_in);
     } else {
-        // check for __getitem__ method
+        // check for __iter__ method
         mp_obj_t dest[2];
-        rt_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
+        rt_load_method_maybe(o_in, MP_QSTR___iter__, dest);
         if (dest[0] != MP_OBJ_NULL) {
-            // __getitem__ exists, create an iterator
-            return mp_obj_new_getitem_iter(dest);
+            // __iter__ exists, call it and return its result
+            return rt_call_method_n_kw(0, 0, dest);
         } else {
-            // object not iterable
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
+            rt_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                // __getitem__ exists, create an iterator
+                return mp_obj_new_getitem_iter(dest);
+            } else {
+                // object not iterable
+                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
+            }
         }
     }
 }
@@ -943,7 +949,15 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+        // check for __next__ method
+        mp_obj_t dest[2];
+        rt_load_method_maybe(o_in, MP_QSTR___next__, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            // __next__ exists, call it and return its result
+            return rt_call_method_n_kw(0, 0, dest);
+        } else {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+        }
     }
 }
 

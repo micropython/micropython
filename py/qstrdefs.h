@@ -17,6 +17,7 @@ Q(__repl_print__)
 
 Q(__bool__)
 Q(__len__)
+Q(__iter__)
 Q(__getitem__)
 Q(__setitem__)
 Q(__add__)

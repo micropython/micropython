@@ -124,6 +124,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
 
     // outer exception handling loop
     for (;;) {
+outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
             // If we have exception to inject, now that we finish setting up
             // execution context, raise it. This works as if RAISE_VARARGS
@@ -641,6 +642,15 @@ unwind_return:
 
         } else {
             // exception occurred
+
+            // check if it's a StopIteration within a for block
+            if (*save_ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
+                ip = save_ip + 1;
+                DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
+                --sp; // pop the exhausted iterator
+                ip += unum; // jump to after for-block
+                goto outer_dispatch_loop; // continue with dispatch loop
+            }
 
             // set file and line number that the exception occurred at
             // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
