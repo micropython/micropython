@@ -157,11 +157,18 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
         map = rt_locals_get();
     } else { // n_args == 1
         // make a list of names in the given object
-        mp_obj_type_t *type = mp_obj_get_type(args[0]);
-        if (type == &mp_type_module) {
+        if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
             map = mp_obj_module_get_globals(args[0]);
-        } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
+        } else {
+            mp_obj_type_t *type;
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+                type = args[0];
+            } else {
+                type = mp_obj_get_type(args[0]);
+            }
+            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
+                map = mp_obj_dict_get_map(type->locals_dict);
+            }
         }
     }
 
