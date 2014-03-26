@@ -8,6 +8,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "map.h"
+#include "runtime.h"
 #include "servo.h"
 
 // this servo driver uses hardware PWM to drive servos on PA0, PA1, PA2, PA3 = X1, X2, X3, X4
@@ -156,9 +157,7 @@ STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void
 
 STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    if (!(n_args == 1 && n_kw == 0)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Servo accepts 1 argument"));
-    }
+    rt_check_nargs(n_args, 1, 1, n_kw, false);
 
     // get servo number
     machine_int_t servo_id = mp_obj_get_int(args[0]) - 1;

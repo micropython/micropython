@@ -8,6 +8,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "map.h"
+#include "runtime.h"
 #include "adc.h"
 #include "pin.h"
 #include "build/pins.h"
@@ -118,9 +119,7 @@ STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env,
 
 STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check number of arguments
-    if (!(n_args == 1 && n_kw == 0)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "ADC accepts 1 argument"));
-    }
+    rt_check_nargs(n_args, 1, 1, n_kw, false);
 
     // 1st argument is the pin name
     mp_obj_t pin_obj = args[0];

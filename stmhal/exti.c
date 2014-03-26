@@ -262,7 +262,7 @@ STATIC MP_DEFINE_CONST_DICT(exti_locals_dict, exti_locals_dict_table);
 STATIC mp_obj_t exti_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
-    rt_check_nargs(n_args, 4, 4, n_kw, 0);
+    rt_check_nargs(n_args, 4, 4, n_kw, false);
 
     exti_obj_t *self = m_new_obj(exti_obj_t);
     self->base.type = type_in;

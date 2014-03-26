@@ -76,9 +76,7 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 
 STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    if (!(n_args == 0 && n_kw == 0)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Accel accepts no arguments"));
-    }
+    rt_check_nargs(n_args, 0, 0, n_kw, false);
 
     // init accel object
     pyb_accel_obj.base.type = &pyb_accel_type;
