@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "i2c.h"
 
@@ -169,16 +170,17 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_mem_write_obj, 4, 4, pyb_i2c_mem_write);
 
-STATIC const mp_method_t pyb_i2c_methods[] = {
-    { MP_QSTR_is_ready, &pyb_i2c_is_ready_obj },
-    { MP_QSTR_mem_read, &pyb_i2c_mem_read_obj },
-    { MP_QSTR_mem_write, &pyb_i2c_mem_write_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready), (mp_obj_t)&pyb_i2c_is_ready_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read), (mp_obj_t)&pyb_i2c_mem_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write), (mp_obj_t)&pyb_i2c_mem_write_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
 
 const mp_obj_type_t pyb_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .make_new = pyb_i2c_make_new,
-    .methods = pyb_i2c_methods,
+    .locals_dict = (mp_obj_t)&pyb_i2c_locals_dict,
 };

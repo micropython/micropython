@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "servo.h"
 
 // this servo driver uses hardware PWM to drive servos on PA0, PA1, PA2, PA3 = X1, X2, X3, X4
@@ -205,15 +206,16 @@ STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
-STATIC const mp_method_t pyb_servo_methods[] = {
-    { MP_QSTR_angle, &pyb_servo_angle_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t pyb_servo_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_angle), (mp_obj_t)&pyb_servo_angle_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pyb_servo_locals_dict, pyb_servo_locals_dict_table);
 
 const mp_obj_type_t pyb_servo_type = {
     { &mp_type_type },
     .name = MP_QSTR_Servo,
     .print = pyb_servo_print,
     .make_new = pyb_servo_make_new,
-    .methods = pyb_servo_methods,
+    .locals_dict = (mp_obj_t)&pyb_servo_locals_dict,
 };

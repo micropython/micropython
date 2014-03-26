@@ -24,6 +24,11 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_FIRST = 4,
 } mp_map_lookup_kind_t;
 
+typedef struct _mp_obj_dict_t {
+    mp_obj_base_t base;
+    mp_map_t map;
+} mp_obj_dict_t;
+
 int get_doubling_prime_greater_or_equal_to(int x);
 void mp_map_init(mp_map_t *map, int n);
 void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);

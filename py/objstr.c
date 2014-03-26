@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -693,20 +694,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 
-STATIC const mp_method_t str_type_methods[] = {
-    { MP_QSTR_find, &str_find_obj },
-    { MP_QSTR_rfind, &str_rfind_obj },
-    { MP_QSTR_join, &str_join_obj },
-    { MP_QSTR_split, &str_split_obj },
-    { MP_QSTR_startswith, &str_startswith_obj },
-    { MP_QSTR_strip, &str_strip_obj },
-    { MP_QSTR_format, &str_format_obj },
-    { MP_QSTR_replace, &str_replace_obj },
-    { MP_QSTR_count, &str_count_obj },
-    { MP_QSTR_partition, &str_partition_obj },
-    { MP_QSTR_rpartition, &str_rpartition_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t str_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_find), (mp_obj_t)&str_find_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rfind), (mp_obj_t)&str_rfind_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_format), (mp_obj_t)&str_format_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_replace), (mp_obj_t)&str_replace_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&str_count_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_partition), (mp_obj_t)&str_partition_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rpartition), (mp_obj_t)&str_rpartition_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
 
 const mp_obj_type_t str_type = {
     { &mp_type_type },
@@ -715,8 +717,8 @@ const mp_obj_type_t str_type = {
     .make_new = str_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_str_iterator,
-    .methods = str_type_methods,
     .buffer_p = { .get_buffer = str_get_buffer },
+    .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
 // Reuses most of methods from str
@@ -727,7 +729,7 @@ const mp_obj_type_t bytes_type = {
     .make_new = bytes_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_bytes_iterator,
-    .methods = str_type_methods,
+    .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
 // the zero-length bytes

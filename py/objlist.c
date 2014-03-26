@@ -328,20 +328,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 0, mp_obj_list_sort);
 
-STATIC const mp_method_t list_type_methods[] = {
-    { MP_QSTR_append, &list_append_obj },
-    { MP_QSTR_clear, &list_clear_obj },
-    { MP_QSTR_copy, &list_copy_obj },
-    { MP_QSTR_count, &list_count_obj },
-    { MP_QSTR_extend, &list_extend_obj },
-    { MP_QSTR_index, &list_index_obj },
-    { MP_QSTR_insert, &list_insert_obj },
-    { MP_QSTR_pop, &list_pop_obj },
-    { MP_QSTR_remove, &list_remove_obj },
-    { MP_QSTR_reverse, &list_reverse_obj },
-    { MP_QSTR_sort, &list_sort_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t list_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_append), (mp_obj_t)&list_append_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&list_clear_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&list_copy_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&list_count_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_extend), (mp_obj_t)&list_extend_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&list_index_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_insert), (mp_obj_t)&list_insert_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pop), (mp_obj_t)&list_pop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&list_remove_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reverse), (mp_obj_t)&list_reverse_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&list_sort_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
 
 const mp_obj_type_t list_type = {
     { &mp_type_type },
@@ -351,7 +352,7 @@ const mp_obj_type_t list_type = {
     .unary_op = list_unary_op,
     .binary_op = list_binary_op,
     .getiter = list_getiter,
-    .methods = list_type_methods,
+    .locals_dict = (mp_obj_t)&list_locals_dict,
 };
 
 STATIC mp_obj_list_t *list_new(uint n) {

@@ -7,14 +7,9 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
-
-typedef struct _mp_obj_dict_t {
-    mp_obj_base_t base;
-    mp_map_t map;
-} mp_obj_dict_t;
 
 STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
@@ -343,7 +338,6 @@ STATIC const mp_obj_type_t dict_view_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = dict_view_it_iternext,
-    .methods = NULL,            /* set operations still to come */
 };
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
@@ -423,20 +417,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 /******************************************************************************/
 /* dict constructors & public C API                                           */
 
-STATIC const mp_method_t dict_type_methods[] = {
-    { MP_QSTR_clear, &dict_clear_obj },
-    { MP_QSTR_copy, &dict_copy_obj },
-    { MP_QSTR_fromkeys, &dict_fromkeys_obj },
-    { MP_QSTR_get, &dict_get_obj },
-    { MP_QSTR_items, &dict_items_obj },
-    { MP_QSTR_keys, &dict_keys_obj },
-    { MP_QSTR_pop, &dict_pop_obj },
-    { MP_QSTR_popitem, &dict_popitem_obj },
-    { MP_QSTR_setdefault, &dict_setdefault_obj },
-    { MP_QSTR_update, &dict_update_obj },
-    { MP_QSTR_values, &dict_values_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t dict_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&dict_clear_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&dict_copy_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fromkeys), (mp_obj_t)&dict_fromkeys_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&dict_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_items), (mp_obj_t)&dict_items_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_keys), (mp_obj_t)&dict_keys_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pop), (mp_obj_t)&dict_pop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_popitem), (mp_obj_t)&dict_popitem_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setdefault), (mp_obj_t)&dict_setdefault_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&dict_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_values), (mp_obj_t)&dict_values_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
 
 const mp_obj_type_t dict_type = {
     { &mp_type_type },
@@ -446,7 +441,7 @@ const mp_obj_type_t dict_type = {
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
     .getiter = dict_getiter,
-    .methods = dict_type_methods,
+    .locals_dict = (mp_obj_t)&dict_locals_dict,
 };
 
 mp_obj_t mp_obj_new_dict(int n_args) {

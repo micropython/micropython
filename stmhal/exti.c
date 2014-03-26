@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "nlr.h"
 
@@ -228,13 +229,14 @@ static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_enable_obj,  exti_obj_enable);
 static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_disable_obj, exti_obj_disable);
 static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_swint_obj,   exti_obj_swint);
 
-static const mp_method_t exti_methods[] = {
-    { MP_QSTR_line,  &exti_obj_line_obj },
-    { MP_QSTR_enable,  &exti_obj_enable_obj },
-    { MP_QSTR_disable,  &exti_obj_disable_obj },
-    { MP_QSTR_swint,  &exti_obj_swint_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t exti_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t) &exti_obj_line_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t) &exti_obj_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t) &exti_obj_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_swint), (mp_obj_t) &exti_obj_swint_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(exti_locals_dict, exti_locals_dict_table);
 
 static mp_obj_t exti_regs(void) {
     printf("EXTI_IMR   %08lx\n", EXTI->IMR);
@@ -320,7 +322,7 @@ const mp_obj_type_t exti_obj_type = {
     { &exti_meta_obj_type },
     .name = MP_QSTR_Exti,
     .print = exti_obj_print,
-    .methods = exti_methods,
+    .locals_dict = (mp_obj_t)&exti_locals_dict,
 };
 
 void exti_init(void) {

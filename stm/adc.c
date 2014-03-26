@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "adc.h"
 
 /* ADC defintions */
@@ -323,19 +324,20 @@ static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_t
 static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
 static MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
-static const mp_method_t adc_all_methods[] = {
-    { MP_QSTR_read_channel,   &adc_all_read_channel_obj},
-    { MP_QSTR_read_core_temp, &adc_all_read_core_temp_obj},
-    { MP_QSTR_read_core_vbat, &adc_all_read_core_vbat_obj},
-    { MP_QSTR_read_core_vref, &adc_all_read_core_vref_obj},
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_channel), (mp_obj_t)  &adc_all_read_channel_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_temp), (mp_obj_t)&adc_all_read_core_temp_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
 };
+
+STATIC MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);
 
 static const mp_obj_type_t adc_all_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
     .print = adc_all_print,
-    .methods = adc_all_methods,
+    .locals_dict = (mp_obj_t)&adc_all_locals_dict,
 };
 
 mp_obj_t pyb_ADC_all(mp_obj_t resolution) {
@@ -380,16 +382,17 @@ static mp_obj_t adc_read(mp_obj_t self_in) {
 
 static MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
-static const mp_method_t adc_methods[] = {
-    { MP_QSTR_read, &adc_read_obj},
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t adc_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&adc_read_obj},
 };
+
+STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
 
 static const mp_obj_type_t adc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
     .print = adc_print,
-    .methods = adc_methods,
+    .locals_dict = (mp_obj_t)&adc_locals_dict,
 };
 
 mp_obj_t pyb_ADC(mp_obj_t pin_name_obj) {

@@ -9,6 +9,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "stream.h"
 
@@ -105,15 +106,16 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return fdfile_new(fd);
 }
 
-static const mp_method_t rawfile_type_methods[] = {
-    { MP_QSTR_fileno, &fdfile_fileno_obj },
-    { MP_QSTR_read, &mp_stream_read_obj },
-    { MP_QSTR_readall, &mp_stream_readall_obj },
-    { MP_QSTR_readline, &mp_stream_unbuffered_readline_obj},
-    { MP_QSTR_write, &mp_stream_write_obj },
-    { MP_QSTR_close, &fdfile_close_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&fdfile_fileno_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 static const mp_obj_type_t rawfile_type = {
     { &mp_type_type },
@@ -126,7 +128,7 @@ static const mp_obj_type_t rawfile_type = {
         .read = fdfile_read,
         .write = fdfile_write,
     },
-    .methods = rawfile_type_methods,
+    .locals_dict = (mp_obj_t)&rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes

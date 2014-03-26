@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "objtuple.h"
@@ -165,11 +166,12 @@ STATIC mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
-STATIC const mp_method_t tuple_type_methods[] = {
-    { MP_QSTR_count, &tuple_count_obj },
-    { MP_QSTR_index, &tuple_index_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t tuple_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&tuple_count_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&tuple_index_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
 const mp_obj_type_t tuple_type = {
     { &mp_type_type },
@@ -179,7 +181,7 @@ const mp_obj_type_t tuple_type = {
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,
-    .methods = tuple_type_methods,
+    .locals_dict = (mp_obj_t)&tuple_locals_dict,
 };
 
 // the zero-length tuple

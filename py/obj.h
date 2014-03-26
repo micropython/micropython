@@ -59,6 +59,21 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, (mp_fun_kw_t)fun_name)
 
+// This macro is used to define constant dict objects
+// You can put "static" in front of the definition to make it local
+
+#define MP_DEFINE_CONST_DICT(dict_name, table_name) \
+    const mp_obj_dict_t dict_name = { \
+        .base = {&dict_type}, \
+        .map = { \
+            .all_keys_are_qstrs = 1, \
+            .table_is_fixed_array = 1, \
+            .used = sizeof(table_name) / sizeof(mp_map_elem_t), \
+            .alloc = sizeof(table_name) / sizeof(mp_map_elem_t), \
+            .table = (mp_map_elem_t*)table_name, \
+        }, \
+    }
+
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
 
@@ -159,8 +174,6 @@ struct _mp_obj_type_t {
     // when actually used.
     mp_buffer_p_t buffer_p;
     mp_stream_p_t stream_p;
-
-    const mp_method_t *methods;
 
     // these are for dynamically created types (classes)
     mp_obj_t bases_tuple;

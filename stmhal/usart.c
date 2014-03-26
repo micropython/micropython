@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "usart.h"
 
 struct _pyb_usart_obj_t {
@@ -209,18 +210,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
 
-STATIC const mp_method_t usart_methods[] = {
-    { MP_QSTR_status, &usart_obj_status_obj },
-    { MP_QSTR_recv_chr, &usart_obj_rx_char_obj },
-    { MP_QSTR_send_chr, &usart_obj_tx_char_obj },
-    { MP_QSTR_send, &usart_obj_tx_str_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t usart_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&usart_obj_status_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_chr), (mp_obj_t)&usart_obj_rx_char_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send_chr), (mp_obj_t)&usart_obj_tx_char_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&usart_obj_tx_str_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(usart_locals_dict, usart_locals_dict_table);
 
 const mp_obj_type_t pyb_usart_type = {
     { &mp_type_type },
     .name = MP_QSTR_Usart,
     .print = usart_obj_print,
     .make_new = usart_obj_make_new,
-    .methods = usart_methods,
+    .locals_dict = (mp_obj_t)&usart_locals_dict,
 };

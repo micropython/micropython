@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 
 #include "pin.h"
 
@@ -34,18 +35,19 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pin_obj_name_obj, pin_obj_name);
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_obj_port_obj, pin_obj_port);
 static MP_DEFINE_CONST_FUN_OBJ_1(pin_obj_pin_obj, pin_obj_pin);
 
-static const mp_method_t pin_methods[] = {
-    { MP_QSTR_name, &pin_obj_name_obj },
-    { MP_QSTR_port, &pin_obj_port_obj },
-    { MP_QSTR_pin, &pin_obj_pin_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t pin_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_name), (mp_obj_t)&pin_obj_name_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_port), (mp_obj_t)&pin_obj_port_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pin), (mp_obj_t)&pin_obj_pin_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
 const mp_obj_type_t pin_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pin_obj_print,
-    .methods = pin_methods,
+    .locals_dict = (mp_obj_t)&pin_locals_dict,
 };
 
 void pin_af_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {

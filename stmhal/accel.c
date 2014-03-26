@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "i2c.h"
 #include "accel.h"
@@ -158,20 +159,21 @@ STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
 
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
-STATIC const mp_method_t pyb_accel_methods[] = {
-    { MP_QSTR_x, &pyb_accel_x_obj },
-    { MP_QSTR_y, &pyb_accel_y_obj },
-    { MP_QSTR_z, &pyb_accel_z_obj },
-    { MP_QSTR_tilt, &pyb_accel_tilt_obj },
-    { MP_QSTR_filtered_xyz, &pyb_accel_filtered_xyz_obj },
-    { MP_QSTR_read, &pyb_accel_read_obj },
-    { MP_QSTR_write, &pyb_accel_write_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t pyb_accel_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_x), (mp_obj_t)&pyb_accel_x_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_y), (mp_obj_t)&pyb_accel_y_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_z), (mp_obj_t)&pyb_accel_z_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tilt), (mp_obj_t)&pyb_accel_tilt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_filtered_xyz), (mp_obj_t)&pyb_accel_filtered_xyz_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&pyb_accel_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_accel_write_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
 
 const mp_obj_type_t pyb_accel_type = {
     { &mp_type_type },
     .name = MP_QSTR_Accel,
     .make_new = pyb_accel_make_new,
-    .methods = pyb_accel_methods,
+    .locals_dict = (mp_obj_t)&pyb_accel_locals_dict,
 };

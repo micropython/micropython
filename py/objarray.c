@@ -149,10 +149,11 @@ STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int
     return 0;
 }
 
-STATIC const mp_method_t array_type_methods[] = {
-    { MP_QSTR_append, &array_append_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t array_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_append), (mp_obj_t)&array_append_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
 
 const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
@@ -163,8 +164,8 @@ const mp_obj_type_t mp_type_array = {
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .store_item = array_store_item,
-    .methods = array_type_methods,
     .buffer_p = { .get_buffer = array_get_buffer },
+    .locals_dict = (mp_obj_t)&array_locals_dict,
 };
 
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {

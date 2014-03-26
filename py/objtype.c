@@ -38,6 +38,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
             if (elem != NULL) {
                 return elem->value;
             }
+            /*
         } else if (type->methods != NULL) {
             // search methods (the const set of methods)
 
@@ -46,6 +47,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
                     return (mp_obj_t)meth->fun;
                 }
             }
+            */
         }
 
         // attribute not found, keep searching base classes

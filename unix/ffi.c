@@ -9,6 +9,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "binary.h"
 
@@ -216,19 +217,20 @@ static mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return o;
 }
 
-static const mp_method_t ffimod_type_methods[] = {
-        { "func", &ffimod_func_obj },
-        { "var", &ffimod_var_obj },
-        { "close", &ffimod_close_obj },
-        { NULL, NULL },
+static const mp_map_elem_t ffimod_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_func), (mp_obj_t) &ffimod_func_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_var), (mp_obj_t) &ffimod_var_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t) &ffimod_close_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(ffimod_locals_dict, ffimod_locals_dict_table);
 
 static const mp_obj_type_t ffimod_type = {
     { &mp_type_type },
     .name = MP_QSTR_ffimod,
     .print = ffimod_print,
     .make_new = ffimod_make_new,
-    .methods = ffimod_type_methods,
+    .locals_dict = (mp_obj_t)&ffimod_locals_dict,
 };
 
 // FFI function

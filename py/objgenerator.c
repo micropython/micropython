@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "bc.h"
 #include "objgenerator.h"
@@ -192,12 +193,13 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
-STATIC const mp_method_t gen_type_methods[] = {
-    { MP_QSTR_close, &gen_instance_close_obj },
-    { MP_QSTR_send, &gen_instance_send_obj },
-    { MP_QSTR_throw, &gen_instance_throw_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t gen_instance_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&gen_instance_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&gen_instance_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_throw), (mp_obj_t)&gen_instance_throw_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
 const mp_obj_type_t gen_instance_type = {
     { &mp_type_type },
@@ -205,7 +207,7 @@ const mp_obj_type_t gen_instance_type = {
     .print = gen_instance_print,
     .getiter = gen_instance_getiter,
     .iternext = gen_instance_iternext,
-    .methods = gen_type_methods,
+    .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {

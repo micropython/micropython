@@ -260,20 +260,21 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_dma_obj, 3, pyb_dac_dma);
 
-STATIC const mp_method_t pyb_dac_methods[] = {
-    { MP_QSTR_noise, &pyb_dac_noise_obj },
-    { MP_QSTR_triangle, &pyb_dac_triangle_obj },
-    { MP_QSTR_write, &pyb_dac_write_obj },
-    { MP_QSTR_dma, &pyb_dac_dma_obj },
+STATIC const mp_map_elem_t pyb_dac_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_noise), (mp_obj_t)&pyb_dac_noise_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_triangle), (mp_obj_t)&pyb_dac_triangle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_dac_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dma), (mp_obj_t)&pyb_dac_dma_obj },
     // TODO add function that does double buffering:
     //  dma2(freq, buf1, buf2, callback)
     //  where callback is called when the buffer has been drained
-    { MP_QSTR_NULL, NULL },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pyb_dac_locals_dict, pyb_dac_locals_dict_table);
 
 const mp_obj_type_t pyb_dac_type = {
     { &mp_type_type },
     .name = MP_QSTR_DAC,
     .make_new = pyb_dac_make_new,
-    .methods = pyb_dac_methods,
+    .locals_dict = (mp_obj_t)&pyb_dac_locals_dict,
 };

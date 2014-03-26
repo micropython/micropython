@@ -15,6 +15,7 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
+#include "map.h"
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
@@ -191,17 +192,18 @@ static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
 static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
-static const mp_method_t test_methods[] = {
-    { MP_QSTR_get, &test_get_obj },
-    { MP_QSTR_set, &test_set_obj },
-    { MP_QSTR_NULL, NULL },
+static const mp_map_elem_t test_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
 
 static const mp_obj_type_t test_type = {
     { &mp_type_type },
     .name = MP_QSTR_Test,
     .print = test_print,
-    .methods = test_methods,
+    .locals_dict = (mp_obj_t)&test_locals_dict,
 };
 
 mp_obj_t test_obj_new(int value) {

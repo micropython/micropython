@@ -72,12 +72,6 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
                 }
             }
         }
-
-        if (type->methods != NULL) {
-            for (const mp_method_t *meth = type->methods; meth->name != MP_QSTR_NULL; meth++) {
-                pyb_help_print_info_about_object(MP_OBJ_NEW_QSTR(meth->name), (mp_obj_t)meth->fun);
-            }
-        }
     }
 
     return mp_const_none;

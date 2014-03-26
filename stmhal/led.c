@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "runtime.h"
 #include "led.h"
 #include "pin.h"
@@ -256,18 +257,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
 
-STATIC const mp_method_t led_methods[] = {
-    { MP_QSTR_on, &led_obj_on_obj },
-    { MP_QSTR_off, &led_obj_off_obj },
-    { MP_QSTR_toggle, &led_obj_toggle_obj },
-    { MP_QSTR_intensity, &led_obj_intensity_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t led_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_on), (mp_obj_t)&led_obj_on_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_off), (mp_obj_t)&led_obj_off_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_toggle), (mp_obj_t)&led_obj_toggle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intensity), (mp_obj_t)&led_obj_intensity_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
 const mp_obj_type_t pyb_led_type = {
     { &mp_type_type },
     .name = MP_QSTR_Led,
     .print = led_obj_print,
     .make_new = led_obj_make_new,
-    .methods = led_methods,
+    .locals_dict = (mp_obj_t)&led_locals_dict,
 };

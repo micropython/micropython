@@ -4,6 +4,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "file.h"
 #include "ff.h"
 
@@ -51,18 +52,19 @@ static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
 // TODO gc hook to close the file if not already closed
 
-static const mp_method_t file_methods[] = {
-    { MP_QSTR_read, &file_obj_read_obj },
-    { MP_QSTR_write, &file_obj_write_obj },
-    { MP_QSTR_close, &file_obj_close_obj },
-    { MP_QSTR_NULL, NULL },
+STATIC const mp_map_elem_t file_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&file_obj_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&file_obj_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(file_locals_dict, file_locals_dict_table);
 
 static const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_File,
     .print = file_obj_print,
-    .methods = file_methods,
+    .locals_dict = (mp_obj_t)&file_locals_dict,
 };
 
 STATIC mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {

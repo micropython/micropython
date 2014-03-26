@@ -423,26 +423,27 @@ STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 /* set constructors & public C API                                            */
 
 
-STATIC const mp_method_t set_type_methods[] = {
-    { MP_QSTR_add, &set_add_obj },
-    { MP_QSTR_clear, &set_clear_obj },
-    { MP_QSTR_copy, &set_copy_obj },
-    { MP_QSTR_discard, &set_discard_obj },
-    { MP_QSTR_difference, &set_diff_obj },
-    { MP_QSTR_difference_update, &set_diff_update_obj },
-    { MP_QSTR_intersection, &set_intersect_obj },
-    { MP_QSTR_intersection_update, &set_intersect_update_obj },
-    { MP_QSTR_isdisjoint, &set_isdisjoint_obj },
-    { MP_QSTR_issubset, &set_issubset_obj },
-    { MP_QSTR_issuperset, &set_issuperset_obj },
-    { MP_QSTR_pop, &set_pop_obj },
-    { MP_QSTR_remove, &set_remove_obj },
-    { MP_QSTR_symmetric_difference, &set_symmetric_difference_obj },
-    { MP_QSTR_symmetric_difference_update, &set_symmetric_difference_update_obj },
-    { MP_QSTR_union, &set_union_obj },
-    { MP_QSTR_update, &set_update_obj },
-    { MP_QSTR_NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t set_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_add), (mp_obj_t)&set_add_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&set_clear_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&set_copy_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_discard), (mp_obj_t)&set_discard_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_difference), (mp_obj_t)&set_diff_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_difference_update), (mp_obj_t)&set_diff_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intersection), (mp_obj_t)&set_intersect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intersection_update), (mp_obj_t)&set_intersect_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_isdisjoint), (mp_obj_t)&set_isdisjoint_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_issubset), (mp_obj_t)&set_issubset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_issuperset), (mp_obj_t)&set_issuperset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pop), (mp_obj_t)&set_pop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&set_remove_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference), (mp_obj_t)&set_symmetric_difference_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference_update), (mp_obj_t)&set_symmetric_difference_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_union), (mp_obj_t)&set_union_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&set_update_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
 const mp_obj_type_t set_type = {
     { &mp_type_type },
@@ -451,7 +452,7 @@ const mp_obj_type_t set_type = {
     .make_new = set_make_new,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .methods = set_type_methods,
+    .locals_dict = (mp_obj_t)&set_locals_dict,
 };
 
 mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {

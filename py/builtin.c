@@ -152,7 +152,6 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
     mp_map_t *map = NULL;
-    const mp_method_t *meth = NULL;
     if (n_args == 0) {
         // make a list of names in the local name space
         map = rt_locals_get();
@@ -164,9 +163,6 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
         } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
             map = mp_obj_dict_get_map(type->locals_dict);
         }
-        if (type->methods != NULL) {
-            meth = type->methods;
-        }
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
@@ -177,11 +173,7 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
             }
         }
     }
-    if (meth != NULL) {
-        for (; meth->name != MP_QSTR_NULL; meth++) {
-            mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(meth->name));
-        }
-    }
+
     return dir;
 }
 

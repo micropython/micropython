@@ -15,6 +15,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "map.h"
 #include "objtuple.h"
 #include "objarray.h"
 #include "runtime.h"
@@ -217,27 +218,28 @@ static mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return socket_new(fd);
 }
 
-static const mp_method_t microsocket_type_methods[] = {
-    { MP_QSTR_fileno, &socket_fileno_obj },
-    { MP_QSTR_makefile, &mp_identity_obj },
-    { MP_QSTR_read, &mp_stream_read_obj },
-    { MP_QSTR_readall, &mp_stream_readall_obj },
-    { MP_QSTR_readline, &mp_stream_unbuffered_readline_obj},
-    { MP_QSTR_write, &mp_stream_write_obj },
-    { MP_QSTR_connect, &socket_connect_obj },
-    { MP_QSTR_bind, &socket_bind_obj },
-    { MP_QSTR_listen, &socket_listen_obj },
-    { MP_QSTR_accept, &socket_accept_obj },
-    { MP_QSTR_recv, &socket_recv_obj },
-    { MP_QSTR_send, &socket_send_obj },
-    { MP_QSTR_setsockopt, &socket_setsockopt_obj },
-    { MP_QSTR_close, &socket_close_obj },
+static const mp_map_elem_t microsocket_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&socket_fileno_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&socket_listen_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&socket_accept_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
-    { MP_QSTR_recv, &mp_stream_read_obj },
-    { MP_QSTR_send, &mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&mp_stream_write_obj },
 #endif
-    { MP_QSTR_NULL, NULL },
 };
+
+STATIC MP_DEFINE_CONST_DICT(microsocket_locals_dict, microsocket_locals_dict_table);
 
 static const mp_obj_type_t microsocket_type = {
     { &mp_type_type },
@@ -250,7 +252,7 @@ static const mp_obj_type_t microsocket_type = {
         .read = socket_read,
         .write = socket_write,
     },
-    .methods = microsocket_type_methods,
+    .locals_dict = (mp_obj_t)&microsocket_locals_dict,
 };
 
 static mp_obj_t mod_socket_htons(mp_obj_t arg) {
