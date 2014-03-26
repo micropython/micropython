@@ -95,6 +95,7 @@
 #define MP_BC_CALL_METHOD_KW     (0x98) // uint
 #define MP_BC_CALL_METHOD_VAR_KW (0x99) // uint
 #define MP_BC_MAKE_FUNCTION_DEFARGS  (0x9a) // uint
+#define MP_BC_MAKE_CLOSURE_DEFARGS   (0x9b) // uint
 
 #define MP_BC_IMPORT_NAME        (0xe0) // qstr
 #define MP_BC_IMPORT_FROM        (0xe1) // qstr

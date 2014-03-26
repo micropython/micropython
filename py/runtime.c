@@ -683,10 +683,10 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
     return fun;
 }
 
-mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple) {
+mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, MP_OBJ_NULL);
+    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, def_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }
