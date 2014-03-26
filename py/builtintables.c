@@ -60,6 +60,7 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_divmod, (mp_obj_t)&mp_builtin_divmod_obj },
     { MP_QSTR_eval, (mp_obj_t)&mp_builtin_eval_obj },
     { MP_QSTR_exec, (mp_obj_t)&mp_builtin_exec_obj },
+    { MP_QSTR_getattr, (mp_obj_t)&mp_builtin_getattr_obj },
     { MP_QSTR_hash, (mp_obj_t)&mp_builtin_hash_obj },
     { MP_QSTR_id, (mp_obj_t)&mp_builtin_id_obj },
     { MP_QSTR_isinstance, (mp_obj_t)&mp_builtin_isinstance_obj },

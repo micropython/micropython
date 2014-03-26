@@ -381,3 +381,10 @@ STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
+
+STATIC mp_obj_t mp_builtin_getattr(mp_obj_t o_in, mp_obj_t attr) {
+    assert(MP_OBJ_IS_QSTR(attr));
+    return rt_load_attr(o_in, MP_OBJ_QSTR_VALUE(attr));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_getattr_obj, mp_builtin_getattr);
