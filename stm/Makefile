@@ -80,6 +80,7 @@ SRC_C = \
 	exti.c \
 	usrsw.c \
 	pybmodule.c \
+	crc32.c \
 #	pybwlan.c \
 
 SRC_S = \
@@ -104,6 +105,7 @@ SRC_STMPERIPH = $(addprefix $(STMPERIPH_DIR)/,\
 	stm32f4xx_rng.c \
 	stm32f4xx_i2c.c \
 	stm32f4xx_adc.c \
+	stm32f4xx_crc.c \
 	stm324x7i_eval.c \
 	stm324x7i_eval_sdio_sd.c \
 	)

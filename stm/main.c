@@ -163,6 +163,11 @@ int main(void) {
     // enable the CCM RAM and the GPIO's
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN | RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
+#if MICROPY_HW_HASH
+        // enable CRC clock
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_CRC, ENABLE);
+#endif
+
 #if MICROPY_HW_HAS_SDCARD
     {
         // configure SDIO pins to be high to start with (apparently makes it more robust)
