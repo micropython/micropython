@@ -313,6 +313,7 @@ bool mp_obj_is_exception_instance(mp_obj_t self_in);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values);
+mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 
 // str
 extern const mp_obj_type_t str_type;

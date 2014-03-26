@@ -59,16 +59,22 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
     return o;
 }
 
+// Get exception "value" - that is, first argument, or None
+mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
+    mp_obj_exception_t *self = self_in;
+    if (self->args.len == 0) {
+        return mp_const_none;
+    } else {
+        return self->args.items[0];
+    }
+}
+
 STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = self_in;
     if (attr == MP_QSTR_args) {
         dest[0] = &self->args;
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
-        if (self->args.len == 0) {
-            dest[0] = mp_const_none;
-        } else {
-            dest[0] = self->args.items[0];
-        }
+        dest[0] = mp_obj_exception_get_value(self);
     }
 }
 
