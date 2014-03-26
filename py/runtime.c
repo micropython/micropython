@@ -859,10 +859,13 @@ STATIC void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
                         // return a bound method, with self being the type of this object
                         dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
                         dest[1] = mp_obj_get_type(base);
-                    } else {
+                    } else if (mp_obj_is_callable(elem->value)) {
                         // return a bound method, with self being this object
-                        dest[0] = (mp_obj_t)elem->value;
+                        dest[0] = elem->value;
                         dest[1] = base;
+                    } else {
+                        // class member is a value, so just return that value
+                        dest[0] = elem->value;
                     }
                 }
             }
