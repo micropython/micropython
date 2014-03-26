@@ -430,8 +430,8 @@ unwind_jump:
 
                     case MP_BC_FOR_ITER:
                         DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                        obj1 = rt_iternext(TOP());
-                        if (obj1 == mp_const_stop_iteration) {
+                        obj1 = rt_iternext_allow_raise(TOP());
+                        if (obj1 == MP_OBJ_NULL) {
                             --sp; // pop the exhausted iterator
                             ip += unum; // jump to after for-block
                         } else {

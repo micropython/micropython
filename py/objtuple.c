@@ -53,7 +53,7 @@ STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
             mp_obj_t iterable = rt_getiter(args[0]);
             mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+            while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
                 if (len >= alloc) {
                     items = m_renew(mp_obj_t, items, alloc, alloc * 2);
                     alloc *= 2;
@@ -245,7 +245,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 

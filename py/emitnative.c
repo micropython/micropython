@@ -987,7 +987,7 @@ STATIC void emit_native_for_iter(emit_t *emit, int label) {
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
     emit_call(emit, RT_F_ITERNEXT, rt_iternext);
-    ASM_MOV_IMM_TO_REG((machine_uint_t)mp_const_stop_iteration, REG_TEMP1);
+    ASM_MOV_IMM_TO_REG((machine_uint_t)MP_OBJ_NULL, REG_TEMP1);
 #if N_X64
     asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
     asm_x64_jcc_label(emit->as, JCC_JE, label);

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -29,7 +30,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &filter_type));
     mp_obj_filter_t *self = self_in;
     mp_obj_t next;
-    while ((next = rt_iternext(self->iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(self->iter)) != MP_OBJ_NULL) {
         mp_obj_t val;
         if (self->fun != mp_const_none) {
             val = rt_call_function_n_kw(self->fun, 1, 0, &next);
@@ -40,7 +41,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
             return next;
         }
     }
-    return mp_const_stop_iteration;
+    return MP_OBJ_NULL;
 }
 
 const mp_obj_type_t filter_type = {

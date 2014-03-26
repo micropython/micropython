@@ -106,7 +106,7 @@ mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     if (next != NULL) {
         return next->key;
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 
@@ -171,7 +171,7 @@ STATIC mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
         self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
     }
 
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
 
@@ -266,14 +266,14 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
     /* TODO: check for the "keys" method */
     mp_obj_t iter = rt_getiter(iterable);
     mp_obj_t next = NULL;
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         mp_obj_t inneriter = rt_getiter(next);
         mp_obj_t key = rt_iternext(inneriter);
         mp_obj_t value = rt_iternext(inneriter);
         mp_obj_t stop = rt_iternext(inneriter);
-        if (key == mp_const_stop_iteration
-            || value == mp_const_stop_iteration
-            || stop != mp_const_stop_iteration) {
+        if (key == MP_OBJ_NULL
+            || value == MP_OBJ_NULL
+            || stop != MP_OBJ_NULL) {
             nlr_jump(mp_obj_new_exception_msg(
                          &mp_type_ValueError,
                          "dictionary update sequence has the wrong length"));
@@ -335,7 +335,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
                 return mp_const_none;
         }
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 
@@ -364,7 +364,7 @@ STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "([");
     mp_obj_t *self_iter = dict_view_getiter(self);
     mp_obj_t *next = NULL;
-    while ((next = dict_view_it_iternext(self_iter)) != mp_const_stop_iteration) {
+    while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_NULL) {
         if (!first) {
             print(env, ", ");
         }

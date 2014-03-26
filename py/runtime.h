@@ -39,7 +39,8 @@ void rt_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t rt_getiter(mp_obj_t o);
-mp_obj_t rt_iternext(mp_obj_t o);
+mp_obj_t rt_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_NULL instead of raising StopIteration()
+mp_obj_t rt_iternext(mp_obj_t o); // will always return MP_OBJ_NULL instead of raising StopIteration(...)
 mp_obj_t rt_make_raise_obj(mp_obj_t o);
 mp_obj_t rt_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t rt_import_from(mp_obj_t module, qstr name);

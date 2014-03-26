@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -37,8 +38,8 @@ STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &enumerate_type));
     mp_obj_enumerate_t *self = self_in;
     mp_obj_t next = rt_iternext(self->iter);
-    if (next == mp_const_stop_iteration) {
-        return mp_const_stop_iteration;
+    if (next == MP_OBJ_NULL) {
+        return MP_OBJ_NULL;
     } else {
         mp_obj_t items[] = {MP_OBJ_NEW_SMALL_INT(self->cur++), next};
         return mp_obj_new_tuple(2, items);

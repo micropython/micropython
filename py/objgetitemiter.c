@@ -1,3 +1,4 @@
+#include <stdlib.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -25,8 +26,8 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     } else {
         // an exception was raised
         if (mp_obj_get_type(nlr.ret_val) == &mp_type_StopIteration) {
-            // return mp_const_stop_iteration instead of raising StopIteration
-            return mp_const_stop_iteration;
+            // return MP_OBJ_NULL instead of raising StopIteration
+            return MP_OBJ_NULL;
         } else {
             // re-raise exception
             nlr_jump(nlr.ret_val);

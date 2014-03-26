@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <assert.h>
 
 #include "nlr.h"
@@ -40,9 +41,9 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 
     for (int i = 0; i < self->n_iters; i++) {
         mp_obj_t next = rt_iternext(self->iters[i]);
-        if (next == mp_const_stop_iteration) {
+        if (next == MP_OBJ_NULL) {
             m_del(mp_obj_t, nextses, self->n_iters);
-            return mp_const_stop_iteration;
+            return MP_OBJ_NULL;
         }
         nextses[i] = next;
     }

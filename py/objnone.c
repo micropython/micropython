@@ -31,8 +31,3 @@ const mp_obj_type_t none_type = {
 
 STATIC const mp_obj_none_t none_obj = {{&none_type}};
 const mp_obj_t mp_const_none = (mp_obj_t)&none_obj;
-
-// the stop-iteration object just needs to be something unique
-// it's not the StopIteration exception
-STATIC const mp_obj_none_t stop_it_obj = {{&none_type}};
-const mp_obj_t mp_const_stop_iteration = (mp_obj_t)&stop_it_obj;

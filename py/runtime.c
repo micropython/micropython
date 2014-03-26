@@ -616,7 +616,7 @@ mp_obj_t rt_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             /* second attempt, walk the iterator */
             mp_obj_t next = NULL;
             mp_obj_t iter = rt_getiter(rhs);
-            while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+            while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
                 if (mp_obj_equal(next, lhs)) {
                     return mp_const_true;
                 }
@@ -778,12 +778,12 @@ void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
 
         for (seq_len = 0; seq_len < num; seq_len++) {
             mp_obj_t el = rt_iternext(iterable);
-            if (el == mp_const_stop_iteration) {
+            if (el == MP_OBJ_NULL) {
                 goto too_short;
             }
             items[num - 1 - seq_len] = el;
         }
-        if (rt_iternext(iterable) != mp_const_stop_iteration) {
+        if (rt_iternext(iterable) != MP_OBJ_NULL) {
             goto too_long;
         }
     }
@@ -944,7 +944,9 @@ mp_obj_t rt_getiter(mp_obj_t o_in) {
     }
 }
 
-mp_obj_t rt_iternext(mp_obj_t o_in) {
+// may return MP_OBJ_NULL as an optimisation instead of raise StopIteration()
+// may also raise StopIteration()
+mp_obj_t rt_iternext_allow_raise(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
         return type->iternext(o_in);
@@ -955,6 +957,36 @@ mp_obj_t rt_iternext(mp_obj_t o_in) {
         if (dest[0] != MP_OBJ_NULL) {
             // __next__ exists, call it and return its result
             return rt_call_method_n_kw(0, 0, dest);
+        } else {
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+        }
+    }
+}
+
+// will always return MP_OBJ_NULL instead of raising StopIteration() (or any subclass thereof)
+// may raise other exceptions
+mp_obj_t rt_iternext(mp_obj_t o_in) {
+    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    if (type->iternext != NULL) {
+        return type->iternext(o_in);
+    } else {
+        // check for __next__ method
+        mp_obj_t dest[2];
+        rt_load_method_maybe(o_in, MP_QSTR___next__, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            // __next__ exists, call it and return its result
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_obj_t ret = rt_call_method_n_kw(0, 0, dest);
+                nlr_pop();
+                return ret;
+            } else {
+                if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
+                    return MP_OBJ_NULL;
+                } else {
+                    nlr_jump(nlr.ret_val);
+                }
+            }
         } else {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
         }

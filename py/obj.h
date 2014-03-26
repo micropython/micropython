@@ -152,7 +152,7 @@ struct _mp_obj_type_t {
     mp_store_item_fun_t store_item;
 
     mp_fun_1_t getiter;
-    mp_fun_1_t iternext;
+    mp_fun_1_t iternext; // may return MP_OBJ_NULL as an optimisation instead of raising StopIteration() (with no args)
 
     // Alternatively, pointer(s) to interfaces to save space
     // in mp_obj_type_t at the expense of extra pointer and extra dereference
@@ -221,7 +221,6 @@ extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
 extern const mp_obj_t mp_const_empty_tuple;
 extern const mp_obj_t mp_const_ellipsis;
-extern const mp_obj_t mp_const_stop_iteration; // special object indicating end of iteration (not StopIteration exception!)
 
 // General API for objects
 

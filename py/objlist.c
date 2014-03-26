@@ -53,7 +53,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             mp_obj_t iterable = rt_getiter(args[0]);
             mp_obj_t list = mp_obj_new_list(0, NULL);
             mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+            while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
                 mp_obj_list_append(list, item);
             }
             return list;
@@ -401,7 +401,7 @@ mp_obj_t list_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 

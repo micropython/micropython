@@ -59,7 +59,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             mp_obj_t set = mp_obj_new_set(0, NULL);
             mp_obj_t iterable = rt_getiter(args[0]);
             mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+            while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
                 mp_obj_set_store(set, item);
             }
             return set;
@@ -89,7 +89,7 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
         }
     }
 
-    return mp_const_stop_iteration;
+    return MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t set_getiter(mp_obj_t set_in) {
@@ -162,7 +162,7 @@ STATIC mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
         } else {
             mp_obj_t iter = rt_getiter(other);
             mp_obj_t next;
-            while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+            while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
                 set_discard(self, next);
             }
         }
@@ -193,7 +193,7 @@ STATIC mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update)
 
     mp_obj_t iter = rt_getiter(other);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             set_add(out, next);
         }
@@ -225,7 +225,7 @@ STATIC mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
 
     mp_obj_t iter = rt_getiter(other);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             return mp_const_false;
         }
@@ -258,7 +258,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     } else {
         mp_obj_t iter = set_getiter(self);
         mp_obj_t next;
-        while ((next = set_it_iternext(iter)) != mp_const_stop_iteration) {
+        while ((next = set_it_iternext(iter)) != MP_OBJ_NULL) {
             if (!mp_set_lookup(&other->set, next, MP_MAP_LOOKUP)) {
                 out = false;
                 break;
@@ -332,7 +332,7 @@ STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other
     mp_obj_set_t *self = self_in;
     mp_obj_t iter = rt_getiter(other_in);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return mp_const_none;
@@ -350,7 +350,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_dif
 STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     mp_obj_t iter = rt_getiter(other_in);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != mp_const_stop_iteration) {
+    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
 }

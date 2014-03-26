@@ -64,7 +64,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     mp_obj_t iterable = rt_getiter(initializer);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
         if (len == 0) {
             array_append(array, item);
         } else {
@@ -212,7 +212,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     if (self->cur < self->array->len) {
         return mp_binary_get_val(self->array->typecode, self->array->items, self->cur++);
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 
