@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import re
 import sys
+import zlib
 
 # codepoint2name is different in Python 2 to Python 3
 import platform
@@ -18,10 +19,7 @@ codepoint2name[ord('/')] = 'slash'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
-    hash = 5381
-    for char in qstr:
-        hash = (hash * 33) ^ ord(char)
-    return hash & 0xffff
+    return zlib.crc32(qstr)&0xFFFFFFFF
 
 def do_work(infiles):
     # read the qstrs in from the input files

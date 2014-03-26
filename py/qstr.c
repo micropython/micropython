@@ -28,15 +28,17 @@
 #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
 #define Q_GET_DATA(q)   ((q) + 4)
 
+#if !MICROPY_HW_HASH
 // this must match the equivalent function in makeqstrdata.py
-machine_uint_t qstr_compute_hash(const byte *data, uint len) {
-    // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
-    machine_uint_t hash = 5381;
-    for (const byte *top = data + len; data < top; data++) {
-        hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
+extern const unsigned int crctab[256];
+machine_uint_t qstr_compute_hash(const byte *buf, uint len) {
+    uint32_t crc = ~0UL;
+    for (const byte *top=buf+len; buf<top; buf++) {
+        crc = (crc >> 8) ^ crctab[(crc ^ (*buf)) & 0xff];
     }
-    return hash & 0xffff;
+    return (~crc)&0xffff;
 }
+#endif
 
 typedef struct _qstr_pool_t {
     struct _qstr_pool_t *prev;
