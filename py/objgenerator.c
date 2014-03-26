@@ -174,8 +174,9 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     }
     // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
     if (ret_kind == MP_VM_RETURN_EXCEPTION) {
-        if (mp_obj_exception_match(ret, &mp_type_GeneratorExit) ||
-            mp_obj_exception_match(ret, &mp_type_StopIteration)) {
+        // ret should always be an instance of an exception class
+        if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_GeneratorExit) ||
+            mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
             return mp_const_none;
         }
         nlr_jump(ret);
