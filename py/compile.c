@@ -766,9 +766,13 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
 
 // stuff for lambda and comprehensions and generators
 void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_params, int n_default_params) {
+#if !MICROPY_EMIT_CPYTHON
+    // in Micro Python we put the default params into a tuple using the bytecode
     if (n_default_params) {
         EMIT_ARG(build_tuple, n_default_params);
     }
+#endif
+
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
@@ -791,14 +795,12 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
             }
         }
     }
-    if (nfree > 0) {
-        EMIT_ARG(build_tuple, nfree);
-    }
 
     // make the function/closure
     if (nfree == 0) {
         EMIT_ARG(make_function, this_scope, n_dict_params, n_default_params);
     } else {
+        EMIT_ARG(build_tuple, nfree);
         EMIT_ARG(make_closure, this_scope, n_dict_params, n_default_params);
     }
 }
