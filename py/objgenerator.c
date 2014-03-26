@@ -74,11 +74,11 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
     return self_in;
 }
 
-mp_obj_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_vm_return_kind_t *ret_kind) {
+mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     mp_obj_gen_instance_t *self = self_in;
     if (self->ip == 0) {
-        *ret_kind = MP_VM_RETURN_NORMAL;
-        return MP_OBJ_NULL;
+        *ret_val = MP_OBJ_NULL;
+        return MP_VM_RETURN_NORMAL;
     }
     if (self->sp == self->state - 1) {
         if (send_value != mp_const_none) {
@@ -87,11 +87,11 @@ mp_obj_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw
     } else {
         *self->sp = send_value;
     }
-    *ret_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
+    mp_vm_return_kind_t ret_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
         &self->state[self->n_state - 1], &self->sp, (mp_exc_stack*)(self->state + self->n_state),
         &self->exc_sp, throw_value);
 
-    switch (*ret_kind) {
+    switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
             // Explicitly mark generator as completed. If we don't do this,
             // subsequent next() may re-execute statements after last yield
@@ -99,26 +99,30 @@ mp_obj_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw
             // TODO: check how return with value behaves under such conditions
             // in CPython.
             self->ip = 0;
-            return *self->sp;
+            *ret_val = *self->sp;
+            break;
 
         case MP_VM_RETURN_YIELD:
-            return *self->sp;
+            *ret_val = *self->sp;
+            break;
 
         case MP_VM_RETURN_EXCEPTION:
             self->ip = 0;
-            return self->state[self->n_state - 1];
+            *ret_val = self->state[self->n_state - 1];
+            break;
 
         default:
             assert(0);
-            return mp_const_none;
+            *ret_val = mp_const_none;
+            break;
     }
+
+    return ret_kind;
 }
 
 STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value) {
-    mp_vm_return_kind_t ret_kind;
-    mp_obj_t ret = mp_obj_gen_resume(self_in, send_value, throw_value, &ret_kind);
-
-    switch (ret_kind) {
+    mp_obj_t ret;
+    switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
         case MP_VM_RETURN_NORMAL:
             // Optimize return w/o value in case generator is used in for loop
             if (ret == mp_const_none) {
@@ -166,24 +170,24 @@ STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
-    mp_vm_return_kind_t ret_kind;
-    mp_obj_t ret = mp_obj_gen_resume(self_in, mp_const_none, (mp_obj_t)&mp_type_GeneratorExit, &ret_kind);
+    mp_obj_t ret;
+    switch (mp_obj_gen_resume(self_in, mp_const_none, (mp_obj_t)&mp_type_GeneratorExit, &ret)) {
+        case MP_VM_RETURN_YIELD:
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
 
-    if (ret_kind == MP_VM_RETURN_YIELD) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
-    }
-    // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
-    if (ret_kind == MP_VM_RETURN_EXCEPTION) {
-        // ret should always be an instance of an exception class
-        if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_GeneratorExit) ||
-            mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
+        // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
+        case MP_VM_RETURN_EXCEPTION:
+            // ret should always be an instance of an exception class
+            if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_GeneratorExit) ||
+                mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
+                return mp_const_none;
+            }
+            nlr_jump(ret);
+
+        default:
+            // The only choice left is MP_VM_RETURN_NORMAL which is successful close
             return mp_const_none;
-        }
-        nlr_jump(ret);
     }
-
-    // The only choice left is MP_VM_RETURN_NORMAL which is successful close
-    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
