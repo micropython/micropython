@@ -325,12 +325,16 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 
     if (self->locals_dict != NULL) {
         assert(MP_OBJ_IS_TYPE(self->locals_dict, &dict_type)); // Micro Python restriction, for now
-        mp_map_t *locals_map = ((void*)self->locals_dict + sizeof(mp_obj_base_t)); // XXX hack to get map object from dict object
-        mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-        return true;
-    } else {
-        return false;
+        mp_map_t *locals_map = mp_obj_dict_get_map(self->locals_dict);
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+        // note that locals_map may be in ROM, so add will fail in that case
+        if (elem != NULL) {
+            elem->value = value;
+            return true;
+        }
     }
+
+    return false;
 }
 
 const mp_obj_type_t mp_type_type = {
