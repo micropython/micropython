@@ -203,10 +203,8 @@ extern const mp_obj_type_t mp_type_BaseException;
 extern const mp_obj_type_t mp_type_ArithmeticError;
 extern const mp_obj_type_t mp_type_AssertionError;
 extern const mp_obj_type_t mp_type_AttributeError;
-extern const mp_obj_type_t mp_type_BufferError;
 extern const mp_obj_type_t mp_type_EOFError;
 extern const mp_obj_type_t mp_type_Exception;
-extern const mp_obj_type_t mp_type_FloatingPointError;
 extern const mp_obj_type_t mp_type_GeneratorExit;
 extern const mp_obj_type_t mp_type_IOError;
 extern const mp_obj_type_t mp_type_ImportError;
@@ -224,7 +222,6 @@ extern const mp_obj_type_t mp_type_StopIteration;
 extern const mp_obj_type_t mp_type_SyntaxError;
 extern const mp_obj_type_t mp_type_SystemError;
 extern const mp_obj_type_t mp_type_TypeError;
-extern const mp_obj_type_t mp_type_UnboundLocalError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
 

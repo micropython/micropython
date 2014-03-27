@@ -84,10 +84,8 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_ArithmeticError, (mp_obj_t)&mp_type_ArithmeticError },
     { MP_QSTR_AssertionError, (mp_obj_t)&mp_type_AssertionError },
     { MP_QSTR_AttributeError, (mp_obj_t)&mp_type_AttributeError },
-    { MP_QSTR_BufferError, (mp_obj_t)&mp_type_BufferError },
     { MP_QSTR_EOFError, (mp_obj_t)&mp_type_EOFError },
     { MP_QSTR_Exception, (mp_obj_t)&mp_type_Exception },
-    { MP_QSTR_FloatingPointError, (mp_obj_t)&mp_type_FloatingPointError },
     { MP_QSTR_GeneratorExit, (mp_obj_t)&mp_type_GeneratorExit },
     { MP_QSTR_IOError, (mp_obj_t)&mp_type_IOError },
     { MP_QSTR_ImportError, (mp_obj_t)&mp_type_ImportError },
@@ -105,7 +103,6 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_SyntaxError, (mp_obj_t)&mp_type_SyntaxError },
     { MP_QSTR_SystemError, (mp_obj_t)&mp_type_SystemError },
     { MP_QSTR_TypeError, (mp_obj_t)&mp_type_TypeError },
-    { MP_QSTR_UnboundLocalError, (mp_obj_t)&mp_type_UnboundLocalError },
     { MP_QSTR_ValueError, (mp_obj_t)&mp_type_ValueError },
     { MP_QSTR_ZeroDivisionError, (mp_obj_t)&mp_type_ZeroDivisionError },
     // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
