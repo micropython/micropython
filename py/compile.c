@@ -144,11 +144,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_modulo(arg0, arg1));
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
-                        //pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 
-                          //                          floor((mp_float_t)arg0 / arg1));
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 
-                                                    python_floor_divide(arg0, arg1));
-			
+                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_floor_divide(arg0, arg1));
                     } else {
                         // shouldn't happen
                         assert(0);
@@ -198,10 +194,22 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
-void compile_node(compiler_t *comp, mp_parse_node_t pn);
+STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 STATIC int comp_next_label(compiler_t *comp) {
     return comp->next_label++;
+}
+
+STATIC void compile_increase_except_level(compiler_t *comp) {
+    comp->cur_except_level += 1;
+    if (comp->cur_except_level > comp->scope_cur->exc_stack_size) {
+        comp->scope_cur->exc_stack_size = comp->cur_except_level;
+    }
+}
+
+STATIC void compile_decrease_except_level(compiler_t *comp) {
+    assert(comp->cur_except_level > 0);
+    comp->cur_except_level -= 1;
 }
 
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
@@ -1635,7 +1643,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     int success_label = comp_next_label(comp);
 
     EMIT_ARG(setup_except, l1);
-    comp->cur_except_level += 1;
+    compile_increase_except_level(comp);
 
     compile_node(comp, pn_body); // body
     EMIT(pop_block);
@@ -1687,7 +1695,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
             EMIT_ARG(setup_finally, l3);
-            comp->cur_except_level += 1;
+            compile_increase_except_level(comp);
         }
         compile_node(comp, pns_except->nodes[1]);
         if (qstr_exception_local != 0) {
@@ -1701,14 +1709,14 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             EMIT_ARG(store_id, qstr_exception_local);
             EMIT_ARG(delete_id, qstr_exception_local);
 
-            comp->cur_except_level -= 1;
+            compile_decrease_except_level(comp);
             EMIT(end_finally);
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
     }
 
-    comp->cur_except_level -= 1;
+    compile_decrease_except_level(comp);
     EMIT(end_finally);
 
     EMIT_ARG(label_assign, success_label);
@@ -1723,7 +1731,7 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     int l_finally_block = comp_next_label(comp);
 
     EMIT_ARG(setup_finally, l_finally_block);
-    comp->cur_except_level += 1;
+    compile_increase_except_level(comp);
 
     if (n_except == 0) {
         assert(MP_PARSE_NODE_IS_NULL(pn_else));
@@ -1736,7 +1744,7 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     EMIT_ARG(label_assign, l_finally_block);
     compile_node(comp, pn_finally);
 
-    comp->cur_except_level -= 1;
+    compile_decrease_except_level(comp);
     EMIT(end_finally);
 
     EMIT_ARG(set_stack_size, stack_size);
@@ -2799,7 +2807,10 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     EMIT_ARG(start_pass, pass, scope);
 
     if (comp->pass == PASS_1) {
+        // reset maximum stack sizes in scope
+        // they will be computed in this first pass
         scope->stack_size = 0;
+        scope->exc_stack_size = 0;
     }
 
 #if MICROPY_EMIT_CPYTHON
@@ -2939,6 +2950,9 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     }
 
     EMIT(end_pass);
+
+    // make sure we match all the exception levels
+    assert(comp->cur_except_level == 0);
 }
 
 void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {

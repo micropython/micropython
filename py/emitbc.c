@@ -224,7 +224,14 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_code_info_qstr(emit, scope->source_file);
     emit_write_code_info_qstr(emit, scope->simple_name);
 
-    // prelude for initialising closed over variables
+    // bytecode prelude: exception stack size; 16 bit uint for now
+    {
+        byte* c = emit_get_cur_to_write_byte_code(emit, 2);
+        c[0] = scope->exc_stack_size & 0xff;
+        c[1] = (scope->exc_stack_size >> 8) & 0xff;
+    }
+
+    // bytecode prelude: initialise closed over variables
     int num_cell = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];

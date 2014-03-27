@@ -211,8 +211,22 @@ const mp_obj_type_t gen_instance_type = {
 };
 
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
-    // TODO: 4 is hardcoded number from vm.c, calc exc stack size instead.
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + 4 * sizeof(mp_exc_stack));
+    // get code info size, and skip the line number table
+    machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
+    bytecode += code_info_size;
+
+    // bytecode prelude: get exception stack size
+    machine_uint_t n_exc_stack = bytecode[0] | (bytecode[1] << 8);
+    bytecode += 2;
+
+    // bytecode prelude: initialise closed over variables
+    // TODO
+    // for now we just make sure there are no cells variables
+    // need to work out how to implement closed over variables in generators
+    assert(bytecode[0] == 0);
+    bytecode += 1;
+
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack));
     o->base.type = &gen_instance_type;
     o->code_info = bytecode;
     o->ip = bytecode;
@@ -224,17 +238,6 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args,
     for (int i = 0; i < n_args; i++) {
         o->state[n_state - 1 - i] = args[i];
     }
-
-    // TODO
-    // prelude for making cells (closed over variables)
-    // for now we just make sure there are no cells variables
-    // need to work out how to implement closed over variables in generators
-
-    // get code info size
-    machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
-    o->ip += code_info_size;
-    assert(o->ip[0] == 0);
-    o->ip += 1;
 
     return o;
 }

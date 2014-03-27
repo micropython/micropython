@@ -45,6 +45,16 @@ typedef enum {
 #define SET_TOP(val) *sp = (val)
 
 mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state, mp_obj_t *ret) {
+    const byte *ip = code;
+
+    // get code info size, and skip line number table
+    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    ip += code_info_size;
+
+    // bytecode prelude: exception stack size; 16 bit uint for now
+    machine_uint_t n_exc_stack = ip[0] | (ip[1] << 8);
+    ip += 2;
+
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
@@ -52,6 +62,14 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
         state = m_new(mp_obj_t, n_state);
     }
     mp_obj_t *sp = &state[0] - 1;
+
+    // allocate state for exceptions
+    mp_exc_stack exc_state[4];
+    mp_exc_stack *exc_stack = &exc_state[0];
+    if (n_exc_stack > 4) {
+        exc_stack = m_new(mp_exc_stack, n_exc_stack);
+    }
+    mp_exc_stack *exc_sp = &exc_stack[0] - 1;
 
     // init args
     for (uint i = 0; i < n_args; i++) {
@@ -61,26 +79,16 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
         state[n_state - 1 - n_args - i] = args2[i];
     }
 
-    const byte *ip = code;
-
-    // get code info size
-    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
-    ip += code_info_size;
-
-    // execute prelude to make any cells (closed over variables)
-    {
-        for (uint n_local = *ip++; n_local > 0; n_local--) {
-            uint local_num = *ip++;
-            if (local_num < n_args + n_args2) {
-                state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
-            } else {
-                state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
-            }
+    // bytecode prelude: initialise closed over variables
+    for (uint n_local = *ip++; n_local > 0; n_local--) {
+        uint local_num = *ip++;
+        if (local_num < n_args + n_args2) {
+            state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
+        } else {
+            state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
         }
     }
 
-    mp_exc_stack exc_stack[4];
-    mp_exc_stack *exc_sp = &exc_stack[0] - 1;
     // execute the byte code
     mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
 
