@@ -244,6 +244,15 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("SETUP_LOOP " UINT_FMT, ip + unum - ip_start);
                 break;
 
+            case MP_BC_SETUP_WITH:
+                DECODE_ULABEL; // loop-like labels are always forward
+                printf("SETUP_WITH " UINT_FMT, ip + unum - ip_start);
+                break;
+
+            case MP_BC_WITH_CLEANUP:
+                printf("WITH_CLEANUP");
+                break;
+
             case MP_BC_UNWIND_JUMP:
                 DECODE_SLABEL;
                 printf("UNWIND_JUMP " UINT_FMT " %d", ip + unum - ip_start, *ip);
