@@ -34,7 +34,7 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
     } else {
         format_float(o->real, buf, sizeof(buf), 'g', 6, '\0');
         print(env, "(%s+", buf);
-        format_float(o->real, buf, sizeof(buf), 'g', 6, '\0');
+        format_float(o->imag, buf, sizeof(buf), 'g', 6, '\0');
         print(env, "%sj)", buf);
     }
 #else
