@@ -12,6 +12,10 @@
 
 #if MICROPY_ENABLE_FLOAT
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#include "formatfloat.h"
+#endif
+
 typedef struct _mp_obj_complex_t {
     mp_obj_base_t base;
     mp_float_t real;
@@ -22,11 +26,24 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 
 STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_complex_t *o = o_in;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    char buf[32];
+    if (o->real == 0) {
+        format_float(o->imag, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "%s", buf);
+    } else {
+        format_float(o->real, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "(%s+", buf);
+        format_float(o->real, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "%sj)", buf);
+    }
+#else
     if (o->real == 0) {
         print(env, "%.8gj",  (double) o->imag);
     } else {
         print(env, "(%.8g+%.8gj)", (double) o->real, (double) o->imag);
     }
+#endif
 }
 
 STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
