@@ -224,11 +224,14 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_code_info_qstr(emit, scope->source_file);
     emit_write_code_info_qstr(emit, scope->simple_name);
 
-    // bytecode prelude: exception stack size; 16 bit uint for now
+    // bytecode prelude: local state size and exception stack size; 16 bit uints for now
     {
-        byte* c = emit_get_cur_to_write_byte_code(emit, 2);
-        c[0] = scope->exc_stack_size & 0xff;
-        c[1] = (scope->exc_stack_size >> 8) & 0xff;
+        byte* c = emit_get_cur_to_write_byte_code(emit, 4);
+        uint n_state = scope->num_locals + scope->stack_size;
+        c[0] = n_state & 0xff;
+        c[1] = (n_state >> 8) & 0xff;
+        c[2] = scope->exc_stack_size & 0xff;
+        c[3] = (scope->exc_stack_size >> 8) & 0xff;
     }
 
     // bytecode prelude: initialise closed over variables

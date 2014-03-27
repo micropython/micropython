@@ -44,16 +44,17 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, uint n_state, mp_obj_t *ret) {
+mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
     const byte *ip = code;
 
     // get code info size, and skip line number table
     machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
     ip += code_info_size;
 
-    // bytecode prelude: exception stack size; 16 bit uint for now
-    machine_uint_t n_exc_stack = ip[0] | (ip[1] << 8);
-    ip += 2;
+    // bytecode prelude: state size and exception stack size; 16 bit uints
+    machine_uint_t n_state = ip[0] | (ip[1] << 8);
+    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
+    ip += 4;
 
     // allocate state for locals and stack
     mp_obj_t temp_state[10];

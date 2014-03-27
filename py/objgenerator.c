@@ -24,9 +24,8 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     mp_obj_t self_fun = self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &fun_bc_type));
     int bc_n_args;
-    uint bc_n_state;
     const byte *bc_code;
-    mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_n_state, &bc_code);
+    mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_code);
     if (n_args != bc_n_args) {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", bc_n_args, n_args));
     }
@@ -34,7 +33,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
-    return mp_obj_new_gen_instance(bc_code, bc_n_state, n_args, args);
+    return mp_obj_new_gen_instance(bc_code, n_args, args);
 }
 
 const mp_obj_type_t gen_wrap_type = {
@@ -210,14 +209,15 @@ const mp_obj_type_t gen_instance_type = {
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
-mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_state, int n_args, const mp_obj_t *args) {
+mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_t *args) {
     // get code info size, and skip the line number table
     machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
     bytecode += code_info_size;
 
-    // bytecode prelude: get exception stack size
-    machine_uint_t n_exc_stack = bytecode[0] | (bytecode[1] << 8);
-    bytecode += 2;
+    // bytecode prelude: get state size and exception stack size
+    machine_uint_t n_state = bytecode[0] | (bytecode[1] << 8);
+    machine_uint_t n_exc_stack = bytecode[2] | (bytecode[3] << 8);
+    bytecode += 4;
 
     // bytecode prelude: initialise closed over variables
     // TODO

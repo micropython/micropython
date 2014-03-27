@@ -48,7 +48,6 @@ typedef struct _mp_code_t {
     mp_code_kind_t kind : 8;
     uint scope_flags : 8;
     uint n_args : 16;
-    uint n_state : 16;
     union {
         struct {
             byte *code;
@@ -147,7 +146,6 @@ void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, 
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].scope_flags = scope_flags;
     unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_state = n_locals + n_stack;
     unique_codes[unique_code_id].u_byte.code = code;
     unique_codes[unique_code_id].u_byte.len = len;
     unique_codes[unique_code_id].arg_names = arg_names;
@@ -176,7 +174,6 @@ void rt_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args)
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
     unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_native.fun = fun;
 
     //printf("native code: %d bytes\n", len);
@@ -208,7 +205,6 @@ void rt_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_a
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
     unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].n_state = 0;
     unique_codes[unique_code_id].u_inline_asm.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -662,7 +658,7 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
     mp_obj_t fun;
     switch (c->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->scope_flags, c->arg_names, c->n_args, def_args, c->n_state, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(c->scope_flags, c->arg_names, c->n_args, def_args, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
             fun = rt_make_function_n(c->n_args, c->u_native.fun);
