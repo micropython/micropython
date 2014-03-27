@@ -1,11 +1,6 @@
-// in principle, rt_xxx functions are called only by vm/native/viper and make assumptions about args
-// mp_xxx functions are safer and can be called by anyone
-// note that rt_assign_xxx are called only from emit*, and maybe we can rename them to reflect this
-
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <math.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -16,6 +11,7 @@
 #include "parsenum.h"
 #include "runtime0.h"
 #include "runtime.h"
+#include "emitglue.h"
 #include "map.h"
 #include "builtin.h"
 #include "builtintables.h"
@@ -37,36 +33,6 @@ STATIC mp_map_t *map_locals;
 STATIC mp_map_t *map_globals;
 STATIC mp_map_t map_builtins;
 
-typedef enum {
-    MP_CODE_NONE,
-    MP_CODE_BYTE,
-    MP_CODE_NATIVE,
-    MP_CODE_INLINE_ASM,
-} mp_code_kind_t;
-
-typedef struct _mp_code_t {
-    mp_code_kind_t kind : 8;
-    uint scope_flags : 8;
-    uint n_args : 16;
-    union {
-        struct {
-            byte *code;
-            uint len;
-        } u_byte;
-        struct {
-            mp_fun_t fun;
-        } u_native;
-        struct {
-            void *fun;
-        } u_inline_asm;
-    };
-    qstr *arg_names;
-} mp_code_t;
-
-STATIC uint next_unique_code_id;
-STATIC machine_uint_t unique_codes_alloc = 0;
-STATIC mp_code_t *unique_codes = NULL;
-
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
 #endif
@@ -77,6 +43,8 @@ STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
 }
 
 void rt_init(void) {
+    mp_emit_glue_init();
+
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     map_locals = map_globals = mp_map_new(1);
 
@@ -101,129 +69,21 @@ void rt_init(void) {
     //sys_path = mp_obj_new_list(0, NULL);
     //rt_store_attr(m_sys, MP_QSTR_path, sys_path);
 
-    // TODO: wastes one mp_code_t structure in mem
-    next_unique_code_id = 1; // 0 indicates "no code"
-    unique_codes_alloc = 0;
-    unique_codes = NULL;
-
 #ifdef WRITE_CODE
     fp_write_code = fopen("out-code", "wb");
 #endif
 }
 
 void rt_deinit(void) {
-    m_del(mp_code_t, unique_codes, unique_codes_alloc);
-    mp_map_free(map_globals);
-    mp_map_deinit(&map_builtins);
-    mp_module_deinit();
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fclose(fp_write_code);
     }
 #endif
-}
-
-uint rt_get_unique_code_id(void) {
-    return next_unique_code_id++;
-}
-
-STATIC void alloc_unique_codes(void) {
-    if (next_unique_code_id > unique_codes_alloc) {
-        DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, next_unique_code_id);
-        // increase size of unique_codes table
-        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, next_unique_code_id);
-        for (uint i = unique_codes_alloc; i < next_unique_code_id; i++) {
-            unique_codes[i].kind = MP_CODE_NONE;
-        }
-        unique_codes_alloc = next_unique_code_id;
-    }
-}
-
-void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, uint scope_flags, qstr *arg_names) {
-    alloc_unique_codes();
-
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
-    unique_codes[unique_code_id].kind = MP_CODE_BYTE;
-    unique_codes[unique_code_id].scope_flags = scope_flags;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_byte.code = code;
-    unique_codes[unique_code_id].u_byte.len = len;
-    unique_codes[unique_code_id].arg_names = arg_names;
-
-    //printf("byte code: %d bytes\n", len);
-
-#ifdef DEBUG_PRINT
-    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d n_locals=%d n_stack=%d\n", unique_code_id, code, len, n_args, n_locals, n_stack);
-    for (int i = 0; i < 128 && i < len; i++) {
-        if (i > 0 && i % 16 == 0) {
-            DEBUG_printf("\n");
-        }
-        DEBUG_printf(" %02x", code[i]);
-    }
-    DEBUG_printf("\n");
-#if MICROPY_DEBUG_PRINTERS
-    mp_byte_code_print(code, len);
-#endif
-#endif
-}
-
-void rt_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args) {
-    alloc_unique_codes();
-
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
-    unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
-    unique_codes[unique_code_id].scope_flags = 0;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_native.fun = fun;
-
-    //printf("native code: %d bytes\n", len);
-
-#ifdef DEBUG_PRINT
-    DEBUG_printf("assign native code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
-    byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
-    for (int i = 0; i < 128 && i < len; i++) {
-        if (i > 0 && i % 16 == 0) {
-            DEBUG_printf("\n");
-        }
-        DEBUG_printf(" %02x", fun_data[i]);
-    }
-    DEBUG_printf("\n");
-
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(fun_data, len, 1, fp_write_code);
-        fflush(fp_write_code);
-    }
-#endif
-#endif
-}
-
-void rt_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_args) {
-    alloc_unique_codes();
-
-    assert(1 <= unique_code_id && unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
-    unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
-    unique_codes[unique_code_id].scope_flags = 0;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_inline_asm.fun = fun;
-
-#ifdef DEBUG_PRINT
-    DEBUG_printf("assign inline asm code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
-    byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
-    for (int i = 0; i < 128 && i < len; i++) {
-        if (i > 0 && i % 16 == 0) {
-            DEBUG_printf("\n");
-        }
-        DEBUG_printf(" %02x", fun_data[i]);
-    }
-    DEBUG_printf("\n");
-
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(fun_data, len, 1, fp_write_code);
-    }
-#endif
-#endif
+    mp_map_free(map_globals);
+    mp_map_deinit(&map_builtins);
+    mp_module_deinit();
+    mp_emit_glue_deinit();
 }
 
 int rt_is_true(mp_obj_t arg) {
@@ -644,47 +504,6 @@ generic_binary_op:
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     return mp_const_none;
-}
-
-mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
-    DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
-    if (unique_code_id < 1 || unique_code_id >= next_unique_code_id) {
-        // illegal code id
-        return mp_const_none;
-    }
-
-    // make the function, depending on the code kind
-    mp_code_t *c = &unique_codes[unique_code_id];
-    mp_obj_t fun;
-    switch (c->kind) {
-        case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->scope_flags, c->arg_names, c->n_args, def_args, c->u_byte.code);
-            break;
-        case MP_CODE_NATIVE:
-            fun = rt_make_function_n(c->n_args, c->u_native.fun);
-            break;
-        case MP_CODE_INLINE_ASM:
-            fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);
-            break;
-        default:
-            assert(0);
-            fun = mp_const_none;
-    }
-
-    // check for generator functions and if so wrap in generator object
-    if ((c->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-        fun = mp_obj_new_gen_wrap(fun);
-    }
-
-    return fun;
-}
-
-mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
-    DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
-    // make function object
-    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, def_args);
-    // wrap function in closure object
-    return mp_obj_new_closure(ffun, closure_tuple);
 }
 
 mp_obj_t rt_call_function_0(mp_obj_t fun) {

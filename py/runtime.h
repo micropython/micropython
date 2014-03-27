@@ -1,3 +1,6 @@
+void rt_init(void);
+void rt_deinit(void);
+
 void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw);
 
 int rt_is_true(mp_obj_t arg);

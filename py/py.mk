@@ -35,6 +35,7 @@ PY_O_BASENAME = \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
+	emitglue.o \
 	runtime.o \
 	map.o \
 	obj.o \

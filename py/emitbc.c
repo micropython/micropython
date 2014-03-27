@@ -12,6 +12,7 @@
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "emitglue.h"
 #include "bc0.h"
 
 struct _emit_t {
@@ -271,9 +272,9 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         for (int i = 0; i < emit->scope->num_params; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
         }
-        rt_assign_byte_code(emit->scope->unique_code_id, emit->code_base,
+        mp_emit_glue_assign_byte_code(emit->scope->unique_code_id, emit->code_base,
             emit->code_info_size + emit->byte_code_size,
-            emit->scope->num_params, emit->scope->num_locals, emit->scope->stack_size,
+            emit->scope->num_params, emit->scope->num_locals,
             emit->scope->scope_flags, arg_names);
     }
 }

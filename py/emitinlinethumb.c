@@ -11,6 +11,7 @@
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "emitglue.h"
 #include "asmthumb.h"
 
 #if MICROPY_EMIT_INLINE_THUMB
@@ -51,7 +52,7 @@ STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
 
     if (emit->pass == PASS_3) {
         void *f = asm_thumb_get_code(emit->as);
-        rt_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
     }
 }
 

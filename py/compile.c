@@ -13,6 +13,7 @@
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "emitglue.h"
 #include "obj.h"
 #include "compile.h"
 #include "runtime.h"
@@ -213,7 +214,7 @@ STATIC void compile_decrease_except_level(compiler_t *comp) {
 }
 
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, comp->source_file, rt_get_unique_code_id(), emit_options);
+    scope_t *scope = scope_new(kind, pn, comp->source_file, mp_emit_glue_get_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -1149,14 +1150,14 @@ void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->break_label == 0) {
-        printf("ERROR: cannot break from here\n");
+        compile_syntax_error(comp, "'break' outside loop");
     }
     EMIT_ARG(break_loop, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->continue_label == 0) {
-        printf("ERROR: cannot continue from here\n");
+        compile_syntax_error(comp, "'continue' outside loop");
     }
     EMIT_ARG(continue_loop, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
 }

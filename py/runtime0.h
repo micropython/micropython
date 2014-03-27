@@ -93,10 +93,3 @@ typedef enum {
 } rt_fun_kind_t;
 
 extern void *const rt_fun_table[RT_F_NUMBER_OF];
-
-void rt_init(void);
-void rt_deinit(void);
-uint rt_get_unique_code_id(void);
-void rt_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, int n_stack, uint scope_flags, qstr *arg_names);
-void rt_assign_native_code(uint unique_code_id, void *f, uint len, int n_args);
-void rt_assign_inline_asm_code(uint unique_code_id, void *f, uint len, int n_args);

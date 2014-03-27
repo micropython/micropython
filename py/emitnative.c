@@ -30,6 +30,7 @@
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "emitglue.h"
 #include "obj.h"
 #include "runtime.h"
 
@@ -275,10 +276,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == PASS_3) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        rt_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        rt_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
 #endif
     }
 }

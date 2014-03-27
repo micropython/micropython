@@ -79,7 +79,7 @@ typedef struct _emit_method_table_t {
     void (*setup_except)(emit_t *emit, int label);
     void (*setup_finally)(emit_t *emit, int label);
     void (*end_finally)(emit_t *emit);
-    void (*get_iter)(emit_t *emit); // tos = getiter(tos)
+    void (*get_iter)(emit_t *emit);
     void (*for_iter)(emit_t *emit, int label);
     void (*for_iter_end)(emit_t *emit);
     void (*pop_block)(emit_t *emit);
