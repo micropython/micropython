@@ -1,6 +1,6 @@
 // This code glues the code emitters to the runtime.
 
-#include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -10,6 +10,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "emitglue.h"
+#include "bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -51,13 +52,27 @@ STATIC machine_uint_t unique_codes_alloc = 0;
 STATIC mp_code_t *unique_codes = NULL;
 STATIC uint next_unique_code_id;
 
+#ifdef WRITE_CODE
+FILE *fp_write_code = NULL;
+#endif
+
 void mp_emit_glue_init(void) {
     next_unique_code_id = 0;
     unique_codes_alloc = 0;
     unique_codes = NULL;
+
+#ifdef WRITE_CODE
+    fp_write_code = fopen("out-code", "wb");
+#endif
 }
 
 void mp_emit_glue_deinit(void) {
+#ifdef WRITE_CODE
+    if (fp_write_code != NULL) {
+        fclose(fp_write_code);
+    }
+#endif
+
     m_del(mp_code_t, unique_codes, unique_codes_alloc);
 }
 
