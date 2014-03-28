@@ -21,6 +21,12 @@ typedef struct mp_obj_exception_t {
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
+// Instance of GeneratorExit exception - needed by generator.close()
+// This would belong to objgenerator.c, but to keep mp_obj_exception_t
+// definition module-private so far, have it here.
+STATIC mp_obj_exception_t GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, NULL, {{&tuple_type}, 0}};
+const mp_obj_t mp_const_GeneratorExit = (mp_obj_t)&GeneratorExit_obj;
+
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
     if (o->msg != NULL) {
