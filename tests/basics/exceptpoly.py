@@ -28,15 +28,15 @@ try:
 except AttributeError:
     print("Caught AttributeError")
 
-try:
-    raise BufferError
-except Exception:
-    print("Caught BufferError via Exception")
+#try:
+#    raise BufferError
+#except Exception:
+#    print("Caught BufferError via Exception")
 
-try:
-    raise BufferError
-except BufferError:
-    print("Caught BufferError")
+#try:
+#    raise BufferError
+#except BufferError:
+#    print("Caught BufferError")
 
 #try:
 #    raise BytesWarning
@@ -88,15 +88,15 @@ try:
 except Exception:
     print("Caught Exception")
 
-try:
-    raise FloatingPointError
-except ArithmeticError:
-    print("Caught FloatingPointError via ArithmeticError")
+#try:
+#    raise FloatingPointError
+#except ArithmeticError:
+#    print("Caught FloatingPointError via ArithmeticError")
 
-try:
-    raise FloatingPointError
-except FloatingPointError:
-    print("Caught FloatingPointError")
+#try:
+#    raise FloatingPointError
+#except FloatingPointError:
+#    print("Caught FloatingPointError")
 
 #try:
 #    raise FutureWarning
@@ -328,15 +328,15 @@ try:
 except TypeError:
     print("Caught TypeError")
 
-try:
-    raise UnboundLocalError
-except NameError:
-    print("Caught UnboundLocalError via NameError")
+#try:
+#    raise UnboundLocalError
+#except NameError:
+#    print("Caught UnboundLocalError via NameError")
 
-try:
-    raise UnboundLocalError
-except UnboundLocalError:
-    print("Caught UnboundLocalError")
+#try:
+#    raise UnboundLocalError
+#except UnboundLocalError:
+#    print("Caught UnboundLocalError")
 
 #try:
 #    raise UserWarning
