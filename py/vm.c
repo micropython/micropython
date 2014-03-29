@@ -381,16 +381,14 @@ dispatch_loop:
                         break;
                         */
 
-                    case MP_BC_SETUP_WITH: {
+                    case MP_BC_SETUP_WITH:
                         obj1 = TOP();
                         SET_TOP(rt_load_attr(obj1, MP_QSTR___exit__));
-                        mp_obj_t dest[2];
-                        rt_load_method(obj1, MP_QSTR___enter__, dest);
-                        obj2 = rt_call_method_n_kw(0, 0, dest);
+                        rt_load_method(obj1, MP_QSTR___enter__, sp + 1);
+                        obj2 = rt_call_method_n_kw(0, 0, sp + 1);
                         SETUP_BLOCK();
                         PUSH(obj2);
                         break;
-                    }
 
                     case MP_BC_WITH_CLEANUP: {
                         static const mp_obj_t no_exc[] = {mp_const_none, mp_const_none, mp_const_none};
