@@ -697,6 +697,9 @@ unwind_return:
                         unum = *ip++;
                         assert(unum <= 1);
                         if (unum == 0) {
+                            if (!currently_in_except_block) {
+                                nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
+                            }
                             // This assumes that nlr.ret_val holds last raised
                             // exception and is not overwritten since then.
                             obj1 = nlr.ret_val;
