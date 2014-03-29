@@ -1,6 +1,7 @@
 // This code glues the code emitters to the runtime.
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -23,7 +24,8 @@
 #endif
 
 typedef enum {
-    MP_CODE_NONE,
+    MP_CODE_UNUSED,
+    MP_CODE_RESERVED,
     MP_CODE_BYTE,
     MP_CODE_NATIVE,
     MP_CODE_INLINE_ASM,
@@ -49,16 +51,16 @@ typedef struct _mp_code_t {
 } mp_code_t;
 
 STATIC machine_uint_t unique_codes_alloc = 0;
+STATIC machine_uint_t unique_codes_total = 0; // always >= unique_codes_alloc
 STATIC mp_code_t *unique_codes = NULL;
-STATIC uint next_unique_code_id;
 
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
 #endif
 
 void mp_emit_glue_init(void) {
-    next_unique_code_id = 0;
     unique_codes_alloc = 0;
+    unique_codes_total = 0;
     unique_codes = NULL;
 
 #ifdef WRITE_CODE
@@ -77,25 +79,34 @@ void mp_emit_glue_deinit(void) {
 }
 
 uint mp_emit_glue_get_unique_code_id(void) {
-    return next_unique_code_id++;
+    // look for an existing unused slot
+    for (uint i = 0; i < unique_codes_alloc; i++) {
+        if (unique_codes[i].kind == MP_CODE_UNUSED) {
+            unique_codes[i].kind = MP_CODE_RESERVED;
+            return i;
+        }
+    }
+    // no existing slot
+    // return next available id, memory will be allocated later
+    return unique_codes_total++;
 }
 
 STATIC void mp_emit_glue_alloc_unique_codes(void) {
-    if (next_unique_code_id > unique_codes_alloc) {
-        DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, next_unique_code_id);
-        // increase size of unique_codes table
-        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, next_unique_code_id);
-        for (uint i = unique_codes_alloc; i < next_unique_code_id; i++) {
-            unique_codes[i].kind = MP_CODE_NONE;
+    if (unique_codes_total > unique_codes_alloc) {
+        DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, unique_codes_total);
+        // increase size of unique_codes table (all new entries are already reserved)
+        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, unique_codes_total);
+        for (uint i = unique_codes_alloc; i < unique_codes_total; i++) {
+            unique_codes[i].kind = MP_CODE_RESERVED;
         }
-        unique_codes_alloc = next_unique_code_id;
+        unique_codes_alloc = unique_codes_total;
     }
 }
 
 void mp_emit_glue_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, uint scope_flags, qstr *arg_names) {
     mp_emit_glue_alloc_unique_codes();
 
-    assert(unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
+    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
     unique_codes[unique_code_id].kind = MP_CODE_BYTE;
     unique_codes[unique_code_id].scope_flags = scope_flags;
     unique_codes[unique_code_id].n_args = n_args;
@@ -123,7 +134,7 @@ void mp_emit_glue_assign_byte_code(uint unique_code_id, byte *code, uint len, in
 void mp_emit_glue_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args) {
     mp_emit_glue_alloc_unique_codes();
 
-    assert(unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
+    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
     unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
     unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
@@ -154,7 +165,7 @@ void mp_emit_glue_assign_native_code(uint unique_code_id, void *fun, uint len, i
 void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_args) {
     mp_emit_glue_alloc_unique_codes();
 
-    assert(unique_code_id < next_unique_code_id && unique_codes[unique_code_id].kind == MP_CODE_NONE);
+    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
     unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
     unique_codes[unique_code_id].scope_flags = 0;
     unique_codes[unique_code_id].n_args = n_args;
@@ -179,9 +190,9 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #endif
 }
 
-mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
+mp_obj_t rt_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args) {
     DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
-    if (unique_code_id >= next_unique_code_id) {
+    if (unique_code_id >= unique_codes_total) {
         // illegal code id
         return mp_const_none;
     }
@@ -200,8 +211,9 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
             fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);
             break;
         default:
+            // code id was never assigned (this should not happen)
             assert(0);
-            fun = mp_const_none;
+            return mp_const_none;
     }
 
     // check for generator functions and if so wrap in generator object
@@ -209,13 +221,20 @@ mp_obj_t rt_make_function_from_id(int unique_code_id, mp_obj_t def_args) {
         fun = mp_obj_new_gen_wrap(fun);
     }
 
+    // in some cases we can free the unique_code slot
+    // any dynamically allocade memory is now owned by the fun object
+    if (free_unique_code) {
+        memset(c, 0, sizeof *c); // make sure all pointers are zeroed
+        c->kind = MP_CODE_UNUSED;
+    }
+
     return fun;
 }
 
-mp_obj_t rt_make_closure_from_id(int unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
+mp_obj_t rt_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, def_args);
+    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, false, def_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

@@ -563,12 +563,12 @@ unwind_jump:
 
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(rt_make_function_from_id(unum, MP_OBJ_NULL));
+                        PUSH(rt_make_function_from_id(unum, false, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
-                        SET_TOP(rt_make_function_from_id(unum, TOP()));
+                        SET_TOP(rt_make_function_from_id(unum, false, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
