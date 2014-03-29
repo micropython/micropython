@@ -391,6 +391,10 @@ dispatch_loop:
                         break;
 
                     case MP_BC_WITH_CLEANUP: {
+                        // Arriving here, there's "exception control block" on top of stack,
+                        // and __exit__ bound method underneath it. Bytecode calls __exit__,
+                        // and "deletes" it off stack, shifting "exception control block"
+                        // to its place.
                         static const mp_obj_t no_exc[] = {mp_const_none, mp_const_none, mp_const_none};
                         if (TOP() == mp_const_none) {
                             sp--;
@@ -432,8 +436,8 @@ dispatch_loop:
                                 //PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_SILENCED));
                                 // But what we need to do is - pop exception from value stack...
                                 sp -= 3;
-                                // ... pop with exception handler, and signal END_FINALLY
-                                // to just execute finally handler normally (signalled by None
+                                // ... pop "with" exception handler, and signal END_FINALLY
+                                // to just execute finally handler normally (by pushing None
                                 // on value stack)
                                 assert(exc_sp >= exc_stack);
                                 assert(exc_sp->opcode == MP_BC_SETUP_WITH);
@@ -709,8 +713,7 @@ yield:
                         *exc_sp_in_out = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
                         return MP_VM_RETURN_YIELD;
 
-                    case MP_BC_YIELD_FROM:
-                    {
+                    case MP_BC_YIELD_FROM: {
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
 #define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_jump(t); }
