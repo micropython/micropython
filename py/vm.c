@@ -45,13 +45,17 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-#define SETUP_BLOCK() \
+#define PUSH_EXC_BLOCK() \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
     exc_sp->opcode = op; \
     exc_sp->handler = ip + unum; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
     currently_in_except_block = 0; /* in a try block now */
+
+#define POP_EXC_BLOCK() \
+    currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
+    exc_sp--; /* pop back to previous exception handler */
 
 mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
     const byte *ip = code;
@@ -386,7 +390,7 @@ dispatch_loop:
                         SET_TOP(rt_load_attr(obj1, MP_QSTR___exit__));
                         rt_load_method(obj1, MP_QSTR___enter__, sp + 1);
                         obj2 = rt_call_method_n_kw(0, 0, sp + 1);
-                        SETUP_BLOCK();
+                        PUSH_EXC_BLOCK();
                         PUSH(obj2);
                         break;
 
@@ -478,7 +482,7 @@ unwind_jump:
                     // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                     case MP_BC_SETUP_EXCEPT:
                     case MP_BC_SETUP_FINALLY:
-                        SETUP_BLOCK();
+                        PUSH_EXC_BLOCK();
                         break;
 
                     case MP_BC_END_FINALLY:
@@ -527,8 +531,7 @@ unwind_jump:
                     case MP_BC_POP_BLOCK:
                         // we are exiting an exception handler, so pop the last one of the exception-stack
                         assert(exc_sp >= exc_stack);
-                        currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
-                        exc_sp--; // pop back to previous exception handler
+                        POP_EXC_BLOCK();
                         break;
 
                     // matched against: SETUP_EXCEPT
@@ -539,8 +542,7 @@ unwind_jump:
                         assert(currently_in_except_block);
                         //sp = (mp_obj_t*)(*exc_sp--);
                         //exc_sp--; // discard ip
-                        currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
-                        exc_sp--; // pop back to previous exception handler
+                        POP_EXC_BLOCK();
                         //sp -= 3; // pop 3 exception values
                         break;
 
@@ -697,6 +699,9 @@ unwind_return:
                         unum = *ip++;
                         assert(unum <= 1);
                         if (unum == 0) {
+                            if (!currently_in_except_block) {
+                                nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
+                            }
                             // This assumes that nlr.ret_val holds last raised
                             // exception and is not overwritten since then.
                             obj1 = nlr.ret_val;
@@ -827,8 +832,7 @@ yield:
                 // at the moment we are just raising the very last exception (the one that caused the nested exception)
 
                 // move up to previous exception handler
-                currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); // restore previous state
-                exc_sp--; // pop back to previous exception handler
+                POP_EXC_BLOCK();
             }
 
             if (exc_sp >= exc_stack) {
