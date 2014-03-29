@@ -378,6 +378,73 @@ dispatch_loop:
                         break;
                         */
 
+                    case MP_BC_SETUP_WITH: {
+                        obj1 = TOP();
+                        SET_TOP(rt_load_attr(obj1, MP_QSTR___exit__));
+                        mp_obj_t dest[2];
+                        rt_load_method(obj1, MP_QSTR___enter__, dest);
+                        obj2 = rt_call_method_n_kw(0, 0, dest);
+                        SETUP_BLOCK();
+                        PUSH(obj2);
+                        break;
+                    }
+
+                    case MP_BC_WITH_CLEANUP: {
+                        static const mp_obj_t no_exc[] = {mp_const_none, mp_const_none, mp_const_none};
+                        if (TOP() == mp_const_none) {
+                            sp--;
+                            obj1 = TOP();
+                            SET_TOP(mp_const_none);
+                            obj2 = rt_call_function_n_kw(obj1, 3, 0, no_exc);
+                        } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
+                            mp_obj_t cause = POP();
+                            switch (MP_OBJ_SMALL_INT_VALUE(cause)) {
+                                case UNWIND_RETURN: {
+                                    mp_obj_t retval = POP();
+                                    obj2 = rt_call_function_n_kw(TOP(), 3, 0, no_exc);
+                                    SET_TOP(retval);
+                                    PUSH(cause);
+                                    break;
+                                }
+                                case UNWIND_JUMP: {
+                                    obj2 = rt_call_function_n_kw(sp[-2], 3, 0, no_exc);
+                                    // Pop __exit__ boundmethod at sp[-2]
+                                    sp[-2] = sp[-1];
+                                    sp[-1] = sp[0];
+                                    SET_TOP(cause);
+                                    break;
+                                }
+                                default:
+                                    assert(0);
+                            }
+                        } else if (mp_obj_is_exception_type(TOP())) {
+                            mp_obj_t args[3] = {sp[0], sp[-1], sp[-2]};
+                            obj2 = rt_call_function_n_kw(sp[-3], 3, 0, args);
+                            // Pop __exit__ boundmethod at sp[-3]
+                            // TODO: Once semantics is proven, optimize for case when obj2 == True
+                            sp[-3] = sp[-2];
+                            sp[-2] = sp[-1];
+                            sp[-1] = sp[0];
+                            sp--;
+                            if (rt_is_true(obj2)) {
+                                // This is what CPython does
+                                //PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_SILENCED));
+                                // But what we need to do is - pop exception from value stack...
+                                sp -= 3;
+                                // ... pop with exception handler, and signal END_FINALLY
+                                // to just execute finally handler normally (signalled by None
+                                // on value stack)
+                                assert(exc_sp >= exc_stack);
+                                assert(exc_sp->opcode == MP_BC_SETUP_WITH);
+                                exc_sp--;
+                                PUSH(mp_const_none);
+                            }
+                        } else {
+                            assert(0);
+                        }
+                        break;
+                    }
+
                     case MP_BC_UNWIND_JUMP:
                         DECODE_SLABEL;
                         PUSH((void*)(ip + unum)); // push destination ip for jump
@@ -387,7 +454,7 @@ unwind_jump:
                         while (unum > 0) {
                             unum -= 1;
                             assert(exc_sp >= exc_stack);
-                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY) {
+                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY || exc_sp->opcode == MP_BC_SETUP_WITH) {
                                 // We're going to run "finally" code as a coroutine
                                 // (not calling it recursively). Set up a sentinel
                                 // on a stack so it can return back to us when it is
@@ -601,7 +668,7 @@ unwind_jump:
                     case MP_BC_RETURN_VALUE:
 unwind_return:
                         while (exc_sp >= exc_stack) {
-                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY) {
+                            if (exc_sp->opcode == MP_BC_SETUP_FINALLY || exc_sp->opcode == MP_BC_SETUP_WITH) {
                                 // We're going to run "finally" code as a coroutine
                                 // (not calling it recursively). Set up a sentinel
                                 // on a stack so it can return back to us when it is
