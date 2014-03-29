@@ -30,7 +30,16 @@ void mp_byte_code_print(const byte *ip, int len) {
     machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
     ip += code_info_size;
 
-    // decode prelude
+    // bytecode prelude: state size and exception stack size; 16 bit uints
+    {
+        uint n_state = ip[0] | (ip[1] << 8);
+        uint n_exc_stack = ip[2] | (ip[3] << 8);
+        ip += 4;
+        printf("(N_STATE %u)\n", n_state);
+        printf("(N_EXC_STACK %u)\n", n_exc_stack);
+    }
+
+    // bytecode prelude: initialise closed over variables
     {
         uint n_local = *ip++;
         printf("(NUM_LOCAL %u)\n", n_local);
@@ -242,6 +251,15 @@ void mp_byte_code_print(const byte *ip, int len) {
             case MP_BC_SETUP_LOOP:
                 DECODE_ULABEL; // loop labels are always forward
                 printf("SETUP_LOOP " UINT_FMT, ip + unum - ip_start);
+                break;
+
+            case MP_BC_SETUP_WITH:
+                DECODE_ULABEL; // loop-like labels are always forward
+                printf("SETUP_WITH " UINT_FMT, ip + unum - ip_start);
+                break;
+
+            case MP_BC_WITH_CLEANUP:
+                printf("WITH_CLEANUP");
                 break;
 
             case MP_BC_UNWIND_JUMP:

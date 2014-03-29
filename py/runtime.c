@@ -20,7 +20,6 @@
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
-#define WRITE_CODE (1)
 #define DEBUG_printf DEBUG_printf
 #define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
 #else // don't print debugging info
@@ -32,10 +31,6 @@
 STATIC mp_map_t *map_locals;
 STATIC mp_map_t *map_globals;
 STATIC mp_map_t map_builtins;
-
-#ifdef WRITE_CODE
-FILE *fp_write_code = NULL;
-#endif
 
 // a good optimising compiler will inline this if necessary
 STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
@@ -68,18 +63,9 @@ void rt_init(void) {
     // for efficiency, left to platform-specific startup code
     //sys_path = mp_obj_new_list(0, NULL);
     //rt_store_attr(m_sys, MP_QSTR_path, sys_path);
-
-#ifdef WRITE_CODE
-    fp_write_code = fopen("out-code", "wb");
-#endif
 }
 
 void rt_deinit(void) {
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fclose(fp_write_code);
-    }
-#endif
     mp_map_free(map_globals);
     mp_map_deinit(&map_builtins);
     mp_module_deinit();

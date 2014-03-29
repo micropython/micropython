@@ -231,6 +231,7 @@ extern const mp_obj_t mp_const_false;
 extern const mp_obj_t mp_const_true;
 extern const mp_obj_t mp_const_empty_tuple;
 extern const mp_obj_t mp_const_ellipsis;
+extern const mp_obj_t mp_const_GeneratorExit;
 
 // General API for objects
 
