@@ -173,7 +173,7 @@ dispatch_loop:
                         break;
 
                     case MP_BC_LOAD_CONST_ELLIPSIS:
-                        PUSH(mp_const_ellipsis);
+                        PUSH((mp_obj_t)&mp_const_ellipsis_obj);
                         break;
 
                     case MP_BC_LOAD_CONST_SMALL_INT: {

@@ -79,11 +79,11 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
     } else if (MP_OBJ_IS_STR(o_in)) {
         return mp_obj_str_get_hash(o_in);
-    } else if (MP_OBJ_IS_TYPE(o_in, &none_type)) {
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (machine_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &fun_native_type) || MP_OBJ_IS_TYPE(o_in, &fun_bc_type)) {
         return (machine_int_t)o_in;
-    } else if (MP_OBJ_IS_TYPE(o_in, &tuple_type)) {
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);
 
     // TODO hash class and instances
@@ -207,7 +207,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
-    if (MP_OBJ_IS_TYPE(o, &tuple_type)) {
+    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
     } else if (MP_OBJ_IS_TYPE(o, &list_type)) {
         mp_obj_list_get(o, len, items);
@@ -217,9 +217,9 @@ void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
 }
 
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
-    if (MP_OBJ_IS_TYPE(o, &tuple_type) || MP_OBJ_IS_TYPE(o, &list_type)) {
+    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple) || MP_OBJ_IS_TYPE(o, &list_type)) {
         uint seq_len;
-        if (MP_OBJ_IS_TYPE(o, &tuple_type)) {
+        if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
             mp_obj_tuple_get(o, &seq_len, items);
         } else {
             mp_obj_list_get(o, &seq_len, items);
@@ -237,7 +237,7 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index,
     int i;
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
-    } else if (MP_OBJ_IS_TYPE(index, &bool_type)) {
+    } else if (MP_OBJ_IS_TYPE(index, &mp_type_bool)) {
         i = (index == mp_const_true ? 1 : 0);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));

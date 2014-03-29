@@ -14,7 +14,7 @@
 // This is unified class for C-level and Python-level exceptions
 // Python-level exceptions have empty ->msg and all arguments are in
 // args tuple. C-level exceptions likely have ->msg set, and args is empty.
-typedef struct mp_obj_exception_t {
+typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
     vstr_t *msg;
@@ -24,8 +24,7 @@ typedef struct mp_obj_exception_t {
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
-STATIC mp_obj_exception_t GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, NULL, {{&tuple_type}, 0}};
-const mp_obj_t mp_const_GeneratorExit = (mp_obj_t)&GeneratorExit_obj;
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, NULL, {{&mp_type_tuple}, 0}};
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
@@ -61,7 +60,7 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
     o->base.type = type;
     o->traceback = MP_OBJ_NULL;
     o->msg = NULL;
-    o->args.base.type = &tuple_type;
+    o->args.base.type = &mp_type_tuple;
     o->args.len = n_args;
     memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
     return o;
@@ -95,7 +94,7 @@ const mp_obj_type_t mp_type_BaseException = {
 };
 
 #define MP_DEFINE_EXCEPTION_BASE(base_name) \
-STATIC const mp_obj_tuple_t mp_type_ ## base_name ## _base_tuple = {{&tuple_type}, 1, {(mp_obj_t)&mp_type_ ## base_name}};\
+STATIC const mp_obj_tuple_t mp_type_ ## base_name ## _base_tuple = {{&mp_type_tuple}, 1, {(mp_obj_t)&mp_type_ ## base_name}};\
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \
 const mp_obj_type_t mp_type_ ## exc_name = { \

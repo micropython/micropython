@@ -226,12 +226,17 @@ extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
 
 // Constant objects, globally accessible
-extern const mp_obj_t mp_const_none;
-extern const mp_obj_t mp_const_false;
-extern const mp_obj_t mp_const_true;
-extern const mp_obj_t mp_const_empty_tuple;
-extern const mp_obj_t mp_const_ellipsis;
-extern const mp_obj_t mp_const_GeneratorExit;
+// The macros are for convenience only
+#define mp_const_none ((mp_obj_t)&mp_const_none_obj)
+#define mp_const_false ((mp_obj_t)&mp_const_false_obj)
+#define mp_const_true ((mp_obj_t)&mp_const_true_obj)
+#define mp_const_empty_tuple ((mp_obj_t)&mp_const_empty_tuple_obj)
+extern const struct _mp_obj_none_t mp_const_none_obj;
+extern const struct _mp_obj_bool_t mp_const_false_obj;
+extern const struct _mp_obj_bool_t mp_const_true_obj;
+extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
+extern const struct _mp_obj_ellipsis_t mp_const_ellipsis_obj;
+extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 // General API for objects
 
@@ -298,10 +303,10 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 extern const mp_obj_type_t mp_type_object;
 
 // none
-extern const mp_obj_type_t none_type;
+extern const mp_obj_type_t mp_type_NoneType;
 
 // bool
-extern const mp_obj_type_t bool_type;
+extern const mp_obj_type_t mp_type_bool;
 #define MP_BOOL(x) (x ? mp_const_true : mp_const_false)
 
 // cell
@@ -359,7 +364,7 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
 #endif
 
 // tuple
-extern const mp_obj_type_t tuple_type;
+extern const mp_obj_type_t mp_type_tuple;
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);

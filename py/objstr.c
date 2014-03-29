@@ -309,7 +309,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // process args
     uint seq_len;
     mp_obj_t *seq_items;
-    if (MP_OBJ_IS_TYPE(arg, &tuple_type)) {
+    if (MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
         mp_obj_tuple_get(arg, &seq_len, &seq_items);
     } else if (MP_OBJ_IS_TYPE(arg, &list_type)) {
         mp_obj_list_get(arg, &seq_len, &seq_items);

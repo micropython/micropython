@@ -42,7 +42,7 @@ STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         case 1:
         {
             // 1 argument, an iterable from which we make a new tuple
-            if (MP_OBJ_IS_TYPE(args[0], &tuple_type)) {
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_tuple)) {
                 return args[0];
             }
 
@@ -75,8 +75,8 @@ STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
 // Don't pass RT_BINARY_OP_NOT_EQUAL here
 STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
-    if (!MP_OBJ_IS_TYPE(another_in, &tuple_type)) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
+    if (!MP_OBJ_IS_TYPE(another_in, &mp_type_tuple)) {
         return false;
     }
     mp_obj_tuple_t *self = self_in;
@@ -115,7 +115,7 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         case RT_BINARY_OP_ADD:
         {
-            if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&tuple_type)) {
+            if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&mp_type_tuple)) {
                 return NULL;
             }
             mp_obj_tuple_t *p = rhs;
@@ -153,14 +153,14 @@ STATIC mp_obj_t tuple_getiter(mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
-    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     return mp_seq_count_obj(self->items, self->len, value);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
 STATIC mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(args[0], &tuple_type));
+    assert(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
     mp_obj_tuple_t *self = args[0];
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
@@ -173,7 +173,7 @@ STATIC const mp_map_elem_t tuple_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
-const mp_obj_type_t tuple_type = {
+const mp_obj_type_t mp_type_tuple = {
     { &mp_type_type },
     .name = MP_QSTR_tuple,
     .print = tuple_print,
@@ -185,15 +185,14 @@ const mp_obj_type_t tuple_type = {
 };
 
 // the zero-length tuple
-STATIC const mp_obj_tuple_t empty_tuple_obj = {{&tuple_type}, 0};
-const mp_obj_t mp_const_empty_tuple = (mp_obj_t)&empty_tuple_obj;
+const mp_obj_tuple_t mp_const_empty_tuple_obj = {{&mp_type_tuple}, 0};
 
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
     if (n == 0) {
         return mp_const_empty_tuple;
     }
     mp_obj_tuple_t *o = m_new_obj_var(mp_obj_tuple_t, mp_obj_t, n);
-    o->base.type = &tuple_type;
+    o->base.type = &mp_type_tuple;
     o->len = n;
     if (items) {
         for (int i = 0; i < n; i++) {
@@ -204,7 +203,7 @@ mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items) {
 }
 
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
-    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     if (len) {
         *len = self->len;
@@ -215,13 +214,13 @@ void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
 }
 
 void mp_obj_tuple_del(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
 }
 
 machine_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &tuple_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     // start hash with pointer to empty tuple, to make it fairly unique
     machine_int_t hash = (machine_int_t)mp_const_empty_tuple;

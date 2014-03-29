@@ -43,7 +43,7 @@ STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-const mp_obj_type_t bool_type = {
+const mp_obj_type_t mp_type_bool = {
     { &mp_type_type },
     .name = MP_QSTR_bool,
     .print = bool_print,
@@ -51,8 +51,5 @@ const mp_obj_type_t bool_type = {
     .unary_op = bool_unary_op,
 };
 
-STATIC const mp_obj_bool_t false_obj = {{&bool_type}, false};
-STATIC const mp_obj_bool_t true_obj = {{&bool_type}, true};
-
-const mp_obj_t mp_const_false = (mp_obj_t)&false_obj;
-const mp_obj_t mp_const_true = (mp_obj_t)&true_obj;
+const mp_obj_bool_t mp_const_false_obj = {{&mp_type_bool}, false};
+const mp_obj_bool_t mp_const_true_obj = {{&mp_type_bool}, true};

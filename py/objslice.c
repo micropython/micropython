@@ -19,14 +19,13 @@ void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, m
     print(env, "Ellipsis");
 }
 
-const mp_obj_type_t ellipsis_type = {
+const mp_obj_type_t mp_type_ellipsis = {
     { &mp_type_type },
     .name = MP_QSTR_Ellipsis,
     .print = ellipsis_print,
 };
 
-STATIC const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
-const mp_obj_t mp_const_ellipsis = (mp_obj_t)&ellipsis_obj;
+const mp_obj_ellipsis_t mp_const_ellipsis_obj = {{&mp_type_ellipsis}};
 
 /******************************************************************************/
 /* slice object                                                               */

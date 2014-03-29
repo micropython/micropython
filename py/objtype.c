@@ -348,7 +348,7 @@ const mp_obj_type_t mp_type_type = {
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
-    assert(MP_OBJ_IS_TYPE(bases_tuple, &tuple_type)); // Micro Python restriction, for now
+    assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // Micro Python restriction, for now
     assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
     o->base.type = &mp_type_type;
@@ -502,7 +502,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
         len = 1;
         items = &classinfo;
-    } else if (MP_OBJ_IS_TYPE(classinfo, &tuple_type)) {
+    } else if (MP_OBJ_IS_TYPE(classinfo, &mp_type_tuple)) {
         mp_obj_tuple_get(classinfo, &len, &items);
     } else {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));

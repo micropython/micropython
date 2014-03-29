@@ -51,7 +51,6 @@ void rt_init(void) {
 
     // add some builtins that can't be done in ROM
     mp_map_add_qstr(map_globals, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
-    mp_map_add_qstr(&map_builtins, MP_QSTR_Ellipsis, mp_const_ellipsis);
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
@@ -559,9 +558,9 @@ mp_obj_t rt_store_set(mp_obj_t set, mp_obj_t item) {
 // unpacked items are stored in reverse order into the array pointed to by items
 void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     uint seq_len;
-    if (MP_OBJ_IS_TYPE(seq_in, &tuple_type) || MP_OBJ_IS_TYPE(seq_in, &list_type)) {
+    if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &list_type)) {
         mp_obj_t *seq_items;
-        if (MP_OBJ_IS_TYPE(seq_in, &tuple_type)) {
+        if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
             mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
         } else {
             mp_obj_list_get(seq_in, &seq_len, &seq_items);

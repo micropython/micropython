@@ -25,7 +25,7 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR___repl_print__, (mp_obj_t)&mp_builtin___repl_print___obj },
 
     // built-in types
-    { MP_QSTR_bool, (mp_obj_t)&bool_type },
+    { MP_QSTR_bool, (mp_obj_t)&mp_type_bool },
     { MP_QSTR_bytes, (mp_obj_t)&bytes_type },
 #if MICROPY_ENABLE_FLOAT
     { MP_QSTR_complex, (mp_obj_t)&mp_type_complex },
@@ -43,12 +43,15 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
     { MP_QSTR_set, (mp_obj_t)&set_type },
     { MP_QSTR_str, (mp_obj_t)&str_type },
     { MP_QSTR_super, (mp_obj_t)&super_type },
-    { MP_QSTR_tuple, (mp_obj_t)&tuple_type },
+    { MP_QSTR_tuple, (mp_obj_t)&mp_type_tuple },
     { MP_QSTR_type, (mp_obj_t)&mp_type_type },
     { MP_QSTR_zip, (mp_obj_t)&zip_type },
 
     { MP_QSTR_classmethod, (mp_obj_t)&mp_type_classmethod },
     { MP_QSTR_staticmethod, (mp_obj_t)&mp_type_staticmethod },
+
+    // built-in objects
+    { MP_QSTR_Ellipsis, (mp_obj_t)&mp_const_ellipsis_obj },
 
     // built-in user functions
     { MP_QSTR_abs, (mp_obj_t)&mp_builtin_abs_obj },

@@ -373,7 +373,7 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         // convert float to int (could also pass in float registers)
         return (machine_int_t)mp_obj_float_get(obj);
 #endif
-    } else if (MP_OBJ_IS_TYPE(obj, &tuple_type)) {
+    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_tuple)) {
         // pointer to start of tuple (could pass length, but then could use len(x) for that)
         uint len;
         mp_obj_t *items;
