@@ -46,7 +46,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
-    } else if (MP_OBJ_IS_TYPE(lhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
         lhs_val = ((mp_obj_int_t*)lhs_in)->val;
     } else {
         return MP_OBJ_NULL;
@@ -54,7 +54,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t*)rhs_in)->val;
     } else {
         return MP_OBJ_NULL;
@@ -131,7 +131,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &int_type;
+    o->base.type = &mp_type_int;
     o->val = val;
     return o;
 }
@@ -145,7 +145,7 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &int_type;
+    o->base.type = &mp_type_int;
     o->val = v;
     return o;
 }

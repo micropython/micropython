@@ -109,7 +109,7 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
 
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
-const mp_obj_type_t int_type = {
+const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
     .print = int_print,

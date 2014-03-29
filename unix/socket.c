@@ -261,7 +261,7 @@ static mp_obj_t mod_socket_htons(mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
 
 static mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(arg, &str_type));
+    assert(MP_OBJ_IS_TYPE(arg, &mp_type_str));
     const char *s = mp_obj_str_get_str(arg);
     struct in_addr addr;
     if (!inet_aton(s, &addr)) {
@@ -274,7 +274,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_inet_aton_obj, mod_socket_inet_aton)
 
 #if MICROPY_SOCKET_EXTRA
 static mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(arg, &str_type));
+    assert(MP_OBJ_IS_TYPE(arg, &mp_type_str));
     const char *s = mp_obj_str_get_str(arg);
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {

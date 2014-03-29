@@ -21,7 +21,7 @@ STATIC mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     }
     assert(n_args >= 2);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
-    o->base.type = &map_type;
+    o->base.type = &mp_type_map;
     o->n_iters = n_args - 1;
     o->fun = args[0];
     for (int i = 0; i < n_args - 1; i++) {
@@ -35,7 +35,7 @@ STATIC mp_obj_t map_getiter(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &map_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
     mp_obj_map_t *self = self_in;
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);
 
@@ -50,7 +50,7 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     return rt_call_function_n_kw(self->fun, self->n_iters, 0, nextses);
 }
 
-const mp_obj_type_t map_type = {
+const mp_obj_type_t mp_type_map = {
     { &mp_type_type },
     .name = MP_QSTR_map,
     .make_new = map_make_new,

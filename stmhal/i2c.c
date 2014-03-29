@@ -124,7 +124,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args) {
     machine_uint_t n = mp_obj_get_int(args[3]);
 
     byte *data;
-    mp_obj_t o = mp_obj_str_builder_start(&bytes_type, n, &data);
+    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, data, n, 200);
 
     //printf("Read got %d\n", status);

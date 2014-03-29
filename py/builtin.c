@@ -166,7 +166,7 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
             } else {
                 type = mp_obj_get_type(args[0]);
             }
-            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
+            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
                 map = mp_obj_dict_get_map(type->locals_dict);
             }
         }
@@ -375,7 +375,7 @@ STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "must use keyword argument for key function"));
     }
-    mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, 0, args);
+    mp_obj_t self = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;

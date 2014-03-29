@@ -254,7 +254,7 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
             values[i] = mp_obj_int_get(a);
-        } else if (MP_OBJ_IS_STR(a) || MP_OBJ_IS_TYPE(a, &bytes_type)) {
+        } else if (MP_OBJ_IS_STR(a) || MP_OBJ_IS_TYPE(a, &mp_type_bytes)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)s;
         } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {

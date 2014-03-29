@@ -100,7 +100,7 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case RT_BINARY_OP_SUBSCR:
         {
 #if MICROPY_ENABLE_SLICE
-            if (MP_OBJ_IS_TYPE(rhs, &slice_type)) {
+            if (MP_OBJ_IS_TYPE(rhs, &mp_type_slice)) {
                 machine_uint_t start, stop;
                 if (!m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop)) {
                     assert(0);
@@ -250,7 +250,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t tuple_it_type = {
+STATIC const mp_obj_type_t mp_type_tuple_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = tuple_it_iternext,
@@ -258,7 +258,7 @@ STATIC const mp_obj_type_t tuple_it_type = {
 
 STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, int cur) {
     mp_obj_tuple_it_t *o = m_new_obj(mp_obj_tuple_it_t);
-    o->base.type = &tuple_it_type;
+    o->base.type = &mp_type_tuple_it;
     o->tuple = tuple;
     o->cur = cur;
     return o;

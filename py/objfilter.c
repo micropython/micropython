@@ -20,14 +20,14 @@ STATIC mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     }
     assert(n_args == 2);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
-    o->base.type = &filter_type;
+    o->base.type = &mp_type_filter;
     o->fun = args[0];
     o->iter = rt_getiter(args[1]);
     return o;
 }
 
 STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &filter_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_filter));
     mp_obj_filter_t *self = self_in;
     mp_obj_t next;
     while ((next = rt_iternext(self->iter)) != MP_OBJ_NULL) {
@@ -44,7 +44,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     return MP_OBJ_NULL;
 }
 
-const mp_obj_type_t filter_type = {
+const mp_obj_type_t mp_type_filter = {
     { &mp_type_type },
     .name = MP_QSTR_filter,
     .make_new = filter_make_new,

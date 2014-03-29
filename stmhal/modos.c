@@ -17,11 +17,11 @@ static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
 #endif
 
 STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
-    const mp_obj_type_t *local_str_type = &str_type;
+    const mp_obj_type_t *local_str_type = &mp_type_str;
     const char *path;
     if (n_args == 1) {
-        if (mp_obj_get_type(args[0]) == &bytes_type) {
-            local_str_type = &bytes_type;
+        if (mp_obj_get_type(args[0]) == &mp_type_bytes) {
+            local_str_type = &mp_type_bytes;
         }
         path = mp_obj_str_get_str(args[0]);
     } else {
@@ -138,7 +138,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
     machine_int_t n = mp_obj_get_int(num);
     byte *data;
-    mp_obj_t o = mp_obj_str_builder_start(&bytes_type, n, &data);
+    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
     for (int i = 0; i < n; i++) {
         data[i] = rng_get();
     }

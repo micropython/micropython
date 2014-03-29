@@ -17,7 +17,7 @@ STATIC mp_obj_t zip_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     // TODO check n_kw == 0
 
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
-    o->base.type = &zip_type;
+    o->base.type = &mp_type_zip;
     o->n_iters = n_args;
     for (int i = 0; i < n_args; i++) {
         o->iters[i] = rt_getiter(args[i]);
@@ -30,7 +30,7 @@ STATIC mp_obj_t zip_getiter(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &zip_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_zip));
     mp_obj_zip_t *self = self_in;
     mp_obj_t *items;
     if (self->n_iters == 0) {
@@ -50,7 +50,7 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     return o;
 }
 
-const mp_obj_type_t zip_type = {
+const mp_obj_type_t mp_type_zip = {
     { &mp_type_type },
     .name = MP_QSTR_zip,
     .make_new = zip_make_new,

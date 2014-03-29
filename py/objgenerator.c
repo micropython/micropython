@@ -22,7 +22,7 @@ typedef struct _mp_obj_gen_wrap_t {
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_t self_fun = self->fun;
-    assert(MP_OBJ_IS_TYPE(self_fun, &fun_bc_type));
+    assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
     int bc_n_args;
     const byte *bc_code;
     mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_code);
@@ -36,7 +36,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     return mp_obj_new_gen_instance(bc_code, n_args, args);
 }
 
-const mp_obj_type_t gen_wrap_type = {
+const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
@@ -44,7 +44,7 @@ const mp_obj_type_t gen_wrap_type = {
 
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
     mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
-    o->base.type = &gen_wrap_type;
+    o->base.type = &mp_type_gen_wrap;
     o->fun = fun;
     return o;
 }
@@ -200,7 +200,7 @@ STATIC const mp_map_elem_t gen_instance_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
-const mp_obj_type_t gen_instance_type = {
+const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
@@ -227,7 +227,7 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_
     bytecode += 1;
 
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack));
-    o->base.type = &gen_instance_type;
+    o->base.type = &mp_type_gen_instance;
     o->code_info = bytecode;
     o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state

@@ -55,7 +55,7 @@ void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args
 }
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &fun_native_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_native));
     mp_obj_fun_native_t *self = self_in;
 
     // check number of arguments
@@ -99,7 +99,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
     }
 }
 
-const mp_obj_type_t fun_native_type = {
+const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
@@ -108,7 +108,7 @@ const mp_obj_type_t fun_native_type = {
 // fun must have the correct signature for n_args fixed arguments
 mp_obj_t rt_make_function_n(int n_args, void *fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args;
     o->n_args_max = n_args;
@@ -118,7 +118,7 @@ mp_obj_t rt_make_function_n(int n_args, void *fun) {
 
 mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = MP_OBJ_FUN_ARGS_MAX;
@@ -129,7 +129,7 @@ mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
 // min and max are inclusive
 mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = n_args_max;
@@ -297,7 +297,7 @@ arg_error:
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
-const mp_obj_type_t fun_bc_type = {
+const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_bc_call,
@@ -318,7 +318,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
         n_extra_args += 1;
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
-    o->base.type = &fun_bc_type;
+    o->base.type = &mp_type_fun_bc;
     o->globals = rt_globals_get();
     o->args = args;
     o->n_args = n_args;
@@ -333,7 +333,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
 }
 
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code) {
-    assert(MP_OBJ_IS_TYPE(self_in, &fun_bc_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_bc));
     mp_obj_fun_bc_t *self = self_in;
     *n_args = self->n_args;
     *code = self->bytecode;
@@ -379,7 +379,7 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         mp_obj_t *items;
         mp_obj_tuple_get(obj, &len, &items);
         return (machine_uint_t)items;
-    } else if (MP_OBJ_IS_TYPE(obj, &list_type)) {
+    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_list)) {
         // pointer to start of list (could pass length, but then could use len(x) for that)
         uint len;
         mp_obj_t *items;
@@ -423,7 +423,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
     return convert_val_from_inline_asm(ret);
 }
 
-STATIC const mp_obj_type_t fun_asm_type = {
+STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
@@ -431,7 +431,7 @@ STATIC const mp_obj_type_t fun_asm_type = {
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
-    o->base.type = &fun_asm_type;
+    o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;
     o->fun = fun;
     return o;

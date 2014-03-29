@@ -16,7 +16,7 @@
 
 STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &int_type;
+    o->base.type = &mp_type_int;
     mpz_init_zero(&o->mpz);
     return o;
 }
@@ -54,7 +54,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
-    } else if (MP_OBJ_IS_TYPE(lhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
         zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
     } else {
         return MP_OBJ_NULL;
@@ -64,7 +64,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
     } else {
         return MP_OBJ_NULL;

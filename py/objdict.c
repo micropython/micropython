@@ -105,7 +105,7 @@ mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t dict_it_type = {
+STATIC const mp_obj_type_t mp_type_dict_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .iternext = dict_it_iternext,
@@ -113,7 +113,7 @@ STATIC const mp_obj_type_t dict_it_type = {
 
 STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur) {
     mp_obj_dict_it_t *o = m_new_obj(mp_obj_dict_it_t);
-    o->base.type = &dict_it_type;
+    o->base.type = &mp_type_dict_it;
     o->dict = dict;
     o->cur = cur;
     return o;
@@ -127,7 +127,7 @@ STATIC mp_obj_t dict_getiter(mp_obj_t o_in) {
 /* dict methods                                                               */
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
 
     mp_map_clear(&self->map);
@@ -137,7 +137,7 @@ STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     mp_obj_dict_t *other = mp_obj_new_dict(self->map.alloc);
     other->map.used = self->map.used;
@@ -203,7 +203,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
 
 STATIC mp_obj_t dict_get(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+    assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
@@ -214,7 +214,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
 STATIC mp_obj_t dict_pop(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+    assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
@@ -226,7 +226,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
 STATIC mp_obj_t dict_setdefault(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_TYPE(args[0], &dict_type));
+    assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
     return dict_get_helper(&((mp_obj_dict_t *)args[0])->map,
                            args[1],
@@ -237,7 +237,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setde
 
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     if (self->map.used == 0) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
@@ -256,7 +256,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
 STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     /* TODO: check for the "keys" method */
     mp_obj_t iter = rt_getiter(iterable);
@@ -394,7 +394,7 @@ mp_obj_t mp_obj_new_dict_view(mp_obj_dict_t *dict, mp_dict_view_kind_t kind) {
 }
 
 STATIC mp_obj_t dict_view(mp_obj_t self_in, mp_dict_view_kind_t kind) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     return mp_obj_new_dict_view(self, kind);
 }
@@ -433,7 +433,7 @@ STATIC const mp_map_elem_t dict_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
 
-const mp_obj_type_t dict_type = {
+const mp_obj_type_t mp_type_dict = {
     { &mp_type_type },
     .name = MP_QSTR_dict,
     .print = dict_print,
@@ -446,7 +446,7 @@ const mp_obj_type_t dict_type = {
 
 mp_obj_t mp_obj_new_dict(int n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
-    o->base.type = &dict_type;
+    o->base.type = &mp_type_dict;
     mp_map_init(&o->map, n_args);
     return o;
 }
@@ -456,14 +456,14 @@ uint mp_obj_dict_len(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;
 }
 
 mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     return &self->map;
 }

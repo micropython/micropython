@@ -68,7 +68,7 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
             } else {
                 type = mp_obj_get_type(args[0]);
             }
-            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
+            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
                 map = mp_obj_dict_get_map(type->locals_dict);
             }
         }

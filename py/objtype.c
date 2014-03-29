@@ -31,7 +31,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
     for (;;) {
         if (type->locals_dict != NULL) {
             // search locals_dict (the set of methods/attributes)
-            assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
+            assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
             mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
@@ -324,7 +324,7 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
 
     if (self->locals_dict != NULL) {
-        assert(MP_OBJ_IS_TYPE(self->locals_dict, &dict_type)); // Micro Python restriction, for now
+        assert(MP_OBJ_IS_TYPE(self->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
         mp_map_t *locals_map = mp_obj_dict_get_map(self->locals_dict);
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         // note that locals_map may be in ROM, so add will fail in that case
@@ -349,7 +349,7 @@ const mp_obj_type_t mp_type_type = {
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // Micro Python restriction, for now
-    assert(MP_OBJ_IS_TYPE(locals_dict, &dict_type)); // Micro Python restriction, for now
+    assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // Micro Python restriction, for now
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
     o->base.type = &mp_type_type;
     o->name = name;
@@ -394,7 +394,7 @@ STATIC mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
 // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    assert(MP_OBJ_IS_TYPE(self_in, &super_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_super));
     mp_obj_super_t *self = self_in;
 
     assert(MP_OBJ_IS_TYPE(self->type, &mp_type_type));
@@ -437,7 +437,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t super_type = {
+const mp_obj_type_t mp_type_super = {
     { &mp_type_type },
     .name = MP_QSTR_super,
     .print = super_print,
@@ -447,7 +447,7 @@ const mp_obj_type_t super_type = {
 
 mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
-    *o = (mp_obj_super_t){{&super_type}, type, obj};
+    *o = (mp_obj_super_t){{&mp_type_super}, type, obj};
     return o;
 }
 

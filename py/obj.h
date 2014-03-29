@@ -36,8 +36,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
 #define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
 #define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
-#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &int_type))
-#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &str_type))
+#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
+#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
@@ -50,7 +50,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_native_t obj_name
 
-#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&fun_native_type}, is_kw, n_args_min, n_args_max, (void *)fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&mp_type_fun_native}, is_kw, n_args_min, n_args_max, (void *)fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 0, 0, (mp_fun_0_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 1, 1, (mp_fun_1_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 2, 2, (mp_fun_2_t)fun_name)
@@ -64,7 +64,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) \
     const mp_obj_dict_t dict_name = { \
-        .base = {&dict_type}, \
+        .base = {&mp_type_dict}, \
         .map = { \
             .all_keys_are_qstrs = 1, \
             .table_is_fixed_array = 1, \
@@ -197,6 +197,31 @@ typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
+extern const mp_obj_type_t mp_type_object;
+extern const mp_obj_type_t mp_type_NoneType;
+extern const mp_obj_type_t mp_type_bool;
+extern const mp_obj_type_t mp_type_int;
+extern const mp_obj_type_t mp_type_str;
+extern const mp_obj_type_t mp_type_bytes;
+extern const mp_obj_type_t mp_type_float;
+extern const mp_obj_type_t mp_type_complex;
+extern const mp_obj_type_t mp_type_tuple;
+extern const mp_obj_type_t mp_type_list;
+extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict implementation detail)
+extern const mp_obj_type_t mp_type_enumerate;
+extern const mp_obj_type_t mp_type_filter;
+extern const mp_obj_type_t mp_type_dict;
+extern const mp_obj_type_t mp_type_set;
+extern const mp_obj_type_t mp_type_slice;
+extern const mp_obj_type_t mp_type_zip;
+extern const mp_obj_type_t mp_type_array;
+extern const mp_obj_type_t mp_type_super;
+extern const mp_obj_type_t mp_type_gen_instance;
+extern const mp_obj_type_t mp_type_fun_native;
+extern const mp_obj_type_t mp_type_fun_bc;
+extern const mp_obj_type_t mp_type_module;
+extern const mp_obj_type_t mp_type_staticmethod;
+extern const mp_obj_type_t mp_type_classmethod;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -299,14 +324,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
 
-// object
-extern const mp_obj_type_t mp_type_object;
-
-// none
-extern const mp_obj_type_t mp_type_NoneType;
-
 // bool
-extern const mp_obj_type_t mp_type_bool;
 #define MP_BOOL(x) (x ? mp_const_true : mp_const_false)
 
 // cell
@@ -314,7 +332,6 @@ mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 
 // int
-extern const mp_obj_type_t int_type;
 // For long int, returns value truncated to machine_int_t
 machine_int_t mp_obj_int_get(mp_obj_t self_in);
 #if MICROPY_ENABLE_FLOAT
@@ -333,7 +350,6 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 
 // str
-extern const mp_obj_type_t str_type;
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);
 mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in);
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
@@ -344,66 +360,43 @@ const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need t
 const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len);
 void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len);
 
-// bytes
-extern const mp_obj_type_t bytes_type;
-
 #if MICROPY_ENABLE_FLOAT
 // float
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
 } mp_obj_float_t;
-extern const mp_obj_type_t mp_type_float;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs);
 
 // complex
-extern const mp_obj_type_t mp_type_complex;
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in);
 #endif
 
 // tuple
-extern const mp_obj_type_t mp_type_tuple;
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
-extern const mp_obj_type_t list_type;
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, struct _mp_map_t *kwargs);
 
-// map (the python builtin, not the dict implementation detail)
-extern const mp_obj_type_t map_type;
-
-// enumerate
-extern const mp_obj_type_t enumerate_type;
-
-// filter
-extern const mp_obj_type_t filter_type;
-
 // dict
-extern const mp_obj_type_t dict_type;
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 struct _mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 
 // set
-extern const mp_obj_type_t set_type;
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice
-extern const mp_obj_type_t slice_type;
 void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
 
-// zip
-extern const mp_obj_type_t zip_type;
-
 // array
-extern const mp_obj_type_t mp_type_array;
 uint mp_obj_array_len(mp_obj_t self_in);
 mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items);
 
@@ -420,18 +413,10 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
     // such functions won't be able to access the global scope, but that's probably okay
 } mp_obj_fun_native_t;
 
-extern const mp_obj_type_t fun_native_type;
-extern const mp_obj_type_t fun_bc_type;
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
-
-// super
-extern const mp_obj_type_t super_type;
-
-// generator
-extern const mp_obj_type_t gen_instance_type;
 
 // module
 typedef struct _mp_obj_module_t {
@@ -439,14 +424,9 @@ typedef struct _mp_obj_module_t {
     qstr name;
     struct _mp_map_t *globals;
 } mp_obj_module_t;
-extern const mp_obj_type_t mp_type_module;
 struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
-
-extern const mp_obj_type_t mp_type_staticmethod;
-extern const mp_obj_type_t mp_type_classmethod;
-
 // this structure is used for instances of both staticmethod and classmethod
 typedef struct _mp_obj_static_class_method_t {
     mp_obj_base_t base;

@@ -558,7 +558,7 @@ mp_obj_t rt_store_set(mp_obj_t set, mp_obj_t item) {
 // unpacked items are stored in reverse order into the array pointed to by items
 void rt_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     uint seq_len;
-    if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &list_type)) {
+    if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
             mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
@@ -646,7 +646,7 @@ STATIC void rt_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             // generic method lookup if type didn't provide a specific one
             // this is a lookup in the object (ie not class or type)
             if (type->locals_dict != NULL) {
-                assert(MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)); // Micro Python restriction, for now
+                assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
                 mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
                 if (elem != NULL) {
@@ -703,10 +703,10 @@ void rt_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 void rt_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
-    if (MP_OBJ_IS_TYPE(base, &list_type)) {
+    if (MP_OBJ_IS_TYPE(base, &mp_type_list)) {
         // list store
         mp_obj_list_store(base, index, value);
-    } else if (MP_OBJ_IS_TYPE(base, &dict_type)) {
+    } else if (MP_OBJ_IS_TYPE(base, &mp_type_dict)) {
         // dict store
         mp_obj_dict_store(base, index, value);
     } else {

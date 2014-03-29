@@ -13,9 +13,9 @@
 
 mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return (mp_obj_t)&int_type;
+        return (mp_obj_t)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
-        return (mp_obj_t)&str_type;
+        return (mp_obj_t)&mp_type_str;
     } else {
         mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;
@@ -81,7 +81,7 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (machine_int_t)o_in;
-    } else if (MP_OBJ_IS_TYPE(o_in, &fun_native_type) || MP_OBJ_IS_TYPE(o_in, &fun_bc_type)) {
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_fun_native) || MP_OBJ_IS_TYPE(o_in, &mp_type_fun_bc)) {
         return (machine_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);
@@ -116,7 +116,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
                 return val == 0;
             } else if (o2 == mp_const_true) {
                 return val == 1;
-            } else if (MP_OBJ_IS_TYPE(o2, &int_type)) {
+            } else if (MP_OBJ_IS_TYPE(o2, &mp_type_int)) {
                 // If o2 is long int, dispatch to its virtual methods
                 mp_obj_base_t *o = o2;
                 if (o->type->binary_op != NULL) {
@@ -161,7 +161,7 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
@@ -176,7 +176,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_as_float(arg);
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         return mp_obj_float_get(arg);
@@ -209,7 +209,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
-    } else if (MP_OBJ_IS_TYPE(o, &list_type)) {
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
@@ -217,7 +217,7 @@ void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
 }
 
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
-    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple) || MP_OBJ_IS_TYPE(o, &list_type)) {
+    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple) || MP_OBJ_IS_TYPE(o, &mp_type_list)) {
         uint seq_len;
         if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
             mp_obj_tuple_get(o, &seq_len, items);
