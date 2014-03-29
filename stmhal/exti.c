@@ -66,6 +66,8 @@
 // There is also a C API, so that drivers which require EXTI interrupt lines
 // can also use this code. See exti.h for the available functions and
 // usrsw.h for an example of using this.
+//
+// TODO Add python method to change callback object.
 
 #define EXTI_OFFSET	(EXTI_BASE - PERIPH_BASE)
 
@@ -302,6 +304,7 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
+                // TODO need to wrap this in an nlr_buf; really need a general function for this
                 rt_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
             }
         }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <stm32f4xx_hal.h>
 
@@ -59,8 +60,12 @@
 #define LCD_INSTR (0)
 #define LCD_DATA (1)
 
+static void lcd_delay(void) {
+    __asm volatile ("nop\nnop");
+}
+
 static void lcd_out(int instr_data, uint8_t i) {
-    HAL_Delay(0);
+    lcd_delay();
     PYB_LCD_PORT->BSRRH = PYB_LCD_CS1_PIN; // CS=0; enable
     if (instr_data == LCD_INSTR) {
         PYB_LCD_PORT->BSRRH = PYB_LCD_A0_PIN; // A0=0; select instr reg
@@ -69,7 +74,7 @@ static void lcd_out(int instr_data, uint8_t i) {
     }
     // send byte bigendian, latches on rising clock
     for (uint32_t n = 0; n < 8; n++) {
-        HAL_Delay(0);
+        lcd_delay();
         PYB_LCD_PORT->BSRRH = PYB_LCD_SCL_PIN; // SCL=0
         if ((i & 0x80) == 0) {
             PYB_LCD_PORT->BSRRH = PYB_LCD_SI_PIN; // SI=0
@@ -77,7 +82,7 @@ static void lcd_out(int instr_data, uint8_t i) {
             PYB_LCD_PORT->BSRRL = PYB_LCD_SI_PIN; // SI=1
         }
         i <<= 1;
-        HAL_Delay(0);
+        lcd_delay();
         PYB_LCD_PORT->BSRRL = PYB_LCD_SCL_PIN; // SCL=1
     }
     PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN; // CS=1; disable
