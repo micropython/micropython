@@ -195,6 +195,9 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         *real = MP_OBJ_SMALL_INT_VALUE(arg);
         *imag = 0;
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+        *real = mp_obj_int_as_float(arg);
+        *imag = 0;
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;

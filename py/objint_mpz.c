@@ -57,6 +57,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
         zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
     } else {
+        // unsupported type
         return MP_OBJ_NULL;
     }
 
@@ -66,7 +67,14 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         zrhs = &z_int;
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
+#if MICROPY_ENABLE_FLOAT
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_float)) {
+        return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
+        return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
+#endif
     } else {
+        // unsupported type
         return MP_OBJ_NULL;
     }
 
