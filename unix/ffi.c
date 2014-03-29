@@ -47,13 +47,13 @@ typedef struct _mp_obj_fficallback_t {
     ffi_type *params[];
 } mp_obj_fficallback_t;
 
-//static const mp_obj_type_t opaque_type;
-static const mp_obj_type_t ffimod_type;
-static const mp_obj_type_t ffifunc_type;
-static const mp_obj_type_t fficallback_type;
-static const mp_obj_type_t ffivar_type;
+//STATIC const mp_obj_type_t opaque_type;
+STATIC const mp_obj_type_t ffimod_type;
+STATIC const mp_obj_type_t ffifunc_type;
+STATIC const mp_obj_type_t fficallback_type;
+STATIC const mp_obj_type_t ffivar_type;
 
-static ffi_type *char2ffi_type(char c)
+STATIC ffi_type *char2ffi_type(char c)
 {
     switch (c) {
         case 'b': return &ffi_type_schar;
@@ -69,7 +69,7 @@ static ffi_type *char2ffi_type(char c)
     }
 }
 
-static ffi_type *get_ffi_type(mp_obj_t o_in)
+STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
 {
     if (MP_OBJ_IS_STR(o_in)) {
         uint len;
@@ -84,7 +84,7 @@ static ffi_type *get_ffi_type(mp_obj_t o_in)
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unknown type"));
 }
 
-static mp_obj_t return_ffi_value(ffi_arg val, char type)
+STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
 {
     switch (type) {
         case 's': {
@@ -100,19 +100,19 @@ static mp_obj_t return_ffi_value(ffi_arg val, char type)
 
 // FFI module
 
-static void ffimod_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffimod_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_ffimod_t *self = self_in;
     print(env, "<ffimod %p>", self->handle);
 }
 
-static mp_obj_t ffimod_close(mp_obj_t self_in) {
+STATIC mp_obj_t ffimod_close(mp_obj_t self_in) {
     mp_obj_ffimod_t *self = self_in;
     dlclose(self->handle);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
 
-static mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
     mp_obj_ffimod_t *self = args[0];
     const char *rettype = mp_obj_str_get_str(args[1]);
     const char *symname = mp_obj_str_get_str(args[2]);
@@ -131,7 +131,7 @@ static mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
     mp_obj_t iterable = rt_getiter(args[3]);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
         o->params[i++] = get_ffi_type(item);
     }
 
@@ -144,7 +144,7 @@ static mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ffimod_func_obj, 4, 4, ffimod_func);
 
-static void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
+STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     mp_obj_t pyargs[cif->nargs];
     for (int i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(int*)args[i]);
@@ -154,7 +154,7 @@ static void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     *(ffi_arg*)ret = mp_obj_int_get(res);
 }
 
-static mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
+STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
     const char *rettype = mp_obj_str_get_str(rettype_in);
 
     int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
@@ -168,7 +168,7 @@ static mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
     mp_obj_t iterable = rt_getiter(paramtypes_in);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
         o->params[i++] = get_ffi_type(item);
     }
 
@@ -186,7 +186,7 @@ static mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_callback_obj, mod_ffi_callback);
 
-static mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symname_in) {
+STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symname_in) {
     mp_obj_ffimod_t *self = self_in;
     const char *rettype = mp_obj_str_get_str(vartype_in);
     const char *symname = mp_obj_str_get_str(symname_in);
@@ -204,7 +204,7 @@ static mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 }
 MP_DEFINE_CONST_FUN_OBJ_3(ffimod_var_obj, ffimod_var);
 
-static mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     const char *fname = mp_obj_str_get_str(args[0]);
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
@@ -217,7 +217,7 @@ static mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return o;
 }
 
-static const mp_map_elem_t ffimod_locals_dict_table[] = {
+STATIC const mp_map_elem_t ffimod_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_func), (mp_obj_t) &ffimod_func_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_var), (mp_obj_t) &ffimod_var_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t) &ffimod_close_obj },
@@ -225,7 +225,7 @@ static const mp_map_elem_t ffimod_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ffimod_locals_dict, ffimod_locals_dict_table);
 
-static const mp_obj_type_t ffimod_type = {
+STATIC const mp_obj_type_t ffimod_type = {
     { &mp_type_type },
     .name = MP_QSTR_ffimod,
     .print = ffimod_print,
@@ -235,7 +235,7 @@ static const mp_obj_type_t ffimod_type = {
 
 // FFI function
 
-static void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_ffifunc_t *self = self_in;
     print(env, "<ffifunc %p>", self->func);
 }
@@ -271,7 +271,7 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     return return_ffi_value(retval, self->rettype);
 }
 
-static const mp_obj_type_t ffifunc_type = {
+STATIC const mp_obj_type_t ffifunc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
@@ -280,12 +280,12 @@ static const mp_obj_type_t ffifunc_type = {
 
 // FFI callback for Python function
 
-static void fficallback_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void fficallback_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_fficallback_t *self = self_in;
     print(env, "<fficallback %p>", self->func);
 }
 
-static const mp_obj_type_t fficallback_type = {
+STATIC const mp_obj_type_t fficallback_type = {
     { &mp_type_type },
     .name = MP_QSTR_fficallback,
     .print = fficallback_print,
@@ -293,41 +293,42 @@ static const mp_obj_type_t fficallback_type = {
 
 // FFI variable
 
-static void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_ffivar_t *self = self_in;
     print(env, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);
 }
 
-static mp_obj_t ffivar_get(mp_obj_t self_in) {
+STATIC mp_obj_t ffivar_get(mp_obj_t self_in) {
     mp_obj_ffivar_t *self = self_in;
     return mp_binary_get_val(self->type, self->var, 0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ffivar_get_obj, ffivar_get);
 
-static mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
+STATIC mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
     mp_obj_ffivar_t *self = self_in;
     mp_binary_set_val(self->type, self->var, 0, val_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffivar_set_obj, ffivar_set);
 
-static const mp_method_t ffivar_type_methods[] = {
-        { "get", &ffivar_get_obj },
-        { "set", &ffivar_set_obj },
-        { NULL, NULL },
+STATIC const mp_map_elem_t ffivar_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&ffivar_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&ffivar_set_obj },
 };
 
-static const mp_obj_type_t ffivar_type = {
+STATIC MP_DEFINE_CONST_DICT(ffivar_locals_dict, ffivar_locals_dict_table);
+
+STATIC const mp_obj_type_t ffivar_type = {
     { &mp_type_type },
     .name = MP_QSTR_ffivar,
     .print = ffivar_print,
-    .methods = ffivar_type_methods,
+    .locals_dict = (mp_obj_t)&ffivar_locals_dict,
 };
 
 // Generic opaque storage object (unused)
 
 /*
-static const mp_obj_type_t opaque_type = {
+STATIC const mp_obj_type_t opaque_type = {
     { &mp_type_type },
     .name = MP_QSTR_opaqueval,
 //    .print = opaque_print,
