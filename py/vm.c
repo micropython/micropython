@@ -445,7 +445,7 @@ dispatch_loop:
                                 // on value stack)
                                 assert(exc_sp >= exc_stack);
                                 assert(exc_sp->opcode == MP_BC_SETUP_WITH);
-                                exc_sp--;
+                                POP_EXC_BLOCK();
                                 PUSH(mp_const_none);
                             }
                         } else {
