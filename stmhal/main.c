@@ -16,10 +16,10 @@
 #include "obj.h"
 #include "parsehelper.h"
 #include "compile.h"
-#include "runtime0.h"
 #include "runtime.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "readline.h"
 #include "pyexec.h"
 #include "usart.h"
 #include "led.h"
@@ -209,6 +209,8 @@ soft_reset:
     def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_src);
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
     sys_path = mp_obj_new_list(3, def_path);
+
+    readline_init();
 
     exti_init();
 

@@ -71,6 +71,8 @@ SRC_C = \
 	math.c \
 	malloc0.c \
 	gccollect.c \
+	pybstdio.c \
+	readline.c \
 	pyexec.c \
 	help.c \
 	input.c \

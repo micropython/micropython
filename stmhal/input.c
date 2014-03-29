@@ -3,9 +3,8 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "readline.h"
 #include "usb.h"
-
-extern int readline(vstr_t *line, const char *prompt);
 
 STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {

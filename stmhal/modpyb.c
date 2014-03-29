@@ -11,6 +11,7 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"
+#include "pybstdio.h"
 #include "pyexec.h"
 #include "led.h"
 #include "gpio.h"
@@ -201,8 +202,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 #if 0
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_I2C_obj, pyb_I2C); // TODO put this in i2c.c
 #endif
-
-extern int stdin_rx_chr(void);
 
 STATIC mp_obj_t pyb_input(void ) {
     return mp_obj_new_int(stdin_rx_chr());
