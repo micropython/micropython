@@ -415,8 +415,8 @@ unwind_jump:
                         // if TOS is None, just pops it and continues
                         // if TOS is an integer, does something else
                         // else error
-                        if (mp_obj_is_exception_instance(TOP())) {
-                            nlr_jump(TOP());
+                        if (mp_obj_is_exception_type(TOP())) {
+                            nlr_jump(sp[-1]);
                         }
                         if (TOP() == mp_const_none) {
                             sp--;
@@ -716,7 +716,7 @@ unwind_return:
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
-                PUSH(nlr.ret_val); // TODO should be type(nlr.ret_val), I think...
+                PUSH(mp_obj_get_type(nlr.ret_val));
 
             } else {
                 // propagate exception to higher level
