@@ -16,6 +16,8 @@ Q(__qualname__)
 Q(__repl_print__)
 
 Q(__bool__)
+Q(__enter__)
+Q(__exit__)
 Q(__len__)
 Q(__iter__)
 Q(__getitem__)
