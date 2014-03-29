@@ -44,6 +44,14 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
+#define SETUP_BLOCK() \
+    DECODE_ULABEL; /* except labels are always forward */ \
+    ++exc_sp; \
+    exc_sp->opcode = op; \
+    exc_sp->handler = ip + unum; \
+    exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
+    currently_in_except_block = 0; /* in a try block now */
+
 mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
     const byte *ip = code;
 
@@ -398,12 +406,7 @@ unwind_jump:
                     // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                     case MP_BC_SETUP_EXCEPT:
                     case MP_BC_SETUP_FINALLY:
-                        DECODE_ULABEL; // except labels are always forward
-                        ++exc_sp;
-                        exc_sp->opcode = op;
-                        exc_sp->handler = ip + unum;
-                        exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block);
-                        currently_in_except_block = 0; // in a try block now
+                        SETUP_BLOCK();
                         break;
 
                     case MP_BC_END_FINALLY:
