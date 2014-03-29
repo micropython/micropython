@@ -102,9 +102,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 
 void usb_hid_send_report(uint8_t *buf) {
 #ifdef USE_DEVICE_MODE
-    #if 0
-    USBD_HID_SendReport(&USB_OTG_Core, buf, 4);
-    #endif
+    USBD_HID_SendReport(&hUSBDDevice, buf, 4);
 #endif
 }
 

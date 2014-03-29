@@ -28,9 +28,7 @@
 #include "servo.h"
 #include "dac.h"
 #include "i2c.h"
-#if 0
 #include "usb.h"
-#endif
 #include "modpyb.h"
 #include "ff.h"
 
@@ -185,15 +183,14 @@ STATIC mp_obj_t pyb_standby(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
 STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
-#if 0
-    mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
+    mp_obj_t *items;
+    mp_obj_get_array_fixed_n(arg, 4, &items);
     uint8_t data[4];
     data[0] = mp_obj_get_int(items[0]);
     data[1] = mp_obj_get_int(items[1]);
     data[2] = mp_obj_get_int(items[2]);
     data[3] = mp_obj_get_int(items[3]);
     usb_hid_send_report(data);
-#endif
     return mp_const_none;
 }
 
@@ -267,9 +264,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_accel_type },
 #endif
 
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
-#endif
 
     // input
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&pyb_input_obj },
