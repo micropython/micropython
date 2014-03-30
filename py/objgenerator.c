@@ -58,12 +58,12 @@ typedef struct _mp_obj_gen_instance_t {
     const byte *ip;
     mp_obj_t *sp;
     // bit 0 is saved currently_in_except_block value
-    mp_exc_stack *exc_sp;
+    mp_exc_stack_t *exc_sp;
     uint n_state;
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
-    mp_exc_stack exc_state[0];
+    mp_exc_stack_t exc_state[0];
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -88,7 +88,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         *self->sp = send_value;
     }
     mp_vm_return_kind_t ret_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
-        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack*)(self->state + self->n_state),
+        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack_t*)(self->state + self->n_state),
         &self->exc_sp, throw_value);
 
     switch (ret_kind) {
@@ -226,12 +226,12 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_
     assert(bytecode[0] == 0);
     bytecode += 1;
 
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack));
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
     o->code_info = bytecode;
     o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
-    o->exc_sp = (mp_exc_stack*)(o->state + n_state) - 1;
+    o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;
     o->n_state = n_state;
 
     // copy args to end of state array, in reverse (that's how mp_execute_byte_code_2 needs it)

@@ -79,12 +79,12 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
-    mp_exc_stack exc_state[4];
-    mp_exc_stack *exc_stack = &exc_state[0];
+    mp_exc_stack_t exc_state[4];
+    mp_exc_stack_t *exc_stack = &exc_state[0];
     if (n_exc_stack > 4) {
-        exc_stack = m_new(mp_exc_stack, n_exc_stack);
+        exc_stack = m_new(mp_exc_stack_t, n_exc_stack);
     }
-    mp_exc_stack *exc_sp = &exc_stack[0] - 1;
+    mp_exc_stack_t *exc_sp = &exc_stack[0] - 1;
 
     // init args
     for (uint i = 0; i < n_args; i++) {
@@ -130,7 +130,7 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
 mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out,
                                            mp_obj_t *fastn, mp_obj_t **sp_in_out,
-                                           mp_exc_stack *exc_stack, mp_exc_stack **exc_sp_in_out,
+                                           mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
                                            volatile mp_obj_t inject_exc) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
@@ -142,7 +142,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     nlr_buf_t nlr;
 
     volatile bool currently_in_except_block = MP_TAGPTR_TAG(*exc_sp_in_out); // 0 or 1, to detect nested exceptions
-    mp_exc_stack *volatile exc_sp = MP_TAGPTR_PTR(*exc_sp_in_out); // stack grows up, exc_sp points to top of stack
+    mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(*exc_sp_in_out); // stack grows up, exc_sp points to top of stack
     const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
 
     // outer exception handling loop
@@ -702,7 +702,7 @@ unwind_return:
                         if (unum == 0) {
                             // search for the inner-most previous exception, to reraise it
                             obj1 = MP_OBJ_NULL;
-                            for (mp_exc_stack *e = exc_sp; e >= exc_stack; e--) {
+                            for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; e--) {
                                 if (e->prev_exc != MP_OBJ_NULL) {
                                     obj1 = e->prev_exc;
                                     break;

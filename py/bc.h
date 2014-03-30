@@ -14,10 +14,10 @@ typedef struct _mp_exc_stack {
     // We might only have 2 interesting cases here: SETUP_EXCEPT & SETUP_FINALLY,
     // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
     byte opcode;
-} mp_exc_stack;
+} mp_exc_stack_t;
 
 mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret);
-mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out, mp_exc_stack *exc_stack, mp_exc_stack **exc_sp_in_out, volatile mp_obj_t inject_exc);
+mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out, mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out, volatile mp_obj_t inject_exc);
 void mp_byte_code_print(const byte *code, int len);
 
 // Helper macros to access pointer with least significant bit holding a flag
