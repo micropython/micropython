@@ -136,6 +136,8 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (o1 == o2) {
         return true;
+    } else if (o1 == mp_const_none || o2 == mp_const_none) {
+        return false;
     } else if (MP_OBJ_IS_SMALL_INT(o1) || MP_OBJ_IS_SMALL_INT(o2)) {
         if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
             return false;
