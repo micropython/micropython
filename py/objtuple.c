@@ -30,7 +30,7 @@ void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
     print(env, ")");
 }
 
-STATIC mp_obj_t tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -175,7 +175,7 @@ const mp_obj_type_t mp_type_tuple = {
     { &mp_type_type },
     .name = MP_QSTR_tuple,
     .print = tuple_print,
-    .make_new = tuple_make_new,
+    .make_new = mp_obj_tuple_make_new,
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
     .getiter = tuple_getiter,

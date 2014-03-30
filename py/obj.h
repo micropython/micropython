@@ -422,6 +422,7 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
+mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 // list
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
@@ -485,7 +486,7 @@ typedef struct _mp_obj_static_class_method_t {
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
 bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
 #define m_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
-#define m_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, len1 * sizeof(item_t)); memcpy(dest + len1, src2, len2 * sizeof(item_t)); }
+#define m_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2);
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
