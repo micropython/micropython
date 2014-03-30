@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
 #include "objmodule.h"
 #include "parsenum.h"
 #include "runtime0.h"
@@ -501,6 +502,148 @@ mp_obj_t mp_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args) {
     DEBUG_OP_printf("call method (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p)\n", args[0], args[1], n_args, n_kw, args);
     int adjust = (args[1] == NULL) ? 0 : 1;
     return mp_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
+}
+
+mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_t *args, mp_obj_t pos_seq, mp_obj_t kw_dict) {
+    mp_obj_t fun = *args++;
+    mp_obj_t self = MP_OBJ_NULL;
+    if (have_self) {
+        self = *args++; // may be MP_OBJ_NULL
+    }
+    uint n_args = n_args_n_kw & 0xff;
+    uint n_kw = (n_args_n_kw >> 8) & 0xff;
+
+    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p, dict=%p)\n", fun, self, n_args, n_kw, args, pos_seq, kw_dict);
+
+    // We need to create the following array of objects:
+    //     args[0 .. n_args]  unpacked(pos_seq)  args[n_args .. n_args + 2 * n_kw]  unpacked(kw_dict)
+    // TODO: optimize one day to avoid constructing new arg array? Will be hard.
+
+    // The new args array
+    mp_obj_t *args2;
+    uint args2_alloc;
+    uint args2_len = 0;
+
+    // Try to get a hint for the size of the kw_dict
+    uint kw_dict_len = 0;
+    if (kw_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(kw_dict, &mp_type_dict)) {
+        kw_dict_len = mp_obj_dict_len(kw_dict);
+    }
+
+    // Extract the pos_seq sequence to the new args array.
+    // Note that it can be arbitrary iterator.
+    if (pos_seq == MP_OBJ_NULL) {
+        // no sequence
+
+        // allocate memory for the new array of args
+        args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len);
+        args2 = m_new(mp_obj_t, args2_alloc);
+
+        // copy the self
+        if (self != MP_OBJ_NULL) {
+            args2[args2_len++] = self;
+        }
+
+        // copy the fixed pos args
+        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        args2_len += n_args;
+
+    } else if (MP_OBJ_IS_TYPE(pos_seq, &mp_type_tuple) || MP_OBJ_IS_TYPE(pos_seq, &mp_type_list)) {
+        // optimise the case of a tuple and list
+
+        // get the items
+        uint len;
+        mp_obj_t *items;
+        mp_obj_get_array(pos_seq, &len, &items);
+
+        // allocate memory for the new array of args
+        args2_alloc = 1 + n_args + len + 2 * (n_kw + kw_dict_len);
+        args2 = m_new(mp_obj_t, args2_alloc);
+
+        // copy the self
+        if (self != MP_OBJ_NULL) {
+            args2[args2_len++] = self;
+        }
+
+        // copy the fixed and variable position args
+        m_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
+        args2_len += n_args + len;
+
+    } else {
+        // generic iterator
+
+        // allocate memory for the new array of args
+        args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len) + 3;
+        args2 = m_new(mp_obj_t, args2_alloc);
+
+        // copy the self
+        if (self != MP_OBJ_NULL) {
+            args2[args2_len++] = self;
+        }
+
+        // copy the fixed position args
+        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+
+        // extract the variable position args from the iterator
+        mp_obj_t iterable = mp_getiter(pos_seq);
+        mp_obj_t item;
+        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            if (args2_len >= args2_alloc) {
+                args2 = m_renew(mp_obj_t, args2, args2_alloc, args2_alloc * 2);
+                args2_alloc *= 2;
+            }
+            args2[args2_len++] = item;
+        }
+    }
+
+    // The size of the args2 array now is the number of positional args.
+    uint pos_args_len = args2_len;
+
+    // Copy the fixed kw args.
+    m_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
+    args2_len += 2 * n_kw;
+
+    // Extract (key,value) pairs from kw_dict dictionary and append to args2.
+    // Note that it can be arbitrary iterator.
+    if (kw_dict == MP_OBJ_NULL) {
+        // pass
+    } else if (MP_OBJ_IS_TYPE(kw_dict, &mp_type_dict)) {
+        // dictionary
+        mp_map_t *map = mp_obj_dict_get_map(kw_dict);
+        assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
+        for (uint i = 0; i < map->alloc; i++) {
+            if (map->table[i].key != MP_OBJ_NULL) {
+                args2[args2_len++] = map->table[i].key;
+                args2[args2_len++] = map->table[i].value;
+            }
+        }
+    } else {
+        // generic mapping
+        // TODO is calling 'items' on the mapping the correct thing to do here?
+        mp_obj_t dest[2];
+        mp_load_method(kw_dict, MP_QSTR_items, dest);
+        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest));
+        mp_obj_t item;
+        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            if (args2_len + 1 >= args2_alloc) {
+                uint new_alloc = args2_alloc * 2;
+                if (new_alloc < 4) {
+                    new_alloc = 4;
+                }
+                args2 = m_renew(mp_obj_t, args2, args2_alloc, new_alloc);
+                args2_alloc = new_alloc;
+            }
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(item, 2, &items);
+            args2[args2_len++] = items[0];
+            args2[args2_len++] = items[1];
+        }
+    }
+
+    mp_obj_t res = mp_call_function_n_kw(fun, pos_args_len, (args2_len - pos_args_len) / 2, args2);
+    m_del(mp_obj_t, args2, args2_alloc);
+
+    return res;
 }
 
 mp_obj_t mp_build_tuple(int n_args, mp_obj_t *items) {

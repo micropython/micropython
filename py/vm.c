@@ -11,7 +11,6 @@
 #include "bc0.h"
 #include "bc.h"
 #include "objgenerator.h"
-#include "objtuple.h"
 
 // Value stack grows up (this makes it incompatible with native C stack, but
 // makes sure that arguments to functions are in natural order arg1..argN
@@ -672,31 +671,39 @@ unwind_jump:
                         SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                         break;
 
-                    case MP_BC_CALL_FUNCTION_VAR: {
+                    case MP_BC_CALL_FUNCTION_VAR:
                         DECODE_UINT;
                         // unum & 0xff == n_positional
                         // (unum >> 8) & 0xff == n_keyword
                         // We have folowing stack layout here:
-                        // arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
-                        // We need to splice seq after all positional args and before kwargs
-                        // TODO: optimize one day to avoid constructing new arg array? Will be hard.
-                        mp_obj_t seq = POP();
-                        int total_stack_args = (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                        sp -= total_stack_args;
-
-                        // Convert vararg sequence to tuple. Note that it can be arbitrary iterator.
-                        // This is null call for tuple, and TODO: we actually could optimize case of list.
-                        mp_obj_tuple_t *varargs = mp_obj_tuple_make_new(MP_OBJ_NULL, 1, 0, &seq);
-
-                        int pos_args_len = (unum & 0xff) + varargs->len;
-                        mp_obj_t *args = m_new(mp_obj_t, total_stack_args + varargs->len);
-                        m_seq_cat(args, sp + 1, unum & 0xff, varargs->items, varargs->len, mp_obj_t);
-                        m_seq_copy(args + pos_args_len, sp + (unum & 0xff) + 1, ((unum >> 7) & 0x1fe), mp_obj_t);
-
-                        SET_TOP(mp_call_function_n_kw(*sp, pos_args_len, (unum >> 8) & 0xff, args));
-                        m_del(mp_obj_t, args, total_stack_args + varargs->len);
+                        // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, obj1, MP_OBJ_NULL));
                         break;
-                    }
+
+                    case MP_BC_CALL_FUNCTION_KW:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        // We have folowing stack layout here:
+                        // fun arg0 arg1 ... kw0 val0 kw1 val1 ... dict <- TOS
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, MP_OBJ_NULL, obj1));
+                        break;
+
+                    case MP_BC_CALL_FUNCTION_VAR_KW:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        // We have folowing stack layout here:
+                        // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
+                        obj2 = POP();
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, obj1, obj2));
+                        break;
 
                     case MP_BC_CALL_METHOD:
                         DECODE_UINT;
@@ -704,6 +711,40 @@ unwind_jump:
                         // (unum >> 8) & 0xff == n_keyword
                         sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
                         SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
+                        break;
+
+                    case MP_BC_CALL_METHOD_VAR:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        // We have folowing stack layout here:
+                        // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, obj1, MP_OBJ_NULL));
+                        break;
+
+                    case MP_BC_CALL_METHOD_KW:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        // We have folowing stack layout here:
+                        // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... dict <- TOS
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, MP_OBJ_NULL, obj1));
+                        break;
+
+                    case MP_BC_CALL_METHOD_VAR_KW:
+                        DECODE_UINT;
+                        // unum & 0xff == n_positional
+                        // (unum >> 8) & 0xff == n_keyword
+                        // We have folowing stack layout here:
+                        // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
+                        obj2 = POP();
+                        obj1 = POP();
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, obj1, obj2));
                         break;
 
                     case MP_BC_RETURN_VALUE:

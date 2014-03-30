@@ -37,6 +37,7 @@ mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
 mp_obj_t mp_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args);
 mp_obj_t mp_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_t *args, mp_obj_t pos_seq, mp_obj_t kw_dict);
 
 mp_obj_t mp_build_tuple(int n_args, mp_obj_t *items);
 mp_obj_t mp_build_list(int n_args, mp_obj_t *items);
