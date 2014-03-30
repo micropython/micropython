@@ -30,7 +30,9 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
 
     const mp_obj_t *args1, *args2;
     uint len1, len2;
-    assert(mp_obj_fun_prepare_simple_args(self_fun, n_args, n_kw, args, &len1, &args1, &len2, &args2));
+    if (!mp_obj_fun_prepare_simple_args(self_fun, n_args, n_kw, args, &len1, &args1, &len2, &args2)) {
+        assert(0);
+    }
 
     return mp_obj_new_gen_instance(bc_code, len1, args1, len2, args2);
 }
