@@ -119,7 +119,8 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
         case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
 
-        return NULL; // op not supported
+        default:
+            return NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);
 }
