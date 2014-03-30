@@ -1,3 +1,4 @@
+void switch_init0(void);
 void switch_init(void);
 int switch_get(void);
 

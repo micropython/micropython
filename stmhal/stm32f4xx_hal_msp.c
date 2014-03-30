@@ -38,7 +38,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc_msc.h"
+#include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 
 #include "misc.h"

@@ -39,6 +39,17 @@ static mp_obj_t switch_callback(mp_obj_t line) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 
+// this function inits the switch GPIO so that it can be used
+void switch_init0(void) {
+    GPIO_InitTypeDef init;
+    init.Pin = USRSW_PIN.pin_mask;
+    init.Mode = GPIO_MODE_INPUT;
+    init.Pull = USRSW_PULL;
+    init.Speed = GPIO_SPEED_FAST;
+    HAL_GPIO_Init(USRSW_PIN.gpio, &init);
+}
+
+// this function inits the callback and EXTI function of the switch
 void switch_init(void) {
     switch_user_callback_obj = mp_const_none;
     exti_register((mp_obj_t)&USRSW_PIN,

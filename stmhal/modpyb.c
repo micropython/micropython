@@ -208,6 +208,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_input_obj, pyb_input);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
+MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
@@ -220,6 +221,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
