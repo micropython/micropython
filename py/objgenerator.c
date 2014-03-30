@@ -211,6 +211,7 @@ const mp_obj_type_t mp_type_gen_instance = {
 };
 
 mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_t *args) {
+    const byte *code_info = bytecode;
     // get code info size, and skip the line number table
     machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
     bytecode += code_info_size;
@@ -229,7 +230,7 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_
 
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
-    o->code_info = bytecode;
+    o->code_info = code_info;
     o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
     o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;
