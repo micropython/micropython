@@ -331,7 +331,6 @@ mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step);
 mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args, const byte *code);
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
-mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
@@ -462,6 +461,8 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
 } mp_obj_fun_native_t;
 
 void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code);
+bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
+                            uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);

@@ -18,6 +18,8 @@ typedef struct _mp_obj_gen_wrap_t {
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
+mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj_t *args, uint n_args2, const mp_obj_t *args2);
+
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_t self_fun = self->fun;
@@ -25,14 +27,12 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     int bc_n_args;
     const byte *bc_code;
     mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_code);
-    if (n_args != bc_n_args) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", bc_n_args, n_args));
-    }
-    if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
-    }
 
-    return mp_obj_new_gen_instance(bc_code, n_args, args);
+    const mp_obj_t *args1, *args2;
+    uint len1, len2;
+    assert(mp_obj_fun_prepare_simple_args(self_fun, n_args, n_kw, args, &len1, &args1, &len2, &args2));
+
+    return mp_obj_new_gen_instance(bc_code, len1, args1, len2, args2);
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
@@ -220,7 +220,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
-mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_t *args) {
+mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj_t *args, uint n_args2, const mp_obj_t *args2) {
     const byte *code_info = bytecode;
     // get code info size, and skip the line number table
     machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
@@ -247,8 +247,11 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, int n_args, const mp_obj_
     o->n_state = n_state;
 
     // copy args to end of state array, in reverse (that's how mp_execute_byte_code_2 needs it)
-    for (int i = 0; i < n_args; i++) {
+    for (uint i = 0; i < n_args; i++) {
         o->state[n_state - 1 - i] = args[i];
+    }
+    for (uint i = 0; i < n_args2; i++) {
+        o->state[n_state - 1 - n_args - i] = args2[i];
     }
 
     return o;
