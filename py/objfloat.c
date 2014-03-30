@@ -111,13 +111,15 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
-        /* TODO floor(?) the value
+        // TODO: verify that C floor matches Python semantics
         case MP_BINARY_OP_FLOOR_DIVIDE:
-        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
-        */
+        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+            lhs_val = MICROPY_FLOAT_C_FUN(floor)(lhs_val / rhs_val);
+            goto check_zero_division;
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: 
             lhs_val /= rhs_val; 
+check_zero_division:
             if (isinf(lhs_val)){ // check for division by zero
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
             }
