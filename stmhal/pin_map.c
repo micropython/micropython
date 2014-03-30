@@ -23,7 +23,7 @@
 //
 // CPU pins which correspond to the board pins are available
 // as pyb.cpu.Name. For the CPU pins, the names are the port letter
-// followed by the pin number. On the PYBOARD4, pyb.Pin.board.X1 and
+// followed by the pin number. On the PYBV4, pyb.Pin.board.X1 and
 // pyb.Pin.cpu.B6 are the same pin.
 //
 // You can also use strings:

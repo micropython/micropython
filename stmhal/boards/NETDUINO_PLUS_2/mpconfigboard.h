@@ -19,19 +19,16 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
-#define USRSW_PIN           (pin_B11)
-#define USRSW_PULL          (GPIO_NOPULL)
-#define USRSW_EXTI_MODE     (GPIO_MODE_IT_RISING)
-#define USRSW_PRESSED       (1)
+#define MICROPY_HW_USRSW_PIN        (pin_B11)
+#define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
+#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
+#define MICROPY_HW_USRSW_PRESSED    (1)
 
-/* LED */
-#define PYB_LED1        (pin_A10)   // Blue LED
-#define PYB_LED2        (pin_C13)   // White LED (aka Power)
-#define PYB_LED3        (pin_A10)   // Same as Led(1)
-#define PYB_LED4        (pin_C13)   // Same as Led(2)
-
-#define PYB_OTYPE       (GPIO_MODE_OUTPUT_PP)
-
-#define PYB_LED_ON(pin)  (pin->gpio->BSRRL = pin->pin_mask)
-#define PYB_LED_OFF(pin) (pin->gpio->BSRRH = pin->pin_mask)
-
+// LEDs
+#define MICROPY_HW_LED1             (pin_A10)   // Blue LED
+#define MICROPY_HW_LED2             (pin_C13)   // White LED (aka Power)
+#define MICROPY_HW_LED3             (pin_A10)   // Same as Led(1)
+#define MICROPY_HW_LED4             (pin_C13)   // Same as Led(2)
+#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
+#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
+#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)

@@ -41,12 +41,14 @@ DSTATUS disk_initialize (
             storage_init();
             return 0;
 
+#if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
             if (!sdcard_power_on()) {
                 return STA_NODISK;
             }
             // TODO return STA_PROTECT if SD card is read only
             return 0;
+#endif
     }
 
     return STA_NOINIT;
@@ -65,9 +67,11 @@ DSTATUS disk_status (
             // flash is ready
             return 0;
 
+#if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
             // TODO return STA_PROTECT if SD card is read only
             return 0;
+#endif
     }
 
     return STA_NOINIT;
@@ -93,11 +97,13 @@ DRESULT disk_read (
             }
             return RES_OK;
 
+#if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
             if (!sdcard_read_blocks(buff, sector, count)) {
                 return RES_ERROR;
             }
             return RES_OK;
+#endif
     }
 
     return RES_PARERR;
@@ -124,11 +130,13 @@ DRESULT disk_write (
             }
             return RES_OK;
 
+#if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
             if (!sdcard_write_blocks(buff, sector, count)) {
                 return RES_ERROR;
             }
             return RES_OK;
+#endif
     }
 
     return RES_PARERR;
@@ -160,6 +168,7 @@ DRESULT disk_ioctl (
             }
             break;
 
+#if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
             switch (cmd) {
                 case CTRL_SYNC:
@@ -170,6 +179,7 @@ DRESULT disk_ioctl (
                     return RES_OK;
             }
             break;
+#endif
     }
 
     return RES_PARERR;

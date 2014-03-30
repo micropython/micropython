@@ -15,13 +15,13 @@
 #include "build/pins.h"
 
 static const pin_obj_t *gLed[] = {
-    &PYB_LED1,
-#if defined(PYB_LED2)
-    &PYB_LED2,
-#if defined(PYB_LED3)
-    &PYB_LED3,
-#if defined(PYB_LED4)
-    &PYB_LED4,
+    &MICROPY_HW_LED1,
+#if defined(MICROPY_HW_LED2)
+    &MICROPY_HW_LED2,
+#if defined(MICROPY_HW_LED3)
+    &MICROPY_HW_LED3,
+#if defined(MICROPY_HW_LED4)
+    &MICROPY_HW_LED4,
 #endif
 #endif
 #endif
@@ -34,27 +34,27 @@ void led_init(void) {
 
     /* Configure I/O speed, mode, output type and pull */
     GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Mode = PYB_OTYPE;
+    GPIO_InitStructure.Mode = MICROPY_HW_LED_OTYPE;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
 
     /* Turn off LEDs and initialize */
     for (int led = 0; led < NUM_LEDS; led++) {
-        PYB_LED_OFF(gLed[led]);
+        MICROPY_HW_LED_OFF(gLed[led]);
         GPIO_InitStructure.Pin = gLed[led]->pin_mask;
         HAL_GPIO_Init(gLed[led]->gpio, &GPIO_InitStructure);
     }
 
-#if defined(PYBOARD4) || defined(PYBv10)
+#if defined(PYBV4) || defined(PYBV10)
     // LED4 (blue) is on PB4 which is TIM3_CH1
     // we use PWM on this channel to fade the LED
 
     // GPIO configuration
-    GPIO_InitStructure.Pin = PYB_LED4.pin_mask;
+    GPIO_InitStructure.Pin = MICROPY_HW_LED4.pin_mask;
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     GPIO_InitStructure.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(PYB_LED4.gpio, &GPIO_InitStructure);
+    HAL_GPIO_Init(MICROPY_HW_LED4.gpio, &GPIO_InitStructure);
 
     // PWM mode configuration
     TIM_OC_InitTypeDef oc_init;
@@ -73,7 +73,7 @@ void led_state(pyb_led_t led, int state) {
     if (led < 1 || led > NUM_LEDS) {
         return;
     }
-#if defined(PYBOARD4) || defined(PYBv10)
+#if defined(PYBV4) || defined(PYBV10)
     if (led == 4) {
         if (state) {
             TIM3->CCR1 = 0xffff;
@@ -87,10 +87,10 @@ void led_state(pyb_led_t led, int state) {
     //printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
         // turn LED off
-        PYB_LED_OFF(led_pin);
+        MICROPY_HW_LED_OFF(led_pin);
     } else {
         // turn LED on
-        PYB_LED_ON(led_pin);
+        MICROPY_HW_LED_ON(led_pin);
     }
 }
 
@@ -99,7 +99,7 @@ void led_toggle(pyb_led_t led) {
         return;
     }
 
-#if defined(PYBOARD4) || defined(PYBv10)
+#if defined(PYBV4) || defined(PYBV10)
     if (led == 4) {
         if (TIM3->CCR1 == 0) {
             TIM3->CCR1 = 0xffff;
@@ -129,7 +129,7 @@ int led_get_intensity(pyb_led_t led) {
         return 0;
     }
 
-#if defined(PYBOARD4) || defined(PYBv10)
+#if defined(PYBV4) || defined(PYBV10)
     if (led == 4) {
         machine_uint_t i = TIM3->CCR1 * 255 / ((USBD_CDC_POLLING_INTERVAL*1000) - 1);
         if (i > 255) {
@@ -153,7 +153,7 @@ int led_get_intensity(pyb_led_t led) {
 }
 
 void led_set_intensity(pyb_led_t led, machine_int_t intensity) {
-#if defined(PYBOARD4) || defined(PYBv10)
+#if defined(PYBV4) || defined(PYBV10)
     if (led == 4) {
         // set intensity using PWM pulse width
         if (intensity < 0) {

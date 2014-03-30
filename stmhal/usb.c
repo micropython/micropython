@@ -31,11 +31,15 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
         USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
         USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+#if MICROPY_HW_HAS_SDCARD
         if (medium == USB_STORAGE_MEDIUM_FLASH) {
             USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
         } else {
             USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
         }
+#else
+        USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+#endif
         USBD_Start(&hUSBDDevice);
     }
     dev_is_enabled = 1;
