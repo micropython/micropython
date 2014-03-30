@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 
@@ -23,7 +25,13 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
     print(env, "%s", buf);
 #else
-    print(env, "%.8g", (double) o->value);
+    char buf[32];
+    sprintf(buf, "%.8g", (double) o->value);
+    print(env, buf);
+    if (strchr(buf, '.') == NULL) {
+        // Python floats always have decimal point
+        print(env, ".0");
+    }
 #endif
 }
 
