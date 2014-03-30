@@ -955,8 +955,13 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
     EMIT_ARG(load_const_id, cscope->simple_name);
 
     // nodes[1] has parent classes, if any
+    // empty parenthesis (eg class C():) gets here as an empty PN_classdef_2 and needs special handling
+    mp_parse_node_t parents = pns->nodes[1];
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(parents, PN_classdef_2)) {
+        parents = MP_PARSE_NODE_NULL;
+    }
     comp->func_arg_is_super = false;
-    compile_trailer_paren_helper(comp, pns->nodes[1], false, 2);
+    compile_trailer_paren_helper(comp, parents, false, 2);
 
     // return its name (the 'C' in class C(...):")
     return cscope->simple_name;
