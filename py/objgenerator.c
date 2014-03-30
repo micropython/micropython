@@ -75,6 +75,7 @@ mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = self_in;
     if (self->ip == 0) {
         *ret_val = MP_OBJ_NULL;
