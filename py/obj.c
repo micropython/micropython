@@ -62,7 +62,7 @@ void mp_obj_print_exception(mp_obj_t exc) {
             }
         }
     }
-    mp_obj_print(exc, PRINT_REPR);
+    mp_obj_print(exc, PRINT_EXC);
     printf("\n");
 }
 

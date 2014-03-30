@@ -141,7 +141,9 @@ typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
-    PRINT_STR, PRINT_REPR
+    PRINT_STR,
+    PRINT_REPR,
+    PRINT_EXC, // Special format for printing exception in unhandled exception message
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
