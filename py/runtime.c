@@ -17,6 +17,7 @@
 #include "builtintables.h"
 #include "bc.h"
 #include "intdivmod.h"
+#include "objgenerator.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -901,6 +902,62 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
             nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
         }
     }
+}
+
+// TODO: Unclear what to do with StopIterarion exception here.
+mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+
+    if (type == &mp_type_gen_instance) {
+        return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
+    }
+
+    if (type->iternext != NULL && send_value == mp_const_none) {
+        mp_obj_t ret = type->iternext(self_in);
+        if (ret != MP_OBJ_NULL) {
+            *ret_val = ret;
+            return MP_VM_RETURN_YIELD;
+        } else {
+            // Emulate raise StopIteration()
+            // Special case, handled in vm.c
+            *ret_val = MP_OBJ_NULL;
+            return MP_VM_RETURN_NORMAL;
+        }
+    }
+
+    mp_obj_t dest[3]; // Reserve slot for send() arg
+
+    if (send_value == mp_const_none) {
+        mp_load_method_maybe(self_in, MP_QSTR___next__, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            *ret_val = mp_call_method_n_kw(0, 0, dest);
+            return MP_VM_RETURN_YIELD;
+        }
+    }
+
+    if (send_value != MP_OBJ_NULL) {
+        mp_load_method(self_in, MP_QSTR_send, dest);
+        dest[2] = send_value;
+        *ret_val = mp_call_method_n_kw(1, 0, dest);
+        return MP_VM_RETURN_YIELD;
+    }
+
+    if (throw_value != MP_OBJ_NULL) {
+        if (mp_obj_is_subclass_fast(mp_obj_get_type(throw_value), &mp_type_GeneratorExit)) {
+            mp_load_method_maybe(self_in, MP_QSTR_close, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                *ret_val = mp_call_method_n_kw(0, 0, dest);
+                // We assume one can't "yield" from close()
+                return MP_VM_RETURN_NORMAL;
+            }
+        }
+        mp_load_method(self_in, MP_QSTR_throw, dest);
+        *ret_val = mp_call_method_n_kw(1, 0, &throw_value);
+        return MP_VM_RETURN_YIELD;
+    }
+
+    assert(0);
+    return MP_VM_RETURN_NORMAL; // Should be unreachable
 }
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o) {

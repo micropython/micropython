@@ -1,9 +1,3 @@
-typedef enum {
-    MP_VM_RETURN_NORMAL,
-    MP_VM_RETURN_YIELD,
-    MP_VM_RETURN_EXCEPTION,
-} mp_vm_return_kind_t;
-
 // Exception stack entry
 typedef struct _mp_exc_stack {
     const byte *handler;

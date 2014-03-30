@@ -1,3 +1,9 @@
+typedef enum {
+    MP_VM_RETURN_NORMAL,
+    MP_VM_RETURN_YIELD,
+    MP_VM_RETURN_EXCEPTION,
+} mp_vm_return_kind_t;
+
 void mp_init(void);
 void mp_deinit(void);
 
@@ -55,6 +61,7 @@ void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t mp_getiter(mp_obj_t o);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_NULL instead of raising StopIteration()
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_NULL instead of raising StopIteration(...)
+mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
 
