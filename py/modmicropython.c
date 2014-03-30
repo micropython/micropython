@@ -2,7 +2,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "builtin.h"
 
 // Various builtins specific to MicroPython runtime,

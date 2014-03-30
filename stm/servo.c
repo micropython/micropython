@@ -8,7 +8,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "servo.h"
 
 // PWM

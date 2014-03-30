@@ -5,7 +5,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "systick.h"
 #include "rng.h"
 #include "storage.h"

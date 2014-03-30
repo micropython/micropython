@@ -15,7 +15,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "objtuple.h"
 #include "objarray.h"
 #include "runtime.h"

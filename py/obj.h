@@ -83,9 +83,52 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
 #define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
-// Need to declare this here so we are not dependent on map.h
-struct _mp_map_t;
-struct _mp_map_elem_t;
+// Underlying map/hash table implementation (not dict object or map function)
+
+typedef struct _mp_map_elem_t {
+    mp_obj_t key;
+    mp_obj_t value;
+} mp_map_elem_t;
+
+// TODO maybe have a truncated mp_map_t for fixed tables, since alloc=used
+// put alloc last in the structure, so the truncated version does not need it
+// this would save 1 ROM word for all ROM objects that have a locals_dict
+// would also need a trucated dict structure
+
+typedef struct _mp_map_t {
+    machine_uint_t all_keys_are_qstrs : 1;
+    machine_uint_t table_is_fixed_array : 1;
+    machine_uint_t used : (8 * sizeof(machine_uint_t) - 2);
+    machine_uint_t alloc;
+    mp_map_elem_t *table;
+} mp_map_t;
+
+typedef enum _mp_map_lookup_kind_t {
+    MP_MAP_LOOKUP,                    // 0
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
+    MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
+    MP_MAP_LOOKUP_FIRST = 4,
+} mp_map_lookup_kind_t;
+
+void mp_map_init(mp_map_t *map, int n);
+void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
+mp_map_t *mp_map_new(int n);
+void mp_map_deinit(mp_map_t *map);
+void mp_map_free(mp_map_t *map);
+mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+void mp_map_clear(mp_map_t *map);
+
+// Underlying set implementation (not set object)
+
+typedef struct _mp_set_t {
+    machine_uint_t alloc;
+    machine_uint_t used;
+    mp_obj_t *table;
+} mp_set_t;
+
+void mp_set_init(mp_set_t *set, int n);
+mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+void mp_set_clear(mp_set_t *set);
 
 // Type definitions for methods
 
@@ -95,7 +138,7 @@ typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
-typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, struct _mp_map_t *);
+typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
     PRINT_STR, PRINT_REPR
@@ -384,12 +427,16 @@ machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
-mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, struct _mp_map_t *kwargs);
+mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // dict
+typedef struct _mp_obj_dict_t {
+    mp_obj_base_t base;
+    mp_map_t map;
+} mp_obj_dict_t;
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
-struct _mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
+mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
@@ -423,9 +470,9 @@ MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     qstr name;
-    struct _mp_map_t *globals;
+    mp_map_t *globals;
 } mp_obj_module_t;
-struct _mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
+mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod

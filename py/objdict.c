@@ -7,7 +7,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 

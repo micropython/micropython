@@ -6,7 +6,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "runtime.h"
 #include "bc.h"
 #include "objgenerator.h"

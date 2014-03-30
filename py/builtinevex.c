@@ -12,7 +12,6 @@
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtin.h"
 
 STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {

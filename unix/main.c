@@ -15,7 +15,6 @@
 #include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
-#include "map.h"
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"

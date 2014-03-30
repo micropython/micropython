@@ -3,10 +3,10 @@ void mp_deinit(void);
 
 void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw);
 
-struct _mp_map_t *mp_locals_get(void);
-void mp_locals_set(struct _mp_map_t *m);
-struct _mp_map_t *mp_globals_get(void);
-void mp_globals_set(struct _mp_map_t *m);
+mp_map_t *mp_locals_get(void);
+void mp_locals_set(mp_map_t *m);
+mp_map_t *mp_globals_get(void);
+void mp_globals_set(mp_map_t *m);
 
 mp_obj_t mp_load_name(qstr qstr);
 mp_obj_t mp_load_global(qstr qstr);
@@ -58,7 +58,7 @@ mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_NULL instead of r
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
 
 extern mp_obj_t mp_sys_path;
-struct _mp_map_t *mp_loaded_modules_get(void);
+mp_map_t *mp_loaded_modules_get(void);
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);

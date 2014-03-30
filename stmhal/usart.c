@@ -8,7 +8,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "usart.h"
 
 struct _pyb_usart_obj_t {

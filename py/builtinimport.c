@@ -17,7 +17,6 @@
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtin.h"
 
 #define PATH_SEP_CHAR '/'

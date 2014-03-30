@@ -6,7 +6,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "led.h"
 #include "pin.h"
 #include "build/pins.h"

@@ -8,7 +8,6 @@
 #include "obj.h"
 #include "objmodule.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtintables.h"
 
 STATIC mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules

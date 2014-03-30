@@ -2,7 +2,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "builtin.h"
 
 STATIC const mp_map_elem_t mp_module_array_globals_table[] = {

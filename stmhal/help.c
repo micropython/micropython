@@ -5,7 +5,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 
 STATIC const char *help_text =
 "Welcome to Micro Python!\n"

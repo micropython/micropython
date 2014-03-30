@@ -5,7 +5,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "modtime.h"
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {

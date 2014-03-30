@@ -9,7 +9,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"

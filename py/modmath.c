@@ -4,7 +4,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "builtin.h"
 
 #if MICROPY_ENABLE_FLOAT

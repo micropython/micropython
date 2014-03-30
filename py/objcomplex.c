@@ -8,7 +8,6 @@
 #include "obj.h"
 #include "parsenum.h"
 #include "runtime0.h"
-#include "map.h"
 
 #if MICROPY_ENABLE_FLOAT
 

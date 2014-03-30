@@ -9,7 +9,6 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 
 mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {

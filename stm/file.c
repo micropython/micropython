@@ -5,7 +5,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "file.h"
 #include "ff.h"
 

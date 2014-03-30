@@ -9,7 +9,6 @@
 #include "obj.h"
 #include "runtime.h"
 #include "runtime0.h"
-#include "map.h"
 
 typedef struct _mp_obj_set_t {
     mp_obj_base_t base;

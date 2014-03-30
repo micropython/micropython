@@ -9,7 +9,6 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
-#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "bc.h"

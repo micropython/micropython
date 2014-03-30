@@ -12,7 +12,6 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "emitglue.h"
-#include "map.h"
 #include "builtin.h"
 #include "builtintables.h"
 #include "bc.h"

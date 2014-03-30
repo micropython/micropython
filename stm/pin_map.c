@@ -9,7 +9,6 @@
 #include "obj.h"
 #include "runtime.h"
 #include "nlr.h"
-#include "map.h"
 
 #include "pin.h"
 

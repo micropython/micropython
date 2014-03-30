@@ -7,7 +7,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "usart.h"
 
 pyb_usart_t pyb_usart_global_debug = PYB_USART_NONE;

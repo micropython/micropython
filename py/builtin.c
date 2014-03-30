@@ -8,7 +8,6 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtin.h"
 
 #if MICROPY_ENABLE_FLOAT
