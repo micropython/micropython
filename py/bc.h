@@ -9,6 +9,8 @@ typedef struct _mp_exc_stack {
     const byte *handler;
     // bit 0 is saved currently_in_except_block value
     mp_obj_t *val_sp;
+    // Saved exception, valid if currently_in_except_block bit is 1
+    mp_obj_t prev_exc;
     // We might only have 2 interesting cases here: SETUP_EXCEPT & SETUP_FINALLY,
     // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
     byte opcode;

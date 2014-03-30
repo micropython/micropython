@@ -51,10 +51,12 @@ typedef enum {
     exc_sp->opcode = op; \
     exc_sp->handler = ip + unum; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
+    exc_sp->prev_exc = nlr.ret_val; \
     currently_in_except_block = 0; /* in a try block now */
 
 #define POP_EXC_BLOCK() \
     currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
+    if (currently_in_except_block) { nlr.ret_val = exc_sp->prev_exc; } \
     exc_sp--; /* pop back to previous exception handler */
 
 mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
