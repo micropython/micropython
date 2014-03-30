@@ -36,10 +36,10 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
-        case RT_UNARY_OP_POSITIVE: return o_in;
-        case RT_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
-        case RT_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
+        case MP_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
+        case MP_UNARY_OP_POSITIVE: return o_in;
+        case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
+        case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
         default: return NULL; // op not supported
     }
 }
@@ -61,7 +61,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return MP_OBJ_NULL;
     }
 
-    // if rhs is small int, then lhs was not (otherwise rt_binary_op handles it)
+    // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
@@ -80,30 +80,30 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
     if (0) {
 #if MICROPY_ENABLE_FLOAT
-    } else if (op == RT_BINARY_OP_TRUE_DIVIDE || op == RT_BINARY_OP_INPLACE_TRUE_DIVIDE) {
+    } else if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
         mp_float_t flhs = mpz_as_float(zlhs);
         mp_float_t frhs = mpz_as_float(zrhs);
         return mp_obj_new_float(flhs / frhs);
 #endif
 
-    } else if (op <= RT_BINARY_OP_INPLACE_POWER) {
+    } else if (op <= MP_BINARY_OP_INPLACE_POWER) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
 
         switch (op) {
-            case RT_BINARY_OP_ADD:
-            case RT_BINARY_OP_INPLACE_ADD:
+            case MP_BINARY_OP_ADD:
+            case MP_BINARY_OP_INPLACE_ADD:
                 mpz_add_inpl(&res->mpz, zlhs, zrhs);
                 break;
-            case RT_BINARY_OP_SUBTRACT:
-            case RT_BINARY_OP_INPLACE_SUBTRACT:
+            case MP_BINARY_OP_SUBTRACT:
+            case MP_BINARY_OP_INPLACE_SUBTRACT:
                 mpz_sub_inpl(&res->mpz, zlhs, zrhs);
                 break;
-            case RT_BINARY_OP_MULTIPLY:
-            case RT_BINARY_OP_INPLACE_MULTIPLY:
+            case MP_BINARY_OP_MULTIPLY:
+            case MP_BINARY_OP_INPLACE_MULTIPLY:
                 mpz_mul_inpl(&res->mpz, zlhs, zrhs);
                 break;
-            case RT_BINARY_OP_FLOOR_DIVIDE:
-            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
+            case MP_BINARY_OP_FLOOR_DIVIDE:
+            case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
 		        if (zlhs->neg != zrhs->neg) {
@@ -115,8 +115,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_deinit(&rem);
                 break;
             }
-            case RT_BINARY_OP_MODULO:
-            case RT_BINARY_OP_INPLACE_MODULO: {
+            case MP_BINARY_OP_MODULO:
+            case MP_BINARY_OP_INPLACE_MODULO: {
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
@@ -127,29 +127,29 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
             }
 
-            case RT_BINARY_OP_AND:
-            case RT_BINARY_OP_INPLACE_AND:
+            case MP_BINARY_OP_AND:
+            case MP_BINARY_OP_INPLACE_AND:
                 mpz_and_inpl(&res->mpz, zlhs, zrhs);
                 break;
-            case RT_BINARY_OP_OR:
-            case RT_BINARY_OP_INPLACE_OR:
+            case MP_BINARY_OP_OR:
+            case MP_BINARY_OP_INPLACE_OR:
                 mpz_or_inpl(&res->mpz, zlhs, zrhs);
                 break;
-            case RT_BINARY_OP_XOR:
-            case RT_BINARY_OP_INPLACE_XOR:
+            case MP_BINARY_OP_XOR:
+            case MP_BINARY_OP_INPLACE_XOR:
                 mpz_xor_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
-            case RT_BINARY_OP_LSHIFT:
-            case RT_BINARY_OP_INPLACE_LSHIFT:
-            case RT_BINARY_OP_RSHIFT:
-            case RT_BINARY_OP_INPLACE_RSHIFT: {
+            case MP_BINARY_OP_LSHIFT:
+            case MP_BINARY_OP_INPLACE_LSHIFT:
+            case MP_BINARY_OP_RSHIFT:
+            case MP_BINARY_OP_INPLACE_RSHIFT: {
                 // TODO check conversion overflow
                 machine_int_t irhs = mpz_as_int(zrhs);
                 if (irhs < 0) {
                     nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                 }
-                if (op == RT_BINARY_OP_LSHIFT || op == RT_BINARY_OP_INPLACE_LSHIFT) {
+                if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
                 } else {
                     mpz_shr_inpl(&res->mpz, zlhs, irhs);
@@ -157,8 +157,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
             }
 
-            case RT_BINARY_OP_POWER:
-            case RT_BINARY_OP_INPLACE_POWER:
+            case MP_BINARY_OP_POWER:
+            case MP_BINARY_OP_INPLACE_POWER:
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
@@ -171,17 +171,17 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else {
         int cmp = mpz_cmp(zlhs, zrhs);
         switch (op) {
-            case RT_BINARY_OP_LESS:
+            case MP_BINARY_OP_LESS:
                 return MP_BOOL(cmp < 0);
-            case RT_BINARY_OP_MORE:
+            case MP_BINARY_OP_MORE:
                 return MP_BOOL(cmp > 0);
-            case RT_BINARY_OP_LESS_EQUAL:
+            case MP_BINARY_OP_LESS_EQUAL:
                 return MP_BOOL(cmp <= 0);
-            case RT_BINARY_OP_MORE_EQUAL:
+            case MP_BINARY_OP_MORE_EQUAL:
                 return MP_BOOL(cmp >= 0);
-            case RT_BINARY_OP_EQUAL:
+            case MP_BINARY_OP_EQUAL:
                 return MP_BOOL(cmp == 0);
-            case RT_BINARY_OP_NOT_EQUAL:
+            case MP_BINARY_OP_NOT_EQUAL:
                 return MP_BOOL(cmp != 0);
 
             default:

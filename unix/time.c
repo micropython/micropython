@@ -43,7 +43,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 void time_init() {
     mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("time"));
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("time"), (mp_obj_t)&mod_time_time_obj);
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("clock"), (mp_obj_t)&mod_time_clock_obj);
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("sleep"), (mp_obj_t)&mod_time_sleep_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("time"), (mp_obj_t)&mod_time_time_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("clock"), (mp_obj_t)&mod_time_clock_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("sleep"), (mp_obj_t)&mod_time_sleep_obj);
 }

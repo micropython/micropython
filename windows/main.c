@@ -69,7 +69,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     // execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        rt_call_function_0(module_fun);
+        mp_call_function_0(module_fun);
         nlr_pop();
     } else {
         // uncaught exception
@@ -183,14 +183,14 @@ mp_obj_t qstr_info(void) {
 
 int main(int argc, char **argv) {
     qstr_init();
-    rt_init();
+    mp_init();
 
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
     mp_obj_t py_argv = mp_obj_new_list(0, NULL);
-    rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
+    mp_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
-    rt_store_name(qstr_from_str("mem_info"), rt_make_function_n(0, mem_info));
-    rt_store_name(qstr_from_str("qstr_info"), rt_make_function_n(0, qstr_info));
+    mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
+    mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
 
     file_init();
 
@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
                 }
             } else {
                 for (int i = a; i < argc; i++) {
-                    rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                    mp_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
                 }
                 do_file(argv[a]);
                 break;
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    rt_deinit();
+    mp_deinit();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;

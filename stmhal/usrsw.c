@@ -33,7 +33,7 @@ static mp_obj_t switch_user_callback_obj;
 
 static mp_obj_t switch_callback(mp_obj_t line) {
     if (switch_user_callback_obj != mp_const_none) {
-        rt_call_function_0(switch_user_callback_obj);
+        mp_call_function_0(switch_user_callback_obj);
     }
     return mp_const_none;
 }

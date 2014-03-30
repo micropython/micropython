@@ -84,8 +84,8 @@ typedef struct _emit_method_table_t {
     void (*for_iter_end)(emit_t *emit);
     void (*pop_block)(emit_t *emit);
     void (*pop_except)(emit_t *emit);
-    void (*unary_op)(emit_t *emit, rt_unary_op_t op);
-    void (*binary_op)(emit_t *emit, rt_binary_op_t op);
+    void (*unary_op)(emit_t *emit, mp_unary_op_t op);
+    void (*binary_op)(emit_t *emit, mp_binary_op_t op);
     void (*build_tuple)(emit_t *emit, int n_args);
     void (*build_list)(emit_t *emit, int n_args);
     void (*list_append)(emit_t *emit, int list_stack_index);

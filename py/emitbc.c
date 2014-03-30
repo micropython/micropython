@@ -632,10 +632,10 @@ STATIC void emit_bc_pop_except(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_POP_EXCEPT);
 }
 
-STATIC void emit_bc_unary_op(emit_t *emit, rt_unary_op_t op) {
-    if (op == RT_UNARY_OP_NOT) {
+STATIC void emit_bc_unary_op(emit_t *emit, mp_unary_op_t op) {
+    if (op == MP_UNARY_OP_NOT) {
         emit_bc_pre(emit, 0);
-        emit_write_byte_code_byte_byte(emit, MP_BC_UNARY_OP, RT_UNARY_OP_BOOL);
+        emit_write_byte_code_byte_byte(emit, MP_BC_UNARY_OP, MP_UNARY_OP_BOOL);
         emit_bc_pre(emit, 0);
         emit_write_byte_code_byte(emit, MP_BC_NOT);
     } else {
@@ -644,14 +644,14 @@ STATIC void emit_bc_unary_op(emit_t *emit, rt_unary_op_t op) {
     }
 }
 
-STATIC void emit_bc_binary_op(emit_t *emit, rt_binary_op_t op) {
+STATIC void emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
     bool invert = false;
-    if (op == RT_BINARY_OP_NOT_IN) {
+    if (op == MP_BINARY_OP_NOT_IN) {
         invert = true;
-        op = RT_BINARY_OP_IN;
-    } else if (op == RT_BINARY_OP_IS_NOT) {
+        op = MP_BINARY_OP_IN;
+    } else if (op == MP_BINARY_OP_IS_NOT) {
         invert = true;
-        op = RT_BINARY_OP_IS;
+        op = MP_BINARY_OP_IS;
     }
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_byte(emit, MP_BC_BINARY_OP, op);

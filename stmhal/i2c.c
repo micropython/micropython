@@ -80,7 +80,7 @@ STATIC pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2cHandle_X}
 
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    rt_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_check_nargs(n_args, 1, 1, n_kw, false);
 
     // get i2c number
     machine_int_t i2c_id = mp_obj_get_int(args[0]) - 1;

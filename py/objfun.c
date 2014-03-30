@@ -26,10 +26,10 @@
 // mp_obj_fun_native_t defined in obj.h
 
 STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
-    rt_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
+    mp_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
 }
 
-void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
+void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
     if (n_kw && !is_kw) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "function does not take keyword arguments"));
@@ -106,7 +106,7 @@ const mp_obj_type_t mp_type_fun_native = {
 };
 
 // fun must have the correct signature for n_args fixed arguments
-mp_obj_t rt_make_function_n(int n_args, void *fun) {
+mp_obj_t mp_make_function_n(int n_args, void *fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &mp_type_fun_native;
     o->is_kw = false;
@@ -116,7 +116,7 @@ mp_obj_t rt_make_function_n(int n_args, void *fun) {
     return o;
 }
 
-mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
+mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &mp_type_fun_native;
     o->is_kw = false;
@@ -127,7 +127,7 @@ mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
 }
 
 // min and max are inclusive
-mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
+mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
     o->base.type = &mp_type_fun_native;
     o->is_kw = false;
@@ -278,14 +278,14 @@ continue2:;
         }
     }
 
-    mp_map_t *old_globals = rt_globals_get();
-    rt_globals_set(self->globals);
+    mp_map_t *old_globals = mp_globals_get();
+    mp_globals_set(self->globals);
     mp_obj_t result;
     DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
     dump_args(args, n_args);
     dump_args(extra_args, n_extra_args);
     mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
-    rt_globals_set(old_globals);
+    mp_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
@@ -319,7 +319,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
     o->base.type = &mp_type_fun_bc;
-    o->globals = rt_globals_get();
+    o->globals = mp_globals_get();
     o->args = args;
     o->n_args = n_args;
     o->n_def_args = n_def_args;

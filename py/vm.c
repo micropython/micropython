@@ -157,7 +157,7 @@ outer_dispatch_loop:
             if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
                 mp_obj_t t = inject_exc;
                 inject_exc = MP_OBJ_NULL;
-                nlr_jump(rt_make_raise_obj(t));
+                nlr_jump(mp_make_raise_obj(t));
             }
             // loop to execute byte code
             for (;;) {
@@ -201,22 +201,22 @@ dispatch_loop:
 
                     case MP_BC_LOAD_CONST_DEC:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_dec(qst));
+                        PUSH(mp_load_const_dec(qst));
                         break;
 
                     case MP_BC_LOAD_CONST_ID:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qst)); // TODO
+                        PUSH(mp_load_const_str(qst)); // TODO
                         break;
 
                     case MP_BC_LOAD_CONST_BYTES:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_bytes(qst));
+                        PUSH(mp_load_const_bytes(qst));
                         break;
 
                     case MP_BC_LOAD_CONST_STRING:
                         DECODE_QSTR;
-                        PUSH(rt_load_const_str(qst));
+                        PUSH(mp_load_const_str(qst));
                         break;
 
                     case MP_BC_LOAD_FAST_0:
@@ -238,32 +238,32 @@ dispatch_loop:
 
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(rt_get_cell(fastn[-unum]));
+                        PUSH(mp_get_cell(fastn[-unum]));
                         break;
 
                     case MP_BC_LOAD_NAME:
                         DECODE_QSTR;
-                        PUSH(rt_load_name(qst));
+                        PUSH(mp_load_name(qst));
                         break;
 
                     case MP_BC_LOAD_GLOBAL:
                         DECODE_QSTR;
-                        PUSH(rt_load_global(qst));
+                        PUSH(mp_load_global(qst));
                         break;
 
                     case MP_BC_LOAD_ATTR:
                         DECODE_QSTR;
-                        SET_TOP(rt_load_attr(TOP(), qst));
+                        SET_TOP(mp_load_attr(TOP(), qst));
                         break;
 
                     case MP_BC_LOAD_METHOD:
                         DECODE_QSTR;
-                        rt_load_method(*sp, qst, sp);
+                        mp_load_method(*sp, qst, sp);
                         sp += 1;
                         break;
 
                     case MP_BC_LOAD_BUILD_CLASS:
-                        PUSH(rt_load_build_class());
+                        PUSH(mp_load_build_class());
                         break;
 
                     case MP_BC_STORE_FAST_0:
@@ -285,33 +285,33 @@ dispatch_loop:
 
                     case MP_BC_STORE_DEREF:
                         DECODE_UINT;
-                        rt_set_cell(fastn[-unum], POP());
+                        mp_set_cell(fastn[-unum], POP());
                         break;
 
                     case MP_BC_STORE_NAME:
                         DECODE_QSTR;
-                        rt_store_name(qst, POP());
+                        mp_store_name(qst, POP());
                         break;
 
                     case MP_BC_STORE_GLOBAL:
                         DECODE_QSTR;
-                        rt_store_global(qst, POP());
+                        mp_store_global(qst, POP());
                         break;
 
                     case MP_BC_STORE_ATTR:
                         DECODE_QSTR;
-                        rt_store_attr(sp[0], qst, sp[-1]);
+                        mp_store_attr(sp[0], qst, sp[-1]);
                         sp -= 2;
                         break;
 
                     case MP_BC_STORE_SUBSCR:
-                        rt_store_subscr(sp[-1], sp[0], sp[-2]);
+                        mp_store_subscr(sp[-1], sp[0], sp[-2]);
                         sp -= 3;
                         break;
 
                     case MP_BC_DELETE_NAME:
                         DECODE_QSTR;
-                        rt_delete_name(qst);
+                        mp_delete_name(qst);
                         break;
 
                     case MP_BC_DUP_TOP:
@@ -349,21 +349,21 @@ dispatch_loop:
 
                     case MP_BC_POP_JUMP_IF_TRUE:
                         DECODE_SLABEL;
-                        if (rt_is_true(POP())) {
+                        if (mp_obj_is_true(POP())) {
                             ip += unum;
                         }
                         break;
 
                     case MP_BC_POP_JUMP_IF_FALSE:
                         DECODE_SLABEL;
-                        if (!rt_is_true(POP())) {
+                        if (!mp_obj_is_true(POP())) {
                             ip += unum;
                         }
                         break;
 
                     case MP_BC_JUMP_IF_TRUE_OR_POP:
                         DECODE_SLABEL;
-                        if (rt_is_true(TOP())) {
+                        if (mp_obj_is_true(TOP())) {
                             ip += unum;
                         } else {
                             sp--;
@@ -372,7 +372,7 @@ dispatch_loop:
 
                     case MP_BC_JUMP_IF_FALSE_OR_POP:
                         DECODE_SLABEL;
-                        if (rt_is_true(TOP())) {
+                        if (mp_obj_is_true(TOP())) {
                             sp--;
                         } else {
                             ip += unum;
@@ -388,9 +388,9 @@ dispatch_loop:
 
                     case MP_BC_SETUP_WITH:
                         obj1 = TOP();
-                        SET_TOP(rt_load_attr(obj1, MP_QSTR___exit__));
-                        rt_load_method(obj1, MP_QSTR___enter__, sp + 1);
-                        obj2 = rt_call_method_n_kw(0, 0, sp + 1);
+                        SET_TOP(mp_load_attr(obj1, MP_QSTR___exit__));
+                        mp_load_method(obj1, MP_QSTR___enter__, sp + 1);
+                        obj2 = mp_call_method_n_kw(0, 0, sp + 1);
                         PUSH_EXC_BLOCK();
                         PUSH(obj2);
                         break;
@@ -405,19 +405,19 @@ dispatch_loop:
                             sp--;
                             obj1 = TOP();
                             SET_TOP(mp_const_none);
-                            obj2 = rt_call_function_n_kw(obj1, 3, 0, no_exc);
+                            obj2 = mp_call_function_n_kw(obj1, 3, 0, no_exc);
                         } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
                             mp_obj_t cause = POP();
                             switch (MP_OBJ_SMALL_INT_VALUE(cause)) {
                                 case UNWIND_RETURN: {
                                     mp_obj_t retval = POP();
-                                    obj2 = rt_call_function_n_kw(TOP(), 3, 0, no_exc);
+                                    obj2 = mp_call_function_n_kw(TOP(), 3, 0, no_exc);
                                     SET_TOP(retval);
                                     PUSH(cause);
                                     break;
                                 }
                                 case UNWIND_JUMP: {
-                                    obj2 = rt_call_function_n_kw(sp[-2], 3, 0, no_exc);
+                                    obj2 = mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
                                     // Pop __exit__ boundmethod at sp[-2]
                                     sp[-2] = sp[-1];
                                     sp[-1] = sp[0];
@@ -429,14 +429,14 @@ dispatch_loop:
                             }
                         } else if (mp_obj_is_exception_type(TOP())) {
                             mp_obj_t args[3] = {sp[0], sp[-1], sp[-2]};
-                            obj2 = rt_call_function_n_kw(sp[-3], 3, 0, args);
+                            obj2 = mp_call_function_n_kw(sp[-3], 3, 0, args);
                             // Pop __exit__ boundmethod at sp[-3]
                             // TODO: Once semantics is proven, optimize for case when obj2 == True
                             sp[-3] = sp[-2];
                             sp[-2] = sp[-1];
                             sp[-1] = sp[0];
                             sp--;
-                            if (rt_is_true(obj2)) {
+                            if (mp_obj_is_true(obj2)) {
                                 // This is what CPython does
                                 //PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_SILENCED));
                                 // But what we need to do is - pop exception from value stack...
@@ -514,12 +514,12 @@ unwind_jump:
                         break;
 
                     case MP_BC_GET_ITER:
-                        SET_TOP(rt_getiter(TOP()));
+                        SET_TOP(mp_getiter(TOP()));
                         break;
 
                     case MP_BC_FOR_ITER:
                         DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                        obj1 = rt_iternext_allow_raise(TOP());
+                        obj1 = mp_iternext_allow_raise(TOP());
                         if (obj1 == MP_OBJ_NULL) {
                             --sp; // pop the exhausted iterator
                             ip += unum; // jump to after for-block
@@ -557,62 +557,62 @@ unwind_jump:
 
                     case MP_BC_UNARY_OP:
                         unum = *ip++;
-                        SET_TOP(rt_unary_op(unum, TOP()));
+                        SET_TOP(mp_unary_op(unum, TOP()));
                         break;
 
                     case MP_BC_BINARY_OP:
                         unum = *ip++;
                         obj2 = POP();
                         obj1 = TOP();
-                        SET_TOP(rt_binary_op(unum, obj1, obj2));
+                        SET_TOP(mp_binary_op(unum, obj1, obj2));
                         break;
 
                     case MP_BC_BUILD_TUPLE:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(rt_build_tuple(unum, sp));
+                        SET_TOP(mp_build_tuple(unum, sp));
                         break;
 
                     case MP_BC_BUILD_LIST:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(rt_build_list(unum, sp));
+                        SET_TOP(mp_build_list(unum, sp));
                         break;
 
                     case MP_BC_LIST_APPEND:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[unum] is a list
-                        rt_list_append(sp[-unum], sp[0]);
+                        mp_list_append(sp[-unum], sp[0]);
                         sp--;
                         break;
 
                     case MP_BC_BUILD_MAP:
                         DECODE_UINT;
-                        PUSH(rt_build_map(unum));
+                        PUSH(mp_build_map(unum));
                         break;
 
                     case MP_BC_STORE_MAP:
                         sp -= 2;
-                        rt_store_map(sp[0], sp[2], sp[1]);
+                        mp_store_map(sp[0], sp[2], sp[1]);
                         break;
 
                     case MP_BC_MAP_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
-                        rt_store_map(sp[-unum - 1], sp[0], sp[-1]);
+                        mp_store_map(sp[-unum - 1], sp[0], sp[-1]);
                         sp -= 2;
                         break;
 
                     case MP_BC_BUILD_SET:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(rt_build_set(unum, sp));
+                        SET_TOP(mp_build_set(unum, sp));
                         break;
 
                     case MP_BC_SET_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum] is a set
-                        rt_store_set(sp[-unum], sp[0]);
+                        mp_store_set(sp[-unum], sp[0]);
                         sp--;
                         break;
 
@@ -632,29 +632,29 @@ unwind_jump:
 
                     case MP_BC_UNPACK_SEQUENCE:
                         DECODE_UINT;
-                        rt_unpack_sequence(sp[0], unum, sp);
+                        mp_unpack_sequence(sp[0], unum, sp);
                         sp += unum - 1;
                         break;
 
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(rt_make_function_from_id(unum, false, MP_OBJ_NULL));
+                        PUSH(mp_make_function_from_id(unum, false, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
-                        SET_TOP(rt_make_function_from_id(unum, false, TOP()));
+                        SET_TOP(mp_make_function_from_id(unum, false, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
                         DECODE_UINT;
-                        SET_TOP(rt_make_closure_from_id(unum, TOP(), MP_OBJ_NULL));
+                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_CLOSURE_DEFARGS:
                         DECODE_UINT;
                         obj1 = POP();
-                        SET_TOP(rt_make_closure_from_id(unum, obj1, TOP()));
+                        SET_TOP(mp_make_closure_from_id(unum, obj1, TOP()));
                         break;
 
                     case MP_BC_CALL_FUNCTION:
@@ -662,7 +662,7 @@ unwind_jump:
                         // unum & 0xff == n_positional
                         // (unum >> 8) & 0xff == n_keyword
                         sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                        SET_TOP(rt_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
+                        SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                         break;
 
                     case MP_BC_CALL_METHOD:
@@ -670,7 +670,7 @@ unwind_jump:
                         // unum & 0xff == n_positional
                         // (unum >> 8) & 0xff == n_keyword
                         sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
-                        SET_TOP(rt_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
+                        SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
                         break;
 
                     case MP_BC_RETURN_VALUE:
@@ -714,7 +714,7 @@ unwind_return:
                         } else {
                             obj1 = POP();
                         }
-                        nlr_jump(rt_make_raise_obj(obj1));
+                        nlr_jump(mp_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
 yield:
@@ -778,17 +778,17 @@ yield:
                     case MP_BC_IMPORT_NAME:
                         DECODE_QSTR;
                         obj1 = POP();
-                        SET_TOP(rt_import_name(qst, obj1, TOP()));
+                        SET_TOP(mp_import_name(qst, obj1, TOP()));
                         break;
 
                     case MP_BC_IMPORT_FROM:
                         DECODE_QSTR;
-                        obj1 = rt_import_from(TOP(), qst);
+                        obj1 = mp_import_from(TOP(), qst);
                         PUSH(obj1);
                         break;
 
                     case MP_BC_IMPORT_STAR:
-                        rt_import_all(POP());
+                        mp_import_all(POP());
                         break;
 
                     default:

@@ -67,6 +67,39 @@ void mp_obj_print_exception(mp_obj_t exc) {
     printf("\n");
 }
 
+int mp_obj_is_true(mp_obj_t arg) {
+    if (arg == mp_const_false) {
+        return 0;
+    } else if (arg == mp_const_true) {
+        return 1;
+    } else if (arg == mp_const_none) {
+        return 0;
+    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+        if (MP_OBJ_SMALL_INT_VALUE(arg) == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
+    } else {
+        mp_obj_type_t *type = mp_obj_get_type(arg);
+        if (type->unary_op != NULL) {
+            mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
+            if (result != MP_OBJ_NULL) {
+                return result == mp_const_true;
+            }
+        }
+
+        mp_obj_t len = mp_obj_len_maybe(arg);
+        if (len != MP_OBJ_NULL) {
+            // obj has a length, truth determined if len != 0
+            return len != MP_OBJ_NEW_SMALL_INT(0);
+        } else {
+            // any other obj is true per Python semantics
+            return 1;
+        }
+    }
+}
+
 bool mp_obj_is_callable(mp_obj_t o_in) {
     return mp_obj_get_type(o_in)->call != NULL;
 }
@@ -121,7 +154,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
                 // If o2 is long int, dispatch to its virtual methods
                 mp_obj_base_t *o = o2;
                 if (o->type->binary_op != NULL) {
-                    mp_obj_t r = o->type->binary_op(RT_BINARY_OP_EQUAL, o2, o1);
+                    mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o2, o1);
                     return r == mp_const_true ? true : false;
                 }
             }
@@ -132,7 +165,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     } else {
         mp_obj_base_t *o = o1;
         if (o->type->binary_op != NULL) {
-            mp_obj_t r = o->type->binary_op(RT_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 return r == mp_const_true ? true : false;
             }
@@ -271,7 +304,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
-            return type->unary_op(RT_UNARY_OP_LEN, o_in);
+            return type->unary_op(MP_UNARY_OP_LEN, o_in);
         } else {
             return MP_OBJ_NULL;
         }

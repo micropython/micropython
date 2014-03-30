@@ -209,7 +209,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sd_present_obj, sd_present);
 
 static mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
     bool result;
-    if (rt_is_true(state)) {
+    if (mp_obj_is_true(state)) {
         result = sdcard_power_on();
     } else {
         sdcard_power_off();

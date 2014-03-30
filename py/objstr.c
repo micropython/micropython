@@ -160,9 +160,9 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
     }
 
-    mp_obj_t iterable = rt_getiter(args[0]);
+    mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
         if (len == -1) {
             vstr_add_char(vstr, MP_OBJ_SMALL_INT_VALUE(item));
         } else {
@@ -215,7 +215,7 @@ STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, cons
 STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
-        case RT_BINARY_OP_SUBSCR:
+        case MP_BINARY_OP_SUBSCR:
             // TODO: need predicate to check for int-like type (bools are such for example)
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
@@ -239,8 +239,8 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "index must be int"));
             }
 
-        case RT_BINARY_OP_ADD:
-        case RT_BINARY_OP_INPLACE_ADD:
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_INPLACE_ADD:
             if (MP_OBJ_IS_STR(rhs_in)) {
                 // add 2 strings
 
@@ -264,7 +264,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             break;
 
-        case RT_BINARY_OP_IN:
+        case MP_BINARY_OP_IN:
             /* NOTE `a in b` is `b.__contains__(a)` */
             if (MP_OBJ_IS_STR(rhs_in)) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
@@ -272,7 +272,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             break;
 
-        case RT_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_MULTIPLY:
         {
             if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 return NULL;
@@ -284,13 +284,13 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return mp_obj_str_builder_end(s);
         }
 
-        // These 2 are never passed here, dealt with as a special case in rt_binary_op().
-        //case RT_BINARY_OP_EQUAL:
-        //case RT_BINARY_OP_NOT_EQUAL:
-        case RT_BINARY_OP_LESS:
-        case RT_BINARY_OP_LESS_EQUAL:
-        case RT_BINARY_OP_MORE:
-        case RT_BINARY_OP_MORE_EQUAL:
+        // These 2 are never passed here, dealt with as a special case in mp_binary_op().
+        //case MP_BINARY_OP_EQUAL:
+        //case MP_BINARY_OP_NOT_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL:
             if (MP_OBJ_IS_STR(rhs_in)) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
                 return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
@@ -373,7 +373,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     while (s < top && splits != 0) {
         start = s;
         while (s < top && !is_ws(*s)) s++;
-        rt_list_append(res, mp_obj_new_str(start, s - start, false));
+        mp_list_append(res, mp_obj_new_str(start, s - start, false));
         if (s >= top) {
             break;
         }
@@ -384,7 +384,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     }
 
     if (s < top) {
-        rt_list_append(res, mp_obj_new_str(s, top - s, false));
+        mp_list_append(res, mp_obj_new_str(s, top - s, false));
     }
 
     return res;

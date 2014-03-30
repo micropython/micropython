@@ -190,7 +190,7 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #endif
 }
 
-mp_obj_t rt_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args) {
+mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args) {
     DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
     if (unique_code_id >= unique_codes_total) {
         // illegal code id
@@ -205,7 +205,7 @@ mp_obj_t rt_make_function_from_id(uint unique_code_id, bool free_unique_code, mp
             fun = mp_obj_new_fun_bc(c->scope_flags, c->arg_names, c->n_args, def_args, c->u_byte.code);
             break;
         case MP_CODE_NATIVE:
-            fun = rt_make_function_n(c->n_args, c->u_native.fun);
+            fun = mp_make_function_n(c->n_args, c->u_native.fun);
             break;
         case MP_CODE_INLINE_ASM:
             fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);
@@ -231,10 +231,10 @@ mp_obj_t rt_make_function_from_id(uint unique_code_id, bool free_unique_code, mp
     return fun;
 }
 
-mp_obj_t rt_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
+mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = rt_make_function_from_id(unique_code_id, false, def_args);
+    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, false, def_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

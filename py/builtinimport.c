@@ -22,7 +22,7 @@
 
 #define PATH_SEP_CHAR '/'
 
-mp_obj_t sys_path;
+mp_obj_t mp_sys_path;
 
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
@@ -42,12 +42,12 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
-    if (sys_path != MP_OBJ_NULL) {
-        mp_obj_list_get(sys_path, &path_num, &path_items);
+    if (mp_sys_path != MP_OBJ_NULL) {
+        mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     }
 
     if (path_num == 0) {
-        // sys_path is empty, so just use the given file name
+        // mp_sys_path is empty, so just use the given file name
         vstr_add_strn(dest, file_str, file_len);
         return stat_dir_or_file(dest);
     } else {
@@ -84,12 +84,12 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     qstr source_name = mp_lexer_source_name(lex);
 
     // save the old context
-    mp_map_t *old_locals = rt_locals_get();
-    mp_map_t *old_globals = rt_globals_get();
+    mp_map_t *old_locals = mp_locals_get();
+    mp_map_t *old_globals = mp_globals_get();
 
     // set the new context
-    rt_locals_set(mp_obj_module_get_globals(module_obj));
-    rt_globals_set(mp_obj_module_get_globals(module_obj));
+    mp_locals_set(mp_obj_module_get_globals(module_obj));
+    mp_globals_set(mp_obj_module_get_globals(module_obj));
 
     // parse the imported script
     mp_parse_error_kind_t parse_error_kind;
@@ -98,8 +98,8 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; clean up and raise exception
-        rt_locals_set(old_locals);
-        rt_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        mp_globals_set(old_globals);
         nlr_jump(mp_parse_make_exception(parse_error_kind));
     }
 
@@ -109,24 +109,24 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (module_fun == mp_const_none) {
         // TODO handle compile error correctly
-        rt_locals_set(old_locals);
-        rt_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        mp_globals_set(old_globals);
         return;
     }
 
     // complied successfully, execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        rt_call_function_0(module_fun);
+        mp_call_function_0(module_fun);
         nlr_pop();
     } else {
         // exception; restore context and re-raise same exception
-        rt_locals_set(old_locals);
-        rt_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        mp_globals_set(old_globals);
         nlr_jump(nlr.ret_val);
     }
-    rt_locals_set(old_locals);
-    rt_globals_set(old_globals);
+    mp_locals_set(old_locals);
+    mp_globals_set(old_globals);
 }
 
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
@@ -228,7 +228,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
             }
             if (outer_module_obj != MP_OBJ_NULL) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);
-                rt_store_attr(outer_module_obj, s, module_obj);
+                mp_store_attr(outer_module_obj, s, module_obj);
             }
             outer_module_obj = module_obj;
             if (top_module_obj == MP_OBJ_NULL) {

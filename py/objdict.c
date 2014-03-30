@@ -34,14 +34,14 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
 
 STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO create from an iterable!
-    return rt_build_map(0);
+    return mp_build_map(0);
 }
 
 STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
-        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
+        case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
         default: return MP_OBJ_NULL; // op not supported for None
     }
 }
@@ -49,7 +49,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
 STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
-        case RT_BINARY_OP_SUBSCR:
+        case MP_BINARY_OP_SUBSCR:
         {
             // dict load
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
@@ -59,7 +59,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return elem->value;
             }
         }
-        case RT_BINARY_OP_IN:
+        case MP_BINARY_OP_IN:
         {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             return MP_BOOL(elem != NULL);
@@ -149,7 +149,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
-    mp_obj_t iter = rt_getiter(args[1]);
+    mp_obj_t iter = mp_getiter(args[1]);
     mp_obj_t len = mp_obj_len_maybe(iter);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = NULL;
@@ -166,7 +166,7 @@ STATIC mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
         self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
     }
 
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
         mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
 
@@ -259,13 +259,13 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     /* TODO: check for the "keys" method */
-    mp_obj_t iter = rt_getiter(iterable);
+    mp_obj_t iter = mp_getiter(iterable);
     mp_obj_t next = NULL;
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
-        mp_obj_t inneriter = rt_getiter(next);
-        mp_obj_t key = rt_iternext(inneriter);
-        mp_obj_t value = rt_iternext(inneriter);
-        mp_obj_t stop = rt_iternext(inneriter);
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+        mp_obj_t inneriter = mp_getiter(next);
+        mp_obj_t key = mp_iternext(inneriter);
+        mp_obj_t value = mp_iternext(inneriter);
+        mp_obj_t stop = mp_iternext(inneriter);
         if (key == MP_OBJ_NULL
             || value == MP_OBJ_NULL
             || stop != MP_OBJ_NULL) {
@@ -372,7 +372,7 @@ STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     /* only supported for the 'keys' kind until sets and dicts are refactored */
     mp_obj_dict_view_t *o = lhs_in;
     if (o->kind != MP_DICT_VIEW_KEYS) return NULL;
-    if (op != RT_BINARY_OP_IN) return NULL;
+    if (op != MP_BINARY_OP_IN) return NULL;
     return dict_binary_op(op, o->dict, rhs_in);
 }
 

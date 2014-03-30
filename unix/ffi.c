@@ -128,10 +128,10 @@ STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
     o->func = sym;
     o->rettype = *rettype;
 
-    mp_obj_t iterable = rt_getiter(args[3]);
+    mp_obj_t iterable = mp_getiter(args[3]);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
         o->params[i++] = get_ffi_type(item);
     }
 
@@ -149,7 +149,7 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     for (int i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(int*)args[i]);
     }
-    mp_obj_t res = rt_call_function_n_kw(func, cif->nargs, 0, pyargs);
+    mp_obj_t res = mp_call_function_n_kw(func, cif->nargs, 0, pyargs);
 
     *(ffi_arg*)ret = mp_obj_int_get(res);
 }
@@ -165,10 +165,10 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     o->rettype = *rettype;
 
-    mp_obj_t iterable = rt_getiter(paramtypes_in);
+    mp_obj_t iterable = mp_getiter(paramtypes_in);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
         o->params[i++] = get_ffi_type(item);
     }
 
@@ -348,8 +348,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);
 
 void ffi_init() {
     mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("ffi"));
-    rt_store_attr(m, MP_QSTR_open, (mp_obj_t)&mod_ffi_open_obj);
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("callback"), (mp_obj_t)&mod_ffi_callback_obj);
+    mp_store_attr(m, MP_QSTR_open, (mp_obj_t)&mod_ffi_open_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("callback"), (mp_obj_t)&mod_ffi_callback_obj);
     // there would be as_bytes, but bytes currently is value, not reference type!
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("as_bytearray"), (mp_obj_t)&mod_ffi_as_bytearray_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("as_bytearray"), (mp_obj_t)&mod_ffi_as_bytearray_obj);
 }

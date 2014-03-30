@@ -162,7 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
-    exc = rt_make_raise_obj(exc);
+    exc = mp_make_raise_obj(exc);
     if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_GeneratorExit)) {
         // Throwing GeneratorExit is equivalent of calling close aka
         // GeneratorExit should be handled specially

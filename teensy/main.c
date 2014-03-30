@@ -186,7 +186,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     
     // set pin
     pinMode(pin, OUTPUT);
-    digitalWrite(pin, rt_is_true(args[1]));
+    digitalWrite(pin, mp_obj_is_true(args[1]));
     return mp_const_none;
 
 pin_error:
@@ -237,7 +237,7 @@ mp_obj_t pyb_delay(mp_obj_t count) {
 }
 
 mp_obj_t pyb_led(mp_obj_t state) {
-    led_state(PYB_LED_BUILTIN, rt_is_true(state));
+    led_state(PYB_LED_BUILTIN, mp_obj_is_true(state));
     return state;
 }
 
@@ -368,7 +368,7 @@ bool do_file(const char *filename) {
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        rt_call_function_0(module_fun);
+        mp_call_function_0(module_fun);
         nlr_pop();
         return true;
     } else {
@@ -427,7 +427,7 @@ void do_repl(void) {
                 nlr_buf_t nlr;
                 uint32_t start = micros();
                 if (nlr_push(&nlr) == 0) {
-                    rt_call_function_0(module_fun);
+                    mp_call_function_0(module_fun);
                     nlr_pop();
                     // optional timing
                     if (0) {
@@ -468,28 +468,28 @@ soft_reset:
     gc_init(&_heap_start, (void*)HEAP_END);
 
     qstr_init();
-    rt_init();
+    mp_init();
 
     // add some functions to the python namespace
     {
-        rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
+        mp_store_name(MP_QSTR_help, mp_make_function_n(0, pyb_help));
         mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
-        rt_store_attr(m, MP_QSTR_info, rt_make_function_n(0, pyb_info));
-        rt_store_attr(m, MP_QSTR_source_dir, rt_make_function_n(1, pyb_source_dir));
-        rt_store_attr(m, MP_QSTR_main, rt_make_function_n(1, pyb_main));
-        rt_store_attr(m, MP_QSTR_gc, rt_make_function_n(0, pyb_gc));
-        rt_store_attr(m, MP_QSTR_delay, rt_make_function_n(1, pyb_delay));
-        rt_store_attr(m, MP_QSTR_led, rt_make_function_n(1, pyb_led));
-        rt_store_attr(m, MP_QSTR_Led, rt_make_function_n(1, pyb_Led));
-        rt_store_attr(m, MP_QSTR_analogRead, rt_make_function_n(1, pyb_analog_read));
-        rt_store_attr(m, MP_QSTR_analogWrite, rt_make_function_n(2, pyb_analog_write));
-        rt_store_attr(m, MP_QSTR_analogWriteResolution, rt_make_function_n(1, pyb_analog_write_resolution));
-        rt_store_attr(m, MP_QSTR_analogWriteFrequency, rt_make_function_n(2, pyb_analog_write_frequency));
+        mp_store_attr(m, MP_QSTR_info, mp_make_function_n(0, pyb_info));
+        mp_store_attr(m, MP_QSTR_source_dir, mp_make_function_n(1, pyb_source_dir));
+        mp_store_attr(m, MP_QSTR_main, mp_make_function_n(1, pyb_main));
+        mp_store_attr(m, MP_QSTR_gc, mp_make_function_n(0, pyb_gc));
+        mp_store_attr(m, MP_QSTR_delay, mp_make_function_n(1, pyb_delay));
+        mp_store_attr(m, MP_QSTR_led, mp_make_function_n(1, pyb_led));
+        mp_store_attr(m, MP_QSTR_Led, mp_make_function_n(1, pyb_Led));
+        mp_store_attr(m, MP_QSTR_analogRead, mp_make_function_n(1, pyb_analog_read));
+        mp_store_attr(m, MP_QSTR_analogWrite, mp_make_function_n(2, pyb_analog_write));
+        mp_store_attr(m, MP_QSTR_analogWriteResolution, mp_make_function_n(1, pyb_analog_write_resolution));
+        mp_store_attr(m, MP_QSTR_analogWriteFrequency, mp_make_function_n(2, pyb_analog_write_frequency));
 
-        rt_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
-        rt_store_attr(m, MP_QSTR_Servo, rt_make_function_n(0, pyb_Servo));
-        rt_store_name(MP_QSTR_pyb, m);
-        rt_store_name(MP_QSTR_run, rt_make_function_n(1, pyb_run));
+        mp_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
+        mp_store_attr(m, MP_QSTR_Servo, mp_make_function_n(0, pyb_Servo));
+        mp_store_name(MP_QSTR_pyb, m);
+        mp_store_name(MP_QSTR_run, mp_make_function_n(1, pyb_run));
     }
 
     printf("About execute /boot.py\n");

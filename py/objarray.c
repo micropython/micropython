@@ -61,10 +61,10 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
     mp_obj_array_t *array = array_new(typecode, len);
 
-    mp_obj_t iterable = rt_getiter(initializer);
+    mp_obj_t iterable = mp_getiter(initializer);
     mp_obj_t item;
     int i = 0;
-    while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
         if (len == 0) {
             array_append(array, item);
         } else {
@@ -99,8 +99,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bytearray_obj, mp_builtin_bytearray);
 STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     mp_obj_array_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
-        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
+        case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -108,7 +108,7 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
 STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_array_t *o = lhs;
     switch (op) {
-        case RT_BINARY_OP_SUBSCR:
+        case MP_BINARY_OP_SUBSCR:
         {
             uint index = mp_get_index(o->base.type, o->len, rhs, false);
             return mp_binary_get_val(o->typecode, o->items, index);

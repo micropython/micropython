@@ -20,7 +20,7 @@ STATIC mp_obj_t zip_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     o->base.type = &mp_type_zip;
     o->n_iters = n_args;
     for (int i = 0; i < n_args; i++) {
-        o->iters[i] = rt_getiter(args[i]);
+        o->iters[i] = mp_getiter(args[i]);
     }
     return o;
 }
@@ -40,7 +40,7 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     mp_obj_tuple_get(o, NULL, &items);
 
     for (int i = 0; i < self->n_iters; i++) {
-        mp_obj_t next = rt_iternext(self->iters[i]);
+        mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_NULL) {
             mp_obj_tuple_del(o);
             return MP_OBJ_NULL;

@@ -25,7 +25,7 @@ STATIC mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     o->n_iters = n_args - 1;
     o->fun = args[0];
     for (int i = 0; i < n_args - 1; i++) {
-        o->iters[i] = rt_getiter(args[i + 1]);
+        o->iters[i] = mp_getiter(args[i + 1]);
     }
     return o;
 }
@@ -40,14 +40,14 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);
 
     for (int i = 0; i < self->n_iters; i++) {
-        mp_obj_t next = rt_iternext(self->iters[i]);
+        mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_NULL) {
             m_del(mp_obj_t, nextses, self->n_iters);
             return MP_OBJ_NULL;
         }
         nextses[i] = next;
     }
-    return rt_call_function_n_kw(self->fun, self->n_iters, 0, nextses);
+    return mp_call_function_n_kw(self->fun, self->n_iters, 0, nextses);
 }
 
 const mp_obj_type_t mp_type_map = {

@@ -17,7 +17,7 @@ STATIC void none_print(void (*print)(void *env, const char *fmt, ...), void *env
 
 STATIC mp_obj_t none_unary_op(int op, mp_obj_t o_in) {
     switch (op) {
-        case RT_UNARY_OP_BOOL: return mp_const_false;
+        case MP_UNARY_OP_BOOL: return mp_const_false;
         default: return MP_OBJ_NULL; // op not supported for None
     }
 }

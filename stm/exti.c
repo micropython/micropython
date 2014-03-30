@@ -284,7 +284,7 @@ static void exti_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
 static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
-    rt_check_nargs(n_args, 4, 4, n_kw, 0);
+    mp_check_nargs(n_args, 4, 4, n_kw, 0);
 
     exti_obj_t *self = m_new_obj(exti_obj_t);
     self->base.type = type_in;
@@ -336,7 +336,7 @@ static void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
-                rt_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
             }
         }
     }

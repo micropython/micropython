@@ -244,7 +244,7 @@ bool mp_obj_is_exception_instance(mp_obj_t self_in) {
 // exception type.
 bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type) {
     // TODO: move implementation from RT_BINARY_OP_EXCEPTION_MATCH here.
-    return rt_binary_op(RT_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
+    return mp_binary_op(MP_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
 }
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {

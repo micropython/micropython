@@ -50,10 +50,10 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         case 1:
         {
             // make list from iterable
-            mp_obj_t iterable = rt_getiter(args[0]);
+            mp_obj_t iterable = mp_getiter(args[0]);
             mp_obj_t list = mp_obj_new_list(0, NULL);
             mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
                 mp_obj_list_append(list, item);
             }
             return list;
@@ -65,7 +65,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     return NULL;
 }
 
-// Don't pass RT_BINARY_OP_NOT_EQUAL here
+// Don't pass MP_BINARY_OP_NOT_EQUAL here
 STATIC bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     if (!MP_OBJ_IS_TYPE(another_in, &mp_type_list)) {
@@ -80,8 +80,8 @@ STATIC bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
 STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
     mp_obj_list_t *self = self_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
-        case RT_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
+        case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
         default: return MP_OBJ_NULL; // op not supported for None
     }
 }
@@ -89,7 +89,7 @@ STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
 STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = lhs;
     switch (op) {
-        case RT_BINARY_OP_SUBSCR:
+        case MP_BINARY_OP_SUBSCR:
         {
 #if MICROPY_ENABLE_SLICE
             if (MP_OBJ_IS_TYPE(rhs, &mp_type_slice)) {
@@ -105,7 +105,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             uint index = mp_get_index(o->base.type, o->len, rhs, false);
             return o->items[index];
         }
-        case RT_BINARY_OP_ADD:
+        case MP_BINARY_OP_ADD:
         {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
                 return NULL;
@@ -115,7 +115,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
-        case RT_BINARY_OP_INPLACE_ADD:
+        case MP_BINARY_OP_INPLACE_ADD:
         {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
                 return NULL;
@@ -123,7 +123,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             list_extend(lhs, rhs);
             return o;
         }
-        case RT_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_MULTIPLY:
         {
             if (!MP_OBJ_IS_SMALL_INT(rhs)) {
                 return NULL;
@@ -133,14 +133,14 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return s;
         }
-        case RT_BINARY_OP_EQUAL:
-        case RT_BINARY_OP_LESS:
-        case RT_BINARY_OP_LESS_EQUAL:
-        case RT_BINARY_OP_MORE:
-        case RT_BINARY_OP_MORE_EQUAL:
+        case MP_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(list_cmp_helper(op, lhs, rhs));
-        case RT_BINARY_OP_NOT_EQUAL:
-            return MP_BOOL(!list_cmp_helper(RT_BINARY_OP_EQUAL, lhs, rhs));
+        case MP_BINARY_OP_NOT_EQUAL:
+            return MP_BOOL(!list_cmp_helper(MP_BINARY_OP_EQUAL, lhs, rhs));
 
         default:
             // op not supported
@@ -201,14 +201,14 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
 
 // TODO make this conform to CPython's definition of sort
 STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool reversed) {
-    int op = reversed ? RT_BINARY_OP_MORE : RT_BINARY_OP_LESS;
+    int op = reversed ? MP_BINARY_OP_MORE : MP_BINARY_OP_LESS;
     while (head < tail) {
         mp_obj_t *h = head - 1;
         mp_obj_t *t = tail;
-        mp_obj_t v = key_fn == NULL ? tail[0] : rt_call_function_1(key_fn, tail[0]); // get pivot using key_fn
+        mp_obj_t v = key_fn == NULL ? tail[0] : mp_call_function_1(key_fn, tail[0]); // get pivot using key_fn
         for (;;) {
-            do ++h; while (rt_binary_op(op, key_fn == NULL ? h[0] : rt_call_function_1(key_fn, h[0]), v) == mp_const_true);
-            do --t; while (h < t && rt_binary_op(op, v, key_fn == NULL ? t[0] : rt_call_function_1(key_fn, t[0])) == mp_const_true);
+            do ++h; while (mp_binary_op(op, key_fn == NULL ? h[0] : mp_call_function_1(key_fn, h[0]), v) == mp_const_true);
+            do --t; while (h < t && mp_binary_op(op, v, key_fn == NULL ? t[0] : mp_call_function_1(key_fn, t[0])) == mp_const_true);
             if (h >= t) break;
             mp_obj_t x = h[0];
             h[0] = t[0];
@@ -235,7 +235,7 @@ mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
         mp_map_elem_t *reverse = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_reverse), MP_MAP_LOOKUP);
         mp_quicksort(self->items, self->items + self->len - 1,
                      keyfun ? keyfun->value : NULL,
-                     reverse && reverse->value ? rt_is_true(reverse->value) : false);
+                     reverse && reverse->value ? mp_obj_is_true(reverse->value) : false);
     }
     return mp_const_none; // return None, as per CPython
 }

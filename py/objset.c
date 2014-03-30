@@ -57,9 +57,9 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         {
             // 1 argument, an iterable from which we make a new set
             mp_obj_t set = mp_obj_new_set(0, NULL);
-            mp_obj_t iterable = rt_getiter(args[0]);
+            mp_obj_t iterable = mp_getiter(args[0]);
             mp_obj_t item;
-            while ((item = rt_iternext(iterable)) != MP_OBJ_NULL) {
+            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
                 mp_obj_set_store(set, item);
             }
             return set;
@@ -160,9 +160,9 @@ STATIC mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
         if (self == other) {
             set_clear(self);
         } else {
-            mp_obj_t iter = rt_getiter(other);
+            mp_obj_t iter = mp_getiter(other);
             mp_obj_t next;
-            while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+            while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
                 set_discard(self, next);
             }
         }
@@ -191,9 +191,9 @@ STATIC mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update)
     mp_obj_set_t *self = self_in;
     mp_obj_set_t *out = mp_obj_new_set(0, NULL);
 
-    mp_obj_t iter = rt_getiter(other);
+    mp_obj_t iter = mp_getiter(other);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             set_add(out, next);
         }
@@ -223,9 +223,9 @@ STATIC mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = self_in;
 
-    mp_obj_t iter = rt_getiter(other);
+    mp_obj_t iter = mp_getiter(other);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             return mp_const_false;
         }
@@ -330,9 +330,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = self_in;
-    mp_obj_t iter = rt_getiter(other_in);
+    mp_obj_t iter = mp_getiter(other_in);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return mp_const_none;
@@ -348,9 +348,9 @@ STATIC mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
 
 STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
-    mp_obj_t iter = rt_getiter(other_in);
+    mp_obj_t iter = mp_getiter(other_in);
     mp_obj_t next;
-    while ((next = rt_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
 }
@@ -379,35 +379,35 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
     switch (op) {
-    case RT_BINARY_OP_OR:
+    case MP_BINARY_OP_OR:
         return set_union(lhs, rhs);
-    case RT_BINARY_OP_XOR:
+    case MP_BINARY_OP_XOR:
         return set_symmetric_difference(lhs, rhs);
-    case RT_BINARY_OP_AND:
+    case MP_BINARY_OP_AND:
         return set_intersect(lhs, rhs);
-    case RT_BINARY_OP_SUBTRACT:
+    case MP_BINARY_OP_SUBTRACT:
         return set_diff(2, args);
-    case RT_BINARY_OP_INPLACE_OR:
+    case MP_BINARY_OP_INPLACE_OR:
         return set_union(lhs, rhs);
-    case RT_BINARY_OP_INPLACE_XOR:
+    case MP_BINARY_OP_INPLACE_XOR:
         return set_symmetric_difference(lhs, rhs);
-    case RT_BINARY_OP_INPLACE_AND:
+    case MP_BINARY_OP_INPLACE_AND:
         return set_intersect(lhs, rhs);
-    case RT_BINARY_OP_INPLACE_SUBTRACT:
+    case MP_BINARY_OP_INPLACE_SUBTRACT:
         return set_diff(2, args);
-    case RT_BINARY_OP_LESS:
+    case MP_BINARY_OP_LESS:
         return set_issubset_proper(lhs, rhs);
-    case RT_BINARY_OP_MORE:
+    case MP_BINARY_OP_MORE:
         return set_issuperset_proper(lhs, rhs);
-    case RT_BINARY_OP_EQUAL:
+    case MP_BINARY_OP_EQUAL:
         return set_equal(lhs, rhs);
-    case RT_BINARY_OP_LESS_EQUAL:
+    case MP_BINARY_OP_LESS_EQUAL:
         return set_issubset(lhs, rhs);
-    case RT_BINARY_OP_MORE_EQUAL:
+    case MP_BINARY_OP_MORE_EQUAL:
         return set_issuperset(lhs, rhs);
-    case RT_BINARY_OP_NOT_EQUAL:
+    case MP_BINARY_OP_NOT_EQUAL:
         return MP_BOOL(set_equal(lhs, rhs) == mp_const_false);
-    case RT_BINARY_OP_IN:
+    case MP_BINARY_OP_IN:
     {
         mp_obj_set_t *o = lhs;
         mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);

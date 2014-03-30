@@ -76,7 +76,7 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 
 STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    rt_check_nargs(n_args, 0, 0, n_kw, false);
+    mp_check_nargs(n_args, 0, 0, n_kw, false);
 
     // init accel object
     pyb_accel_obj.base.type = &pyb_accel_type;
@@ -135,7 +135,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
         tuple[i] = mp_obj_new_int(val);
     }
 
-    return rt_build_tuple(3, tuple);
+    return mp_build_tuple(3, tuple);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);

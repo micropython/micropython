@@ -140,7 +140,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, mp_builtin_open);
 
 void file_init() {
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    rt_store_attr(m_sys, MP_QSTR_stdin, fdfile_new(STDIN_FILENO));
-    rt_store_attr(m_sys, MP_QSTR_stdout, fdfile_new(STDOUT_FILENO));
-    rt_store_attr(m_sys, MP_QSTR_stderr, fdfile_new(STDERR_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stdin, fdfile_new(STDIN_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stdout, fdfile_new(STDOUT_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stderr, fdfile_new(STDERR_FILENO));
 }

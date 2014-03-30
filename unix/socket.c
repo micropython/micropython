@@ -314,7 +314,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     }
     assert(addr);
 
-    mp_obj_t list = rt_build_list(0, NULL);
+    mp_obj_t list = mp_build_list(0, NULL);
     for (; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
         t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_family);
@@ -328,7 +328,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
             t->items[3] = mp_const_none;
         }
         t->items[4] = mp_obj_new_bytearray(addr->ai_addrlen, addr->ai_addr);
-        rt_list_append(list, t);
+        mp_list_append(list, t);
     }
     return list;
 }
@@ -366,15 +366,15 @@ static const struct sym_entry {
 
 void microsocket_init() {
     mp_obj_t m = mp_obj_new_module(MP_QSTR_microsocket);
-    rt_store_attr(m, MP_QSTR_socket, (mp_obj_t)&microsocket_type);
+    mp_store_attr(m, MP_QSTR_socket, (mp_obj_t)&microsocket_type);
 #if MICROPY_SOCKET_EXTRA
-    rt_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
-    rt_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
-    rt_store_attr(m, MP_QSTR_inet_aton, (mp_obj_t)&mod_socket_inet_aton_obj);
-    rt_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
+    mp_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
+    mp_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
+    mp_store_attr(m, MP_QSTR_inet_aton, (mp_obj_t)&mod_socket_inet_aton_obj);
+    mp_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
 #endif
-    rt_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
+    mp_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
     for (const struct sym_entry *p = constants; p->sym != NULL; p++) {
-        rt_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
+        mp_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
     }
 }

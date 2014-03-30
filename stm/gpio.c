@@ -46,7 +46,7 @@ mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
         }
     } else {
         // set pin
-        if (rt_is_true(args[1])) {
+        if (mp_obj_is_true(args[1])) {
             // set pin high
             port->BSRRL = pin_mask;
         } else {

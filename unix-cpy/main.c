@@ -61,7 +61,7 @@ void do_file(const char *file) {
 
 int main(int argc, char **argv) {
     qstr_init();
-    rt_init();
+    mp_init();
 
     if (argc == 2) {
         do_file(argv[1]);
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         printf("usage: py [<file>]\n");
         return 1;
     }
-    rt_deinit();
+    mp_deinit();
 
     return 0;
 }
