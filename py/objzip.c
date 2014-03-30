@@ -25,10 +25,6 @@ STATIC mp_obj_t zip_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     return o;
 }
 
-STATIC mp_obj_t zip_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
 STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_zip));
     mp_obj_zip_t *self = self_in;
@@ -54,6 +50,6 @@ const mp_obj_type_t mp_type_zip = {
     { &mp_type_type },
     .name = MP_QSTR_zip,
     .make_new = zip_make_new,
-    .getiter = zip_getiter,
+    .getiter = mp_identity,
     .iternext = zip_iternext,
 };
