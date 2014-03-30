@@ -205,6 +205,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, 0);
     o->base.type = exc_type;
     o->traceback = MP_OBJ_NULL;
+    o->args.base.type = &mp_type_tuple;
     o->args.len = 0;
 
     if (fmt == NULL) {
