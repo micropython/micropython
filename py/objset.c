@@ -72,6 +72,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
 const mp_obj_type_t mp_type_set_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = set_it_iternext,
 };
 

@@ -885,6 +885,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t mp_type_str_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = str_it_iternext,
 };
 
@@ -903,6 +904,7 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t mp_type_bytes_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = bytes_it_iternext,
 };
 

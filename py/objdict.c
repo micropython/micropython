@@ -107,6 +107,7 @@ mp_obj_t dict_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t mp_type_dict_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = dict_it_iternext,
 };
 
@@ -336,6 +337,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t dict_view_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = dict_view_it_iternext,
 };
 

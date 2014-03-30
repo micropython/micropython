@@ -219,6 +219,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t array_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = array_it_iternext,
 };
 
