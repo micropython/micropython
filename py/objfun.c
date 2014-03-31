@@ -151,15 +151,17 @@ typedef struct _mp_obj_fun_bc_t {
     mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args and/or kw args (if it takes them)
 } mp_obj_fun_bc_t;
 
-void dump_args(const mp_obj_t *a, int sz) {
 #if DEBUG_PRINT
+STATIC void dump_args(const mp_obj_t *a, int sz) {
     DEBUG_printf("%p: ", a);
     for (int i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
-#endif
 }
+#else
+#define dump_args(...) (void)0
+#endif
 
 // If it's possible to call a function without allocating new argument array,
 // this function returns true, together with pointers to 2 subarrays to be used
