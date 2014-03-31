@@ -764,7 +764,7 @@ yield:
                         if (inject_exc != MP_OBJ_NULL) {
                             t_exc = inject_exc;
                             inject_exc = MP_OBJ_NULL;
-                            ret_kind = mp_resume(TOP(), mp_const_none, t_exc, &obj2);
+                            ret_kind = mp_resume(TOP(), MP_OBJ_NULL, t_exc, &obj2);
                         } else {
                             ret_kind = mp_resume(TOP(), obj1, MP_OBJ_NULL, &obj2);
                         }

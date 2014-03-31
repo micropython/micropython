@@ -915,6 +915,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
 
 // TODO: Unclear what to do with StopIterarion exception here.
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     mp_obj_type_t *type = mp_obj_get_type(self_in);
 
     if (type == &mp_type_gen_instance) {
