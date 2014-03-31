@@ -8,6 +8,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "pfenv.h"
 #if 0
 #include "lcd.h"
 #endif
@@ -17,89 +18,6 @@
 #if MICROPY_ENABLE_FLOAT
 #include "formatfloat.h"
 #endif
-
-#define PF_FLAG_LEFT_ADJUST (0x01)
-#define PF_FLAG_SHOW_SIGN   (0x02)
-#define PF_FLAG_SPACE_SIGN  (0x04)
-#define PF_FLAG_NO_TRAILZ   (0x08)
-#define PF_FLAG_ZERO_PAD    (0x10)
-
-// tricky; we compute pad string by: pad_chars + (flags & PF_FLAG_ZERO_PAD)
-#define PF_PAD_SIZE PF_FLAG_ZERO_PAD
-static const char *pad_chars = "                0000000000000000";
-
-typedef struct _pfenv_t {
-    void *data;
-    void (*print_strn)(void *, const char *str, unsigned int len);
-} pfenv_t;
-
-static void print_str_dummy(void *data, const char *str, unsigned int len) {
-}
-
-const pfenv_t pfenv_dummy = {0, print_str_dummy};
-
-static int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, int flags, int width) {
-    int pad = width - len;
-    if (pad > 0 && (flags & PF_FLAG_LEFT_ADJUST) == 0) {
-        while (pad > 0) {
-            int p = pad;
-            if (p > PF_PAD_SIZE)
-                p = PF_PAD_SIZE;
-            pfenv->print_strn(pfenv->data, pad_chars + (flags & PF_FLAG_ZERO_PAD), p);
-            pad -= p;
-        }
-    }
-    pfenv->print_strn(pfenv->data, str, len);
-    while (pad > 0) {
-        int p = pad;
-        if (p > PF_PAD_SIZE)
-            p = PF_PAD_SIZE;
-        pfenv->print_strn(pfenv->data, pad_chars, p);
-        pad -= p;
-    }
-    return len;
-}
-
-// enough room for 32 signed number
-#define INT_BUF_SIZE (12)
-
-static int pfenv_print_int(const pfenv_t *pfenv, unsigned int x, int sgn, int base, int base_char, int flags, int width) {
-    char sign = 0;
-    if (sgn) {
-        if ((int)x < 0) {
-            sign = '-';
-            x = -x;
-        } else if (flags & PF_FLAG_SHOW_SIGN) {
-            sign = '+';
-        } else if (flags & PF_FLAG_SPACE_SIGN) {
-            sign = ' ';
-        }
-    }
-
-    char buf[INT_BUF_SIZE];
-    char *b = buf + INT_BUF_SIZE;
-
-    if (x == 0) {
-        *(--b) = '0';
-    } else {
-        do {
-            int c = x % base;
-            x /= base;
-            if (c >= 10) {
-                c += base_char - 10;
-            } else {
-                c += '0';
-            }
-            *(--b) = c;
-        } while (b > buf && x != 0);
-    }
-
-    if (b > buf && sign != 0) {
-        *(--b) = sign;
-    }
-
-    return pfenv_print_strn(pfenv, b, buf + INT_BUF_SIZE - b, flags, width);
-}
 
 void pfenv_prints(const pfenv_t *pfenv, const char *str) {
     pfenv->print_strn(pfenv->data, str, strlen(str));
@@ -129,13 +47,16 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 
         // parse flags, if they exist
         int flags = 0;
+        char fill = ' ';
         while (*fmt != '\0') {
             if (*fmt == '-') flags |= PF_FLAG_LEFT_ADJUST;
             else if (*fmt == '+') flags |= PF_FLAG_SHOW_SIGN;
             else if (*fmt == ' ') flags |= PF_FLAG_SPACE_SIGN;
             else if (*fmt == '!') flags |= PF_FLAG_NO_TRAILZ;
-            else if (*fmt == '0') flags |= PF_FLAG_ZERO_PAD;
-            else break;
+            else if (*fmt == '0') {
+                flags |= PF_FLAG_PAD_AFTER_SIGN;
+                fill = '0';
+            } else break;
             ++fmt;
         }
 
@@ -177,15 +98,15 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
         switch (*fmt) {
             case 'b':
                 if (va_arg(args, int)) {
-                    chrs += pfenv_print_strn(pfenv, "true", 4, flags, width);
+                    chrs += pfenv_print_strn(pfenv, "true", 4, flags, fill, width);
                 } else {
-                    chrs += pfenv_print_strn(pfenv, "false", 5, flags, width);
+                    chrs += pfenv_print_strn(pfenv, "false", 5, flags, fill, width);
                 }
                 break;
             case 'c':
             {
                 char str = va_arg(args, int);
-                chrs += pfenv_print_strn(pfenv, &str, 1, flags, width);
+                chrs += pfenv_print_strn(pfenv, &str, 1, flags, fill, width);
                 break;
             }
             case 's':
@@ -195,25 +116,25 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                     if (prec < 0) {
                         prec = strlen(str);
                     }
-                    chrs += pfenv_print_strn(pfenv, str, prec, flags, width);
+                    chrs += pfenv_print_strn(pfenv, str, prec, flags, fill, width);
                 } else {
-                    chrs += pfenv_print_strn(pfenv, "(null)", 6, flags, width);
+                    chrs += pfenv_print_strn(pfenv, "(null)", 6, flags, fill, width);
                 }
                 break;
             }
             case 'u':
-                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 10, 'a', flags, width);
+                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 10, 'a', flags, fill, width);
                 break;
             case 'd':
-                chrs += pfenv_print_int(pfenv, va_arg(args, int), 1, 10, 'a', flags, width);
+                chrs += pfenv_print_int(pfenv, va_arg(args, int), 1, 10, 'a', flags, fill, width);
                 break;
             case 'x':
             case 'p': // ?
-                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'a', flags, width);
+                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'a', flags, fill, width);
                 break;
             case 'X':
             case 'P': // ?
-                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, width);
+                chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, fill, width);
                 break;
 #if MICROPY_ENABLE_FLOAT
             case 'e':
@@ -223,33 +144,18 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
             case 'g':
             case 'G':
             {
-                char buf[32];
-                char sign = '\0';
-
-                if (flags & PF_FLAG_SHOW_SIGN) {
-                    sign = '+';
-                }
-                else
-                if (flags & PF_FLAG_SPACE_SIGN) {
-                    sign = ' ';
-                }
-                float f = va_arg(args, double);
-                int len = format_float(f, buf, sizeof(buf), *fmt, prec, sign);
-                char *s = buf;
-
-                // buf[0] < '0' returns true if the first character is space, + or -
-                // buf[1] < '9' matches a digit, and doesn't match when we get back +nan or +inf
-                if (buf[0] < '0' && buf[1] <= '9' && (flags & PF_FLAG_ZERO_PAD)) {
-                    chrs += pfenv_print_strn(pfenv, &buf[0], 1, 0, 1);
-                    s++;
-                    width--;
-                    len--;
-                }
-                if (*s < '0' || *s >= '9') {
-                    // For inf or nan, we don't want to zero pad.
-                    flags &= ~PF_FLAG_ZERO_PAD;
-                }
-                chrs += pfenv_print_strn(pfenv, s, len, flags, width); 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+                mp_float_t f = va_arg(args, double);
+                chrs += pfenv_print_float(pfenv, f, *fmt, flags, fill, width, prec);
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+                // Currently pfenv_print_float uses snprintf, so if you want
+                // to use pfenv_print_float with doubles then you'll need
+                // fix it to not use snprintf first. Otherwise you'll have
+                // inifinite recursion.
+#error Calling pfenv_print_float with double not supported from within printf
+#else
+#error Unknown MICROPY FLOAT IMPL
+#endif
                 break;
             }
 #endif
@@ -338,7 +244,7 @@ void strn_print_strn(void *data, const char *str, unsigned int len) {
     strn_pfenv->cur += len;
     strn_pfenv->remain -= len;
 }
-
+    
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
     strn_pfenv_t strn_pfenv;
     strn_pfenv.cur = str;
