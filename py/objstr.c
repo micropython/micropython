@@ -17,6 +17,7 @@ typedef struct _mp_obj_str_t {
     const byte *data;
 } mp_obj_str_t;
 
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args);
 const mp_obj_t mp_const_empty_bytes;
 
 // use this macro to extract the string hash
@@ -283,6 +284,19 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return mp_obj_str_builder_end(s);
         }
 
+        case MP_BINARY_OP_MODULO: {
+            mp_obj_t *args;
+            uint n_args;
+            if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple)) {
+                // TODO: Support tuple subclasses?
+                mp_obj_tuple_get(rhs_in, &n_args, &args);
+            } else {
+                args = &rhs_in;
+                n_args = 1;
+            }
+            return str_modulo_format(lhs_in, n_args, args);
+        }
+
         // These 2 are never passed here, dealt with as a special case in mp_binary_op().
         //case MP_BINARY_OP_EQUAL:
         //case MP_BINARY_OP_NOT_EQUAL:
@@ -501,6 +515,47 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
         } else {
             vstr_add_char(vstr, *str);
         }
+    }
+
+    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    vstr_free(vstr);
+    return s;
+}
+
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_STR(pattern));
+
+    GET_STR_DATA_LEN(pattern, str, len);
+    int arg_i = 0;
+    vstr_t *vstr = vstr_new();
+    for (const byte *top = str + len; str < top; str++) {
+        if (*str == '%') {
+            if (++str >= top) {
+                break;
+            }
+            if (*str == '%') {
+                vstr_add_char(vstr, '%');
+            } else {
+                if (arg_i >= n_args) {
+                    nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
+                }
+                switch (*str) {
+                    case 's':
+                        mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_STR);
+                        break;
+                    case 'r':
+                        mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_REPR);
+                        break;
+                }
+                arg_i++;
+            }
+        } else {
+            vstr_add_char(vstr, *str);
+        }
+    }
+
+    if (arg_i != n_args) {
+        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "not all arguments converted during string formatting"));
     }
 
     mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
