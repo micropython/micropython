@@ -1534,35 +1534,41 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 // TODO preload end and step onto stack if they are not constants
-// TODO check if step is negative and do opposite test
+// Note that, as per semantics of for .. range, the final failing value should not be stored in the loop variable
+// And, if the loop never runs, the loop variable should never be assigned
 void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
 
     int top_label = comp_next_label(comp);
     int entry_label = comp_next_label(comp);
 
-    // compile: var = start
+    // compile: start, duplicated on stack
     compile_node(comp, pn_start);
-    c_assign(comp, pn_var, ASSIGN_STORE);
+    EMIT(dup_top);
 
     EMIT_ARG(jump, entry_label);
     EMIT_ARG(label_assign, top_label);
+
+    // at this point we actually have 1 less element on the stack
+    EMIT_ARG(set_stack_size, EMIT(get_stack_size) - 1);
+
+    // store next value to var
+    c_assign(comp, pn_var, ASSIGN_STORE);
 
     // compile body
     compile_node(comp, pn_body);
 
     EMIT_ARG(label_assign, continue_label);
 
-    // compile: var += step
-    c_assign(comp, pn_var, ASSIGN_AUG_LOAD);
+    // compile: var + step, duplicated on stack
+    compile_node(comp, pn_var);
     compile_node(comp, pn_step);
     EMIT_ARG(binary_op, MP_BINARY_OP_INPLACE_ADD);
-    c_assign(comp, pn_var, ASSIGN_AUG_STORE);
+    EMIT(dup_top);
 
     EMIT_ARG(label_assign, entry_label);
 
     // compile: if var <cond> end: goto top
-    compile_node(comp, pn_var);
     compile_node(comp, pn_end);
     assert(MP_PARSE_NODE_IS_SMALL_INT(pn_step));
     if (MP_PARSE_NODE_LEAF_SMALL_INT(pn_step) >= 0) {
@@ -1571,6 +1577,9 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
         EMIT_ARG(binary_op, MP_BINARY_OP_MORE);
     }
     EMIT_ARG(pop_jump_if_true, top_label);
+
+    // discard final value of var that failed the loop condition
+    EMIT(pop_top);
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
