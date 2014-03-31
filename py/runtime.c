@@ -877,6 +877,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
 
 // TODO: Unclear what to do with StopIterarion exception here.
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     mp_obj_type_t *type = mp_obj_get_type(self_in);
 
     if (type == &mp_type_gen_instance) {
@@ -922,9 +923,20 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
                 return MP_VM_RETURN_NORMAL;
             }
         }
-        mp_load_method(self_in, MP_QSTR_throw, dest);
-        *ret_val = mp_call_method_n_kw(1, 0, &throw_value);
-        return MP_VM_RETURN_YIELD;
+        mp_load_method_maybe(self_in, MP_QSTR_throw, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            *ret_val = mp_call_method_n_kw(1, 0, &throw_value);
+            // If .throw() method returned, we assume it's value to yield
+            // - any exception would be thrown with nlr_jump().
+            return MP_VM_RETURN_YIELD;
+        }
+        // If there's nowhere to throw exception into, then we assume that object
+        // is just incapable to handle it, so any exception thrown into it
+        // will be propagated up. This behavior is approved by test_pep380.py
+        // test_delegation_of_close_to_non_generator(),
+        //  test_delegating_throw_to_non_generator()
+        *ret_val = throw_value;
+        return MP_VM_RETURN_EXCEPTION;
     }
 
     assert(0);
