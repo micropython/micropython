@@ -297,6 +297,10 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
 STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
+    if (attr == MP_QSTR___name__) {
+        dest[0] = MP_OBJ_NEW_QSTR(self->name);
+        return;
+    }
     mp_obj_t member = mp_obj_class_lookup(self, attr);
     if (member != MP_OBJ_NULL) {
         // check if the methods are functions, static or class methods
