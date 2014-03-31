@@ -10,6 +10,10 @@
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
 
 void vstr_init(vstr_t *vstr, int alloc) {
+    if (alloc < 2) {
+        // need at least 1 byte for the null byte at the end
+        alloc = 2;
+    }
     vstr->alloc = alloc;
     vstr->len = 0;
     vstr->buf = m_new(char, vstr->alloc);
