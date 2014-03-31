@@ -24,6 +24,7 @@
 #include "lexerfatfs.h"
 #include "parse.h"
 #include "obj.h"
+#include "objmodule.h"
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
@@ -232,12 +233,12 @@ soft_reset:
 
     // Micro Python init
     qstr_init();
-    rt_init();
+    mp_init();
     mp_obj_t def_path[3];
     def_path[0] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_);
     def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_src);
     def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
-    sys_path = mp_obj_new_list(3, def_path);
+    mp_sys_path = mp_obj_new_list(3, def_path);
 
     exti_init();
 
@@ -269,12 +270,11 @@ soft_reset:
     pin_map_init();
 
     // add some functions to the builtin Python namespace
-    rt_store_name(MP_QSTR_help, rt_make_function_n(0, pyb_help));
-    rt_store_name(MP_QSTR_open, rt_make_function_n(2, pyb_io_open));
+    mp_store_name(MP_QSTR_help, mp_make_function_n(0, pyb_help));
+    mp_store_name(MP_QSTR_open, mp_make_function_n(2, pyb_io_open));
 
-    // we pre-import the pyb module
-    // probably shouldn't do this, so we are compatible with CPython
-    rt_store_name(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
+    // load the pyb module
+    mp_module_register(MP_QSTR_pyb, (mp_obj_t)&pyb_module);
 
     // check if user switch held (initiates reset of filesystem)
     bool reset_filesystem = false;

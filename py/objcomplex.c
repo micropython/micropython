@@ -8,9 +8,12 @@
 #include "obj.h"
 #include "parsenum.h"
 #include "runtime0.h"
-#include "map.h"
 
 #if MICROPY_ENABLE_FLOAT
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#include "formatfloat.h"
+#endif
 
 typedef struct _mp_obj_complex_t {
     mp_obj_base_t base;
@@ -22,11 +25,24 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 
 STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_complex_t *o = o_in;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    char buf[32];
+    if (o->real == 0) {
+        format_float(o->imag, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "%sj", buf);
+    } else {
+        format_float(o->real, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "(%s+", buf);
+        format_float(o->imag, buf, sizeof(buf), 'g', 6, '\0');
+        print(env, "%sj)", buf);
+    }
+#else
     if (o->real == 0) {
         print(env, "%.8gj",  (double) o->imag);
     } else {
         print(env, "(%.8g+%.8gj)", (double) o->real, (double) o->imag);
     }
+#endif
 }
 
 STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -77,9 +93,9 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
 STATIC mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
     mp_obj_complex_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(o->real != 0 || o->imag != 0);
-        case RT_UNARY_OP_POSITIVE: return o_in;
-        case RT_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
+        case MP_UNARY_OP_BOOL: return MP_BOOL(o->real != 0 || o->imag != 0);
+        case MP_UNARY_OP_POSITIVE: return o_in;
+        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -117,18 +133,18 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
     mp_float_t rhs_real, rhs_imag;
     mp_obj_get_complex(rhs_in, &rhs_real, &rhs_imag); // can be any type, this function will convert to float (if possible)
     switch (op) {
-        case RT_BINARY_OP_ADD:
-        case RT_BINARY_OP_INPLACE_ADD:
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_INPLACE_ADD:
             lhs_real += rhs_real;
             lhs_imag += rhs_imag;
             break;
-        case RT_BINARY_OP_SUBTRACT:
-        case RT_BINARY_OP_INPLACE_SUBTRACT:
+        case MP_BINARY_OP_SUBTRACT:
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
             lhs_real -= rhs_real;
             lhs_imag -= rhs_imag;
             break;
-        case RT_BINARY_OP_MULTIPLY:
-        case RT_BINARY_OP_INPLACE_MULTIPLY:
+        case MP_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_INPLACE_MULTIPLY:
         {
             mp_float_t real = lhs_real * rhs_real - lhs_imag * rhs_imag;
             lhs_imag = lhs_real * rhs_imag + lhs_imag * rhs_real;
@@ -136,12 +152,12 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
             break;
         }
         /* TODO floor(?) the value
-        case RT_BINARY_OP_FLOOR_DIVIDE:
-        case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
+        case MP_BINARY_OP_FLOOR_DIVIDE:
+        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
         */
         /* TODO
-        case RT_BINARY_OP_TRUE_DIVIDE:
-        case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: val = lhs_val / rhs_val; break;
+        case MP_BINARY_OP_TRUE_DIVIDE:
+        case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: val = lhs_val / rhs_val; break;
         */
         return NULL; // op not supported
     }

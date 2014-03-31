@@ -9,7 +9,6 @@
 #include "obj.h"
 #include "runtime.h"
 #include "nlr.h"
-#include "map.h"
 
 #include "pin.h"
 
@@ -23,7 +22,7 @@
 //
 // CPU pins which correspond to the board pins are available
 // as pyb.cpu.Name. For the CPU pins, the names are the port letter
-// followed by the pin number. On the PYBOARD4, pyb.Pin.board.X1 and
+// followed by the pin number. On the PYBV4, pyb.Pin.board.X1 and
 // pyb.Pin.cpu.B6 are the same pin.
 //
 // You can also use strings:
@@ -69,7 +68,7 @@ static void pin_map_obj_print(void (*print)(void *env, const char *fmt, ...), vo
 
 static mp_obj_t pin_map_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     pin_map_obj_t *self = self_in;
-    rt_check_nargs(n_args, 1, 2, n_kw, false);
+    mp_check_nargs(n_args, 1, 2, n_kw, false);
 
     if (n_args > 1) {
         if (!self->map_dict) {
@@ -96,7 +95,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_obj_mapper_obj, 1, 2, pin_map
 static mp_obj_t pin_map_obj_debug(uint n_args, mp_obj_t *args) {
     pin_map_obj_t *self = args[0];
     if (n_args > 1) {
-        self->debug = rt_is_true(args[1]);
+        self->debug = mp_obj_is_true(args[1]);
         return mp_const_none;
     }
     return MP_BOOL(self->debug);
@@ -162,7 +161,7 @@ const pin_obj_t *pin_map_user_obj(mp_obj_t user_obj) {
     }
 
     if (pin_map_obj.mapper) {
-        pin_obj = rt_call_function_1(pin_map_obj.mapper, user_obj);
+        pin_obj = mp_call_function_1(pin_map_obj.mapper, user_obj);
         if (pin_obj != mp_const_none) {
             if (!MP_OBJ_IS_TYPE(pin_obj, &pin_obj_type)) {
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin.mapper didn't return a Pin object"));

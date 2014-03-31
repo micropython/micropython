@@ -8,7 +8,6 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtin.h"
 
 #if MICROPY_ENABLE_FLOAT
@@ -22,15 +21,15 @@ STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args);
 
     // we differ from CPython: we set the new __locals__ object here
-    mp_map_t *old_locals = rt_locals_get();
+    mp_map_t *old_locals = mp_locals_get();
     mp_obj_t class_locals = mp_obj_new_dict(0);
-    rt_locals_set(mp_obj_dict_get_map(class_locals));
+    mp_locals_set(mp_obj_dict_get_map(class_locals));
 
     // call the class code
-    mp_obj_t cell = rt_call_function_1(args[0], (mp_obj_t)0xdeadbeef);
+    mp_obj_t cell = mp_call_function_1(args[0], (mp_obj_t)0xdeadbeef);
 
     // restore old __locals__ object
-    rt_locals_set(old_locals);
+    mp_locals_set(old_locals);
 
     // get the class type (meta object) from the base objects
     mp_obj_t meta;
@@ -49,7 +48,7 @@ STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     meta_args[0] = args[1]; // class name
     meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
     meta_args[2] = class_locals; // dict of members
-    mp_obj_t new_class = rt_call_function_n_kw(meta, 3, 0, meta_args);
+    mp_obj_t new_class = mp_call_function_n_kw(meta, 3, 0, meta_args);
 
     // store into cell if neede
     if (cell != mp_const_none) {
@@ -101,10 +100,10 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
 STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
-    mp_obj_t iterable = rt_getiter(o_in);
+    mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-        if (!rt_is_true(item)) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        if (!mp_obj_is_true(item)) {
             return mp_const_false;
         }
     }
@@ -114,10 +113,10 @@ STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_all_obj, mp_builtin_all);
 
 STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
-    mp_obj_t iterable = rt_getiter(o_in);
+    mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-        if (rt_is_true(item)) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        if (mp_obj_is_true(item)) {
             return mp_const_true;
         }
     }
@@ -151,28 +150,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
-    mp_map_t *map;
+    mp_map_t *map = NULL;
     if (n_args == 0) {
         // make a list of names in the local name space
-        map = rt_locals_get();
+        map = mp_locals_get();
     } else { // n_args == 1
         // make a list of names in the given object
-        mp_obj_type_t *type = mp_obj_get_type(args[0]);
-        if (type == &mp_type_module) {
+        if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
             map = mp_obj_module_get_globals(args[0]);
-        } else if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &dict_type)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
         } else {
-            return mp_obj_new_list(0, NULL);
+            mp_obj_type_t *type;
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+                type = args[0];
+            } else {
+                type = mp_obj_get_type(args[0]);
+            }
+            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
+                map = mp_obj_dict_get_map(type->locals_dict);
+            }
         }
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
-    for (uint i = 0; i < map->alloc; i++) {
-        if (map->table[i].key != MP_OBJ_NULL) {
-            mp_obj_list_append(dir, map->table[i].key);
+    if (map != NULL) {
+        for (uint i = 0; i < map->alloc; i++) {
+            if (map->table[i].key != MP_OBJ_NULL) {
+                mp_obj_list_append(dir, map->table[i].key);
+            }
         }
     }
+
     return dir;
 }
 
@@ -185,7 +192,7 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
         args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
-        return rt_build_tuple(2, args);
+        return mp_build_tuple(2, args);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
@@ -201,7 +208,7 @@ STATIC mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
 
 STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
-    return rt_getiter(o_in);
+    return mp_getiter(o_in);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
@@ -220,10 +227,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_builtin_len);
 STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
-        mp_obj_t iterable = rt_getiter(args[0]);
+        mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t max_obj = NULL;
         mp_obj_t item;
-        while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
             if (max_obj == NULL || mp_obj_less(max_obj, item)) {
                 max_obj = item;
             }
@@ -249,10 +256,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_max_obj, 1, mp_builtin_max);
 STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
-        mp_obj_t iterable = rt_getiter(args[0]);
+        mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t min_obj = NULL;
         mp_obj_t item;
-        while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
             if (min_obj == NULL || mp_obj_less(item, min_obj)) {
                 min_obj = item;
             }
@@ -276,8 +283,8 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_min_obj, 1, mp_builtin_min);
 
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
-    mp_obj_t ret = rt_iternext(o);
-    if (ret == mp_const_stop_iteration) {
+    mp_obj_t ret = mp_iternext_allow_raise(o);
+    if (ret == MP_OBJ_NULL) {
         nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
@@ -303,8 +310,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 STATIC mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     switch (n_args) {
-        case 2: return rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]);
-        default: return rt_binary_op(RT_BINARY_OP_MODULO, rt_binary_op(RT_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
+        case 2: return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
+        default: return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
     }
 }
 
@@ -351,10 +358,10 @@ STATIC mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
         case 1: value = mp_obj_new_int(0); break;
         default: value = args[1]; break;
     }
-    mp_obj_t iterable = rt_getiter(args[0]);
+    mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
-        value = rt_binary_op(RT_BINARY_OP_ADD, value, item);
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        value = mp_binary_op(MP_BINARY_OP_ADD, value, item);
     }
     return value;
 }
@@ -367,7 +374,7 @@ STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "must use keyword argument for key function"));
     }
-    mp_obj_t self = list_type.make_new((mp_obj_t)&list_type, 1, 0, args);
+    mp_obj_t self = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;
@@ -380,3 +387,10 @@ STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
+
+STATIC mp_obj_t mp_builtin_getattr(mp_obj_t o_in, mp_obj_t attr) {
+    assert(MP_OBJ_IS_QSTR(attr));
+    return mp_load_attr(o_in, MP_OBJ_QSTR_VALUE(attr));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_getattr_obj, mp_builtin_getattr);

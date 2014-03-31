@@ -33,24 +33,35 @@ static mp_obj_t switch_user_callback_obj;
 
 static mp_obj_t switch_callback(mp_obj_t line) {
     if (switch_user_callback_obj != mp_const_none) {
-        rt_call_function_0(switch_user_callback_obj);
+        mp_call_function_0(switch_user_callback_obj);
     }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 
+// this function inits the switch GPIO so that it can be used
+void switch_init0(void) {
+    GPIO_InitTypeDef init;
+    init.Pin = MICROPY_HW_USRSW_PIN.pin_mask;
+    init.Mode = GPIO_MODE_INPUT;
+    init.Pull = MICROPY_HW_USRSW_PULL;
+    init.Speed = GPIO_SPEED_FAST;
+    HAL_GPIO_Init(MICROPY_HW_USRSW_PIN.gpio, &init);
+}
+
+// this function inits the callback and EXTI function of the switch
 void switch_init(void) {
     switch_user_callback_obj = mp_const_none;
-    exti_register((mp_obj_t)&USRSW_PIN,
-                  MP_OBJ_NEW_SMALL_INT(USRSW_EXTI_MODE),
-                  MP_OBJ_NEW_SMALL_INT(USRSW_PULL),
+    exti_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
+                  MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_EXTI_MODE),
+                  MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_PULL),
                   (mp_obj_t)&switch_callback_obj,
                   NULL);
 }
 
 int switch_get(void) {
-    int val = ((USRSW_PIN.gpio->IDR & USRSW_PIN.pin_mask) != 0);
-    return val == USRSW_PRESSED;
+    int val = ((MICROPY_HW_USRSW_PIN.gpio->IDR & MICROPY_HW_USRSW_PIN.pin_mask) != 0);
+    return val == MICROPY_HW_USRSW_PRESSED;
 }
 
 /******************************************************************************/

@@ -19,14 +19,13 @@ void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, m
     print(env, "Ellipsis");
 }
 
-const mp_obj_type_t ellipsis_type = {
+const mp_obj_type_t mp_type_ellipsis = {
     { &mp_type_type },
     .name = MP_QSTR_Ellipsis,
     .print = ellipsis_print,
 };
 
-STATIC const mp_obj_ellipsis_t ellipsis_obj = {{&ellipsis_type}};
-const mp_obj_t mp_const_ellipsis = (mp_obj_t)&ellipsis_obj;
+const mp_obj_ellipsis_t mp_const_ellipsis_obj = {{&mp_type_ellipsis}};
 
 /******************************************************************************/
 /* slice object                                                               */
@@ -46,7 +45,7 @@ void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
     print(env, "slice(" INT_FMT ", " INT_FMT ")", o->start, o->stop);
 }
 
-const mp_obj_type_t slice_type = {
+const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
@@ -73,14 +72,14 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
         }
     }
     mp_obj_slice_t *o = m_new(mp_obj_slice_t, 1);
-    o->base.type = &slice_type;
+    o->base.type = &mp_type_slice;
     o->start = start;
     o->stop = stop;
     return (mp_obj_t)o;
 }
 
 void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step) {
-    assert(MP_OBJ_IS_TYPE(self_in, &slice_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_slice));
     mp_obj_slice_t *self = self_in;
     *start = self->start;
     *stop = self->stop;

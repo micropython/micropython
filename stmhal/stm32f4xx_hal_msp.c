@@ -5,16 +5,7 @@
   * @version V1.0.1
   * @date    26-February-2014
   * @brief   HAL MSP module.
-  *         
-  @verbatim
- ===============================================================================
-                     ##### How to use this driver #####
- ===============================================================================
-    [..]
-    This file is generated automatically by MicroXplorer and eventually modified 
-    by the user
-
-  @endverbatim
+  *
   ******************************************************************************
   * @attention
   *
@@ -47,28 +38,16 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 
-/** @addtogroup STM32F4xx_HAL_Driver
-  * @{
-  */
+#include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "obj.h"
+#include "servo.h"
 
-/** @defgroup HAL_MSP
-  * @brief HAL MSP module.
-  * @{
-  */
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
-
-/** @defgroup HAL_MSP_Private_Functions
-  * @{
-  */
+TIM_HandleTypeDef TIM3_Handle;
 
 /**
   * @brief  Initializes the Global MSP.
@@ -77,9 +56,21 @@
   */
 void HAL_MspInit(void) {
     // set up the timer for USBD CDC
-    USBD_CDC_TIMx_CLK_ENABLE();
-    HAL_NVIC_SetPriority(USBD_CDC_TIMx_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(USBD_CDC_TIMx_IRQn);
+    __TIM3_CLK_ENABLE();
+
+    TIM3_Handle.Instance = TIM3;
+    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
+    TIM3_Handle.Init.Prescaler = 84-1;
+    TIM3_Handle.Init.ClockDivision = 0;
+    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_Base_Init(&TIM3_Handle);
+
+    HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+
+    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
+        /* Starting Error */
+    }
 }
 
 /**
@@ -88,9 +79,9 @@ void HAL_MspInit(void) {
   * @retval None
   */
 void HAL_MspDeInit(void) {
-    // reset USBD CDC timer
-    USBD_CDC_TIMx_FORCE_RESET();
-    USBD_CDC_TIMx_RELEASE_RESET();
+    // reset TIM3 timer
+    __TIM3_FORCE_RESET();
+    __TIM3_RELEASE_RESET();
 }
 
 /**
@@ -153,6 +144,14 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 {
   /*##-1- Reset peripherals ##################################################*/
    __HAL_RCC_RTC_DISABLE();
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    if (htim == &TIM3_Handle) {
+        USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+    } else if (htim == &TIM2_Handle) {
+        servo_timer_irq_callback();
+    }
 }
 
 /**

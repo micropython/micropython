@@ -27,7 +27,7 @@ mp_obj_t pyb_gpio(uint n_args, mp_obj_t *args) {
     }
 
     // set pin
-    HAL_GPIO_WritePin(pin->gpio, pin->pin_mask, rt_is_true(args[1]));
+    HAL_GPIO_WritePin(pin->gpio, pin->pin_mask, mp_obj_is_true(args[1]));
     return mp_const_none;
 }
 

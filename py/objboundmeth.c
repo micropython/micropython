@@ -24,13 +24,13 @@ mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
         mp_obj_t args2[5];
         args2[0] = self->self;
         memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
-        return rt_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
+        return mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
     } else {
         // use heap to allocate temporary args array
         mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_total);
         args2[0] = self->self;
         memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
-        mp_obj_t res = rt_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
+        mp_obj_t res = mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
         m_del(mp_obj_t, args2, 1 + n_total);
         return res;
     }

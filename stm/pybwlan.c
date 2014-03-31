@@ -21,7 +21,6 @@
 #include "lexer.h"
 #include "parse.h"
 #include "obj.h"
-#include "map.h"
 #include "runtime.h"
 
 #include "cc3k/ccspi.h"

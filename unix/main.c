@@ -84,7 +84,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     // execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        rt_call_function_0(module_fun);
+        mp_call_function_0(module_fun);
         nlr_pop();
     } else {
         // uncaught exception
@@ -191,17 +191,18 @@ static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
 static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
 static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
-static const mp_method_t test_methods[] = {
-    { "get", &test_get_obj },
-    { "set", &test_set_obj },
-    { NULL, NULL },
+static const mp_map_elem_t test_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
 
 static const mp_obj_type_t test_type = {
     { &mp_type_type },
     .name = MP_QSTR_Test,
     .print = test_print,
-    .methods = test_methods,
+    .locals_dict = (mp_obj_t)&test_locals_dict,
 };
 
 mp_obj_t test_obj_new(int value) {
@@ -276,7 +277,7 @@ int main(int argc, char **argv) {
 #endif
 
     qstr_init();
-    rt_init();
+    mp_init();
 
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
@@ -290,9 +291,9 @@ int main(int argc, char **argv) {
             p++;
         }
     }
-    sys_path = mp_obj_new_list(path_num, NULL);
+    mp_sys_path = mp_obj_new_list(path_num, NULL);
     mp_obj_t *path_items;
-    mp_obj_list_get(sys_path, &path_num, &path_items);
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     char *p = path;
     for (int i = 1; i < path_num; i++) {
@@ -313,15 +314,15 @@ int main(int argc, char **argv) {
     }
 
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    rt_store_attr(m_sys, MP_QSTR_path, sys_path);
+    mp_store_attr(m_sys, MP_QSTR_path, mp_sys_path);
     mp_obj_t py_argv = mp_obj_new_list(0, NULL);
-    rt_store_attr(m_sys, MP_QSTR_argv, py_argv);
+    mp_store_attr(m_sys, MP_QSTR_argv, py_argv);
 
-    rt_store_name(qstr_from_str("test"), test_obj_new(42));
-    rt_store_name(qstr_from_str("mem_info"), rt_make_function_n(0, mem_info));
-    rt_store_name(qstr_from_str("qstr_info"), rt_make_function_n(0, qstr_info));
+    mp_store_name(qstr_from_str("test"), test_obj_new(42));
+    mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
+    mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
 #if MICROPY_ENABLE_GC
-    rt_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
+    mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
 #endif
 
     file_init();
@@ -342,8 +343,8 @@ int main(int argc, char **argv) {
     // test_obj.attr = 42
     mp_obj_t test_class_type, test_class_instance;
     test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    rt_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = rt_call_function_0(test_class_type));
-    rt_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
@@ -376,7 +377,7 @@ int main(int argc, char **argv) {
                 free(basedir);
             }
             for (int i = a; i < argc; i++) {
-                rt_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                mp_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
             do_file(argv[a]);
             executed = true;
@@ -388,7 +389,7 @@ int main(int argc, char **argv) {
         do_repl();
     }
 
-    rt_deinit();
+    mp_deinit();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;

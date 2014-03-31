@@ -10,6 +10,10 @@
 #include "mpz.h"
 #include "objint.h"
 
+#if MICROPY_ENABLE_FLOAT
+#include <math.h>
+#endif
+
 // This dispatcher function is expected to be independent of the implementation
 // of long int
 STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -25,6 +29,10 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_integer(s, l, 0);
+#if MICROPY_ENABLE_FLOAT
+            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
+                return MP_OBJ_NEW_SMALL_INT((machine_int_t)(MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
+#endif
             } else {
                 return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
             }
@@ -101,9 +109,15 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
+#if MICROPY_ENABLE_FLOAT
+mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+#endif
+
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
-const mp_obj_type_t int_type = {
+const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
     .print = int_print,

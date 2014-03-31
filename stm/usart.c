@@ -235,19 +235,20 @@ static MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
 static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
 static MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
 
-STATIC const mp_method_t usart_methods[] = {
-    { "status", &usart_obj_status_obj },
-    { "recv_chr", &usart_obj_rx_char_obj },
-    { "send_chr", &usart_obj_tx_char_obj },
-    { "send", &usart_obj_tx_str_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t usart_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&usart_obj_status_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_chr), (mp_obj_t)&usart_obj_rx_char_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send_chr), (mp_obj_t)&usart_obj_tx_char_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&usart_obj_tx_str_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(usart_locals_dict, usart_locals_dict_table);
 
 STATIC const mp_obj_type_t usart_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_Usart,
     .print = usart_obj_print,
-    .methods = usart_methods,
+    .locals_dict = (mp_obj_t)&usart_locals_dict,
 };
 
 STATIC mp_obj_t pyb_Usart(mp_obj_t usart_id, mp_obj_t baudrate) {

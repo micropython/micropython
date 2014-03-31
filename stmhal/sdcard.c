@@ -8,14 +8,12 @@
 #include "obj.h"
 #include "runtime.h"
 #include "sdcard.h"
+#include "pin.h"
+#include "build/pins.h"
+
+#if MICROPY_HW_HAS_SDCARD
 
 static SD_HandleTypeDef sd_handle;
-
-#define SDCARD_DETECT_GPIO_PORT (GPIOA)
-#define SDCARD_DETECT_GPIO_PIN (GPIO_PIN_8)
-#define SDCARD_DETECT_GPIO_PULL (GPIO_PULLUP)
-#define SDCARD_DETECT_GPIO_PRESENT (GPIO_PIN_RESET)
-#define __SDCARD_DETECT_GPIO_CLK_ENABLE() __GPIOA_CLK_ENABLE()
 
 void sdcard_init(void) {
     GPIO_InitTypeDef GPIO_Init_Structure;
@@ -38,10 +36,10 @@ void sdcard_init(void) {
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
     GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
-    GPIO_Init_Structure.Pull = SDCARD_DETECT_GPIO_PULL;
+    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
     GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Pin = SDCARD_DETECT_GPIO_PIN;
-    HAL_GPIO_Init(SDCARD_DETECT_GPIO_PORT, &GPIO_Init_Structure);
+    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
+    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
@@ -59,7 +57,7 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
 }
 
 bool sdcard_is_present(void) {
-    return HAL_GPIO_ReadPin(SDCARD_DETECT_GPIO_PORT, SDCARD_DETECT_GPIO_PIN) == SDCARD_DETECT_GPIO_PRESENT;
+    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN.gpio, MICROPY_HW_SDCARD_DETECT_PIN.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
 }
 
 bool sdcard_power_on(void) {
@@ -210,7 +208,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sd_present_obj, sd_present);
 
 static mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
     bool result;
-    if (rt_is_true(state)) {
+    if (mp_obj_is_true(state)) {
         result = sdcard_power_on();
     } else {
         sdcard_power_off();
@@ -232,17 +230,20 @@ static mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
 
 static MP_DEFINE_CONST_FUN_OBJ_2(sd_read_obj, sd_read);
 
-static const mp_method_t sdcard_methods[] = {
-    { "present", &sd_present_obj },
-    { "power", &sd_power_obj },
-    { "read", &sd_read_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t sdcard_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_present), (mp_obj_t)&sd_present_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_power), (mp_obj_t)&sd_power_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&sd_read_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(sdcard_locals_dict, sdcard_locals_dict_table);
 
 static const mp_obj_type_t sdcard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDcard,
-    .methods = sdcard_methods,
+    .locals_dict = (mp_obj_t)&sdcard_locals_dict,
 };
 
 const mp_obj_base_t pyb_sdcard_obj = {&sdcard_type};
+
+#endif // MICROPY_HW_HAS_SDCARD

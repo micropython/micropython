@@ -27,7 +27,7 @@
   ******************************************************************************
   */
 
-#include "usbd_msc.h"
+#include "usbd_cdc_msc_hid.h"
 #include "usbd_msc_storage.h"
 
 #include "misc.h"
@@ -41,7 +41,7 @@
 static const int8_t FLASH_STORAGE_Inquirydata[] = { // 36 bytes
     // LUN 0
     0x00,
-    0x00, // 0x00 for a fixed drive, 0x80 for a removable drive
+    0x80, // 0x00 for a fixed drive, 0x80 for a removable drive
     0x02,
     0x02,
     (STANDARD_INQUIRY_DATA_LEN - 5),
@@ -158,6 +158,8 @@ const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops = {
 
 /******************************************************************************/
 // Callback functions for when the SD card is the mass storage device
+
+#if MICROPY_HW_HAS_SDCARD
 
 static const int8_t SDCARD_STORAGE_Inquirydata[] = { // 36 bytes
     // LUN 0
@@ -318,3 +320,5 @@ const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops = {
     SDCARD_STORAGE_GetMaxLun,
     (int8_t *)SDCARD_STORAGE_Inquirydata,
 };
+
+#endif // MICROPY_HW_HAS_SDCARD

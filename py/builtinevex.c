@@ -12,7 +12,6 @@
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
-#include "map.h"
 #include "builtin.h"
 
 STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
@@ -43,7 +42,7 @@ STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse
     }
 
     // complied successfully, execute it
-    return rt_call_function_0(module_fun);
+    return mp_call_function_0(module_fun);
 }
 
 STATIC mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
@@ -55,8 +54,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
 STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
     // Unconditional getting/setting assumes that these operations
     // are cheap, which is the case when this comment was written.
-    mp_map_t *old_globals = rt_globals_get();
-    mp_map_t *old_locals = rt_locals_get();
+    mp_map_t *old_globals = mp_globals_get();
+    mp_map_t *old_locals = mp_locals_get();
     if (n_args > 1) {
         mp_obj_t globals = args[1];
         mp_obj_t locals;
@@ -65,13 +64,13 @@ STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
         } else {
             locals = globals;
         }
-        rt_globals_set(mp_obj_dict_get_map(globals));
-        rt_locals_set(mp_obj_dict_get_map(locals));
+        mp_globals_set(mp_obj_dict_get_map(globals));
+        mp_locals_set(mp_obj_dict_get_map(locals));
     }
     mp_obj_t res = parse_compile_execute(args[0], MP_PARSE_FILE_INPUT);
     // TODO if the above call throws an exception, then we never get to reset the globals/locals
-    rt_globals_set(old_globals);
-    rt_locals_set(old_locals);
+    mp_globals_set(old_globals);
+    mp_locals_set(old_locals);
     return res;
 }
 

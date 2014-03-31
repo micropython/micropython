@@ -36,7 +36,8 @@ typedef struct _scope_t {
     int num_dict_params;
     */
     int num_locals;
-    int stack_size;
+    int stack_size;     // maximum size of the locals stack
+    int exc_stack_size; // maximum size of the exception stack
     uint unique_code_id;
     uint emit_options;
 } scope_t;

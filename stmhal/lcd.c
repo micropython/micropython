@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <stm32f4xx_hal.h>
 
@@ -16,14 +17,14 @@
 #include "font_petme128_8x8.h"
 #include "lcd.h"
 
-#if defined(PYBOARD3)
+#if defined(PYBV3)
 #define PYB_LCD_PORT        (GPIOA)
 #define PYB_LCD_CS1_PIN     (GPIO_PIN_0)
 #define PYB_LCD_RST_PIN     (GPIO_PIN_1)
 #define PYB_LCD_A0_PIN      (GPIO_PIN_2)
 #define PYB_LCD_SCL_PIN     (GPIO_PIN_3)
 #define PYB_LCD_SI_PIN      (GPIO_PIN_4)
-#elif defined(PYBOARD4)
+#elif defined(PYBV4) || defined(PYBV10)
 // X position
 #define PYB_LCD_PORT       (GPIOA)
 #define PYB_LCD_CS1_PIN    (GPIO_PIN_2) // X3
@@ -59,8 +60,12 @@
 #define LCD_INSTR (0)
 #define LCD_DATA (1)
 
+static void lcd_delay(void) {
+    __asm volatile ("nop\nnop");
+}
+
 static void lcd_out(int instr_data, uint8_t i) {
-    HAL_Delay(0);
+    lcd_delay();
     PYB_LCD_PORT->BSRRH = PYB_LCD_CS1_PIN; // CS=0; enable
     if (instr_data == LCD_INSTR) {
         PYB_LCD_PORT->BSRRH = PYB_LCD_A0_PIN; // A0=0; select instr reg
@@ -69,7 +74,7 @@ static void lcd_out(int instr_data, uint8_t i) {
     }
     // send byte bigendian, latches on rising clock
     for (uint32_t n = 0; n < 8; n++) {
-        HAL_Delay(0);
+        lcd_delay();
         PYB_LCD_PORT->BSRRH = PYB_LCD_SCL_PIN; // SCL=0
         if ((i & 0x80) == 0) {
             PYB_LCD_PORT->BSRRH = PYB_LCD_SI_PIN; // SI=0
@@ -77,7 +82,7 @@ static void lcd_out(int instr_data, uint8_t i) {
             PYB_LCD_PORT->BSRRL = PYB_LCD_SI_PIN; // SI=1
         }
         i <<= 1;
-        HAL_Delay(0);
+        lcd_delay();
         PYB_LCD_PORT->BSRRL = PYB_LCD_SCL_PIN; // SCL=1
     }
     PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN; // CS=1; disable
@@ -209,7 +214,7 @@ mp_obj_t lcd_print(mp_obj_t text) {
 
 mp_obj_t lcd_light(mp_obj_t value) {
 #if defined(PYB_LCD_BL_PORT)
-    if (rt_is_true(value)) {
+    if (mp_obj_is_true(value)) {
         PYB_LCD_BL_PORT->BSRRL = PYB_LCD_BL_PIN; // set pin high to turn backlight on
     } else {
         PYB_LCD_BL_PORT->BSRRH = PYB_LCD_BL_PIN; // set pin low to turn backlight off
@@ -286,14 +291,14 @@ static mp_obj_t pyb_lcd_init(void) {
 
     // Micro Python interface
     mp_obj_t o = mp_obj_new_type(MP_QSTR_LCD, mp_const_empty_tuple, mp_obj_new_dict(0));
-    rt_store_attr(o, qstr_from_str("lcd8"), rt_make_function_n(2, lcd_draw_pixel_8));
-    rt_store_attr(o, qstr_from_str("clear"), rt_make_function_n(0, lcd_pix_clear));
-    rt_store_attr(o, qstr_from_str("get"), rt_make_function_n(2, lcd_pix_get));
-    rt_store_attr(o, qstr_from_str("set"), rt_make_function_n(2, lcd_pix_set));
-    rt_store_attr(o, qstr_from_str("reset"), rt_make_function_n(2, lcd_pix_reset));
-    rt_store_attr(o, qstr_from_str("show"), rt_make_function_n(0, lcd_pix_show));
-    rt_store_attr(o, qstr_from_str("text"), rt_make_function_n(1, lcd_print));
-    rt_store_attr(o, qstr_from_str("light"), rt_make_function_n(1, lcd_light));
+    mp_store_attr(o, qstr_from_str("lcd8"), mp_make_function_n(2, lcd_draw_pixel_8));
+    mp_store_attr(o, qstr_from_str("clear"), mp_make_function_n(0, lcd_pix_clear));
+    mp_store_attr(o, qstr_from_str("get"), mp_make_function_n(2, lcd_pix_get));
+    mp_store_attr(o, qstr_from_str("set"), mp_make_function_n(2, lcd_pix_set));
+    mp_store_attr(o, qstr_from_str("reset"), mp_make_function_n(2, lcd_pix_reset));
+    mp_store_attr(o, qstr_from_str("show"), mp_make_function_n(0, lcd_pix_show));
+    mp_store_attr(o, qstr_from_str("text"), mp_make_function_n(1, lcd_print));
+    mp_store_attr(o, qstr_from_str("light"), mp_make_function_n(1, lcd_light));
     mp_lcd = o;
     return o;
 }
@@ -302,7 +307,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(pyb_lcd_init_obj, pyb_lcd_init);
 
 void lcd_init(void) {
     mp_lcd = MP_OBJ_NULL;
-    rt_store_name(qstr_from_str("LCD"), (mp_obj_t)&pyb_lcd_init_obj);
+    mp_store_name(qstr_from_str("LCD"), (mp_obj_t)&pyb_lcd_init_obj);
 }
 
 void lcd_print_str(const char *str) {

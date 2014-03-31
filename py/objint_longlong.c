@@ -32,10 +32,10 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
 mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case RT_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
-        case RT_UNARY_OP_POSITIVE: return o_in;
-        case RT_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
-        case RT_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
+        case MP_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
+        case MP_UNARY_OP_POSITIVE: return o_in;
+        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
+        case MP_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
         default: return NULL; // op not supported
     }
 }
@@ -46,7 +46,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
-    } else if (MP_OBJ_IS_TYPE(lhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
         lhs_val = ((mp_obj_int_t*)lhs_in)->val;
     } else {
         return MP_OBJ_NULL;
@@ -54,57 +54,57 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &int_type)) {
+    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t*)rhs_in)->val;
     } else {
         return MP_OBJ_NULL;
     }
 
     switch (op) {
-        case RT_BINARY_OP_ADD:
-        case RT_BINARY_OP_INPLACE_ADD:
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_INPLACE_ADD:
             return mp_obj_new_int_from_ll(lhs_val + rhs_val);
-        case RT_BINARY_OP_SUBTRACT:
-        case RT_BINARY_OP_INPLACE_SUBTRACT:
+        case MP_BINARY_OP_SUBTRACT:
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
             return mp_obj_new_int_from_ll(lhs_val - rhs_val);
-        case RT_BINARY_OP_MULTIPLY:
-        case RT_BINARY_OP_INPLACE_MULTIPLY:
+        case MP_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_INPLACE_MULTIPLY:
             return mp_obj_new_int_from_ll(lhs_val * rhs_val);
-        case RT_BINARY_OP_FLOOR_DIVIDE:
-        case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+        case MP_BINARY_OP_FLOOR_DIVIDE:
+        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             return mp_obj_new_int_from_ll(lhs_val / rhs_val);
-        case RT_BINARY_OP_MODULO:
-        case RT_BINARY_OP_INPLACE_MODULO:
+        case MP_BINARY_OP_MODULO:
+        case MP_BINARY_OP_INPLACE_MODULO:
             return mp_obj_new_int_from_ll(lhs_val % rhs_val);
 
-        case RT_BINARY_OP_AND:
-        case RT_BINARY_OP_INPLACE_AND:
+        case MP_BINARY_OP_AND:
+        case MP_BINARY_OP_INPLACE_AND:
             return mp_obj_new_int_from_ll(lhs_val & rhs_val);
-        case RT_BINARY_OP_OR:
-        case RT_BINARY_OP_INPLACE_OR:
+        case MP_BINARY_OP_OR:
+        case MP_BINARY_OP_INPLACE_OR:
             return mp_obj_new_int_from_ll(lhs_val | rhs_val);
-        case RT_BINARY_OP_XOR:
-        case RT_BINARY_OP_INPLACE_XOR:
+        case MP_BINARY_OP_XOR:
+        case MP_BINARY_OP_INPLACE_XOR:
             return mp_obj_new_int_from_ll(lhs_val ^ rhs_val);
 
-        case RT_BINARY_OP_LSHIFT:
-        case RT_BINARY_OP_INPLACE_LSHIFT:
+        case MP_BINARY_OP_LSHIFT:
+        case MP_BINARY_OP_INPLACE_LSHIFT:
             return mp_obj_new_int_from_ll(lhs_val << (int)rhs_val);
-        case RT_BINARY_OP_RSHIFT:
-        case RT_BINARY_OP_INPLACE_RSHIFT:
+        case MP_BINARY_OP_RSHIFT:
+        case MP_BINARY_OP_INPLACE_RSHIFT:
             return mp_obj_new_int_from_ll(lhs_val >> (int)rhs_val);
 
-        case RT_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS:
             return MP_BOOL(lhs_val < rhs_val);
-        case RT_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE:
             return MP_BOOL(lhs_val > rhs_val);
-        case RT_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_LESS_EQUAL:
             return MP_BOOL(lhs_val <= rhs_val);
-        case RT_BINARY_OP_MORE_EQUAL:
+        case MP_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(lhs_val >= rhs_val);
-        case RT_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_EQUAL:
             return MP_BOOL(lhs_val == rhs_val);
-        case RT_BINARY_OP_NOT_EQUAL:
+        case MP_BINARY_OP_NOT_EQUAL:
             return MP_BOOL(lhs_val != rhs_val);
 
         default:
@@ -131,7 +131,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &int_type;
+    o->base.type = &mp_type_int;
     o->val = val;
     return o;
 }
@@ -145,7 +145,7 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &int_type;
+    o->base.type = &mp_type_int;
     o->val = v;
     return o;
 }
@@ -153,14 +153,26 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
 machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        return self->val;
     }
-    mp_obj_int_t *self = self_in;
-    return self->val;
 }
 
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
     // TODO: Check overflow
     return mp_obj_int_get(self_in);
 }
+
+#if MICROPY_ENABLE_FLOAT
+mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        return self->val;
+    }
+}
+#endif
 
 #endif

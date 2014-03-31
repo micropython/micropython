@@ -70,7 +70,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
 
 STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    bool is_bytes = MP_OBJ_IS_TYPE(self_in, &bytes_type);
+    bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
     } else {
@@ -99,12 +99,12 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         case 3:
         {
             // TODO: validate 2nd/3rd args
-            if (!MP_OBJ_IS_TYPE(args[0], &bytes_type)) {
+            if (!MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "bytes expected"));
             }
             GET_STR_DATA_LEN(args[0], str_data, str_len);
             GET_STR_HASH(args[0], str_hash);
-            mp_obj_str_t *o = str_new(&str_type, NULL, str_len);
+            mp_obj_str_t *o = str_new(&mp_type_str, NULL, str_len);
             o->data = str_data;
             o->hash = str_hash;
             return o;
@@ -126,7 +126,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         }
         GET_STR_DATA_LEN(args[0], str_data, str_len);
         GET_STR_HASH(args[0], str_hash);
-        mp_obj_str_t *o = str_new(&bytes_type, NULL, str_len);
+        mp_obj_str_t *o = str_new(&mp_type_bytes, NULL, str_len);
         o->data = str_data;
         o->hash = str_hash;
         return o;
@@ -140,7 +140,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         byte *data;
 
-        mp_obj_t o = mp_obj_str_builder_start(&bytes_type, len, &data);
+        mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
         memset(data, 0, len);
         return mp_obj_str_builder_end(o);
     }
@@ -156,12 +156,12 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         vstr = vstr_new();
     } else {
         len = MP_OBJ_SMALL_INT_VALUE(len_in);
-        o = mp_obj_str_builder_start(&bytes_type, len, &data);
+        o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
     }
 
-    mp_obj_t iterable = rt_getiter(args[0]);
+    mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = rt_iternext(iterable)) != mp_const_stop_iteration) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
         if (len == -1) {
             vstr_add_char(vstr, MP_OBJ_SMALL_INT_VALUE(item));
         } else {
@@ -173,7 +173,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         vstr_shrink(vstr);
         // TODO: Optimize, borrow buffer from vstr
         len = vstr_len(vstr);
-        o = mp_obj_str_builder_start(&bytes_type, len, &data);
+        o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
         memcpy(data, vstr_str(vstr), len);
         vstr_free(vstr);
     }
@@ -186,19 +186,26 @@ wrong_args:
 
 // like strstr but with specified length and allows \0 bytes
 // TODO replace with something more efficient/standard
-STATIC const byte *find_subbytes(const byte *haystack, uint hlen, const byte *needle, uint nlen) {
+STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, const byte *needle, machine_uint_t nlen, machine_int_t direction) {
     if (hlen >= nlen) {
-        for (uint i = 0; i <= hlen - nlen; i++) {
-            bool found = true;
-            for (uint j = 0; j < nlen; j++) {
-                if (haystack[i + j] != needle[j]) {
-                    found = false;
-                    break;
-                }
+        machine_uint_t str_index, str_index_end;
+        if (direction > 0) {
+            str_index = 0;
+            str_index_end = hlen - nlen;
+        } else {
+            str_index = hlen - nlen;
+            str_index_end = 0;
+        }
+        for (;;) {
+            if (memcmp(&haystack[str_index], needle, nlen) == 0) {
+                //found
+                return haystack + str_index;
             }
-            if (found) {
-                return haystack + i;
+            if (str_index == str_index_end) {
+                //not found
+                break;
             }
+            str_index += direction;
         }
     }
     return NULL;
@@ -207,18 +214,18 @@ STATIC const byte *find_subbytes(const byte *haystack, uint hlen, const byte *ne
 STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
-        case RT_BINARY_OP_SUBSCR:
+        case MP_BINARY_OP_SUBSCR:
             // TODO: need predicate to check for int-like type (bools are such for example)
             // ["no", "yes"][1 == 2] is common idiom
             if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in, false);
-                if (MP_OBJ_IS_TYPE(lhs_in, &bytes_type)) {
+                if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_bytes)) {
                     return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
                 } else {
                     return mp_obj_new_str(lhs_data + index, 1, true);
                 }
 #if MICROPY_ENABLE_SLICE
-            } else if (MP_OBJ_IS_TYPE(rhs_in, &slice_type)) {
+            } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_slice)) {
                 machine_uint_t start, stop;
                 if (!m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop)) {
                     assert(0);
@@ -231,8 +238,8 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "index must be int"));
             }
 
-        case RT_BINARY_OP_ADD:
-        case RT_BINARY_OP_INPLACE_ADD:
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_INPLACE_ADD:
             if (MP_OBJ_IS_STR(rhs_in)) {
                 // add 2 strings
 
@@ -256,15 +263,15 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             break;
 
-        case RT_BINARY_OP_IN:
+        case MP_BINARY_OP_IN:
             /* NOTE `a in b` is `b.__contains__(a)` */
             if (MP_OBJ_IS_STR(rhs_in)) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
-                return MP_BOOL(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len) != NULL);
+                return MP_BOOL(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
             }
             break;
 
-        case RT_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_MULTIPLY:
         {
             if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
                 return NULL;
@@ -276,13 +283,13 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return mp_obj_str_builder_end(s);
         }
 
-        // These 2 are never passed here, dealt with as a special case in rt_binary_op().
-        //case RT_BINARY_OP_EQUAL:
-        //case RT_BINARY_OP_NOT_EQUAL:
-        case RT_BINARY_OP_LESS:
-        case RT_BINARY_OP_LESS_EQUAL:
-        case RT_BINARY_OP_MORE:
-        case RT_BINARY_OP_MORE_EQUAL:
+        // These 2 are never passed here, dealt with as a special case in mp_binary_op().
+        //case MP_BINARY_OP_EQUAL:
+        //case MP_BINARY_OP_NOT_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL:
             if (MP_OBJ_IS_STR(rhs_in)) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
                 return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
@@ -301,9 +308,9 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // process args
     uint seq_len;
     mp_obj_t *seq_items;
-    if (MP_OBJ_IS_TYPE(arg, &tuple_type)) {
+    if (MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
         mp_obj_tuple_get(arg, &seq_len, &seq_items);
-    } else if (MP_OBJ_IS_TYPE(arg, &list_type)) {
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
         mp_obj_list_get(arg, &seq_len, &seq_items);
     } else {
         goto bad_arg;
@@ -365,7 +372,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     while (s < top && splits != 0) {
         start = s;
         while (s < top && !is_ws(*s)) s++;
-        rt_list_append(res, mp_obj_new_str(start, s - start, false));
+        mp_list_append(res, mp_obj_new_str(start, s - start, false));
         if (s >= top) {
             break;
         }
@@ -376,13 +383,13 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     }
 
     if (s < top) {
-        rt_list_append(res, mp_obj_new_str(s, top - s, false));
+        mp_list_append(res, mp_obj_new_str(s, top - s, false));
     }
 
     return res;
 }
 
-STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
@@ -392,26 +399,29 @@ STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
 
     machine_uint_t start = 0;
     machine_uint_t end = haystack_len;
-    /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
-        start = mp_get_index(&str_type, haystack_len, args[2], true);
+        start = mp_get_index(&mp_type_str, haystack_len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = mp_get_index(&str_type, haystack_len, args[3], true);
+        end = mp_get_index(&mp_type_str, haystack_len, args[3], true);
     }
 
-    const byte *p = find_subbytes(haystack + start, haystack_len - start, needle, needle_len);
+    const byte *p = find_subbytes(haystack + start, end - start, needle, needle_len, direction);
     if (p == NULL) {
         // not found
         return MP_OBJ_NEW_SMALL_INT(-1);
     } else {
         // found
-        machine_int_t pos = p - haystack;
-        if (pos + needle_len > end) {
-            pos = -1;
-        }
-        return MP_OBJ_NEW_SMALL_INT(pos);
+        return MP_OBJ_NEW_SMALL_INT(p - haystack);
     }
+}
+
+STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
+    return str_finder(n_args, args, 1);
+}
+
+STATIC mp_obj_t str_rfind(uint n_args, const mp_obj_t *args) {
+    return str_finder(n_args, args, -1);
 }
 
 // TODO: (Much) more variety in args
@@ -422,15 +432,6 @@ STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
         return mp_const_false;
     }
     return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
-}
-
-STATIC bool chr_in_str(const byte* const str, const machine_uint_t str_len, int c) {
-    for (machine_uint_t i = 0; i < str_len; i++) {
-        if (str[i] == c) {
-            return true;
-        }
-    }
-    return false;
 }
 
 STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
@@ -457,7 +458,7 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     bool first_good_char_pos_set = false;
     machine_uint_t last_good_char_pos = 0;
     for (machine_uint_t i = 0; i < orig_str_len; i++) {
-        if (!chr_in_str(chars_to_del, chars_to_del_len, orig_str[i])) {
+        if (find_subbytes(chars_to_del, chars_to_del_len, &orig_str[i], 1, 1) == NULL) {
             last_good_char_pos = i;
             if (!first_good_char_pos_set) {
                 first_good_char_pos = i;
@@ -547,7 +548,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
         const byte *old_occurrence;
         const byte *offset_ptr = str;
         machine_uint_t offset_num = 0;
-        while ((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len)) != NULL) {
+        while ((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len, 1)) != NULL) {
             // copy from just after end of last occurrence of to-be-replaced string to right before start of next occurrence
             if (data != NULL) {
                 memcpy(data + replaced_str_index, offset_ptr, old_occurrence - offset_ptr);
@@ -601,12 +602,11 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 
     machine_uint_t start = 0;
     machine_uint_t end = haystack_len;
-    /* TODO use a non-exception-throwing mp_get_index */
     if (n_args >= 3 && args[2] != mp_const_none) {
-        start = mp_get_index(&str_type, haystack_len, args[2], true);
+        start = mp_get_index(&mp_type_str, haystack_len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = mp_get_index(&str_type, haystack_len, args[3], true);
+        end = mp_get_index(&mp_type_str, haystack_len, args[3], true);
     }
 
     // if needle_len is zero then we count each gap between characters as an occurrence
@@ -648,27 +648,12 @@ STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, machine_int_t di
         result[2] = self_in;
     }
 
-    if (str_len >= sep_len) {
-        machine_uint_t str_index, str_index_end;
-        if (direction > 0) {
-            str_index = 0;
-            str_index_end = str_len - sep_len;
-        } else {
-            str_index = str_len - sep_len;
-            str_index_end = 0;
-        }
-        for (;;) {
-            if (memcmp(&str[str_index], sep, sep_len) == 0) {
-                result[0] = mp_obj_new_str(str, str_index, false);
-                result[1] = arg;
-                result[2] = mp_obj_new_str(str + str_index + sep_len, str_len - str_index - sep_len, false);
-                break;
-            }
-            if (str_index == str_index_end) {
-                break;
-            }
-            str_index += direction;
-        }
+    const byte *position_ptr = find_subbytes(str, str_len, sep, sep_len, direction);
+    if (position_ptr != NULL) {
+        machine_uint_t position = position_ptr - str;
+        result[0] = mp_obj_new_str(str, position, false);
+        result[1] = arg;
+        result[2] = mp_obj_new_str(str + position + sep_len, str_len - position - sep_len, false);
     }
 
     return mp_obj_new_tuple(3, result);
@@ -697,6 +682,7 @@ STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, in
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
@@ -707,44 +693,46 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 
-STATIC const mp_method_t str_type_methods[] = {
-    { "find", &str_find_obj },
-    { "join", &str_join_obj },
-    { "split", &str_split_obj },
-    { "startswith", &str_startswith_obj },
-    { "strip", &str_strip_obj },
-    { "format", &str_format_obj },
-    { "replace", &str_replace_obj },
-    { "count", &str_count_obj },
-    { "partition", &str_partition_obj },
-    { "rpartition", &str_rpartition_obj },
-    { NULL, NULL }, // end-of-list sentinel
+STATIC const mp_map_elem_t str_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_find), (mp_obj_t)&str_find_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rfind), (mp_obj_t)&str_rfind_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_format), (mp_obj_t)&str_format_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_replace), (mp_obj_t)&str_replace_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&str_count_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_partition), (mp_obj_t)&str_partition_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rpartition), (mp_obj_t)&str_rpartition_obj },
 };
 
-const mp_obj_type_t str_type = {
+STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
+
+const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
     .print = str_print,
     .make_new = str_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_str_iterator,
-    .methods = str_type_methods,
     .buffer_p = { .get_buffer = str_get_buffer },
+    .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
 // Reuses most of methods from str
-const mp_obj_type_t bytes_type = {
+const mp_obj_type_t mp_type_bytes = {
     { &mp_type_type },
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_bytes_iterator,
-    .methods = str_type_methods,
+    .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
 // the zero-length bytes
-STATIC const mp_obj_str_t empty_bytes_obj = {{&bytes_type}, 0, 0, NULL};
+STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
@@ -789,12 +777,12 @@ mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_alread
         return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
     } else {
         // no existing qstr, don't make one
-        return str_new(&str_type, data, len);
+        return str_new(&mp_type_str, data, len);
     }
 }
 
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len) {
-    return str_new(&bytes_type, data, len);
+    return str_new(&mp_type_bytes, data, len);
 }
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
@@ -843,7 +831,7 @@ uint mp_obj_str_get_len(mp_obj_t self_in) {
 qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
     if (MP_OBJ_IS_QSTR(self_in)) {
         return MP_OBJ_QSTR_VALUE(self_in);
-    } else if (MP_OBJ_IS_TYPE(self_in, &str_type)) {
+    } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_str)) {
         mp_obj_str_t *self = self_in;
         return qstr_from_strn((char*)self->data, self->len);
     } else {
@@ -890,13 +878,14 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 
-STATIC const mp_obj_type_t str_it_type = {
+STATIC const mp_obj_type_t mp_type_str_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = str_it_iternext,
 };
 
@@ -908,19 +897,20 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return mp_const_stop_iteration;
+        return MP_OBJ_NULL;
     }
 }
 
-STATIC const mp_obj_type_t bytes_it_type = {
+STATIC const mp_obj_type_t mp_type_bytes_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
     .iternext = bytes_it_iternext,
 };
 
 mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
-    o->base.type = &str_it_type;
+    o->base.type = &mp_type_str_it;
     o->str = str;
     o->cur = 0;
     return o;
@@ -928,7 +918,7 @@ mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
 
 mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
-    o->base.type = &bytes_it_type;
+    o->base.type = &mp_type_bytes_it;
     o->str = str;
     o->cur = 0;
     return o;

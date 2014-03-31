@@ -105,15 +105,16 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return fdfile_new(fd);
 }
 
-static const mp_method_t rawfile_type_methods[] = {
-        { "fileno", &fdfile_fileno_obj },
-        { "read", &mp_stream_read_obj },
-        { "readall", &mp_stream_readall_obj },
-        { "readline", &mp_stream_unbuffered_readline_obj},
-        { "write", &mp_stream_write_obj },
-        { "close", &fdfile_close_obj },
-        { NULL, NULL },
+STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&fdfile_fileno_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 static const mp_obj_type_t rawfile_type = {
     { &mp_type_type },
@@ -126,7 +127,7 @@ static const mp_obj_type_t rawfile_type = {
         .read = fdfile_read,
         .write = fdfile_write,
     },
-    .methods = rawfile_type_methods,
+    .locals_dict = (mp_obj_t)&rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes
@@ -138,7 +139,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, mp_builtin_open);
 
 void file_init() {
     mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    rt_store_attr(m_sys, MP_QSTR_stdin, fdfile_new(STDIN_FILENO));
-    rt_store_attr(m_sys, MP_QSTR_stdout, fdfile_new(STDOUT_FILENO));
-    rt_store_attr(m_sys, MP_QSTR_stderr, fdfile_new(STDERR_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stdin, fdfile_new(STDIN_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stdout, fdfile_new(STDOUT_FILENO));
+    mp_store_attr(m_sys, MP_QSTR_stderr, fdfile_new(STDERR_FILENO));
 }

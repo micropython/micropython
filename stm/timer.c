@@ -74,11 +74,11 @@ void timer_init(void) {
 
     // Python interface
     mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("timer"));
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("callback"), rt_make_function_n(1, timer_py_set_callback));
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("period"), rt_make_function_n(1, timer_py_set_period));
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("prescaler"), rt_make_function_n(1, timer_py_set_prescaler));
-    rt_store_attr(m, QSTR_FROM_STR_STATIC("value"), rt_make_function_n(0, timer_py_get_value));
-    rt_store_name(QSTR_FROM_STR_STATIC("timer"), m);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("callback"), mp_make_function_n(1, timer_py_set_callback));
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("period"), mp_make_function_n(1, timer_py_set_period));
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("prescaler"), mp_make_function_n(1, timer_py_set_prescaler));
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("value"), mp_make_function_n(0, timer_py_get_value));
+    mp_store_name(QSTR_FROM_STR_STATIC("timer"), m);
 }
 
 void timer_interrupt(void) {
@@ -86,7 +86,7 @@ void timer_interrupt(void) {
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             // XXX what to do if the GC is in the middle of running??
-            rt_call_function_0(timer_py_callback);
+            mp_call_function_0(timer_py_callback);
             nlr_pop();
         } else {
             // uncaught exception

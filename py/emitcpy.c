@@ -541,21 +541,21 @@ STATIC void emit_cpy_pop_except(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_unary_op(emit_t *emit, rt_unary_op_t op) {
+STATIC void emit_cpy_unary_op(emit_t *emit, mp_unary_op_t op) {
     emit_pre(emit, 0, 1);
     if (emit->pass == PASS_3) {
         switch (op) {
-            case RT_UNARY_OP_POSITIVE: printf("UNARY_POSITIVE\n"); break;
-            case RT_UNARY_OP_NEGATIVE: printf("UNARY_NEGATIVE\n"); break;
-            case RT_UNARY_OP_INVERT: printf("UNARY_INVERT\n"); break;
-            case RT_UNARY_OP_NOT: printf("UNARY_NOT\n"); break;
+            case MP_UNARY_OP_POSITIVE: printf("UNARY_POSITIVE\n"); break;
+            case MP_UNARY_OP_NEGATIVE: printf("UNARY_NEGATIVE\n"); break;
+            case MP_UNARY_OP_INVERT: printf("UNARY_INVERT\n"); break;
+            case MP_UNARY_OP_NOT: printf("UNARY_NOT\n"); break;
             default: assert(0);
         }
     }
 }
 
-STATIC void emit_cpy_binary_op(emit_t *emit, rt_binary_op_t op) {
-    if (op <= RT_BINARY_OP_INPLACE_POWER) {
+STATIC void emit_cpy_binary_op(emit_t *emit, mp_binary_op_t op) {
+    if (op <= MP_BINARY_OP_INPLACE_POWER) {
         // CPython uses a byte code for each binary op
         emit_pre(emit, -1, 1);
     } else {
@@ -564,42 +564,42 @@ STATIC void emit_cpy_binary_op(emit_t *emit, rt_binary_op_t op) {
     }
     if (emit->pass == PASS_3) {
         switch (op) {
-            case RT_BINARY_OP_SUBSCR: printf("BINARY_SUBSCR\n"); break;
-            case RT_BINARY_OP_OR: printf("BINARY_OR\n"); break;
-            case RT_BINARY_OP_XOR: printf("BINARY_XOR\n"); break;
-            case RT_BINARY_OP_AND: printf("BINARY_AND\n"); break;
-            case RT_BINARY_OP_LSHIFT: printf("BINARY_LSHIFT\n"); break;
-            case RT_BINARY_OP_RSHIFT: printf("BINARY_RSHIFT\n"); break;
-            case RT_BINARY_OP_ADD: printf("BINARY_ADD\n"); break;
-            case RT_BINARY_OP_SUBTRACT: printf("BINARY_SUBTRACT\n"); break;
-            case RT_BINARY_OP_MULTIPLY: printf("BINARY_MULTIPLY\n"); break;
-            case RT_BINARY_OP_FLOOR_DIVIDE: printf("BINARY_FLOOR_DIVIDE\n"); break;
-            case RT_BINARY_OP_TRUE_DIVIDE: printf("BINARY_TRUE_DIVIDE\n"); break;
-            case RT_BINARY_OP_MODULO: printf("BINARY_MODULO\n"); break;
-            case RT_BINARY_OP_POWER: printf("BINARY_POWER\n"); break;
-            case RT_BINARY_OP_INPLACE_OR: printf("INPLACE_OR\n"); break;
-            case RT_BINARY_OP_INPLACE_XOR: printf("INPLACE_XOR\n"); break;
-            case RT_BINARY_OP_INPLACE_AND: printf("INPLACE_AND\n"); break;
-            case RT_BINARY_OP_INPLACE_LSHIFT: printf("INPLACE_LSHIFT\n"); break;
-            case RT_BINARY_OP_INPLACE_RSHIFT: printf("INPLACE_RSHIFT\n"); break;
-            case RT_BINARY_OP_INPLACE_ADD: printf("INPLACE_ADD\n"); break;
-            case RT_BINARY_OP_INPLACE_SUBTRACT: printf("INPLACE_SUBTRACT\n"); break;
-            case RT_BINARY_OP_INPLACE_MULTIPLY: printf("INPLACE_MULTIPLY\n"); break;
-            case RT_BINARY_OP_INPLACE_FLOOR_DIVIDE: printf("INPLACE_FLOOR_DIVIDE\n"); break;
-            case RT_BINARY_OP_INPLACE_TRUE_DIVIDE: printf("INPLACE_TRUE_DIVIDE\n"); break;
-            case RT_BINARY_OP_INPLACE_MODULO: printf("INPLACE_MODULO\n"); break;
-            case RT_BINARY_OP_INPLACE_POWER: printf("INPLACE_POWER\n"); break;
-            case RT_BINARY_OP_LESS: printf("COMPARE_OP <\n"); break;
-            case RT_BINARY_OP_MORE: printf("COMPARE_OP >\n"); break;
-            case RT_BINARY_OP_EQUAL: printf("COMPARE_OP ==\n"); break;
-            case RT_BINARY_OP_LESS_EQUAL: printf("COMPARE_OP <=\n"); break;
-            case RT_BINARY_OP_MORE_EQUAL: printf("COMPARE_OP >=\n"); break;
-            case RT_BINARY_OP_NOT_EQUAL: printf("COMPARE_OP !=\n"); break;
-            case RT_BINARY_OP_IN: printf("COMPARE_OP in\n"); break;
-            case RT_BINARY_OP_IS: printf("COMPARE_OP is\n"); break;
-            case RT_BINARY_OP_EXCEPTION_MATCH: printf("COMPARE_OP exception match\n"); break;
-            case RT_BINARY_OP_NOT_IN: printf("COMPARE_OP not in\n"); break;
-            case RT_BINARY_OP_IS_NOT: printf("COMPARE_OP is not\n"); break;
+            case MP_BINARY_OP_SUBSCR: printf("BINARY_SUBSCR\n"); break;
+            case MP_BINARY_OP_OR: printf("BINARY_OR\n"); break;
+            case MP_BINARY_OP_XOR: printf("BINARY_XOR\n"); break;
+            case MP_BINARY_OP_AND: printf("BINARY_AND\n"); break;
+            case MP_BINARY_OP_LSHIFT: printf("BINARY_LSHIFT\n"); break;
+            case MP_BINARY_OP_RSHIFT: printf("BINARY_RSHIFT\n"); break;
+            case MP_BINARY_OP_ADD: printf("BINARY_ADD\n"); break;
+            case MP_BINARY_OP_SUBTRACT: printf("BINARY_SUBTRACT\n"); break;
+            case MP_BINARY_OP_MULTIPLY: printf("BINARY_MULTIPLY\n"); break;
+            case MP_BINARY_OP_FLOOR_DIVIDE: printf("BINARY_FLOOR_DIVIDE\n"); break;
+            case MP_BINARY_OP_TRUE_DIVIDE: printf("BINARY_TRUE_DIVIDE\n"); break;
+            case MP_BINARY_OP_MODULO: printf("BINARY_MODULO\n"); break;
+            case MP_BINARY_OP_POWER: printf("BINARY_POWER\n"); break;
+            case MP_BINARY_OP_INPLACE_OR: printf("INPLACE_OR\n"); break;
+            case MP_BINARY_OP_INPLACE_XOR: printf("INPLACE_XOR\n"); break;
+            case MP_BINARY_OP_INPLACE_AND: printf("INPLACE_AND\n"); break;
+            case MP_BINARY_OP_INPLACE_LSHIFT: printf("INPLACE_LSHIFT\n"); break;
+            case MP_BINARY_OP_INPLACE_RSHIFT: printf("INPLACE_RSHIFT\n"); break;
+            case MP_BINARY_OP_INPLACE_ADD: printf("INPLACE_ADD\n"); break;
+            case MP_BINARY_OP_INPLACE_SUBTRACT: printf("INPLACE_SUBTRACT\n"); break;
+            case MP_BINARY_OP_INPLACE_MULTIPLY: printf("INPLACE_MULTIPLY\n"); break;
+            case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: printf("INPLACE_FLOOR_DIVIDE\n"); break;
+            case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: printf("INPLACE_TRUE_DIVIDE\n"); break;
+            case MP_BINARY_OP_INPLACE_MODULO: printf("INPLACE_MODULO\n"); break;
+            case MP_BINARY_OP_INPLACE_POWER: printf("INPLACE_POWER\n"); break;
+            case MP_BINARY_OP_LESS: printf("COMPARE_OP <\n"); break;
+            case MP_BINARY_OP_MORE: printf("COMPARE_OP >\n"); break;
+            case MP_BINARY_OP_EQUAL: printf("COMPARE_OP ==\n"); break;
+            case MP_BINARY_OP_LESS_EQUAL: printf("COMPARE_OP <=\n"); break;
+            case MP_BINARY_OP_MORE_EQUAL: printf("COMPARE_OP >=\n"); break;
+            case MP_BINARY_OP_NOT_EQUAL: printf("COMPARE_OP !=\n"); break;
+            case MP_BINARY_OP_IN: printf("COMPARE_OP in\n"); break;
+            case MP_BINARY_OP_IS: printf("COMPARE_OP is\n"); break;
+            case MP_BINARY_OP_EXCEPTION_MATCH: printf("COMPARE_OP exception match\n"); break;
+            case MP_BINARY_OP_NOT_IN: printf("COMPARE_OP not in\n"); break;
+            case MP_BINARY_OP_IS_NOT: printf("COMPARE_OP is not\n"); break;
             default: assert(0);
         }
     }

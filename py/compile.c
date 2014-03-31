@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -12,9 +13,11 @@
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
+#include "emitglue.h"
 #include "obj.h"
 #include "compile.h"
 #include "runtime.h"
+#include "intdivmod.h"
 
 // TODO need to mangle __attr names
 
@@ -140,11 +143,11 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_SLASH)) {
                         ; // pass
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
-                        // XXX implement this properly as Python's % operator acts differently to C's
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 % arg1);
+                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_modulo(arg0, arg1));
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
-                        // XXX implement this properly as Python's // operator acts differently to C's
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 / arg1);
+                        if (arg1 != 0) {
+                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_floor_divide(arg0, arg1));
+                        }
                     } else {
                         // shouldn't happen
                         assert(0);
@@ -194,14 +197,26 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
-void compile_node(compiler_t *comp, mp_parse_node_t pn);
+STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 STATIC int comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
+STATIC void compile_increase_except_level(compiler_t *comp) {
+    comp->cur_except_level += 1;
+    if (comp->cur_except_level > comp->scope_cur->exc_stack_size) {
+        comp->scope_cur->exc_stack_size = comp->cur_except_level;
+    }
+}
+
+STATIC void compile_decrease_except_level(compiler_t *comp) {
+    assert(comp->cur_except_level > 0);
+    comp->cur_except_level -= 1;
+}
+
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, comp->source_file, rt_get_unique_code_id(), emit_options);
+    scope_t *scope = scope_new(kind, pn, comp->source_file, mp_emit_glue_get_unique_code_id(), emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -592,7 +607,7 @@ void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign_kind_t
                 compile_node(comp, pns1->nodes[0]);
                 if (assign_kind == ASSIGN_AUG_LOAD) {
                     EMIT(dup_top_two);
-                    EMIT_ARG(binary_op, RT_BINARY_OP_SUBSCR);
+                    EMIT_ARG(binary_op, MP_BINARY_OP_SUBSCR);
                 } else {
                     EMIT(store_subscr);
                 }
@@ -765,6 +780,13 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
 
 // stuff for lambda and comprehensions and generators
 void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_params, int n_default_params) {
+#if !MICROPY_EMIT_CPYTHON
+    // in Micro Python we put the default params into a tuple using the bytecode
+    if (n_default_params) {
+        EMIT_ARG(build_tuple, n_default_params);
+    }
+#endif
+
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
@@ -787,14 +809,12 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
             }
         }
     }
-    if (nfree > 0) {
-        EMIT_ARG(build_tuple, nfree);
-    }
 
     // make the function/closure
     if (nfree == 0) {
         EMIT_ARG(make_function, this_scope, n_dict_params, n_default_params);
     } else {
+        EMIT_ARG(build_tuple, nfree);
         EMIT_ARG(make_closure, this_scope, n_dict_params, n_default_params);
     }
 }
@@ -948,8 +968,13 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
     EMIT_ARG(load_const_id, cscope->simple_name);
 
     // nodes[1] has parent classes, if any
+    // empty parenthesis (eg class C():) gets here as an empty PN_classdef_2 and needs special handling
+    mp_parse_node_t parents = pns->nodes[1];
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(parents, PN_classdef_2)) {
+        parents = MP_PARSE_NODE_NULL;
+    }
     comp->func_arg_is_super = false;
-    compile_trailer_paren_helper(comp, pns->nodes[1], false, 2);
+    compile_trailer_paren_helper(comp, parents, false, 2);
 
     // return its name (the 'C' in class C(...):")
     return cscope->simple_name;
@@ -1143,14 +1168,14 @@ void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->break_label == 0) {
-        printf("ERROR: cannot break from here\n");
+        compile_syntax_error(comp, "'break' outside loop");
     }
     EMIT_ARG(break_loop, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->continue_label == 0) {
-        printf("ERROR: cannot continue from here\n");
+        compile_syntax_error(comp, "'continue' outside loop");
     }
     EMIT_ARG(continue_loop, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
 }
@@ -1254,11 +1279,13 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
         } else {
             // TODO not implemented
             // This covers relative imports starting with dot(s) like "from .foo import"
+            compile_syntax_error(comp, "Relative imports not implemented");
             assert(0);
         }
     } else {
         // TODO not implemented
         // This covers relative imports with dots only like "from .. import"
+        compile_syntax_error(comp, "Relative imports not implemented");
         assert(0);
     }
 }
@@ -1522,7 +1549,7 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     // compile: var += step
     c_assign(comp, pn_var, ASSIGN_AUG_LOAD);
     compile_node(comp, pn_step);
-    EMIT_ARG(binary_op, RT_BINARY_OP_INPLACE_ADD);
+    EMIT_ARG(binary_op, MP_BINARY_OP_INPLACE_ADD);
     c_assign(comp, pn_var, ASSIGN_AUG_STORE);
 
     EMIT_ARG(label_assign, entry_label);
@@ -1532,9 +1559,9 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     compile_node(comp, pn_end);
     assert(MP_PARSE_NODE_IS_SMALL_INT(pn_step));
     if (MP_PARSE_NODE_LEAF_SMALL_INT(pn_step) >= 0) {
-        EMIT_ARG(binary_op, RT_BINARY_OP_LESS);
+        EMIT_ARG(binary_op, MP_BINARY_OP_LESS);
     } else {
-        EMIT_ARG(binary_op, RT_BINARY_OP_MORE);
+        EMIT_ARG(binary_op, MP_BINARY_OP_MORE);
     }
     EMIT_ARG(pop_jump_if_true, top_label);
 
@@ -1637,7 +1664,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     int success_label = comp_next_label(comp);
 
     EMIT_ARG(setup_except, l1);
-    comp->cur_except_level += 1;
+    compile_increase_except_level(comp);
 
     compile_node(comp, pn_body); // body
     EMIT(pop_block);
@@ -1671,7 +1698,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             }
             EMIT(dup_top);
             compile_node(comp, pns_exception_expr);
-            EMIT_ARG(binary_op, RT_BINARY_OP_EXCEPTION_MATCH);
+            EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
             EMIT_ARG(pop_jump_if_false, end_finally_label);
         }
 
@@ -1689,7 +1716,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
             EMIT_ARG(setup_finally, l3);
-            comp->cur_except_level += 1;
+            compile_increase_except_level(comp);
         }
         compile_node(comp, pns_except->nodes[1]);
         if (qstr_exception_local != 0) {
@@ -1703,14 +1730,14 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
             EMIT_ARG(store_id, qstr_exception_local);
             EMIT_ARG(delete_id, qstr_exception_local);
 
-            comp->cur_except_level -= 1;
+            compile_decrease_except_level(comp);
             EMIT(end_finally);
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
     }
 
-    comp->cur_except_level -= 1;
+    compile_decrease_except_level(comp);
     EMIT(end_finally);
 
     EMIT_ARG(label_assign, success_label);
@@ -1725,7 +1752,7 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     int l_finally_block = comp_next_label(comp);
 
     EMIT_ARG(setup_finally, l_finally_block);
-    comp->cur_except_level += 1;
+    compile_increase_except_level(comp);
 
     if (n_except == 0) {
         assert(MP_PARSE_NODE_IS_NULL(pn_else));
@@ -1738,7 +1765,7 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
     EMIT_ARG(label_assign, l_finally_block);
     compile_node(comp, pn_finally);
 
-    comp->cur_except_level -= 1;
+    compile_decrease_except_level(comp);
     EMIT(end_finally);
 
     EMIT_ARG(set_stack_size, stack_size);
@@ -1791,6 +1818,7 @@ void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *nodes, m
             EMIT_ARG(setup_with, l_end);
             EMIT(pop_top);
         }
+        compile_increase_except_level(comp);
         // compile additional pre-bits and the body
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
@@ -1798,6 +1826,7 @@ void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *nodes, m
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
         EMIT_ARG(label_assign, l_end);
         EMIT(with_cleanup);
+        compile_decrease_except_level(comp);
         EMIT(end_finally);
     }
 }
@@ -1837,21 +1866,21 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_LOAD); // lhs load for aug assign
             compile_node(comp, pns1->nodes[1]); // rhs
             assert(MP_PARSE_NODE_IS_TOKEN(pns1->nodes[0]));
-            rt_binary_op_t op;
+            mp_binary_op_t op;
             switch (MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0])) {
-                case MP_TOKEN_DEL_PIPE_EQUAL: op = RT_BINARY_OP_INPLACE_OR; break;
-                case MP_TOKEN_DEL_CARET_EQUAL: op = RT_BINARY_OP_INPLACE_XOR; break;
-                case MP_TOKEN_DEL_AMPERSAND_EQUAL: op = RT_BINARY_OP_INPLACE_AND; break;
-                case MP_TOKEN_DEL_DBL_LESS_EQUAL: op = RT_BINARY_OP_INPLACE_LSHIFT; break;
-                case MP_TOKEN_DEL_DBL_MORE_EQUAL: op = RT_BINARY_OP_INPLACE_RSHIFT; break;
-                case MP_TOKEN_DEL_PLUS_EQUAL: op = RT_BINARY_OP_INPLACE_ADD; break;
-                case MP_TOKEN_DEL_MINUS_EQUAL: op = RT_BINARY_OP_INPLACE_SUBTRACT; break;
-                case MP_TOKEN_DEL_STAR_EQUAL: op = RT_BINARY_OP_INPLACE_MULTIPLY; break;
-                case MP_TOKEN_DEL_DBL_SLASH_EQUAL: op = RT_BINARY_OP_INPLACE_FLOOR_DIVIDE; break;
-                case MP_TOKEN_DEL_SLASH_EQUAL: op = RT_BINARY_OP_INPLACE_TRUE_DIVIDE; break;
-                case MP_TOKEN_DEL_PERCENT_EQUAL: op = RT_BINARY_OP_INPLACE_MODULO; break;
-                case MP_TOKEN_DEL_DBL_STAR_EQUAL: op = RT_BINARY_OP_INPLACE_POWER; break;
-                default: assert(0); op = RT_BINARY_OP_INPLACE_OR; // shouldn't happen
+                case MP_TOKEN_DEL_PIPE_EQUAL: op = MP_BINARY_OP_INPLACE_OR; break;
+                case MP_TOKEN_DEL_CARET_EQUAL: op = MP_BINARY_OP_INPLACE_XOR; break;
+                case MP_TOKEN_DEL_AMPERSAND_EQUAL: op = MP_BINARY_OP_INPLACE_AND; break;
+                case MP_TOKEN_DEL_DBL_LESS_EQUAL: op = MP_BINARY_OP_INPLACE_LSHIFT; break;
+                case MP_TOKEN_DEL_DBL_MORE_EQUAL: op = MP_BINARY_OP_INPLACE_RSHIFT; break;
+                case MP_TOKEN_DEL_PLUS_EQUAL: op = MP_BINARY_OP_INPLACE_ADD; break;
+                case MP_TOKEN_DEL_MINUS_EQUAL: op = MP_BINARY_OP_INPLACE_SUBTRACT; break;
+                case MP_TOKEN_DEL_STAR_EQUAL: op = MP_BINARY_OP_INPLACE_MULTIPLY; break;
+                case MP_TOKEN_DEL_DBL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_FLOOR_DIVIDE; break;
+                case MP_TOKEN_DEL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_TRUE_DIVIDE; break;
+                case MP_TOKEN_DEL_PERCENT_EQUAL: op = MP_BINARY_OP_INPLACE_MODULO; break;
+                case MP_TOKEN_DEL_DBL_STAR_EQUAL: op = MP_BINARY_OP_INPLACE_POWER; break;
+                default: assert(0); op = MP_BINARY_OP_INPLACE_OR; // shouldn't happen
             }
             EMIT_ARG(binary_op, op);
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_STORE); // lhs store for aug assign
@@ -1908,7 +1937,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, rt_binary_op_t binary_op) {
+void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, mp_binary_op_t binary_op) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
     for (int i = 1; i < num_nodes; i += 1) {
@@ -1978,7 +2007,7 @@ void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_not_test_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
-    EMIT_ARG(unary_op, RT_UNARY_OP_NOT);
+    EMIT_ARG(unary_op, MP_UNARY_OP_NOT);
 }
 
 void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1997,28 +2026,28 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
             EMIT(rot_three);
         }
         if (MP_PARSE_NODE_IS_TOKEN(pns->nodes[i])) {
-            rt_binary_op_t op;
+            mp_binary_op_t op;
             switch (MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])) {
-                case MP_TOKEN_OP_LESS: op = RT_BINARY_OP_LESS; break;
-                case MP_TOKEN_OP_MORE: op = RT_BINARY_OP_MORE; break;
-                case MP_TOKEN_OP_DBL_EQUAL: op = RT_BINARY_OP_EQUAL; break;
-                case MP_TOKEN_OP_LESS_EQUAL: op = RT_BINARY_OP_LESS_EQUAL; break;
-                case MP_TOKEN_OP_MORE_EQUAL: op = RT_BINARY_OP_MORE_EQUAL; break;
-                case MP_TOKEN_OP_NOT_EQUAL: op = RT_BINARY_OP_NOT_EQUAL; break;
-                case MP_TOKEN_KW_IN: op = RT_BINARY_OP_IN; break;
-                default: assert(0); op = RT_BINARY_OP_LESS; // shouldn't happen
+                case MP_TOKEN_OP_LESS: op = MP_BINARY_OP_LESS; break;
+                case MP_TOKEN_OP_MORE: op = MP_BINARY_OP_MORE; break;
+                case MP_TOKEN_OP_DBL_EQUAL: op = MP_BINARY_OP_EQUAL; break;
+                case MP_TOKEN_OP_LESS_EQUAL: op = MP_BINARY_OP_LESS_EQUAL; break;
+                case MP_TOKEN_OP_MORE_EQUAL: op = MP_BINARY_OP_MORE_EQUAL; break;
+                case MP_TOKEN_OP_NOT_EQUAL: op = MP_BINARY_OP_NOT_EQUAL; break;
+                case MP_TOKEN_KW_IN: op = MP_BINARY_OP_IN; break;
+                default: assert(0); op = MP_BINARY_OP_LESS; // shouldn't happen
             }
             EMIT_ARG(binary_op, op);
         } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])) {
             mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[i];
             int kind = MP_PARSE_NODE_STRUCT_KIND(pns2);
             if (kind == PN_comp_op_not_in) {
-                EMIT_ARG(binary_op, RT_BINARY_OP_NOT_IN);
+                EMIT_ARG(binary_op, MP_BINARY_OP_NOT_IN);
             } else if (kind == PN_comp_op_is) {
                 if (MP_PARSE_NODE_IS_NULL(pns2->nodes[0])) {
-                    EMIT_ARG(binary_op, RT_BINARY_OP_IS);
+                    EMIT_ARG(binary_op, MP_BINARY_OP_IS);
                 } else {
-                    EMIT_ARG(binary_op, RT_BINARY_OP_IS_NOT);
+                    EMIT_ARG(binary_op, MP_BINARY_OP_IS_NOT);
                 }
             } else {
                 // shouldn't happen
@@ -2051,15 +2080,15 @@ void compile_star_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, RT_BINARY_OP_OR);
+    c_binary_op(comp, pns, MP_BINARY_OP_OR);
 }
 
 void compile_xor_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, RT_BINARY_OP_XOR);
+    c_binary_op(comp, pns, MP_BINARY_OP_XOR);
 }
 
 void compile_and_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, RT_BINARY_OP_AND);
+    c_binary_op(comp, pns, MP_BINARY_OP_AND);
 }
 
 void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2068,9 +2097,9 @@ void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_LESS)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_LSHIFT);
+            EMIT_ARG(binary_op, MP_BINARY_OP_LSHIFT);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_MORE)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_RSHIFT);
+            EMIT_ARG(binary_op, MP_BINARY_OP_RSHIFT);
         } else {
             // shouldn't happen
             assert(0);
@@ -2084,9 +2113,9 @@ void compile_arith_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PLUS)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_ADD);
+            EMIT_ARG(binary_op, MP_BINARY_OP_ADD);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MINUS)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_SUBTRACT);
+            EMIT_ARG(binary_op, MP_BINARY_OP_SUBTRACT);
         } else {
             // shouldn't happen
             assert(0);
@@ -2100,13 +2129,13 @@ void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_STAR)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_MULTIPLY);
+            EMIT_ARG(binary_op, MP_BINARY_OP_MULTIPLY);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_SLASH)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_FLOOR_DIVIDE);
+            EMIT_ARG(binary_op, MP_BINARY_OP_FLOOR_DIVIDE);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_SLASH)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_TRUE_DIVIDE);
+            EMIT_ARG(binary_op, MP_BINARY_OP_TRUE_DIVIDE);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PERCENT)) {
-            EMIT_ARG(binary_op, RT_BINARY_OP_MODULO);
+            EMIT_ARG(binary_op, MP_BINARY_OP_MODULO);
         } else {
             // shouldn't happen
             assert(0);
@@ -2117,11 +2146,11 @@ void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[1]);
     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_PLUS)) {
-        EMIT_ARG(unary_op, RT_UNARY_OP_POSITIVE);
+        EMIT_ARG(unary_op, MP_UNARY_OP_POSITIVE);
     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
-        EMIT_ARG(unary_op, RT_UNARY_OP_NEGATIVE);
+        EMIT_ARG(unary_op, MP_UNARY_OP_NEGATIVE);
     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)) {
-        EMIT_ARG(unary_op, RT_UNARY_OP_INVERT);
+        EMIT_ARG(unary_op, MP_UNARY_OP_INVERT);
     } else {
         // shouldn't happen
         assert(0);
@@ -2208,7 +2237,7 @@ void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_power_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
-    EMIT_ARG(binary_op, RT_BINARY_OP_POWER);
+    EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
 }
 
 void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2433,7 +2462,7 @@ void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_trailer_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // object who's index we want is on top of stack
     compile_node(comp, pns->nodes[0]); // the index
-    EMIT_ARG(binary_op, RT_BINARY_OP_SUBSCR);
+    EMIT_ARG(binary_op, MP_BINARY_OP_SUBSCR);
 }
 
 void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2861,7 +2890,10 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     EMIT_ARG(start_pass, pass, scope);
 
     if (comp->pass == PASS_1) {
+        // reset maximum stack sizes in scope
+        // they will be computed in this first pass
         scope->stack_size = 0;
+        scope->exc_stack_size = 0;
     }
 
 #if MICROPY_EMIT_CPYTHON
@@ -3001,6 +3033,9 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     }
 
     EMIT(end_pass);
+
+    // make sure we match all the exception levels
+    assert(comp->cur_except_level == 0);
 }
 
 void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
@@ -3359,7 +3394,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
         return mp_const_true;
 #else
         // return function that executes the outer module
-        return rt_make_function_from_id(unique_code_id, MP_OBJ_NULL);
+        // we can free the unique_code slot because no-one has reference to this unique_code_id anymore
+        return mp_make_function_from_id(unique_code_id, true, MP_OBJ_NULL);
 #endif
     }
 }

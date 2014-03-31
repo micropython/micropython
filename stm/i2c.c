@@ -325,20 +325,21 @@ static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_read_obj, i2c_obj_read);
 static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_readAndStop_obj, i2c_obj_readAndStop);
 static MP_DEFINE_CONST_FUN_OBJ_1(i2c_obj_stop_obj, i2c_obj_stop);
 
-static const mp_method_t i2c_methods[] = {
-    { "start", &i2c_obj_start_obj },
-    { "write", &i2c_obj_write_obj },
-    { "read", &i2c_obj_read_obj },
-    { "readAndStop", &i2c_obj_readAndStop_obj },
-    { "stop", &i2c_obj_stop_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t i2c_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start), (mp_obj_t)&i2c_obj_start_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&i2c_obj_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&i2c_obj_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readAndStop), (mp_obj_t)&i2c_obj_readAndStop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&i2c_obj_stop_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(i2c_locals_dict, i2c_locals_dict_table);
 
 static const mp_obj_type_t i2c_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = i2c_obj_print,
-    .methods = i2c_methods,
+    .locals_dict = (mp_obj_t)&i2c_locals_dict,
 };
 
 // create the I2C object

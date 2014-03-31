@@ -18,7 +18,7 @@
 // A qstr is an index into the qstr pool.
 // The data for a qstr contains (hash, length, data).
 // For now we use very simple encoding, just to get the framework correct:
-//  - hash is 2 bytes (simply the sum of data bytes)
+//  - hash is 2 bytes (see function below)
 //  - length is 2 bytes
 //  - data follows
 //  - \0 terminated (for now, so they can be printed using printf)
@@ -28,10 +28,12 @@
 #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
 #define Q_GET_DATA(q)   ((q) + 4)
 
+// this must match the equivalent function in makeqstrdata.py
 machine_uint_t qstr_compute_hash(const byte *data, uint len) {
-    machine_uint_t hash = 0;
+    // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
+    machine_uint_t hash = 5381;
     for (const byte *top = data + len; data < top; data++) {
-        hash += *data;
+        hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
     return hash & 0xffff;
 }

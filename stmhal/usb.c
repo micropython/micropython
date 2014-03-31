@@ -2,9 +2,8 @@
 
 #include "usbd_core.h"
 #include "usbd_desc.h"
-#include "usbd_cdc.h"
+#include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
-#include "usbd_msc.h"
 #include "usbd_msc_storage.h"
 
 #include "misc.h"
@@ -18,42 +17,30 @@ USBD_HandleTypeDef hUSBDDevice;
 #endif
 
 static int dev_is_enabled = 0;
-uint32_t APP_dev_is_connected = 0; /* used by usbd_cdc_vcp */
 mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 
-void pyb_usb_dev_init(usbd_device_kind_t device_kind, usbd_storage_medium_kind_t medium_kind) {
+void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
 #ifdef USE_DEVICE_MODE
     if (!dev_is_enabled) {
         // only init USB once in the device's power-lifetime
-        switch (device_kind) {
-            case USBD_DEVICE_CDC:
-                // XXX USBD_CDC_Init (called by one of these functions below) uses malloc,
-                // so the memory is invalid after a soft reset (which resets the GC).
-                USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
-                USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);
-                USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
-                USBD_Start(&hUSBDDevice);
-                //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_cb, &USR_cb);
-                break;
-
-            case USBD_DEVICE_MSC:
-                // XXX USBD_CDC_Init (called by one of these functions below) uses malloc,
-                // so the memory is invalid after a soft reset (which resets the GC).
-                USBD_Init(&hUSBDDevice, &MSC_Desc, 0);
-                USBD_RegisterClass(&hUSBDDevice, &USBD_MSC);
-                if (medium_kind == USBD_STORAGE_MEDIUM_FLASH) {
-                    USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
-                } else {
-                    USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
-                }
-                USBD_Start(&hUSBDDevice);
-                break;
-
-            case USBD_DEVICE_HID:
-                //USBD_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_PYB_HID_cb, &USR_cb);
-                // TODO
-                break;
+        if (mode == USB_DEVICE_MODE_CDC_MSC) {
+            USBD_SelectMode(USBD_MODE_CDC_MSC);
+        } else {
+            USBD_SelectMode(USBD_MODE_CDC_HID);
         }
+        USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
+        USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
+        USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+#if MICROPY_HW_HAS_SDCARD
+        if (medium == USB_STORAGE_MEDIUM_FLASH) {
+            USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+        } else {
+            USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+        }
+#else
+        USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+#endif
+        USBD_Start(&hUSBDDevice);
     }
     dev_is_enabled = 1;
 
@@ -67,7 +54,7 @@ bool usb_vcp_is_enabled(void) {
 }
 
 bool usb_vcp_is_connected(void) {
-    return APP_dev_is_connected;
+    return USBD_CDC_IsConnected();
 }
 
 void usb_vcp_set_interrupt_char(int c) {
@@ -115,9 +102,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 
 void usb_hid_send_report(uint8_t *buf) {
 #ifdef USE_DEVICE_MODE
-    #if 0
-    USBD_HID_SendReport(&USB_OTG_Core, buf, 4);
-    #endif
+    USBD_HID_SendReport(&hUSBDDevice, buf, 4);
 #endif
 }
 

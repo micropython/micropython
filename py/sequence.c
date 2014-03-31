@@ -6,7 +6,6 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -55,16 +54,16 @@ bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_ui
 }
 
 // Special-case comparison function for sequences of bytes
-// Don't pass RT_BINARY_OP_NOT_EQUAL here
+// Don't pass MP_BINARY_OP_NOT_EQUAL here
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2) {
     // Let's deal only with > & >=
-    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
+    if (op == MP_BINARY_OP_LESS || op == MP_BINARY_OP_LESS_EQUAL) {
         SWAP(const byte*, data1, data2);
         SWAP(uint, len1, len2);
-        if (op == RT_BINARY_OP_LESS) {
-            op = RT_BINARY_OP_MORE;
+        if (op == MP_BINARY_OP_LESS) {
+            op = MP_BINARY_OP_MORE;
         } else {
-            op = RT_BINARY_OP_MORE_EQUAL;
+            op = MP_BINARY_OP_MORE_EQUAL;
         }
     }
     uint min_len = len1 < len2 ? len1 : len2;
@@ -83,7 +82,7 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
             // ... then longer list length wins (we deal only with >)
             return false;
         }
-    } else if (op == RT_BINARY_OP_MORE) {
+    } else if (op == MP_BINARY_OP_MORE) {
         // Otherwise, if we have strict relation, equality means failure
         return false;
     }
@@ -91,20 +90,20 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
 }
 
 // Special-case comparison function for sequences of mp_obj_t
-// Don't pass RT_BINARY_OP_NOT_EQUAL here
+// Don't pass MP_BINARY_OP_NOT_EQUAL here
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2) {
-    if (op == RT_BINARY_OP_EQUAL && len1 != len2) {
+    if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
         return false;
     }
 
     // Let's deal only with > & >=
-    if (op == RT_BINARY_OP_LESS || op == RT_BINARY_OP_LESS_EQUAL) {
+    if (op == MP_BINARY_OP_LESS || op == MP_BINARY_OP_LESS_EQUAL) {
         SWAP(const mp_obj_t *, items1, items2);
         SWAP(uint, len1, len2);
-        if (op == RT_BINARY_OP_LESS) {
-            op = RT_BINARY_OP_MORE;
+        if (op == MP_BINARY_OP_LESS) {
+            op = MP_BINARY_OP_MORE;
         } else {
-            op = RT_BINARY_OP_MORE_EQUAL;
+            op = MP_BINARY_OP_MORE_EQUAL;
         }
     }
 
@@ -113,10 +112,10 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
     bool rel_status;
     for (int i = 0; i < len; i++) {
         eq_status = mp_obj_equal(items1[i], items2[i]);
-        if (op == RT_BINARY_OP_EQUAL && !eq_status) {
+        if (op == MP_BINARY_OP_EQUAL && !eq_status) {
             return false;
         }
-        rel_status = (rt_binary_op(op, items1[i], items2[i]) == mp_const_true);
+        rel_status = (mp_binary_op(op, items1[i], items2[i]) == mp_const_true);
         if (!eq_status && !rel_status) {
             return false;
         }
@@ -130,7 +129,7 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
                 // ... then longer list length wins (we deal only with >)
                 return false;
             }
-        } else if (op == RT_BINARY_OP_MORE) {
+        } else if (op == MP_BINARY_OP_MORE) {
             // Otherwise, if we have strict relation, equality means failure
             return false;
         }

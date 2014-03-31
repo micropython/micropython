@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -19,13 +20,13 @@ STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);
 STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(n_args > 0);
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = &enumerate_type;
-    o->iter = rt_getiter(args[0]);
+    o->base.type = &mp_type_enumerate;
+    o->iter = mp_getiter(args[0]);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
     return o;
 }
 
-const mp_obj_type_t enumerate_type = {
+const mp_obj_type_t mp_type_enumerate = {
     { &mp_type_type },
     .name = MP_QSTR_enumerate,
     .make_new = enumerate_make_new,
@@ -34,11 +35,11 @@ const mp_obj_type_t enumerate_type = {
 };
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &enumerate_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_enumerate));
     mp_obj_enumerate_t *self = self_in;
-    mp_obj_t next = rt_iternext(self->iter);
-    if (next == mp_const_stop_iteration) {
-        return mp_const_stop_iteration;
+    mp_obj_t next = mp_iternext(self->iter);
+    if (next == MP_OBJ_NULL) {
+        return MP_OBJ_NULL;
     } else {
         mp_obj_t items[] = {MP_OBJ_NEW_SMALL_INT(self->cur++), next};
         return mp_obj_new_tuple(2, items);

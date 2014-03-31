@@ -9,7 +9,6 @@
 #include "qstr.h"
 #include "parse.h"
 #include "obj.h"
-#include "map.h"
 #include "runtime.h"
 
 #include "audio.h"
@@ -193,18 +192,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_audio_triangle_obj, pyb_audio_triangle);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_audio_dac_obj, pyb_audio_dac);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_audio_dma_obj, 3, pyb_audio_dma);
 
-STATIC const mp_method_t pyb_audio_methods[] = {
-    { "noise", &pyb_audio_noise_obj },
-    { "triangle", &pyb_audio_triangle_obj },
-    { "dac", &pyb_audio_dac_obj },
-    { "dma", &pyb_audio_dma_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t pyb_audio_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_noise), (mp_obj_t)&pyb_audio_noise_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_triangle), (mp_obj_t)&pyb_audio_triangle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dac), (mp_obj_t)&pyb_audio_dac_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dma), (mp_obj_t)&pyb_audio_dma_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(pyb_audio_locals_dict, pyb_audio_locals_dict_table);
 
 STATIC const mp_obj_type_t pyb_audio_type = {
     { &mp_type_type },
     .name = MP_QSTR_,
-    .methods = pyb_audio_methods,
+    .locals_dict = (mp_obj_t)&pyb_audio_locals_dict,
 };
 
 STATIC const pyb_audio_t pyb_audio_channel_1 = {{&pyb_audio_type}, DAC_Channel_1, DMA1_Stream5};

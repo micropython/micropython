@@ -35,6 +35,7 @@ PY_O_BASENAME = \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
+	emitglue.o \
 	runtime.o \
 	map.o \
 	obj.o \
@@ -58,6 +59,7 @@ PY_O_BASENAME = \
 	objlist.o \
 	objmap.o \
 	objmodule.o \
+	objobject.o \
 	objnone.o \
 	objnamedtuple.o \
 	objrange.o \
@@ -73,11 +75,15 @@ PY_O_BASENAME = \
 	builtin.o \
 	builtinimport.o \
 	builtinevex.o \
-	builtinmp.o \
-	builtinmath.o \
+	builtintables.o \
+	modarray.o \
+	modcollections.o \
+	modmath.o \
+	modmicropython.o \
 	vm.o \
 	showbc.o \
 	repl.o \
+	intdivmod.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))

@@ -94,12 +94,23 @@ class Pin(object):
         self.alt_fn = []
         self.board_name = None
         self.alt_fn_count = 0
+        self.adc_num = 0
+        self.adc_channel = 0
 
     def port_letter(self):
         return chr(self.port + ord('A'))
 
     def pin_name(self):
         return '{:s}{:d}'.format(self.port_letter(), self.pin)
+
+    def parse_adc(self, adc_str):
+        if (adc_str[:3] != 'ADC'):
+            return
+        (adc,channel) = adc_str.split('_')
+        for idx in range(3, len(adc)):
+            adc_num = int(adc[idx]) # 1, 2, or 3
+            self.adc_num |= (1 << (adc_num - 1))
+        self.adc_channel = int(channel[2:])
 
     def parse_af(self, af_idx, af_strs_in):
         if len(af_strs_in) == 0:
@@ -113,10 +124,22 @@ class Pin(object):
             if alt_fn.is_supported():
                 self.alt_fn_count += 1
 
-    def alt_fn_name(self):
-        if self.alt_fn_count > 0:
-            return 'pin_{:s}_af'.format(self.pin_name())
-        return 'NULL'
+    def alt_fn_name(self, null_if_0=False):
+        if null_if_0 and self.alt_fn_count == 0:
+            return 'NULL'
+        return 'pin_{:s}_af'.format(self.pin_name())
+
+    def adc_num_str(self):
+        str = ''
+        for adc_num in range(1,4):
+            if self.adc_num & (1 << (adc_num - 1)):
+                if len(str) > 0:
+                    str += ' | '
+                str += 'PIN_ADC'
+                str += chr(ord('0') + adc_num)
+        if len(str) == 0:
+            str = '0'
+        return str
 
     def print(self):
         if self.alt_fn_count == 0:
@@ -128,9 +151,10 @@ class Pin(object):
             print("// ",  end='')
         print('};')
         print('')
-        print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:d}, {:s});'.format(
+        print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:d}, {:s}, {:s}, {:d});'.format(
             self.pin_name(), self.port_letter(), self.pin,
-            self.alt_fn_count, self.alt_fn_name()))
+            self.alt_fn_count, self.alt_fn_name(null_if_0=True),
+            self.adc_num_str(), self.adc_channel))
         print('')
 
     def print_header(self, hdr_file):
@@ -162,7 +186,10 @@ class Pins(object):
                     continue
                 pin = Pin(port_num, pin_num)
                 for af_idx in range(af_col, len(row)):
-                    pin.parse_af(af_idx - af_col, row[af_idx])
+                    if af_idx < af_col + 16:
+                        pin.parse_af(af_idx - af_col, row[af_idx])
+                    elif af_idx == af_col + 16:
+                        pin.parse_adc(row[af_idx])
                 self.pins.append(pin)
 
     def parse_board_file(self, filename):
@@ -198,11 +225,30 @@ class Pins(object):
         print('')
         self.print_named('board', self.board_pins)
 
+    def print_adc(self, adc_num):
+        print('');
+        print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
+        for channel in range(16):
+            adc_found = False
+            for pin in self.pins:
+                if (pin.board_name and
+                    (pin.adc_num & (1 << (adc_num - 1))) and (pin.adc_channel == channel)):
+                    print('  &pin_{:s}, // {:d}'.format(pin.pin_name(), channel))
+                    adc_found = True
+                    break
+            if not adc_found:
+                print('  NULL,    // {:d}'.format(channel))
+        print('};')
+
+
     def print_header(self, hdr_filename):
         with open(hdr_filename, 'wt') as hdr_file:
             for pin in self.pins:
                 if pin.board_name:
                     pin.print_header(hdr_file)
+            hdr_file.write('extern const pin_obj_t * const pin_adc1[];\n')
+            hdr_file.write('extern const pin_obj_t * const pin_adc2[];\n')
+            hdr_file.write('extern const pin_obj_t * const pin_adc3[];\n')
 
 
 def main():
@@ -254,6 +300,9 @@ def main():
         with open(args.prefix_filename, 'r') as prefix_file:
             print(prefix_file.read())
     pins.print()
+    pins.print_adc(1)
+    pins.print_adc(2)
+    pins.print_adc(3)
     pins.print_header(args.hdr_filename)
 
 

@@ -5,13 +5,12 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
-#include "map.h"
 
 // approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
 // prefixed with zero for the empty case.
 STATIC int doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
 
-int get_doubling_prime_greater_or_equal_to(int x) {
+STATIC int get_doubling_prime_greater_or_equal_to(int x) {
     for (int i = 0; i < sizeof(doubling_primes) / sizeof(int); i++) {
         if (doubling_primes[i] >= x) {
             return doubling_primes[i];

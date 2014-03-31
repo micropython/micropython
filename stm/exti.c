@@ -226,13 +226,14 @@ static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_enable_obj,  exti_obj_enable);
 static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_disable_obj, exti_obj_disable);
 static MP_DEFINE_CONST_FUN_OBJ_1(exti_obj_swint_obj,   exti_obj_swint);
 
-static const mp_method_t exti_methods[] = {
-    { "line",  &exti_obj_line_obj },
-    { "enable",  &exti_obj_enable_obj },
-    { "disable",  &exti_obj_disable_obj },
-    { "swint",  &exti_obj_swint_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t exti_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t) &exti_obj_line_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t) &exti_obj_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t) &exti_obj_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_swint), (mp_obj_t) &exti_obj_swint_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(exti_locals_dict, exti_locals_dict_table);
 
 static mp_obj_t exti_regs(void) {
     printf("EXTI_IMR   %08lx\n", EXTI->IMR);
@@ -282,7 +283,7 @@ static void exti_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
 static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
-    rt_check_nargs(n_args, 4, 4, n_kw, 0);
+    mp_check_nargs(n_args, 4, 4, n_kw, 0);
 
     exti_obj_t *self = m_new_obj(exti_obj_t);
     self->base.type = type_in;
@@ -317,7 +318,7 @@ const mp_obj_type_t exti_obj_type = {
     { &exti_meta_obj_type },
     .name = MP_QSTR_Exti,
     .print = exti_obj_print,
-    .methods = exti_methods,
+    .locals_dict = (mp_obj_t)&exti_locals_dict,
 };
 
 void exti_init(void) {
@@ -334,7 +335,7 @@ static void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
-                rt_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
             }
         }
     }

@@ -9,7 +9,6 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
-#include "map.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "bc.h"
@@ -26,10 +25,10 @@
 // mp_obj_fun_native_t defined in obj.h
 
 STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
-    rt_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
+    mp_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
 }
 
-void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
+void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
     if (n_kw && !is_kw) {
         nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "function does not take keyword arguments"));
@@ -55,7 +54,7 @@ void rt_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args
 }
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &fun_native_type));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_native));
     mp_obj_fun_native_t *self = self_in;
 
     // check number of arguments
@@ -99,16 +98,16 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
     }
 }
 
-const mp_obj_type_t fun_native_type = {
+const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
 };
 
 // fun must have the correct signature for n_args fixed arguments
-mp_obj_t rt_make_function_n(int n_args, void *fun) {
+mp_obj_t mp_make_function_n(int n_args, void *fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args;
     o->n_args_max = n_args;
@@ -116,9 +115,9 @@ mp_obj_t rt_make_function_n(int n_args, void *fun) {
     return o;
 }
 
-mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
+mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = MP_OBJ_FUN_ARGS_MAX;
@@ -127,9 +126,9 @@ mp_obj_t rt_make_function_var(int n_args_min, mp_fun_var_t fun) {
 }
 
 // min and max are inclusive
-mp_obj_t rt_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
+mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
     mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &fun_native_type;
+    o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
     o->n_args_max = n_args_max;
@@ -147,7 +146,6 @@ typedef struct _mp_obj_fun_bc_t {
     machine_uint_t n_def_args : 15;     // number of default arguments
     machine_uint_t takes_var_args : 1;  // set if this function takes variable args
     machine_uint_t takes_kw_args : 1;   // set if this function takes keyword args
-    uint n_state;           // total state size for the executing function (incl args, locals, stack)
     const byte *bytecode;   // bytecode for the function
     qstr *args;             // argument names (needed to resolve positional args passed as keywords)
     mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args and/or kw args (if it takes them)
@@ -161,6 +159,42 @@ void dump_args(const mp_obj_t *a, int sz) {
     }
     DEBUG_printf("\n");
 #endif
+}
+
+// If it's possible to call a function without allocating new argument array,
+// this function returns true, together with pointers to 2 subarrays to be used
+// as arguments. Otherwise, it returns false. It is expected that this fucntion
+// will be accompanied by another, mp_obj_fun_prepare_full_args(), which will
+// instead take pointer to full-length out-array, and will fill it in. Rationale
+// being that a caller can try this function and if it succeeds, the function call
+// can be made without allocating extra memory. Otherwise, caller can allocate memory
+// and try "full" function. These functions are expected to be refactoring of
+// code in fun_bc_call() and evenrually replace it.
+bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
+                            uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2) {
+    mp_obj_fun_bc_t *self = self_in;
+
+    assert(n_kw == 0);
+    assert(self->takes_var_args == 0);
+    assert(self->takes_kw_args == 0);
+
+    mp_obj_t *extra_args = self->extra_args + self->n_def_args;
+    uint n_extra_args = 0;
+
+    if (n_args > self->n_args) {
+            goto arg_error;
+    } else {
+        extra_args -= self->n_args - n_args;
+        n_extra_args += self->n_args - n_args;
+    }
+    *out_args1 = args;
+    *out_args1_len = n_args;
+    *out_args2 = extra_args;
+    *out_args2_len = n_extra_args;
+    return true;
+
+arg_error:
+    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -279,14 +313,14 @@ continue2:;
         }
     }
 
-    mp_map_t *old_globals = rt_globals_get();
-    rt_globals_set(self->globals);
+    mp_map_t *old_globals = mp_globals_get();
+    mp_globals_set(self->globals);
     mp_obj_t result;
     DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
     dump_args(args, n_args);
     dump_args(extra_args, n_extra_args);
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, self->n_state, &result);
-    rt_globals_set(old_globals);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
+    mp_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
@@ -298,13 +332,13 @@ arg_error:
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
-const mp_obj_type_t fun_bc_type = {
+const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_bc_call,
 };
 
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args_in, uint n_state, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args_in, const byte *code) {
     uint n_def_args = 0;
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -319,14 +353,13 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
         n_extra_args += 1;
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
-    o->base.type = &fun_bc_type;
-    o->globals = rt_globals_get();
+    o->base.type = &mp_type_fun_bc;
+    o->globals = mp_globals_get();
     o->args = args;
     o->n_args = n_args;
     o->n_def_args = n_def_args;
     o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
     o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
-    o->n_state = n_state;
     o->bytecode = code;
     if (def_args != MP_OBJ_NULL) {
         memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
@@ -334,11 +367,10 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     return o;
 }
 
-void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, uint *n_state, const byte **code) {
-    assert(MP_OBJ_IS_TYPE(self_in, &fun_bc_type));
+void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_bc));
     mp_obj_fun_bc_t *self = self_in;
     *n_args = self->n_args;
-    *n_state = self->n_state;
     *code = self->bytecode;
 }
 
@@ -376,13 +408,13 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         // convert float to int (could also pass in float registers)
         return (machine_int_t)mp_obj_float_get(obj);
 #endif
-    } else if (MP_OBJ_IS_TYPE(obj, &tuple_type)) {
+    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_tuple)) {
         // pointer to start of tuple (could pass length, but then could use len(x) for that)
         uint len;
         mp_obj_t *items;
         mp_obj_tuple_get(obj, &len, &items);
         return (machine_uint_t)items;
-    } else if (MP_OBJ_IS_TYPE(obj, &list_type)) {
+    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_list)) {
         // pointer to start of list (could pass length, but then could use len(x) for that)
         uint len;
         mp_obj_t *items;
@@ -426,7 +458,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
     return convert_val_from_inline_asm(ret);
 }
 
-STATIC const mp_obj_type_t fun_asm_type = {
+STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
@@ -434,7 +466,7 @@ STATIC const mp_obj_type_t fun_asm_type = {
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
-    o->base.type = &fun_asm_type;
+    o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;
     o->fun = fun;
     return o;

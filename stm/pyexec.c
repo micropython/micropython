@@ -154,7 +154,7 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
     uint32_t start = sys_tick_counter;
     if (nlr_push(&nlr) == 0) {
         usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
-        rt_call_function_0(module_fun);
+        mp_call_function_0(module_fun);
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         nlr_pop();
         ret = true;
@@ -238,8 +238,8 @@ raw_repl_reset:
 void pyexec_repl(void) {
 #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     // in host mode, we enable the LCD for the repl
-    mp_obj_t lcd_o = rt_call_function_0(rt_load_name(qstr_from_str("LCD")));
-    rt_call_function_1(rt_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
+    mp_obj_t lcd_o = mp_call_function_0(mp_load_name(qstr_from_str("LCD")));
+    mp_call_function_1(mp_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
 #endif
 
     stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");

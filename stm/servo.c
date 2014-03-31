@@ -146,16 +146,17 @@ STATIC mp_obj_t servo_obj_angle(mp_obj_t self_in, mp_obj_t angle) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(servo_obj_angle_obj, servo_obj_angle);
 
-STATIC const mp_method_t servo_methods[] = {
-    { "angle", &servo_obj_angle_obj },
-    { NULL, NULL },
+STATIC const mp_map_elem_t servo_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_angle), (mp_obj_t)&servo_obj_angle_obj },
 };
+
+STATIC MP_DEFINE_CONST_DICT(servo_locals_dict, servo_locals_dict_table);
 
 STATIC const mp_obj_type_t servo_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_Servo,
     .print = servo_obj_print,
-    .methods = servo_methods,
+    .locals_dict = (mp_obj_t)&servo_locals_dict,
 };
 
 STATIC mp_obj_t pyb_Servo(mp_obj_t servo_id) {
