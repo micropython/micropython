@@ -31,11 +31,11 @@ mp_obj_t mp_load_const_bytes(qstr qstr);
 mp_obj_t mp_get_cell(mp_obj_t cell);
 void mp_set_cell(mp_obj_t cell, mp_obj_t val);
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args);
+mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_function_n(int n_args, void *fun); // fun must have the correct signature for n_args fixed arguments
 mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun);
 mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun); // min and max are inclusive
-mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args);
+mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args);
 
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);

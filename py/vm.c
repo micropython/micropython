@@ -648,23 +648,28 @@ unwind_jump:
 
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(mp_make_function_from_id(unum, false, MP_OBJ_NULL));
+                        PUSH(mp_make_function_from_id(unum, false, MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
-                        SET_TOP(mp_make_function_from_id(unum, false, TOP()));
+                        // Stack layout: def_dict def_tuple <- TOS
+                        obj1 = POP();
+                        SET_TOP(mp_make_function_from_id(unum, false, obj1, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
                         DECODE_UINT;
-                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL));
+                        // Stack layout: closure_tuple <- TOS
+                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_CLOSURE_DEFARGS:
                         DECODE_UINT;
+                        // Stack layout: def_dict def_tuple closure_tuple <- TOS
                         obj1 = POP();
-                        SET_TOP(mp_make_closure_from_id(unum, obj1, TOP()));
+                        obj2 = POP();
+                        SET_TOP(mp_make_closure_from_id(unum, obj1, obj2, TOP()));
                         break;
 
                     case MP_BC_CALL_FUNCTION:

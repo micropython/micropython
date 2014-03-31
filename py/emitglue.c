@@ -190,12 +190,15 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #endif
 }
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args) {
+mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
     if (unique_code_id >= unique_codes_total) {
         // illegal code id
         return mp_const_none;
     }
+
+    // TODO implement default kw args
+    assert(def_kw_args == MP_OBJ_NULL);
 
     // make the function, depending on the code kind
     mp_code_t *c = &unique_codes[unique_code_id];
@@ -231,10 +234,10 @@ mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp
     return fun;
 }
 
-mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args) {
+mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, false, def_args);
+    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, false, def_args, def_kw_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

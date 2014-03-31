@@ -776,16 +776,13 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
 }
 
 // stuff for lambda and comprehensions and generators
+// if we are not in CPython compatibility mode then:
+//  if n_pos_defaults > 0 then there is a tuple on the stack with the positional defaults
+//  if n_kw_defaults > 0 then there is a dictionary on the stack with the keyword defaults
+//  if both exist, the tuple is above the dictionary (ie the first pop gets the tuple)
 void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_defaults, int n_kw_defaults) {
     assert(n_pos_defaults >= 0);
     assert(n_kw_defaults >= 0);
-
-#if !MICROPY_EMIT_CPYTHON
-    // in Micro Python we put the default params into a tuple using the bytecode
-    if (n_pos_defaults) {
-        EMIT_ARG(build_tuple, n_pos_defaults);
-    }
-#endif
 
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
@@ -870,8 +867,19 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             if (comp->have_bare_star) {
                 comp->param_pass_num_dict_params += 1;
                 if (comp->param_pass == 1) {
+#if !MICROPY_EMIT_CPYTHON
+                    // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                    if (comp->param_pass_num_dict_params == 1) {
+                        // first default dict param, so make the map
+                        EMIT_ARG(build_map, 0);
+                    }
+#endif
                     EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pn_id));
                     compile_node(comp, pn_equal);
+#if !MICROPY_EMIT_CPYTHON
+                    // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                    EMIT(store_map);
+#endif
                 }
             } else {
                 comp->param_pass_num_default_params += 1;
@@ -921,6 +929,13 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     comp->param_pass_num_dict_params = 0;
     comp->param_pass_num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
+
+#if !MICROPY_EMIT_CPYTHON
+    // in Micro Python we put the default positional parameters into a tuple using the bytecode
+    if (comp->param_pass_num_default_params > 0) {
+        EMIT_ARG(build_tuple, comp->param_pass_num_default_params);
+    }
+#endif
 
     // get the scope for this function
     scope_t *fscope = (scope_t*)pns->nodes[4];
@@ -3327,7 +3342,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
 #else
         // return function that executes the outer module
         // we can free the unique_code slot because no-one has reference to this unique_code_id anymore
-        return mp_make_function_from_id(unique_code_id, true, MP_OBJ_NULL);
+        return mp_make_function_from_id(unique_code_id, true, MP_OBJ_NULL, MP_OBJ_NULL);
 #endif
     }
 }

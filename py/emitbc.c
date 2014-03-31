@@ -732,23 +732,38 @@ STATIC void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
 }
 
 STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
-    assert(n_kw_defaults == 0);
-    if (n_pos_defaults == 0) {
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
     } else {
-        emit_bc_pre(emit, 0);
+        if (n_pos_defaults == 0) {
+            // load dummy entry for non-existent positional default tuple
+            emit_bc_load_null(emit);
+        } else if (n_kw_defaults == 0) {
+            // load dummy entry for non-existent keyword default dict
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        }
+        emit_bc_pre(emit, -1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
     }
 }
 
 STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
-    assert(n_kw_defaults == 0);
-    if (n_pos_defaults == 0) {
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 0);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
     } else {
-        emit_bc_pre(emit, -1);
+        if (n_pos_defaults == 0) {
+            // load dummy entry for non-existent positional default tuple
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        } else if (n_kw_defaults == 0) {
+            // load dummy entry for non-existent keyword default dict
+            emit_bc_load_null(emit);
+            emit_bc_rot_three(emit);
+        }
+        emit_bc_pre(emit, -2);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);
     }
 }
