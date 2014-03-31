@@ -399,6 +399,11 @@ STATIC void emit_bc_load_const_verbatim_str(emit_t *emit, const char *str) {
     assert(0);
 }
 
+STATIC void emit_bc_load_null(emit_t *emit) {
+    emit_bc_pre(emit, 1);
+    emit_write_byte_code_byte(emit, MP_BC_LOAD_NULL);
+};
+
 STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
@@ -748,56 +753,30 @@ STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaul
     }
 }
 
-STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    int s = 0;
-    if (have_star_arg) {
-        s += 1;
-    }
-    if (have_dbl_star_arg) {
-        s += 1;
-    }
-    emit_bc_pre(emit, -n_positional - 2 * n_keyword - s);
-    int op;
-    if (have_star_arg) {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_FUNCTION_VAR_KW;
-        } else {
-            op = MP_BC_CALL_FUNCTION_VAR;
+STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, uint bytecode_base, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+    if (have_star_arg || have_dbl_star_arg) {
+        if (!have_star_arg) {
+            // load dummy entry for non-existent pos_seq
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        } else if (!have_dbl_star_arg) {
+            // load dummy entry for non-existent kw_dict
+            emit_bc_load_null(emit);
         }
+        emit_bc_pre(emit, stack_adj - n_positional - 2 * n_keyword - 2);
+        emit_write_byte_code_byte_uint(emit, bytecode_base + 1, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     } else {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_FUNCTION_KW;
-        } else {
-            op = MP_BC_CALL_FUNCTION;
-        }
+        emit_bc_pre(emit, stack_adj - n_positional - 2 * n_keyword);
+        emit_write_byte_code_byte_uint(emit, bytecode_base, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     }
-    emit_write_byte_code_byte_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
+}
+
+STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+    emit_bc_call_function_method_helper(emit, 0, MP_BC_CALL_FUNCTION, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
 }
 
 STATIC void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    int s = 0;
-    if (have_star_arg) {
-        s += 1;
-    }
-    if (have_dbl_star_arg) {
-        s += 1;
-    }
-    emit_bc_pre(emit, -1 - n_positional - 2 * n_keyword - s);
-    int op;
-    if (have_star_arg) {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_METHOD_VAR_KW;
-        } else {
-            op = MP_BC_CALL_METHOD_VAR;
-        }
-    } else {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_METHOD_KW;
-        } else {
-            op = MP_BC_CALL_METHOD;
-        }
-    }
-    emit_write_byte_code_byte_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
+    emit_bc_call_function_method_helper(emit, -1, MP_BC_CALL_METHOD, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
 }
 
 STATIC void emit_bc_return_value(emit_t *emit) {

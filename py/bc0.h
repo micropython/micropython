@@ -11,6 +11,7 @@
 #define MP_BC_LOAD_CONST_ID      (0x17) // qstr
 #define MP_BC_LOAD_CONST_BYTES   (0x18) // qstr
 #define MP_BC_LOAD_CONST_STRING  (0x19) // qstr
+#define MP_BC_LOAD_NULL          (0x1a)
 
 #define MP_BC_LOAD_FAST_0        (0x20)
 #define MP_BC_LOAD_FAST_1        (0x21)
@@ -84,18 +85,14 @@
 #define MP_BC_YIELD_VALUE        (0x82)
 #define MP_BC_YIELD_FROM         (0x83)
 
-#define MP_BC_MAKE_FUNCTION      (0x90) // uint
-#define MP_BC_MAKE_CLOSURE       (0x91) // uint
-#define MP_BC_CALL_FUNCTION      (0x92) // uint
-#define MP_BC_CALL_FUNCTION_VAR  (0x93) // uint
-#define MP_BC_CALL_FUNCTION_KW   (0x94) // uint
-#define MP_BC_CALL_FUNCTION_VAR_KW   (0x95) // uint
-#define MP_BC_CALL_METHOD        (0x96) // uint
-#define MP_BC_CALL_METHOD_VAR    (0x97) // uint
-#define MP_BC_CALL_METHOD_KW     (0x98) // uint
-#define MP_BC_CALL_METHOD_VAR_KW (0x99) // uint
-#define MP_BC_MAKE_FUNCTION_DEFARGS  (0x9a) // uint
-#define MP_BC_MAKE_CLOSURE_DEFARGS   (0x9b) // uint
+#define MP_BC_MAKE_FUNCTION         (0x90) // uint
+#define MP_BC_MAKE_FUNCTION_DEFARGS (0x91) // uint
+#define MP_BC_MAKE_CLOSURE          (0x92) // uint
+#define MP_BC_MAKE_CLOSURE_DEFARGS  (0x93) // uint
+#define MP_BC_CALL_FUNCTION         (0x94) // uint
+#define MP_BC_CALL_FUNCTION_VAR_KW  (0x95) // uint
+#define MP_BC_CALL_METHOD           (0x96) // uint
+#define MP_BC_CALL_METHOD_VAR_KW    (0x97) // uint
 
 #define MP_BC_IMPORT_NAME        (0xe0) // qstr
 #define MP_BC_IMPORT_FROM        (0xe1) // qstr
