@@ -11,42 +11,34 @@
 #include "runtime.h"
 #include "runtime0.h"
 
-// This is unified class for C-level and Python-level exceptions
-// Python-level exceptions have empty ->msg and all arguments are in
-// args tuple. C-level exceptions likely have ->msg set, and args is empty.
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
-    vstr_t *msg;
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, NULL, {{&mp_type_tuple}, 0}};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, {{&mp_type_tuple}, 0}};
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
-    if (o->msg != NULL) {
-        print(env, "%s: %s", qstr_str(o->base.type->name), vstr_str(o->msg));
-    } else {
-        // Yes, that's how CPython has it
-        // TODO now that exceptions are classes and instances, I think this needs to be changed to match CPython
-        if (kind == PRINT_REPR) {
-            print(env, "%s", qstr_str(o->base.type->name));
-        }
-        if (kind == PRINT_STR) {
-            if (o->args.len == 0) {
-                print(env, "");
-                return;
-            } else if (o->args.len == 1) {
-                mp_obj_print_helper(print, env, o->args.items[0], PRINT_STR);
-                return;
-            }
-        }
-        tuple_print(print, env, &o->args, kind);
+    if (kind == PRINT_REPR) {
+        print(env, "%s", qstr_str(o->base.type->name));
+    } else if (kind == PRINT_EXC) {
+        print(env, "%s: ", qstr_str(o->base.type->name));
     }
+    if (kind == PRINT_STR || kind == PRINT_EXC) {
+        if (o->args.len == 0) {
+            print(env, "");
+            return;
+        } else if (o->args.len == 1) {
+            mp_obj_print_helper(print, env, o->args.items[0], PRINT_STR);
+            return;
+        }
+    }
+    tuple_print(print, env, &o->args, kind);
 }
 
 STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -59,7 +51,6 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
     o->base.type = type;
     o->traceback = MP_OBJ_NULL;
-    o->msg = NULL;
     o->args.base.type = &mp_type_tuple;
     o->args.len = n_args;
     memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
@@ -185,7 +176,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     */
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
-    return mp_obj_new_exception_msg_varg(exc_type, NULL);
+    return mp_obj_new_exception_args(exc_type, 0, NULL);
 }
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args) {
@@ -202,22 +193,25 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
     // make exception object
-    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, 0);
+    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, 1);
     o->base.type = exc_type;
     o->traceback = MP_OBJ_NULL;
     o->args.base.type = &mp_type_tuple;
-    o->args.len = 0;
+    o->args.len = 1;
 
     if (fmt == NULL) {
         // no message
-        o->msg = NULL;
+        assert(0);
     } else {
-        // render exception message
-        o->msg = vstr_new();
+        // render exception message and store as .args[0]
+        // TODO: optimize bufferbloat
+        vstr_t *vstr = vstr_new();
         va_list ap;
         va_start(ap, fmt);
-        vstr_vprintf(o->msg, fmt, ap);
+        vstr_vprintf(vstr, fmt, ap);
         va_end(ap);
+        o->args.items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+        vstr_free(vstr);
     }
 
     return o;

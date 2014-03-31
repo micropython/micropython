@@ -348,13 +348,20 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 }
                 case MP_BINARY_OP_FLOOR_DIVIDE:
                 case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-                {
+                    if (rhs_val == 0) {
+                        goto zero_division;
+                    }
                     lhs_val = python_floor_divide(lhs_val, rhs_val);
                     break;
-                }
+
                 #if MICROPY_ENABLE_FLOAT
                 case MP_BINARY_OP_TRUE_DIVIDE:
-                case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
+                case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
+                    if (rhs_val == 0) {
+zero_division:
+                        nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
+                    }
+                    return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
                 #endif
 
                 case MP_BINARY_OP_MODULO:

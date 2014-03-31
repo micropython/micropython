@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 
@@ -23,7 +25,13 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
     print(env, "%s", buf);
 #else
-    print(env, "%.8g", (double) o->value);
+    char buf[32];
+    sprintf(buf, "%.8g", (double) o->value);
+    print(env, buf);
+    if (strchr(buf, '.') == NULL) {
+        // Python floats always have decimal point
+        print(env, ".0");
+    }
 #endif
 }
 
@@ -103,13 +111,15 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
-        /* TODO floor(?) the value
+        // TODO: verify that C floor matches Python semantics
         case MP_BINARY_OP_FLOOR_DIVIDE:
-        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
-        */
+        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+            lhs_val = MICROPY_FLOAT_C_FUN(floor)(lhs_val / rhs_val);
+            goto check_zero_division;
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: 
             lhs_val /= rhs_val; 
+check_zero_division:
             if (isinf(lhs_val)){ // check for division by zero
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
             }
@@ -119,7 +129,8 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
         case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
         case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
 
-        return NULL; // op not supported
+        default:
+            return NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);
 }

@@ -145,7 +145,9 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_modulo(arg0, arg1));
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_floor_divide(arg0, arg1));
+                        if (arg1 != 0) {
+                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, python_floor_divide(arg0, arg1));
+                        }
                     } else {
                         // shouldn't happen
                         assert(0);
