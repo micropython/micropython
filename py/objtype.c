@@ -16,6 +16,7 @@
 typedef struct _mp_obj_class_t {
     mp_obj_base_t base;
     mp_map_t members;
+    // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_class_t;
 
 STATIC mp_obj_t mp_obj_new_class(mp_obj_t class) {
@@ -225,6 +226,19 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else {
             // class member is a value, so just return that value
             dest[0] = member;
+        }
+        return;
+    }
+
+    // try __getattr__
+    if (attr != MP_QSTR___getattr__) {
+        mp_obj_t dest2[3];
+        mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
+        if (dest2[0] != MP_OBJ_NULL) {
+            // __getattr__ exists, call it and return its result
+            // XXX if this fails to load the requested attr, should we catch the attribute error and return silently?
+            dest2[2] = MP_OBJ_NEW_QSTR(attr);
+            dest[0] = mp_call_method_n_kw(1, 0, dest2);
             return;
         }
     }

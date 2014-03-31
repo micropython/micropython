@@ -701,7 +701,7 @@ mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
 // normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
 // method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
-STATIC void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
+void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
@@ -709,48 +709,45 @@ STATIC void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     // get the type
     mp_obj_type_t *type = mp_obj_get_type(base);
 
-    // if this type can do its own load, then call it
-    if (type->load_attr != NULL) {
-        type->load_attr(base, attr, dest);
-    }
-
-    // if nothing found yet, look for built-in and generic names
-    if (dest[0] == MP_OBJ_NULL) {
+    // look for built-in names
+    if (0) {
 #if MICROPY_CPYTHON_COMPAT
-        if (attr == MP_QSTR___class__) {
-            // a.__class__ is equivalent to type(a)
-            dest[0] = type;
-        } else
+    } else if (attr == MP_QSTR___class__) {
+        // a.__class__ is equivalent to type(a)
+        dest[0] = type;
 #endif
-        if (attr == MP_QSTR___next__ && type->iternext != NULL) {
-            dest[0] = (mp_obj_t)&mp_builtin_next_obj;
-            dest[1] = base;
-        } else if (type->load_attr == NULL) {
-            // generic method lookup if type didn't provide a specific one
-            // this is a lookup in the object (ie not class or type)
-            if (type->locals_dict != NULL) {
-                assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
-                mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
-                mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-                if (elem != NULL) {
-                    // check if the methods are functions, static or class methods
-                    // see http://docs.python.org/3.3/howto/descriptor.html
-                    if (MP_OBJ_IS_TYPE(elem->value, &mp_type_staticmethod)) {
-                        // return just the function
-                        dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
-                    } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_classmethod)) {
-                        // return a bound method, with self being the type of this object
-                        dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
-                        dest[1] = mp_obj_get_type(base);
-                    } else if (mp_obj_is_callable(elem->value)) {
-                        // return a bound method, with self being this object
-                        dest[0] = elem->value;
-                        dest[1] = base;
-                    } else {
-                        // class member is a value, so just return that value
-                        dest[0] = elem->value;
-                    }
-                }
+
+    } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+        dest[0] = (mp_obj_t)&mp_builtin_next_obj;
+        dest[1] = base;
+
+    } else if (type->load_attr != NULL) {
+        // this type can do its own load, so call it
+        type->load_attr(base, attr, dest);
+
+    } else if (type->locals_dict != NULL) {
+        // generic method lookup
+        // this is a lookup in the object (ie not class or type)
+        assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
+        mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            // check if the methods are functions, static or class methods
+            // see http://docs.python.org/3.3/howto/descriptor.html
+            if (MP_OBJ_IS_TYPE(elem->value, &mp_type_staticmethod)) {
+                // return just the function
+                dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
+            } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_classmethod)) {
+                // return a bound method, with self being the type of this object
+                dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
+                dest[1] = mp_obj_get_type(base);
+            } else if (mp_obj_is_callable(elem->value)) {
+                // return a bound method, with self being this object
+                dest[0] = elem->value;
+                dest[1] = base;
+            } else {
+                // class member is a value, so just return that value
+                dest[0] = elem->value;
             }
         }
     }

@@ -46,6 +46,7 @@ void mp_unpack_sequence(mp_obj_t seq, uint num, mp_obj_t *items);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
+void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 
