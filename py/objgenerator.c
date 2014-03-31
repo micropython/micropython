@@ -127,7 +127,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
     switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
         case MP_VM_RETURN_NORMAL:
             // Optimize return w/o value in case generator is used in for loop
-            if (ret == mp_const_none) {
+            if (ret == mp_const_none || ret == MP_OBJ_NULL) {
                 return MP_OBJ_NULL;
             } else {
                 nlr_jump(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
