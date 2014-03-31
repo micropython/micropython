@@ -1142,15 +1142,15 @@ STATIC void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
     assert(0);
 }
 
-STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
-    assert(n_default_params == 0 && n_dict_params == 0);
+    assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
     emit_call_with_imm_arg(emit, MP_F_MAKE_FUNCTION_FROM_ID, mp_make_function_from_id, scope->unique_code_id, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     assert(0);
 }
 

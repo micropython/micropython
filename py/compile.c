@@ -774,11 +774,14 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
 }
 
 // stuff for lambda and comprehensions and generators
-void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_params, int n_default_params) {
+void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_defaults, int n_kw_defaults) {
+    assert(n_pos_defaults >= 0);
+    assert(n_kw_defaults >= 0);
+
 #if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the default params into a tuple using the bytecode
-    if (n_default_params) {
-        EMIT_ARG(build_tuple, n_default_params);
+    if (n_pos_defaults) {
+        EMIT_ARG(build_tuple, n_pos_defaults);
     }
 #endif
 
@@ -807,10 +810,10 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_dict_
 
     // make the function/closure
     if (nfree == 0) {
-        EMIT_ARG(make_function, this_scope, n_dict_params, n_default_params);
+        EMIT_ARG(make_function, this_scope, n_pos_defaults, n_kw_defaults);
     } else {
         EMIT_ARG(build_tuple, nfree);
-        EMIT_ARG(make_closure, this_scope, n_dict_params, n_default_params);
+        EMIT_ARG(make_closure, this_scope, n_pos_defaults, n_kw_defaults);
     }
 }
 
@@ -921,7 +924,7 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     scope_t *fscope = (scope_t*)pns->nodes[4];
 
     // make the function
-    close_over_variables_etc(comp, fscope, comp->param_pass_num_dict_params, comp->param_pass_num_default_params);
+    close_over_variables_etc(comp, fscope, comp->param_pass_num_default_params, comp->param_pass_num_dict_params);
 
     // restore variables
     comp->have_bare_star = old_have_bare_star;

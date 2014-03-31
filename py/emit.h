@@ -97,8 +97,8 @@ typedef struct _emit_method_table_t {
     void (*build_slice)(emit_t *emit, int n_args);
     void (*unpack_sequence)(emit_t *emit, int n_args);
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
-    void (*make_function)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-    void (*make_closure)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
+    void (*make_function)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
+    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
     void (*call_function)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
     void (*call_method)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
     void (*return_value)(emit_t *emit);

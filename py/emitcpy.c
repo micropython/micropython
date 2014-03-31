@@ -759,19 +759,19 @@ STATIC void load_cpy_const_code_and_name(emit_t *emit, qstr qstr) {
     }
 }
 
-STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     load_cpy_const_code_and_name(emit, scope->simple_name);
-    emit_pre(emit, -1 - n_default_params - 2 * n_dict_params, 3);
+    emit_pre(emit, -1 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == PASS_3) {
-        printf("MAKE_FUNCTION %d\n", (n_dict_params << 8) | n_default_params);
+        printf("MAKE_FUNCTION %d\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
-STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     load_cpy_const_code_and_name(emit, scope->simple_name);
-    emit_pre(emit, -2 - n_default_params - 2 * n_dict_params, 3);
+    emit_pre(emit, -2 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == PASS_3) {
-        printf("MAKE_CLOSURE %d\n", (n_dict_params << 8) | n_default_params);
+        printf("MAKE_CLOSURE %d\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
