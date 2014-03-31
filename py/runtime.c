@@ -716,10 +716,13 @@ STATIC void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 
     // if nothing found yet, look for built-in and generic names
     if (dest[0] == MP_OBJ_NULL) {
+#if MICROPY_CPYTHON_COMPAT
         if (attr == MP_QSTR___class__) {
             // a.__class__ is equivalent to type(a)
             dest[0] = type;
-        } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+        } else
+#endif
+        if (attr == MP_QSTR___next__ && type->iternext != NULL) {
             dest[0] = (mp_obj_t)&mp_builtin_next_obj;
             dest[1] = base;
         } else if (type->load_attr == NULL) {
