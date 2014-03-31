@@ -192,7 +192,7 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
         args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
-        return mp_build_tuple(2, args);
+        return mp_obj_new_tuple(2, args);
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }

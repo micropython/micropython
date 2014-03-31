@@ -28,9 +28,6 @@ mp_obj_t mp_load_const_dec(qstr qstr);
 mp_obj_t mp_load_const_str(qstr qstr);
 mp_obj_t mp_load_const_bytes(qstr qstr);
 
-mp_obj_t mp_get_cell(mp_obj_t cell);
-void mp_set_cell(mp_obj_t cell, mp_obj_t val);
-
 mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_function_n(int n_args, void *fun); // fun must have the correct signature for n_args fixed arguments
 mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun);
@@ -45,13 +42,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_ob
 mp_obj_t mp_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_t *args);
 
-mp_obj_t mp_build_tuple(int n_args, mp_obj_t *items);
-mp_obj_t mp_build_list(int n_args, mp_obj_t *items);
-mp_obj_t mp_list_append(mp_obj_t list, mp_obj_t arg);
-mp_obj_t mp_build_set(int n_args, mp_obj_t *items);
-mp_obj_t mp_store_set(mp_obj_t set, mp_obj_t item);
 void mp_unpack_sequence(mp_obj_t seq, uint num, mp_obj_t *items);
-mp_obj_t mp_build_map(int n_args);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);

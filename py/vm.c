@@ -243,7 +243,7 @@ dispatch_loop:
 
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(mp_get_cell(fastn[-unum]));
+                        PUSH(mp_obj_cell_get(fastn[-unum]));
                         break;
 
                     case MP_BC_LOAD_NAME:
@@ -290,7 +290,7 @@ dispatch_loop:
 
                     case MP_BC_STORE_DEREF:
                         DECODE_UINT;
-                        mp_set_cell(fastn[-unum], POP());
+                        mp_obj_cell_set(fastn[-unum], POP());
                         break;
 
                     case MP_BC_STORE_NAME:
@@ -580,49 +580,49 @@ unwind_jump:
                     case MP_BC_BUILD_TUPLE:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_tuple(unum, sp));
+                        SET_TOP(mp_obj_new_tuple(unum, sp));
                         break;
 
                     case MP_BC_BUILD_LIST:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_list(unum, sp));
+                        SET_TOP(mp_obj_new_list(unum, sp));
                         break;
 
                     case MP_BC_LIST_APPEND:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[unum] is a list
-                        mp_list_append(sp[-unum], sp[0]);
+                        mp_obj_list_append(sp[-unum], sp[0]);
                         sp--;
                         break;
 
                     case MP_BC_BUILD_MAP:
                         DECODE_UINT;
-                        PUSH(mp_build_map(unum));
+                        PUSH(mp_obj_new_dict(unum));
                         break;
 
                     case MP_BC_STORE_MAP:
                         sp -= 2;
-                        mp_store_map(sp[0], sp[2], sp[1]);
+                        mp_obj_dict_store(sp[0], sp[2], sp[1]);
                         break;
 
                     case MP_BC_MAP_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
-                        mp_store_map(sp[-unum - 1], sp[0], sp[-1]);
+                        mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
                         sp -= 2;
                         break;
 
                     case MP_BC_BUILD_SET:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_set(unum, sp));
+                        SET_TOP(mp_obj_new_set(unum, sp));
                         break;
 
                     case MP_BC_SET_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum] is a set
-                        mp_store_set(sp[-unum], sp[0]);
+                        mp_obj_set_store(sp[-unum], sp[0]);
                         sp--;
                         break;
 

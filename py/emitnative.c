@@ -1063,14 +1063,14 @@ STATIC void emit_native_build_tuple(emit_t *emit, int n_args) {
     //   if wrapped in byte_array, or something, allocates memory and fills it
     emit_native_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE, mp_build_tuple, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE, mp_obj_new_tuple, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
 }
 
 STATIC void emit_native_build_list(emit_t *emit, int n_args) {
     emit_native_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_LIST, mp_build_list, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_BUILD_LIST, mp_obj_new_list, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
 }
 
@@ -1081,13 +1081,13 @@ STATIC void emit_native_list_append(emit_t *emit, int list_index) {
     emit_access_stack(emit, list_index, &vtype_list, REG_ARG_1);
     assert(vtype_list == VTYPE_PYOBJ);
     assert(vtype_item == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_LIST_APPEND, mp_list_append);
+    emit_call(emit, MP_F_LIST_APPEND, mp_obj_list_append);
     emit_post(emit);
 }
 
 STATIC void emit_native_build_map(emit_t *emit, int n_args) {
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_BUILD_MAP, mp_build_map, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_BUILD_MAP, mp_obj_new_dict, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
 }
 
@@ -1097,7 +1097,7 @@ STATIC void emit_native_store_map(emit_t *emit) {
     assert(vtype_key == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
     assert(vtype_map == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_STORE_MAP, mp_store_map);
+    emit_call(emit, MP_F_STORE_MAP, mp_obj_dict_store);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
 
@@ -1109,14 +1109,14 @@ STATIC void emit_native_map_add(emit_t *emit, int map_index) {
     assert(vtype_map == VTYPE_PYOBJ);
     assert(vtype_key == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_STORE_MAP, mp_store_map);
+    emit_call(emit, MP_F_STORE_MAP, mp_obj_dict_store);
     emit_post(emit);
 }
 
 STATIC void emit_native_build_set(emit_t *emit, int n_args) {
     emit_native_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_SET, mp_build_set, n_args, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_BUILD_SET, mp_obj_new_set, n_args, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
 }
 
@@ -1127,7 +1127,7 @@ STATIC void emit_native_set_add(emit_t *emit, int set_index) {
     emit_access_stack(emit, set_index, &vtype_set, REG_ARG_1);
     assert(vtype_set == VTYPE_PYOBJ);
     assert(vtype_item == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_STORE_SET, mp_store_set);
+    emit_call(emit, MP_F_STORE_SET, mp_obj_set_store);
     emit_post(emit);
 }
 

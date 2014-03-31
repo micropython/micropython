@@ -372,7 +372,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     while (s < top && splits != 0) {
         start = s;
         while (s < top && !is_ws(*s)) s++;
-        mp_list_append(res, mp_obj_new_str(start, s - start, false));
+        mp_obj_list_append(res, mp_obj_new_str(start, s - start, false));
         if (s >= top) {
             break;
         }
@@ -383,7 +383,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     }
 
     if (s < top) {
-        mp_list_append(res, mp_obj_new_str(s, top - s, false));
+        mp_obj_list_append(res, mp_obj_new_str(s, top - s, false));
     }
 
     return res;

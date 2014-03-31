@@ -377,7 +377,7 @@ int main(int argc, char **argv) {
                 free(basedir);
             }
             for (int i = a; i < argc; i++) {
-                mp_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                mp_obj_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
             do_file(argv[a]);
             executed = true;

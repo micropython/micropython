@@ -72,10 +72,6 @@ void mp_deinit(void) {
     mp_emit_glue_deinit();
 }
 
-mp_obj_t mp_list_append(mp_obj_t self_in, mp_obj_t arg) {
-    return mp_obj_list_append(self_in, arg);
-}
-
 mp_obj_t mp_load_const_dec(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
     uint len;
@@ -134,14 +130,6 @@ mp_obj_t mp_load_build_class(void) {
         // no user-defined __build_class__, return builtin one
         return (mp_obj_t)&mp_builtin___build_class___obj;
     }
-}
-
-mp_obj_t mp_get_cell(mp_obj_t cell) {
-    return mp_obj_cell_get(cell);
-}
-
-void mp_set_cell(mp_obj_t cell, mp_obj_t val) {
-    mp_obj_cell_set(cell, val);
 }
 
 void mp_store_name(qstr qstr, mp_obj_t obj) {
@@ -656,23 +644,6 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
     return res;
 }
 
-mp_obj_t mp_build_tuple(int n_args, mp_obj_t *items) {
-    return mp_obj_new_tuple(n_args, items);
-}
-
-mp_obj_t mp_build_list(int n_args, mp_obj_t *items) {
-    return mp_obj_new_list(n_args, items);
-}
-
-mp_obj_t mp_build_set(int n_args, mp_obj_t *items) {
-    return mp_obj_new_set(n_args, items);
-}
-
-mp_obj_t mp_store_set(mp_obj_t set, mp_obj_t item) {
-    mp_obj_set_store(set, item);
-    return set;
-}
-
 // unpacked items are stored in reverse order into the array pointed to by items
 void mp_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     uint seq_len;
@@ -711,15 +682,6 @@ too_short:
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "need more than %d values to unpack", seq_len));
 too_long:
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
-}
-
-mp_obj_t mp_build_map(int n_args) {
-    return mp_obj_new_dict(n_args);
-}
-
-mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value) {
-    // map should always be a dict
-    return mp_obj_dict_store(map, key, value);
 }
 
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
@@ -1057,13 +1019,13 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_is_true,
     mp_unary_op,
     mp_binary_op,
-    mp_build_tuple,
-    mp_build_list,
-    mp_list_append,
-    mp_build_map,
-    mp_store_map,
-    mp_build_set,
-    mp_store_set,
+    mp_obj_new_tuple,
+    mp_obj_new_list,
+    mp_obj_list_append,
+    mp_obj_new_dict,
+    mp_obj_dict_store,
+    mp_obj_new_set,
+    mp_obj_set_store,
     mp_make_function_from_id,
     mp_call_function_n_kw_for_native,
     mp_call_method_n_kw,

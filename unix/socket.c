@@ -313,7 +313,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     }
     assert(addr);
 
-    mp_obj_t list = mp_build_list(0, NULL);
+    mp_obj_t list = mp_obj_new_list(0, NULL);
     for (; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
         t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_family);
@@ -327,7 +327,7 @@ static mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
             t->items[3] = mp_const_none;
         }
         t->items[4] = mp_obj_new_bytearray(addr->ai_addrlen, addr->ai_addr);
-        mp_list_append(list, t);
+        mp_obj_list_append(list, t);
     }
     return list;
 }

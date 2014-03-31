@@ -134,7 +134,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
         tuple[i] = mp_obj_new_int(val);
     }
 
-    return mp_build_tuple(3, tuple);
+    return mp_obj_new_tuple(3, tuple);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
