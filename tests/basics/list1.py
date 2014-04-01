@@ -20,3 +20,8 @@ print(x)
 print(x[1:])
 print(x[:-1])
 print(x[2:3])
+
+try:
+    print(x[1.0])
+except TypeError:
+    print("TypeError")
