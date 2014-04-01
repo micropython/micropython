@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <string.h>
 
-///#include "std.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
@@ -55,8 +54,9 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     if (left_pad) {
         while (left_pad > 0) {
             int p = left_pad;
-            if (p > pad_size)
+            if (p > pad_size) {
                 p = pad_size;
+            }
             pfenv->print_strn(pfenv->data, pad_chars, p);
             left_pad -= p;
         }
@@ -65,8 +65,9 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     if (right_pad) {
         while (right_pad > 0) {
             int p = right_pad;
-            if (p > pad_size)
+            if (p > pad_size) {
                 p = pad_size;
+            }
             pfenv->print_strn(pfenv->data, pad_chars, p);
             right_pad -= p;
         }
@@ -205,7 +206,7 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
         // so suppress the zero fill.
         fill = ' ';
     }
-    chrs += pfenv_print_strn(pfenv, s, len, flags, fill, width); 
+    chrs += pfenv_print_strn(pfenv, s, len, flags, fill, width);
 
     return chrs;
 }
