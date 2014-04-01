@@ -16,9 +16,8 @@
 #include "formatfloat.h"
 #endif
 
-#define PF_PAD_SIZE 16
-static const char *pad_spaces = "                ";
-static const char *pad_zeroes = "0000000000000000";
+static const char pad_spaces[] = "                ";
+static const char pad_zeroes[] = "0000000000000000";
 
 void pfenv_vstr_add_strn(void *data, const char *str, unsigned int len){
     vstr_add_strn(data, str, len);
@@ -28,16 +27,20 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
-    char pad_fill[PF_PAD_SIZE];
+    int pad_size;
     const char *pad_chars;
 
     if (!fill || fill == ' ' ) {
         pad_chars = pad_spaces;
+        pad_size = sizeof(pad_spaces) - 1;
     } else if (fill == '0') {
         pad_chars = pad_zeroes;
+        pad_size = sizeof(pad_zeroes) - 1;
     } else {
-        memset(pad_fill, fill, PF_PAD_SIZE);
-        pad_chars = pad_fill;
+        // Other pad characters are fairly unusual, so we'll take the hit
+        // and output them 1 at a time.
+        pad_chars = &fill;
+        pad_size = 1;
     }
 
     if (flags & PF_FLAG_CENTER_ADJUST) {
@@ -52,8 +55,8 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     if (left_pad) {
         while (left_pad > 0) {
             int p = left_pad;
-            if (p > PF_PAD_SIZE)
-                p = PF_PAD_SIZE;
+            if (p > pad_size)
+                p = pad_size;
             pfenv->print_strn(pfenv->data, pad_chars, p);
             left_pad -= p;
         }
@@ -62,8 +65,8 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     if (right_pad) {
         while (right_pad > 0) {
             int p = right_pad;
-            if (p > PF_PAD_SIZE)
-                p = PF_PAD_SIZE;
+            if (p > pad_size)
+                p = pad_size;
             pfenv->print_strn(pfenv->data, pad_chars, p);
             right_pad -= p;
         }
