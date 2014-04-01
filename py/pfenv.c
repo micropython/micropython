@@ -71,8 +71,9 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     return len;
 }
 
-// enough room for 32 signed number
-#define INT_BUF_SIZE (16)
+// 32-bits is 10 digits, add 3 for commas, 1 for sign, 1 for terminating null
+// We can use 16 characters for 32-bit and 32 characters for 64-bit
+#define INT_BUF_SIZE (sizeof(machine_int_t) * 4)
 
 int pfenv_print_int(const pfenv_t *pfenv, unsigned int x, int sgn, int base, int base_char, int flags, char fill, int width) {
     char sign = 0;
