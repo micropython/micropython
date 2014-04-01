@@ -9,6 +9,7 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
+#include "pfenv.h"
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
@@ -492,28 +493,389 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
 }
 
+// Takes an int arg, but only parses unsigned numbers, and only changes
+// *num if at least one digit was parsed.
+static int str_to_int(const char *str, int *num) {
+    const char *s = str;
+    if (unichar_isdigit(*s)) {
+        *num = 0;
+        do {
+            *num = *num * 10 + (*s - '0');
+            s++;
+        }
+        while (unichar_isdigit(*s));
+    }
+    return s - str;
+}
+
+static bool isalignment(char ch) {
+    return ch && strchr("<>=^", ch) != NULL;
+}
+
+static bool istype(char ch) {
+    return ch && strchr("bcdeEfFgGnosxX%", ch) != NULL;
+}
+
+static bool arg_looks_integer(mp_obj_t arg) {
+    return MP_OBJ_IS_TYPE(arg, &mp_type_bool) || MP_OBJ_IS_INT(arg);
+}
+
+static bool arg_looks_numeric(mp_obj_t arg) {
+    return arg_looks_integer(arg)
+#if MICROPY_ENABLE_FLOAT
+        || MP_OBJ_IS_TYPE(arg, &mp_type_float)
+#endif
+    ;
+}
+
 mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
-    int arg_i = 1;
+    int arg_i = 0;
     vstr_t *vstr = vstr_new();
+    pfenv_t pfenv_vstr;
+    pfenv_vstr.data = vstr;
+    pfenv_vstr.print_strn = pfenv_vstr_add_strn;
+
     for (const byte *top = str + len; str < top; str++) {
-        if (*str == '{') {
+        if (*str == '}') {
             str++;
-            if (str < top && *str == '{') {
-                vstr_add_char(vstr, '{');
+            if (str < top && *str == '}') {
+                vstr_add_char(vstr, '}');
+                continue;
+            }
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Single '}' encountered in format string"));
+        }
+        if (*str != '{') {
+            vstr_add_char(vstr, *str);
+            continue;
+        }
+
+        str++;
+        if (str < top && *str == '{') {
+            vstr_add_char(vstr, '{');
+            continue;
+        }
+
+        // replacement_field ::=  "{" [field_name] ["!" conversion] [":" format_spec] "}"
+
+        vstr_t *field_name = NULL;
+        char conversion = '\0';
+        vstr_t *format_spec = NULL;
+
+        if (str < top && *str != '}' && *str != '!' && *str != ':') {
+            field_name = vstr_new();
+            while (str < top && *str != '}' && *str != '!' && *str != ':') {
+                vstr_add_char(field_name, *str++);
+            }
+            vstr_add_char(field_name, '\0');
+        }
+
+        // conversion ::=  "r" | "s"
+
+        if (str < top && *str == '!') {
+            str++;
+            if (str < top && (*str == 'r' || *str == 's')) {
+                conversion = *str++;
             } else {
-                while (str < top && *str != '}') str++;
-                if (arg_i >= n_args) {
-                    nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "end of format while looking for conversion specifier"));
+            }
+        }
+
+        if (str < top && *str == ':') {
+            str++;
+            // {:} is the same as {}, which is the same as {!s}
+            // This makes a difference when passing in a True or False
+            // '{}'.format(True) returns 'True'
+            // '{:d}'.format(True) returns '1'
+            // So we treat {:} as {} and this later gets treated to be {!s}
+            if (*str != '}') {
+                format_spec = vstr_new(); 
+                while (str < top && *str != '}') {
+                    vstr_add_char(format_spec, *str++);
                 }
-                // TODO: may be PRINT_REPR depending on formatting code
-                mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_STR);
-                arg_i++;
+                vstr_add_char(format_spec, '\0');
+            }
+        }
+        if (str >= top) {
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "unmatched '{' in format"));
+        }
+        if (*str != '}') {
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "expected ':' after format specifier"));
+        }
+
+        mp_obj_t arg = mp_const_none;
+
+        if (field_name) {
+            if (arg_i > 0) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "cannot switch from automatic field numbering to manual field specification"));
+            }
+            int index;
+            if (str_to_int(vstr_str(field_name), &index) != vstr_len(field_name) - 1) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "attributes not supported yet"));
+            }
+            if (index >= n_args - 1) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
+            }
+            arg = args[index + 1];
+            arg_i = -1;
+            vstr_free(field_name);
+            field_name = NULL;
+        } else {
+            if (arg_i < 0) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "cannot switch from manual field specification to automatic field numbering"));
+            }
+            if (arg_i >= n_args - 1) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
+            }
+            arg = args[arg_i + 1];
+            arg_i++;
+        }
+        if (!format_spec && !conversion) {
+            conversion = 's';
+        }
+        if (conversion) {
+            mp_print_kind_t print_kind;
+            if (conversion == 's') {
+                print_kind = PRINT_STR;
+            } else if (conversion == 'r') {
+                print_kind = PRINT_REPR;
+            } else {
+                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Unknown conversion specifier %c", conversion));
+            }
+            vstr_t *arg_vstr = vstr_new();
+            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, arg_vstr, arg, print_kind);
+            arg = mp_obj_new_str((const byte *)vstr_str(arg_vstr), vstr_len(arg_vstr), false);
+            vstr_free(arg_vstr);
+        }
+
+        char sign = '\0';
+        char fill = '\0';
+        char align = '\0';
+        int width = -1;
+        int precision = -1;
+        char type = '\0';
+        int flags = 0;
+
+        if (format_spec) {
+            // The format specifier (from http://docs.python.org/2/library/string.html#formatspec)
+            //
+            // [[fill]align][sign][#][0][width][,][.precision][type]
+            // fill        ::=  <any character>
+            // align       ::=  "<" | ">" | "=" | "^"
+            // sign        ::=  "+" | "-" | " "
+            // width       ::=  integer
+            // precision   ::=  integer
+            // type        ::=  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%"
+
+            const char *s = vstr_str(format_spec);
+            if (isalignment(*s)) {
+                align = *s++;
+            } else if (*s && isalignment(s[1])) {
+                fill = *s++;
+                align = *s++;
+            }
+            if (*s == '+' || *s == '-' || *s == ' ') {
+                if (*s == '+') {
+                    flags |= PF_FLAG_SHOW_SIGN;
+                } else if (*s == ' ') {
+                    flags |= PF_FLAG_SPACE_SIGN;
+                }
+                sign = *s++;
+            }
+            if (*s == '#') {
+                flags |= PF_FLAG_SHOW_PREFIX;
+                s++;
+            }
+            if (*s == '0') {
+                if (!align) {
+                    align = '=';
+                }
+                if (!fill) {
+                    fill = '0';
+                }
+            }
+            s += str_to_int(s, &width);
+            if (*s == ',') {
+                flags |= PF_FLAG_SHOW_COMMA;
+                s++;
+            }
+            if (*s == '.') {
+                s++;
+                s += str_to_int(s, &precision);
+            }
+            if (istype(*s)) {
+                type = *s++;
+            }
+            if (*s) {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "Invalid conversion specification"));
+            }
+            vstr_free(format_spec);
+            format_spec = NULL;
+        }
+        if (!align) {
+            if (arg_looks_numeric(arg)) {
+                align = '>';
+            } else {
+                align = '<';
+            }
+        }
+        if (!fill) {
+            fill = ' ';
+        }
+
+        if (sign) {
+            if (type == 's') {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Sign not allowed in string format specifier"));
+            }
+            if (type == 'c') {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Sign not allowed with integer format specifier 'c'"));
             }
         } else {
-            vstr_add_char(vstr, *str);
+            sign = '-';
+        }
+
+        switch (align) {
+            case '<': flags |= PF_FLAG_LEFT_ADJUST;     break;
+            case '=': flags |= PF_FLAG_PAD_AFTER_SIGN;  break;
+            case '^': flags |= PF_FLAG_CENTER_ADJUST;   break;
+        }
+
+        if (arg_looks_integer(arg)) {
+            switch (type) {
+                case 'b':
+                    pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 2, 'a', flags, fill, width);
+                    continue;
+
+                case 'c':
+                {
+                    char ch = mp_obj_get_int(arg);
+                    pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, fill, width);
+                    continue;
+                }
+
+                case '\0':  // No explicit format type implies 'd'
+                case 'n':   // I don't think we support locales in uPy so use 'd'
+                case 'd':
+                    pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 10, 'a', flags, fill, width);
+                    continue;
+
+                case 'o':
+                    pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 8, 'a', flags, fill, width);
+                    continue;
+
+                case 'x':
+                    pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'a', flags, fill, width);
+                    continue;
+
+                case 'X':
+                    pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'A', flags, fill, width);
+                    continue;
+
+                case 'e':
+                case 'E':
+                case 'f':
+                case 'F':
+                case 'g':
+                case 'G':
+                case '%':
+                    // The floating point formatters all work with anything that
+                    // looks like an integer
+                    break;
+
+                default:
+                    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        "Unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
+            }
+        }
+#if MICROPY_ENABLE_FLOAT
+        if (arg_looks_numeric(arg)) {
+            if (!type) {
+
+                // Even though the docs say that an unspecified type is the same
+                // as 'g', there is one subtle difference, when the exponent
+                // is one less than the precision.
+                //  
+                // '{:10.1}'.format(0.0) ==> '0e+00'
+                // '{:10.1g}'.format(0.0) ==> '0'
+                //
+                // TODO: Figure out how to deal with this.
+                //
+                // A proper solution would involve adding a special flag
+                // or something to format_float, and create a format_double
+                // to deal with doubles. In order to fix this when using
+                // sprintf, we'd need to use the e format and tweak the
+                // returned result to strip trailing zeros like the g format
+                // does.
+                //
+                // {:10.3} and {:10.2e} with 1.23e2 both produce 1.23e+02
+                // but with 1.e2 you get 1e+02 and 1.00e+02
+                //
+                // Stripping the trailing 0's (like g) does would make the
+                // e format give us the right format.
+                //
+                // CPython sources say:
+                //   Omitted type specifier.  Behaves in the same way as repr(x)
+                //   and str(x) if no precision is given, else like 'g', but with
+                //   at least one digit after the decimal point. */
+
+                type = 'g';
+            }
+            if (type == 'n') {
+                type = 'g';
+            }
+
+            flags |= PF_FLAG_PAD_NAN_INF; // '{:06e}'.format(float('-inf')) should give '-00inf'
+            switch (type) {
+                case 'e':
+                case 'E':
+                case 'f':
+                case 'F':
+                case 'g':
+                case 'G':
+                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), type, flags, fill, width, precision); 
+                    break;
+
+                case '%':
+                    flags |= PF_FLAG_ADD_PERCENT;
+                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg) * 100.0F, 'f', flags, fill, width, precision);
+                    break;
+
+                default:
+                    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        "Unknown format code '%c' for object of type 'float'",
+                        type, mp_obj_get_type_str(arg)));
+            }
+#endif
+        } else {
+            if (align == '=') {
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "'=' alignment not allowed in string format specifier"));
+            }
+            switch (type) {
+                case '\0':
+                    mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, arg, PRINT_STR);
+                    break;
+
+                case 's':
+                {
+                    uint len;
+                    const char *s = mp_obj_str_get_data(arg, &len);
+                    if (precision < 0) {
+                        precision = len;
+                    }
+                    if (len > precision) {
+                        len = precision;
+                    }
+                    pfenv_print_strn(&pfenv_vstr, s, len, flags, fill, width);
+                    break;
+                }
+
+                default:
+                    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        "Unknown format code '%c' for object of type 'str'",
+                        type, mp_obj_get_type_str(arg)));
+            }
         }
     }
 

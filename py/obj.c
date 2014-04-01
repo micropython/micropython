@@ -198,6 +198,10 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
+#if MICROPY_ENABLE_FLOAT
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
+        return mp_obj_float_get(arg);
+#endif
     } else {
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }
