@@ -486,12 +486,6 @@ STATIC void emit_bc_store_subscr(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_STORE_SUBSCR);
 }
 
-STATIC void emit_bc_store_locals(emit_t *emit) {
-    // not needed
-    emit_bc_pre(emit, -1);
-    emit_write_byte_code_byte(emit, MP_BC_POP_TOP);
-}
-
 STATIC void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 0);
@@ -860,7 +854,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_store_global,
     emit_bc_store_attr,
     emit_bc_store_subscr,
-    emit_bc_store_locals,
     emit_bc_delete_fast,
     emit_bc_delete_deref,
     emit_bc_delete_name,

@@ -818,13 +818,6 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     emit_call(emit, MP_F_STORE_SUBSCR, mp_store_subscr);
 }
 
-STATIC void emit_native_store_locals(emit_t *emit) {
-    // not needed
-    vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-    emit_post(emit);
-}
-
 STATIC void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // could support for Python types, just set to None (so GC can reclaim it)
@@ -1290,7 +1283,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_store_global,
     emit_native_store_attr,
     emit_native_store_subscr,
-    emit_native_store_locals,
     emit_native_delete_fast,
     emit_native_delete_deref,
     emit_native_delete_name,

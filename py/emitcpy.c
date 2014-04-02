@@ -325,13 +325,6 @@ STATIC void emit_cpy_store_subscr(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_store_locals(emit_t *emit) {
-    emit_pre(emit, -1, 1);
-    if (emit->pass == PASS_3) {
-        printf("STORE_LOCALS\n");
-    }
-}
-
 STATIC void emit_cpy_delete_fast(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
@@ -833,7 +826,6 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_store_global,
     emit_cpy_store_attr,
     emit_cpy_store_subscr,
-    emit_cpy_store_locals,
     emit_cpy_delete_fast,
     emit_cpy_delete_deref,
     emit_cpy_delete_name,

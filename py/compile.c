@@ -2957,15 +2957,8 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             id_info_t *id_info = scope_find_or_add_id(scope, MP_QSTR___class__, &added);
             assert(added);
             id_info->kind = ID_INFO_KIND_LOCAL;
-            id_info = scope_find_or_add_id(scope, MP_QSTR___locals__, &added);
-            assert(added);
-            id_info->kind = ID_INFO_KIND_LOCAL;
-            id_info->param = true;
-            scope->num_params = 1; // __locals__ is the parameter
         }
 
-        EMIT_ARG(load_id, MP_QSTR___locals__);
-        EMIT(store_locals);
         EMIT_ARG(load_id, MP_QSTR___name__);
         EMIT_ARG(store_id, MP_QSTR___module__);
         EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
@@ -3155,8 +3148,10 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 
     // compute scope_flags
-    //scope->scope_flags = 0; since we set some things in parameters
-    if (scope->kind != SCOPE_MODULE) {
+
+#if MICROPY_EMIT_CPYTHON
+    // these flags computed here are for CPython compatibility only
+    if (scope->kind == SCOPE_FUNCTION) {
         scope->scope_flags |= MP_SCOPE_FLAG_NEWLOCALS;
     }
     if (scope->kind == SCOPE_FUNCTION || scope->kind == SCOPE_LAMBDA || scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
@@ -3169,6 +3164,8 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
             scope->scope_flags |= MP_SCOPE_FLAG_NESTED;
         }
     }
+#endif
+
     int num_free = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];

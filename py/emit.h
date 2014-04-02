@@ -54,7 +54,6 @@ typedef struct _emit_method_table_t {
     void (*store_global)(emit_t *emit, qstr qstr);
     void (*store_attr)(emit_t *emit, qstr qstr);
     void (*store_subscr)(emit_t *emit);
-    void (*store_locals)(emit_t *emit);
     void (*delete_fast)(emit_t *emit, qstr qstr, int local_num);
     void (*delete_deref)(emit_t *emit, qstr qstr, int local_num);
     void (*delete_name)(emit_t *emit, qstr qstr);

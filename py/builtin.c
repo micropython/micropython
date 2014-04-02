@@ -26,7 +26,7 @@ STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     mp_locals_set(mp_obj_dict_get_map(class_locals));
 
     // call the class code
-    mp_obj_t cell = mp_call_function_1(args[0], (mp_obj_t)0xdeadbeef);
+    mp_obj_t cell = mp_call_function_0(args[0]);
 
     // restore old __locals__ object
     mp_locals_set(old_locals);

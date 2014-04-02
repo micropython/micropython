@@ -182,5 +182,4 @@ const emit_method_table_t emit_pass1_method_table = {
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
-    (void*)emit_pass1_dummy,
 };
