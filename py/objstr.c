@@ -788,9 +788,11 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "Unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
             }
-
+        }
+        // NOTE: no else here. We need the e, f, g etc formats for integer
+        //       arguments (from above if) to take this if.
 #if MICROPY_ENABLE_FLOAT
-        } else if (arg_looks_numeric(arg)) {
+        if (arg_looks_numeric(arg)) {
             if (!type) {
 
                 // Even though the docs say that an unspecified type is the same
@@ -847,9 +849,10 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                         "Unknown format code '%c' for object of type 'float'",
                         type, mp_obj_get_type_str(arg)));
             }
+        } else
 #endif
 
-        } else {
+        {
             // arg doesn't look like a number
 
             if (align == '=') {
