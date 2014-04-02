@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
 
@@ -9,6 +10,8 @@
 #include "parsenum.h"
 #include "mpz.h"
 #include "objint.h"
+#include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_ENABLE_FLOAT
 #include <math.h>
@@ -59,16 +62,20 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     }
 }
 
-// This is called only for non-SMALL_INT
+// This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
-    assert(0);
-    return mp_const_none;
+    return MP_OBJ_NULL;
 }
 
-// This is called only for non-SMALL_INT
+// This is called for operations on SMALL_INT that are not handled by mp_binary_op
 mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    assert(0);
-    return mp_const_none;
+    if (op == MP_BINARY_OP_MULTIPLY) {
+        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
+            // multiply is commutative for these types, so delegate to them
+            return mp_binary_op(op, rhs_in, lhs_in);
+        }
+    }
+    return MP_OBJ_NULL;
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT

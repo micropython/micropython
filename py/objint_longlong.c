@@ -9,6 +9,7 @@
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
@@ -57,6 +58,13 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t*)rhs_in)->val;
     } else {
+        if (op == MP_BINARY_OP_MULTIPLY) {
+            if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
+                // multiply is commutative for these types, so delegate to them
+                return mp_binary_op(op, rhs_in, lhs_in);
+            }
+        }
+        // unsupported operation/type
         return MP_OBJ_NULL;
     }
 
