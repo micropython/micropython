@@ -788,9 +788,9 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "Unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
             }
+        }
 
-#if MICROPY_ENABLE_FLOAT
-        } else if (arg_looks_numeric(arg)) {
+        if (arg_looks_numeric(arg)) {
             if (!type) {
 
                 // Even though the docs say that an unspecified type is the same
@@ -828,6 +828,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
 
             flags |= PF_FLAG_PAD_NAN_INF; // '{:06e}'.format(float('-inf')) should give '-00inf'
             switch (type) {
+#if MICROPY_ENABLE_FLOAT
                 case 'e':
                 case 'E':
                 case 'f':
@@ -841,14 +842,13 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                     flags |= PF_FLAG_ADD_PERCENT;
                     pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg) * 100.0F, 'f', flags, fill, width, precision);
                     break;
+#endif
 
                 default:
                     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "Unknown format code '%c' for object of type 'float'",
                         type, mp_obj_get_type_str(arg)));
             }
-#endif
-
         } else {
             // arg doesn't look like a number
 

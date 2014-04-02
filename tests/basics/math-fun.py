@@ -34,7 +34,7 @@ functions = [('sqrt', sqrt, p_test_values),
 for function_name, function, test_vals in functions:
     print(function_name)
     for value in test_vals:
-        print("{:8.7g}".format(function(value)))
+        print("{:.7g}".format(function(value)))
 
 binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.),
                                 (-23., -42.), (1., 0.0), (1., -0.0)])
@@ -43,4 +43,4 @@ binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.)
 for function_name, function, test_vals in binary_functions:
     print(function_name)
     for value1, value2 in test_vals:
-        print("{:8.7g}".format(function(value1, value2)))
+        print("{:.7g}".format(function(value1, value2)))
