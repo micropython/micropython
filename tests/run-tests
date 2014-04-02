@@ -23,7 +23,7 @@ failed_tests = []
 tests = []
 
 if not sys.argv[1:]:
-    tests = sorted(glob('basics/*.py') + glob('io/*.py'))
+    tests = sorted(glob('basics/*.py') + glob('io/*.py') + glob('misc/*.py'))
 else:
     tests = sys.argv[1:]
 
