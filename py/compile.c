@@ -2994,6 +2994,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     assert(comp->cur_except_level == 0);
 }
 
+#if MICROPY_EMIT_INLINE_THUMB
 void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
@@ -3072,6 +3073,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
         EMIT_INLINE_ASM(end_pass);
     }
 }
+#endif
 
 void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals

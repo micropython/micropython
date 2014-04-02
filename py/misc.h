@@ -54,12 +54,6 @@ bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
 
-/** string ******************************************************/
-
-/*
-#define streq(s1, s2) (strcmp((s1), (s2)) == 0)
-*/
-
 /** variable string *********************************************/
 
 typedef struct _vstr_t {
