@@ -184,7 +184,31 @@ STATIC const qstr binary_op_method_name[] = {
     [MP_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
 };
 
+// Given a member that was extracted from an instance, convert it correctly
+// and put the result in the dest[] array for a possible method call.
+// Conversion means dealing with static/class methods, callables, and values.
+// see http://docs.python.org/3.3/howto/descriptor.html
+STATIC void class_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_t *dest) {
+    if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
+        // return just the function
+        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
+        // return a bound method, with self being the type of this object
+        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
+        dest[1] = mp_obj_get_type(self);
+    } else if (mp_obj_is_callable(member)) {
+        // return a bound method, with self being this object
+        dest[0] = member;
+        dest[1] = self;
+    } else {
+        // class member is a value, so just return that value
+        dest[0] = member;
+    }
+}
+
 STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    // Note: For ducktyping, CPython does not look in the instance members or use
+    // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_class_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
     if (op_name == 0) {
@@ -192,7 +216,11 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
     mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name);
     if (member != MP_OBJ_NULL) {
-        return mp_call_function_2(member, lhs_in, rhs_in);
+        mp_obj_t dest[3];
+        dest[1] = MP_OBJ_NULL;
+        class_convert_return_attr(lhs_in, member, dest);
+        dest[2] = rhs_in;
+        return mp_call_method_n_kw(1, 0, dest);
     } else {
         return MP_OBJ_NULL;
     }
@@ -209,24 +237,7 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
     if (member != MP_OBJ_NULL) {
-        // check if the methods are functions, static or class methods
-        // see http://docs.python.org/3.3/howto/descriptor.html
-        // TODO check that this is the correct place to have this logic
-        if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
-            // return just the function
-            dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-        } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
-            // return a bound method, with self being the type of this object
-            dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-            dest[1] = mp_obj_get_type(self_in);
-        } else if (mp_obj_is_callable(member)) {
-            // return a bound method, with self being this object
-            dest[0] = member;
-            dest[1] = self_in;
-        } else {
-            // class member is a value, so just return that value
-            dest[0] = member;
-        }
+        class_convert_return_attr(self_in, member, dest);
         return;
     }
 
@@ -432,25 +443,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
         if (member != MP_OBJ_NULL) {
-            // XXX this and the code in class_load_attr need to be factored out
-            // check if the methods are functions, static or class methods
-            // see http://docs.python.org/3.3/howto/descriptor.html
-            // TODO check that this is the correct place to have this logic
-            if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
-                // return just the function
-                dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-            } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
-                // return a bound method, with self being the type of this object
-                dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-                dest[1] = mp_obj_get_type(self->obj);
-            } if (mp_obj_is_callable(member)) {
-                // return a bound method, with self being this object
-                dest[0] = member;
-                dest[1] = self->obj;
-            } else {
-                // class member is a value, so just return that value
-                dest[0] = member;
-            }
+            class_convert_return_attr(self, member, dest);
             return;
         }
     }
