@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "mpconfig.h"
+#include "misc.h"
 #include "gc.h"
 
 #if MICROPY_ENABLE_GC
