@@ -213,11 +213,11 @@ mp_obj_t test_obj_new(int value) {
     return o;
 }
 
-int usage(void) {
+int usage(char **argv) {
     printf(
-"usage: py [-X <opt>] [-c <command>] [<filename>]\n"
+"usage: %s [-X <opt>] [-c <command>] [<filename>]\n"
 "\n"
-"Implementation specific options:\n"
+"Implementation specific options:\n", argv[0]
 );
     int impl_opts_cnt = 0;
 #if MICROPY_ENABLE_GC
@@ -261,7 +261,7 @@ void pre_process_options(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
                 if (a + 1 >= argc) {
-                    exit(usage());
+                    exit(usage(argv));
                 }
                 if (0) {
 #if MICROPY_ENABLE_GC
@@ -269,7 +269,7 @@ void pre_process_options(int argc, char **argv) {
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, NULL, 0);
 #endif
                 } else {
-                    exit(usage());
+                    exit(usage(argv));
                 }
                 a++;
             }
@@ -370,7 +370,7 @@ int main(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
-                    return usage();
+                    return usage(argv);
                 }
                 do_str(argv[a + 1]);
                 executed = true;
@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else {
-                return usage();
+                return usage(argv);
             }
         } else {
             char *basedir = realpath(argv[a], NULL);
