@@ -1434,12 +1434,19 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
     compile_node(comp, pns->nodes[1]); // if block
-    //if (!(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))) { // optimisation; doesn't align with CPython
-        // jump over elif/else blocks if they exist
-        if (!EMIT(last_emit_was_return_value)) { // simple optimisation to align with CPython
-            EMIT_ARG(jump, l_end);
-        }
-    //}
+
+    if (
+#if !MICROPY_EMIT_CPYTHON
+        // optimisation to not jump over non-existent elif/else blocks (this optimisation is not in CPython)
+        !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3])) &&
+#endif
+        // optimisation to not jump if last instruction was return
+        !EMIT(last_emit_was_return_value)
+        ) {
+        // jump over elif/else blocks
+        EMIT_ARG(jump, l_end);
+    }
+
     EMIT_ARG(label_assign, l_fail);
 
     if (!MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
