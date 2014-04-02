@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stm32f4xx_hal.h>
-#include "usbd_cdc_msc_hid.h"
-#include "usbd_cdc_interface.h"
 
 #include "nlr.h"
 #include "misc.h"
@@ -9,6 +7,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "timer.h"
 #include "led.h"
 #include "pin.h"
 #include "build/pins.h"
@@ -53,6 +52,8 @@ void led_init(void) {
 #if defined(PYBV4) || defined(PYBV10)
     // LED4 (blue) is on PB4 which is TIM3_CH1
     // we use PWM on this channel to fade the LED
+
+    // LED3 (yellow) is on PA15 which has TIM2_CH1, so we could PWM that as well
 
     // GPIO configuration
     GPIO_InitStructure.Pin = MICROPY_HW_LED4.pin_mask;

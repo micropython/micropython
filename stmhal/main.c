@@ -22,6 +22,7 @@
 #include "readline.h"
 #include "pyexec.h"
 #include "usart.h"
+#include "timer.h"
 #include "led.h"
 #include "exti.h"
 #include "usrsw.h"
@@ -38,7 +39,6 @@
 #include "dac.h"
 #include "pin.h"
 #if 0
-#include "timer.h"
 #include "pybwlan.h"
 #endif
 
@@ -177,6 +177,7 @@ int main(void) {
 
     // basic sub-system init
     pendsv_init();
+    timer_tim3_init();
     led_init();
     switch_init0();
 
@@ -409,6 +410,11 @@ soft_reset:
     rng_init();
 #endif
 
+#if MICROPY_HW_ENABLE_TIMER
+    // timer
+    //timer_init();
+#endif
+
     // I2C
     i2c_init();
 
@@ -420,13 +426,6 @@ soft_reset:
 #if MICROPY_HW_ENABLE_SERVO
     // servo
     servo_init();
-#endif
-
-#if 0
-#if MICROPY_HW_ENABLE_TIMER
-    // timer
-    timer_init();
-#endif
 #endif
 
 #if MICROPY_HW_ENABLE_DAC

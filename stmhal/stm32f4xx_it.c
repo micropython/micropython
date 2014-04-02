@@ -42,15 +42,13 @@
 
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc_msc_hid.h"
-#include "usbd_cdc_interface.h"
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "exti.h"
-#include "servo.h"
+#include "timer.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -351,12 +349,12 @@ void RTC_WKUP_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
 }
 
-void TIM2_IRQHandler(void) {
-    HAL_TIM_IRQHandler(&TIM2_Handle);
-}
-
 void TIM3_IRQHandler(void) {
     HAL_TIM_IRQHandler(&TIM3_Handle);
+}
+
+void TIM5_IRQHandler(void) {
+    HAL_TIM_IRQHandler(&TIM5_Handle);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

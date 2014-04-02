@@ -61,6 +61,7 @@ SRC_C = \
 	usbd_msc_storage.c \
 	pendsv.c \
 	systick.c  \
+	timer.c \
 	led.c \
 	pin.c \
 	pin_map.c \
@@ -98,7 +99,6 @@ SRC_C = \
 	adc.c \
 	i2c.c \
 
-#	timer.c \
 #	pybwlan.c \
 
 SRC_S = \
