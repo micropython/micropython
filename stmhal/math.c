@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <math.h>
+
 typedef float float_t;
 typedef union {
     float f;
@@ -86,7 +88,6 @@ float erfcf(float x) { return 0.0; }
 float modff(float x, float *y) { return 0.0; }
 float frexpf(float x, int *exp) { return 0.0; }
 float ldexpf(float x, int exp) { return 0.0; }
-int __fpclassifyf(float x) { return 0; }
 
 /*****************************************************************************/
 // from musl-0.9.15 libm.h
@@ -134,6 +135,18 @@ do {                                              \
       __u.i = (w);                                \
       (d) = __u.f;                                \
 } while (0)
+
+/*****************************************************************************/
+// __fpclassifyf from musl-0.9.15
+
+int __fpclassifyf(float x)
+{
+	union {float f; uint32_t i;} u = {x};
+	int e = u.i>>23 & 0xff;
+	if (!e) return u.i<<1 ? FP_SUBNORMAL : FP_ZERO;
+	if (e==0xff) return u.i<<9 ? FP_NAN : FP_INFINITE;
+	return FP_NORMAL;
+}
 
 /*****************************************************************************/
 // scalbnf from musl-0.9.15

@@ -27,8 +27,6 @@ typedef struct _pyb_servo_obj_t {
     uint16_t pulse_dest;
 } pyb_servo_obj_t;
 
-STATIC const mp_obj_type_t servo_obj_type;
-
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
 void servo_init(void) {
@@ -36,7 +34,7 @@ void servo_init(void) {
 
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
-        pyb_servo_obj[i].base.type = &servo_obj_type;
+        pyb_servo_obj[i].base.type = &pyb_servo_type;
         pyb_servo_obj[i].servo_id = i + 1;
         pyb_servo_obj[i].time_left = 0;
         pyb_servo_obj[i].pulse_cur = 150; // units of 10us
@@ -149,7 +147,7 @@ STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 
     // check servo number
     if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo %d does not exist", servo_id));
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo %d does not exist", servo_id + 1));
     }
 
     // get and init servo object
