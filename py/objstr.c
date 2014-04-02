@@ -790,6 +790,8 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
             }
         }
 
+        // NOTE: no else here. We need the e, f, g etc formats for integer
+        //       arguments (from above if) to take this if.
         if (arg_looks_numeric(arg)) {
             if (!type) {
 
