@@ -317,18 +317,30 @@ STATIC mp_obj_t mp_builtin_pow(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
-STATIC mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    mp_map_elem_t *sep_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_MAP_LOOKUP);
+    mp_map_elem_t *end_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_end), MP_MAP_LOOKUP);
+    const char *sep_data = " ";
+    uint sep_len = 1;
+    const char *end_data = "\n";
+    uint end_len = 1;
+    if (sep_elem != NULL && sep_elem->value != mp_const_none) {
+        sep_data = mp_obj_str_get_data(sep_elem->value, &sep_len);
+    }
+    if (end_elem != NULL && end_elem->value != mp_const_none) {
+        end_data = mp_obj_str_get_data(end_elem->value, &end_len);
+    }
     for (int i = 0; i < n_args; i++) {
         if (i > 0) {
-            printf(" ");
+            printf("%.*s", sep_len, sep_data);
         }
         mp_obj_print(args[i], PRINT_STR);
     }
-    printf("\n");
+    printf("%.*s", end_len, end_data);
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_print_obj, 0, mp_builtin_print);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 
 STATIC mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 3);
