@@ -218,8 +218,19 @@ int usage(void) {
 "usage: py [-X <opt>] [-c <command>] [<filename>]\n"
 "\n"
 "Implementation specific options:\n"
+);
+    int impl_opts_cnt = 0;
+#if MICROPY_ENABLE_GC
+    printf(
 "  heapsize=<n> -- set the heap size for the GC\n"
 );
+    impl_opts_cnt++;
+#endif
+
+    if (impl_opts_cnt == 0) {
+        printf("  (none)\n");
+    }
+
     return 1;
 }
 
