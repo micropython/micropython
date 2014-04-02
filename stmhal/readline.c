@@ -58,8 +58,8 @@ int readline(vstr_t *line, const char *prompt) {
             } else if (c == 27) {
                 // escape sequence
                 escape_seq = 1;
-            } else if (c == 127) {
-                // backspace
+            } else if (c == 8 || c == 127) {
+                // backspace/delete
                 if (cursor_pos > orig_line_len) {
                     vstr_cut_out_bytes(line, cursor_pos - 1, 1);
                     // set redraw parameters
@@ -125,6 +125,7 @@ int readline(vstr_t *line, const char *prompt) {
         }
 
         // redraw command prompt, efficiently
+        // TODO we can probably use some more sophisticated VT100 commands here
         if (redraw_step_back > 0) {
             for (int i = 0; i < redraw_step_back; i++) {
                 stdout_tx_str("\b");
