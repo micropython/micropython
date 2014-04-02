@@ -91,6 +91,12 @@ int readline(vstr_t *line, const char *prompt) {
                     vstr_cut_tail_bytes(line, 1);
                     stdout_tx_str("\b \b");
                 }
+            } else if (c == 8) {
+                if (line->len > 0) {
+                    // erase char
+                    stdout_tx_str("\b \b");
+                    line->buf[line->len--] = (char)0;
+                }
             } else if (32 <= c && c <= 126) {
                 vstr_add_char(line, c);
                 stdout_tx_str(line->buf + line->len - 1);
