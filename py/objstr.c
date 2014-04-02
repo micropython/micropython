@@ -894,32 +894,162 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
     assert(MP_OBJ_IS_STR(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
+    const byte *start_str = str;
     int arg_i = 0;
     vstr_t *vstr = vstr_new();
+    pfenv_t pfenv_vstr;
+    pfenv_vstr.data = vstr;
+    pfenv_vstr.print_strn = pfenv_vstr_add_strn;
+
     for (const byte *top = str + len; str < top; str++) {
+        if (*str != '%') {
+            vstr_add_char(vstr, *str);
+            continue;
+        }
+        if (++str >= top) {
+            break;
+        }
         if (*str == '%') {
-            if (++str >= top) {
+            vstr_add_char(vstr, '%');
+            continue;
+        }
+        if (arg_i >= n_args) {
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
+        }
+        int flags = 0;
+        char fill = ' ';
+        bool alt = false;
+        while (str < top) {
+            if (*str == '-')      flags |= PF_FLAG_LEFT_ADJUST;
+            else if (*str == '+') flags |= PF_FLAG_SHOW_SIGN;
+            else if (*str == ' ') flags |= PF_FLAG_SPACE_SIGN;
+            else if (*str == '#') alt = true;
+            else if (*str == '0') {
+                flags |= PF_FLAG_PAD_AFTER_SIGN;
+                fill = '0';
+            } else break;
+            str++;
+        }
+        // parse width, if it exists
+        int width = 0; 
+        if (str < top) {
+            if (*str == '*') {
+                width = mp_obj_get_int(args[arg_i++]);
+                str++;
+            } else {
+                for (; str < top && '0' <= *str && *str <= '9'; str++) {
+                    width = width * 10 + *str - '0';
+                }
+            }
+        }
+        int prec = -1;
+        if (str < top && *str == '.') {
+            if (++str < top) {
+                if (*str == '*') {
+                    prec = mp_obj_get_int(args[arg_i++]);
+                    str++;
+                } else {
+                    prec = 0;
+                    for (; str < top && '0' <= *str && *str <= '9'; str++) {
+                        prec = prec * 10 + *str - '0';
+                    }
+                }
+            }
+        }
+
+        if (str >= top) {
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "incomplete format"));
+        }
+        mp_obj_t arg = args[arg_i];
+        switch (*str) {
+            case 'c':
+                if (MP_OBJ_IS_STR(arg)) {
+                    uint len;
+                    const char *s = mp_obj_str_get_data(arg, &len);
+                    if (len != 1) {
+                        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "%c requires int or char")); 
+                        break;
+                    }
+                    pfenv_print_strn(&pfenv_vstr, s, 1, flags, ' ', width);
+                    break;
+                }
+                if (arg_looks_integer(arg)) {
+                    char ch = mp_obj_get_int(arg);
+                    pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, ' ', width);
+                    break;
+                }
+#if MICROPY_ENABLE_FLOAT
+                // This is what CPython reports, so we report the same.
+                if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
+                    nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "integer argument expected, got float")); 
+
+                }
+#endif
+                nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "an integer is required")); 
+                break; 
+
+            case 'd':
+            case 'i':
+            case 'u':
+                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 10, 'a', flags, fill, width);
+                break;
+
+#if MICROPY_ENABLE_FLOAT
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
+            case 'g':
+            case 'G':
+                pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), *str, flags, fill, width, prec);
+                break;
+#endif
+
+            case 'o':
+                if (alt) {
+                    flags |= PF_FLAG_SHOW_PREFIX;
+                }
+                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 8, 'a', flags, fill, width); 
+                break;
+
+            case 'r':
+            case 's':
+            {
+                vstr_t *arg_vstr = vstr_new();
+                mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf,
+                                    arg_vstr, arg, *str == 'r' ? PRINT_REPR : PRINT_STR);
+                uint len = vstr_len(arg_vstr);
+                if (prec < 0) {
+                    prec = len;
+                }
+                if (len > prec) {
+                    len = prec;
+                }
+                pfenv_print_strn(&pfenv_vstr, vstr_str(arg_vstr), len, flags, ' ', width);
+                vstr_free(arg_vstr);
                 break;
             }
-            if (*str == '%') {
-                vstr_add_char(vstr, '%');
-            } else {
-                if (arg_i >= n_args) {
-                    nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
+
+            case 'x':
+                if (alt) {
+                    flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                switch (*str) {
-                    case 's':
-                        mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_STR);
-                        break;
-                    case 'r':
-                        mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[arg_i], PRINT_REPR);
-                        break;
+                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'a', flags, fill, width);
+                break;
+
+            case 'X':
+                if (alt) {
+                    flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                arg_i++;
-            }
-        } else {
-            vstr_add_char(vstr, *str);
+                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'A', flags, fill, width);
+                break;
+            
+            default:
+                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                    "unsupported format character '%c' (0x%x) at index %d",
+                    *str, *str, str - start_str));
         }
+        arg_i++;
     }
 
     if (arg_i != n_args) {
