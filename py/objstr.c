@@ -788,9 +788,9 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "Unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
             }
-        }
+
 #if MICROPY_ENABLE_FLOAT
-        if (arg_looks_numeric(arg)) {
+        } else if (arg_looks_numeric(arg)) {
             if (!type) {
 
                 // Even though the docs say that an unspecified type is the same
@@ -848,10 +848,14 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                         type, mp_obj_get_type_str(arg)));
             }
 #endif
+
         } else {
+            // arg doesn't look like a number
+
             if (align == '=') {
                 nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "'=' alignment not allowed in string format specifier"));
             }
+
             switch (type) {
                 case '\0':
                     mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, arg, PRINT_STR);

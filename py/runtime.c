@@ -346,8 +346,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_TRUE_DIVIDE:
                 case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
                     if (rhs_val == 0) {
-zero_division:
-                        nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
+                        goto zero_division;
                     }
                     return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
                 #endif
@@ -451,6 +450,9 @@ generic_binary_op:
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     return mp_const_none;
+
+zero_division:
+    nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
