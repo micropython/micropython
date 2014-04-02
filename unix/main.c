@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <errno.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -369,13 +370,19 @@ int main(int argc, char **argv) {
                 return usage();
             }
         } else {
-            // Set base dir of the script as first entry in sys.path
             char *basedir = realpath(argv[a], NULL);
-            if (basedir != NULL) {
-                char *p = strrchr(basedir, '/');
-                path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-                free(basedir);
+            if (basedir == NULL) {
+                fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
+                perror("");
+                // CPython exits with 2 in such case
+                exit(2);
             }
+
+            // Set base dir of the script as first entry in sys.path
+            char *p = strrchr(basedir, '/');
+            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+            free(basedir);
+
             for (int i = a; i < argc; i++) {
                 mp_obj_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
