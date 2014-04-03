@@ -13,6 +13,12 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
+void file_obj_del(mp_obj_t self_in) {
+    pyb_file_obj_t *self = self_in;
+    f_close(&self->fp);
+    printf("<file del called>\n");
+}
+
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     printf("<file %p>", self_in);
 }
@@ -64,13 +70,14 @@ static const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_File,
     .print = file_obj_print,
+    .del   = file_obj_del,
     .locals_dict = (mp_obj_t)&file_locals_dict,
 };
 
 mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
     const char *filename = mp_obj_str_get_str(o_filename);
     const char *mode = mp_obj_str_get_str(o_mode);
-    pyb_file_obj_t *self = m_new_obj(pyb_file_obj_t);
+    pyb_file_obj_t *self = m_new_mp_obj(pyb_file_obj_t);
     self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
         // open for reading
