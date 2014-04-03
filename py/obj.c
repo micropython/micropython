@@ -203,6 +203,24 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
     }
 }
 
+// returns false if arg is not of integral type
+// returns true and sets *value if it is of integral type
+// can throw OverflowError if arg is of integral type, but doesn't fit in a machine_int_t
+bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value) {
+    if (arg == mp_const_false) {
+        *value = 0;
+    } else if (arg == mp_const_true) {
+        *value = 1;
+    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+        *value = MP_OBJ_SMALL_INT_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+        *value = mp_obj_int_get_checked(arg);
+    } else {
+        return false;
+    }
+    return true;
+}
+
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t arg) {
     if (arg == mp_const_false) {

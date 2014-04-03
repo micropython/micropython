@@ -122,12 +122,11 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             list_extend(lhs, rhs);
             return o;
         }
-        case MP_BINARY_OP_MULTIPLY:
-        {
-            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+        case MP_BINARY_OP_MULTIPLY: {
+            machine_int_t n;
+            if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return NULL;
             }
-            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
             mp_obj_list_t *s = list_new(o->len * n);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return s;

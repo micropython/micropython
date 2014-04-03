@@ -243,8 +243,18 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
 }
 
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
-    // TODO: Check overflow
-    return mp_obj_int_get(self_in);
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        machine_int_t value;
+        if (mpz_as_int_checked(&self->mpz, &value)) {
+            return value;
+        } else {
+            // overflow
+            nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
+        }
+    }
 }
 
 #if MICROPY_ENABLE_FLOAT
