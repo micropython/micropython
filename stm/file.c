@@ -92,3 +92,5 @@ mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
     }
     return self;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_open_obj, pyb_io_open);

@@ -18,6 +18,8 @@
 #define MICROPY_ENABLE_LFN          (0)
 #define MICROPY_LFN_CODE_PAGE       (1) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
+extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)

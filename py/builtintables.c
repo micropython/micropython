@@ -121,6 +121,9 @@ STATIC const mp_builtin_elem_t builtin_module_table[] = {
     { MP_QSTR_micropython, (mp_obj_t)&mp_module_micropython },
 
     { MP_QSTR_array, (mp_obj_t)&mp_module_array },
+#if MICROPY_ENABLE_MOD_IO
+    { MP_QSTR_io, (mp_obj_t)&mp_module_io },
+#endif
     { MP_QSTR_collections, (mp_obj_t)&mp_module_collections },
 
 #if MICROPY_ENABLE_FLOAT
