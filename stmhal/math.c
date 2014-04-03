@@ -64,6 +64,10 @@ float sqrtf(float x) {
 // TODO we need import these functions from some library (eg musl or newlib)
 float powf(float x, float y) { return 0.0; }
 float logf(float x) { return 0.0; }
+// some compilers define log2f in terms of logf
+#ifdef log2f
+#undef log2f
+#endif
 float log2f(float x) { return 0.0; }
 float log10f(float x) { return 0.0; }
 float tanhf(float x) { return 0.0; }
