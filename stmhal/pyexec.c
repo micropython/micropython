@@ -120,9 +120,8 @@ raw_repl_reset:
             } else if (c == VCP_CHAR_CTRL_D) {
                 // input finished
                 break;
-            } else if (c == '\r') {
-                vstr_add_char(&line, '\n');
-            } else if (32 <= c && c <= 126) {
+            } else if (c <= 127) {
+                // let through any other ASCII character
                 vstr_add_char(&line, c);
             }
         }
