@@ -27,12 +27,22 @@ if not sys.argv[1:]:
 else:
     tests = sys.argv[1:]
 
+test_on_pyboard = False
+if test_on_pyboard:
+    import pyboard
+    pyb = pyboard.Pyboard('/dev/ttyACM0')
+    pyb.enter_raw_repl()
+
 for test_file in tests:
     test_name = os.path.splitext(os.path.basename(test_file))[0]
 
     output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
     try:
-        output_mupy = subprocess.check_output([MP_PY, test_file])
+        if test_on_pyboard:
+            pyb.enter_raw_repl()
+            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+        else:
+            output_mupy = subprocess.check_output([MP_PY, test_file])
     except subprocess.CalledProcessError:
         output_mupy = b'CRASH'
 
