@@ -31,6 +31,7 @@ int readline(vstr_t *line, const char *prompt) {
     stdout_tx_str(prompt);
     int orig_line_len = line->len;
     int escape_seq = 0;
+    char escape_seq_buf[1] = {0};
     int hist_cur = -1;
     int cursor_pos = orig_line_len;
     for (;;) {
@@ -43,6 +44,12 @@ int readline(vstr_t *line, const char *prompt) {
             if (VCP_CHAR_CTRL_A <= c && c <= VCP_CHAR_CTRL_D && vstr_len(line) == orig_line_len) {
                 // control character with empty line
                 return c;
+            } else if (c == VCP_CHAR_CTRL_A) {
+                // CTRL-A with non-empty line is go-to-start-of-line
+                redraw_step_back = cursor_pos - orig_line_len;
+            } else if (c == VCP_CHAR_CTRL_E) {
+                // CTRL-E is go-to-end-of-line
+                redraw_step_forward = line->len - cursor_pos;
             } else if (c == '\r') {
                 // newline
                 stdout_tx_str("\r\n");
@@ -80,44 +87,60 @@ int readline(vstr_t *line, const char *prompt) {
                 escape_seq = 0;
             }
         } else if (escape_seq == 2) {
-            escape_seq = 0;
-            if (c == 'A') {
-                // up arrow
-                if (hist_cur + 1 < READLINE_HIST_SIZE && readline_hist[hist_cur + 1] != NULL) {
-                    // increase hist num
-                    hist_cur += 1;
-                    // set line to history
-                    line->len = orig_line_len;
-                    vstr_add_str(line, readline_hist[hist_cur]);
-                    // set redraw parameters
-                    redraw_step_back = cursor_pos - orig_line_len;
-                    redraw_from_cursor = true;
-                    redraw_step_forward = line->len - orig_line_len;
-                }
-            } else if (c == 'B') {
-                // down arrow
-                if (hist_cur >= 0) {
-                    // decrease hist num
-                    hist_cur -= 1;
-                    // set line to history
-                    vstr_cut_tail_bytes(line, line->len - orig_line_len);
-                    if (hist_cur >= 0) {
+            if ('0' <= c && c <= '9') {
+                escape_seq = 3;
+                escape_seq_buf[0] = c;
+            } else {
+                escape_seq = 0;
+                if (c == 'A') {
+                    // up arrow
+                    if (hist_cur + 1 < READLINE_HIST_SIZE && readline_hist[hist_cur + 1] != NULL) {
+                        // increase hist num
+                        hist_cur += 1;
+                        // set line to history
+                        line->len = orig_line_len;
                         vstr_add_str(line, readline_hist[hist_cur]);
+                        // set redraw parameters
+                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_from_cursor = true;
+                        redraw_step_forward = line->len - orig_line_len;
                     }
-                    // set redraw parameters
+                } else if (c == 'B') {
+                    // down arrow
+                    if (hist_cur >= 0) {
+                        // decrease hist num
+                        hist_cur -= 1;
+                        // set line to history
+                        vstr_cut_tail_bytes(line, line->len - orig_line_len);
+                        if (hist_cur >= 0) {
+                            vstr_add_str(line, readline_hist[hist_cur]);
+                        }
+                        // set redraw parameters
+                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_from_cursor = true;
+                        redraw_step_forward = line->len - orig_line_len;
+                    }
+                } else if (c == 'C') {
+                    // right arrow
+                    if (cursor_pos < line->len) {
+                        redraw_step_forward = 1;
+                    }
+                } else if (c == 'D') {
+                    // left arrow
+                    if (cursor_pos > orig_line_len) {
+                        redraw_step_back = 1;
+                    }
+                }
+            }
+        } else if (escape_seq == 3) {
+            escape_seq = 0;
+            if (c == '~') {
+                if (escape_seq_buf[0] == '1' || escape_seq_buf[0] == '7') {
+                    // home key
                     redraw_step_back = cursor_pos - orig_line_len;
-                    redraw_from_cursor = true;
-                    redraw_step_forward = line->len - orig_line_len;
-                }
-            } else if (c == 'C') {
-                // right arrow
-                if (cursor_pos < line->len) {
-                    redraw_step_forward = 1;
-                }
-            } else if (c == 'D') {
-                // left arrow
-                if (cursor_pos > orig_line_len) {
-                    redraw_step_back = 1;
+                } else if (escape_seq_buf[0] == '4' || escape_seq_buf[0] == '8') {
+                    // end key
+                    redraw_step_forward = line->len - cursor_pos;
                 }
             }
         } else {

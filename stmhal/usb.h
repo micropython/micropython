@@ -3,6 +3,7 @@
 #define VCP_CHAR_CTRL_B (2)
 #define VCP_CHAR_CTRL_C (3)
 #define VCP_CHAR_CTRL_D (4)
+#define VCP_CHAR_CTRL_E (5)
 
 typedef enum {
     USB_DEVICE_MODE_CDC_MSC,
