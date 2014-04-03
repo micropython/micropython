@@ -36,7 +36,13 @@ if test_on_pyboard:
 for test_file in tests:
     test_name = os.path.splitext(os.path.basename(test_file))[0]
 
-    output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
+    # run CPython
+    try:
+        output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
+    except subprocess.CalledProcessError:
+        output_expected = b'CPYTHON3 CRASH'
+
+    # run Micro Python
     try:
         if test_on_pyboard:
             pyb.enter_raw_repl()

@@ -11,7 +11,11 @@ struct _nlr_buf_t {
 #if defined(__i386__)
     void *regs[6];
 #elif defined(__x86_64__)
+  #if defined(__CYGWIN__)
+    void *regs[12];
+  #else
     void *regs[8];
+  #endif
 #elif defined(__thumb2__)
     void *regs[10];
 #else
