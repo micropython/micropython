@@ -49,6 +49,11 @@ static mp_obj_t fdfile_close(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
+mp_obj_t fdfile___exit__(uint n_args, const mp_obj_t *args) {
+    return fdfile_close(args[0]);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);
+
 static mp_obj_t fdfile_fileno(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
@@ -112,6 +117,8 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&fdfile___exit___obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
