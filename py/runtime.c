@@ -367,18 +367,34 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                         nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative power with no float support"));
                         #endif
                     } else {
-                        // TODO check for overflow
                         machine_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
+                                machine_int_t old = ans;
                                 ans *= lhs_val;
+                                if (ans < old) {
+                                    goto power_overflow;
+                                }
                             }
-                            lhs_val *= lhs_val;
+                            if (rhs_val == 1) {
+                                break;
+                            }
                             rhs_val /= 2;
+                            machine_int_t old = lhs_val;
+                            lhs_val *= lhs_val;
+                            if (lhs_val < old) {
+                                goto power_overflow;
+                            }
                         }
                         lhs_val = ans;
                     }
                     break;
+
+                power_overflow:
+                    // use higher precision
+                    lhs = mp_obj_new_int_from_ll(MP_OBJ_SMALL_INT_VALUE(lhs));
+                    goto generic_binary_op;
+
                 case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val); break;
                 case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val); break;
                 case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;

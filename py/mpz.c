@@ -993,8 +993,11 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         if (mpz_is_odd(n)) {
             mpz_mul_inpl(dest, dest, x);
         }
-        mpz_mul_inpl(x, x, x);
         n->len = mpn_shr(n->dig, n->dig, n->len, 1);
+        if (n->len == 0) {
+            break;
+        }
+        mpz_mul_inpl(x, x, x);
     }
 
     mpz_free(x);
