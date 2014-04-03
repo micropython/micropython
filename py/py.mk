@@ -90,6 +90,14 @@ PY_O_BASENAME = \
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
+# Anything that depends on FORCE will be considered out-of-date
+FORCE:
+.PHONY: FORCE
+
+$(PY_BUILD)/py-version.h: FORCE
+	$(Q)$(PY_SRC)/py-version.sh > $@.tmp
+	$(Q)if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
+
 # qstr data
 
 # Adding an order only dependency on $(PY_BUILD) causes $(PY_BUILD) to get
@@ -104,7 +112,7 @@ $(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqst
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependendency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(PY_O): | $(PY_BUILD)/qstrdefs.generated.h
+$(PY_O): | $(PY_BUILD)/qstrdefs.generated.h $(PY_BUILD)/py-version.h
 
 # emitters
 
