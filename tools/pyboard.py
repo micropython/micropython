@@ -58,16 +58,25 @@ class Pyboard:
         if data != b'OK':
             raise Exception('could not exec command')
         data = self.serial.read(2)
-        while self.serial.inWaiting() > 0:
-            data = data + self.serial.read(self.serial.inWaiting())
-            time.sleep(0.01)
+        timeout = 0
+        while True:
+            if self.serial.inWaiting() > 0:
+                data = data + self.serial.read(self.serial.inWaiting())
+                timeout = 0
+            elif data.endswith(b'\x04>'):
+                break
+            else:
+                timeout += 1
+                if timeout > 100:
+                    break
+                time.sleep(0.1)
         if not data.endswith(b'\x04>'):
             print(data)
-            raise Exception('could not exec command')
+            raise Exception('timeout waiting for EOF reception')
         if data.startswith(b'Traceback') or data.startswith(b'  File '):
             print(data)
             raise Exception('command failed')
-        return str(data[:-2], encoding='ascii')
+        return data[:-2]
 
     def execfile(self, filename):
         with open(filename) as f:
@@ -82,7 +91,7 @@ def execfile(filename, device='/dev/ttyACM0'):
     pyb = Pyboard(device)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
-    print(output, end='')
+    print(str(output, encoding='ascii'), end='')
     pyb.exit_raw_repl()
     pyb.close()
 
