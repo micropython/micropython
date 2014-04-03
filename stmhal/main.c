@@ -434,7 +434,7 @@ soft_reset:
 #endif
 
     // run main script
-    if (reset_mode == 1) {
+    if (reset_mode == 1 && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         vstr_t *vstr = vstr_new();
         vstr_add_str(vstr, "0:/");
         if (pyb_config_source_dir == MP_OBJ_NULL) {
