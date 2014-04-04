@@ -15,6 +15,8 @@
 
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
+enum { ESC_PLAIN = 1, ESC_BRACKET, ESC_BRACKET_DIGIT, ESC_O };
+
 void readline_init(void) {
     memset(readline_hist, 0, READLINE_HIST_SIZE * sizeof(const char*));
 }
@@ -64,7 +66,7 @@ int readline(vstr_t *line, const char *prompt) {
                 return 0;
             } else if (c == 27) {
                 // escape sequence
-                escape_seq = 1;
+                escape_seq = ESC_PLAIN;
             } else if (c == 8 || c == 127) {
                 // backspace/delete
                 if (cursor_pos > orig_line_len) {
@@ -80,15 +82,20 @@ int readline(vstr_t *line, const char *prompt) {
                 redraw_from_cursor = true;
                 redraw_step_forward = 1;
             }
-        } else if (escape_seq == 1) {
-            if (c == '[') {
-                escape_seq = 2;
-            } else {
-                escape_seq = 0;
+        } else if (escape_seq == ESC_PLAIN) {
+            switch (c) {
+                case '[':
+                    escape_seq = ESC_BRACKET;
+                    break;
+                case 'O':
+                    escape_seq = ESC_O;
+                    break;
+                default:
+                    escape_seq = 0;
             }
-        } else if (escape_seq == 2) {
+        } else if (escape_seq == ESC_BRACKET) {
             if ('0' <= c && c <= '9') {
-                escape_seq = 3;
+                escape_seq = ESC_BRACKET_DIGIT;
                 escape_seq_buf[0] = c;
             } else {
                 escape_seq = 0;
@@ -132,16 +139,25 @@ int readline(vstr_t *line, const char *prompt) {
                     }
                 }
             }
-        } else if (escape_seq == 3) {
-            escape_seq = 0;
+        } else if (escape_seq == ESC_BRACKET_DIGIT) {
             if (c == '~') {
                 if (escape_seq_buf[0] == '1' || escape_seq_buf[0] == '7') {
-                    // home key
+home_key:
                     redraw_step_back = cursor_pos - orig_line_len;
                 } else if (escape_seq_buf[0] == '4' || escape_seq_buf[0] == '8') {
-                    // end key
+end_key:
                     redraw_step_forward = line->len - cursor_pos;
                 }
+            }
+            escape_seq = 0;
+        } else if (escape_seq == ESC_O) {
+            switch (c) {
+                case 'H':
+                    goto home_key;
+                case 'F':
+                    goto end_key;
+                default:
+                    escape_seq = 0;
             }
         } else {
             escape_seq = 0;
