@@ -10,3 +10,12 @@ except:
     # Note: CPython and us throw different exception trying to read from
     # close file.
     print("can't read file after with")
+
+
+# Regression test: test that exception in with initialization properly
+# thrown and doesn't crash.
+try:
+    with open('__non_existent', 'r'):
+        pass
+except OSError:
+    print("OSError")
