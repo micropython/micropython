@@ -32,8 +32,26 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO create from an iterable!
-    return mp_obj_new_dict(0);
+    mp_obj_t dict;
+    switch (n_args) {
+        case 0:
+            dict = mp_obj_new_dict(0);
+            break;
+
+        case 1:
+            // TODO create dict from an iterable!
+            assert(false);
+
+        default:
+            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "dict takes at most 1 argument"));
+    }
+
+    // add to the new dict any keyword args
+    for (const mp_obj_t *a = args + n_args; n_kw > 0; n_kw--, a += 2) {
+        mp_obj_dict_store(dict, a[0], a[1]);
+    }
+
+    return dict;
 }
 
 STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
