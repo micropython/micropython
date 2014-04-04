@@ -23,6 +23,7 @@
 #include "pyexec.h"
 #include "storage.h"
 #include "usb.h"
+#include "build/py/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;
@@ -155,7 +156,7 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
+    stdout_tx_str("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
