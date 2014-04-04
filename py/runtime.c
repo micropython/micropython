@@ -33,6 +33,14 @@ STATIC mp_map_t *map_locals;
 STATIC mp_map_t *map_globals;
 STATIC mp_map_t map_builtins;
 
+STATIC mp_map_t map_main;
+
+const mp_obj_module_t mp_module___main__ = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR___main__,
+    .globals = (mp_map_t*)&map_main,
+};
+
 // a good optimising compiler will inline this if necessary
 STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
     mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
@@ -41,17 +49,18 @@ STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
 void mp_init(void) {
     mp_emit_glue_init();
 
-    // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    map_locals = map_globals = mp_map_new(1);
-
-    // init built-in hash table
-    mp_map_init(&map_builtins, 3);
-
     // init global module stuff
     mp_module_init();
 
+    mp_map_init(&map_main, 1);
     // add some builtins that can't be done in ROM
-    mp_map_add_qstr(map_globals, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+    mp_map_add_qstr(&map_main, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+
+    // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
+    map_locals = map_globals = &map_main;
+
+    // init built-in hash table
+    mp_map_init(&map_builtins, 3);
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
