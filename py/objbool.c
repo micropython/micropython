@@ -1,3 +1,4 @@
+#include <stdlib.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -43,12 +44,21 @@ STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
+STATIC mp_obj_t bool_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    if (MP_BINARY_OP_OR <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
+        return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT((machine_int_t)mp_obj_is_true(lhs_in)), rhs_in);
+    }
+    // operation not supported
+    return MP_OBJ_NULL;
+}
+
 const mp_obj_type_t mp_type_bool = {
     { &mp_type_type },
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,
     .unary_op = bool_unary_op,
+    .binary_op = bool_binary_op,
 };
 
 const mp_obj_bool_t mp_const_false_obj = {{&mp_type_bool}, false};

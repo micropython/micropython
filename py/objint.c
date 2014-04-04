@@ -17,9 +17,8 @@
 #include <math.h>
 #endif
 
-// This dispatcher function is expected to be independent of the implementation
-// of long int
-STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+// This dispatcher function is expected to be independent of the implementation of long int
+STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
     switch (n_args) {
@@ -56,26 +55,20 @@ STATIC mp_obj_t int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
-void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
     }
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
-mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     return MP_OBJ_NULL;
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_binary_op
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (op == MP_BINARY_OP_MULTIPLY) {
-        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
-            // multiply is commutative for these types, so delegate to them
-            return mp_binary_op(op, rhs_in, lhs_in);
-        }
-    }
-    return MP_OBJ_NULL;
+mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
@@ -124,11 +117,29 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
 
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
+// This dispatcher function is expected to be independent of the implementation of long int
+// It handles the extra cases for integer-like arithmetic
+mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    if (rhs_in == mp_const_false) {
+        // false acts as 0
+        return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(0));
+    } else if (rhs_in == mp_const_true) {
+        // true acts as 0
+        return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(1));
+    } else if (op == MP_BINARY_OP_MULTIPLY) {
+        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
+            // multiply is commutative for these types, so delegate to them
+            return mp_binary_op(op, rhs_in, lhs_in);
+        }
+    }
+    return MP_OBJ_NULL;
+}
+
 const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
-    .print = int_print,
-    .make_new = int_make_new,
-    .unary_op = int_unary_op,
-    .binary_op = int_binary_op,
+    .print = mp_obj_int_print,
+    .make_new = mp_obj_int_make_new,
+    .unary_op = mp_obj_int_unary_op,
+    .binary_op = mp_obj_int_binary_op,
 };

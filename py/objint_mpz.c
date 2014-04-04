@@ -22,7 +22,7 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
     return o;
 }
 
-void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
     } else {
@@ -34,7 +34,7 @@ void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj
     }
 }
 
-mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
@@ -45,7 +45,7 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;
@@ -75,14 +75,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
 #endif
     } else {
-        if (op == MP_BINARY_OP_MULTIPLY) {
-            if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
-                // multiply is commutative for these types, so delegate to them
-                return mp_binary_op(op, rhs_in, lhs_in);
-            }
-        }
-        // unsupported operation/type
-        return MP_OBJ_NULL;
+        // delegate to generic function to check for extra cases
+        return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
     }
 
     if (0) {
