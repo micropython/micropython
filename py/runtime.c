@@ -16,7 +16,7 @@
 #include "builtin.h"
 #include "builtintables.h"
 #include "bc.h"
-#include "intdivmod.h"
+#include "smallint.h"
 #include "objgenerator.h"
 
 #if 0 // print debugging info
@@ -289,7 +289,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
                     // If long long type exists and is larger than machine_int_t, then
                     // we can use the following code to perform overflow-checked multiplication.
-                    // Otherwise (eg in x64 case) we must use the branching code below.
+                    // Otherwise (eg in x64 case) we must use mp_small_int_mul_overflow.
                     #if 0
                     // compute result using long long precision
                     long long res = (long long)lhs_val * (long long)rhs_val;
@@ -302,36 +302,14 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     }
                     #endif
 
-                    if (lhs_val > 0) { // lhs_val is positive
-                        if (rhs_val > 0) { // lhs_val and rhs_val are positive
-                            if (lhs_val > (MP_SMALL_INT_MAX / rhs_val)) {
-                                goto mul_overflow;
-                            }
-                        } else { // lhs_val positive, rhs_val nonpositive
-                            if (rhs_val < (MP_SMALL_INT_MIN / lhs_val)) {
-                                goto mul_overflow;
-                            }
-                        } // lhs_val positive, rhs_val nonpositive
-                    } else { // lhs_val is nonpositive
-                        if (rhs_val > 0) { // lhs_val is nonpositive, rhs_val is positive
-                            if (lhs_val < (MP_SMALL_INT_MIN / rhs_val)) {
-                                goto mul_overflow;
-                            }
-                        } else { // lhs_val and rhs_val are nonpositive
-                            if (lhs_val != 0 && rhs_val < (MP_SMALL_INT_MAX / lhs_val)) {
-                                goto mul_overflow;
-                            }
-                        } // End if lhs_val and rhs_val are nonpositive
-                    } // End if lhs_val is nonpositive
-
-                    // use standard precision
-                    return MP_OBJ_NEW_SMALL_INT(lhs_val * rhs_val);
-
-                mul_overflow:
-                    // use higher precision
-                    lhs = mp_obj_new_int_from_ll(lhs_val);
-                    goto generic_binary_op;
-
+                    if (mp_small_int_mul_overflow(lhs_val, rhs_val)) {
+                        // use higher precision
+                        lhs = mp_obj_new_int_from_ll(lhs_val);
+                        goto generic_binary_op;
+                    } else {
+                        // use standard precision
+                        return MP_OBJ_NEW_SMALL_INT(lhs_val * rhs_val);
+                    }
                     break;
                 }
                 case MP_BINARY_OP_FLOOR_DIVIDE:
@@ -339,7 +317,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     if (rhs_val == 0) {
                         goto zero_division;
                     }
-                    lhs_val = python_floor_divide(lhs_val, rhs_val);
+                    lhs_val = mp_small_int_floor_divide(lhs_val, rhs_val);
                     break;
 
                 #if MICROPY_ENABLE_FLOAT
@@ -352,11 +330,11 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 #endif
 
                 case MP_BINARY_OP_MODULO:
-                case MP_BINARY_OP_INPLACE_MODULO:
-                {
-                    lhs_val = python_modulo(lhs_val, rhs_val);
+                case MP_BINARY_OP_INPLACE_MODULO: {
+                    lhs_val = mp_small_int_modulo(lhs_val, rhs_val);
                     break;
                 }
+
                 case MP_BINARY_OP_POWER:
                 case MP_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {
@@ -370,21 +348,19 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                         machine_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
-                                machine_int_t old = ans;
-                                ans *= lhs_val;
-                                if (ans < old) {
+                                if (mp_small_int_mul_overflow(ans, lhs_val)) {
                                     goto power_overflow;
                                 }
+                                ans *= lhs_val;
                             }
                             if (rhs_val == 1) {
                                 break;
                             }
                             rhs_val /= 2;
-                            machine_int_t old = lhs_val;
-                            lhs_val *= lhs_val;
-                            if (lhs_val < old) {
+                            if (mp_small_int_mul_overflow(lhs_val, lhs_val)) {
                                 goto power_overflow;
                             }
+                            lhs_val *= lhs_val;
                         }
                         lhs_val = ans;
                     }

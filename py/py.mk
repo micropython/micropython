@@ -84,7 +84,7 @@ PY_O_BASENAME = \
 	vm.o \
 	showbc.o \
 	repl.o \
-	intdivmod.o \
+	smallint.o \
 	pfenv.o \
 
 # prepend the build destination prefix to the py object files
