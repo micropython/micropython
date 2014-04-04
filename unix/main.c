@@ -30,7 +30,8 @@
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
-long heap_size = 128*1024;
+// Make it larger on a 64 bit machine, because pointers are larger.
+long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
 #endif
 
 // Stack top at the start of program
