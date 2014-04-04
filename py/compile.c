@@ -115,31 +115,31 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
                     machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
                     machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
-                    machine_int_t res;
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PLUS)) {
-                        res = arg0 + arg1;
+                        arg0 += arg1;
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_MINUS)) {
-                        res = arg0 - arg1;
+                        arg0 -= arg1;
                     } else {
                         // shouldn't happen
                         assert(0);
-                        res = 0;
                     }
-                    if (MP_PARSE_FITS_SMALL_INT(res)) {
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, res);
+                    if (MP_PARSE_FITS_SMALL_INT(arg0)) {
+                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
                     }
                 }
                 break;
 
             case PN_term:
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    int arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
-                    int arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
+                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
-#if MICROPY_EMIT_CPYTHON
-                        // can overflow; enabled only to compare with CPython
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 * arg1);
-#endif
+                        if (!mp_small_int_mul_overflow(arg0, arg1)) {
+                            arg0 *= arg1;
+                            if (MP_PARSE_FITS_SMALL_INT(arg0)) {
+                                pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
+                            }
+                        }
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_SLASH)) {
                         ; // pass
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
