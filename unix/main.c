@@ -42,7 +42,7 @@ void microsocket_init();
 void time_init();
 void ffi_init();
 
-static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
         return;
     }
@@ -94,7 +94,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     }
 }
 
-static char *strjoin(const char *s1, int sep_char, const char *s2) {
+STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
     char *s = malloc(l1 + l2 + 2);
@@ -108,7 +108,7 @@ static char *strjoin(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-static char *prompt(char *p) {
+STATIC char *prompt(char *p) {
 #if MICROPY_USE_READLINE
     char *line = readline(p);
     if (line) {
@@ -133,7 +133,7 @@ static char *prompt(char *p) {
     return line;
 }
 
-static void do_repl(void) {
+STATIC void do_repl(void) {
     for (;;) {
         char *line = prompt(">>> ");
         if (line == NULL) {
@@ -159,12 +159,12 @@ static void do_repl(void) {
     }
 }
 
-static void do_file(const char *file) {
+STATIC void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-static void do_str(const char *str) {
+STATIC void do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
     execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
@@ -174,33 +174,33 @@ typedef struct _test_obj_t {
     int value;
 } test_obj_t;
 
-static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     test_obj_t *self = self_in;
     print(env, "<test %d>", self->value);
 }
 
-static mp_obj_t test_get(mp_obj_t self_in) {
+STATIC mp_obj_t test_get(mp_obj_t self_in) {
     test_obj_t *self = self_in;
     return mp_obj_new_int(self->value);
 }
 
-static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
     test_obj_t *self = self_in;
     self->value = mp_obj_get_int(arg);
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
-static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
-static const mp_map_elem_t test_locals_dict_table[] = {
+STATIC const mp_map_elem_t test_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
 
-static const mp_obj_type_t test_type = {
+STATIC const mp_obj_type_t test_type = {
     { &mp_type_type },
     .name = MP_QSTR_Test,
     .print = test_print,
@@ -249,7 +249,7 @@ mp_obj_t qstr_info(void) {
 
 #if MICROPY_ENABLE_GC
 // TODO: this doesn't belong here
-static mp_obj_t pyb_gc(void) {
+STATIC mp_obj_t pyb_gc(void) {
     gc_collect();
     return mp_const_none;
 }
