@@ -357,7 +357,6 @@ int mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
-bool mp_obj_less(mp_obj_t o1, mp_obj_t o2);
 
 machine_int_t mp_obj_get_int(mp_obj_t arg);
 bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value);

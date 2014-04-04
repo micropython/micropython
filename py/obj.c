@@ -178,17 +178,6 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     }
 }
 
-bool mp_obj_less(mp_obj_t o1, mp_obj_t o2) {
-    if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
-        mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1);
-        mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2);
-        return i1 < i2;
-    } else {
-        assert(0);
-        return false;
-    }
-}
-
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
