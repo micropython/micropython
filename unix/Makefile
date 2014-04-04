@@ -28,12 +28,12 @@ LDFLAGS_MOD += -lreadline
 endif
 ifeq ($(MICROPY_MOD_TIME),1)
 CFLAGS_MOD += -DMICROPY_MOD_TIME=1
-SRC_MOD += time.c
+SRC_MOD += modtime.c
 endif
 ifeq ($(MICROPY_MOD_FFI),1)
 CFLAGS_MOD += `pkg-config --cflags libffi` -DMICROPY_MOD_FFI=1
 LDFLAGS_MOD += -ldl -lffi
-SRC_MOD += ffi.c
+SRC_MOD += modffi.c
 endif
 
 
@@ -50,7 +50,7 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 	file.c \
-	socket.c \
+	modsocket.c \
 	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
