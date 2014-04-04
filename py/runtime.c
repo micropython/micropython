@@ -1034,6 +1034,11 @@ void mp_globals_set(mp_map_t *m) {
     map_globals = m;
 }
 
+void *m_malloc_fail(int num_bytes) {
+    DEBUG_printf("memory allocation failed, allocating %d bytes\n", num_bytes);
+    nlr_jump((mp_obj_t)&mp_const_MemoryError_obj);
+}
+
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_const_dec,

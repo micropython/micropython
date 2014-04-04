@@ -41,8 +41,7 @@ void *m_malloc(int num_bytes) {
     }
     void *ptr = malloc(num_bytes);
     if (ptr == NULL) {
-        printf("could not allocate memory, allocating %d bytes\n", num_bytes);
-        return NULL;
+        return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
@@ -68,8 +67,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     }
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL) {
-        printf("could not allocate memory, reallocating %d bytes\n", new_num_bytes);
-        return NULL;
+        return m_malloc_fail(new_num_bytes);
     }
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
