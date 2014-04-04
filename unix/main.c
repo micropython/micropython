@@ -97,7 +97,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
 static char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
-    char *s = m_new(char, l1 + l2 + 2);
+    char *s = malloc(l1 + l2 + 2);
     memcpy(s, s1, l1);
     if (sep_char != 0) {
         s[l1] = sep_char;
