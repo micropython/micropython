@@ -24,6 +24,10 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     char buf[32];
     format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
     print(env, "%s", buf);
+    if (strchr(buf, '.') == NULL) {
+        // Python floats always have decimal point
+        print(env, ".0");
+    }
 #else
     char buf[32];
     sprintf(buf, "%.8g", (double) o->value);
