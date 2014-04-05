@@ -86,14 +86,16 @@ mp_obj_t mp_module_get(qstr module_name) {
     // lookup module
     mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
-    // module found, return it
-    if (el != NULL) {
-        return el->value;
+    if (el == NULL) {
+        // module not found, look for builtin module names
+        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_dict_obj.map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+        if (el == NULL) {
+            return MP_OBJ_NULL;
+        }
     }
 
-    // module not found, look for builtin module names
-    // it will return MP_OBJ_NULL if nothing found
-    return mp_builtin_tables_lookup_module(module_name);
+    // module found, return it
+    return el->value;
 }
 
 void mp_module_register(qstr qstr, mp_obj_t module) {

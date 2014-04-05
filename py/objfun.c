@@ -152,7 +152,7 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
-    mp_map_t *globals;      // the context within which this function was defined
+    mp_obj_dict_t *globals; // the context within which this function was defined
     machine_uint_t n_args : 15;         // number of arguments this function takes
     machine_uint_t n_def_args : 15;     // number of default arguments
     machine_uint_t takes_var_args : 1;  // set if this function takes variable args
@@ -326,7 +326,7 @@ continue2:;
         }
     }
 
-    mp_map_t *old_globals = mp_globals_get();
+    mp_obj_dict_t *old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     mp_obj_t result;
     DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);

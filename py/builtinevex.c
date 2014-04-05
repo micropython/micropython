@@ -54,8 +54,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
 STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
     // Unconditional getting/setting assumes that these operations
     // are cheap, which is the case when this comment was written.
-    mp_map_t *old_globals = mp_globals_get();
-    mp_map_t *old_locals = mp_locals_get();
+    mp_obj_dict_t *old_globals = mp_globals_get();
+    mp_obj_dict_t *old_locals = mp_locals_get();
     if (n_args > 1) {
         mp_obj_t globals = args[1];
         mp_obj_t locals;
@@ -64,8 +64,8 @@ STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
         } else {
             locals = globals;
         }
-        mp_globals_set(mp_obj_dict_get_map(globals));
-        mp_locals_set(mp_obj_dict_get_map(locals));
+        mp_globals_set(globals);
+        mp_locals_set(locals);
     }
     mp_obj_t res = parse_compile_execute(args[0], MP_PARSE_FILE_INPUT);
     // TODO if the above call throws an exception, then we never get to reset the globals/locals

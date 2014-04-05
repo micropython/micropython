@@ -29,10 +29,10 @@
 #endif
 
 // locals and globals need to be pointers because they can be the same in outer module scope
-STATIC mp_map_t *map_locals;
-STATIC mp_map_t *map_globals;
-STATIC mp_map_t map_builtins;
+STATIC mp_obj_dict_t *dict_locals;
+STATIC mp_obj_dict_t *dict_globals;
 
+// dictionary for the __main__ module
 STATIC mp_obj_dict_t dict_main;
 
 const mp_obj_module_t mp_module___main__ = {
@@ -47,15 +47,12 @@ void mp_init(void) {
     // init global module stuff
     mp_module_init();
 
+    // initialise the __main__ module
     mp_obj_dict_init(&dict_main, 1);
-    // add some builtins that can't be done in ROM
     mp_obj_dict_store(&dict_main, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    map_locals = map_globals = &dict_main.map;
-
-    // init built-in hash table
-    mp_map_init(&map_builtins, 3);
+    dict_locals = dict_globals = &dict_main;
 
 #if MICROPY_CPYTHON_COMPAT
     // Precreate sys module, so "import sys" didn't throw exceptions.
@@ -70,8 +67,7 @@ void mp_init(void) {
 }
 
 void mp_deinit(void) {
-    mp_map_free(map_globals);
-    mp_map_deinit(&map_builtins);
+    //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
     mp_emit_glue_deinit();
 }
@@ -97,10 +93,10 @@ mp_obj_t mp_load_const_bytes(qstr qstr) {
 
 mp_obj_t mp_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
-    DEBUG_OP_printf("load name %s\n", map_locals, qstr_str(qstr));
+    DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
-    if (map_locals != map_globals) {
-        mp_map_elem_t *elem = mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+    if (dict_locals != dict_globals) {
+        mp_map_elem_t *elem = mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             return elem->value;
         }
@@ -111,14 +107,11 @@ mp_obj_t mp_load_name(qstr qstr) {
 mp_obj_t mp_load_global(qstr qstr) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
-    mp_map_elem_t *elem = mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&dict_globals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
     if (elem == NULL) {
-        elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+        // TODO lookup in dynamic table of builtins first
+        elem = mp_map_lookup((mp_map_t*)&mp_builtin_object_dict_obj.map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            mp_obj_t o = mp_builtin_tables_lookup_object(qstr);
-            if (o != MP_OBJ_NULL) {
-                return o;
-            }
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
@@ -127,31 +120,25 @@ mp_obj_t mp_load_global(qstr qstr) {
 
 mp_obj_t mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
-    // lookup __build_class__ in dynamic table of builtins first
-    mp_map_elem_t *elem = mp_map_lookup(&map_builtins, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
-    if (elem != NULL) {
-        // found user-defined __build_class__, return it
-        return elem->value;
-    } else {
-        // no user-defined __build_class__, return builtin one
-        return (mp_obj_t)&mp_builtin___build_class___obj;
-    }
+    // TODO lookup __build_class__ in dynamic table of builtins first
+    // ... else no user-defined __build_class__, return builtin one
+    return (mp_obj_t)&mp_builtin___build_class___obj;
 }
 
 void mp_store_name(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qstr), obj);
-    mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
+    mp_obj_dict_store(dict_locals, MP_OBJ_NEW_QSTR(qstr), obj);
 }
 
 void mp_delete_name(qstr qstr) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qstr));
     // TODO raise NameError if qstr not found
-    mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 
 void mp_store_global(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
-    mp_map_lookup(map_globals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = obj;
+    mp_obj_dict_store(dict_globals, MP_OBJ_NEW_QSTR(qstr), obj);
 }
 
 mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
@@ -1020,22 +1007,22 @@ void mp_import_all(mp_obj_t module) {
     }
 }
 
-mp_map_t *mp_locals_get(void) {
-    return map_locals;
+mp_obj_dict_t *mp_locals_get(void) {
+    return dict_locals;
 }
 
-void mp_locals_set(mp_map_t *m) {
-    DEBUG_OP_printf("mp_locals_set(%p)\n", m);
-    map_locals = m;
+void mp_locals_set(mp_obj_dict_t *d) {
+    DEBUG_OP_printf("mp_locals_set(%p)\n", d);
+    dict_locals = d;
 }
 
-mp_map_t *mp_globals_get(void) {
-    return map_globals;
+mp_obj_dict_t *mp_globals_get(void) {
+    return dict_globals;
 }
 
-void mp_globals_set(mp_map_t *m) {
-    DEBUG_OP_printf("mp_globals_set(%p)\n", m);
-    map_globals = m;
+void mp_globals_set(mp_obj_dict_t *d) {
+    DEBUG_OP_printf("mp_globals_set(%p)\n", d);
+    dict_globals = d;
 }
 
 void *m_malloc_fail(int num_bytes) {

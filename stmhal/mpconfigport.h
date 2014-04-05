@@ -24,18 +24,18 @@ extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_EXTRA_BUILTINS \
-    { MP_QSTR_help, (mp_obj_t)&mp_builtin_help_obj }, \
-    { MP_QSTR_input, (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_QSTR_open, (mp_obj_t)&mp_builtin_open_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t time_module;
 #define MICROPY_EXTRA_BUILTIN_MODULES \
-    { MP_QSTR_os, (mp_obj_t)&os_module }, \
-    { MP_QSTR_pyb, (mp_obj_t)&pyb_module }, \
-    { MP_QSTR_time, (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
 
 // type definitions for the specific machine
 

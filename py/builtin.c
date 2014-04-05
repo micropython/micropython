@@ -20,10 +20,10 @@
 STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
     assert(2 <= n_args);
 
-    // we differ from CPython: we set the new __locals__ object here
-    mp_map_t *old_locals = mp_locals_get();
+    // set the new classes __locals__ object
+    mp_obj_dict_t *old_locals = mp_locals_get();
     mp_obj_t class_locals = mp_obj_new_dict(0);
-    mp_locals_set(mp_obj_dict_get_map(class_locals));
+    mp_locals_set(class_locals);
 
     // call the class code
     mp_obj_t cell = mp_call_function_0(args[0]);
@@ -150,14 +150,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
-    mp_map_t *map = NULL;
+    mp_obj_dict_t *dict = NULL;
     if (n_args == 0) {
         // make a list of names in the local name space
-        map = mp_locals_get();
+        dict = mp_locals_get();
     } else { // n_args == 1
         // make a list of names in the given object
         if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            map = mp_obj_dict_get_map(mp_obj_module_get_globals(args[0]));
+            dict = mp_obj_module_get_globals(args[0]);
         } else {
             mp_obj_type_t *type;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
@@ -166,16 +166,16 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
                 type = mp_obj_get_type(args[0]);
             }
             if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
-                map = mp_obj_dict_get_map(type->locals_dict);
+                dict = type->locals_dict;
             }
         }
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
-    if (map != NULL) {
-        for (uint i = 0; i < map->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                mp_obj_list_append(dir, map->table[i].key);
+    if (dict != NULL) {
+        for (uint i = 0; i < dict->map.alloc; i++) {
+            if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+                mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }
     }
