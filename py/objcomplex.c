@@ -86,7 +86,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "complex takes at most 2 arguments, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "complex takes at most 2 arguments, %d given", n_args));
     }
 }
 

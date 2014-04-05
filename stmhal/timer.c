@@ -174,7 +174,7 @@ void timer_interrupt(void) {
 mp_obj_t pyb_Timer(mp_obj_t timx_in) {
     TIM_TypeDef *TIMx = (TIM_TypeDef*)mp_obj_get_int(timx_in);
     if (!IS_TIM_INSTANCE(TIMx)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "argument 1 is not a TIM instance"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "argument 1 is not a TIM instance"));
     }
     pyb_hal_tim_t *tim = m_new_obj(pyb_hal_tim_t);
     tim->htim.Instance = TIMx;

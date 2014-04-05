@@ -84,7 +84,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     }
     if (self->sp == self->state - 1) {
         if (send_value != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator"));
         }
     } else {
         *self->sp = send_value;
@@ -130,12 +130,12 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (ret == mp_const_none || ret == MP_OBJ_NULL) {
                 return MP_OBJ_NULL;
             } else {
-                nlr_jump(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
+                nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
             }
 
         case MP_VM_RETURN_YIELD:
             if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(mp_obj_get_type(throw_value), &mp_type_GeneratorExit)) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
             }
             return ret;
 
@@ -146,7 +146,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
                 return MP_OBJ_NULL;
             } else {
-                nlr_jump(ret);
+                nlr_raise(ret);
             }
 
         default:
@@ -162,7 +162,7 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL);
     if (ret == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
+        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
     }
@@ -177,7 +177,7 @@ STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
+        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
     }
@@ -189,7 +189,7 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, mp_const_none, (mp_obj_t)&mp_const_GeneratorExit_obj, &ret)) {
         case MP_VM_RETURN_YIELD:
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
 
         // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:
@@ -198,7 +198,7 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
                 mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
                 return mp_const_none;
             }
-            nlr_jump(ret);
+            nlr_raise(ret);
 
         default:
             // The only choice left is MP_VM_RETURN_NORMAL which is successful close

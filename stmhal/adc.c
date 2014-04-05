@@ -131,16 +131,16 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         const pin_obj_t *pin = pin_map_user_obj(pin_obj);
         if ((pin->adc_num & PIN_ADC1) == 0) {
             // No ADC1 function on that pin
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have ADC capabilities", pin->name));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have ADC capabilities", pin->name));
         }
         channel = pin->adc_channel;
     }
 
     if (!IS_ADC_CHANNEL(channel)) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Not a valid ADC Channel: %d", channel));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Not a valid ADC Channel: %d", channel));
     }
     if (pin_adc1[channel] == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Channel %d not available on this board", channel));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Channel %d not available on this board", channel));
     }
 
     pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
@@ -192,7 +192,7 @@ void adc_init_all(pyb_obj_adc_all_t *adc_all, uint32_t resolution) {
         case 10: resolution = ADC_RESOLUTION10b; break;
         case 12: resolution = ADC_RESOLUTION12b; break;
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "resolution %d not supported", resolution));
     }
 

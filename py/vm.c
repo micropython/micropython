@@ -158,7 +158,7 @@ outer_dispatch_loop:
             if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
                 mp_obj_t t = inject_exc;
                 inject_exc = MP_OBJ_NULL;
-                nlr_jump(mp_make_raise_obj(t));
+                nlr_raise(mp_make_raise_obj(t));
             }
             // loop to execute byte code
             for (;;) {
@@ -508,7 +508,7 @@ unwind_jump:
                         // if TOS is an integer, does something else
                         // else error
                         if (mp_obj_is_exception_type(TOP())) {
-                            nlr_jump(sp[-1]);
+                            nlr_raise(sp[-1]);
                         }
                         if (TOP() == mp_const_none) {
                             sp--;
@@ -749,12 +749,12 @@ unwind_return:
                                 }
                             }
                             if (obj1 == MP_OBJ_NULL) {
-                                nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
+                                nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
                             }
                         } else {
                             obj1 = POP();
                         }
-                        nlr_jump(mp_make_raise_obj(obj1));
+                        nlr_raise(mp_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
 yield:
@@ -767,7 +767,7 @@ yield:
                     case MP_BC_YIELD_FROM: {
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
-#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_jump(t); }
+#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_raise(t); }
                         mp_vm_return_kind_t ret_kind;
                         obj1 = POP();
                         mp_obj_t t_exc = MP_OBJ_NULL;
@@ -810,7 +810,7 @@ yield:
                                 GENERATOR_EXIT_IF_NEEDED(t_exc);
                                 break;
                             } else {
-                                nlr_jump(obj2);
+                                nlr_raise(obj2);
                             }
                         }
                     }

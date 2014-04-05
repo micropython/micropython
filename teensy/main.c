@@ -190,7 +190,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     return mp_const_none;
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
+    nlr_raise(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);

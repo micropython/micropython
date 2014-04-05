@@ -124,7 +124,7 @@ mp_obj_t mp_load_global(qstr qstr) {
             if (o != MP_OBJ_NULL) {
                 return o;
             }
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
         }
     }
     return elem->value;
@@ -191,7 +191,7 @@ mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
             }
         }
         // TODO specify in error message what the operator is
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", mp_obj_get_type_str(arg)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "bad operand type for unary operator: '%s'", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -271,7 +271,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_INPLACE_LSHIFT: {
                     if (rhs_val < 0) {
                         // negative shift not allowed
-                        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                     } else if (rhs_val >= BITS_PER_WORD || lhs_val > (MP_SMALL_INT_MAX >> rhs_val) || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
                         // left-shift will overflow, so use higher precision integer
                         lhs = mp_obj_new_int_from_ll(lhs_val);
@@ -286,7 +286,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_INPLACE_RSHIFT:
                     if (rhs_val < 0) {
                         // negative shift not allowed
-                        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                     } else {
                         // standard precision is enough for right-shift
                         lhs_val >>= rhs_val;
@@ -354,7 +354,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                         lhs = mp_obj_new_float(lhs_val);
                         goto generic_binary_op;
                         #else
-                        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative power with no float support"));
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative power with no float support"));
                         #endif
                     } else {
                         machine_int_t ans = 1;
@@ -430,7 +430,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return mp_const_false;
         }
 
-        nlr_jump(mp_obj_new_exception_msg_varg(
+        nlr_raise(mp_obj_new_exception_msg_varg(
                      &mp_type_TypeError, "'%s' object is not iterable",
                      mp_obj_get_type_str(rhs)));
         return mp_const_none;
@@ -450,13 +450,13 @@ generic_binary_op:
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     return mp_const_none;
 
 zero_division:
-    nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -494,7 +494,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
     if (type->call != NULL) {
         return type->call(fun_in, n_args, n_kw, args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
     }
 }
 
@@ -685,9 +685,9 @@ void mp_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
     return;
 
 too_short:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "need more than %d values to unpack", seq_len));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "need more than %d values to unpack", seq_len));
 too_long:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
 }
 
 mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
@@ -774,10 +774,10 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         // no attribute/method called attr
         // following CPython, we give a more detailed error message for type objects
         if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
                 "type object '%s' has no attribute '%s'", qstr_str(((mp_obj_type_t*)base)->name), qstr_str(attr)));
         } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
         }
     }
 }
@@ -790,7 +790,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             return;
         }
     }
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
 void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
@@ -810,7 +810,7 @@ void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             }
             // TODO: call base classes here?
         }
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
     }
 }
 
@@ -825,7 +825,7 @@ void mp_delete_subscr(mp_obj_t base, mp_obj_t index) {
         // dict delete
         mp_obj_dict_delete(base, index);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
     }
 }
 
@@ -847,7 +847,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
                 return mp_obj_new_getitem_iter(dest);
             } else {
                 // object not iterable
-                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
             }
         }
     }
@@ -867,7 +867,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
             // __next__ exists, call it and return its result
             return mp_call_method_n_kw(0, 0, dest);
         } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
         }
     }
 }
@@ -893,11 +893,11 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
                     return MP_OBJ_NULL;
                 } else {
-                    nlr_jump(nlr.ret_val);
+                    nlr_raise(nlr.ret_val);
                 }
             }
         } else {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
         }
     }
 }
@@ -954,7 +954,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         if (dest[0] != MP_OBJ_NULL) {
             *ret_val = mp_call_method_n_kw(1, 0, &throw_value);
             // If .throw() method returned, we assume it's value to yield
-            // - any exception would be thrown with nlr_jump().
+            // - any exception would be thrown with nlr_raise().
             return MP_VM_RETURN_YIELD;
         }
         // If there's nowhere to throw exception into, then we assume that object
@@ -1045,7 +1045,7 @@ void mp_globals_set(mp_map_t *m) {
 
 void *m_malloc_fail(int num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %d bytes\n", num_bytes);
-    nlr_jump((mp_obj_t)&mp_const_MemoryError_obj);
+    nlr_raise((mp_obj_t)&mp_const_MemoryError_obj);
 }
 
 // these must correspond to the respective enum

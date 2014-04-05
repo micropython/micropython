@@ -107,13 +107,13 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
         }
 
     } else {
         // TODO
         if (n_args != 0) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 0 positional arguments but %d were given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 0 positional arguments but %d were given", n_args));
         }
     }
 
@@ -298,7 +298,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
 
         default:
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "type takes 1 or 3 arguments"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "type takes 1 or 3 arguments"));
     }
 }
 
@@ -308,7 +308,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_type_t *self = self_in;
 
     if (self->make_new == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
     }
 
     // make new instance
@@ -428,7 +428,7 @@ STATIC mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     if (n_args != 2 || n_kw != 0) {
         // 0 arguments are turned into 2 in the compiler
         // 1 argument is not yet implemented
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "super() requires 2 arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "super() requires 2 arguments"));
     }
     return mp_obj_new_super(args[0], args[1]);
 }
@@ -528,7 +528,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     } else if (MP_OBJ_IS_TYPE(classinfo, &mp_type_tuple)) {
         mp_obj_tuple_get(classinfo, &len, &items);
     } else {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));
     }
 
     for (uint i = 0; i < len; i++) {
@@ -541,7 +541,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
 
 STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
     if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
     }
     return mp_obj_is_subclass(object, classinfo);
 }
@@ -561,7 +561,7 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint
     assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
 
     if (n_args != 1 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 1 positional argument but %d were given", n_args));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 1 positional argument but %d were given", n_args));
     }
 
     mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);

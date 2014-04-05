@@ -148,7 +148,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 // TODO check conversion overflow
                 machine_int_t irhs = mpz_as_int(zrhs);
                 if (irhs < 0) {
-                    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -222,7 +222,7 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
     len -= skip;
     uint n = mpz_set_from_str(&o->mpz, str, len, false, base);
     if (n != len) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     return o;
 }
@@ -246,7 +246,7 @@ machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
             return value;
         } else {
             // overflow
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
         }
     }
 }

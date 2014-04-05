@@ -19,7 +19,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
     }
 
     // skip leading space
@@ -93,11 +93,11 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     return MP_OBJ_NEW_SMALL_INT(int_val);
 
 value_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, str));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, str));
 
 overflow:
     // TODO reparse using bignum
-    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "overflow parsing integer"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "overflow parsing integer"));
 }
 
 #define PARSE_DEC_IN_INTG (1)
@@ -208,7 +208,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool f
 
     // check we reached the end of the string
     if (str != top) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
 
     // return the object
@@ -221,6 +221,6 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool f
     }
 
 #else
-    nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "decimal numbers not supported"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "decimal numbers not supported"));
 #endif
 }

@@ -141,7 +141,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         byte str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
     } else {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
     }
 }
 
@@ -194,7 +194,7 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
         return mp_obj_new_tuple(2, args);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
 }
 
@@ -216,7 +216,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 STATIC mp_obj_t mp_builtin_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     } else {
         return len;
     }
@@ -236,7 +236,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
             }
         }
         if (max_obj == NULL) {
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "max() arg is an empty sequence"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "max() arg is an empty sequence"));
         }
         return max_obj;
     } else {
@@ -265,7 +265,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
             }
         }
         if (min_obj == NULL) {
-            nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "min() arg is an empty sequence"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "min() arg is an empty sequence"));
         }
         return min_obj;
     } else {
@@ -285,7 +285,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_min_obj, 1, mp_builtin_min);
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(&mp_type_StopIteration));
+        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
     }
@@ -301,7 +301,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         // TODO unicode
         return mp_obj_new_int(((const byte*)str)[0]);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
     }
 }
 
@@ -383,7 +383,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(n_args >= 1);
     if (n_args > 1) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "must use keyword argument for key function"));
     }
     mp_obj_t self = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, args);

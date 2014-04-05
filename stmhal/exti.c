@@ -116,10 +116,10 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_ob
         // get both the port number and line number.
         v_line = mp_obj_get_int(pin_obj);
         if (v_line < 16) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d < 16, use a Pin object", v_line));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d < 16, use a Pin object", v_line));
         }
         if (v_line >= EXTI_NUM_VECTORS) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d >= max of %d", v_line, EXTI_NUM_VECTORS));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d >= max of %d", v_line, EXTI_NUM_VECTORS));
         }
     } else {
         pin = pin_map_user_obj(pin_obj);
@@ -132,18 +132,18 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_ob
         mode != GPIO_MODE_EVT_RISING &&
         mode != GPIO_MODE_EVT_FALLING &&
         mode != GPIO_MODE_EVT_RISING_FALLING) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Mode: %d", mode));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Mode: %d", mode));
     }
     int pull = mp_obj_get_int(pull_obj);
     if (pull != GPIO_NOPULL &&
         pull != GPIO_PULLUP &&
         pull != GPIO_PULLDOWN) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Pull: %d", pull));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Pull: %d", pull));
     }
 
     exti_vector_t *v = &exti_vector[v_line];
     if (v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d is already in use", v_line));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d is already in use", v_line));
     }
 
     // We need to update callback and param atomically, so we disable the line

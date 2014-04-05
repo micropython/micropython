@@ -123,12 +123,12 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
         last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (3);
     } else {
         if (pyb_wlan_get_host(host_name) == mp_const_none) {
-            nlr_jump(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "unknown host"));
+            nlr_raise(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "unknown host"));
         }
     }
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd < 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", sd));
+        nlr_raise(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", sd));
     }
     //printf("socket seemed to work\n");
     //sys_tick_delay_ms(200);
@@ -139,7 +139,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
     remote.sin_addr.s_addr = htonl(last_ip);
     int ret = connect(sd, (sockaddr*)&remote, sizeof(sockaddr));
     if (ret != 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "connect failed: %d", ret));
+        nlr_raise(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "connect failed: %d", ret));
     }
     //printf("connect seemed to work\n");
     //sys_tick_delay_ms(200);
@@ -160,7 +160,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             ret = send(sd, query + sent, strlen(query + sent), 0);
             //printf("sent %d bytes\n", ret);
             if (ret < 0) {
-                nlr_jump(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "send failed"));
+                nlr_raise(mp_obj_new_exception_msg(QSTR_FROM_STR_STATIC("WlanError"), "send failed"));
             }
             sent += ret;
             //sys_tick_delay_ms(200);
@@ -197,7 +197,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             // read data
             ret = recv(sd, buf, 64, 0);
             if (ret < 0) {
-                nlr_jump(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "recv failed %d", ret));
+                nlr_raise(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "recv failed %d", ret));
             }
             vstr_add_strn(vstr, buf, ret);
         }
@@ -217,7 +217,7 @@ mp_obj_t pyb_wlan_serve(void) {
     sys_tick_delay_ms(500);
     if (sd < 0) {
         printf("socket fail\n");
-        nlr_jump(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", sd));
+        nlr_raise(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "socket failed: %d", sd));
     }
 
     /*
@@ -238,7 +238,7 @@ mp_obj_t pyb_wlan_serve(void) {
     sys_tick_delay_ms(100);
     if (ret != 0) {
         printf("bind fail\n");
-        nlr_jump(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "bind failed: %d", ret));
+        nlr_raise(mp_obj_new_exception_msg_varg(QSTR_FROM_STR_STATIC("WlanError"), "bind failed: %d", ret));
     }
     printf("bind seemed to work\n");
 

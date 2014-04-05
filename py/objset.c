@@ -65,7 +65,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -309,7 +309,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
     }
     return obj;
 }
@@ -319,7 +319,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = self_in;
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(&mp_type_KeyError));
+        nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
     }
     return mp_const_none;
 }

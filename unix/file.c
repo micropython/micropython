@@ -105,7 +105,7 @@ STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
     int fd = open(fname, mode, 0644);
     if (fd == -1) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     return fdfile_new(fd);
 }

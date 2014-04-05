@@ -43,7 +43,7 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             assert(false);
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "dict takes at most 1 argument"));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "dict takes at most 1 argument"));
     }
 
     // add to the new dict any keyword args
@@ -71,7 +71,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // dict load
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 return elem->value;
             }
@@ -199,7 +199,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     if (elem == NULL || elem->value == NULL) {
         if (deflt == NULL) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 value = mp_const_none;
             }
@@ -258,7 +258,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     if (self->map.used == 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
     }
     mp_obj_dict_it_t *iter = mp_obj_new_dict_iterator(self, 0);
 
@@ -287,7 +287,7 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
         if (key == MP_OBJ_NULL
             || value == MP_OBJ_NULL
             || stop != MP_OBJ_NULL) {
-            nlr_jump(mp_obj_new_exception_msg(
+            nlr_raise(mp_obj_new_exception_msg(
                          &mp_type_ValueError,
                          "dictionary update sequence has the wrong length"));
         } else {

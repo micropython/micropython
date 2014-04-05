@@ -57,7 +57,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
             }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -121,7 +121,7 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
             lhs_val /= rhs_val; 
 check_zero_division:
             if (isinf(lhs_val)){ // check for division by zero
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
             }
             break;
         case MP_BINARY_OP_POWER:

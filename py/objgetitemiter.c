@@ -30,7 +30,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
             return MP_OBJ_NULL;
         } else {
             // re-raise exception
-            nlr_jump(nlr.ret_val);
+            nlr_raise(nlr.ret_val);
         }
     }
 }

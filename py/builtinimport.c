@@ -77,7 +77,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
     }
 
     qstr source_name = mp_lexer_source_name(lex);
@@ -99,7 +99,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
         // parse error; clean up and raise exception
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        nlr_jump(mp_parse_make_exception(parse_error_kind));
+        nlr_raise(mp_parse_make_exception(parse_error_kind));
     }
 
     // compile the imported script
@@ -122,7 +122,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
         // exception; restore context and re-raise same exception
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        nlr_jump(nlr.ret_val);
+        nlr_raise(nlr.ret_val);
     }
     mp_locals_set(old_locals);
     mp_globals_set(old_globals);
@@ -148,7 +148,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     }
 
     if (level != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
             "Relative import is not implemented"));
     }
 
@@ -197,7 +197,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
             }
 
             module_obj = mp_module_get(mod_name);
@@ -211,7 +211,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
-                        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
                             "Per PEP-420 a dir without __init__.py (%s) is a namespace package; "
                             "namespace packages are not supported", vstr_str(&path)));
                     }

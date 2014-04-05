@@ -29,7 +29,7 @@ STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; raise exception
-        nlr_jump(mp_parse_make_exception(parse_error_kind));
+        nlr_raise(mp_parse_make_exception(parse_error_kind));
     }
 
     // compile the string

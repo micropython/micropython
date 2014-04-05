@@ -16,7 +16,7 @@ typedef struct _mp_obj_filter_t {
 
 STATIC mp_obj_t filter_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args != 2 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "filter expected 2 arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "filter expected 2 arguments"));
     }
     assert(n_args == 2);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);

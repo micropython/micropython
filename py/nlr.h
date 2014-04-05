@@ -26,3 +26,16 @@ struct _nlr_buf_t {
 unsigned int nlr_push(nlr_buf_t *);
 void nlr_pop(void);
 void nlr_jump(void *val) __attribute__((noreturn));
+
+// use nlr_raise instead of nlr_jump so that debugging is easier
+#ifndef DEBUG
+#define nlr_raise(val) nlr_jump(val)
+#else
+#define nlr_raise(val) \
+    do { \
+        void *_val = val; \
+        assert(_val != NULL); \
+        assert(mp_obj_is_exception_instance(_val)); \
+        nlr_jump(_val); \
+    } while (0)
+#endif

@@ -76,7 +76,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args < 1 || n_args > 2) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
     }
     // TODO check args
     uint l;

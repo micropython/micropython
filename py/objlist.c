@@ -59,7 +59,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
     }
     return NULL;
 }
@@ -184,7 +184,7 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = args[0];
     if (self->len == 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
     }
     uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
@@ -224,7 +224,7 @@ mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(n_args >= 1);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     if (n_args > 1) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "list.sort takes no positional arguments"));
     }
     mp_obj_list_t *self = args[0];
