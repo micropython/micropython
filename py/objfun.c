@@ -53,6 +53,16 @@ void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args
     }
 }
 
+STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            // These objects can be equal only if it's the same underlying structure,
+            // we don't even need to check for 2nd arg type.
+            return MP_BOOL(lhs_in == rhs_in);
+    }
+    return NULL;
+}
+
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_native));
     mp_obj_fun_native_t *self = self_in;
@@ -102,6 +112,7 @@ const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
+    .binary_op = fun_binary_op,
 };
 
 // fun must have the correct signature for n_args fixed arguments
@@ -338,6 +349,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_bc_call,
+    .binary_op = fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args_in, const byte *code) {
@@ -464,6 +476,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
+    .binary_op = fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {
