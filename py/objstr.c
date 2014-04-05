@@ -528,6 +528,15 @@ static bool arg_looks_numeric(mp_obj_t arg) {
     ;
 }
 
+static machine_int_t arg_as_int(mp_obj_t arg) {
+#if MICROPY_ENABLE_FLOAT
+    if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
+        return mp_obj_get_float(arg);
+    }
+#endif
+    return mp_obj_get_int(arg);
+}
+
 mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
 
@@ -991,7 +1000,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
             case 'd':
             case 'i':
             case 'u':
-                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 10, 'a', flags, fill, width);
+                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 10, 'a', flags, fill, width);
                 break;
 
 #if MICROPY_ENABLE_FLOAT
@@ -1009,7 +1018,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                 if (alt) {
                     flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 8, 'a', flags, fill, width); 
+                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 8, 'a', flags, fill, width); 
                 break;
 
             case 'r':
@@ -1034,14 +1043,14 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                 if (alt) {
                     flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'a', flags, fill, width);
+                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'a', flags, fill, width);
                 break;
 
             case 'X':
                 if (alt) {
                     flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                pfenv_print_int(&pfenv_vstr, mp_obj_get_int(arg), 1, 16, 'A', flags, fill, width);
+                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'A', flags, fill, width);
                 break;
             
             default:
