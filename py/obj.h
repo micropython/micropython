@@ -117,6 +117,7 @@ void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
+void mp_map_dump(mp_map_t *map);
 
 // Underlying set implementation (not set object)
 

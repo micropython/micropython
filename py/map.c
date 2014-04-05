@@ -243,3 +243,17 @@ void mp_set_clear(mp_set_t *set) {
     set->used = 0;
     set->table = NULL;
 }
+
+#if DEBUG_PRINT
+void mp_map_dump(mp_map_t *map) {
+    for (int i = 0; i < map->alloc; i++) {
+        if (map->table[i].key != NULL) {
+            mp_obj_print(map->table[i].key, PRINT_REPR);
+        } else {
+            printf("(nil)");
+        }
+        printf(": %p\n", map->table[i].value);
+    }
+    printf("---\n");
+}
+#endif
