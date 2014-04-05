@@ -411,15 +411,6 @@ STATIC mp_obj_t mp_builtin_getattr(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
 
-
-STATIC mp_obj_t mp_builtin_globals() {
-    return mp_globals_get();
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_builtin_globals);
-
-STATIC mp_obj_t mp_builtin_locals() {
-    return mp_locals_get();
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_builtin_locals);
+// These two are defined in terms of MicroPython API functions right away
+MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_globals_get);
+MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_locals_get);
