@@ -17,7 +17,7 @@ typedef struct _pfenv_t {
 void pfenv_vstr_add_strn(void *data, const char *str, unsigned int len);
 
 int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, int flags, char fill, int width);
-int pfenv_print_int(const pfenv_t *pfenv, unsigned int x, int sgn, int base, int base_char, int flags, char fill, int width);
+int pfenv_print_int(const pfenv_t *pfenv, machine_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width);
 #if MICROPY_ENABLE_FLOAT
 int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
 #endif
