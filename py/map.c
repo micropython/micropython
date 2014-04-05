@@ -91,6 +91,12 @@ STATIC void mp_map_rehash(mp_map_t *map) {
     m_del(mp_map_elem_t, old_table, old_alloc);
 }
 
+// MP_MAP_LOOKUP behaviour:
+//  - returns NULL if not found, else the slot it was found in with key,value non-null
+// MP_MAP_LOOKUP_ADD_IF_NOT_FOUND behaviour:
+//  - returns slot, with key non-null and value=MP_OBJ_NULL if it was added
+// MP_MAP_LOOKUP_REMOVE_IF_FOUND behaviour:
+//  - returns NULL if not found, else the slot if was found in with key null and value non-null
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
     // if the map is a fixed array then we must do a brute force linear search
     if (map->table_is_fixed_array) {
@@ -135,7 +141,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 }
                 return slot;
             } else {
-                return MP_OBJ_NULL;
+                return NULL;
             }
         } else if (slot->key == MP_OBJ_SENTINEL) {
             // found deleted slot, remember for later
@@ -146,10 +152,6 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             // found index
             // Note: CPython does not replace the index; try x={True:'true'};x[1]='one';x
             if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                // this leaks this memory (but see dict_get_helper)
-                mp_map_elem_t *retval = m_new(mp_map_elem_t, 1);
-                retval->key = slot->key;
-                retval->value = slot->value;
                 // delete element in this slot
                 map->used--;
                 if (map->table[(pos + 1) % map->alloc].key == MP_OBJ_NULL) {
@@ -158,7 +160,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 } else {
                     slot->key = MP_OBJ_SENTINEL;
                 }
-                return retval;
+                // keep slot->value so that caller can access it if needed
             }
             return slot;
         }
@@ -185,7 +187,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     start_pos = pos = hash % map->alloc;
                 }
             } else {
-                return MP_OBJ_NULL;
+                return NULL;
             }
         }
     }

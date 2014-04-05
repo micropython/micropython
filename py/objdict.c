@@ -208,10 +208,6 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
         }
     } else {
         value = elem->value;
-        if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-            // catch the leak (from mp_map_lookup)
-            m_free(elem, sizeof(mp_map_elem_t));
-        }
     }
     if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
         elem->value = value;
