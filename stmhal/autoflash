@@ -1,7 +1,13 @@
 #!/bin/sh
 #
-# this script waits for a DFU device to be attached and then flashes it
-# it then waits until the DFU mode is exited, and then loops
+# This script loops doing the following:
+#   - wait for DFU device
+#   - flash DFU device
+#   - wait for DFU to exit
+#   - wait for serial port to appear
+#   - run a terminal
+
+SERIAL=/dev/ttyACM0
 
 while true; do
     echo "waiting for DFU device..."
@@ -11,8 +17,10 @@ while true; do
         fi
         sleep 1s
     done
+
     echo "found DFU device, flashing"
     dfu-util -a 0 -D build/flash.dfu
+
     echo "waiting for DFU to exit..."
     while true; do
         if lsusb | grep -q DFU; then
@@ -21,4 +29,15 @@ while true; do
         fi
         break
     done
+
+    echo "waiting for $SERIAL..."
+    while true; do
+        if ls /dev/tty* | grep -q $SERIAL; then
+            break
+        fi
+        sleep 1s
+        continue
+    done
+    sleep 1s
+    picocom $SERIAL
 done
