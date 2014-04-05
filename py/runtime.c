@@ -33,18 +33,13 @@ STATIC mp_map_t *map_locals;
 STATIC mp_map_t *map_globals;
 STATIC mp_map_t map_builtins;
 
-STATIC mp_map_t map_main;
+STATIC mp_obj_dict_t dict_main;
 
 const mp_obj_module_t mp_module___main__ = {
     .base = { &mp_type_module },
     .name = MP_QSTR___main__,
-    .globals = (mp_map_t*)&map_main,
+    .globals = (mp_obj_dict_t*)&dict_main,
 };
-
-// a good optimising compiler will inline this if necessary
-STATIC void mp_map_add_qstr(mp_map_t *map, qstr qstr, mp_obj_t value) {
-    mp_map_lookup(map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-}
 
 void mp_init(void) {
     mp_emit_glue_init();
@@ -52,12 +47,12 @@ void mp_init(void) {
     // init global module stuff
     mp_module_init();
 
-    mp_map_init(&map_main, 1);
+    mp_obj_dict_init(&dict_main, 1);
     // add some builtins that can't be done in ROM
-    mp_map_add_qstr(&map_main, MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+    mp_obj_dict_store(&dict_main, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    map_locals = map_globals = &map_main;
+    map_locals = map_globals = &dict_main.map;
 
     // init built-in hash table
     mp_map_init(&map_builtins, 3);
@@ -1017,9 +1012,9 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
-    mp_map_t *map = mp_obj_module_get_globals(module);
+    mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
     for (uint i = 0; i < map->alloc; i++) {
-        if (map->table[i].key != MP_OBJ_NULL) {
+        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             mp_store_name(MP_OBJ_QSTR_VALUE(map->table[i].key), map->table[i].value);
         }
     }

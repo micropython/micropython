@@ -157,7 +157,7 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     } else { // n_args == 1
         // make a list of names in the given object
         if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            map = mp_obj_module_get_globals(args[0]);
+            map = mp_obj_dict_get_map(mp_obj_module_get_globals(args[0]));
         } else {
             mp_obj_type_t *type;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
@@ -174,7 +174,7 @@ STATIC mp_obj_t mp_builtin_dir(uint n_args, const mp_obj_t *args) {
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (map != NULL) {
         for (uint i = 0; i < map->alloc; i++) {
-            if (map->table[i].key != MP_OBJ_NULL) {
+            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                 mp_obj_list_append(dir, map->table[i].key);
             }
         }

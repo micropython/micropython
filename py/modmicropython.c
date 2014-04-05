@@ -34,16 +34,19 @@ STATIC const mp_map_elem_t mp_module_micropython_globals_table[] = {
 #endif
 };
 
-STATIC const mp_map_t mp_module_micropython_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(mp_module_micropython_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(mp_module_micropython_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)mp_module_micropython_globals_table,
+STATIC const mp_obj_dict_t mp_module_micropython_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_micropython_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_micropython_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_micropython_globals_table,
+    },
 };
 
 const mp_obj_module_t mp_module_micropython = {
     .base = { &mp_type_module },
     .name = MP_QSTR_micropython,
-    .globals = (mp_map_t*)&mp_module_micropython_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_micropython_globals,
 };

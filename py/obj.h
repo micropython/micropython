@@ -115,6 +115,8 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
 } mp_map_lookup_kind_t;
 
+#define MP_MAP_SLOT_IS_FILLED(map, pos) ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL)
+
 void mp_map_init(mp_map_t *map, int n);
 void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
 mp_map_t *mp_map_new(int n);
@@ -131,6 +133,8 @@ typedef struct _mp_set_t {
     machine_uint_t used;
     mp_obj_t *table;
 } mp_set_t;
+
+#define MP_SET_SLOT_IS_FILLED(set, pos) ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL)
 
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -444,6 +448,7 @@ typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
     mp_map_t map;
 } mp_obj_dict_t;
+void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args);
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
@@ -483,9 +488,9 @@ MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     qstr name;
-    mp_map_t *globals;
+    mp_obj_dict_t *globals;
 } mp_obj_module_t;
-mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
+mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod

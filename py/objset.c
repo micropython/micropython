@@ -32,7 +32,7 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
     bool first = true;
     print(env, "{");
     for (int i = 0; i < self->set.alloc; i++) {
-        if (self->set.table[i] != MP_OBJ_NULL && self->set.table[i] != MP_OBJ_SENTINEL) {
+        if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
             if (!first) {
                 print(env, ", ");
             }
@@ -80,12 +80,12 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set_it));
     mp_obj_set_it_t *self = self_in;
     machine_uint_t max = self->set->set.alloc;
-    mp_obj_t *table = self->set->set.table;
+    mp_set_t *set = &self->set->set;
 
     for (machine_uint_t i = self->cur; i < max; i++) {
-        if (table[i] != MP_OBJ_NULL && table[i] != MP_OBJ_SENTINEL) {
+        if (MP_SET_SLOT_IS_FILLED(set, i)) {
             self->cur = i + 1;
-            return table[i];
+            return set->table[i];
         }
     }
 

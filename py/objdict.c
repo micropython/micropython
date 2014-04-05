@@ -100,12 +100,12 @@ typedef struct _mp_obj_dict_it_t {
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
     mp_obj_dict_it_t *self = self_in;
     machine_uint_t max = self->dict->map.alloc;
-    mp_map_elem_t *table = self->dict->map.table;
+    mp_map_t *map = &self->dict->map;
 
     for (int i = self->cur; i < max; i++) {
-        if (table[i].key != MP_OBJ_NULL && table[i].key != MP_OBJ_SENTINEL) {
+        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             self->cur = i + 1;
-            return &(table[i]);
+            return &(map->table[i]);
         }
     }
 
@@ -463,10 +463,14 @@ const mp_obj_type_t mp_type_dict = {
     .locals_dict = (mp_obj_t)&dict_locals_dict,
 };
 
+void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args) {
+    dict->base.type = &mp_type_dict;
+    mp_map_init(&dict->map, n_args);
+}
+
 mp_obj_t mp_obj_new_dict(int n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
-    o->base.type = &mp_type_dict;
-    mp_map_init(&o->map, n_args);
+    mp_obj_dict_init(o, n_args);
     return o;
 }
 

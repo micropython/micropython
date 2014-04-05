@@ -139,18 +139,21 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&mp_math_lgamma_obj },
 };
 
-STATIC const mp_map_t mp_module_math_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)mp_module_math_globals_table,
+STATIC const mp_obj_dict_t mp_module_math_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_math_globals_table,
+    },
 };
 
 const mp_obj_module_t mp_module_math = {
     .base = { &mp_type_module },
     .name = MP_QSTR_math,
-    .globals = (mp_map_t*)&mp_module_math_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_math_globals,
 };
 
 #endif // MICROPY_ENABLE_FLOAT

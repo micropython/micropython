@@ -87,8 +87,8 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     mp_map_t *old_globals = mp_globals_get();
 
     // set the new context
-    mp_locals_set(mp_obj_module_get_globals(module_obj));
-    mp_globals_set(mp_obj_module_get_globals(module_obj));
+    mp_locals_set(mp_obj_dict_get_map(mp_obj_module_get_globals(module_obj)));
+    mp_globals_set(mp_obj_dict_get_map(mp_obj_module_get_globals(module_obj)));
 
     // parse the imported script
     mp_parse_error_kind_t parse_error_kind;

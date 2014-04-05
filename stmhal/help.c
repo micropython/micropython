@@ -59,7 +59,7 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
 
         mp_map_t *map = NULL;
         if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            map = mp_obj_module_get_globals(args[0]);
+            map = mp_obj_dict_get_map(mp_obj_module_get_globals(args[0]));
         } else {
             mp_obj_type_t *type;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
