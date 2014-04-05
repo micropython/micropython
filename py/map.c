@@ -127,17 +127,20 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     mp_map_rehash(map);
                     // restart the search for the new element
                     pos = hash % map->alloc;
+                    continue;
                 } else {
                     map->used += 1;
                     elem->key = index;
+                    elem->value = NULL;
                     if (!MP_OBJ_IS_QSTR(index)) {
                         map->all_keys_are_qstrs = 0;
                     }
                     return elem;
                 }
-            } else {
+            } else if (elem->value == NULL) {
                 return NULL;
             }
+            // Otherwise it's just entry marked as deleted, so continue with next one
         } else if (elem->key == index || (!map->all_keys_are_qstrs && mp_obj_equal(elem->key, index))) {
             // found it
             /* it seems CPython does not replace the index; try x={True:'true'};x[1]='one';x
@@ -152,14 +155,15 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 retval->key = elem->key;
                 retval->value = elem->value;
                 elem->key = NULL;
-                elem->value = NULL;
+                // elem->key = NULL && elem->value != NULL means "marked deleted"
+                // assume value indeed never NULL
                 return retval;
             }
             return elem;
-        } else {
-            // not yet found, keep searching in this table
-            pos = (pos + 1) % map->alloc;
         }
+
+        // not yet found, keep searching in this table
+        pos = (pos + 1) % map->alloc;
     }
 }
 
