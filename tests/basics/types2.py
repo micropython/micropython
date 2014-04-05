@@ -4,3 +4,9 @@ print(hash(int) != 0)
 print(hash(list) != 0)
 class Foo: pass
 print(hash(Foo) != 0)
+
+print(int == int)
+print(int != list)
+
+d = {}
+d[int] = float

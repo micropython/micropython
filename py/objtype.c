@@ -367,6 +367,16 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     return false;
 }
 
+STATIC mp_obj_t type_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            // Types can be equal only if it's the same type structure,
+            // we don't even need to check for 2nd arg type.
+            return MP_BOOL(lhs_in == rhs_in);
+    }
+    return NULL;
+}
+
 const mp_obj_type_t mp_type_type = {
     { &mp_type_type },
     .name = MP_QSTR_type,
@@ -375,6 +385,7 @@ const mp_obj_type_t mp_type_type = {
     .call = type_call,
     .load_attr = type_load_attr,
     .store_attr = type_store_attr,
+    .binary_op = type_binary_op,
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
