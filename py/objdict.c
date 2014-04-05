@@ -481,6 +481,13 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     return self_in;
 }
 
+mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
+    mp_obj_dict_t *self = self_in;
+    dict_get_helper(&self->map, key, NULL, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    return self_in;
+}
+
 mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;

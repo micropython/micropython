@@ -150,6 +150,7 @@ void mp_store_name(qstr qstr, mp_obj_t obj) {
 
 void mp_delete_name(qstr qstr) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qstr));
+    // TODO raise NameError if qstr not found
     mp_map_lookup(map_locals, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 
@@ -804,6 +805,21 @@ void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             // TODO: call base classes here?
         }
         nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+    }
+}
+
+void mp_delete_subscr(mp_obj_t base, mp_obj_t index) {
+    DEBUG_OP_printf("delete subscr %p[%p]\n", base, index);
+    /* list delete not implemented
+    if (MP_OBJ_IS_TYPE(base, &mp_type_list)) {
+        // list delete
+        mp_obj_list_delete(base, index);
+    } else */
+    if (MP_OBJ_IS_TYPE(base, &mp_type_dict)) {
+        // dict delete
+        mp_obj_dict_delete(base, index);
+    } else {
+        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
     }
 }
 

@@ -440,6 +440,7 @@ typedef struct _mp_obj_dict_t {
 } mp_obj_dict_t;
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
+mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
 mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 
 // set
