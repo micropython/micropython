@@ -532,7 +532,8 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     }
 
     for (uint i = 0; i < len; i++) {
-        if (mp_obj_is_subclass_fast(object, items[i])) {
+        // We explicitly check for 'object' here since no-one explicitly derives from it
+        if (items[i] == &mp_type_object || mp_obj_is_subclass_fast(object, items[i])) {
             return mp_const_true;
         }
     }
