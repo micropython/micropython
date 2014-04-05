@@ -13,12 +13,6 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
-void file_obj_del(mp_obj_t self_in) {
-    pyb_file_obj_t *self = self_in;
-    f_close(&self->fp);
-    printf("<file del called>\n");
-}
-
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     printf("<file %p>", self_in);
 }
@@ -62,6 +56,7 @@ STATIC const mp_map_elem_t file_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&file_obj_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&file_obj_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&file_obj_close_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(file_locals_dict, file_locals_dict_table);
@@ -70,7 +65,6 @@ static const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_File,
     .print = file_obj_print,
-    .del   = file_obj_del,
     .locals_dict = (mp_obj_t)&file_locals_dict,
 };
 

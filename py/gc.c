@@ -8,6 +8,7 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -175,12 +176,14 @@ STATIC void gc_sweep(void) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
                 if (ATB_IS_MPOBJ(block)) {
-                    ATB_CLR_MPOBJ(block); // clear mpobj flag
-                    mp_obj_t *self = (mp_obj_t*)PTR_FROM_BLOCK(block);
-                    mp_obj_type_t *type= mp_obj_get_type(self);
-                    if (type->del != NULL) {
-                        type->del(self);
+                    mp_obj_t dest[2];
+                    mp_load_method((mp_obj_t*)PTR_FROM_BLOCK(block), MP_QSTR___del__, dest);
+                    // load_method returned a method
+                    if (dest[1] != MP_OBJ_NULL) {
+                        mp_call_method_n_kw(0, 0, dest);
                     }
+                    // clear mpobj flag
+                    ATB_CLR_MPOBJ(block);
                 }
                 free_tail = 1;
                 // fall through to free the head
@@ -305,14 +308,15 @@ found:
     // mark first block as used head
     ATB_FREE_TO_HEAD(start_block);
 
-    if (is_mpobj) {
-        ATB_SET_MPOBJ(start_block);
-    }
-
     // mark rest of blocks as used tail
     // TODO for a run of many blocks can make this more efficient
     for (machine_uint_t bl = start_block + 1; bl <= end_block; bl++) {
         ATB_FREE_TO_TAIL(bl);
+    }
+
+    if (is_mpobj) {
+        // set mp_obj flag only if it has del
+        ATB_SET_MPOBJ(start_block);
     }
 
     // return pointer to first block
