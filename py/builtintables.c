@@ -118,6 +118,7 @@ STATIC const mp_builtin_elem_t builtin_object_table[] = {
 };
 
 STATIC const mp_builtin_elem_t builtin_module_table[] = {
+    { MP_QSTR___main__, (mp_obj_t)&mp_module___main__ },
     { MP_QSTR_micropython, (mp_obj_t)&mp_module_micropython },
 
     { MP_QSTR_array, (mp_obj_t)&mp_module_array },
