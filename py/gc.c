@@ -27,15 +27,17 @@ typedef unsigned char byte;
 #define STACK_SIZE (64) // tunable; minimum is 1
 
 STATIC byte *gc_alloc_table_start;
-STATIC byte *gc_mpobj_table_start;
 STATIC machine_uint_t gc_alloc_table_byte_len;
-STATIC machine_uint_t gc_mpobj_table_byte_len;
+#if MICROPY_ENABLE_FINALISER
+STATIC byte *gc_finaliser_table_start;
+#endif
 STATIC machine_uint_t *gc_pool_start;
 STATIC machine_uint_t *gc_pool_end;
 
 STATIC int gc_stack_overflow;
 STATIC machine_uint_t gc_stack[STACK_SIZE];
 STATIC machine_uint_t *gc_sp;
+STATIC bool gc_lock;
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
@@ -67,38 +69,58 @@ STATIC machine_uint_t *gc_sp;
 #define ATB_HEAD_TO_MARK(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
 #define ATB_MARK_TO_HEAD(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
 
-#define ATB_SET_MPOBJ(block) do { gc_mpobj_table_start[(block) / 8] |= (1<<(block%8)); } while (0)
-#define ATB_CLR_MPOBJ(block) do { gc_mpobj_table_start[(block) / 8] &= (~(1<<(block%8))); } while (0)
-#define ATB_IS_MPOBJ(block) ((gc_mpobj_table_start[(block) / 8]>>(block%8))&0x01)
-
 #define BLOCK_FROM_PTR(ptr) (((ptr) - (machine_uint_t)gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (machine_uint_t)gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
+
+#if MICROPY_ENABLE_FINALISER
+// FTB = finaliser table byte
+// if set, then the corresponding block may have a finaliser
+
+#define BLOCKS_PER_FTB (8)
+
+#define FTB_GET(block) ((gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
+#define FTB_SET(block) do { gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
+#define FTB_CLEAR(block) do { gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
+#endif
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
-    DEBUG_printf("Initializing GC heap: %p-%p\n", start, end);
+    DEBUG_printf("Initializing GC heap: %p..%p = %ld bytes\n", start, end, end - start);
 
-    // calculate parameters for GC
-    machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
-    gc_alloc_table_byte_len = total_word_len * BYTES_PER_WORD / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
+    // T = A + F + P
+    //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
+    //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+    machine_uint_t total_byte_len = end - start;
+#if MICROPY_ENABLE_FINALISER
+    gc_alloc_table_byte_len = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+#else
+    gc_alloc_table_byte_len = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+#endif
+
+
     gc_alloc_table_start = (byte*)start;
 
-    gc_mpobj_table_byte_len = (gc_alloc_table_byte_len * BITS_PER_BYTE / 2)/8;
-    gc_mpobj_table_start = gc_alloc_table_start+gc_alloc_table_byte_len;
+#if MICROPY_ENABLE_FINALISER
+    machine_uint_t gc_finaliser_table_byte_len = (gc_alloc_table_byte_len * BLOCKS_PER_ATB) / BLOCKS_PER_FTB;
+    gc_finaliser_table_start = gc_alloc_table_start + gc_alloc_table_byte_len;
+#endif
 
-    machine_uint_t gc_pool_block_len = (gc_alloc_table_byte_len * BITS_PER_BYTE / 2) -(gc_mpobj_table_byte_len / BYTES_PER_BLOCK);
-    machine_uint_t gc_pool_word_len = gc_pool_block_len * WORDS_PER_BLOCK;
-    gc_pool_start = (machine_uint_t*)end - gc_pool_word_len;
+    machine_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
+    gc_pool_start = end - gc_pool_block_len * BYTES_PER_BLOCK;
     gc_pool_end = end;
 
     // clear ATBs
     memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
 
-    // clear MPOBJ flags
-    memset(gc_mpobj_table_start, 0, gc_mpobj_table_byte_len);
+#if MICROPY_ENABLE_FINALISER
+    // clear FTBs
+    memset(gc_finaliser_table_start, 0, gc_finaliser_table_byte_len);
+#endif
 
     // allocate first block because gc_pool_start points there and it will never
     // be freed, so allocating 1 block with null pointers will minimise memory loss
@@ -107,9 +129,15 @@ void gc_init(void *start, void *end) {
         gc_pool_start[i] = 0;
     }
 
+    // unlock the GC
+    gc_lock = false;
+
     DEBUG_printf("GC layout:\n");
-    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes\n", gc_alloc_table_start, gc_alloc_table_byte_len);
-    DEBUG_printf("  pool at %p, length " UINT_FMT " blocks = " UINT_FMT " words = " UINT_FMT " bytes\n", gc_pool_start, gc_pool_block_len, gc_pool_word_len, gc_pool_word_len * BYTES_PER_WORD);
+    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_alloc_table_start, gc_alloc_table_byte_len, gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+#if MICROPY_ENABLE_FINALISER
+    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_finaliser_table_start, gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
+#endif
+    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_pool_start, gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
 #define VERIFY_PTR(ptr) ( \
@@ -176,16 +204,22 @@ STATIC void gc_sweep(void) {
     for (machine_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
-                if (ATB_IS_MPOBJ(block)) {
-                    mp_obj_t dest[2];
-                    mp_load_method((mp_obj_t*)PTR_FROM_BLOCK(block), MP_QSTR___del__, dest);
-                    // load_method returned a method
-                    if (dest[1] != MP_OBJ_NULL) {
-                        mp_call_method_n_kw(0, 0, dest);
+#if MICROPY_ENABLE_FINALISER
+                if (FTB_GET(block)) {
+                    mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
+                    if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
+                        // if the object has a type then see if it has a __del__ method
+                        mp_obj_t dest[2];
+                        mp_load_method_maybe(obj, MP_QSTR___del__, dest);
+                        if (dest[0] != MP_OBJ_NULL) {
+                            // load_method returned a method
+                            mp_call_method_n_kw(0, 0, dest);
+                        }
                     }
-                    // clear mpobj flag
-                    ATB_CLR_MPOBJ(block);
+                    // clear finaliser flag
+                    FTB_CLEAR(block);
                 }
+#endif
                 free_tail = 1;
                 // fall through to free the head
 
@@ -204,6 +238,7 @@ STATIC void gc_sweep(void) {
 }
 
 void gc_collect_start(void) {
+    gc_lock = true;
     gc_stack_overflow = 0;
     gc_sp = gc_stack;
 }
@@ -219,6 +254,7 @@ void gc_collect_root(void **ptrs, machine_uint_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
+    gc_lock = false;
 }
 
 void gc_info(gc_info_t *info) {
@@ -266,9 +302,13 @@ void gc_info(gc_info_t *info) {
     info->free *= BYTES_PER_BLOCK;
 }
 
-void *_gc_alloc(machine_uint_t n_bytes, bool is_mpobj) {
+void *gc_alloc(machine_uint_t n_bytes, bool has_finaliser) {
     machine_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
+
+    if (gc_lock) {
+        // TODO
+    }
 
     // check for 0 allocation
     if (n_blocks == 0) {
@@ -315,25 +355,37 @@ found:
         ATB_FREE_TO_TAIL(bl);
     }
 
-    if (is_mpobj) {
-        // set mp_obj flag only if it has del
-        ATB_SET_MPOBJ(start_block);
-    }
+    // get pointer to first block
+    void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 
-    // return pointer to first block
-    return (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
+#if MICROPY_ENABLE_FINALISER
+    if (has_finaliser) {
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
+        // set mp_obj flag only if it has a finaliser
+        FTB_SET(start_block);
+    }
+#endif
+
+    return ret_ptr;
 }
 
+/*
 void *gc_alloc(machine_uint_t n_bytes) {
     return _gc_alloc(n_bytes, false);
 }
 
-void *gc_alloc_mp_obj(machine_uint_t n_bytes) {
+void *gc_alloc_with_finaliser(machine_uint_t n_bytes) {
     return _gc_alloc(n_bytes, true);
 }
+*/
 
 // force the freeing of a piece of memory
 void gc_free(void *ptr_in) {
+    if (gc_lock) {
+        // TODO
+    }
+
     machine_uint_t ptr = (machine_uint_t)ptr_in;
 
     if (VERIFY_PTR(ptr)) {
@@ -386,12 +438,16 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
 }
 #else
 void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
+    if (gc_lock) {
+        // TODO
+    }
+
     void *ptr_out = NULL;
     machine_uint_t block = 0;
     machine_uint_t ptr = (machine_uint_t)ptr_in;
 
     if (ptr_in == NULL) {
-        return gc_alloc(n_bytes);
+        return gc_alloc(n_bytes, false);
     }
 
     if (VERIFY_PTR(ptr)                         // verify pointer
@@ -444,7 +500,13 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
             ptr_out = ptr_in;
 
         // try to find a new contiguous chain
-        } else if ((ptr_out = gc_alloc(n_bytes)) != NULL) {
+        } else if ((ptr_out = gc_alloc(n_bytes,
+#if MICROPY_ENABLE_FINALISER
+                        FTB_GET(block)
+#else
+                        false
+#endif
+                        )) != NULL) {
             DEBUG_printf("gc_realloc: allocating new block\n");
             memcpy(ptr_out, ptr_in, n_existing);
             gc_free(ptr_in);
@@ -489,18 +551,18 @@ void gc_test(void) {
     gc_init(heap, heap + len / sizeof(machine_uint_t));
     void *ptrs[100];
     {
-        machine_uint_t **p = gc_alloc(16);
-        p[0] = gc_alloc(64);
-        p[1] = gc_alloc(1);
-        p[2] = gc_alloc(1);
-        p[3] = gc_alloc(1);
-        machine_uint_t ***p2 = gc_alloc(16);
+        machine_uint_t **p = gc_alloc(16, false);
+        p[0] = gc_alloc(64, false);
+        p[1] = gc_alloc(1, false);
+        p[2] = gc_alloc(1, false);
+        p[3] = gc_alloc(1, false);
+        machine_uint_t ***p2 = gc_alloc(16, false);
         p2[0] = p;
         p2[1] = p;
         ptrs[0] = p2;
     }
     for (int i = 0; i < 25; i+=2) {
-        machine_uint_t *p = gc_alloc(i);
+        machine_uint_t *p = gc_alloc(i, false);
         printf("p=%p\n", p);
         if (i & 3) {
             //ptrs[i] = p;

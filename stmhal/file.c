@@ -53,6 +53,7 @@ STATIC const mp_map_elem_t file_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&file_obj_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&file_obj___exit___obj },
 };
@@ -81,7 +82,7 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, cons
     if (n_args > 1) {
         mode = mp_obj_str_get_str(args[1]);
     }
-    pyb_file_obj_t *self = m_new_obj(pyb_file_obj_t);
+    pyb_file_obj_t *self = m_new_obj_with_finaliser(pyb_file_obj_t);
     self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
         // open for reading

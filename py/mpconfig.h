@@ -55,6 +55,11 @@
 #define MICROPY_ENABLE_GC (0)
 #endif
 
+// Whether to enable finalisers in the garbage collector (ie call __del__)
+#ifndef MICROPY_ENABLE_GC_FINALISER
+#define MICROPY_ENABLE_GC_FINALISER (0)
+#endif
+
 // Whether to include REPL helper function
 #ifndef MICROPY_ENABLE_REPL_HELPERS
 #define MICROPY_ENABLE_REPL_HELPERS (0)

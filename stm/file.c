@@ -71,7 +71,7 @@ static const mp_obj_type_t file_obj_type = {
 mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
     const char *filename = mp_obj_str_get_str(o_filename);
     const char *mode = mp_obj_str_get_str(o_mode);
-    pyb_file_obj_t *self = m_new_mp_obj(pyb_file_obj_t);
+    pyb_file_obj_t *self = m_new_obj_with_finaliser(pyb_file_obj_t);
     self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
         // open for reading

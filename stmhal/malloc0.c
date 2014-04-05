@@ -1,5 +1,6 @@
+#include <stdio.h>
 #include <stdint.h>
-#include "std.h"
+#include "misc.h"
 #include "mpconfig.h"
 #include "gc.h"
 
