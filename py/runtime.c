@@ -690,18 +690,24 @@ too_long:
     nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
 }
 
-mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
+mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
-    // use load_method
     mp_obj_t dest[2];
-    mp_load_method(base, attr, dest);
-    if (dest[1] == MP_OBJ_NULL) {
+    // use load_method, raising or not raising exception
+    ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        return defval;
+    } else if (dest[1] == MP_OBJ_NULL) {
         // load_method returned just a normal attribute
         return dest[0];
     } else {
         // load_method returned a method, so build a bound method object
         return mp_obj_new_bound_meth(dest[0], dest[1]);
     }
+}
+
+mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
+    return mp_load_attr_default(base, attr, MP_OBJ_NULL);
 }
 
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
