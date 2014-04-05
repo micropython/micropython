@@ -23,6 +23,11 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_OBJ_NULL ((mp_obj_t)NULL)
 
+// The SENTINEL object is used for various internal purposes where one needs
+// an object which is unique from all other objects, including MP_OBJ_NULL.
+
+#define MP_OBJ_SENTINEL ((mp_obj_t)8)
+
 // These macros check for small int, qstr or object, and access small int and qstr values
 //  - xxxx...xxx1: a small int, bits 1 and above are the value
 //  - xxxx...xx10: a qstr, bits 2 and above are the value
@@ -103,11 +108,11 @@ typedef struct _mp_map_t {
     mp_map_elem_t *table;
 } mp_map_t;
 
+// These can be or'd together
 typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP,                    // 0
     MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
-    MP_MAP_LOOKUP_FIRST = 4,
 } mp_map_lookup_kind_t;
 
 void mp_map_init(mp_map_t *map, int n);
@@ -129,6 +134,7 @@ typedef struct _mp_set_t {
 
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
 
 // Type definitions for methods

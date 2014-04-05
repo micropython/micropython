@@ -103,7 +103,7 @@ STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
     mp_map_elem_t *table = self->dict->map.table;
 
     for (int i = self->cur; i < max; i++) {
-        if (table[i].key != NULL) {
+        if (table[i].key != MP_OBJ_NULL && table[i].key != MP_OBJ_SENTINEL) {
             self->cur = i + 1;
             return &(table[i]);
         }
