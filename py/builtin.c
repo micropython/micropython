@@ -400,9 +400,13 @@ STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
 
-STATIC mp_obj_t mp_builtin_getattr(mp_obj_t o_in, mp_obj_t attr) {
-    assert(MP_OBJ_IS_QSTR(attr));
-    return mp_load_attr(o_in, MP_OBJ_QSTR_VALUE(attr));
+STATIC mp_obj_t mp_builtin_getattr(uint n_args, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_QSTR(args[1]));
+    mp_obj_t defval = MP_OBJ_NULL;
+    if (n_args > 2) {
+        defval = args[2];
+    }
+    return mp_load_attr_default(args[0], MP_OBJ_QSTR_VALUE(args[1]), defval);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_getattr_obj, mp_builtin_getattr);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
