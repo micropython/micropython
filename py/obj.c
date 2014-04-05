@@ -118,6 +118,8 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return (machine_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_type)) {
+        return (machine_int_t)o_in;
 
     // TODO hash class and instances
     // TODO delegate to __hash__ method if it exists
