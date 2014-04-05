@@ -400,6 +400,22 @@ STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
 
+// See mp_load_attr() if making any changes
+STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
+    mp_obj_t dest[2];
+    // use load_method, raising or not raising exception
+    ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        return defval;
+    } else if (dest[1] == MP_OBJ_NULL) {
+        // load_method returned just a normal attribute
+        return dest[0];
+    } else {
+        // load_method returned a method, so build a bound method object
+        return mp_obj_new_bound_meth(dest[0], dest[1]);
+    }
+}
+
 STATIC mp_obj_t mp_builtin_getattr(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_QSTR(args[1]));
     mp_obj_t defval = MP_OBJ_NULL;
