@@ -181,6 +181,9 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
 }
 
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
+    // This function essentially performs implicit type conversion to int
+    // Note that Python does NOT provide implicit type conversion from
+    // float to int in the core expression language, try some_list[1.0].
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
