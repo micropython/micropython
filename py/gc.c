@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "mpconfig.h"
 #include "misc.h"
 #include "gc.h"
+
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
+#include "runtime.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -21,7 +27,9 @@ typedef unsigned char byte;
 #define STACK_SIZE (64) // tunable; minimum is 1
 
 STATIC byte *gc_alloc_table_start;
+STATIC byte *gc_mpobj_table_start;
 STATIC machine_uint_t gc_alloc_table_byte_len;
+STATIC machine_uint_t gc_mpobj_table_byte_len;
 STATIC machine_uint_t *gc_pool_start;
 STATIC machine_uint_t *gc_pool_end;
 
@@ -59,6 +67,10 @@ STATIC machine_uint_t *gc_sp;
 #define ATB_HEAD_TO_MARK(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
 #define ATB_MARK_TO_HEAD(block) do { gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
 
+#define ATB_SET_MPOBJ(block) do { gc_mpobj_table_start[(block) / 8] |= (1<<(block%8)); } while (0)
+#define ATB_CLR_MPOBJ(block) do { gc_mpobj_table_start[(block) / 8] &= (~(1<<(block%8))); } while (0)
+#define ATB_IS_MPOBJ(block) ((gc_mpobj_table_start[(block) / 8]>>(block%8))&0x01)
+
 #define BLOCK_FROM_PTR(ptr) (((ptr) - (machine_uint_t)gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (machine_uint_t)gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
@@ -73,13 +85,20 @@ void gc_init(void *start, void *end) {
     machine_uint_t total_word_len = (machine_uint_t*)end - (machine_uint_t*)start;
     gc_alloc_table_byte_len = total_word_len * BYTES_PER_WORD / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     gc_alloc_table_start = (byte*)start;
-    machine_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BITS_PER_BYTE / 2;
+
+    gc_mpobj_table_byte_len = (gc_alloc_table_byte_len * BITS_PER_BYTE / 2)/8;
+    gc_mpobj_table_start = gc_alloc_table_start+gc_alloc_table_byte_len;
+
+    machine_uint_t gc_pool_block_len = (gc_alloc_table_byte_len * BITS_PER_BYTE / 2) -(gc_mpobj_table_byte_len / BYTES_PER_BLOCK);
     machine_uint_t gc_pool_word_len = gc_pool_block_len * WORDS_PER_BLOCK;
     gc_pool_start = (machine_uint_t*)end - gc_pool_word_len;
     gc_pool_end = end;
 
     // clear ATBs
     memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
+
+    // clear MPOBJ flags
+    memset(gc_mpobj_table_start, 0, gc_mpobj_table_byte_len);
 
     // allocate first block because gc_pool_start points there and it will never
     // be freed, so allocating 1 block with null pointers will minimise memory loss
@@ -157,6 +176,16 @@ STATIC void gc_sweep(void) {
     for (machine_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
+                if (ATB_IS_MPOBJ(block)) {
+                    mp_obj_t dest[2];
+                    mp_load_method((mp_obj_t*)PTR_FROM_BLOCK(block), MP_QSTR___del__, dest);
+                    // load_method returned a method
+                    if (dest[1] != MP_OBJ_NULL) {
+                        mp_call_method_n_kw(0, 0, dest);
+                    }
+                    // clear mpobj flag
+                    ATB_CLR_MPOBJ(block);
+                }
                 free_tail = 1;
                 // fall through to free the head
 
@@ -237,7 +266,7 @@ void gc_info(gc_info_t *info) {
     info->free *= BYTES_PER_BLOCK;
 }
 
-void *gc_alloc(machine_uint_t n_bytes) {
+void *_gc_alloc(machine_uint_t n_bytes, bool is_mpobj) {
     machine_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -286,8 +315,21 @@ found:
         ATB_FREE_TO_TAIL(bl);
     }
 
+    if (is_mpobj) {
+        // set mp_obj flag only if it has del
+        ATB_SET_MPOBJ(start_block);
+    }
+
     // return pointer to first block
     return (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
+}
+
+void *gc_alloc(machine_uint_t n_bytes) {
+    return _gc_alloc(n_bytes, false);
+}
+
+void *gc_alloc_mp_obj(machine_uint_t n_bytes) {
+    return _gc_alloc(n_bytes, true);
 }
 
 // force the freeing of a piece of memory

@@ -31,6 +31,7 @@ STATIC int peak_bytes_allocated = 0;
 #undef free
 #undef realloc
 #define malloc gc_alloc
+#define malloc_mp_obj gc_alloc_mp_obj
 #define free gc_free
 #define realloc gc_realloc
 #endif // MICROPY_ENABLE_GC
@@ -42,6 +43,24 @@ void *m_malloc(int num_bytes) {
     void *ptr = malloc(num_bytes);
     if (ptr == NULL) {
         return m_malloc_fail(num_bytes);
+    }
+#if MICROPY_MEM_STATS
+    total_bytes_allocated += num_bytes;
+    current_bytes_allocated += num_bytes;
+    UPDATE_PEAK();
+#endif
+    DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+    return ptr;
+}
+
+void *m_malloc_mp_obj(int num_bytes) {
+    if (num_bytes == 0) {
+        return NULL;
+    }
+    void *ptr = malloc_mp_obj(num_bytes);
+    if (ptr == NULL) {
+        printf("could not allocate memory, allocating %d bytes\n", num_bytes);
+        return NULL;
     }
 #if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
