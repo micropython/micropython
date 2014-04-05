@@ -3,7 +3,6 @@
 Q(Test)
 
 Q(argv)
-Q(open)
 Q(stdin)
 Q(stdout)
 Q(stderr)

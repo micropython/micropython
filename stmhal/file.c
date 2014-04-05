@@ -61,17 +61,20 @@ STATIC const mp_map_elem_t file_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(file_locals_dict, file_locals_dict_table);
 
 STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
-static const mp_obj_type_t file_obj_type = {
+
+STATIC const mp_stream_p_t file_obj_stream_p = {
+    .read = file_read,
+    .write = file_write,
+};
+
+STATIC const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_File,
     .make_new = file_obj_make_new,
     .print = file_obj_print,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = {
-        .read = file_read,
-        .write = file_write,
-    },
+    .stream_p = &file_obj_stream_p,
     .locals_dict = (mp_obj_t)&file_locals_dict,
 };
 

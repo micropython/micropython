@@ -229,7 +229,7 @@ struct _mp_obj_type_t {
     // in mp_obj_type_t at the expense of extra pointer and extra dereference
     // when actually used.
     mp_buffer_p_t buffer_p;
-    mp_stream_p_t stream_p;
+    const mp_stream_p_t *stream_p;
 
     // these are for dynamically created types (classes)
     mp_obj_t bases_tuple;

@@ -123,6 +123,11 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
+STATIC const mp_stream_p_t rawfile_stream_p = {
+    .read = fdfile_read,
+    .write = fdfile_write,
+};
+
 STATIC const mp_obj_type_t rawfile_type = {
     { &mp_type_type },
     .name = MP_QSTR_io_dot_FileIO,
@@ -130,10 +135,7 @@ STATIC const mp_obj_type_t rawfile_type = {
     .make_new = fdfile_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = {
-        .read = fdfile_read,
-        .write = fdfile_write,
-    },
+    .stream_p = &rawfile_stream_p,
     .locals_dict = (mp_obj_t)&rawfile_locals_dict,
 };
 

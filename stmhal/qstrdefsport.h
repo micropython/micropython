@@ -33,7 +33,6 @@ Q(SDcard)
 Q(gpio)
 Q(gpio_in)
 Q(gpio_out)
-Q(open)
 Q(File)
 // Entries for sys.path
 Q(0:/)

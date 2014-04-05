@@ -240,6 +240,11 @@ STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(microsocket_locals_dict, microsocket_locals_dict_table);
 
+STATIC const mp_stream_p_t microsocket_stream_p = {
+    .read = socket_read,
+    .write = socket_write,
+};
+
 STATIC const mp_obj_type_t microsocket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
@@ -247,10 +252,7 @@ STATIC const mp_obj_type_t microsocket_type = {
     .make_new = socket_make_new,
     .getiter = NULL,
     .iternext = NULL,
-    .stream_p = {
-        .read = socket_read,
-        .write = socket_write,
-    },
+    .stream_p = &microsocket_stream_p,
     .locals_dict = (mp_obj_t)&microsocket_locals_dict,
 };
 

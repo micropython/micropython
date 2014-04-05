@@ -14,7 +14,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
-    if (o->type->stream_p.read == NULL) {
+    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
@@ -25,7 +25,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     }
     byte *buf = m_new(byte, sz);
     int error;
-    machine_int_t out_sz = o->type->stream_p.read(o, buf, sz, &error);
+    machine_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
     if (out_sz == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
@@ -37,7 +37,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
 
 STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
-    if (o->type->stream_p.write == NULL) {
+    if (o->type->stream_p == NULL || o->type->stream_p->write == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
@@ -45,7 +45,7 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     uint sz;
     const char *buf = mp_obj_str_get_data(arg, &sz);
     int error;
-    machine_int_t out_sz = o->type->stream_p.write(self_in, buf, sz, &error);
+    machine_int_t out_sz = o->type->stream_p->write(self_in, buf, sz, &error);
     if (out_sz == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
@@ -60,7 +60,7 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
 #define READ_SIZE 256
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
-    if (o->type->stream_p.read == NULL) {
+    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
@@ -72,7 +72,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     int error;
     int current_read = READ_SIZE;
     while (true) {
-        machine_int_t out_sz = o->type->stream_p.read(self_in, p, current_read, &error);
+        machine_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == -1) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }
@@ -101,7 +101,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
-    if (o->type->stream_p.read == NULL) {
+    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
@@ -126,7 +126,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
         }
 
-        machine_int_t out_sz = o->type->stream_p.read(o, p, 1, &error);
+        machine_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == -1) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }
