@@ -1,1 +1,1 @@
-print({1}.union({2}))
+print(sorted({1}.union({2})))
