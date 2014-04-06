@@ -1106,21 +1106,30 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
 
 STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
-    assert(MP_OBJ_IS_STR(args[1]));
-    assert(MP_OBJ_IS_STR(args[2]));
 
-    machine_int_t max_rep = 0;
+    machine_int_t max_rep = -1;
     if (n_args == 4) {
-        assert(MP_OBJ_IS_SMALL_INT(args[3]));
-        max_rep = MP_OBJ_SMALL_INT_VALUE(args[3]);
+        max_rep = mp_obj_get_int(args[3]);
         if (max_rep == 0) {
             return args[0];
         } else if (max_rep < 0) {
-            max_rep = 0;
+            max_rep = -1;
         }
     }
 
     // if max_rep is still 0 by this point we will need to do all possible replacements
+
+    // check argument types
+
+    if (!MP_OBJ_IS_STR(args[1])) {
+        bad_implicit_conversion(args[1]);
+    }
+
+    if (!MP_OBJ_IS_STR(args[2])) {
+        bad_implicit_conversion(args[2]);
+    }
+
+    // extract string data
 
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], old, old_len);
@@ -1143,8 +1152,20 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
         machine_uint_t num_replacements_done = 0;
         const byte *old_occurrence;
         const byte *offset_ptr = str;
-        machine_uint_t offset_num = 0;
-        while ((old_occurrence = find_subbytes(offset_ptr, str_len - offset_num, old, old_len, 1)) != NULL) {
+        machine_uint_t str_len_remain = str_len;
+        if (old_len == 0) {
+            // if old_str is empty, copy new_str to start of replaced string
+            // copy the replacement string
+            if (data != NULL) {
+                memcpy(data, new, new_len);
+            }
+            replaced_str_index += new_len;
+            num_replacements_done++;
+        }
+        while (num_replacements_done != max_rep && str_len_remain > 0 && (old_occurrence = find_subbytes(offset_ptr, str_len_remain, old, old_len, 1)) != NULL) {
+            if (old_len == 0) {
+                old_occurrence += 1;
+            }
             // copy from just after end of last occurrence of to-be-replaced string to right before start of next occurrence
             if (data != NULL) {
                 memcpy(data + replaced_str_index, offset_ptr, old_occurrence - offset_ptr);
@@ -1156,19 +1177,15 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
             }
             replaced_str_index += new_len;
             offset_ptr = old_occurrence + old_len;
-            offset_num = offset_ptr - str;
-
+            str_len_remain = str + str_len - offset_ptr;
             num_replacements_done++;
-            if (max_rep != 0 && num_replacements_done == max_rep){
-                break;
-            }
         }
 
         // copy from just after end of last occurrence of to-be-replaced string to end of old string
         if (data != NULL) {
-            memcpy(data + replaced_str_index, offset_ptr, str_len - offset_num);
+            memcpy(data + replaced_str_index, offset_ptr, str_len_remain);
         }
-        replaced_str_index += str_len - offset_num;
+        replaced_str_index += str_len_remain;
 
         if (data == NULL) {
             // first pass
@@ -1178,6 +1195,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
             } else {
                 // substr found, allocate new string
                 replaced_str = mp_obj_str_builder_start(mp_obj_get_type(args[0]), replaced_str_index, &data);
+                assert(data != NULL);
             }
         } else {
             // second pass, we are done
