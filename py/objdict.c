@@ -86,6 +86,28 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             return MP_BOOL(elem != NULL);
         }
+        case MP_BINARY_OP_EQUAL: {
+            // TODO: Support equality to other object types
+            if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
+                mp_obj_dict_t *rhs = rhs_in;
+                if (o->map.used != rhs->map.used) {
+                    return mp_const_false;
+                }
+
+                machine_uint_t size = o->map.alloc;
+                mp_map_t *map = &o->map;
+
+                for (machine_uint_t i = 0; i < size; i++) {
+                    if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+                        mp_map_elem_t *elem = mp_map_lookup(&rhs->map, map->table[i].key, MP_MAP_LOOKUP);
+                        if (elem == NULL || !mp_obj_equal(map->table[i].value, elem->value)) {
+                            return mp_const_false;
+                        }
+                    }
+                }
+                return mp_const_true;
+            }
+        }
         default:
             // op not supported
             return NULL;
