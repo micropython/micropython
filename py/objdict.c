@@ -12,6 +12,7 @@
 
 STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
+STATIC mp_obj_t dict_copy(mp_obj_t self_in);
 
 STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
@@ -39,6 +40,10 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             break;
 
         case 1:
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_dict)) {
+                return dict_copy(args[0]);
+            }
+            // TODO create dict from an arbitrary mapping!
             // TODO create dict from an iterable!
             assert(false);
 
