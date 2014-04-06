@@ -164,6 +164,8 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     mp_obj_dict_t *other = mp_obj_new_dict(self->map.alloc);
     other->map.used = self->map.used;
+    other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
+    other->map.table_is_fixed_array = 0;
     memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
     return other;
 }

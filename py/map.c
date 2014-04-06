@@ -30,7 +30,7 @@ void mp_map_init(mp_map_t *map, int n) {
         map->alloc = 0;
         map->table = NULL;
     } else {
-        map->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
+        map->alloc = n;
         map->table = m_new0(mp_map_elem_t, map->alloc);
     }
     map->used = 0;
@@ -197,7 +197,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 /* set                                                                        */
 
 void mp_set_init(mp_set_t *set, int n) {
-    set->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
+    set->alloc = n;
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
 }
