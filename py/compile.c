@@ -36,12 +36,6 @@ typedef enum {
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
 #define EMIT_INLINE_ASM_ARG(fun, ...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, __VA_ARGS__))
 
-#define EMIT_OPT_NONE           (0)
-#define EMIT_OPT_BYTE_CODE      (1)
-#define EMIT_OPT_NATIVE_PYTHON  (2)
-#define EMIT_OPT_VIPER          (3)
-#define EMIT_OPT_ASM_THUMB      (4)
-
 typedef struct _compiler_t {
     qstr source_file;
     bool is_repl;
@@ -1000,16 +994,16 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
 
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == MP_QSTR_byte_code) {
-        *emit_options = EMIT_OPT_BYTE_CODE;
+        *emit_options = MP_EMIT_OPT_BYTE_CODE;
 #if MICROPY_EMIT_NATIVE
     } else if (attr == MP_QSTR_native) {
-        *emit_options = EMIT_OPT_NATIVE_PYTHON;
+        *emit_options = MP_EMIT_OPT_NATIVE_PYTHON;
     } else if (attr == MP_QSTR_viper) {
-        *emit_options = EMIT_OPT_VIPER;
+        *emit_options = MP_EMIT_OPT_VIPER;
 #endif
 #if MICROPY_EMIT_INLINE_THUMB
     } else if (attr == MP_QSTR_asm_thumb) {
-        *emit_options = EMIT_OPT_ASM_THUMB;
+        *emit_options = MP_EMIT_OPT_ASM_THUMB;
 #endif
     } else {
         compile_syntax_error(comp, "invalid micropython decorator");
@@ -1601,7 +1595,7 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // this bit optimises: for <x> in range(...), turning it into an explicitly incremented variable
     // this is actually slower, but uses no heap memory
     // for viper it will be much, much faster
-    if (/*comp->scope_cur->emit_options == EMIT_OPT_VIPER &&*/ MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
+    if (/*comp->scope_cur->emit_options == MP_EMIT_OPT_VIPER &&*/ MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)) {
         mp_parse_node_struct_t *pns_it = (mp_parse_node_struct_t*)pns->nodes[1];
         if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0]) 
             && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range
@@ -3187,7 +3181,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     }
 }
 
-mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
+mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl) {
     compiler_t *comp = m_new(compiler_t, 1);
 
     comp->source_file = source_file;
@@ -3208,7 +3202,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     pn = fold_constants(pn);
 
     // set the outer scope
-    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, EMIT_OPT_NONE);
+    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
 
     // compile pass 1
     comp->emit = emit_pass1_new();
@@ -3219,7 +3213,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
     for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
 #if MICROPY_EMIT_INLINE_THUMB
-        } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+        } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
             compile_scope_inline_asm(comp, s, PASS_1);
 #endif
         } else {
@@ -3255,7 +3249,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
             // dummy
 
 #if MICROPY_EMIT_INLINE_THUMB
-        } else if (s->emit_options == EMIT_OPT_ASM_THUMB) {
+        } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
             // inline assembly for thumb
             if (emit_inline_thumb == NULL) {
                 emit_inline_thumb = emit_inline_thumb_new(max_num_labels);
@@ -3279,8 +3273,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
             switch (s->emit_options) {
 
 #if MICROPY_EMIT_NATIVE
-                case EMIT_OPT_NATIVE_PYTHON:
-                case EMIT_OPT_VIPER:
+                case MP_EMIT_OPT_NATIVE_PYTHON:
+                case MP_EMIT_OPT_VIPER:
 #if MICROPY_EMIT_X64
                     if (emit_native == NULL) {
                         emit_native = emit_native_x64_new(max_num_labels);
@@ -3293,7 +3287,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, bool is_repl) {
                     comp->emit_method_table = &emit_native_thumb_method_table;
 #endif
                     comp->emit = emit_native;
-                    comp->emit_method_table->set_native_types(comp->emit, s->emit_options == EMIT_OPT_VIPER);
+                    comp->emit_method_table->set_native_types(comp->emit, s->emit_options == MP_EMIT_OPT_VIPER);
                     break;
 #endif // MICROPY_EMIT_NATIVE
 

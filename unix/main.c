@@ -28,6 +28,9 @@
 #include <readline/history.h>
 #endif
 
+// Default emit options
+uint emit_opt = MP_EMIT_OPT_NONE;
+
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
@@ -76,7 +79,7 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     printf("----------------\n");
     */
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
 
     if (module_fun == mp_const_none) {
         // compile error
@@ -221,6 +224,10 @@ int usage(char **argv) {
 "Implementation specific options:\n", argv[0]
 );
     int impl_opts_cnt = 0;
+    printf(
+"  emit={bytecode,native,viper} -- set the default code emitter\n"
+);
+    impl_opts_cnt++;
 #if MICROPY_ENABLE_GC
     printf(
 "  heapsize=<n> -- set the heap size for the GC\n"
@@ -265,6 +272,12 @@ void pre_process_options(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 if (0) {
+                } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
+                    emit_opt = MP_EMIT_OPT_BYTE_CODE;
+                } else if (strcmp(argv[a + 1], "emit=native") == 0) {
+                    emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
+                } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
+                    emit_opt = MP_EMIT_OPT_VIPER;
 #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, NULL, 0);

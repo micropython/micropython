@@ -359,7 +359,7 @@ bool do_file(const char *filename) {
 
     mp_lexer_free(lex);
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, false);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
     mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
@@ -422,7 +422,7 @@ void do_repl(void) {
         } else {
             // parse okay
             mp_lexer_free(lex);
-            mp_obj_t module_fun = mp_compile(pn, source_name, true);
+            mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 uint32_t start = micros();
