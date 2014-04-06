@@ -6,6 +6,12 @@
 # ports (if PIP_MICROPY_DEST environment var is set).
 #
 
+if [ "$1" != "install" ]; then
+    echo "Only install command is supported currently"
+    exit 1
+fi
+shift
+
 if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
     echo "Destination snapshot directory: $dest"
