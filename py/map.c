@@ -197,7 +197,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 /* set                                                                        */
 
 void mp_set_init(mp_set_t *set, int n) {
-    set->alloc = n;
+    set->alloc = get_doubling_prime_greater_or_equal_to(n + 1);
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
 }
