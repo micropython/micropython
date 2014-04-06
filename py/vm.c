@@ -653,14 +653,14 @@ unwind_jump:
 
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(mp_make_function_from_id(unum, false, MP_OBJ_NULL, MP_OBJ_NULL));
+                        PUSH(mp_make_function_from_id(unum, MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
                         // Stack layout: def_dict def_tuple <- TOS
                         obj1 = POP();
-                        SET_TOP(mp_make_function_from_id(unum, false, obj1, TOP()));
+                        SET_TOP(mp_make_function_from_id(unum, obj1, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:

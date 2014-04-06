@@ -34,6 +34,13 @@
 #include "obj.h"
 #include "runtime.h"
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 // wrapper around everything in this file
 #if (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)
 
@@ -300,6 +307,7 @@ STATIC void emit_native_set_source_line(emit_t *emit, int source_line) {
 }
 
 STATIC void adjust_stack(emit_t *emit, int stack_size_delta) {
+    DEBUG_printf("adjust stack: stack:%d + delta:%d\n", emit->stack_size, stack_size_delta);
     emit->stack_size += stack_size_delta;
     assert(emit->stack_size >= 0);
     if (emit->pass > PASS_1 && emit->stack_size > emit->scope->stack_size) {
@@ -542,6 +550,18 @@ STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, void
 #endif
 }
 
+STATIC void emit_call_with_3_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2, machine_int_t arg_val3, int arg_reg3) {
+    need_reg_all(emit);
+    ASM_MOV_IMM_TO_REG(arg_val1, arg_reg1);
+    ASM_MOV_IMM_TO_REG(arg_val2, arg_reg2);
+    ASM_MOV_IMM_TO_REG(arg_val3, arg_reg3);
+#if N_X64
+    asm_x64_call_ind(emit->as, fun, REG_RAX);
+#elif N_THUMB
+    asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#endif
+}
+
 STATIC void emit_native_load_id(emit_t *emit, qstr qstr) {
     // check for built-ins
     if (strcmp(qstr_str(qstr), "v_int") == 0) {
@@ -577,22 +597,38 @@ STATIC void emit_native_label_assign(emit_t *emit, int l) {
     emit_post(emit);
 }
 
-STATIC void emit_native_import_name(emit_t *emit, qstr qstr) {
-    // not implemented
-    assert(0);
+STATIC void emit_native_import_name(emit_t *emit, qstr qst) {
+    DEBUG_printf("import_name %s\n", qstr_str(qst));
+    vtype_kind_t vtype_fromlist;
+    vtype_kind_t vtype_level;
+    emit_pre_pop_reg_reg(emit, &vtype_fromlist, REG_ARG_2, &vtype_level, REG_ARG_3); // arg2 = fromlist, arg3 = level
+    assert(vtype_fromlist == VTYPE_PYOBJ);
+    assert(vtype_level == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, MP_F_IMPORT_NAME, mp_import_name, qst, REG_ARG_1); // arg1 = import name
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_import_from(emit_t *emit, qstr qstr) {
-    // not implemented
-    assert(0);
+STATIC void emit_native_import_from(emit_t *emit, qstr qst) {
+    DEBUG_printf("import_from %s\n", qstr_str(qst));
+    emit_native_pre(emit);
+    vtype_kind_t vtype_module;
+    emit_access_stack(emit, 1, &vtype_module, REG_ARG_1); // arg1 = module
+    assert(vtype_module == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, MP_F_IMPORT_FROM, mp_import_from, qst, REG_ARG_2); // arg2 = import name
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_import_star(emit_t *emit) {
-    // not implemented
-    assert(0);
+    DEBUG_printf("import_star\n");
+    vtype_kind_t vtype_module;
+    emit_pre_pop_reg(emit, &vtype_module, REG_ARG_1); // arg1 = module
+    assert(vtype_module == VTYPE_PYOBJ);
+    emit_call(emit, MP_F_IMPORT_ALL, mp_import_all);
+    emit_post(emit);
 }
 
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
+    DEBUG_printf("load_const_tok %d\n", tok);
     emit_native_pre(emit);
     int vtype;
     machine_uint_t val;
@@ -616,6 +652,7 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 }
 
 STATIC void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
+    DEBUG_printf("load_const_small_int %d\n", arg);
     emit_native_pre(emit);
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);
@@ -624,10 +661,12 @@ STATIC void emit_native_load_const_small_int(emit_t *emit, machine_int_t arg) {
     }
 }
 
-STATIC void emit_native_load_const_int(emit_t *emit, qstr qstr) {
-    // not implemented
-    // load integer, check fits in 32 bits
-    assert(0);
+STATIC void emit_native_load_const_int(emit_t *emit, qstr qst) {
+    DEBUG_printf("load_const_int %s\n", qstr_str(st));
+    // for viper: load integer, check fits in 32 bits
+    emit_native_pre(emit);
+    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, mp_obj_new_int_from_long_str, qst, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
@@ -1125,12 +1164,26 @@ STATIC void emit_native_set_add(emit_t *emit, int set_index) {
 }
 
 STATIC void emit_native_build_slice(emit_t *emit, int n_args) {
-    assert(0);
+    DEBUG_printf("build_slice %d\n", n_args);
+    assert(n_args == 2);
+    vtype_kind_t vtype_start, vtype_stop;
+    emit_pre_pop_reg_reg(emit, &vtype_stop, REG_ARG_2, &vtype_start, REG_ARG_1); // arg1 = start, arg2 = stop
+    assert(vtype_start == VTYPE_PYOBJ);
+    assert(vtype_stop == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, MP_F_NEW_SLICE, mp_obj_new_slice, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg3 = step
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
+
 STATIC void emit_native_unpack_sequence(emit_t *emit, int n_args) {
-    // call runtime, needs type decl
-    assert(0);
+    // TODO this is untested
+    DEBUG_printf("unpack_sequence %d\n", n_args);
+    vtype_kind_t vtype_base;
+    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = seq
+    assert(vtype_base == VTYPE_PYOBJ);
+    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, n_args); // arg3 = dest ptr
+    emit_call_with_imm_arg(emit, MP_F_UNPACK_SEQUENCE, mp_unpack_sequence, n_args, REG_ARG_2); // arg2 = n_args
 }
+
 STATIC void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
     assert(0);
 }
@@ -1139,7 +1192,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_MAKE_FUNCTION_FROM_ID, mp_make_function_from_id, scope->unique_code_id, REG_ARG_1);
+    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_ID, mp_make_function_from_id, scope->unique_code_id, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1149,7 +1202,7 @@ STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_pos_de
 
 STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
     // call special viper runtime routine with type info for args, and wanted type info for return
-    assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
+    assert(!have_star_arg && !have_dbl_star_arg);
 
     /* we no longer have these _n specific call_function's
      * they anyway push args into an array
@@ -1176,18 +1229,18 @@ STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
     */
 
     emit_native_pre(emit);
-    if (n_positional != 0) {
-        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional); // pointer to args
+    if (n_positional != 0 || n_keyword != 0) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional + 2 * n_keyword); // pointer to args
     }
     vtype_kind_t vtype_fun;
     emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
     assert(vtype_fun == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_CALL_FUNCTION_N_KW_FOR_NATIVE, mp_call_function_n_kw_for_native, n_positional, REG_ARG_2);
+    emit_call_with_imm_arg(emit, MP_F_CALL_FUNCTION_N_KW_FOR_NATIVE, mp_call_function_n_kw_for_native, n_positional | (n_keyword << 8), REG_ARG_2);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    assert(n_keyword == 0 && !have_star_arg && !have_dbl_star_arg);
+    assert(!have_star_arg && !have_dbl_star_arg);
 
     /*
     if (n_positional == 0) {
@@ -1207,12 +1260,13 @@ STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keywor
     */
 
     emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional + 2); // pointer to items, including meth and self
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, 2 + n_positional + 2 * n_keyword); // pointer to items, including meth and self
     emit_call_with_2_imm_args(emit, MP_F_CALL_METHOD_N_KW, mp_call_method_n_kw, n_positional, REG_ARG_1, n_keyword, REG_ARG_2);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_return_value(emit_t *emit) {
+    DEBUG_printf("return_value\n");
     // easy.  since we don't know who we return to, just return the raw value.
     // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;

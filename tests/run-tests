@@ -51,7 +51,7 @@ for test_file in tests:
             pyb.enter_raw_repl()
             output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
         else:
-            output_mupy = subprocess.check_output([MP_PY, test_file])
+            output_mupy = subprocess.check_output([MP_PY, '-X', 'emit=bytecode', test_file])
     except subprocess.CalledProcessError:
         output_mupy = b'CRASH'
 

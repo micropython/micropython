@@ -190,7 +190,7 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #endif
 }
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args, mp_obj_t def_kw_args) {
+mp_obj_t mp_make_function_from_id(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
     if (unique_code_id >= unique_codes_total) {
         // illegal code id
@@ -224,20 +224,25 @@ mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp
         fun = mp_obj_new_gen_wrap(fun);
     }
 
-    // in some cases we can free the unique_code slot
-    // any dynamically allocade memory is now owned by the fun object
-    if (free_unique_code) {
-        memset(c, 0, sizeof *c); // make sure all pointers are zeroed
-        c->kind = MP_CODE_UNUSED;
-    }
-
     return fun;
+}
+
+mp_obj_t mp_make_function_from_id_and_free(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args) {
+    mp_obj_t f = mp_make_function_from_id(unique_code_id, def_args, def_kw_args);
+
+    // in some cases we can free the unique_code slot
+    // any dynamically allocated memory is now owned by the fun object
+    mp_code_t *c = &unique_codes[unique_code_id];
+    memset(c, 0, sizeof *c); // make sure all pointers are zeroed
+    c->kind = MP_CODE_UNUSED;
+
+    return f;
 }
 
 mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
     // make function object
-    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, false, def_args, def_kw_args);
+    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, def_args, def_kw_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

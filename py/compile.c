@@ -3351,7 +3351,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #else
         // return function that executes the outer module
         // we can free the unique_code slot because no-one has reference to this unique_code_id anymore
-        return mp_make_function_from_id(unique_code_id, true, MP_OBJ_NULL, MP_OBJ_NULL);
+        return mp_make_function_from_id_and_free(unique_code_id, MP_OBJ_NULL, MP_OBJ_NULL);
 #endif
     }
 }

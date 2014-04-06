@@ -28,7 +28,8 @@ mp_obj_t mp_load_const_dec(qstr qstr);
 mp_obj_t mp_load_const_str(qstr qstr);
 mp_obj_t mp_load_const_bytes(qstr qstr);
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, bool free_unique_code, mp_obj_t def_args, mp_obj_t def_kw_args);
+mp_obj_t mp_make_function_from_id(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args);
+mp_obj_t mp_make_function_from_id_and_free(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_function_n(int n_args, void *fun); // fun must have the correct signature for n_args fixed arguments
 mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun);
 mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun); // min and max are inclusive
