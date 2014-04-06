@@ -1,5 +1,5 @@
 d = {1: 2, 3: 4}
-print(d)
+print(len(d))
 d.clear()
 print(d)
 d[2] = 42
