@@ -115,7 +115,17 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t se
         *fmt_size = 0;
         return *buf;
     }
-    fmt_int_t num = mp_obj_get_int(self_in);
+    fmt_int_t num;
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    mp_obj_int_t *self = self_in;
+    if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
+        // mp_obj_get_int truncates to machine_int_t
+        num = self->val;
+    } else
+#endif
+    {
+        num = mp_obj_get_int(self_in);
+    }
     char sign = '\0';
     if (num < 0) {
         num = -num;
