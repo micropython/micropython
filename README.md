@@ -39,7 +39,7 @@ The Unix version
 
 The "unix" port requires a standard Unix environment with gcc and GNU make.
 x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARM. Porting to other architectures require writing some assembly code
+as ARMv7. Porting to other architectures require writing some assembly code
 for the exception handling.
 
 To build:
