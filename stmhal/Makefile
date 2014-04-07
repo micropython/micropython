@@ -189,7 +189,7 @@ all: $(BUILD)/flash.dfu
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
 	$(ECHO) "Create $@"
-	$(Q)python $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
 
 $(BUILD)/flash0.bin: $(BUILD)/flash.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $@
@@ -220,7 +220,7 @@ $(OBJ): | $(BUILD)/pins.h
 # both pins_$(BOARD).c and pins.h
 $(BUILD)/%_$(BOARD).c $(BUILD)/%.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE)
 	$(ECHO) "Create $@"
-	$(Q)python $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
