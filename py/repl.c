@@ -29,10 +29,11 @@ bool mp_repl_is_compound_stmt(const char *line) {
         return true;
     }
 
-    // also "compound" if unmatched open bracket
+    // also "compound" if unmatched open bracket or triple quote
     int n_paren = 0;
     int n_brack = 0;
     int n_brace = 0;
+    int in_triple_quote = 0;
     for (const char *l = line; *l; l++) {
         switch (*l) {
             case '(': n_paren += 1; break;
@@ -41,9 +42,15 @@ bool mp_repl_is_compound_stmt(const char *line) {
             case ']': n_brack -= 1; break;
             case '{': n_brace += 1; break;
             case '}': n_brace -= 1; break;
+            case '"':
+                if (l[1] == '"' && l[2] == '"') {
+                    l += 2;
+                    in_triple_quote = 1 - in_triple_quote;
+                }
+                break;
         }
     }
-    return n_paren > 0 || n_brack > 0 || n_brace > 0;
+    return n_paren > 0 || n_brack > 0 || n_brace > 0 || in_triple_quote != 0;
 }
 
 #endif // MICROPY_ENABLE_REPL_HELPERS
