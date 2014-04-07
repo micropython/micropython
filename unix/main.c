@@ -22,6 +22,7 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
+#include "build/py/py-version.h"
 
 #if MICROPY_USE_READLINE
 #include <readline/readline.h>
@@ -137,6 +138,9 @@ STATIC char *prompt(char *p) {
 }
 
 STATIC void do_repl(void) {
+    printf("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; UNIX version\n");
+    printf("Type \"help()\" for more information.\n");
+
     for (;;) {
         char *line = prompt(">>> ");
         if (line == NULL) {

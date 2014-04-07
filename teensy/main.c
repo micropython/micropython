@@ -19,6 +19,7 @@
 #include "usb.h"
 #include "gc.h"
 #include "led.h"
+#include "build/py/py-version.h"
 
 #include "Arduino.h"
 
@@ -380,7 +381,7 @@ bool do_file(const char *filename) {
 }
 
 void do_repl(void) {
-    stdout_tx_str("Micro Python for Teensy 3.1\r\n");
+    stdout_tx_str("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; Teensy 3.1 version\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
