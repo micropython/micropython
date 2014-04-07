@@ -128,7 +128,7 @@ STATIC mp_obj_t set_copy(mp_obj_t self_in) {
 
     mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
     other->base.type = &mp_type_set;
-    mp_set_init(&other->set, self->set.alloc - 1);
+    mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
 
