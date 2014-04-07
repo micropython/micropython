@@ -5,26 +5,26 @@ def r(s):
 sets = [set(), {1}, {1, 2}, {1, 2, 3}, {2, 3}, {2, 3, 5}, {5}, {7}]
 for s in sets:
     for t in sets:
-        print(s, '|', t, '=', r(s | t))
-        print(s, '^', t, '=', r(s ^ t))
-        print(s, '&', t, '=', r(s & t))
-        print(s, '-', t, '=', r(s - t))
+        print(r(s), '|', r(t), '=', r(s | t))
+        print(r(s), '^', r(t), '=', r(s ^ t))
+        print(r(s), '&', r(t), '=', r(s & t))
+        print(r(s), '-', r(t), '=', r(s - t))
         u = s.copy()
         u |= t
-        print(s, "|=", t, '-->', r(u))
+        print(r(s), "|=", r(t), '-->', r(u))
         u = s.copy()
         u ^= t
-        print(s, "^=", t, '-->', r(u))
+        print(r(s), "^=", r(t), '-->', r(u))
         u = s.copy()
         u &= t
-        print(s, "&=", t, "-->", r(u))
+        print(r(s), "&=", r(t), "-->", r(u))
         u = s.copy()
         u -= t
-        print(s, "-=", t, "-->", r(u))
+        print(r(s), "-=", r(t), "-->", r(u))
 
-        print(s, '==', t, '=', s == t)
-        print(s, '!=', t, '=', s != t)
-        print(s, '>', t, '=', s > t)
-        print(s, '>=', t, '=', s >= t)
-        print(s, '<', t, '=', s < t)
-        print(s, '<=', t, '=', s <= t)
+        print(r(s), '==', r(t), '=', s == t)
+        print(r(s), '!=', r(t), '=', s != t)
+        print(r(s), '>', r(t), '=', s > t)
+        print(r(s), '>=', r(t), '=', s >= t)
+        print(r(s), '<', r(t), '=', s < t)
+        print(r(s), '<=', r(t), '=', s <= t)
