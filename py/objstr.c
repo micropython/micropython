@@ -1128,7 +1128,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
         }
     }
 
-    // if max_rep is still 0 by this point we will need to do all possible replacements
+    // if max_rep is still -1 by this point we will need to do all possible replacements
 
     // check argument types
 
