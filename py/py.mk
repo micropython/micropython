@@ -105,7 +105,7 @@ $(PY_BUILD)/py-version.h: FORCE
 $(PY_BUILD)/qstrdefs.generated.h: | $(PY_BUILD)/
 $(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
 	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
-	$(Q)python $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@
 
 # We don't know which source files actually need the generated.h (since
 # it is #included from str.h). The compiler generated dependencies will cause

@@ -39,12 +39,17 @@ BUILD ?= build
 
 RM = rm
 ECHO = @echo
+CP = cp
+MKDIR = mkdir
+SED = sed
+PYTHON = python
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
+STRIP = $(CROSS_COMPILE)strip
 
 all:
 .PHONY: all
