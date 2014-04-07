@@ -13,7 +13,7 @@
 #define MICROPY_ENABLE_REPL_HELPERS (1)
 #define MICROPY_ENABLE_LEXER_UNIX   (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 
 // type definitions for the specific machine
 
@@ -31,6 +31,5 @@ typedef unsigned int machine_uint_t; // must be pointer size
 
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
-typedef double machine_float_t;
 
-machine_float_t machine_sqrt(machine_float_t x);
+extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;

@@ -59,7 +59,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     printf("----------------\n");
     */
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
 
     if (module_fun == mp_const_none) {
         // compile error
@@ -229,10 +229,4 @@ int main(int argc, char **argv) {
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;
-}
-
-// for sqrt
-#include <math.h>
-machine_float_t machine_sqrt(machine_float_t x) {
-    return sqrt(x);
 }
