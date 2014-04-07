@@ -76,5 +76,6 @@ bool mpz_as_int_checked(const mpz_t *z, machine_int_t *value);
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 uint mpz_as_str_size(const mpz_t *z, uint base);
+uint mpz_as_str_size_formatted(const mpz_t *i, uint base, const char *prefix, char comma);
 char *mpz_as_str(const mpz_t *z, uint base);
-uint mpz_as_str_inpl(const mpz_t *z, uint base, char *str);
+uint mpz_as_str_inpl(const mpz_t *z, uint base, const char *prefix, char base_char, char comma, char *str);

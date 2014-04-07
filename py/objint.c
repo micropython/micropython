@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -53,13 +54,138 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
     }
 }
 
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-
 void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
+    // The size of this buffer is rather arbitrary. If it's not large
+    // enough, a dynamic one will be allocated.
+    char stack_buf[sizeof(machine_int_t) * 4];
+    char *buf = stack_buf;
+    int buf_size = sizeof(stack_buf);
+    int fmt_size;
+
+    char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
+    print(env, "%s", str);
+
+    if (buf != stack_buf) {
+        m_free(buf, buf_size);
     }
 }
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE || MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+typedef mp_longint_impl_t   fmt_int_t;
+#else
+typedef mp_small_int_t   fmt_int_t;
+#endif
+
+static const uint log_base2_floor[] = {
+    0,
+    0, 1, 1, 2,
+    2, 2, 2, 3,
+    3, 3, 3, 3,
+    3, 3, 3, 4,
+    4, 4, 4, 4,
+    4, 4, 4, 4,
+    4, 4, 4, 4,
+    4, 4, 4, 5
+};
+
+uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
+    if (base < 2 || base > 32) {
+        return 0;
+    }
+
+    uint num_digits = sizeof(fmt_int_t) * 8 / log_base2_floor[base] + 1;
+    uint num_commas = comma ? num_digits / 3: 0;
+    uint prefix_len = prefix ? strlen(prefix) : 0;
+    return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
+}
+
+// This routine expects you to pass in a buffer and size (in *buf and buf_size).
+// If, for some reason, this buffer is too small, then it will allocate a
+// buffer and return the allocated buffer and size in *buf and *buf_size. It
+// is the callers responsibility to free this allocated buffer.
+//
+// The resulting formatted string will be returned from this function and the
+// formatted size will be in *fmt_size.
+char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+                           int base, const char *prefix, char base_char, char comma) {
+    if (!MP_OBJ_IS_INT(self_in)) {
+        buf[0] = '\0';
+        *fmt_size = 0;
+        return *buf;
+    }
+    fmt_int_t num;
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    mp_obj_int_t *self = self_in;
+    if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
+        // mp_obj_get_int truncates to machine_int_t
+        num = self->val;
+    } else
+#endif
+    {
+        num = mp_obj_get_int(self_in);
+    }
+    char sign = '\0';
+    if (num < 0) {
+        num = -num;
+        sign = '-';
+    }
+
+    uint needed_size = int_as_str_size_formatted(base, prefix, comma);
+    if (needed_size > *buf_size) {
+        *buf = m_new(char, needed_size);
+        *buf_size = needed_size;
+    }
+    char *str = *buf;
+
+    char *b = str + needed_size;
+    *(--b) = '\0';
+    char *last_comma = b;
+
+    if (num == 0) {
+        *(--b) = '0';
+    } else {
+        do {
+            int c = num % base;
+            num /= base;
+            if (c >= 10) {
+                c += base_char - 10;
+            } else {
+                c += '0';
+            }
+            *(--b) = c;
+            if (comma && num != 0 && b > str && (last_comma - b) == 3) {
+                *(--b) = comma;
+                last_comma = b;
+            }
+        }
+        while (b > str && num != 0);
+    }
+    if (prefix) {
+        size_t prefix_len = strlen(prefix);
+        char *p = b - prefix_len;
+        if (p > str) {
+            b = p;
+            while (*prefix) {
+                *p++ = *prefix++;
+            }
+        }
+    }
+    if (sign && b > str) {
+        *(--b) = sign;
+    }
+    *fmt_size = *buf + needed_size - b - 1;
+
+    return b;
+}
+
+bool mp_obj_int_is_positive(mp_obj_t self_in) {
+    return mp_obj_get_int(self_in) >= 0;
+}
+#endif  // LONGLONG or NONE
+
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {

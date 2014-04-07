@@ -22,16 +22,47 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
     return o;
 }
 
-void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+// This routine expects you to pass in a buffer and size (in *buf and buf_size).
+// If, for some reason, this buffer is too small, then it will allocate a
+// buffer and return the allocated buffer and size in *buf and *buf_size. It
+// is the callers responsibility to free this allocated buffer.
+//
+// The resulting formatted string will be returned from this function and the
+// formatted size will be in *fmt_size.
+char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+                           int base, const char *prefix, char base_char, char comma) {
+    mpz_t small_mpz;
+    mpz_t *mpz;
+    mpz_dig_t small_dig[(sizeof(mp_small_int_t) * 8 + MPZ_DIG_SIZE - 1) / MPZ_DIG_SIZE];
+
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
+        mpz_init_fixed_from_int(&small_mpz, small_dig,
+                                sizeof(small_dig) / sizeof(small_dig[0]),
+                                MP_OBJ_SMALL_INT_VALUE(self_in));
+        mpz = &small_mpz;
     } else {
-        // TODO would rather not allocate memory to print...
         mp_obj_int_t *self = self_in;
-        char *str = mpz_as_str(&self->mpz, 10);
-        print(env, "%s", str);
-        m_free(str, 0);
+        mpz = &self->mpz;
     }
+
+    uint needed_size = mpz_as_str_size_formatted(mpz, base, prefix, comma);
+    if (needed_size > *buf_size) {
+        *buf = m_new(char, needed_size);
+        *buf_size = needed_size;
+    }
+    char *str = *buf;
+
+    *fmt_size = mpz_as_str_inpl(mpz, base, prefix, base_char, comma, str);
+
+    return str;
+}
+
+bool mp_obj_int_is_positive(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
+    }
+    mp_obj_int_t *self = self_in;
+    return !self->mpz.neg;
 }
 
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
