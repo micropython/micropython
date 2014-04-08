@@ -293,6 +293,7 @@ void pre_process_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+    nlr_jump(0);
     volatile int stack_dummy;
     stack_top = (void*)&stack_dummy;
 
@@ -446,4 +447,9 @@ int DEBUG_printf(const char *fmt, ...) {
     int ret = vfprintf(stderr, fmt, ap);
     va_end(ap);
     return ret;
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught NLR %p\n", val);
+    exit(1);
 }

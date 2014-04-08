@@ -60,6 +60,8 @@ _nlr_jump:
 nlr_jump:
 #endif
     mov     nlr_top, %edx           # load nlr_top
+    test    %edx, %edx              # check for nlr_top being NULL
+    je      nlr_jump_fail           # fail if nlr_top is NULL
     mov     4(%esp), %eax           # load return value
     mov     %eax, 4(%edx)           # store return value
     mov     (%edx), %eax            # load prev nlr_top
@@ -78,6 +80,7 @@ nlr_jump:
     .size   nlr_jump, .-nlr_jump
 #endif
 
+    .bss
 #ifndef _WIN32
     .local  nlr_top
 #endif

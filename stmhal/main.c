@@ -73,6 +73,11 @@ void __fatal_error(const char *msg) {
     }
 }
 
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught exception %p\n", val);
+    __fatal_error("");
+}
+
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;

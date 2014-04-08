@@ -61,6 +61,8 @@ nlr_jump:
 #endif
     movq    %rdi, %rax              # put return value in %rax
     movq    nlr_top(%rip), %rdi     # get nlr_top into %rdi
+    test    %rdi, %rdi              # check for nlr_top being NULL
+    je      .fail                   # fail if nlr_top is NULL
     movq    %rax, 8(%rdi)           # store return value
     movq    (%rdi), %rax            # load prev nlr_buf
     movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
@@ -76,10 +78,14 @@ nlr_jump:
     xorq    %rax, %rax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
+.fail:
+    movq    %rax, %rdi              # put argument back in first-arg register
+    je      nlr_jump_fail           # transfer control to nlr_jump_fail
 #if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_jump, .-nlr_jump
 #endif
 
+    .bss
 #if !(defined(__APPLE__) && defined(__MACH__))
     .local  nlr_top
 #endif
@@ -107,12 +113,21 @@ nlr_push:
     xorq    %rax, %rax              # return 0, normal return
     ret                             # return
 
-/* void nlr_jump(rcx=uint val) */
+/* void nlr_pop() */
+    .globl  nlr_pop
+nlr_pop:
+    movq    nlr_top(%rip), %rax     # get nlr_top into %rax
+    movq    (%rax), %rax            # load prev nlr_buf
+    movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
+    ret                             # return
 
+/* void nlr_jump(rcx=uint val) */
     .globl  nlr_jump
 nlr_jump:
     movq    %rcx, %rax              # put return value in %rax
-    movq    nlr_top(%rip), %rcx     # get nlr_top into %rsi
+    movq    nlr_top(%rip), %rcx     # get nlr_top into %rcx
+    test    %rcx, %rcx              # check for nlr_top being NULL
+    je      .fail                   # fail if nlr_top is NULL
     movq    %rax, 8(%rcx)           # store return value
     movq    (%rcx), %rax            # load prev nlr_buf
     movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
@@ -130,16 +145,12 @@ nlr_jump:
     xorq    %rax, %rax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
+.fail:
+    movq    %rax, %rcx              # put argument back in first-arg register
+    je      nlr_jump_fail           # transfer control to nlr_jump_fail
 
+    .bss
     .comm   nlr_top,8,8
-
-    /* void nlr_pop() */
-    .globl  nlr_pop
-nlr_pop:
-    movq    nlr_top(%rip), %rax     # get nlr_top into %rax
-    movq    (%rax), %rax            # load prev nlr_buf
-    movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
-    ret                             # return
 
 #endif // !defined(__CYGWIN__)
 
