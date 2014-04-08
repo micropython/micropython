@@ -32,7 +32,7 @@ Additional components:
 - examples/ -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and python (2.7 or 3.3) for the stm port.
+You will also need bash and python (2.7 or 3.3).
 
 The Unix version
 ----------------
