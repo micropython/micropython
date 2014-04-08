@@ -275,6 +275,12 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
     asm_thumb_write_op16(as, 0x4600 | op_lo);
 }
 
+#define OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))
+
+void asm_thumb_add_reg_reg_reg(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b) {
+    asm_thumb_write_op16(as, OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b));
+}
+
 #define OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src) (0x1e00 | ((i3_src) << 6) | ((rlo_src) << 3) | (rlo_dest))
 
 void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src) {
@@ -283,11 +289,21 @@ void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int
     asm_thumb_write_op16(as, OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src));
 }
 
+#define OP_CMP_REG_REG(rlo_a, rlo_b) (0x4280 | ((rlo_b) << 3) | (rlo_a))
+
+void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b) {
+    asm_thumb_write_op16(as, OP_CMP_REG_REG(rlo_a, rlo_b));
+}
+
 #define OP_CMP_RLO_I8(rlo, i8) (0x2800 | ((rlo) << 8) | (i8))
 
 void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
     assert(rlo < REG_R8);
     asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, i8));
+}
+
+void asm_thumb_ite_ge(asm_thumb_t *as) {
+    asm_thumb_write_op16(as, 0xbfac);
 }
 
 #define OP_B_N(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
@@ -358,22 +374,6 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
     int word_offset = as->num_locals - local_num - 1;
     assert(as->pass < ASM_THUMB_PASS_3 || word_offset >= 0);
     asm_thumb_write_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
-}
-
-#define OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))
-
-void asm_thumb_add_reg_reg_reg(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b) {
-    asm_thumb_write_op16(as, OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b));
-}
-
-#define OP_CMP_REG_REG(rlo_a, rlo_b) (0x4280 | ((rlo_b) << 3) | (rlo_a))
-
-void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b) {
-    asm_thumb_write_op16(as, OP_CMP_REG_REG(rlo_a, rlo_b));
-}
-
-void asm_thumb_ite_ge(asm_thumb_t *as) {
-    asm_thumb_write_op16(as, 0xbfac);
 }
 
 // this could be wrong, because it should have a range of +/- 16MiB...

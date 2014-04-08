@@ -81,45 +81,36 @@ STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr
     asm_thumb_label_assign(emit->as, label_num);
 }
 
-STATIC bool check_n_arg(qstr op, int n_args, int wanted_n_args) {
-    if (wanted_n_args == n_args) {
-        return true;
-    } else {
-        printf("SyntaxError: '%s' expects %d arguments'\n", qstr_str(op), wanted_n_args);
-        return false;
-    }
-}
-
-STATIC uint get_arg_rlo(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+STATIC uint get_arg_rlo(const char *op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
+        printf("SyntaxError: '%s' expects a register in position %d\n", op, wanted_arg_num);
         return 0;
     }
     qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
     const char *reg_str = qstr_str(reg_qstr);
     if (!(strlen(reg_str) == 2 && reg_str[0] == 'r' && ('0' <= reg_str[1] && reg_str[1] <= '7'))) {
-        printf("SyntaxError: '%s' expects a register in position %d\n", qstr_str(op), wanted_arg_num);
+        printf("SyntaxError: '%s' expects a register in position %d\n", op, wanted_arg_num);
         return 0;
     }
     return reg_str[1] - '0';
 }
 
-STATIC int get_arg_i(qstr op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
+STATIC int get_arg_i(const char *op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects an integer in position %d\n", qstr_str(op), wanted_arg_num);
+        printf("SyntaxError: '%s' expects an integer in position %d\n", op, wanted_arg_num);
         return 0;
     }
     int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn_args[wanted_arg_num]);
     if ((i & (~fit_mask)) != 0) {
-        printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", qstr_str(op), i, fit_mask);
+        printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", op, i, fit_mask);
         return 0;
     }
     return i;
 }
 
-STATIC int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_args, int wanted_arg_num) {
+STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects a label in position %d\n", qstr_str(op), wanted_arg_num);
+        printf("SyntaxError: '%s' expects a label in position %d\n", op, wanted_arg_num);
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
@@ -135,6 +126,24 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, qstr op, mp_parse_node_t *pn_a
     return 0;
 }
 
+typedef struct _cc_name_t { byte cc; byte name[2]; } cc_name_t;
+STATIC const cc_name_t cc_name_table[] = {
+    {THUMB_CC_EQ, "eq"},
+    {THUMB_CC_NE, "ne"},
+    {THUMB_CC_CS, "cs"},
+    {THUMB_CC_CC, "cc"},
+    {THUMB_CC_MI, "mi"},
+    {THUMB_CC_PL, "pl"},
+    {THUMB_CC_VS, "vs"},
+    {THUMB_CC_VC, "vc"},
+    {THUMB_CC_HI, "hi"},
+    {THUMB_CC_LS, "ls"},
+    {THUMB_CC_GE, "ge"},
+    {THUMB_CC_LT, "lt"},
+    {THUMB_CC_GT, "gt"},
+    {THUMB_CC_LE, "le"},
+};
+
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
@@ -146,60 +155,86 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
     // three_args =
     // "subs", RLO, RLO, I3, asm_thumb_subs_reg_reg_i3
 
-    // 1 arg
-    if (strcmp(qstr_str(op), "b") == 0) {
-        if (!check_n_arg(op, n_args, 1)) {
-            return;
-        }
-        int label_num = get_arg_label(emit, op, pn_args, 0);
-        // TODO check that this succeeded, ie branch was within range
-        asm_thumb_b_n(emit->as, label_num);
-    } else if (strcmp(qstr_str(op), "bgt") == 0) {
-        if (!check_n_arg(op, n_args, 1)) {
-            return;
-        }
-        int label_num = get_arg_label(emit, op, pn_args, 0);
-        // TODO check that this succeeded, ie branch was within range
-        asm_thumb_bcc_n(emit->as, THUMB_CC_GT, label_num);
+    const char *op_str = qstr_str(op);
+    uint op_len = strlen(op_str);
 
-    // 2 args
-    } else if (strcmp(qstr_str(op), "movs") == 0) {
-        if (!check_n_arg(op, n_args, 2)) {
-            return;
+    if (n_args == 0) {
+        if (strcmp(op_str, "ite.ge") == 0) { // TODO correct name for this op?
+            asm_thumb_ite_ge(emit->as);
+        } else {
+            goto unknown_op;
         }
-        uint rlo_dest = get_arg_rlo(op, pn_args, 0);
-        int i_src = get_arg_i(op, pn_args, 1, 0xff);
-        asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
-    } else if (strcmp(qstr_str(op), "movw") == 0) {
-        if (!check_n_arg(op, n_args, 2)) {
-            return;
-        }
-        uint rlo_dest = get_arg_rlo(op, pn_args, 0); // TODO can be reg lo or hi
-        int i_src = get_arg_i(op, pn_args, 1, 0xffff);
-        asm_thumb_movw_reg_i16(emit->as, rlo_dest, i_src);
-    } else if (strcmp(qstr_str(op), "cmp") == 0) {
-        if (!check_n_arg(op, n_args, 2)) {
-            return;
-        }
-        uint rlo = get_arg_rlo(op, pn_args, 0);
-        int i8 = get_arg_i(op, pn_args, 1, 0xff);
-        asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
 
-    // 3 args
-    } else if (strcmp(qstr_str(op), "subs") == 0) {
-        if (!check_n_arg(op, n_args, 3)) {
-            return;
+    } else if (n_args == 1) {
+        if (strcmp(op_str, "b") == 0) {
+            int label_num = get_arg_label(emit, op_str, pn_args, 0);
+            // TODO check that this succeeded, ie branch was within range
+            asm_thumb_b_n(emit->as, label_num);
+        } else if (op_str[0] == 'b' && op_len == 3) {
+            uint cc = -1;
+            for (uint i = 0; i < (sizeof cc_name_table) / (sizeof cc_name_table[0]); i++) {
+                if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
+                    cc = cc_name_table[i].cc;
+                }
+            }
+            if (cc == -1) {
+                goto unknown_op;
+            }
+            int label_num = get_arg_label(emit, op_str, pn_args, 0);
+            // TODO check that this succeeded, ie branch was within range
+            asm_thumb_bcc_n(emit->as, cc, label_num);
+        } else {
+            goto unknown_op;
         }
-        uint rlo_dest = get_arg_rlo(op, pn_args, 0);
-        uint rlo_src = get_arg_rlo(op, pn_args, 1);
-        int i3_src = get_arg_i(op, pn_args, 2, 0x7);
-        asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
 
-    // unknown op
+    } else if (n_args == 2) {
+        if (strcmp(op_str, "mov") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
+            uint rlo_src = get_arg_rlo(op_str, pn_args, 1);
+            asm_thumb_mov_reg_reg(emit->as, rlo_dest, rlo_src);
+        } else if (strcmp(op_str, "movs") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
+            int i_src = get_arg_i(op_str, pn_args, 1, 0xff);
+            asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
+        } else if (strcmp(op_str, "movw") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0); // TODO can be reg lo or hi
+            int i_src = get_arg_i(op_str, pn_args, 1, 0xffff);
+            asm_thumb_movw_reg_i16(emit->as, rlo_dest, i_src);
+        } else if (strcmp(op_str, "movt") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0); // TODO can be reg lo or hi
+            int i_src = get_arg_i(op_str, pn_args, 1, 0xffff);
+            asm_thumb_movt_reg_i16(emit->as, rlo_dest, i_src);
+        } else if (strcmp(op_str, "cmp") == 0) {
+            uint rlo = get_arg_rlo(op_str, pn_args, 0);
+            int i8 = get_arg_i(op_str, pn_args, 1, 0xff);
+            asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
+        } else {
+            goto unknown_op;
+        }
+
+    } else if (n_args == 3) {
+        if (strcmp(op_str, "add") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
+            uint rlo_src_a = get_arg_rlo(op_str, pn_args, 1);
+            uint rlo_src_b = get_arg_rlo(op_str, pn_args, 2);
+            asm_thumb_add_reg_reg_reg(emit->as, rlo_dest, rlo_src_a, rlo_src_b);
+        } else if (strcmp(op_str, "subs") == 0) {
+            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
+            uint rlo_src = get_arg_rlo(op_str, pn_args, 1);
+            int i3_src = get_arg_i(op_str, pn_args, 2, 0x7);
+            asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
+        } else {
+            goto unknown_op;
+        }
+
     } else {
-        printf("SyntaxError: unsupported ARM Thumb instruction '%s'\n", qstr_str(op));
-        return;
+        goto unknown_op;
     }
+
+    return;
+
+unknown_op:
+    printf("SyntaxError: unsupported ARM Thumb instruction '%s' with %d arguments\n", op_str, n_args);
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
