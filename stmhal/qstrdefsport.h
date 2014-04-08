@@ -108,7 +108,10 @@ Q(dma)
 
 // for Servo object
 Q(Servo)
+Q(pulse_width)
+Q(calibrate)
 Q(angle)
+Q(speed)
 
 // for os module
 Q(os)

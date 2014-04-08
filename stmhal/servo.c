@@ -20,11 +20,16 @@
 
 typedef struct _pyb_servo_obj_t {
     mp_obj_base_t base;
-    uint16_t servo_id;
-    uint16_t time_left;
+    uint8_t servo_id;
+    uint8_t pulse_min;          // units of 10us
+    uint8_t pulse_max;          // units of 10us
+    uint8_t pulse_centre;       // units of 10us
+    uint8_t pulse_angle_90;     // units of 10us; pulse at 90 degrees, minus pulse_centre
+    uint8_t pulse_speed_100;    // units of 10us; pulse at 100% forward speed, minus pulse_centre
+    uint16_t pulse_cur;         // units of 10us
+    uint16_t pulse_dest;        // units of 10us
     int16_t pulse_accum;
-    uint16_t pulse_cur;
-    uint16_t pulse_dest;
+    uint16_t time_left;
 } pyb_servo_obj_t;
 
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
@@ -36,9 +41,14 @@ void servo_init(void) {
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
         pyb_servo_obj[i].base.type = &pyb_servo_type;
         pyb_servo_obj[i].servo_id = i + 1;
-        pyb_servo_obj[i].time_left = 0;
-        pyb_servo_obj[i].pulse_cur = 150; // units of 10us
+        pyb_servo_obj[i].pulse_min = 64;
+        pyb_servo_obj[i].pulse_max = 242;
+        pyb_servo_obj[i].pulse_centre = 150;
+        pyb_servo_obj[i].pulse_angle_90 = 97;
+        pyb_servo_obj[i].pulse_speed_100 = 70;
+        pyb_servo_obj[i].pulse_cur = 150;
         pyb_servo_obj[i].pulse_dest = 0;
+        pyb_servo_obj[i].time_left = 0;
     }
 }
 
@@ -47,6 +57,13 @@ void servo_timer_irq_callback(void) {
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
         pyb_servo_obj_t *s = &pyb_servo_obj[i];
         if (s->pulse_cur != s->pulse_dest) {
+            // clamp pulse to within min/max
+            if (s->pulse_dest < s->pulse_min) {
+                s->pulse_dest = s->pulse_min;
+            } else if (s->pulse_dest > s->pulse_max) {
+                s->pulse_dest = s->pulse_max;
+            }
+            // adjust cur to get closer to dest
             if (s->time_left <= 1) {
                 s->pulse_cur = s->pulse_dest;
                 s->time_left = 0;
@@ -57,6 +74,7 @@ void servo_timer_irq_callback(void) {
                 s->time_left--;
                 need_it = true;
             }
+            // set the pulse width
             switch (s->servo_id) {
                 case 1: TIM5->CCR1 = s->pulse_cur; break;
                 case 2: TIM5->CCR2 = s->pulse_cur; break;
@@ -135,7 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
 STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
-    print(env, "<Servo %lu at %lu>", self->servo_id, self->pulse_cur);
+    print(env, "<Servo %lu at %luus>", self->servo_id, 10 * self->pulse_cur);
 }
 
 STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -159,20 +177,64 @@ STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     return s;
 }
 
+STATIC mp_obj_t pyb_servo_pulse_width(uint n_args, const mp_obj_t *args) {
+    pyb_servo_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get pulse width, in us
+        return mp_obj_new_int(10 * self->pulse_cur);
+    } else {
+        // set pulse width, in us
+        self->pulse_dest = mp_obj_get_int(args[1]) / 10;
+        self->time_left = 0;
+        servo_timer_irq_callback();
+        return mp_const_none;
+    }
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_servo_pulse_width);
+
+STATIC mp_obj_t pyb_servo_calibrate(uint n_args, const mp_obj_t *args) {
+    pyb_servo_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get calibration values
+        mp_obj_t tuple[5];
+        tuple[0] = mp_obj_new_int(10 * self->pulse_min);
+        tuple[1] = mp_obj_new_int(10 * self->pulse_max);
+        tuple[2] = mp_obj_new_int(10 * self->pulse_centre);
+        tuple[3] = mp_obj_new_int(10 * (self->pulse_angle_90 + self->pulse_centre));
+        tuple[4] = mp_obj_new_int(10 * (self->pulse_speed_100 + self->pulse_centre));
+        return mp_obj_new_tuple(5, tuple);
+    } else if (n_args >= 4) {
+        // set min, max, centre
+        self->pulse_min = mp_obj_get_int(args[1]) / 10;
+        self->pulse_max = mp_obj_get_int(args[2]) / 10;
+        self->pulse_centre = mp_obj_get_int(args[3]) / 10;
+        if (n_args == 4) {
+            return mp_const_none;
+        } else if (n_args == 6) {
+            self->pulse_angle_90 = mp_obj_get_int(args[4]) / 10 - self->pulse_centre;
+            self->pulse_speed_100 = mp_obj_get_int(args[5]) / 10 - self->pulse_centre;
+            return mp_const_none;
+        }
+    }
+
+    // bad number of arguments
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "calibrate expecting 1, 4 or 6 arguments, got %d", n_args));
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibrate_obj, 1, 6, pyb_servo_calibrate);
+
 STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get angle
-        return mp_obj_new_int((self->pulse_cur - 152) * 90 / 85);
+        return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 90 / self->pulse_angle_90);
     } else {
 #if MICROPY_ENABLE_FLOAT
-        machine_int_t v = 152 + 85.0 * mp_obj_get_float(args[1]) / 90.0;
+        self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_float(args[1]) / 90.0;
 #else
-        machine_int_t v = 152 + 85 * mp_obj_get_int(args[1]) / 90;
+        self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_int(args[1]) / 90;
 #endif
-        if (v < 65) { v = 65; }
-        if (v > 210) { v = 210; }
-        self->pulse_dest = v;
         if (n_args == 2) {
             // set angle immediately
             self->time_left = 0;
@@ -188,8 +250,37 @@ STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
+STATIC mp_obj_t pyb_servo_speed(uint n_args, const mp_obj_t *args) {
+    pyb_servo_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get speed
+        return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 100 / self->pulse_speed_100);
+    } else {
+#if MICROPY_ENABLE_FLOAT
+        self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_float(args[1]) / 100.0;
+#else
+        self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_int(args[1]) / 100;
+#endif
+        if (n_args == 2) {
+            // set speed immediately
+            self->time_left = 0;
+        } else {
+            // set speed over a given time (given in milli seconds)
+            self->time_left = mp_obj_get_int(args[2]) / 20;
+            self->pulse_accum = 0;
+        }
+        servo_timer_irq_callback();
+        return mp_const_none;
+    }
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_speed_obj, 1, 3, pyb_servo_speed);
+
 STATIC const mp_map_elem_t pyb_servo_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_servo_pulse_width_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_calibrate), (mp_obj_t)&pyb_servo_calibrate_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_angle), (mp_obj_t)&pyb_servo_angle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_speed), (mp_obj_t)&pyb_servo_speed_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_servo_locals_dict, pyb_servo_locals_dict_table);
