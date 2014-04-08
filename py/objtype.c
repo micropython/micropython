@@ -269,6 +269,11 @@ STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 }
 
 bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        // delete item
+        // TODO implement me!
+        return false;
+    }
     mp_obj_class_t *self = self_in;
     mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
     if (member != MP_OBJ_NULL) {

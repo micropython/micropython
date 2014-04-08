@@ -19,6 +19,7 @@ typedef struct _mp_obj_list_t {
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 STATIC mp_obj_list_t *list_new(uint n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
+STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args);
 
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
@@ -144,6 +145,16 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             // op not supported
             return NULL;
     }
+}
+
+STATIC bool list_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        mp_obj_t args[2] = {self_in, index};
+        list_pop(2, args);
+    } else {
+        mp_obj_list_store(self_in, index, value);
+    }
+    return true;
 }
 
 STATIC mp_obj_t list_getiter(mp_obj_t o_in) {
@@ -349,6 +360,7 @@ const mp_obj_type_t mp_type_list = {
     .make_new = list_make_new,
     .unary_op = list_unary_op,
     .binary_op = list_binary_op,
+    .store_item = list_store_item,
     .getiter = list_getiter,
     .locals_dict = (mp_obj_t)&list_locals_dict,
 };

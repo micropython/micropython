@@ -37,6 +37,7 @@ struct _emit_t {
 };
 
 STATIC void emit_bc_rot_two(emit_t *emit);
+STATIC void emit_bc_rot_three(emit_t *emit);
 
 emit_t *emit_bc_new(uint max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
@@ -515,8 +516,9 @@ STATIC void emit_bc_delete_attr(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_bc_delete_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -2);
-    emit_write_byte_code_byte(emit, MP_BC_DELETE_SUBSCR);
+    emit_bc_load_null(emit);
+    emit_bc_rot_three(emit);
+    emit_bc_store_subscr(emit);
 }
 
 STATIC void emit_bc_dup_top(emit_t *emit) {

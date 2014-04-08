@@ -114,6 +114,14 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
+STATIC bool dict_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        mp_obj_dict_delete(self_in, index);
+    } else {
+        mp_obj_dict_store(self_in, index, value);
+    }
+    return true;
+}
 
 /******************************************************************************/
 /* dict iterator                                                              */
@@ -484,6 +492,7 @@ const mp_obj_type_t mp_type_dict = {
     .make_new = dict_make_new,
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
+    .store_item = dict_store_item,
     .getiter = dict_getiter,
     .locals_dict = (mp_obj_t)&dict_locals_dict,
 };

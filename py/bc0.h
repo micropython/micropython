@@ -40,7 +40,6 @@
 
 #define MP_BC_DELETE_NAME        (0x39) // qstr
 #define MP_BC_DELETE_GLOBAL      (0x3a) // qstr
-#define MP_BC_DELETE_SUBSCR      (0x3b)
 
 #define MP_BC_DUP_TOP            (0x40)
 #define MP_BC_DUP_TOP_TWO        (0x41)

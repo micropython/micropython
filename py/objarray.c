@@ -143,6 +143,10 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
 STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        // delete item; does this need to be implemented?
+        return false;
+    }
     mp_obj_array_t *o = self_in;
     uint index = mp_get_index(o->base.type, o->len, index_in, false);
     mp_binary_set_val(o->typecode, o->items, index, value);

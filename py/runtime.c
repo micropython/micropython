@@ -841,37 +841,18 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
-    if (MP_OBJ_IS_TYPE(base, &mp_type_list)) {
-        // list store
-        mp_obj_list_store(base, index, value);
-    } else if (MP_OBJ_IS_TYPE(base, &mp_type_dict)) {
-        // dict store
-        mp_obj_dict_store(base, index, value);
-    } else {
-        mp_obj_type_t *type = mp_obj_get_type(base);
-        if (type->store_item != NULL) {
-            bool r = type->store_item(base, index, value);
-            if (r) {
-                return;
-            }
-            // TODO: call base classes here?
+    mp_obj_type_t *type = mp_obj_get_type(base);
+    if (type->store_item != NULL) {
+        bool r = type->store_item(base, index, value);
+        if (r) {
+            return;
         }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+        // TODO: call base classes here?
     }
-}
-
-void mp_delete_subscr(mp_obj_t base, mp_obj_t index) {
-    DEBUG_OP_printf("delete subscr %p[%p]\n", base, index);
-    /* list delete not implemented
-    if (MP_OBJ_IS_TYPE(base, &mp_type_list)) {
-        // list delete
-        mp_obj_list_delete(base, index);
-    } else */
-    if (MP_OBJ_IS_TYPE(base, &mp_type_dict)) {
-        // dict delete
-        mp_obj_dict_delete(base, index);
-    } else {
+    if (value == MP_OBJ_NULL) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
     }
 }
 
