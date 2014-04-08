@@ -37,7 +37,7 @@ STATIC machine_uint_t *gc_pool_end;
 STATIC int gc_stack_overflow;
 STATIC machine_uint_t gc_stack[STACK_SIZE];
 STATIC machine_uint_t *gc_sp;
-STATIC bool gc_lock;
+STATIC machine_uint_t gc_lock_depth;
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
@@ -130,7 +130,7 @@ void gc_init(void *start, void *end) {
     }
 
     // unlock the GC
-    gc_lock = false;
+    gc_lock_depth = 0;
 
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_alloc_table_start, gc_alloc_table_byte_len, gc_alloc_table_byte_len * BLOCKS_PER_ATB);
@@ -138,6 +138,14 @@ void gc_init(void *start, void *end) {
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_finaliser_table_start, gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
 #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_pool_start, gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+}
+
+void gc_lock(void) {
+    gc_lock_depth++;
+}
+
+void gc_unlock(void) {
+    gc_lock_depth--;
 }
 
 #define VERIFY_PTR(ptr) ( \
@@ -238,7 +246,7 @@ STATIC void gc_sweep(void) {
 }
 
 void gc_collect_start(void) {
-    gc_lock = true;
+    gc_lock();
     gc_stack_overflow = 0;
     gc_sp = gc_stack;
 }
@@ -254,7 +262,7 @@ void gc_collect_root(void **ptrs, machine_uint_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
-    gc_lock = false;
+    gc_unlock();
 }
 
 void gc_info(gc_info_t *info) {
@@ -306,8 +314,9 @@ void *gc_alloc(machine_uint_t n_bytes, bool has_finaliser) {
     machine_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
-    if (gc_lock) {
-        // TODO
+    // check if GC is locked
+    if (gc_lock_depth > 0) {
+        return NULL;
     }
 
     // check for 0 allocation
@@ -382,8 +391,9 @@ void *gc_alloc_with_finaliser(machine_uint_t n_bytes) {
 
 // force the freeing of a piece of memory
 void gc_free(void *ptr_in) {
-    if (gc_lock) {
-        // TODO
+    if (gc_lock_depth > 0) {
+        // TODO how to deal with this error?
+        return;
     }
 
     machine_uint_t ptr = (machine_uint_t)ptr_in;
@@ -420,7 +430,7 @@ machine_uint_t gc_nbytes(void *ptr_in) {
 }
 
 #if 0
-// use this realloc for now, one below is broken
+// old, simple realloc that didn't expand memory in place
 void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     machine_uint_t n_existing = gc_nbytes(ptr);
     if (n_bytes <= n_existing) {
@@ -436,10 +446,11 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
         return ptr2;
     }
 }
-#else
+#endif
+
 void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
-    if (gc_lock) {
-        // TODO
+    if (gc_lock_depth > 0) {
+        return NULL;
     }
 
     void *ptr_out = NULL;
@@ -515,8 +526,6 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 
     return ptr_out;
 }
-
-#endif
 
 void gc_dump_info() {
     gc_info_t info;
