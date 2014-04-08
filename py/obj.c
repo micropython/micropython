@@ -330,3 +330,21 @@ mp_obj_t mp_identity(mp_obj_t self) {
     return self;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
+
+bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
+    mp_obj_base_t *o = (mp_obj_base_t *)obj;
+    if (o->type->buffer_p.get_buffer == NULL) {
+        return false;
+    }
+    o->type->buffer_p.get_buffer(o, bufinfo, BUFFER_READ);
+    if (bufinfo->buf == NULL) {
+        return false;
+    }
+    return true;
+}
+
+void mp_get_buffer_raise(mp_obj_t obj, buffer_info_t *bufinfo) {
+    if (!mp_get_buffer(obj, bufinfo)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Object with buffer protocol required"));
+    }
+}
