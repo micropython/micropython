@@ -105,9 +105,12 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     OTG_HS_WKUP_IRQn, TAMP_STAMP_IRQn, RTC_WKUP_IRQn
 };
 
+// Set override_callback_obj to true if you want to unconditionally set the
+// callback function.
+//
 // NOTE: param is for C callers. Python can use closure to get an object bound
 //       with the function.
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_obj_t callback_obj, void *param) {
+uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -143,7 +146,7 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_ob
     }
 
     exti_vector_t *v = &exti_vector[v_line];
-    if (v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
+    if (!override_callback_obj && v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d is already in use", v_line));
     }
 
@@ -272,7 +275,7 @@ STATIC mp_obj_t exti_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     mp_obj_t mode_obj = args[1];
     mp_obj_t trigger_obj = args[2];
     mp_obj_t callback_obj = args[3];
-    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, NULL);
+    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, false, NULL);
 
     return self;
 }
@@ -315,7 +318,8 @@ void Handle_EXTI_Irq(uint32_t line) {
                 } else {
                     // Uncaught exception; disable the callback so it doesn't run again.
                     v->callback_obj = mp_const_none;
-                    printf("Uncaught exception in EXTI interrupt handler on line %lu\n", line);
+                    exti_disable(line);
+                    printf("Uncaught exception in EXTI interrupt handler line %lu\n", line);
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
