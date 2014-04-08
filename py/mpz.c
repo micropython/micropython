@@ -1255,7 +1255,7 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, const char *prefix, char base_ch
         return s - str;
     }
 
-    // make a copy of mpz digits
+    // make a copy of mpz digits, so we can do the div/mod calculation
     mpz_dig_t *dig = m_new(mpz_dig_t, ilen);
     memcpy(dig, i->dig, ilen * sizeof(mpz_dig_t));
 
@@ -1294,6 +1294,9 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, const char *prefix, char base_ch
         }
     }
     while (!done);
+
+    // free the copy of the digits array
+    m_del(mpz_dig_t, dig, ilen);
 
     if (prefix) {
         const char *p = &prefix[strlen(prefix)];
