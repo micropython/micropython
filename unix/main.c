@@ -293,7 +293,6 @@ void pre_process_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    nlr_jump(0);
     volatile int stack_dummy;
     stack_top = (void*)&stack_dummy;
 
