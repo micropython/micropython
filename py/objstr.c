@@ -1352,6 +1352,7 @@ const mp_obj_type_t mp_type_bytes = {
     .make_new = bytes_make_new,
     .binary_op = str_binary_op,
     .getiter = mp_obj_new_bytes_iterator,
+    .buffer_p = { .get_buffer = str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
