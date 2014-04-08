@@ -67,6 +67,11 @@ bool mp_repl_continue_with_input(const char *input) {
         return true;
     }
 
+    // continue if last character was backslash (for line continuation)
+    if (i[-1] == '\\') {
+        return true;
+    }
+
     // continue if compound keyword and last line was not empty
     if (starts_with_compound_keyword && i[-1] != '\n') {
         return true;
