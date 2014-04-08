@@ -253,14 +253,22 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
             values[i] = mp_obj_int_get(a);
-        } else if (MP_OBJ_IS_STR(a) || MP_OBJ_IS_TYPE(a, &mp_type_bytes)) {
+        } else if (MP_OBJ_IS_STR(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)s;
+        } else if (((mp_obj_base_t*)a)->type->buffer_p.get_buffer != NULL) {
+            mp_obj_base_t *o = (mp_obj_base_t*)a;
+            buffer_info_t bufinfo;
+            o->type->buffer_p.get_buffer(o, &bufinfo, BUFFER_READ); // TODO: BUFFER_READ?
+            if (bufinfo.buf == NULL) {
+                goto error;
+            }
+            values[i] = (ffi_arg)bufinfo.buf;
         } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = a;
             values[i] = (ffi_arg)p->func;
         } else {
-            assert(0);
+            goto error;
         }
         valueptrs[i] = &values[i];
     }
@@ -268,6 +276,9 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     ffi_arg retval;
     ffi_call(&self->cif, self->func, &retval, valueptrs);
     return return_ffi_value(retval, self->rettype);
+
+error:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Don't know how to pass object to native function"));
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {
