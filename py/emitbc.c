@@ -36,6 +36,8 @@ struct _emit_t {
     byte dummy_data[8];
 };
 
+STATIC void emit_bc_rot_two(emit_t *emit);
+
 emit_t *emit_bc_new(uint max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
     emit->max_num_labels = max_num_labels;
@@ -487,14 +489,13 @@ STATIC void emit_bc_store_subscr(emit_t *emit) {
 }
 
 STATIC void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
-    assert(local_num >= 0);
-    emit_bc_pre(emit, 0);
-    emit_write_byte_code_byte_uint(emit, MP_BC_DELETE_FAST_N, local_num);
+    emit_bc_load_null(emit);
+    emit_bc_store_fast(emit, qstr, local_num);
 }
 
 STATIC void emit_bc_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_bc_pre(emit, 0);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_DELETE_DEREF, local_num);
+    emit_bc_load_null(emit);
+    emit_bc_store_deref(emit, qstr, local_num);
 }
 
 STATIC void emit_bc_delete_name(emit_t *emit, qstr qstr) {
@@ -508,8 +509,9 @@ STATIC void emit_bc_delete_global(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_bc_delete_attr(emit_t *emit, qstr qstr) {
-    emit_bc_pre(emit, -1);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_DELETE_ATTR, qstr);
+    emit_bc_load_null(emit);
+    emit_bc_rot_two(emit);
+    emit_bc_store_attr(emit, qstr);
 }
 
 STATIC void emit_bc_delete_subscr(emit_t *emit) {

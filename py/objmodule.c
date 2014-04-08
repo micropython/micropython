@@ -27,8 +27,14 @@ STATIC void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_module_t *self = self_in;
-    // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-    mp_obj_dict_store(self->globals, MP_OBJ_NEW_QSTR(attr), value);
+    if (value == MP_OBJ_NULL) {
+        // delete attribute
+        mp_obj_dict_delete(self->globals, MP_OBJ_NEW_QSTR(attr));
+    } else {
+        // store attribute
+        // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
+        mp_obj_dict_store(self->globals, MP_OBJ_NEW_QSTR(attr), value);
+    }
     return true;
 }
 

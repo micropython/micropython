@@ -217,7 +217,7 @@ struct _mp_obj_type_t {
     mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
 
     mp_load_attr_fun_t load_attr;
-    mp_store_attr_fun_t store_attr;
+    mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
     // Implements container[index] = val; note that load_item is implemented
     // by binary_op(RT_BINARY_OP_SUBSCR)
     mp_store_item_fun_t store_item;

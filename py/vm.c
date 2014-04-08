@@ -314,14 +314,14 @@ dispatch_loop:
                         sp -= 3;
                         break;
 
-                    case MP_BC_DELETE_FAST_N:
-                        DECODE_UINT;
-                        fastn[-unum] = MP_OBJ_NULL;
-                        break;
-
                     case MP_BC_DELETE_NAME:
                         DECODE_QSTR;
                         mp_delete_name(qst);
+                        break;
+
+                    case MP_BC_DELETE_GLOBAL:
+                        DECODE_QSTR;
+                        mp_delete_global(qst);
                         break;
 
                     case MP_BC_DELETE_SUBSCR:

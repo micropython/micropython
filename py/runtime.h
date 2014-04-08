@@ -20,6 +20,7 @@ mp_obj_t mp_load_build_class(void);
 void mp_store_name(qstr qstr, mp_obj_t obj);
 void mp_store_global(qstr qstr, mp_obj_t obj);
 void mp_delete_name(qstr qstr);
+void mp_delete_global(qstr qstr);
 
 mp_obj_t mp_unary_op(int op, mp_obj_t arg);
 mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs);

@@ -132,13 +132,19 @@ void mp_store_name(qstr qstr, mp_obj_t obj) {
 
 void mp_delete_name(qstr qstr) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qstr));
-    // TODO raise NameError if qstr not found
-    mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    // TODO convert KeyError to NameError if qstr not found
+    mp_obj_dict_delete(dict_locals, MP_OBJ_NEW_QSTR(qstr));
 }
 
 void mp_store_global(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
     mp_obj_dict_store(dict_globals, MP_OBJ_NEW_QSTR(qstr), obj);
+}
+
+void mp_delete_global(qstr qstr) {
+    DEBUG_OP_printf("delete global %s\n", qstr_str(qstr));
+    // TODO convert KeyError to NameError if qstr not found
+    mp_obj_dict_delete(dict_globals, MP_OBJ_NEW_QSTR(qstr));
 }
 
 mp_obj_t mp_unary_op(int op, mp_obj_t arg) {

@@ -193,11 +193,6 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("STORE_SUBSCR");
                 break;
 
-            case MP_BC_DELETE_FAST_N:
-                DECODE_UINT;
-                printf("DELETE_FAST_N " UINT_FMT, unum);
-                break;
-
             case MP_BC_DELETE_NAME:
                 DECODE_QSTR;
                 printf("DELETE_NAME %s", qstr_str(qstr));

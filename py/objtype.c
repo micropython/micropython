@@ -257,8 +257,15 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
-    mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    return true;
+    if (value == MP_OBJ_NULL) {
+        // delete attribute
+        mp_map_elem_t *el = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+        return el != NULL;
+    } else {
+        // store attribute
+        mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+        return true;
+    }
 }
 
 bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
@@ -356,11 +363,19 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     if (self->locals_dict != NULL) {
         assert(MP_OBJ_IS_TYPE(self->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
         mp_map_t *locals_map = mp_obj_dict_get_map(self->locals_dict);
-        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-        // note that locals_map may be in ROM, so add will fail in that case
-        if (elem != NULL) {
-            elem->value = value;
-            return true;
+        if (value == MP_OBJ_NULL) {
+            // delete attribute
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+            // note that locals_map may be in ROM, so remove will fail in that case
+            return elem != NULL;
+        } else {
+            // store attribute
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+            // note that locals_map may be in ROM, so add will fail in that case
+            if (elem != NULL) {
+                elem->value = value;
+                return true;
+            }
         }
     }
 

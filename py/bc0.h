@@ -1,6 +1,10 @@
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
 
+// TODO Add MP_BC_LOAD_FAST_CHECKED and MP_BC_STORE_FAST_CHECKED for acting on those
+// locals which have del called on them anywhere in the function.
+// UnboundLocalError: local variable '%s' referenced before assignment
+
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
 #define MP_BC_LOAD_CONST_NONE    (0x11)
 #define MP_BC_LOAD_CONST_TRUE    (0x12)
@@ -34,12 +38,9 @@
 #define MP_BC_STORE_ATTR         (0x37) // qstr
 #define MP_BC_STORE_SUBSCR       (0x38)
 
-#define MP_BC_DELETE_FAST_N      (0x39) // uint
-#define MP_BC_DELETE_DEREF       (0x3a) // uint
-#define MP_BC_DELETE_NAME        (0x3b) // qstr
-#define MP_BC_DELETE_GLOBAL      (0x3c) // qstr
-#define MP_BC_DELETE_ATTR        (0x3d) // qstr
-#define MP_BC_DELETE_SUBSCR      (0x3e)
+#define MP_BC_DELETE_NAME        (0x39) // qstr
+#define MP_BC_DELETE_GLOBAL      (0x3a) // qstr
+#define MP_BC_DELETE_SUBSCR      (0x3b)
 
 #define MP_BC_DUP_TOP            (0x40)
 #define MP_BC_DUP_TOP_TWO        (0x41)
@@ -97,4 +98,3 @@
 #define MP_BC_IMPORT_NAME        (0xe0) // qstr
 #define MP_BC_IMPORT_FROM        (0xe1) // qstr
 #define MP_BC_IMPORT_STAR        (0xe2)
-
