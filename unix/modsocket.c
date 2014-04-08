@@ -34,21 +34,6 @@ STATIC const mp_obj_type_t microsocket_type;
     { if (err_flag == -1) \
         { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error_val)); } }
 
-STATIC void get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
-    mp_obj_base_t *o = (mp_obj_base_t *)obj;
-    if (o->type->buffer_p.get_buffer == NULL) {
-        goto error;
-    }
-    o->type->buffer_p.get_buffer(o, bufinfo, BUFFER_READ);
-    if (bufinfo->buf == NULL) {
-        goto error;
-    }
-    return;
-
-error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Operation not supported"));
-}
-
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
     o->base.type = &microsocket_type;
@@ -96,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
     buffer_info_t bufinfo;
-    get_buffer(addr_in, &bufinfo);
+    mp_get_buffer_raise(addr_in, &bufinfo);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
     return mp_const_none;
@@ -106,7 +91,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
     buffer_info_t bufinfo;
-    get_buffer(addr_in, &bufinfo);
+    mp_get_buffer_raise(addr_in, &bufinfo);
     int r = bind(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
     return mp_const_none;
@@ -184,7 +169,7 @@ STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
         optlen = sizeof(val);
     } else {
         buffer_info_t bufinfo;
-        get_buffer(args[3], &bufinfo);
+        mp_get_buffer_raise(args[3], &bufinfo);
         optval = bufinfo.buf;
         optlen = bufinfo.len;
     }
