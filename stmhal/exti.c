@@ -4,12 +4,13 @@
 
 #include <stm32f4xx_hal.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
+#include "gc.h"
 #include "obj.h"
 #include "runtime.h"
-#include "nlr.h"
 
 #include "pin.h"
 #include "exti.h"
@@ -297,14 +298,27 @@ void exti_init(void) {
     }
 }
 
+// Interrupt handler
 void Handle_EXTI_Irq(uint32_t line) {
     if (__HAL_GPIO_EXTI_GET_FLAG(1 << line)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
-                // TODO need to wrap this in an nlr_buf; really need a general function for this
-                mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                // When executing code within a handler we must lock the GC to prevent
+                // any memory allocations.  We must also catch any exceptions.
+                gc_lock();
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                    nlr_pop();
+                } else {
+                    // Uncaught exception; disable the callback so it doesn't run again.
+                    v->callback_obj = mp_const_none;
+                    printf("Uncaught exception in EXTI interrupt handler on line %lu\n", line);
+                    mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+                }
+                gc_unlock();
             }
         }
     }
