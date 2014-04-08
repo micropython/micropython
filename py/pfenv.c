@@ -77,11 +77,16 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     return len;
 }
 
+int pfenv_print_int(const pfenv_t *pfenv, int x, int sgn, int base, int base_char, int flags, char fill, int width) {
+    // XXX this really needs to be a dedicated function, since converting to a mp_int looses the MSB
+    return pfenv_print_mp_int(pfenv, MP_OBJ_NEW_SMALL_INT((machine_int_t)x), sgn, base, base_char, flags, fill, width);
+}
+
 // 32-bits is 10 digits, add 3 for commas, 1 for sign, 1 for terminating null
 // We can use 16 characters for 32-bit and 32 characters for 64-bit
 #define INT_BUF_SIZE (sizeof(machine_int_t) * 4)
 
-int pfenv_print_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     if (!MP_OBJ_IS_INT(x)) {
         // This will convert booleans to int, or raise an error for
         // non-integer types.

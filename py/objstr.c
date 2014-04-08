@@ -792,7 +792,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
         if (arg_looks_integer(arg)) {
             switch (type) {
                 case 'b':
-                    pfenv_print_int(&pfenv_vstr, arg, 1, 2, 'a', flags, fill, width);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 2, 'a', flags, fill, width);
                     continue;
 
                 case 'c':
@@ -805,7 +805,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                 case '\0':  // No explicit format type implies 'd'
                 case 'n':   // I don't think we support locales in uPy so use 'd'
                 case 'd':
-                    pfenv_print_int(&pfenv_vstr, arg, 1, 10, 'a', flags, fill, width);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 10, 'a', flags, fill, width);
                     continue;
 
                 case 'o':
@@ -813,15 +813,15 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
                         flags |= PF_FLAG_SHOW_OCTAL_LETTER;
                     }
 
-                    pfenv_print_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width);
                     continue;
 
                 case 'x':
-                    pfenv_print_int(&pfenv_vstr, arg, 1, 16, 'a', flags, fill, width);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, 'a', flags, fill, width);
                     continue;
 
                 case 'X':
-                    pfenv_print_int(&pfenv_vstr, arg, 1, 16, 'A', flags, fill, width);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, 'A', flags, fill, width);
                     continue;
 
                 case 'e':
@@ -1042,7 +1042,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
             case 'd':
             case 'i':
             case 'u':
-                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 10, 'a', flags, fill, width);
+                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 10, 'a', flags, fill, width);
                 break;
 
 #if MICROPY_ENABLE_FLOAT
@@ -1060,7 +1060,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                 if (alt) {
                     flags |= (PF_FLAG_SHOW_PREFIX | PF_FLAG_SHOW_OCTAL_LETTER);
                 }
-                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 8, 'a', flags, fill, width); 
+                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 8, 'a', flags, fill, width); 
                 break;
 
             case 'r':
@@ -1085,14 +1085,14 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                 if (alt) {
                     flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'a', flags, fill, width);
+                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'a', flags, fill, width);
                 break;
 
             case 'X':
                 if (alt) {
                     flags |= PF_FLAG_SHOW_PREFIX;
                 }
-                pfenv_print_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'A', flags, fill, width);
+                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'A', flags, fill, width);
                 break;
 
             default:
