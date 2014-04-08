@@ -91,6 +91,13 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 // This is top-level factory function, not virtual method
 // TODO: "bytearray" really should be type, not function
 STATIC mp_obj_t mp_builtin_bytearray(mp_obj_t arg) {
+    if (MP_OBJ_IS_SMALL_INT(arg)) {
+        uint len = MP_OBJ_SMALL_INT_VALUE(arg);
+        mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
+        memset(o->items, 0, len);
+        return o;
+    }
+
     return array_construct(BYTEARRAY_TYPECODE, arg);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bytearray_obj, mp_builtin_bytearray);
