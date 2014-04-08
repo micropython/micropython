@@ -261,6 +261,43 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
     return MP_OBJ_NULL;
 }
 
+STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
+    buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[0], &bufinfo);
+
+    assert(bufinfo.len >= sizeof(machine_int_t));
+    // TODO: Support long ints
+    // TODO: Support byteorder param
+    // TODO: Support signed param
+    return mp_obj_new_int_from_uint(*(machine_uint_t*)bufinfo.buf);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_obj, 1, 3, int_from_bytes);
+
+STATIC mp_obj_t int_to_bytes(uint n_args, const mp_obj_t *args) {
+    machine_int_t val = mp_obj_int_get_checked(args[0]);
+
+    uint len = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    byte *data;
+
+    // TODO: Support long ints
+    // TODO: Support byteorder param
+    // TODO: Support signed param
+    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
+    memset(data, 0, len);
+    memcpy(data, &val, len < sizeof(machine_int_t) ? len : sizeof(machine_int_t));
+    return mp_obj_str_builder_end(o);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 2, 4, int_to_bytes);
+
+STATIC const mp_map_elem_t int_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_from_bytes), (mp_obj_t)&int_from_bytes_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_to_bytes), (mp_obj_t)&int_to_bytes_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
+
 const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
@@ -268,4 +305,5 @@ const mp_obj_type_t mp_type_int = {
     .make_new = mp_obj_int_make_new,
     .unary_op = mp_obj_int_unary_op,
     .binary_op = mp_obj_int_binary_op,
+    .locals_dict = (mp_obj_t)&int_locals_dict,
 };
