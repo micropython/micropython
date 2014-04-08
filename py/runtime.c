@@ -672,6 +672,70 @@ too_long:
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "too many values to unpack (expected %d)", num));
 }
 
+// unpacked items are stored in reverse order into the array pointed to by items
+void mp_unpack_ex(mp_obj_t seq_in, uint num_in, mp_obj_t *items) {
+    uint num_left = num_in & 0xff;
+    uint num_right = (num_in >> 8) & 0xff;
+    DEBUG_OP_printf("unpack ex %d %d\n", num_left, num_right);
+    uint seq_len;
+    if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
+        mp_obj_t *seq_items;
+        if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
+            mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
+        } else {
+            if (num_left == 0 && num_right == 0) {
+                // *a, = b # sets a to b if b is a list
+                items[0] = seq_in;
+                return;
+            }
+            mp_obj_list_get(seq_in, &seq_len, &seq_items);
+        }
+        if (seq_len < num_left + num_right) {
+            goto too_short;
+        }
+        for (uint i = 0; i < num_right; i++) {
+            items[i] = seq_items[seq_len - 1 - i];
+        }
+        items[num_right] = mp_obj_new_list(seq_len - num_left - num_right, seq_items + num_left);
+        for (uint i = 0; i < num_left; i++) {
+            items[num_right + 1 + i] = seq_items[num_left - 1 - i];
+        }
+    } else {
+        // Generic iterable; this gets a bit messy: we unpack known left length to the
+        // items destination array, then the rest to a dynamically created list.  Once the
+        // iterable is exhausted, we take from this list for the right part of the items.
+        // TODO Improve to waste less memory in the dynamically created list.
+        mp_obj_t iterable = mp_getiter(seq_in);
+        mp_obj_t item;
+        for (seq_len = 0; seq_len < num_left; seq_len++) {
+            item = mp_iternext(iterable);
+            if (item == MP_OBJ_NULL) {
+                goto too_short;
+            }
+            items[num_left + num_right + 1 - 1 - seq_len] = item;
+        }
+        mp_obj_t rest = mp_obj_new_list(0, NULL);
+        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            mp_obj_list_append(rest, item);
+        }
+        uint rest_len;
+        mp_obj_t *rest_items;
+        mp_obj_list_get(rest, &rest_len, &rest_items);
+        if (rest_len < num_right) {
+            goto too_short;
+        }
+        items[num_right] = rest;
+        for (uint i = 0; i < num_right; i++) {
+            items[num_right - 1 - i] = rest_items[rest_len - num_right + i];
+        }
+        mp_obj_list_set_len(rest, rest_len - num_right);
+    }
+    return;
+
+too_short:
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "need more than %d values to unpack", seq_len));
+}
+
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
     // use load_method

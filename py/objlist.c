@@ -378,6 +378,13 @@ void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
     *items = self->items;
 }
 
+void mp_obj_list_set_len(mp_obj_t self_in, uint len) {
+    // trust that the caller knows what it's doing
+    // TODO realloc if len got much smaller than alloc
+    mp_obj_list_t *self = self_in;
+    self->len = len;
+}
+
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_list_t *self = self_in;
     uint i = mp_get_index(self->base.type, self->len, index, false);

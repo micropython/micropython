@@ -1933,6 +1933,11 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 // optimisation for a, b = c, d; to match CPython's optimisation
                 mp_parse_node_struct_t* pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
                 mp_parse_node_struct_t* pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
+                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
+                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)) {
+                    // can't optimise when it's a star expression on the lhs
+                    goto no_optimisation;
+                }
                 compile_node(comp, pns10->nodes[0]); // rhs
                 compile_node(comp, pns10->nodes[1]); // rhs
                 EMIT(rot_two);
@@ -1945,6 +1950,12 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 // optimisation for a, b, c = d, e, f; to match CPython's optimisation
                 mp_parse_node_struct_t* pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
                 mp_parse_node_struct_t* pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
+                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
+                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)
+                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[2], PN_star_expr)) {
+                    // can't optimise when it's a star expression on the lhs
+                    goto no_optimisation;
+                }
                 compile_node(comp, pns10->nodes[0]); // rhs
                 compile_node(comp, pns10->nodes[1]); // rhs
                 compile_node(comp, pns10->nodes[2]); // rhs
@@ -1954,6 +1965,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 c_assign(comp, pns0->nodes[1], ASSIGN_STORE); // lhs store
                 c_assign(comp, pns0->nodes[2], ASSIGN_STORE); // lhs store
             } else {
+                no_optimisation:
                 compile_node(comp, pns1->nodes[0]); // rhs
                 c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
             }

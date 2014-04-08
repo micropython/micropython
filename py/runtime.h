@@ -44,6 +44,7 @@ mp_obj_t mp_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_t *args);
 
 void mp_unpack_sequence(mp_obj_t seq, uint num, mp_obj_t *items);
+void mp_unpack_ex(mp_obj_t seq, uint num, mp_obj_t *items);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);

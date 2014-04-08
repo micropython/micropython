@@ -653,6 +653,12 @@ unwind_jump:
                         sp += unum - 1;
                         break;
 
+                    case MP_BC_UNPACK_EX:
+                        DECODE_UINT;
+                        mp_unpack_ex(sp[0], unum, sp);
+                        sp += (unum & 0xff) + ((unum >> 8) & 0xff);
+                        break;
+
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
                         PUSH(mp_make_function_from_id(unum, MP_OBJ_NULL, MP_OBJ_NULL));
