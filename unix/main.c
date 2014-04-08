@@ -139,7 +139,6 @@ STATIC char *prompt(char *p) {
 
 STATIC void do_repl(void) {
     printf("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; UNIX version\n");
-    printf("Type \"help()\" for more information.\n");
 
     for (;;) {
         char *line = prompt(">>> ");
