@@ -17,6 +17,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     // built-in types
     { MP_OBJ_NEW_QSTR(MP_QSTR_bool), (mp_obj_t)&mp_type_bool },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bytes), (mp_obj_t)&mp_type_bytes },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bytearray), (mp_obj_t)&mp_type_bytearray },
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_complex), (mp_obj_t)&mp_type_complex },
 #endif
@@ -72,7 +73,6 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_repr), (mp_obj_t)&mp_builtin_repr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sorted), (mp_obj_t)&mp_builtin_sorted_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&mp_builtin_sum_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bytearray), (mp_obj_t)&mp_builtin_bytearray_obj },
 
     // built-in exceptions
     { MP_OBJ_NEW_QSTR(MP_QSTR_BaseException), (mp_obj_t)&mp_type_BaseException },

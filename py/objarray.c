@@ -88,19 +88,20 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     return array_construct(*typecode, args[1]);
 }
 
-// This is top-level factory function, not virtual method
-// TODO: "bytearray" really should be type, not function
-STATIC mp_obj_t mp_builtin_bytearray(mp_obj_t arg) {
-    if (MP_OBJ_IS_SMALL_INT(arg)) {
-        uint len = MP_OBJ_SMALL_INT_VALUE(arg);
+STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    if (n_args > 1) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
+    }
+
+    if (MP_OBJ_IS_SMALL_INT(args[0])) {
+        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
         memset(o->items, 0, len);
         return o;
     }
 
-    return array_construct(BYTEARRAY_TYPECODE, arg);
+    return array_construct(BYTEARRAY_TYPECODE, args[0]);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bytearray_obj, mp_builtin_bytearray);
 
 STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     mp_obj_array_t *o = o_in;
@@ -127,7 +128,7 @@ STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 }
 
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array));
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
         int item_sz = mp_binary_get_size(self->typecode);
@@ -174,9 +175,22 @@ const mp_obj_type_t mp_type_array = {
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };
 
+const mp_obj_type_t mp_type_bytearray = {
+    { &mp_type_type },
+    .name = MP_QSTR_bytearray,
+    .print = array_print,
+    .make_new = bytearray_make_new,
+    .getiter = array_iterator_new,
+    .unary_op = array_unary_op,
+    .binary_op = array_binary_op,
+    .store_item = array_store_item,
+    .buffer_p = { .get_buffer = array_get_buffer },
+    .locals_dict = (mp_obj_t)&array_locals_dict,
+};
+
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
-    o->base.type = &mp_type_array;
+    o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
