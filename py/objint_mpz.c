@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -29,30 +30,21 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 //
 // The resulting formatted string will be returned from this function and the
 // formatted size will be in *fmt_size.
-char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
-                           int base, const char *prefix, char base_char, char comma) {
-    mpz_t small_mpz;
-    mpz_t *mpz;
-    mpz_dig_t small_dig[(sizeof(mp_small_int_t) * 8 + MPZ_DIG_SIZE - 1) / MPZ_DIG_SIZE];
+//
+// This particular routine should only be called for the mpz representation of the int.
+char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+                                int base, const char *prefix, char base_char, char comma) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = self_in;
 
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        mpz_init_fixed_from_int(&small_mpz, small_dig,
-                                sizeof(small_dig) / sizeof(small_dig[0]),
-                                MP_OBJ_SMALL_INT_VALUE(self_in));
-        mpz = &small_mpz;
-    } else {
-        mp_obj_int_t *self = self_in;
-        mpz = &self->mpz;
-    }
-
-    uint needed_size = mpz_as_str_size_formatted(mpz, base, prefix, comma);
+    uint needed_size = mpz_as_str_size_formatted(&self->mpz, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
     }
     char *str = *buf;
 
-    *fmt_size = mpz_as_str_inpl(mpz, base, prefix, base_char, comma, str);
+    *fmt_size = mpz_as_str_inpl(&self->mpz, base, prefix, base_char, comma, str);
 
     return str;
 }

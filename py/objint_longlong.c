@@ -22,6 +22,14 @@
 #define SUFFIX ""
 #endif
 
+bool mp_obj_int_is_positive(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
+    }
+    mp_obj_int_t *self = self_in;
+    return self->val >= 0;
+}
+
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {

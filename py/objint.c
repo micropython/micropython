@@ -70,15 +70,13 @@ void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
 }
 
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE || MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-typedef mp_longint_impl_t   fmt_int_t;
+typedef mp_longint_impl_t fmt_int_t;
 #else
-typedef mp_small_int_t   fmt_int_t;
+typedef mp_small_int_t fmt_int_t;
 #endif
 
-static const uint log_base2_floor[] = {
+STATIC const uint log_base2_floor[] = {
     0,
     0, 1, 1, 2,
     2, 2, 2, 3,
@@ -90,7 +88,7 @@ static const uint log_base2_floor[] = {
     4, 4, 4, 5
 };
 
-uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
+STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
     if (base < 2 || base > 32) {
         return 0;
     }
@@ -110,22 +108,29 @@ uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
 // formatted size will be in *fmt_size.
 char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
-    if (!MP_OBJ_IS_INT(self_in)) {
+    fmt_int_t num;
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        // A small int; get the integer value to format.
+        num = mp_obj_get_int(self_in);
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+    } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
+        // Not a small int.
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        mp_obj_int_t *self = self_in;
+        // Get the value to format; mp_obj_get_int truncates to machine_int_t.
+        num = self->val;
+#else
+        // Delegate to the implementation for the long int.
+        return mp_obj_int_formatted_impl(buf, buf_size, fmt_size, self_in, base, prefix, base_char, comma);
+#endif
+#endif
+    } else {
+        // Not an int.
         buf[0] = '\0';
         *fmt_size = 0;
         return *buf;
     }
-    fmt_int_t num;
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-    mp_obj_int_t *self = self_in;
-    if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
-        // mp_obj_get_int truncates to machine_int_t
-        num = self->val;
-    } else
-#endif
-    {
-        num = mp_obj_get_int(self_in);
-    }
+
     char sign = '\0';
     if (num < 0) {
         num = -num;
@@ -180,12 +185,11 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t se
     return b;
 }
 
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return mp_obj_get_int(self_in) >= 0;
 }
-#endif  // LONGLONG or NONE
-
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
