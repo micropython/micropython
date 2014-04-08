@@ -77,14 +77,79 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     return len;
 }
 
-int pfenv_print_int(const pfenv_t *pfenv, int x, int sgn, int base, int base_char, int flags, char fill, int width) {
-    // XXX this really needs to be a dedicated function, since converting to a mp_int looses the MSB
-    return pfenv_print_mp_int(pfenv, MP_OBJ_NEW_SMALL_INT((machine_int_t)x), sgn, base, base_char, flags, fill, width);
-}
-
 // 32-bits is 10 digits, add 3 for commas, 1 for sign, 1 for terminating null
 // We can use 16 characters for 32-bit and 32 characters for 64-bit
 #define INT_BUF_SIZE (sizeof(machine_int_t) * 4)
+
+// This function is used by stmhal port to implement printf.
+// It needs to be a separate function to pfenv_print_mp_int, since converting to a mp_int looses the MSB.
+int pfenv_print_int(const pfenv_t *pfenv, machine_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+    char sign = 0;
+    if (sgn) {
+        if ((machine_int_t)x < 0) {
+            sign = '-';
+            x = -x;
+        } else if (flags & PF_FLAG_SHOW_SIGN) {
+            sign = '+';
+        } else if (flags & PF_FLAG_SPACE_SIGN) {
+            sign = ' ';
+        }
+    }
+
+    char buf[INT_BUF_SIZE];
+    char *b = buf + INT_BUF_SIZE;
+
+    if (x == 0) {
+        *(--b) = '0';
+    } else {
+        do {
+            int c = x % base;
+            x /= base;
+            if (c >= 10) {
+                c += base_char - 10;
+            } else {
+                c += '0';
+            }
+            *(--b) = c;
+        } while (b > buf && x != 0);
+    }
+
+    char prefix_char = '\0';
+
+    if (flags & PF_FLAG_SHOW_PREFIX) {
+        if (base == 2) {
+            prefix_char = base_char + 'b' - 'a';
+        } else if (base == 8) {
+            prefix_char = base_char + 'o' - 'a';
+        } else if (base == 16) {
+            prefix_char = base_char + 'x' - 'a';
+        }
+    }
+
+    int len = 0;
+    if (flags & PF_FLAG_PAD_AFTER_SIGN) {
+        if (sign) {
+            len += pfenv_print_strn(pfenv, &sign, 1, flags, fill, 1);
+            width--;
+        }
+        if (prefix_char) {
+            len += pfenv_print_strn(pfenv, "0", 1, flags, fill, 1);
+            len += pfenv_print_strn(pfenv, &prefix_char, 1, flags, fill, 1);
+            width -= 2;
+        }
+    } else {
+        if (prefix_char && b > &buf[1]) {
+            *(--b) = prefix_char;
+            *(--b) = '0';
+        }
+        if (sign && b > buf) {
+            *(--b) = sign;
+        }
+    }
+
+    len += pfenv_print_strn(pfenv, b, buf + INT_BUF_SIZE - b, flags, fill, width);
+    return len;
+}
 
 int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     if (!MP_OBJ_IS_INT(x)) {
