@@ -15,7 +15,7 @@ typedef struct _pyb_file_obj_t {
 } pyb_file_obj_t;
 
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    printf("<file %p>", self_in);
+    printf("<io.FileIO %p>", self_in);
 }
 
 STATIC machine_int_t file_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {
@@ -69,7 +69,7 @@ STATIC const mp_stream_p_t file_obj_stream_p = {
 
 STATIC const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
-    .name = MP_QSTR_File,
+    .name = MP_QSTR_FileIO,
     .make_new = file_obj_make_new,
     .print = file_obj_print,
     .getiter = mp_identity,

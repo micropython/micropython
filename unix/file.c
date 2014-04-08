@@ -130,7 +130,7 @@ STATIC const mp_stream_p_t rawfile_stream_p = {
 
 STATIC const mp_obj_type_t rawfile_type = {
     { &mp_type_type },
-    .name = MP_QSTR_io_dot_FileIO,
+    .name = MP_QSTR_FileIO,
     .print = fdfile_print,
     .make_new = fdfile_make_new,
     .getiter = mp_identity,

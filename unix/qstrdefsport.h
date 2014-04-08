@@ -27,7 +27,7 @@ Q(accept)
 Q(recv)
 Q(setsockopt)
 
-Q(io.FileIO)
+Q(FileIO)
 Q(ffimod)
 Q(ffifunc)
 Q(fficallback)
