@@ -63,7 +63,10 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
             print(env, "%c", *s);
         } else if (*s == '\n') {
             print(env, "\\n");
-        // TODO add more escape codes here if we want to match CPython
+        } else if (*s == '\r') {
+            print(env, "\\r");
+        } else if (*s == '\t') {
+            print(env, "\\t");
         } else {
             print(env, "\\x%02x", *s);
         }
