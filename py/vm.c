@@ -639,8 +639,10 @@ unwind_jump:
                             obj1 = TOP();
                             SET_TOP(mp_obj_new_slice(obj1, obj2, NULL));
                         } else {
-                            printf("3-argument slice is not supported\n");
-                            assert(0);
+                            obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "3-argument slice is not supported");
+                            nlr_pop();
+                            fastn[0] = obj1;
+                            return MP_VM_RETURN_EXCEPTION;
                         }
                         break;
 #endif
@@ -833,9 +835,10 @@ yield:
 
                     default:
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);
-                        assert(0);
+                        obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                         nlr_pop();
-                        return MP_VM_RETURN_NORMAL;
+                        fastn[0] = obj1;
+                        return MP_VM_RETURN_EXCEPTION;
                 }
             }
 
