@@ -52,7 +52,6 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
-void mp_delete_subscr(mp_obj_t base, mp_obj_t index);
 
 mp_obj_t mp_getiter(mp_obj_t o);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_NULL instead of raising StopIteration()
