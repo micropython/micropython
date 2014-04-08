@@ -399,15 +399,12 @@ void do_repl(void) {
             continue;
         }
 
-        if (mp_repl_is_compound_stmt(vstr_str(&line))) {
-            for (;;) {
-                vstr_add_char(&line, '\n');
-                int len = vstr_len(&line);
-                int ret = readline(&line, "... ");
-                if (ret == 0 || vstr_len(&line) == len) {
-                    // done entering compound statement
-                    break;
-                }
+        while (mp_repl_continue_with_input(vstr_str(&line))) {
+            vstr_add_char(&line, '\n');
+            int ret = readline(&line, "... ");
+            if (ret == 0) {
+                // stop entering compound statement
+                break;
             }
         }
 

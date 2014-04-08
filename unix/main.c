@@ -146,17 +146,15 @@ STATIC void do_repl(void) {
             // EOF
             return;
         }
-        if (mp_repl_is_compound_stmt(line)) {
-            for (;;) {
-                char *line2 = prompt("... ");
-                if (line2 == NULL || strlen(line2) == 0) {
-                    break;
-                }
-                char *line3 = strjoin(line, '\n', line2);
-                free(line);
-                free(line2);
-                line = line3;
+        while (mp_repl_continue_with_input(line)) {
+            char *line2 = prompt("... ");
+            if (line2 == NULL) {
+                break;
             }
+            char *line3 = strjoin(line, '\n', line2);
+            free(line);
+            free(line2);
+            line = line3;
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
