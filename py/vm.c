@@ -241,9 +241,23 @@ dispatch_loop:
                         PUSH(fastn[-unum]);
                         break;
 
+                    case MP_BC_LOAD_FAST_CHECKED:
+                        DECODE_UINT;
+                        obj1 = fastn[-unum];
+                        if (obj1 == MP_OBJ_NULL) {
+                            local_name_error:
+                            nlr_raise(mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment"));
+                        }
+                        PUSH(obj1);
+                        break;
+
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(mp_obj_cell_get(fastn[-unum]));
+                        obj1 = mp_obj_cell_get(fastn[-unum]);
+                        if (obj1 == MP_OBJ_NULL) {
+                            goto local_name_error;
+                        }
+                        PUSH(obj1);
                         break;
 
                     case MP_BC_LOAD_NAME:
@@ -312,6 +326,22 @@ dispatch_loop:
                     case MP_BC_STORE_SUBSCR:
                         mp_store_subscr(sp[-1], sp[0], sp[-2]);
                         sp -= 3;
+                        break;
+
+                    case MP_BC_DELETE_FAST:
+                        DECODE_UINT;
+                        if (fastn[-unum] == MP_OBJ_NULL) {
+                            goto local_name_error;
+                        }
+                        fastn[-unum] = MP_OBJ_NULL;
+                        break;
+
+                    case MP_BC_DELETE_DEREF:
+                        DECODE_UINT;
+                        if (mp_obj_cell_get(fastn[-unum]) == MP_OBJ_NULL) {
+                            goto local_name_error;
+                        }
+                        mp_obj_cell_set(fastn[-unum], MP_OBJ_NULL);
                         break;
 
                     case MP_BC_DELETE_NAME:

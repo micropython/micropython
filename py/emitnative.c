@@ -704,7 +704,7 @@ STATIC void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
     assert(0);
 }
 
-STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qstr));

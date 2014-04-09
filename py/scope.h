@@ -8,6 +8,7 @@ enum {
 
 enum {
     ID_FLAG_IS_PARAM = 0x01,
+    ID_FLAG_IS_DELETED = 0x02,
 };
 
 typedef struct _id_info_t {

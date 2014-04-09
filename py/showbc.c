@@ -123,6 +123,11 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_FAST_N " UINT_FMT, unum);
                 break;
 
+            case MP_BC_LOAD_FAST_CHECKED:
+                DECODE_UINT;
+                printf("LOAD_FAST_CHECKED " UINT_FMT, unum);
+                break;
+
             case MP_BC_LOAD_DEREF:
                 DECODE_UINT;
                 printf("LOAD_DEREF " UINT_FMT, unum);
@@ -191,6 +196,16 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_STORE_SUBSCR:
                 printf("STORE_SUBSCR");
+                break;
+
+            case MP_BC_DELETE_FAST:
+                DECODE_UINT;
+                printf("DELETE_FAST " UINT_FMT, unum);
+                break;
+
+            case MP_BC_DELETE_DEREF:
+                DECODE_UINT;
+                printf("DELETE_DEREF " UINT_FMT, unum);
                 break;
 
             case MP_BC_DELETE_NAME:

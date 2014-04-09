@@ -1,10 +1,6 @@
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
 
-// TODO Add MP_BC_LOAD_FAST_CHECKED and MP_BC_STORE_FAST_CHECKED for acting on those
-// locals which have del called on them anywhere in the function.
-// UnboundLocalError: local variable '%s' referenced before assignment
-
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
 #define MP_BC_LOAD_CONST_NONE    (0x11)
 #define MP_BC_LOAD_CONST_TRUE    (0x12)
@@ -21,12 +17,13 @@
 #define MP_BC_LOAD_FAST_1        (0x21)
 #define MP_BC_LOAD_FAST_2        (0x22)
 #define MP_BC_LOAD_FAST_N        (0x23) // uint
-#define MP_BC_LOAD_DEREF         (0x24) // uint
-#define MP_BC_LOAD_NAME          (0x25) // qstr
-#define MP_BC_LOAD_GLOBAL        (0x26) // qstr
-#define MP_BC_LOAD_ATTR          (0x27) // qstr
-#define MP_BC_LOAD_METHOD        (0x28) // qstr
-#define MP_BC_LOAD_BUILD_CLASS   (0x29)
+#define MP_BC_LOAD_FAST_CHECKED  (0x24) // uint
+#define MP_BC_LOAD_DEREF         (0x25) // uint
+#define MP_BC_LOAD_NAME          (0x26) // qstr
+#define MP_BC_LOAD_GLOBAL        (0x27) // qstr
+#define MP_BC_LOAD_ATTR          (0x28) // qstr
+#define MP_BC_LOAD_METHOD        (0x29) // qstr
+#define MP_BC_LOAD_BUILD_CLASS   (0x2a)
 
 #define MP_BC_STORE_FAST_0       (0x30)
 #define MP_BC_STORE_FAST_1       (0x31)
@@ -38,8 +35,10 @@
 #define MP_BC_STORE_ATTR         (0x37) // qstr
 #define MP_BC_STORE_SUBSCR       (0x38)
 
-#define MP_BC_DELETE_NAME        (0x39) // qstr
-#define MP_BC_DELETE_GLOBAL      (0x3a) // qstr
+#define MP_BC_DELETE_FAST        (0x39) // uint
+#define MP_BC_DELETE_DEREF       (0x3a) // uint
+#define MP_BC_DELETE_NAME        (0x3b) // qstr
+#define MP_BC_DELETE_GLOBAL      (0x3c) // qstr
 
 #define MP_BC_DUP_TOP            (0x40)
 #define MP_BC_DUP_TOP_TWO        (0x41)

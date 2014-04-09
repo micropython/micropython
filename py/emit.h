@@ -43,9 +43,9 @@ typedef struct _emit_method_table_t {
     void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
     void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
-    void (*load_fast)(emit_t *emit, qstr qstr, int local_num);
+    void (*load_fast)(emit_t *emit, qstr qstr, uint id_flags, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
-    void (*load_closure)(emit_t *emit, qstr qstr, int local_num);
+    void (*load_closure)(emit_t *emit, qstr qstr, int local_num); // only needed for emitcpy
     void (*load_name)(emit_t *emit, qstr qstr);
     void (*load_global)(emit_t *emit, qstr qstr);
     void (*load_attr)(emit_t *emit, qstr qstr);
