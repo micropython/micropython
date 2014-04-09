@@ -2208,7 +2208,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         // get first argument to function
         bool found = false;
         for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
-            if (comp->scope_cur->id_info[i].param) {
+            if (comp->scope_cur->id_info[i].flags && ID_FLAG_IS_PARAM) {
                 EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].local_num);
                 found = true;
                 break;
@@ -2761,8 +2761,8 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
             compile_syntax_error(comp, pn, "same name used for parameter");
             return;
         }
-        id_info->param = true;
         id_info->kind = ID_INFO_KIND_LOCAL;
+        id_info->flags |= ID_FLAG_IS_PARAM;
     }
 }
 
@@ -3097,7 +3097,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
         // note: params always count for 1 local, even if they are a cell
-        if (id->param || id->kind == ID_INFO_KIND_LOCAL) {
+        if (id->kind == ID_INFO_KIND_LOCAL || (id->flags & ID_FLAG_IS_PARAM)) {
             id->local_num = scope->num_locals;
             scope->num_locals += 1;
         }
@@ -3119,7 +3119,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         // in Micro Python the cells come right after the fast locals
         // parameters are not counted here, since they remain at the start
         // of the locals, even if they are cell vars
-        if (!id->param && id->kind == ID_INFO_KIND_CELL) {
+        if (id->kind == ID_INFO_KIND_CELL && !(id->flags & ID_FLAG_IS_PARAM)) {
             id->local_num = scope->num_locals;
             scope->num_locals += 1;
         }
@@ -3136,7 +3136,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
                 for (int j = 0; j < scope->id_info_len; j++) {
                     id_info_t *id2 = &scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
-                        assert(!id2->param); // free vars should not be params
+                        assert(!(id2->flags & ID_FLAG_IS_PARAM)); // free vars should not be params
 #if MICROPY_EMIT_CPYTHON
                         // in CPython the frees are numbered after the cells
                         id2->local_num = num_cell + num_free;
@@ -3154,7 +3154,7 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         if (num_free > 0) {
             for (int i = 0; i < scope->id_info_len; i++) {
                 id_info_t *id = &scope->id_info[i];
-                if (id->param || id->kind != ID_INFO_KIND_FREE) {
+                if (id->kind != ID_INFO_KIND_FREE || (id->flags && ID_FLAG_IS_PARAM)) {
                     id->local_num += num_free;
                 }
             }

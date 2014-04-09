@@ -6,9 +6,13 @@ enum {
     ID_INFO_KIND_FREE,  // in a function f, belongs to the parent of f
 };
 
+enum {
+    ID_FLAG_IS_PARAM = 0x01,
+};
+
 typedef struct _id_info_t {
-    uint8_t param;
     uint8_t kind;
+    uint8_t flags;
     // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
     // whet it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
     uint16_t local_num;

@@ -73,10 +73,10 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
     // handled by the compiler because it adds arguments before compiling the body
     id_info_t *id_info = &scope->id_info[scope->id_info_len++];
 
-    id_info->param = false;
     id_info->kind = 0;
-    id_info->qstr = qstr;
+    id_info->flags = 0;
     id_info->local_num = 0;
+    id_info->qstr = qstr;
     *added = true;
     return id_info;
 }
