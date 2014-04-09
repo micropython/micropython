@@ -77,7 +77,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", vstr_str(file)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", vstr_str(file)));
     }
 
     qstr source_name = mp_lexer_source_name(lex);
@@ -197,7 +197,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "ImportError: No module named '%s'", qstr_str(mod_name)));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", qstr_str(mod_name)));
             }
 
             module_obj = mp_module_get(mod_name);
