@@ -675,24 +675,24 @@ STATIC void emit_cpy_unpack_ex(emit_t *emit, int n_left, int n_right) {
     }
 }
 
-STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
     int s = 0;
-    if (have_star_arg) {
+    if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
         s += 1;
     }
-    if (have_dbl_star_arg) {
+    if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
         s += 1;
     }
     emit_pre(emit, -n_positional - 2 * n_keyword - s, 3);
     if (emit->pass == PASS_3) {
-        if (have_star_arg) {
-            if (have_dbl_star_arg) {
+        if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
+            if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
                 printf("CALL_FUNCTION_VAR_KW");
             } else {
                 printf("CALL_FUNCTION_VAR");
             }
         } else {
-            if (have_dbl_star_arg) {
+            if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
                 printf("CALL_FUNCTION_KW");
             } else {
                 printf("CALL_FUNCTION");
@@ -702,8 +702,8 @@ STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword
     }
 }
 
-STATIC void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    emit_cpy_call_function(emit, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
+STATIC void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_cpy_call_function(emit, n_positional, n_keyword, star_flags);
 }
 
 STATIC void emit_cpy_return_value(emit_t *emit) {

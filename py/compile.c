@@ -51,8 +51,7 @@ typedef struct _compiler_t {
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
     int n_arg_keyword;
-    bool have_star_arg;
-    bool have_dbl_star_arg;
+    uint8_t star_flags;
     bool have_bare_star;
     int param_pass;
     int param_pass_num_dict_params;
@@ -1075,7 +1074,7 @@ void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // call each decorator
     for (int i = 0; i < n - num_built_in_decorators; i++) {
-        EMIT_ARG(call_function, 1, 0, false, false);
+        EMIT_ARG(call_function, 1, 0, 0);
     }
 
     // store func/class object into name
@@ -1422,7 +1421,7 @@ void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
         // assertion message
         compile_node(comp, pns->nodes[1]);
-        EMIT_ARG(call_function, 1, 0, false, false);
+        EMIT_ARG(call_function, 1, 0, 0);
     }
     EMIT_ARG(raise_varargs, 1);
     EMIT_ARG(label_assign, l_end);
@@ -1873,7 +1872,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             // for REPL, evaluate then print the expression
             EMIT_ARG(load_id, MP_QSTR___repl_print__);
             compile_node(comp, pns->nodes[0]);
-            EMIT_ARG(call_function, 1, 0, false, false);
+            EMIT_ARG(call_function, 1, 0, 0);
             EMIT(pop_top);
 
         } else {
@@ -2219,38 +2218,35 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             printf("TypeError: super() call cannot find self\n");
             return;
         }
-        EMIT_ARG(call_function, 2, 0, false, false);
+        EMIT_ARG(call_function, 2, 0, 0);
         return;
     }
 #endif
 
     int old_n_arg_keyword = comp->n_arg_keyword;
-    bool old_have_star_arg = comp->have_star_arg;
-    bool old_have_dbl_star_arg = comp->have_dbl_star_arg;
+    uint old_star_flags = comp->star_flags;
     comp->n_arg_keyword = 0;
-    comp->have_star_arg = false;
-    comp->have_dbl_star_arg = false;
+    comp->star_flags = 0;
 
     compile_node(comp, pn_arglist); // arguments to function call; can be null
 
     // compute number of positional arguments
     int n_positional = n_positional_extra + list_len(pn_arglist, PN_arglist) - comp->n_arg_keyword;
-    if (comp->have_star_arg) {
+    if (comp->star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
         n_positional -= 1;
     }
-    if (comp->have_dbl_star_arg) {
+    if (comp->star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
         n_positional -= 1;
     }
 
     if (is_method_call) {
-        EMIT_ARG(call_method, n_positional, comp->n_arg_keyword, comp->have_star_arg, comp->have_dbl_star_arg);
+        EMIT_ARG(call_method, n_positional, comp->n_arg_keyword, comp->star_flags);
     } else {
-        EMIT_ARG(call_function, n_positional, comp->n_arg_keyword, comp->have_star_arg, comp->have_dbl_star_arg);
+        EMIT_ARG(call_function, n_positional, comp->n_arg_keyword, comp->star_flags);
     }
 
     comp->n_arg_keyword = old_n_arg_keyword;
-    comp->have_star_arg = old_have_star_arg;
-    comp->have_dbl_star_arg = old_have_dbl_star_arg;
+    comp->star_flags = old_star_flags;
 }
 
 void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2330,7 +2326,7 @@ void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_
 
     compile_node(comp, pns_comp_for->nodes[1]); // source of the iterator
     EMIT(get_iter);
-    EMIT_ARG(call_function, 1, 0, false, false);
+    EMIT_ARG(call_function, 1, 0, 0);
 }
 
 void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2574,20 +2570,20 @@ void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->have_star_arg) {
+    if (comp->star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "can't have multiple *x");
         return;
     }
-    comp->have_star_arg = true;
+    comp->star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
     compile_node(comp, pns->nodes[0]);
 }
 
 void compile_arglist_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->have_dbl_star_arg) {
+    if (comp->star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "can't have multiple **x");
         return;
     }
-    comp->have_dbl_star_arg = true;
+    comp->star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
     compile_node(comp, pns->nodes[0]);
 }
 

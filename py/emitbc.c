@@ -767,13 +767,13 @@ STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaul
     }
 }
 
-STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, uint bytecode_base, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    if (have_star_arg || have_dbl_star_arg) {
-        if (!have_star_arg) {
+STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, uint bytecode_base, int n_positional, int n_keyword, uint star_flags) {
+    if (star_flags) {
+        if (!(star_flags & MP_EMIT_STAR_FLAG_SINGLE)) {
             // load dummy entry for non-existent pos_seq
             emit_bc_load_null(emit);
             emit_bc_rot_two(emit);
-        } else if (!have_dbl_star_arg) {
+        } else if (!(star_flags & MP_EMIT_STAR_FLAG_DOUBLE)) {
             // load dummy entry for non-existent kw_dict
             emit_bc_load_null(emit);
         }
@@ -785,12 +785,12 @@ STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, uin
     }
 }
 
-STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    emit_bc_call_function_method_helper(emit, 0, MP_BC_CALL_FUNCTION, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
+STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_bc_call_function_method_helper(emit, 0, MP_BC_CALL_FUNCTION, n_positional, n_keyword, star_flags);
 }
 
-STATIC void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    emit_bc_call_function_method_helper(emit, -1, MP_BC_CALL_METHOD, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
+STATIC void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_bc_call_function_method_helper(emit, -1, MP_BC_CALL_METHOD, n_positional, n_keyword, star_flags);
 }
 
 STATIC void emit_bc_return_value(emit_t *emit) {

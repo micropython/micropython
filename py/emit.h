@@ -14,6 +14,9 @@ typedef enum {
     PASS_3 = 3, // emit code
 } pass_kind_t;
 
+#define MP_EMIT_STAR_FLAG_SINGLE (0x01)
+#define MP_EMIT_STAR_FLAG_DOUBLE (0x02)
+
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
@@ -98,8 +101,8 @@ typedef struct _emit_method_table_t {
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
     void (*make_function)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
     void (*make_closure)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
-    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
-    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
+    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
+    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, int n_args);
     void (*yield_value)(emit_t *emit);

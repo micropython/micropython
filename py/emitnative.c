@@ -1200,9 +1200,9 @@ STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_pos_de
     assert(0);
 }
 
-STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
     // call special viper runtime routine with type info for args, and wanted type info for return
-    assert(!have_star_arg && !have_dbl_star_arg);
+    assert(!star_flags);
 
     /* we no longer have these _n specific call_function's
      * they anyway push args into an array
@@ -1239,8 +1239,8 @@ STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    assert(!have_star_arg && !have_dbl_star_arg);
+STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    assert(!star_flags);
 
     /*
     if (n_positional == 0) {
