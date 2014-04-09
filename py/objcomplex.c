@@ -144,22 +144,40 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
             lhs_imag -= rhs_imag;
             break;
         case MP_BINARY_OP_MULTIPLY:
-        case MP_BINARY_OP_INPLACE_MULTIPLY:
-        {
-            mp_float_t real = lhs_real * rhs_real - lhs_imag * rhs_imag;
+        case MP_BINARY_OP_INPLACE_MULTIPLY: {
+            mp_float_t real;
+            multiply:
+            real = lhs_real * rhs_real - lhs_imag * rhs_imag;
             lhs_imag = lhs_real * rhs_imag + lhs_imag * rhs_real;
             lhs_real = real;
             break;
         }
-        /* TODO floor(?) the value
         case MP_BINARY_OP_FLOOR_DIVIDE:
-        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: val = lhs_val / rhs_val; break;
-        */
-        /* TODO
+        case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't do truncated division of a complex number"));
+
         case MP_BINARY_OP_TRUE_DIVIDE:
-        case MP_BINARY_OP_INPLACE_TRUE_DIVIDE: val = lhs_val / rhs_val; break;
-        */
-        return NULL; // op not supported
+        case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
+            if (rhs_imag == 0) {
+                if (rhs_real == 0) {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "complex division by zero"));
+                }
+                lhs_real /= rhs_real;
+                lhs_imag /= rhs_real;
+            } else if (rhs_real == 0) {
+                mp_float_t real = lhs_imag / rhs_imag;
+                lhs_imag = -lhs_real / rhs_imag;
+                lhs_real = real;
+            } else {
+                mp_float_t rhs_len_sq = rhs_real*rhs_real + rhs_imag*rhs_imag;
+                rhs_real /= rhs_len_sq;
+                rhs_imag /= -rhs_len_sq;
+                goto multiply;
+            }
+            break;
+
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
 }
