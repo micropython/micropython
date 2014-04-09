@@ -230,7 +230,7 @@ STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
     }
 }
 
-STATIC void emit_cpy_load_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_FAST %d %s\n", local_num, qstr_str(qstr));
