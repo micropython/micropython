@@ -133,6 +133,10 @@ static const char fresh_main_py[] =
 "# main.py -- put your code here!\n"
 ;
 
+static const char fresh_pybcdc_inf[] =
+#include "pybcdc.h"
+;
+
 int main(void) {
     // TODO disable JTAG
 
@@ -206,7 +210,9 @@ soft_reset:
             }
             HAL_Delay(20);
             if (i % 30 == 29) {
-                reset_mode = (reset_mode + 1) & 7;
+                if (++reset_mode > 3) {
+                    reset_mode = 1;
+                }
                 led_state(2, reset_mode & 1);
                 led_state(3, reset_mode & 2);
                 led_state(4, reset_mode & 4);
@@ -308,6 +314,11 @@ soft_reset:
             UINT n;
             f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
             // TODO check we could write n bytes
+            f_close(&fp);
+
+            // create .inf driver file
+            f_open(&fp, "0:/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
+            f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
             f_close(&fp);
 
             // keep LED on for at least 200ms
