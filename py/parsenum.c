@@ -19,7 +19,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
 
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "ValueError: int() arg 2 must be >=2 and <= 36"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "int() arg 2 must be >= 2 and <= 36"));
     }
 
     // skip leading space
