@@ -329,17 +329,19 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_t *seq_items;
     if (MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
         mp_obj_tuple_get(arg, &seq_len, &seq_items);
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
-        mp_obj_list_get(arg, &seq_len, &seq_items);
     } else {
-        goto bad_arg;
+        if (!MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
+            // arg is not a list, try to convert it to one
+            arg = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, &arg);
+        }
+        mp_obj_list_get(arg, &seq_len, &seq_items);
     }
 
     // count required length
     int required_len = 0;
     for (int i = 0; i < seq_len; i++) {
         if (!MP_OBJ_IS_STR(seq_items[i])) {
-            goto bad_arg;
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "join expected a list of str's"));
         }
         if (i > 0) {
             required_len += sep_len;
@@ -363,9 +365,6 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
 
     // return joined string
     return mp_obj_str_builder_end(joined_str);
-
-bad_arg:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "?str.join expecting a list of str's"));
 }
 
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
