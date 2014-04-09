@@ -369,6 +369,7 @@ void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(mp_obj_t exc);
 
 int mp_obj_is_true(mp_obj_t arg);
+bool mp_obj_is_integer(mp_obj_t o_in); // returns true if o_in is bool, small int, or long int
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);

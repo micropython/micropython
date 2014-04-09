@@ -221,9 +221,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
         case MP_BINARY_OP_SUBSCR:
-            // TODO: need predicate to check for int-like type (bools are such for example)
-            // ["no", "yes"][1 == 2] is common idiom
-            if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
+            if (mp_obj_is_integer(rhs_in)) {
                 uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in, false);
                 if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_bytes)) {
                     return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
