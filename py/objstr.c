@@ -438,7 +438,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     return res;
 }
 
-STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction) {
+STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction, bool is_index) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
@@ -458,7 +458,11 @@ STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t dire
     const byte *p = find_subbytes(haystack + start, end - start, needle, needle_len, direction);
     if (p == NULL) {
         // not found
-        return MP_OBJ_NEW_SMALL_INT(-1);
+        if (is_index) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "substring not found"));
+        } else {
+            return MP_OBJ_NEW_SMALL_INT(-1);
+        }
     } else {
         // found
         return MP_OBJ_NEW_SMALL_INT(p - haystack);
@@ -466,11 +470,19 @@ STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t dire
 }
 
 STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
-    return str_finder(n_args, args, 1);
+    return str_finder(n_args, args, 1, false);
 }
 
 STATIC mp_obj_t str_rfind(uint n_args, const mp_obj_t *args) {
-    return str_finder(n_args, args, -1);
+    return str_finder(n_args, args, -1, false);
+}
+
+STATIC mp_obj_t str_index(uint n_args, const mp_obj_t *args) {
+    return str_finder(n_args, args, 1, true);
+}
+
+STATIC mp_obj_t str_rindex(uint n_args, const mp_obj_t *args) {
+    return str_finder(n_args, args, -1, true);
 }
 
 // TODO: (Much) more variety in args
@@ -1125,7 +1137,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
         }
     }
 
-    // if max_rep is still 0 by this point we will need to do all possible replacements
+    // if max_rep is still -1 by this point we will need to do all possible replacements
 
     // check argument types
 
@@ -1304,6 +1316,8 @@ STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, in
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
@@ -1317,6 +1331,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_find), (mp_obj_t)&str_find_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rfind), (mp_obj_t)&str_rfind_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&str_index_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rindex), (mp_obj_t)&str_rindex_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
