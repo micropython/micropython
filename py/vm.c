@@ -95,14 +95,15 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
         state[n_state - 1 - n_args - i] = args2[i];
     }
 
+    // set rest of state to MP_OBJ_NULL
+    for (uint i = 0; i < n_state - n_args - n_args2; i++) {
+        state[i] = MP_OBJ_NULL;
+    }
+
     // bytecode prelude: initialise closed over variables
     for (uint n_local = *ip++; n_local > 0; n_local--) {
         uint local_num = *ip++;
-        if (local_num < n_args + n_args2) {
-            state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
-        } else {
-            state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
-        }
+        state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
     }
 
     // execute the byte code

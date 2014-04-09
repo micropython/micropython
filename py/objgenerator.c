@@ -252,14 +252,15 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj
         o->state[n_state - 1 - n_args - i] = args2[i];
     }
 
+    // set rest of state to MP_OBJ_NULL
+    for (uint i = 0; i < n_state - n_args - n_args2; i++) {
+        o->state[i] = MP_OBJ_NULL;
+    }
+
     // bytecode prelude: initialise closed over variables
     for (uint n_local = *bytecode++; n_local > 0; n_local--) {
         uint local_num = *bytecode++;
-        if (local_num < n_args + n_args2) {
-            o->state[n_state - 1 - local_num] = mp_obj_new_cell(o->state[n_state - 1 - local_num]);
-        } else {
-            o->state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
-        }
+        o->state[n_state - 1 - local_num] = mp_obj_new_cell(o->state[n_state - 1 - local_num]);
     }
 
     // set ip to start of actual byte code
