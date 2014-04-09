@@ -50,12 +50,12 @@ typedef struct _compiler_t {
     int break_continue_except_level;
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
-    int n_arg_keyword;
+    uint16_t n_arg_keyword;
     uint8_t star_flags;
-    bool have_bare_star;
-    int param_pass;
-    int param_pass_num_dict_params;
-    int param_pass_num_default_params;
+    uint8_t have_bare_star;
+    uint8_t param_pass;
+    uint16_t param_pass_num_dict_params;
+    uint16_t param_pass_num_default_params;
 
     scope_t *scope_head;
     scope_t *scope_cur;
@@ -905,10 +905,10 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     }
 
     // save variables (probably don't need to do this, since we can't have nested definitions..?)
-    bool old_have_bare_star = comp->have_bare_star;
-    int old_param_pass = comp->param_pass;
-    int old_param_pass_num_dict_params = comp->param_pass_num_dict_params;
-    int old_param_pass_num_default_params = comp->param_pass_num_default_params;
+    uint old_have_bare_star = comp->have_bare_star;
+    uint old_param_pass = comp->param_pass;
+    uint old_param_pass_num_dict_params = comp->param_pass_num_dict_params;
+    uint old_param_pass_num_default_params = comp->param_pass_num_default_params;
 
     // compile default parameters
 
@@ -2223,7 +2223,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     }
 #endif
 
-    int old_n_arg_keyword = comp->n_arg_keyword;
+    uint old_n_arg_keyword = comp->n_arg_keyword;
     uint old_star_flags = comp->star_flags;
     comp->n_arg_keyword = 0;
     comp->star_flags = 0;
