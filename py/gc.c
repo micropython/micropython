@@ -20,8 +20,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-typedef unsigned char byte;
-
 #define WORDS_PER_BLOCK (4)
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
 #define STACK_SIZE (64) // tunable; minimum is 1
