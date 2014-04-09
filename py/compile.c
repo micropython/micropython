@@ -3196,21 +3196,9 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 }
 
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl) {
-    compiler_t *comp = m_new(compiler_t, 1);
-
+    compiler_t *comp = m_new0(compiler_t, 1);
     comp->source_file = source_file;
     comp->is_repl = is_repl;
-    comp->had_error = false;
-
-    comp->break_label = 0;
-    comp->continue_label = 0;
-    comp->break_continue_except_level = 0;
-    comp->cur_except_level = 0;
-
-    comp->func_arg_is_super = false;
-
-    comp->scope_head = NULL;
-    comp->scope_cur = NULL;
 
     // optimise constants
     pn = fold_constants(pn);
