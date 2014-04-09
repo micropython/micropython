@@ -236,17 +236,10 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj
     machine_uint_t n_exc_stack = bytecode[2] | (bytecode[3] << 8);
     bytecode += 4;
 
-    // bytecode prelude: initialise closed over variables
-    // TODO
-    // for now we just make sure there are no cells variables
-    // need to work out how to implement closed over variables in generators
-    assert(bytecode[0] == 0);
-    bytecode += 1;
-
+    // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
     o->code_info = code_info;
-    o->ip = bytecode;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
     o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;
     o->n_state = n_state;
@@ -258,6 +251,19 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj
     for (uint i = 0; i < n_args2; i++) {
         o->state[n_state - 1 - n_args - i] = args2[i];
     }
+
+    // bytecode prelude: initialise closed over variables
+    for (uint n_local = *bytecode++; n_local > 0; n_local--) {
+        uint local_num = *bytecode++;
+        if (local_num < n_args + n_args2) {
+            o->state[n_state - 1 - local_num] = mp_obj_new_cell(o->state[n_state - 1 - local_num]);
+        } else {
+            o->state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
+        }
+    }
+
+    // set ip to start of actual byte code
+    o->ip = bytecode;
 
     return o;
 }
