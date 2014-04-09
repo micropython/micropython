@@ -1,4 +1,5 @@
 // taken from python source, Include/code.h
+// These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_OPTIMISED    0x01
 #define MP_SCOPE_FLAG_NEWLOCALS    0x02
 #define MP_SCOPE_FLAG_VARARGS      0x04

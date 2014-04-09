@@ -308,8 +308,8 @@ STATIC void emit_native_set_source_line(emit_t *emit, int source_line) {
 
 STATIC void adjust_stack(emit_t *emit, int stack_size_delta) {
     DEBUG_printf("adjust stack: stack:%d + delta:%d\n", emit->stack_size, stack_size_delta);
+    assert((int)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
-    assert(emit->stack_size >= 0);
     if (emit->pass > PASS_1 && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }

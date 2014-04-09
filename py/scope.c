@@ -10,10 +10,8 @@
 #include "scope.h"
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint unique_code_id, uint emit_options) {
-    scope_t *scope = m_new(scope_t, 1);
+    scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
-    scope->parent = NULL;
-    scope->next = NULL;
     scope->pn = pn;
     scope->source_file = source_file;
     switch (kind) {
@@ -43,19 +41,10 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
         default:
             assert(0);
     }
-    scope->id_info_alloc = 8;
-    scope->id_info_len = 0;
-    scope->id_info = m_new(id_info_t, scope->id_info_alloc);
-
-    scope->scope_flags = 0;
-    scope->num_params = 0;
-    /* not needed
-    scope->num_default_params = 0;
-    scope->num_dict_params = 0;
-    */
-    scope->num_locals = 0;
     scope->unique_code_id = unique_code_id;
     scope->emit_options = emit_options;
+    scope->id_info_alloc = 8;
+    scope->id_info = m_new(id_info_t, scope->id_info_alloc);
 
     return scope;
 }

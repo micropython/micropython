@@ -38,16 +38,17 @@ typedef enum {
 
 typedef struct _compiler_t {
     qstr source_file;
-    bool is_repl;
-    pass_kind_t pass;
-    bool had_error; // try to keep compiler clean from nlr
+    uint8_t is_repl;
+    uint8_t pass; // holds enum type pass_kind_t
+    uint8_t had_error; // try to keep compiler clean from nlr
+    uint8_t func_arg_is_super; // used to compile special case of super() function call
 
     int next_label;
 
     int break_label;
     int continue_label;
     int break_continue_except_level;
-    int cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
+    uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
     int n_arg_keyword;
     bool have_star_arg;
@@ -56,8 +57,6 @@ typedef struct _compiler_t {
     int param_pass;
     int param_pass_num_dict_params;
     int param_pass_num_default_params;
-
-    bool func_arg_is_super; // used to compile special case of super() function call
 
     scope_t *scope_head;
     scope_t *scope_cur;

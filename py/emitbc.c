@@ -321,6 +321,7 @@ STATIC void emit_bc_delete_id(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_bc_pre(emit_t *emit, int stack_size_delta) {
+    assert((int)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;

@@ -1,3 +1,4 @@
+// These must fit in 8 bits; see scope.h
 enum {
     MP_EMIT_OPT_NONE,
     MP_EMIT_OPT_BYTE_CODE,
