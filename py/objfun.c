@@ -211,9 +211,13 @@ arg_error:
 }
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    DEBUG_printf("Input: ");
+    DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
+    DEBUG_printf("Input pos args: ");
     dump_args(args, n_args);
+    DEBUG_printf("Input kw args: ");
+    dump_args(args + n_args, n_kw * 2);
     mp_obj_fun_bc_t *self = self_in;
+    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
     const mp_obj_t *kwargs = args + n_args;
     mp_obj_t *extra_args = self->extra_args + self->n_def_args;
