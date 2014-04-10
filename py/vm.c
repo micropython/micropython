@@ -77,15 +77,11 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
 #if DETECT_VM_STACK_OVERFLOW
-    if (n_state + 1 > 10) {
-        state = m_new(mp_obj_t, n_state + 1);
-    }
-    state[n_state - n_args - n_args2] = (void*)0xdeadbeef;
-#else
+    n_state += 1;
+#endif
     if (n_state > 10) {
         state = m_new(mp_obj_t, n_state);
     }
-#endif
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
@@ -119,9 +115,22 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
 
 #if DETECT_VM_STACK_OVERFLOW
-    if (state[n_state - n_args - n_args2] != (void*)0xdeadbeef) {
-        printf("VM stack overflow\n");
-        assert(0);
+    // We can't check the case when an exception is returned in state[n_state - 1]
+    // and there are no arguments, because in this case our detection slot may have
+    // been overwritten by the returned exception (which is allowed).
+    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && n_args == 0 && n_args2 == 0)) {
+        // Just check to see that we have at least 1 null object left in the state.
+        bool overflow = true;
+        for (uint i = 0; i < n_state - n_args - n_args2; i++) {
+            if (state[i] == MP_OBJ_NULL) {
+                overflow = false;
+                break;
+            }
+        }
+        if (overflow) {
+            printf("VM stack overflow state=%p n_state+1=%u\n", state, n_state);
+            assert(0);
+        }
     }
 #endif
 
@@ -182,6 +191,7 @@ outer_dispatch_loop:
 dispatch_loop:
                 save_ip = ip;
                 int op = *ip++;
+                //printf("ip=%p sp=%p op=%u\n", save_ip, sp, op);
                 switch (op) {
                     case MP_BC_LOAD_CONST_FALSE:
                         PUSH(mp_const_false);
