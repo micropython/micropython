@@ -77,7 +77,7 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
         pin = GPIO_PIN_5;
         dac_obj = &pyb_dac_channel_2;
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Dac %d does not exist", dac_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Dac %d does not exist", dac_id));
     }
 
     // GPIO configuration
@@ -182,7 +182,7 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 
     mp_obj_type_t *type = mp_obj_get_type(args[1]);
     if (type->buffer_p.get_buffer == NULL) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "buffer argument must support buffer protocol"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "buffer argument must support buffer protocol"));
     }
     buffer_info_t bufinfo;
     type->buffer_p.get_buffer(args[1], &bufinfo, BUFFER_READ);

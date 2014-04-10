@@ -4,12 +4,13 @@
 
 #include <stm32f4xx_hal.h>
 
+#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
+#include "gc.h"
 #include "obj.h"
 #include "runtime.h"
-#include "nlr.h"
 
 #include "pin.h"
 #include "exti.h"
@@ -104,9 +105,12 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     OTG_HS_WKUP_IRQn, TAMP_STAMP_IRQn, RTC_WKUP_IRQn
 };
 
+// Set override_callback_obj to true if you want to unconditionally set the
+// callback function.
+//
 // NOTE: param is for C callers. Python can use closure to get an object bound
 //       with the function.
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_obj_t callback_obj, void *param) {
+uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -116,10 +120,10 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_ob
         // get both the port number and line number.
         v_line = mp_obj_get_int(pin_obj);
         if (v_line < 16) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d < 16, use a Pin object", v_line));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d < 16, use a Pin object", v_line));
         }
         if (v_line >= EXTI_NUM_VECTORS) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d >= max of %d", v_line, EXTI_NUM_VECTORS));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d >= max of %d", v_line, EXTI_NUM_VECTORS));
         }
     } else {
         pin = pin_map_user_obj(pin_obj);
@@ -132,18 +136,18 @@ uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_ob
         mode != GPIO_MODE_EVT_RISING &&
         mode != GPIO_MODE_EVT_FALLING &&
         mode != GPIO_MODE_EVT_RISING_FALLING) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Mode: %d", mode));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Mode: %d", mode));
     }
     int pull = mp_obj_get_int(pull_obj);
     if (pull != GPIO_NOPULL &&
         pull != GPIO_PULLUP &&
         pull != GPIO_PULLDOWN) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Pull: %d", pull));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid EXTI Pull: %d", pull));
     }
 
     exti_vector_t *v = &exti_vector[v_line];
-    if (v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d is already in use", v_line));
+    if (!override_callback_obj && v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "EXTI vector %d is already in use", v_line));
     }
 
     // We need to update callback and param atomically, so we disable the line
@@ -271,7 +275,7 @@ STATIC mp_obj_t exti_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     mp_obj_t mode_obj = args[1];
     mp_obj_t trigger_obj = args[2];
     mp_obj_t callback_obj = args[3];
-    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, NULL);
+    self->line = exti_register(line_obj, mode_obj, trigger_obj, callback_obj, false, NULL);
 
     return self;
 }
@@ -297,14 +301,28 @@ void exti_init(void) {
     }
 }
 
+// Interrupt handler
 void Handle_EXTI_Irq(uint32_t line) {
     if (__HAL_GPIO_EXTI_GET_FLAG(1 << line)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
             exti_vector_t *v = &exti_vector[line];
             if (v->callback_obj != mp_const_none) {
-                // TODO need to wrap this in an nlr_buf; really need a general function for this
-                mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                // When executing code within a handler we must lock the GC to prevent
+                // any memory allocations.  We must also catch any exceptions.
+                gc_lock();
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                    nlr_pop();
+                } else {
+                    // Uncaught exception; disable the callback so it doesn't run again.
+                    v->callback_obj = mp_const_none;
+                    exti_disable(line);
+                    printf("Uncaught exception in EXTI interrupt handler line %lu\n", line);
+                    mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+                }
+                gc_unlock();
             }
         }
     }

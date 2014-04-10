@@ -19,7 +19,7 @@ STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *e
 
 STATIC void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = self_in;
-    mp_map_elem_t *elem = mp_map_lookup(self->globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         dest[0] = elem->value;
     }
@@ -27,8 +27,14 @@ STATIC void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_module_t *self = self_in;
-    // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-    mp_map_lookup(self->globals, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+    if (value == MP_OBJ_NULL) {
+        // delete attribute
+        mp_obj_dict_delete(self->globals, MP_OBJ_NEW_QSTR(attr));
+    } else {
+        // store attribute
+        // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
+        mp_obj_dict_store(self->globals, MP_OBJ_NEW_QSTR(attr), value);
+    }
     return true;
 }
 
@@ -52,10 +58,10 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &mp_type_module;
     o->name = module_name;
-    o->globals = mp_map_new(1);
+    o->globals = mp_obj_new_dict(1);
 
     // store __name__ entry in the module
-    mp_map_lookup(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = MP_OBJ_NEW_QSTR(module_name);
+    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = o;
@@ -64,7 +70,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     return o;
 }
 
-mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in) {
+mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
     mp_obj_module_t *self = self_in;
     return self->globals;
@@ -86,14 +92,16 @@ mp_obj_t mp_module_get(qstr module_name) {
     // lookup module
     mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
-    // module found, return it
-    if (el != NULL) {
-        return el->value;
+    if (el == NULL) {
+        // module not found, look for builtin module names
+        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_dict_obj.map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+        if (el == NULL) {
+            return MP_OBJ_NULL;
+        }
     }
 
-    // module not found, look for builtin module names
-    // it will return MP_OBJ_NULL if nothing found
-    return mp_builtin_tables_lookup_module(module_name);
+    // module found, return it
+    return el->value;
 }
 
 void mp_module_register(qstr qstr, mp_obj_t module) {

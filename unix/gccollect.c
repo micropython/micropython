@@ -78,9 +78,14 @@ void gc_collect(void) {
 
     gc_collect_start();
     // this traces .data and .bss sections
-    extern char __bss_start, _end;
-    //printf(".bss: %p-%p\n", &__bss_start, &_end);
-    gc_collect_root((void**)&__bss_start, ((machine_uint_t)&_end - (machine_uint_t)&__bss_start) / sizeof(machine_uint_t));
+#ifdef __CYGWIN__
+#define BSS_START __bss_start__
+#else
+#define BSS_START __bss_start
+#endif
+    extern char BSS_START, _end;
+    //printf(".bss: %p-%p\n", &BSS_START, &_end);
+    gc_collect_root((void**)&BSS_START, ((machine_uint_t)&_end - (machine_uint_t)&BSS_START) / sizeof(machine_uint_t));
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)

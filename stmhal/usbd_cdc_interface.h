@@ -33,10 +33,6 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/* Periodically, the state of the buffer "UserTxBuffer" is checked.
-   The period depends on USBD_CDC_POLLING_INTERVAL */
-#define USBD_CDC_POLLING_INTERVAL             10 /* in ms. The max is 65 and the min is 1 */
-
 extern TIM_HandleTypeDef TIM3_Handle;
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 

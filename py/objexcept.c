@@ -17,6 +17,9 @@ typedef struct _mp_obj_exception_t {
     mp_obj_tuple_t args;
 } mp_obj_exception_t;
 
+// Instance of MemoryError exception - needed by mp_malloc_fail
+const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, {{&mp_type_tuple}, 0}};
+
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
@@ -45,7 +48,7 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
     mp_obj_type_t *type = type_in;
 
     if (n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
     }
 
     mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);

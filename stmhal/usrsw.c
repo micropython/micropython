@@ -49,14 +49,9 @@ void switch_init0(void) {
     HAL_GPIO_Init(MICROPY_HW_USRSW_PIN.gpio, &init);
 }
 
-// this function inits the callback and EXTI function of the switch
+// this function inits the callback pointer
 void switch_init(void) {
     switch_user_callback_obj = mp_const_none;
-    exti_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
-                  MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_EXTI_MODE),
-                  MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_PULL),
-                  (mp_obj_t)&switch_callback_obj,
-                  NULL);
 }
 
 int switch_get(void) {
@@ -70,9 +65,19 @@ int switch_get(void) {
 static mp_obj_t pyb_switch(uint n_args, mp_obj_t *args) {
     if (n_args == 0) {
         return switch_get() ? mp_const_true : mp_const_false;
+    } else {
+        switch_user_callback_obj = args[0];
+        // Init the EXTI each time this function is called, since the EXTI
+        // may have been disabled by an exception in the interrupt, or the
+        // user disabling the line explicitly.
+        exti_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
+                      MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_EXTI_MODE),
+                      MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_PULL),
+                      switch_user_callback_obj == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
+                      true,
+                      NULL);
+        return mp_const_none;
     }
-    switch_user_callback_obj = args[0];
-    return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_switch_obj, 0, 1, pyb_switch);

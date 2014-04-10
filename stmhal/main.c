@@ -22,6 +22,7 @@
 #include "readline.h"
 #include "pyexec.h"
 #include "usart.h"
+#include "timer.h"
 #include "led.h"
 #include "exti.h"
 #include "usrsw.h"
@@ -38,7 +39,6 @@
 #include "dac.h"
 #include "pin.h"
 #if 0
-#include "timer.h"
 #include "pybwlan.h"
 #endif
 
@@ -71,6 +71,11 @@ void __fatal_error(const char *msg) {
     for (;;) {
         flash_error(1);
     }
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught exception %p\n", val);
+    __fatal_error("");
 }
 
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
@@ -119,13 +124,17 @@ static const char fresh_boot_py[] =
 "# can run arbitrary Python, but best to keep it minimal\n"
 "\n"
 "import pyb\n"
-"#pyb.source_dir('/src')\n"
-"#pyb.main('main.py')\n"
-"#pyb.usb_mode('CDC+MSC') # one of: 'CDC+MSC', 'CDC+HID'\n"
+"#pyb.main('main.py') # main script to run after this one\n"
+"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\n"
+"#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\n"
 ;
 
 static const char fresh_main_py[] =
 "# main.py -- put your code here!\n"
+;
+
+static const char fresh_pybcdc_inf[] =
+#include "pybcdc.h"
 ;
 
 int main(void) {
@@ -177,20 +186,20 @@ int main(void) {
 
     // basic sub-system init
     pendsv_init();
+    timer_tim3_init();
     led_init();
     switch_init0();
 
     int first_soft_reset = true;
-    uint reset_mode;
 
 soft_reset:
 
     // check if user switch held to select the reset mode
-    reset_mode = 1;
     led_state(1, 0);
     led_state(2, 1);
     led_state(3, 0);
     led_state(4, 0);
+    uint reset_mode = 1;
 
 #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
@@ -200,7 +209,9 @@ soft_reset:
             }
             HAL_Delay(20);
             if (i % 30 == 29) {
-                reset_mode = (reset_mode + 1) & 7;
+                if (++reset_mode > 3) {
+                    reset_mode = 1;
+                }
                 led_state(2, reset_mode & 1);
                 led_state(3, reset_mode & 2);
                 led_state(4, reset_mode & 4);
@@ -252,11 +263,10 @@ soft_reset:
     // Micro Python init
     qstr_init();
     mp_init();
-    mp_obj_t def_path[3];
+    mp_obj_t def_path[2];
     def_path[0] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_);
-    def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_src);
-    def_path[2] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
-    mp_sys_path = mp_obj_new_list(3, def_path);
+    def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
+    mp_sys_path = mp_obj_new_list(2, def_path);
 
     readline_init();
 
@@ -292,16 +302,17 @@ soft_reset:
                 __fatal_error("could not create LFS");
             }
 
-            // create src directory
-            res = f_mkdir("0:/src");
-            // ignore result from mkdir
-
             // create empty main.py
             FIL fp;
-            f_open(&fp, "0:/src/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+            f_open(&fp, "0:/main.py", FA_WRITE | FA_CREATE_ALWAYS);
             UINT n;
             f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
             // TODO check we could write n bytes
+            f_close(&fp);
+
+            // create .inf driver file
+            f_open(&fp, "0:/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
+            f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
             f_close(&fp);
 
             // keep LED on for at least 200ms
@@ -314,7 +325,7 @@ soft_reset:
         }
     }
 
-    // make sure we have a /boot.py
+    // make sure we have a 0:/boot.py
     {
         FILINFO fno;
 #if _USE_LFN
@@ -350,17 +361,8 @@ soft_reset:
         }
     }
 
-    // run /boot.py
-    if (reset_mode == 1) {
-        if (!pyexec_file("0:/boot.py")) {
-            flash_error(4);
-        }
-    }
-
-    // turn boot-up LEDs off
-    led_state(2, 0);
-    led_state(3, 0);
-    led_state(4, 0);
+    // root device defaults to internal flash filesystem
+    uint root_device = 0;
 
 #if defined(USE_DEVICE_MODE)
     usb_storage_medium_t usb_medium = USB_STORAGE_MEDIUM_FLASH;
@@ -373,6 +375,9 @@ soft_reset:
         if (res != FR_OK) {
             printf("[SD] could not mount SD card\n");
         } else {
+            // use SD card as root device
+            root_device = 1;
+
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
 #if defined(USE_DEVICE_MODE)
@@ -385,6 +390,27 @@ soft_reset:
     // Get rid of compiler warning if no SDCARD is configured.
     (void)first_soft_reset;
 #endif
+
+    // run <root>:/boot.py, if it exists
+    if (reset_mode == 1) {
+        const char *boot_file;
+        if (root_device == 0) {
+            boot_file = "0:/boot.py";
+        } else {
+            boot_file = "1:/boot.py";
+        }
+        FRESULT res = f_stat(boot_file, NULL);
+        if (res == FR_OK) {
+            if (!pyexec_file(boot_file)) {
+                flash_error(4);
+            }
+        }
+    }
+
+    // turn boot-up LEDs off
+    led_state(2, 0);
+    led_state(3, 0);
+    led_state(4, 0);
 
 #if defined(USE_HOST_MODE)
     // USB host
@@ -409,6 +435,11 @@ soft_reset:
     rng_init();
 #endif
 
+#if MICROPY_HW_ENABLE_TIMER
+    // timer
+    //timer_init();
+#endif
+
     // I2C
     i2c_init();
 
@@ -422,35 +453,25 @@ soft_reset:
     servo_init();
 #endif
 
-#if 0
-#if MICROPY_HW_ENABLE_TIMER
-    // timer
-    timer_init();
-#endif
-#endif
-
 #if MICROPY_HW_ENABLE_DAC
     // DAC
     dac_init();
 #endif
 
-    // run main script
-    if (reset_mode == 1) {
+    // now that everything is initialised, run main script
+    if (reset_mode == 1 && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         vstr_t *vstr = vstr_new();
-        vstr_add_str(vstr, "0:/");
-        if (pyb_config_source_dir == MP_OBJ_NULL) {
-            vstr_add_str(vstr, "src");
-        } else {
-            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_source_dir));
-        }
-        vstr_add_char(vstr, '/');
+        vstr_printf(vstr, "%d:/", root_device);
         if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");
         } else {
             vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
-        if (!pyexec_file(vstr_str(vstr))) {
-            flash_error(3);
+        FRESULT res = f_stat(vstr_str(vstr), NULL);
+        if (res == FR_OK) {
+            if (!pyexec_file(vstr_str(vstr))) {
+                flash_error(3);
+            }
         }
         vstr_free(vstr);
     }

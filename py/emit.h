@@ -14,6 +14,9 @@ typedef enum {
     PASS_3 = 3, // emit code
 } pass_kind_t;
 
+#define MP_EMIT_STAR_FLAG_SINGLE (0x01)
+#define MP_EMIT_STAR_FLAG_DOUBLE (0x02)
+
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
@@ -40,9 +43,9 @@ typedef struct _emit_method_table_t {
     void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
     void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
-    void (*load_fast)(emit_t *emit, qstr qstr, int local_num);
+    void (*load_fast)(emit_t *emit, qstr qstr, uint id_flags, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
-    void (*load_closure)(emit_t *emit, qstr qstr, int local_num);
+    void (*load_closure)(emit_t *emit, qstr qstr, int local_num); // only needed for emitcpy
     void (*load_name)(emit_t *emit, qstr qstr);
     void (*load_global)(emit_t *emit, qstr qstr);
     void (*load_attr)(emit_t *emit, qstr qstr);
@@ -54,7 +57,6 @@ typedef struct _emit_method_table_t {
     void (*store_global)(emit_t *emit, qstr qstr);
     void (*store_attr)(emit_t *emit, qstr qstr);
     void (*store_subscr)(emit_t *emit);
-    void (*store_locals)(emit_t *emit);
     void (*delete_fast)(emit_t *emit, qstr qstr, int local_num);
     void (*delete_deref)(emit_t *emit, qstr qstr, int local_num);
     void (*delete_name)(emit_t *emit, qstr qstr);
@@ -97,10 +99,10 @@ typedef struct _emit_method_table_t {
     void (*build_slice)(emit_t *emit, int n_args);
     void (*unpack_sequence)(emit_t *emit, int n_args);
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
-    void (*make_function)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-    void (*make_closure)(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params);
-    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
-    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg);
+    void (*make_function)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
+    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
+    void (*call_function)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
+    void (*call_method)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, int n_args);
     void (*yield_value)(emit_t *emit);

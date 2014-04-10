@@ -1,5 +1,5 @@
 d = {1:2, 3:4}
-print(d)
+print(len(d))
 d.update(["ab"])
 print(d[1])
 print(d[3])

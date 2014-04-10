@@ -287,16 +287,19 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Exti), (mp_obj_t)&exti_obj_type },
 };
 
-STATIC const mp_map_t pyb_module_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(pyb_module_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(pyb_module_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)pyb_module_globals_table,
+STATIC const mp_obj_dict_t pyb_module_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(pyb_module_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(pyb_module_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)pyb_module_globals_table,
+    },
 };
 
 const mp_obj_module_t pyb_module = {
     .base = { &mp_type_module },
     .name = MP_QSTR_pyb,
-    .globals = (mp_map_t*)&pyb_module_globals,
+    .globals = (mp_obj_dict_t*)&pyb_module_globals,
 };

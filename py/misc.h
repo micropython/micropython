@@ -27,15 +27,22 @@ typedef unsigned int uint;
 #define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#if MICROPY_ENABLE_FINALISER
+#define m_new_obj_with_finaliser(type) ((type*)(m_malloc_with_finaliser(sizeof(type))))
+#else
+#define m_new_obj_with_finaliser(type) m_new_obj(type)
+#endif
 #define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
 #define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 #define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
 
 void *m_malloc(int num_bytes);
+void *m_malloc_with_finaliser(int num_bytes);
 void *m_malloc0(int num_bytes);
 void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes);
 void m_free(void *ptr, int num_bytes);
+void *m_malloc_fail(int num_bytes);
 
 int m_get_total_bytes_allocated(void);
 int m_get_current_bytes_allocated(void);
@@ -53,12 +60,6 @@ bool unichar_isalpha(unichar c);
 bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
-
-/** string ******************************************************/
-
-/*
-#define streq(s1, s2) (strcmp((s1), (s2)) == 0)
-*/
 
 /** variable string *********************************************/
 

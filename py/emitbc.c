@@ -36,6 +36,9 @@ struct _emit_t {
     byte dummy_data[8];
 };
 
+STATIC void emit_bc_rot_two(emit_t *emit);
+STATIC void emit_bc_rot_three(emit_t *emit);
+
 emit_t *emit_bc_new(uint max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
     emit->max_num_labels = max_num_labels;
@@ -318,6 +321,7 @@ STATIC void emit_bc_delete_id(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_bc_pre(emit_t *emit, int stack_size_delta) {
+    assert((int)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
@@ -399,14 +403,25 @@ STATIC void emit_bc_load_const_verbatim_str(emit_t *emit, const char *str) {
     assert(0);
 }
 
-STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_bc_load_null(emit_t *emit) {
+    emit_bc_pre(emit, 1);
+    emit_write_byte_code_byte(emit, MP_BC_LOAD_NULL);
+};
+
+STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
-    switch (local_num) {
-        case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
-        case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
-        case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
-        default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
+    if (id_flags & ID_FLAG_IS_DELETED) {
+        // This local may be deleted, so need to do a checked load.
+        emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_CHECKED, local_num);
+    } else {
+        // This local is never deleted, so can do a fast, uncheched load.
+        switch (local_num) {
+            case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
+            case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
+            case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
+            default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
+        }
     }
 }
 
@@ -481,21 +496,12 @@ STATIC void emit_bc_store_subscr(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_STORE_SUBSCR);
 }
 
-STATIC void emit_bc_store_locals(emit_t *emit) {
-    // not needed
-    emit_bc_pre(emit, -1);
-    emit_write_byte_code_byte(emit, MP_BC_POP_TOP);
-}
-
 STATIC void emit_bc_delete_fast(emit_t *emit, qstr qstr, int local_num) {
-    assert(local_num >= 0);
-    emit_bc_pre(emit, 0);
-    emit_write_byte_code_byte_uint(emit, MP_BC_DELETE_FAST_N, local_num);
+    emit_write_byte_code_byte_uint(emit, MP_BC_DELETE_FAST, local_num);
 }
 
 STATIC void emit_bc_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    emit_bc_pre(emit, 0);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_DELETE_DEREF, local_num);
+    emit_write_byte_code_byte_uint(emit, MP_BC_DELETE_DEREF, local_num);
 }
 
 STATIC void emit_bc_delete_name(emit_t *emit, qstr qstr) {
@@ -509,13 +515,15 @@ STATIC void emit_bc_delete_global(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_bc_delete_attr(emit_t *emit, qstr qstr) {
-    emit_bc_pre(emit, -1);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_DELETE_ATTR, qstr);
+    emit_bc_load_null(emit);
+    emit_bc_rot_two(emit);
+    emit_bc_store_attr(emit, qstr);
 }
 
 STATIC void emit_bc_delete_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -2);
-    emit_write_byte_code_byte(emit, MP_BC_DELETE_SUBSCR);
+    emit_bc_load_null(emit);
+    emit_bc_rot_three(emit);
+    emit_bc_store_subscr(emit);
 }
 
 STATIC void emit_bc_dup_top(emit_t *emit) {
@@ -726,78 +734,67 @@ STATIC void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
     emit_write_byte_code_byte_uint(emit, MP_BC_UNPACK_EX, n_left | (n_right << 8));
 }
 
-STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
-    assert(n_dict_params == 0);
-    if (n_default_params == 0) {
+STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
     } else {
-        emit_bc_pre(emit, 0);
+        if (n_pos_defaults == 0) {
+            // load dummy entry for non-existent positional default tuple
+            emit_bc_load_null(emit);
+        } else if (n_kw_defaults == 0) {
+            // load dummy entry for non-existent keyword default dict
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        }
+        emit_bc_pre(emit, -1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
     }
 }
 
-STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
-    assert(n_dict_params == 0);
-    if (n_default_params == 0) {
+STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 0);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
     } else {
-        emit_bc_pre(emit, -1);
+        if (n_pos_defaults == 0) {
+            // load dummy entry for non-existent positional default tuple
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        } else if (n_kw_defaults == 0) {
+            // load dummy entry for non-existent keyword default dict
+            emit_bc_load_null(emit);
+            emit_bc_rot_three(emit);
+        }
+        emit_bc_pre(emit, -2);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);
     }
 }
 
-STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    int s = 0;
-    if (have_star_arg) {
-        s += 1;
-    }
-    if (have_dbl_star_arg) {
-        s += 1;
-    }
-    emit_bc_pre(emit, -n_positional - 2 * n_keyword - s);
-    int op;
-    if (have_star_arg) {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_FUNCTION_VAR_KW;
-        } else {
-            op = MP_BC_CALL_FUNCTION_VAR;
+STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, uint bytecode_base, int n_positional, int n_keyword, uint star_flags) {
+    if (star_flags) {
+        if (!(star_flags & MP_EMIT_STAR_FLAG_SINGLE)) {
+            // load dummy entry for non-existent pos_seq
+            emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
+        } else if (!(star_flags & MP_EMIT_STAR_FLAG_DOUBLE)) {
+            // load dummy entry for non-existent kw_dict
+            emit_bc_load_null(emit);
         }
+        emit_bc_pre(emit, stack_adj - n_positional - 2 * n_keyword - 2);
+        emit_write_byte_code_byte_uint(emit, bytecode_base + 1, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     } else {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_FUNCTION_KW;
-        } else {
-            op = MP_BC_CALL_FUNCTION;
-        }
+        emit_bc_pre(emit, stack_adj - n_positional - 2 * n_keyword);
+        emit_write_byte_code_byte_uint(emit, bytecode_base, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     }
-    emit_write_byte_code_byte_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
 }
 
-STATIC void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    int s = 0;
-    if (have_star_arg) {
-        s += 1;
-    }
-    if (have_dbl_star_arg) {
-        s += 1;
-    }
-    emit_bc_pre(emit, -1 - n_positional - 2 * n_keyword - s);
-    int op;
-    if (have_star_arg) {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_METHOD_VAR_KW;
-        } else {
-            op = MP_BC_CALL_METHOD_VAR;
-        }
-    } else {
-        if (have_dbl_star_arg) {
-            op = MP_BC_CALL_METHOD_KW;
-        } else {
-            op = MP_BC_CALL_METHOD;
-        }
-    }
-    emit_write_byte_code_byte_uint(emit, op, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints
+STATIC void emit_bc_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_bc_call_function_method_helper(emit, 0, MP_BC_CALL_FUNCTION, n_positional, n_keyword, star_flags);
+}
+
+STATIC void emit_bc_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_bc_call_function_method_helper(emit, -1, MP_BC_CALL_METHOD, n_positional, n_keyword, star_flags);
 }
 
 STATIC void emit_bc_return_value(emit_t *emit) {
@@ -866,7 +863,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_store_global,
     emit_bc_store_attr,
     emit_bc_store_subscr,
-    emit_bc_store_locals,
     emit_bc_delete_fast,
     emit_bc_delete_deref,
     emit_bc_delete_name,

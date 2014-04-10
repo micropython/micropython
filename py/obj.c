@@ -99,6 +99,11 @@ int mp_obj_is_true(mp_obj_t arg) {
     }
 }
 
+// returns true if o_in is bool, small int, or long int
+bool mp_obj_is_integer(mp_obj_t o_in) {
+    return MP_OBJ_IS_INT(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bool);
+}
+
 bool mp_obj_is_callable(mp_obj_t o_in) {
     return mp_obj_get_type(o_in)->call != NULL;
 }
@@ -118,12 +123,14 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return (machine_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_type)) {
+        return (machine_int_t)o_in;
 
     // TODO hash class and instances
     // TODO delegate to __hash__ method if it exists
 
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unhashable type: '%s'", mp_obj_get_type_str(o_in)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unhashable type: '%s'", mp_obj_get_type_str(o_in)));
     }
 }
 
@@ -172,24 +179,16 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             }
         }
 
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
             "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
         return false;
     }
 }
 
-bool mp_obj_less(mp_obj_t o1, mp_obj_t o2) {
-    if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
-        mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1);
-        mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2);
-        return i1 < i2;
-    } else {
-        assert(0);
-        return false;
-    }
-}
-
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
+    // This function essentially performs implicit type conversion to int
+    // Note that Python does NOT provide implicit type conversion from
+    // float to int in the core expression language, try some_list[1.0].
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
@@ -199,8 +198,26 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to int", mp_obj_get_type_str(arg)));
     }
+}
+
+// returns false if arg is not of integral type
+// returns true and sets *value if it is of integral type
+// can throw OverflowError if arg is of integral type, but doesn't fit in a machine_int_t
+bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value) {
+    if (arg == mp_const_false) {
+        *value = 0;
+    } else if (arg == mp_const_true) {
+        *value = 1;
+    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+        *value = MP_OBJ_SMALL_INT_VALUE(arg);
+    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+        *value = mp_obj_int_get_checked(arg);
+    } else {
+        return false;
+    }
+    return true;
 }
 
 #if MICROPY_ENABLE_FLOAT
@@ -216,7 +233,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         return mp_obj_float_get(arg);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to float", mp_obj_get_type_str(arg)));
     }
 }
 
@@ -239,7 +256,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
     }
 }
 #endif
@@ -250,7 +267,7 @@ void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
     } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
     }
 }
 
@@ -263,22 +280,22 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
             mp_obj_list_get(o, &seq_len, items);
         }
         if (seq_len != len) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", len, seq_len));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", len, seq_len));
         }
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
     }
 }
 
 // is_slice determines whether the index is a slice index
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice) {
     int i;
-    if (MP_OBJ_IS_SMALL_INT(index)) {
-        i = MP_OBJ_SMALL_INT_VALUE(index);
+    if (MP_OBJ_IS_INT(index)) {
+        i = mp_obj_int_get_checked(index);
     } else if (MP_OBJ_IS_TYPE(index, &mp_type_bool)) {
         i = (index == mp_const_true ? 1 : 0);
     } else {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 
     if (i < 0) {
@@ -292,7 +309,7 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index,
         }
     } else {
         if (i < 0 || i >= len) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
         }
     }
     return i;
@@ -318,3 +335,21 @@ mp_obj_t mp_identity(mp_obj_t self) {
     return self;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
+
+bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
+    mp_obj_base_t *o = (mp_obj_base_t *)obj;
+    if (o->type->buffer_p.get_buffer == NULL) {
+        return false;
+    }
+    o->type->buffer_p.get_buffer(o, bufinfo, BUFFER_READ);
+    if (bufinfo->buf == NULL) {
+        return false;
+    }
+    return true;
+}
+
+void mp_get_buffer_raise(mp_obj_t obj, buffer_info_t *bufinfo) {
+    if (!mp_get_buffer(obj, bufinfo)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Object with buffer protocol required"));
+    }
+}

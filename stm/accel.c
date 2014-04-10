@@ -268,7 +268,7 @@ mp_obj_t pyb_accel_read(void) {
     data[2] = mp_obj_new_int(accel_buf[2] + accel_buf[5] + accel_buf[8] + accel_buf[11]);
     data[3] = mp_obj_new_int(jolt_info);
 
-    return mp_build_tuple(4, data);
+    return mp_obj_new_tuple(4, data);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_obj, pyb_accel_read);
@@ -283,7 +283,7 @@ mp_obj_t pyb_accel_read_all(void) {
     }
     data[10] = mp_obj_new_int(accel_read_nack());
 
-    return mp_build_tuple(11, data);
+    return mp_obj_new_tuple(11, data);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_accel_read_all_obj, pyb_accel_read_all);

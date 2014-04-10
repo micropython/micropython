@@ -23,6 +23,7 @@
 #include "pyexec.h"
 #include "storage.h"
 #include "usb.h"
+#include "build/py/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;
@@ -43,7 +44,7 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
 
     mp_lexer_free(lex);
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
     mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
@@ -120,9 +121,8 @@ raw_repl_reset:
             } else if (c == VCP_CHAR_CTRL_D) {
                 // input finished
                 break;
-            } else if (c == '\r') {
-                vstr_add_char(&line, '\n');
-            } else if (32 <= c && c <= 126) {
+            } else if (c <= 127) {
+                // let through any other ASCII character
                 vstr_add_char(&line, c);
             }
         }
@@ -156,7 +156,7 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    stdout_tx_str("Micro Python build <git hash> on 25/1/2014; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
+    stdout_tx_str("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
@@ -204,15 +204,12 @@ friendly_repl_reset:
             continue;
         }
 
-        if (mp_repl_is_compound_stmt(vstr_str(&line))) {
-            for (;;) {
-                vstr_add_char(&line, '\n');
-                int len = vstr_len(&line);
-                int ret = readline(&line, "... ");
-                if (ret == VCP_CHAR_CTRL_D || vstr_len(&line) == len) {
-                    // done entering compound statement
-                    break;
-                }
+        while (mp_repl_continue_with_input(vstr_str(&line))) {
+            vstr_add_char(&line, '\n');
+            int ret = readline(&line, "... ");
+            if (ret == VCP_CHAR_CTRL_D) {
+                // stop entering compound statement
+                break;
             }
         }
 

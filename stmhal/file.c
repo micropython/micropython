@@ -4,6 +4,8 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
+#include "stream.h"
 #include "file.h"
 #include "ff.h"
 
@@ -13,30 +15,21 @@ typedef struct _pyb_file_obj_t {
 } pyb_file_obj_t;
 
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    printf("<file %p>", self_in);
+    printf("<io.FileIO %p>", self_in);
 }
 
-mp_obj_t file_obj_read(mp_obj_t self_in, mp_obj_t arg) {
+STATIC machine_int_t file_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
-    int n = mp_obj_get_int(arg);
-    byte *buf = m_new(byte, n);
-    UINT n_out;
-    f_read(&self->fp, buf, n, &n_out);
-    return mp_obj_new_str(buf, n_out, false);
+    UINT sz_out;
+    *errcode = f_read(&self->fp, buf, size, &sz_out);
+    return sz_out;
 }
 
-mp_obj_t file_obj_write(mp_obj_t self_in, mp_obj_t arg) {
+STATIC machine_int_t file_write(mp_obj_t self_in, const void *buf, machine_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
-    uint l;
-    const char *s = mp_obj_str_get_data(arg, &l);
-    UINT n_out;
-    FRESULT res = f_write(&self->fp, s, l, &n_out);
-    if (res != FR_OK) {
-        printf("File error: could not write to file; error code %d\n", res);
-    } else if (n_out != l) {
-        printf("File error: could not write all data to file; wrote %d / %d bytes\n", n_out, l);
-    }
-    return mp_const_none;
+    UINT sz_out;
+    *errcode = f_write(&self->fp, buf, size, &sz_out);
+    return sz_out;
 }
 
 mp_obj_t file_obj_close(mp_obj_t self_in) {
@@ -45,31 +38,54 @@ mp_obj_t file_obj_close(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_2(file_obj_read_obj, file_obj_read);
-static MP_DEFINE_CONST_FUN_OBJ_2(file_obj_write_obj, file_obj_write);
-static MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
+
+mp_obj_t file_obj___exit__(uint n_args, const mp_obj_t *args) {
+    return file_obj_close(args[0]);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj___exit__);
 
 // TODO gc hook to close the file if not already closed
 
 STATIC const mp_map_elem_t file_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&file_obj_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&file_obj_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&file_obj_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&file_obj___exit___obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(file_locals_dict, file_locals_dict_table);
 
-static const mp_obj_type_t file_obj_type = {
+STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
+
+STATIC const mp_stream_p_t file_obj_stream_p = {
+    .read = file_read,
+    .write = file_write,
+};
+
+STATIC const mp_obj_type_t file_obj_type = {
     { &mp_type_type },
-    .name = MP_QSTR_File,
+    .name = MP_QSTR_FileIO,
+    .make_new = file_obj_make_new,
     .print = file_obj_print,
+    .getiter = mp_identity,
+    .iternext = mp_stream_unbuffered_iter,
+    .stream_p = &file_obj_stream_p,
     .locals_dict = (mp_obj_t)&file_locals_dict,
 };
 
-STATIC mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
-    const char *filename = mp_obj_str_get_str(o_filename);
-    const char *mode = mp_obj_str_get_str(o_mode);
-    pyb_file_obj_t *self = m_new_obj(pyb_file_obj_t);
+STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    mp_check_nargs(n_args, 1, 2, n_kw, false);
+    const char *filename = mp_obj_str_get_str(args[0]);
+    const char *mode = "r";
+    if (n_args > 1) {
+        mode = mp_obj_str_get_str(args[1]);
+    }
+    pyb_file_obj_t *self = m_new_obj_with_finaliser(pyb_file_obj_t);
     self->base.type = &file_obj_type;
     if (mode[0] == 'r') {
         // open for reading
@@ -92,4 +108,10 @@ STATIC mp_obj_t pyb_io_open(mp_obj_t o_filename, mp_obj_t o_mode) {
     return self;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_open_obj, pyb_io_open);
+// Factory function for I/O stream classes
+STATIC mp_obj_t pyb_io_open(uint n_args, const mp_obj_t *args) {
+    // TODO: analyze mode and buffering args and instantiate appropriate type
+    return file_obj_make_new((mp_obj_t)&file_obj_type, n_args, 0, args);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, pyb_io_open);

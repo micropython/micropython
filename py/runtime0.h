@@ -1,4 +1,5 @@
 // taken from python source, Include/code.h
+// These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_OPTIMISED    0x01
 #define MP_SCOPE_FLAG_NEWLOCALS    0x02
 #define MP_SCOPE_FLAG_VARARGS      0x04
@@ -65,6 +66,7 @@ typedef enum {
 
 typedef enum {
     MP_F_LOAD_CONST_DEC = 0,
+    MP_F_LOAD_CONST_INT,
     MP_F_LOAD_CONST_STR,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
@@ -89,6 +91,11 @@ typedef enum {
     MP_F_CALL_METHOD_N_KW,
     MP_F_GETITER,
     MP_F_ITERNEXT,
+    MP_F_IMPORT_NAME,
+    MP_F_IMPORT_FROM,
+    MP_F_IMPORT_ALL,
+    MP_F_NEW_SLICE,
+    MP_F_UNPACK_SEQUENCE,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 

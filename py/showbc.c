@@ -123,6 +123,11 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_FAST_N " UINT_FMT, unum);
                 break;
 
+            case MP_BC_LOAD_FAST_CHECKED:
+                DECODE_UINT;
+                printf("LOAD_FAST_CHECKED " UINT_FMT, unum);
+                break;
+
             case MP_BC_LOAD_DEREF:
                 DECODE_UINT;
                 printf("LOAD_DEREF " UINT_FMT, unum);
@@ -193,9 +198,9 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("STORE_SUBSCR");
                 break;
 
-            case MP_BC_DELETE_FAST_N:
+            case MP_BC_DELETE_FAST:
                 DECODE_UINT;
-                printf("DELETE_FAST_N " UINT_FMT, unum);
+                printf("DELETE_FAST " UINT_FMT, unum);
                 break;
 
             case MP_BC_DELETE_DEREF:
@@ -404,16 +409,6 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("CALL_FUNCTION n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
-            case MP_BC_CALL_FUNCTION_VAR:
-                DECODE_UINT;
-                printf("CALL_FUNCTION_VAR n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
-                break;
-
-            case MP_BC_CALL_FUNCTION_KW:
-                DECODE_UINT;
-                printf("CALL_FUNCTION_KW n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
-                break;
-
             case MP_BC_CALL_FUNCTION_VAR_KW:
                 DECODE_UINT;
                 printf("CALL_FUNCTION_VAR_KW n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
@@ -422,16 +417,6 @@ void mp_byte_code_print(const byte *ip, int len) {
             case MP_BC_CALL_METHOD:
                 DECODE_UINT;
                 printf("CALL_METHOD n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
-                break;
-
-            case MP_BC_CALL_METHOD_VAR:
-                DECODE_UINT;
-                printf("CALL_METHOD_VAR n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
-                break;
-
-            case MP_BC_CALL_METHOD_KW:
-                DECODE_UINT;
-                printf("CALL_METHOD_KW n=" UINT_FMT " nkw=" UINT_FMT, unum & 0xff, (unum >> 8) & 0xff);
                 break;
 
             case MP_BC_CALL_METHOD_VAR_KW:

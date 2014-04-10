@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include <stm32f4xx_hal.h>
@@ -11,9 +12,18 @@
 #include "readline.h"
 #include "usb.h"
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 #define READLINE_HIST_SIZE (8)
 
 static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+
+enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
 void readline_init(void) {
     memset(readline_hist, 0, READLINE_HIST_SIZE * sizeof(const char*));
@@ -30,7 +40,8 @@ STATIC char *str_dup(const char *str) {
 int readline(vstr_t *line, const char *prompt) {
     stdout_tx_str(prompt);
     int orig_line_len = line->len;
-    int escape_seq = 0;
+    int escape_seq = ESEQ_NONE;
+    char escape_seq_buf[1] = {0};
     int hist_cur = -1;
     int cursor_pos = orig_line_len;
     for (;;) {
@@ -39,10 +50,16 @@ int readline(vstr_t *line, const char *prompt) {
         int redraw_step_back = 0;
         bool redraw_from_cursor = false;
         int redraw_step_forward = 0;
-        if (escape_seq == 0) {
+        if (escape_seq == ESEQ_NONE) {
             if (VCP_CHAR_CTRL_A <= c && c <= VCP_CHAR_CTRL_D && vstr_len(line) == orig_line_len) {
                 // control character with empty line
                 return c;
+            } else if (c == VCP_CHAR_CTRL_A) {
+                // CTRL-A with non-empty line is go-to-start-of-line
+                goto home_key;
+            } else if (c == VCP_CHAR_CTRL_E) {
+                // CTRL-E is go-to-end-of-line
+                goto end_key;
             } else if (c == '\r') {
                 // newline
                 stdout_tx_str("\r\n");
@@ -57,9 +74,9 @@ int readline(vstr_t *line, const char *prompt) {
                 return 0;
             } else if (c == 27) {
                 // escape sequence
-                escape_seq = 1;
-            } else if (c == 127) {
-                // backspace
+                escape_seq = ESEQ_ESC;
+            } else if (c == 8 || c == 127) {
+                // backspace/delete
                 if (cursor_pos > orig_line_len) {
                     vstr_cut_out_bytes(line, cursor_pos - 1, 1);
                     // set redraw parameters
@@ -73,58 +90,103 @@ int readline(vstr_t *line, const char *prompt) {
                 redraw_from_cursor = true;
                 redraw_step_forward = 1;
             }
-        } else if (escape_seq == 1) {
-            if (c == '[') {
-                escape_seq = 2;
-            } else {
-                escape_seq = 0;
+        } else if (escape_seq == ESEQ_ESC) {
+            switch (c) {
+                case '[':
+                    escape_seq = ESEQ_ESC_BRACKET;
+                    break;
+                case 'O':
+                    escape_seq = ESEQ_ESC_O;
+                    break;
+                default:
+                    DEBUG_printf("(ESC %d)", c);
+                    escape_seq = ESEQ_NONE;
             }
-        } else if (escape_seq == 2) {
-            escape_seq = 0;
-            if (c == 'A') {
-                // up arrow
-                if (hist_cur + 1 < READLINE_HIST_SIZE && readline_hist[hist_cur + 1] != NULL) {
-                    // increase hist num
-                    hist_cur += 1;
-                    // set line to history
-                    line->len = orig_line_len;
-                    vstr_add_str(line, readline_hist[hist_cur]);
-                    // set redraw parameters
-                    redraw_step_back = cursor_pos - orig_line_len;
-                    redraw_from_cursor = true;
-                    redraw_step_forward = line->len - orig_line_len;
-                }
-            } else if (c == 'B') {
-                // down arrow
-                if (hist_cur >= 0) {
-                    // decrease hist num
-                    hist_cur -= 1;
-                    // set line to history
-                    vstr_cut_tail_bytes(line, line->len - orig_line_len);
-                    if (hist_cur >= 0) {
+        } else if (escape_seq == ESEQ_ESC_BRACKET) {
+            if ('0' <= c && c <= '9') {
+                escape_seq = ESEQ_ESC_BRACKET_DIGIT;
+                escape_seq_buf[0] = c;
+            } else {
+                escape_seq = ESEQ_NONE;
+                if (c == 'A') {
+                    // up arrow
+                    if (hist_cur + 1 < READLINE_HIST_SIZE && readline_hist[hist_cur + 1] != NULL) {
+                        // increase hist num
+                        hist_cur += 1;
+                        // set line to history
+                        line->len = orig_line_len;
                         vstr_add_str(line, readline_hist[hist_cur]);
+                        // set redraw parameters
+                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_from_cursor = true;
+                        redraw_step_forward = line->len - orig_line_len;
                     }
-                    // set redraw parameters
+                } else if (c == 'B') {
+                    // down arrow
+                    if (hist_cur >= 0) {
+                        // decrease hist num
+                        hist_cur -= 1;
+                        // set line to history
+                        vstr_cut_tail_bytes(line, line->len - orig_line_len);
+                        if (hist_cur >= 0) {
+                            vstr_add_str(line, readline_hist[hist_cur]);
+                        }
+                        // set redraw parameters
+                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_from_cursor = true;
+                        redraw_step_forward = line->len - orig_line_len;
+                    }
+                } else if (c == 'C') {
+                    // right arrow
+                    if (cursor_pos < line->len) {
+                        redraw_step_forward = 1;
+                    }
+                } else if (c == 'D') {
+                    // left arrow
+                    if (cursor_pos > orig_line_len) {
+                        redraw_step_back = 1;
+                    }
+                } else if (c == 'H') {
+                    // home
+                    goto home_key;
+                } else if (c == 'F') {
+                    // end
+                    goto end_key;
+                } else {
+                    DEBUG_printf("(ESC [ %d)", c);
+                }
+            }
+        } else if (escape_seq == ESEQ_ESC_BRACKET_DIGIT) {
+            if (c == '~') {
+                if (escape_seq_buf[0] == '1' || escape_seq_buf[0] == '7') {
+home_key:
                     redraw_step_back = cursor_pos - orig_line_len;
-                    redraw_from_cursor = true;
-                    redraw_step_forward = line->len - orig_line_len;
+                } else if (escape_seq_buf[0] == '4' || escape_seq_buf[0] == '8') {
+end_key:
+                    redraw_step_forward = line->len - cursor_pos;
+                } else {
+                    DEBUG_printf("(ESC [ %c %d)", escape_seq_buf[0], c);
                 }
-            } else if (c == 'C') {
-                // right arrow
-                if (cursor_pos < line->len) {
-                    redraw_step_forward = 1;
-                }
-            } else if (c == 'D') {
-                // left arrow
-                if (cursor_pos > orig_line_len) {
-                    redraw_step_back = 1;
-                }
+            } else {
+                DEBUG_printf("(ESC [ %c %d)", escape_seq_buf[0], c);
+            }
+            escape_seq = ESEQ_NONE;
+        } else if (escape_seq == ESEQ_ESC_O) {
+            switch (c) {
+                case 'H':
+                    goto home_key;
+                case 'F':
+                    goto end_key;
+                default:
+                    DEBUG_printf("(ESC O %d)", c);
+                    escape_seq = ESEQ_NONE;
             }
         } else {
-            escape_seq = 0;
+            escape_seq = ESEQ_NONE;
         }
 
         // redraw command prompt, efficiently
+        // TODO we can probably use some more sophisticated VT100 commands here
         if (redraw_step_back > 0) {
             for (int i = 0; i < redraw_step_back; i++) {
                 stdout_tx_str("\b");

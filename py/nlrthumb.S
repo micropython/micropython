@@ -60,6 +60,8 @@ nlr_pop:
 nlr_jump:
     ldr     r3, .L2                 @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
+    cmp     r2, #0                  @ test if nlr_top is NULL
+    beq     nlr_jump_fail           @ if nlr_top is NULL, transfer control to nlr_jump_fail
     str     r0, [r2, #4]            @ store return value
     ldr     r0, [r2]                @ load prev nlr_buf
     str     r0, [r3]                @ store prev nol_buf into nlr_top (to unlink list)

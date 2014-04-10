@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -9,6 +10,7 @@
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
@@ -20,16 +22,15 @@
 #define SUFFIX ""
 #endif
 
-void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
-    } else {
-        mp_obj_int_t *self = self_in;
-        print(env, "%lld" SUFFIX, self->val);
+        return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
     }
+    mp_obj_int_t *self = self_in;
+    return self->val >= 0;
 }
 
-mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
@@ -40,7 +41,7 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     long long lhs_val;
     long long rhs_val;
 
@@ -57,7 +58,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t*)rhs_in)->val;
     } else {
-        return MP_OBJ_NULL;
+        // delegate to generic function to check for extra cases
+        return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
     }
 
     switch (op) {
@@ -142,7 +144,7 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
     // TODO: this doesn't handle Python hacked 0o octal syntax
     v = strtoll(s, &end, 0);
     if (*end != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;

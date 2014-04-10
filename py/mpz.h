@@ -71,9 +71,11 @@ mpz_t *mpz_div(const mpz_t *lhs, const mpz_t *rhs);
 mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs);
 
 machine_int_t mpz_as_int(const mpz_t *z);
+bool mpz_as_int_checked(const mpz_t *z, machine_int_t *value);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 uint mpz_as_str_size(const mpz_t *z, uint base);
+uint mpz_as_str_size_formatted(const mpz_t *i, uint base, const char *prefix, char comma);
 char *mpz_as_str(const mpz_t *z, uint base);
-uint mpz_as_str_inpl(const mpz_t *z, uint base, char *str);
+uint mpz_as_str_inpl(const mpz_t *z, uint base, const char *prefix, char base_char, char comma, char *str);

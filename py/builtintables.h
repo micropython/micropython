@@ -1,2 +1,2 @@
-mp_obj_t mp_builtin_tables_lookup_object(qstr q);
-mp_obj_t mp_builtin_tables_lookup_module(qstr q);
+extern const mp_obj_dict_t mp_builtin_object_dict_obj;
+extern const mp_obj_dict_t mp_builtin_module_dict_obj;

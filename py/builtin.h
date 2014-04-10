@@ -13,6 +13,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_divmod_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_eval_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_exec_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_getattr_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_globals_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_hash_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_id_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_isinstance_obj);
@@ -20,6 +21,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_issubclass_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_iter_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_len_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_list_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_locals_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_max_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_min_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_next_obj);
@@ -33,7 +35,10 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 
+extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_array;
 extern const mp_obj_module_t mp_module_collections;
+extern const mp_obj_module_t mp_module_io;
 extern const mp_obj_module_t mp_module_math;
 extern const mp_obj_module_t mp_module_micropython;
+extern const mp_obj_module_t mp_module_struct;

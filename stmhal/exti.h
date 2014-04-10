@@ -22,7 +22,7 @@
 
 void exti_init(void);
 
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, void *param);
+uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param);
 
 void exti_enable(uint line);
 void exti_disable(uint line);

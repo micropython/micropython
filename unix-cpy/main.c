@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -48,7 +49,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
 
             // compile
-            mp_obj_t module_fun = mp_compile(pn, 0, false);
+            mp_obj_t module_fun = mp_compile(pn, 0, MP_EMIT_OPT_NONE, false);
 
             //printf("----------------\n");
 
@@ -74,12 +75,11 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-// for sqrt
-#include <math.h>
-machine_float_t machine_sqrt(machine_float_t x) {
-    return sqrt(x);
-}
-
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught NLR %p\n", val);
+    exit(1);
 }

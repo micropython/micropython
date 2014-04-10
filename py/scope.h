@@ -6,15 +6,18 @@ enum {
     ID_INFO_KIND_FREE,  // in a function f, belongs to the parent of f
 };
 
-typedef struct _id_info_t {
-    // TODO compress this info to make structure smaller in memory
-    bool param;
-    int kind;
-    qstr qstr;
+enum {
+    ID_FLAG_IS_PARAM = 0x01,
+    ID_FLAG_IS_DELETED = 0x02,
+};
 
+typedef struct _id_info_t {
+    uint8_t kind;
+    uint8_t flags;
     // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
     // whet it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
-    int local_num;
+    uint16_t local_num;
+    qstr qstr;
 } id_info_t;
 
 // scope is a "block" in Python parlance
@@ -26,20 +29,16 @@ typedef struct _scope_t {
     mp_parse_node_t pn;
     qstr source_file;
     qstr simple_name;
-    int id_info_alloc;
-    int id_info_len;
-    id_info_t *id_info;
-    uint scope_flags; // see runtime0.h
-    int num_params;
-    /* not needed
-    int num_default_params;
-    int num_dict_params;
-    */
-    int num_locals;
-    int stack_size;     // maximum size of the locals stack
-    int exc_stack_size; // maximum size of the exception stack
     uint unique_code_id;
-    uint emit_options;
+    uint8_t scope_flags;  // see runtime0.h
+    uint8_t emit_options; // see compile.h
+    uint16_t num_params;
+    uint16_t num_locals;
+    uint16_t stack_size;     // maximum size of the locals stack
+    uint16_t exc_stack_size; // maximum size of the exception stack
+    uint16_t id_info_alloc;
+    uint16_t id_info_len;
+    id_info_t *id_info;
 } scope_t;
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint unique_code_id, uint emit_options);

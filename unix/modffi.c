@@ -80,7 +80,7 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
     }
     // TODO: Support actual libffi type objects
 
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unknown type"));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unknown type"));
 }
 
 STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
@@ -118,7 +118,7 @@ STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
@@ -136,7 +136,7 @@ STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
     }
 
     return o;
@@ -173,12 +173,12 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, func_in, o->func);
     if (res != FFI_OK) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ffi_prep_closure_loc"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ffi_prep_closure_loc"));
     }
 
     return o;
@@ -192,7 +192,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
     o->base.type = &ffivar_type;
@@ -208,7 +208,7 @@ STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
     o->base.type = type_in;
@@ -253,14 +253,22 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
             values[i] = mp_obj_int_get(a);
-        } else if (MP_OBJ_IS_STR(a) || MP_OBJ_IS_TYPE(a, &mp_type_bytes)) {
+        } else if (MP_OBJ_IS_STR(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)s;
+        } else if (((mp_obj_base_t*)a)->type->buffer_p.get_buffer != NULL) {
+            mp_obj_base_t *o = (mp_obj_base_t*)a;
+            buffer_info_t bufinfo;
+            o->type->buffer_p.get_buffer(o, &bufinfo, BUFFER_READ); // TODO: BUFFER_READ?
+            if (bufinfo.buf == NULL) {
+                goto error;
+            }
+            values[i] = (ffi_arg)bufinfo.buf;
         } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = a;
             values[i] = (ffi_arg)p->func;
         } else {
-            assert(0);
+            goto error;
         }
         valueptrs[i] = &values[i];
     }
@@ -268,6 +276,9 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     ffi_arg retval;
     ffi_call(&self->cif, self->func, &retval, valueptrs);
     return return_ffi_value(retval, self->rettype);
+
+error:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Don't know how to pass object to native function"));
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {

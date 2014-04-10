@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +30,8 @@ STATIC int peak_bytes_allocated = 0;
 #undef malloc
 #undef free
 #undef realloc
-#define malloc gc_alloc
+#define malloc(b) gc_alloc((b), false)
+#define malloc_with_finaliser(b) gc_alloc((b), true)
 #define free gc_free
 #define realloc gc_realloc
 #endif // MICROPY_ENABLE_GC
@@ -42,8 +42,7 @@ void *m_malloc(int num_bytes) {
     }
     void *ptr = malloc(num_bytes);
     if (ptr == NULL) {
-        printf("could not allocate memory, allocating %d bytes\n", num_bytes);
-        return NULL;
+        return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
@@ -53,6 +52,25 @@ void *m_malloc(int num_bytes) {
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
     return ptr;
 }
+
+#if MICROPY_ENABLE_FINALISER
+void *m_malloc_with_finaliser(int num_bytes) {
+    if (num_bytes == 0) {
+        return NULL;
+    }
+    void *ptr = malloc_with_finaliser(num_bytes);
+    if (ptr == NULL) {
+        return m_malloc_fail(num_bytes);
+    }
+#if MICROPY_MEM_STATS
+    total_bytes_allocated += num_bytes;
+    current_bytes_allocated += num_bytes;
+    UPDATE_PEAK();
+#endif
+    DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+    return ptr;
+}
+#endif
 
 void *m_malloc0(int num_bytes) {
     void *ptr = m_malloc(num_bytes);
@@ -69,8 +87,7 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     }
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL) {
-        printf("could not allocate memory, reallocating %d bytes\n", new_num_bytes);
-        return NULL;
+        return m_malloc_fail(new_num_bytes);
     }
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,

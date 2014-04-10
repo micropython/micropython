@@ -164,7 +164,7 @@ const pin_obj_t *pin_map_user_obj(mp_obj_t user_obj) {
         pin_obj = mp_call_function_1(pin_map_obj.mapper, user_obj);
         if (pin_obj != mp_const_none) {
             if (!MP_OBJ_IS_TYPE(pin_obj, &pin_obj_type)) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin.mapper didn't return a Pin object"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin.mapper didn't return a Pin object"));
             }
             if (pin_map_obj.debug) {
                 printf("Pin.mapper maps ");
@@ -222,5 +222,5 @@ const pin_obj_t *pin_map_user_obj(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin '%s' not a valid pin identifier", pin_name));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin '%s' not a valid pin identifier", pin_name));
 }

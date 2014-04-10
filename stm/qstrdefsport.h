@@ -36,7 +36,6 @@ Q(Usart)
 Q(ADC)
 Q(ADC_all)
 Q(Audio)
-Q(open)
 Q(File)
 // Entries for sys.path
 Q(0:/)

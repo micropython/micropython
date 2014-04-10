@@ -993,8 +993,11 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         if (mpz_is_odd(n)) {
             mpz_mul_inpl(dest, dest, x);
         }
-        mpz_mul_inpl(x, x, x);
         n->len = mpn_shr(n->dig, n->dig, n->len, 1);
+        if (n->len == 0) {
+            break;
+        }
+        mpz_mul_inpl(x, x, x);
     }
 
     mpz_free(x);
@@ -1139,6 +1142,7 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 }
 #endif
 
+// TODO check that this correctly handles overflow in all cases
 machine_int_t mpz_as_int(const mpz_t *i) {
     machine_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
@@ -1147,11 +1151,13 @@ machine_int_t mpz_as_int(const mpz_t *i) {
         machine_int_t oldval = val;
         val = (val << DIG_SIZE) | *d;
         if (val < oldval) {
-            // TODO need better handling of conversion overflow
+            // overflow, return +/- "infinity"
             if (i->neg == 0) {
-                return 0x7fffffff;
+                // +infinity
+                return ~WORD_MSBIT_HIGH;
             } else {
-                return 0x80000000;
+                // -infinity
+                return WORD_MSBIT_HIGH;
             }
         }
     }
@@ -1161,6 +1167,28 @@ machine_int_t mpz_as_int(const mpz_t *i) {
     }
 
     return val;
+}
+
+// TODO check that this correctly handles overflow in all cases
+bool mpz_as_int_checked(const mpz_t *i, machine_int_t *value) {
+    machine_int_t val = 0;
+    mpz_dig_t *d = i->dig + i->len;
+
+    while (--d >= i->dig) {
+        machine_int_t oldval = val;
+        val = (val << DIG_SIZE) | *d;
+        if (val < oldval) {
+            // overflow
+            return false;
+        }
+    }
+
+    if (i->neg != 0) {
+        val = -val;
+    }
+
+    *value = val;
+    return true;
 }
 
 #if MICROPY_ENABLE_FLOAT
@@ -1188,15 +1216,27 @@ uint mpz_as_str_size(const mpz_t *i, uint base) {
     return i->len * DIG_SIZE / log_base2_floor[base] + 2 + 1; // +1 for null byte termination
 }
 
+uint mpz_as_str_size_formatted(const mpz_t *i, uint base, const char *prefix, char comma) {
+    if (base < 2 || base > 32) {
+        return 0;
+    }
+
+    uint num_digits = i->len * DIG_SIZE / log_base2_floor[base] + 1;
+    uint num_commas = comma ? num_digits / 3: 0;
+    uint prefix_len = prefix ? strlen(prefix) : 0;
+
+    return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
+}
+
 char *mpz_as_str(const mpz_t *i, uint base) {
     char *s = m_new(char, mpz_as_str_size(i, base));
-    mpz_as_str_inpl(i, base, s);
+    mpz_as_str_inpl(i, base, "", 'a', 0, s);
     return s;
 }
 
 // assumes enough space as calculated by mpz_as_str_size
 // returns length of string, not including null byte
-uint mpz_as_str_inpl(const mpz_t *i, uint base, char *str) {
+uint mpz_as_str_inpl(const mpz_t *i, uint base, const char *prefix, char base_char, char comma, char *str) {
     if (str == NULL || base < 2 || base > 32) {
         str[0] = 0;
         return 0;
@@ -1204,18 +1244,23 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, char *str) {
 
     uint ilen = i->len;
 
+    char *s = str;
     if (ilen == 0) {
-        str[0] = '0';
-        str[1] = 0;
-        return 1;
+        if (prefix) {
+            while (*prefix)
+                *s++ = *prefix++;
+        }
+        *s++ = '0';
+        *s = '\0';
+        return s - str;
     }
 
-    // make a copy of mpz digits
+    // make a copy of mpz digits, so we can do the div/mod calculation
     mpz_dig_t *dig = m_new(mpz_dig_t, ilen);
     memcpy(dig, i->dig, ilen * sizeof(mpz_dig_t));
 
     // convert
-    char *s = str;
+    char *last_comma = str;
     bool done;
     do {
         mpz_dig_t *d = dig + ilen;
@@ -1231,7 +1276,7 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, char *str) {
         // convert to character
         a += '0';
         if (a > '9') {
-            a += 'a' - '9' - 1;
+            a += base_char - '9' - 1;
         }
         *s++ = a;
 
@@ -1243,8 +1288,22 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, char *str) {
                 break;
             }
         }
-    } while (!done);
+        if (comma && (s - last_comma) == 3) {
+            *s++ = comma;
+            last_comma = s;
+        }
+    }
+    while (!done);
 
+    // free the copy of the digits array
+    m_del(mpz_dig_t, dig, ilen);
+
+    if (prefix) {
+        const char *p = &prefix[strlen(prefix)];
+        while (p > prefix) {
+            *s++ = *--p;
+        }
+    }
     if (i->neg != 0) {
         *s++ = '-';
     }
@@ -1256,7 +1315,7 @@ uint mpz_as_str_inpl(const mpz_t *i, uint base, char *str) {
         *v = temp;
     }
 
-    s[0] = 0; // null termination
+    *s = '\0'; // null termination
 
     return s - str;
 }

@@ -1,15 +1,18 @@
-#! /usr/bin/env python3.3
+#! /usr/bin/env python3
 
 import os
 import subprocess
 import sys
 from glob import glob
 
+# Tests require at least CPython 3.3. If your default python3 executable
+# is of lower version, you can point MICROPY_CPYTHON3 environment var
+# to the correct executable.
 if os.name == 'nt':
-    CPYTHON3 = 'python3.3.exe'
+    CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3.exe')
     MP_PY = '../windows/micropython.exe'
 else:
-    CPYTHON3 = 'python3.3'
+    CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
     MP_PY = '../unix/micropython'
 
 def rm_f(fname):
@@ -23,16 +26,32 @@ failed_tests = []
 tests = []
 
 if not sys.argv[1:]:
-    tests = sorted(glob('basics/*.py') + glob('io/*.py'))
+    tests = sorted(glob('basics/*.py') + glob('io/*.py') + glob('misc/*.py'))
 else:
     tests = sys.argv[1:]
+
+test_on_pyboard = False
+if test_on_pyboard:
+    import pyboard
+    pyb = pyboard.Pyboard('/dev/ttyACM0')
+    pyb.enter_raw_repl()
 
 for test_file in tests:
     test_name = os.path.splitext(os.path.basename(test_file))[0]
 
-    output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
+    # run CPython
     try:
-        output_mupy = subprocess.check_output([MP_PY, test_file])
+        output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
+    except subprocess.CalledProcessError:
+        output_expected = b'CPYTHON3 CRASH'
+
+    # run Micro Python
+    try:
+        if test_on_pyboard:
+            pyb.enter_raw_repl()
+            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+        else:
+            output_mupy = subprocess.check_output([MP_PY, '-X', 'emit=bytecode', test_file])
     except subprocess.CalledProcessError:
         output_mupy = b'CRASH'
 

@@ -28,16 +28,19 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
 };
 
-STATIC const mp_map_t time_module_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(time_module_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(time_module_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)time_module_globals_table,
+STATIC const mp_obj_dict_t time_module_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(time_module_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(time_module_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)time_module_globals_table,
+    },
 };
 
 const mp_obj_module_t time_module = {
     .base = { &mp_type_module },
     .name = MP_QSTR_time,
-    .globals = (mp_map_t*)&time_module_globals,
+    .globals = (mp_obj_dict_t*)&time_module_globals,
 };

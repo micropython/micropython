@@ -32,15 +32,15 @@ Additional components:
 - examples/ -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and python (2.7 or 3.3) for the stm port.
+You will also need bash and python (2.7 or 3.3).
 
 The Unix version
 ----------------
 
-The "unix" part requires a standard Unix environment with gcc and GNU make.
-x86 and x64 architectures are supported (i.e. x86 32- and 64-bit). ARM to
-be confirmed. Porting to other architectures require writing some assembly
-code for the exception handling.
+The "unix" port requires a standard Unix environment with gcc and GNU make.
+x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
+as ARMv7. Porting to other architectures require writing some assembly code
+for the exception handling.
 
 To build:
 
@@ -59,7 +59,7 @@ module (recommended, enable in unix/mpconfigport.mk), libffi-dev is required.
 The STM version
 ---------------
 
-The "stmhal" part requires an ARM compiler, arm-none-eabi-gcc, and associated
+The "stmhal" port requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
 arm-none-eabi-gcc packages from the AUR.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded

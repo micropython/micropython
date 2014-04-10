@@ -17,8 +17,12 @@
     mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_float(y_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
-#define MATH_FUN_BOOL1(py_name, c_name) \
+#define MATH_FUN_1_TO_BOOL(py_name, c_name) \
     mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return MP_BOOL(c_name(mp_obj_get_float(x_obj))); } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+
+#define MATH_FUN_1_TO_INT(py_name, c_name) \
+    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int((machine_int_t)MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 STATIC const mp_obj_float_t mp_math_e_obj = {{&mp_type_float}, M_E};
@@ -44,15 +48,15 @@ MATH_FUN_1(acos, acos)
 MATH_FUN_1(asin, asin)
 MATH_FUN_1(atan, atan)
 MATH_FUN_2(atan2, atan2)
-MATH_FUN_1(ceil, ceil)
+MATH_FUN_1_TO_INT(ceil, ceil)
 MATH_FUN_2(copysign, copysign)
 MATH_FUN_1(fabs, fabs)
-MATH_FUN_1(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
+MATH_FUN_1_TO_INT(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
 MATH_FUN_2(fmod, fmod)
-MATH_FUN_BOOL1(isfinite, isfinite)
-MATH_FUN_BOOL1(isinf, isinf)
-MATH_FUN_BOOL1(isnan, isnan)
-MATH_FUN_1(trunc, trunc)
+MATH_FUN_1_TO_BOOL(isfinite, isfinite)
+MATH_FUN_1_TO_BOOL(isinf, isinf)
+MATH_FUN_1_TO_BOOL(isnan, isnan)
+MATH_FUN_1_TO_INT(trunc, trunc)
 MATH_FUN_2(ldexp, ldexp)
 MATH_FUN_1(erf, erf)
 MATH_FUN_1(erfc, erfc)
@@ -135,18 +139,21 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&mp_math_lgamma_obj },
 };
 
-STATIC const mp_map_t mp_module_math_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)mp_module_math_globals_table,
+STATIC const mp_obj_dict_t mp_module_math_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_math_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_math_globals_table,
+    },
 };
 
 const mp_obj_module_t mp_module_math = {
     .base = { &mp_type_module },
     .name = MP_QSTR_math,
-    .globals = (mp_map_t*)&mp_module_math_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_math_globals,
 };
 
 #endif // MICROPY_ENABLE_FLOAT

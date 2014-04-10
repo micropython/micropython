@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <errno.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -21,15 +22,20 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
+#include "build/py/py-version.h"
 
 #if MICROPY_USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
 
+// Default emit options
+uint emit_opt = MP_EMIT_OPT_NONE;
+
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
-long heap_size = 128*1024;
+// Make it larger on a 64 bit machine, because pointers are larger.
+long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
 #endif
 
 // Stack top at the start of program
@@ -40,7 +46,7 @@ void microsocket_init();
 void time_init();
 void ffi_init();
 
-static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
         return;
     }
@@ -74,7 +80,7 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     printf("----------------\n");
     */
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
 
     if (module_fun == mp_const_none) {
         // compile error
@@ -92,10 +98,10 @@ static void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     }
 }
 
-static char *strjoin(const char *s1, int sep_char, const char *s2) {
+STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
-    char *s = m_new(char, l1 + l2 + 2);
+    char *s = malloc(l1 + l2 + 2);
     memcpy(s, s1, l1);
     if (sep_char != 0) {
         s[l1] = sep_char;
@@ -106,7 +112,7 @@ static char *strjoin(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-static char *prompt(char *p) {
+STATIC char *prompt(char *p) {
 #if MICROPY_USE_READLINE
     char *line = readline(p);
     if (line) {
@@ -131,24 +137,24 @@ static char *prompt(char *p) {
     return line;
 }
 
-static void do_repl(void) {
+STATIC void do_repl(void) {
+    printf("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; UNIX version\n");
+
     for (;;) {
         char *line = prompt(">>> ");
         if (line == NULL) {
             // EOF
             return;
         }
-        if (mp_repl_is_compound_stmt(line)) {
-            for (;;) {
-                char *line2 = prompt("... ");
-                if (line2 == NULL || strlen(line2) == 0) {
-                    break;
-                }
-                char *line3 = strjoin(line, '\n', line2);
-                free(line);
-                free(line2);
-                line = line3;
+        while (mp_repl_continue_with_input(line)) {
+            char *line2 = prompt("... ");
+            if (line2 == NULL) {
+                break;
             }
+            char *line3 = strjoin(line, '\n', line2);
+            free(line);
+            free(line2);
+            line = line3;
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
@@ -157,12 +163,12 @@ static void do_repl(void) {
     }
 }
 
-static void do_file(const char *file) {
+STATIC void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-static void do_str(const char *str) {
+STATIC void do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
     execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
@@ -172,33 +178,33 @@ typedef struct _test_obj_t {
     int value;
 } test_obj_t;
 
-static void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     test_obj_t *self = self_in;
     print(env, "<test %d>", self->value);
 }
 
-static mp_obj_t test_get(mp_obj_t self_in) {
+STATIC mp_obj_t test_get(mp_obj_t self_in) {
     test_obj_t *self = self_in;
     return mp_obj_new_int(self->value);
 }
 
-static mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
     test_obj_t *self = self_in;
     self->value = mp_obj_get_int(arg);
     return mp_const_none;
 }
 
-static MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
-static MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
 
-static const mp_map_elem_t test_locals_dict_table[] = {
+STATIC const mp_map_elem_t test_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
 
-static const mp_obj_type_t test_type = {
+STATIC const mp_obj_type_t test_type = {
     { &mp_type_type },
     .name = MP_QSTR_Test,
     .print = test_print,
@@ -212,13 +218,28 @@ mp_obj_t test_obj_new(int value) {
     return o;
 }
 
-int usage(void) {
+int usage(char **argv) {
     printf(
-"usage: py [-X <opt>] [-c <command>] [<filename>]\n"
+"usage: %s [-X <opt>] [-c <command>] [<filename>]\n"
 "\n"
-"Implementation specific options:\n"
+"Implementation specific options:\n", argv[0]
+);
+    int impl_opts_cnt = 0;
+    printf(
+"  emit={bytecode,native,viper} -- set the default code emitter\n"
+);
+    impl_opts_cnt++;
+#if MICROPY_ENABLE_GC
+    printf(
 "  heapsize=<n> -- set the heap size for the GC\n"
 );
+    impl_opts_cnt++;
+#endif
+
+    if (impl_opts_cnt == 0) {
+        printf("  (none)\n");
+    }
+
     return 1;
 }
 
@@ -236,7 +257,7 @@ mp_obj_t qstr_info(void) {
 
 #if MICROPY_ENABLE_GC
 // TODO: this doesn't belong here
-static mp_obj_t pyb_gc(void) {
+STATIC mp_obj_t pyb_gc(void) {
     gc_collect();
     return mp_const_none;
 }
@@ -249,15 +270,21 @@ void pre_process_options(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
                 if (a + 1 >= argc) {
-                    exit(usage());
+                    exit(usage(argv));
                 }
                 if (0) {
+                } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
+                    emit_opt = MP_EMIT_OPT_BYTE_CODE;
+                } else if (strcmp(argv[a + 1], "emit=native") == 0) {
+                    emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
+                } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
+                    emit_opt = MP_EMIT_OPT_VIPER;
 #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, NULL, 0);
 #endif
                 } else {
-                    exit(usage());
+                    exit(usage(argv));
                 }
                 a++;
             }
@@ -358,7 +385,7 @@ int main(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
-                    return usage();
+                    return usage(argv);
                 }
                 do_str(argv[a + 1]);
                 executed = true;
@@ -366,18 +393,24 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else {
-                return usage();
+                return usage(argv);
             }
         } else {
-            // Set base dir of the script as first entry in sys.path
             char *basedir = realpath(argv[a], NULL);
-            if (basedir != NULL) {
-                char *p = strrchr(basedir, '/');
-                path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-                free(basedir);
+            if (basedir == NULL) {
+                fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
+                perror("");
+                // CPython exits with 2 in such case
+                exit(2);
             }
+
+            // Set base dir of the script as first entry in sys.path
+            char *p = strrchr(basedir, '/');
+            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+            free(basedir);
+
             for (int i = a; i < argc; i++) {
-                mp_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                mp_obj_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
             do_file(argv[a]);
             executed = true;
@@ -413,4 +446,9 @@ int DEBUG_printf(const char *fmt, ...) {
     int ret = vfprintf(stderr, fmt, ap);
     va_end(ap);
     return ret;
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught NLR %p\n", val);
+    exit(1);
 }

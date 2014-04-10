@@ -95,14 +95,15 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
         state[n_state - 1 - n_args - i] = args2[i];
     }
 
+    // set rest of state to MP_OBJ_NULL
+    for (uint i = 0; i < n_state - n_args - n_args2; i++) {
+        state[i] = MP_OBJ_NULL;
+    }
+
     // bytecode prelude: initialise closed over variables
     for (uint n_local = *ip++; n_local > 0; n_local--) {
         uint local_num = *ip++;
-        if (local_num < n_args + n_args2) {
-            state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
-        } else {
-            state[n_state - 1 - local_num] = mp_obj_new_cell(MP_OBJ_NULL);
-        }
+        state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
     }
 
     // execute the byte code
@@ -158,7 +159,7 @@ outer_dispatch_loop:
             if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
                 mp_obj_t t = inject_exc;
                 inject_exc = MP_OBJ_NULL;
-                nlr_jump(mp_make_raise_obj(t));
+                nlr_raise(mp_make_raise_obj(t));
             }
             // loop to execute byte code
             for (;;) {
@@ -220,6 +221,10 @@ dispatch_loop:
                         PUSH(mp_load_const_str(qst));
                         break;
 
+                    case MP_BC_LOAD_NULL:
+                        PUSH(MP_OBJ_NULL);
+                        break;
+
                     case MP_BC_LOAD_FAST_0:
                         PUSH(fastn[0]);
                         break;
@@ -237,9 +242,23 @@ dispatch_loop:
                         PUSH(fastn[-unum]);
                         break;
 
+                    case MP_BC_LOAD_FAST_CHECKED:
+                        DECODE_UINT;
+                        obj1 = fastn[-unum];
+                        if (obj1 == MP_OBJ_NULL) {
+                            local_name_error:
+                            nlr_raise(mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment"));
+                        }
+                        PUSH(obj1);
+                        break;
+
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
-                        PUSH(mp_get_cell(fastn[-unum]));
+                        obj1 = mp_obj_cell_get(fastn[-unum]);
+                        if (obj1 == MP_OBJ_NULL) {
+                            goto local_name_error;
+                        }
+                        PUSH(obj1);
                         break;
 
                     case MP_BC_LOAD_NAME:
@@ -286,7 +305,7 @@ dispatch_loop:
 
                     case MP_BC_STORE_DEREF:
                         DECODE_UINT;
-                        mp_set_cell(fastn[-unum], POP());
+                        mp_obj_cell_set(fastn[-unum], POP());
                         break;
 
                     case MP_BC_STORE_NAME:
@@ -310,22 +329,30 @@ dispatch_loop:
                         sp -= 3;
                         break;
 
-                    case MP_BC_DELETE_FAST_N:
+                    case MP_BC_DELETE_FAST:
                         DECODE_UINT;
+                        if (fastn[-unum] == MP_OBJ_NULL) {
+                            goto local_name_error;
+                        }
                         fastn[-unum] = MP_OBJ_NULL;
                         break;
 
                     case MP_BC_DELETE_DEREF:
                         DECODE_UINT;
-                        if (mp_get_cell(fastn[-unum]) != MP_OBJ_NULL) {
-                            mp_set_cell(fastn[-unum], MP_OBJ_NULL);
-                        } else {
-                            assert(0);
+                        if (mp_obj_cell_get(fastn[-unum]) == MP_OBJ_NULL) {
+                            goto local_name_error;
                         }
+                        mp_obj_cell_set(fastn[-unum], MP_OBJ_NULL);
                         break;
+
                     case MP_BC_DELETE_NAME:
                         DECODE_QSTR;
                         mp_delete_name(qst);
+                        break;
+
+                    case MP_BC_DELETE_GLOBAL:
+                        DECODE_QSTR;
+                        mp_delete_global(qst);
                         break;
 
                     case MP_BC_DUP_TOP:
@@ -507,7 +534,7 @@ unwind_jump:
                         // if TOS is an integer, does something else
                         // else error
                         if (mp_obj_is_exception_type(TOP())) {
-                            nlr_jump(sp[-1]);
+                            nlr_raise(sp[-1]);
                         }
                         if (TOP() == mp_const_none) {
                             sp--;
@@ -584,49 +611,49 @@ unwind_jump:
                     case MP_BC_BUILD_TUPLE:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_tuple(unum, sp));
+                        SET_TOP(mp_obj_new_tuple(unum, sp));
                         break;
 
                     case MP_BC_BUILD_LIST:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_list(unum, sp));
+                        SET_TOP(mp_obj_new_list(unum, sp));
                         break;
 
                     case MP_BC_LIST_APPEND:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[unum] is a list
-                        mp_list_append(sp[-unum], sp[0]);
+                        mp_obj_list_append(sp[-unum], sp[0]);
                         sp--;
                         break;
 
                     case MP_BC_BUILD_MAP:
                         DECODE_UINT;
-                        PUSH(mp_build_map(unum));
+                        PUSH(mp_obj_new_dict(unum));
                         break;
 
                     case MP_BC_STORE_MAP:
                         sp -= 2;
-                        mp_store_map(sp[0], sp[2], sp[1]);
+                        mp_obj_dict_store(sp[0], sp[2], sp[1]);
                         break;
 
                     case MP_BC_MAP_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
-                        mp_store_map(sp[-unum - 1], sp[0], sp[-1]);
+                        mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
                         sp -= 2;
                         break;
 
                     case MP_BC_BUILD_SET:
                         DECODE_UINT;
                         sp -= unum - 1;
-                        SET_TOP(mp_build_set(unum, sp));
+                        SET_TOP(mp_obj_new_set(unum, sp));
                         break;
 
                     case MP_BC_SET_ADD:
                         DECODE_UINT;
                         // I think it's guaranteed by the compiler that sp[-unum] is a set
-                        mp_store_set(sp[-unum], sp[0]);
+                        mp_obj_set_store(sp[-unum], sp[0]);
                         sp--;
                         break;
 
@@ -638,8 +665,10 @@ unwind_jump:
                             obj1 = TOP();
                             SET_TOP(mp_obj_new_slice(obj1, obj2, NULL));
                         } else {
-                            printf("3-argument slice is not supported\n");
-                            assert(0);
+                            obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "3-argument slice is not supported");
+                            nlr_pop();
+                            fastn[0] = obj1;
+                            return MP_VM_RETURN_EXCEPTION;
                         }
                         break;
 #endif
@@ -650,25 +679,36 @@ unwind_jump:
                         sp += unum - 1;
                         break;
 
+                    case MP_BC_UNPACK_EX:
+                        DECODE_UINT;
+                        mp_unpack_ex(sp[0], unum, sp);
+                        sp += (unum & 0xff) + ((unum >> 8) & 0xff);
+                        break;
+
                     case MP_BC_MAKE_FUNCTION:
                         DECODE_UINT;
-                        PUSH(mp_make_function_from_id(unum, false, MP_OBJ_NULL));
+                        PUSH(mp_make_function_from_id(unum, MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
-                        SET_TOP(mp_make_function_from_id(unum, false, TOP()));
+                        // Stack layout: def_dict def_tuple <- TOS
+                        obj1 = POP();
+                        SET_TOP(mp_make_function_from_id(unum, obj1, TOP()));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
                         DECODE_UINT;
-                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL));
+                        // Stack layout: closure_tuple <- TOS
+                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_CLOSURE_DEFARGS:
                         DECODE_UINT;
+                        // Stack layout: def_dict def_tuple closure_tuple <- TOS
                         obj1 = POP();
-                        SET_TOP(mp_make_closure_from_id(unum, obj1, TOP()));
+                        obj2 = POP();
+                        SET_TOP(mp_make_closure_from_id(unum, obj1, obj2, TOP()));
                         break;
 
                     case MP_BC_CALL_FUNCTION:
@@ -679,38 +719,14 @@ unwind_jump:
                         SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                         break;
 
-                    case MP_BC_CALL_FUNCTION_VAR:
-                        DECODE_UINT;
-                        // unum & 0xff == n_positional
-                        // (unum >> 8) & 0xff == n_keyword
-                        // We have folowing stack layout here:
-                        // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, obj1, MP_OBJ_NULL));
-                        break;
-
-                    case MP_BC_CALL_FUNCTION_KW:
-                        DECODE_UINT;
-                        // unum & 0xff == n_positional
-                        // (unum >> 8) & 0xff == n_keyword
-                        // We have folowing stack layout here:
-                        // fun arg0 arg1 ... kw0 val0 kw1 val1 ... dict <- TOS
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, MP_OBJ_NULL, obj1));
-                        break;
-
                     case MP_BC_CALL_FUNCTION_VAR_KW:
                         DECODE_UINT;
                         // unum & 0xff == n_positional
                         // (unum >> 8) & 0xff == n_keyword
                         // We have folowing stack layout here:
                         // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
-                        obj2 = POP();
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
-                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp, obj1, obj2));
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 2;
+                        SET_TOP(mp_call_method_n_kw_var(false, unum, sp));
                         break;
 
                     case MP_BC_CALL_METHOD:
@@ -721,38 +737,14 @@ unwind_jump:
                         SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
                         break;
 
-                    case MP_BC_CALL_METHOD_VAR:
-                        DECODE_UINT;
-                        // unum & 0xff == n_positional
-                        // (unum >> 8) & 0xff == n_keyword
-                        // We have folowing stack layout here:
-                        // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
-                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, obj1, MP_OBJ_NULL));
-                        break;
-
-                    case MP_BC_CALL_METHOD_KW:
-                        DECODE_UINT;
-                        // unum & 0xff == n_positional
-                        // (unum >> 8) & 0xff == n_keyword
-                        // We have folowing stack layout here:
-                        // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... dict <- TOS
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
-                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, MP_OBJ_NULL, obj1));
-                        break;
-
                     case MP_BC_CALL_METHOD_VAR_KW:
                         DECODE_UINT;
                         // unum & 0xff == n_positional
                         // (unum >> 8) & 0xff == n_keyword
                         // We have folowing stack layout here:
                         // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
-                        obj2 = POP();
-                        obj1 = POP();
-                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
-                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp, obj1, obj2));
+                        sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 3;
+                        SET_TOP(mp_call_method_n_kw_var(true, unum, sp));
                         break;
 
                     case MP_BC_RETURN_VALUE:
@@ -791,12 +783,12 @@ unwind_return:
                                 }
                             }
                             if (obj1 == MP_OBJ_NULL) {
-                                nlr_jump(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
+                                nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
                             }
                         } else {
                             obj1 = POP();
                         }
-                        nlr_jump(mp_make_raise_obj(obj1));
+                        nlr_raise(mp_make_raise_obj(obj1));
 
                     case MP_BC_YIELD_VALUE:
 yield:
@@ -809,14 +801,14 @@ yield:
                     case MP_BC_YIELD_FROM: {
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
-#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_jump(t); }
+#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_raise(t); }
                         mp_vm_return_kind_t ret_kind;
                         obj1 = POP();
                         mp_obj_t t_exc = MP_OBJ_NULL;
                         if (inject_exc != MP_OBJ_NULL) {
                             t_exc = inject_exc;
                             inject_exc = MP_OBJ_NULL;
-                            ret_kind = mp_resume(TOP(), mp_const_none, t_exc, &obj2);
+                            ret_kind = mp_resume(TOP(), MP_OBJ_NULL, t_exc, &obj2);
                         } else {
                             ret_kind = mp_resume(TOP(), obj1, MP_OBJ_NULL, &obj2);
                         }
@@ -852,7 +844,7 @@ yield:
                                 GENERATOR_EXIT_IF_NEEDED(t_exc);
                                 break;
                             } else {
-                                nlr_jump(obj2);
+                                nlr_raise(obj2);
                             }
                         }
                     }
@@ -875,9 +867,10 @@ yield:
 
                     default:
                         printf("code %p, byte code 0x%02x not implemented\n", ip, op);
-                        assert(0);
+                        obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                         nlr_pop();
-                        return MP_VM_RETURN_NORMAL;
+                        fastn[0] = obj1;
+                        return MP_VM_RETURN_EXCEPTION;
                 }
             }
 
@@ -896,8 +889,8 @@ yield:
             // set file and line number that the exception occurred at
             // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
             // But consider how to handle nested exceptions.
-            // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj)
-            if (mp_obj_is_exception_instance(nlr.ret_val) && nlr.ret_val != &mp_const_GeneratorExit_obj) {
+            // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
+            if (mp_obj_is_exception_instance(nlr.ret_val) && nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);

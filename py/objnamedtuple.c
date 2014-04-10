@@ -102,7 +102,7 @@ STATIC void namedtuple_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC bool namedtuple_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
-    nlr_jump(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
 }
 
 STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -110,7 +110,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
     uint num_fields = namedtuple_count_fields(type->fields);
     if (n_args != num_fields) {
         // Counts include implicit "self"
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                "__new__() takes %d positional arguments but %d were given",
                                                num_fields + 1, n_args + 1));
     }

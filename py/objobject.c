@@ -11,11 +11,9 @@ typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
 } mp_obj_object_t;
 
-const mp_obj_type_t mp_type_object;
-
 STATIC mp_obj_t object_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     if (n_args != 0 || n_kw != 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "object takes no arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object takes no arguments"));
     }
 
     mp_obj_object_t *o = m_new_obj(mp_obj_object_t);

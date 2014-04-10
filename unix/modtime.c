@@ -10,13 +10,13 @@
 #include "obj.h"
 #include "runtime.h"
 
-static mp_obj_t mod_time_time() {
+STATIC mp_obj_t mod_time_time() {
     return mp_obj_new_int((machine_int_t)time(NULL));
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
-static mp_obj_t mod_time_clock() {
+STATIC mp_obj_t mod_time_clock() {
 //    return mp_obj_new_int((machine_int_t)clock());
     // POSIX requires CLOCKS_PER_SEC equals 1000000, so that's what we assume
     // float cannot represent full range of int32 precisely, so we pre-divide
@@ -24,9 +24,9 @@ static mp_obj_t mod_time_clock() {
     // to preserve integer part resolution.
     return mp_obj_new_float((float)(clock() / 1000) / 1000.0);
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
-static mp_obj_t mod_time_sleep(mp_obj_t arg) {
+STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
 #if MICROPY_ENABLE_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
@@ -39,7 +39,7 @@ static mp_obj_t mod_time_sleep(mp_obj_t arg) {
 #endif
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 void time_init() {
     mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("time"));

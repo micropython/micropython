@@ -62,8 +62,11 @@ void asm_thumb_movs_rlo_i8(asm_thumb_t *as, uint rlo_dest, int i8_src);
 void asm_thumb_movw_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src);
 void asm_thumb_movt_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src);
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
+void asm_thumb_add_reg_reg_reg(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b);
 void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src);
+void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b);
 void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8);
+void asm_thumb_ite_ge(asm_thumb_t *as);
 void asm_thumb_b_n(asm_thumb_t *as, int label);
 void asm_thumb_bcc_n(asm_thumb_t *as, int cond, int label);
 
@@ -72,10 +75,6 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src); // convenience
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
-
-void asm_thumb_add_reg_reg_reg(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b); // convenience ?
-void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b); // convenience ?
-void asm_thumb_ite_ge(asm_thumb_t *as); // convenience ?
 
 void asm_thumb_b_label(asm_thumb_t *as, int label); // convenience ?
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, int label); // convenience: picks narrow or wide branch

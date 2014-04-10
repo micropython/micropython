@@ -19,6 +19,7 @@
 #include "usb.h"
 #include "gc.h"
 #include "led.h"
+#include "build/py/py-version.h"
 
 #include "Arduino.h"
 
@@ -190,7 +191,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     return mp_const_none;
 
 pin_error:
-    nlr_jump(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
+    nlr_raise(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
@@ -359,7 +360,7 @@ bool do_file(const char *filename) {
 
     mp_lexer_free(lex);
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, false);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
     mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
@@ -380,7 +381,7 @@ bool do_file(const char *filename) {
 }
 
 void do_repl(void) {
-    stdout_tx_str("Micro Python for Teensy 3.1\r\n");
+    stdout_tx_str("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; Teensy 3.1 version\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     vstr_t line;
@@ -398,15 +399,12 @@ void do_repl(void) {
             continue;
         }
 
-        if (mp_repl_is_compound_stmt(vstr_str(&line))) {
-            for (;;) {
-                vstr_add_char(&line, '\n');
-                int len = vstr_len(&line);
-                int ret = readline(&line, "... ");
-                if (ret == 0 || vstr_len(&line) == len) {
-                    // done entering compound statement
-                    break;
-                }
+        while (mp_repl_continue_with_input(vstr_str(&line))) {
+            vstr_add_char(&line, '\n');
+            int ret = readline(&line, "... ");
+            if (ret == 0) {
+                // stop entering compound statement
+                break;
             }
         }
 
@@ -422,7 +420,7 @@ void do_repl(void) {
         } else {
             // parse okay
             mp_lexer_free(lex);
-            mp_obj_t module_fun = mp_compile(pn, source_name, true);
+            mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
             if (module_fun != mp_const_none) {
                 nlr_buf_t nlr;
                 uint32_t start = micros();

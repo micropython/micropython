@@ -35,10 +35,10 @@ $(ECHO) "CC $<"
 $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
-@cp $(@:.o=.d) $(@:.o=.P); \
-  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+@$(CP) $(@:.o=.d) $(@:.o=.P); \
+  $(SED) -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
       -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
-  rm -f $(@:.o=.d)
+  $(RM) -f $(@:.o=.d)
 endef
 
 vpath %.c . $(TOP)
@@ -61,7 +61,7 @@ $(BUILD)/%.pp: %.c
 OBJ_DIRS = $(sort $(dir $(OBJ)))
 $(OBJ): | $(OBJ_DIRS)
 $(OBJ_DIRS):
-	mkdir -p $@
+	$(MKDIR) -p $@
 
 ifneq ($(PROG),)
 # Build a standalone executable (unix and unix-cpy do this)
@@ -72,9 +72,9 @@ $(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)strip $(PROG)
+	$(Q)$(STRIP) $(PROG)
 endif
-	$(Q)size $(PROG)
+	$(Q)$(SIZE) $(PROG)
 
 clean: clean-prog
 clean-prog:

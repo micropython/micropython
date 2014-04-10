@@ -230,7 +230,7 @@ STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
     }
 }
 
-STATIC void emit_cpy_load_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_FAST %d %s\n", local_num, qstr_str(qstr));
@@ -322,13 +322,6 @@ STATIC void emit_cpy_store_subscr(emit_t *emit) {
     emit_pre(emit, -3, 1);
     if (emit->pass == PASS_3) {
         printf("STORE_SUBSCR\n");
-    }
-}
-
-STATIC void emit_cpy_store_locals(emit_t *emit) {
-    emit_pre(emit, -1, 1);
-    if (emit->pass == PASS_3) {
-        printf("STORE_LOCALS\n");
     }
 }
 
@@ -682,24 +675,24 @@ STATIC void emit_cpy_unpack_ex(emit_t *emit, int n_left, int n_right) {
     }
 }
 
-STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
+STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
     int s = 0;
-    if (have_star_arg) {
+    if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
         s += 1;
     }
-    if (have_dbl_star_arg) {
+    if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
         s += 1;
     }
     emit_pre(emit, -n_positional - 2 * n_keyword - s, 3);
     if (emit->pass == PASS_3) {
-        if (have_star_arg) {
-            if (have_dbl_star_arg) {
+        if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
+            if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
                 printf("CALL_FUNCTION_VAR_KW");
             } else {
                 printf("CALL_FUNCTION_VAR");
             }
         } else {
-            if (have_dbl_star_arg) {
+            if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
                 printf("CALL_FUNCTION_KW");
             } else {
                 printf("CALL_FUNCTION");
@@ -709,8 +702,8 @@ STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword
     }
 }
 
-STATIC void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, bool have_star_arg, bool have_dbl_star_arg) {
-    emit_cpy_call_function(emit, n_positional, n_keyword, have_star_arg, have_dbl_star_arg);
+STATIC void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+    emit_cpy_call_function(emit, n_positional, n_keyword, star_flags);
 }
 
 STATIC void emit_cpy_return_value(emit_t *emit) {
@@ -759,19 +752,19 @@ STATIC void load_cpy_const_code_and_name(emit_t *emit, qstr qstr) {
     }
 }
 
-STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     load_cpy_const_code_and_name(emit, scope->simple_name);
-    emit_pre(emit, -1 - n_default_params - 2 * n_dict_params, 3);
+    emit_pre(emit, -1 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == PASS_3) {
-        printf("MAKE_FUNCTION %d\n", (n_dict_params << 8) | n_default_params);
+        printf("MAKE_FUNCTION %d\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
-STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, int n_dict_params, int n_default_params) {
+STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     load_cpy_const_code_and_name(emit, scope->simple_name);
-    emit_pre(emit, -2 - n_default_params - 2 * n_dict_params, 3);
+    emit_pre(emit, -2 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == PASS_3) {
-        printf("MAKE_CLOSURE %d\n", (n_dict_params << 8) | n_default_params);
+        printf("MAKE_CLOSURE %d\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
@@ -833,7 +826,6 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_store_global,
     emit_cpy_store_attr,
     emit_cpy_store_subscr,
-    emit_cpy_store_locals,
     emit_cpy_delete_fast,
     emit_cpy_delete_deref,
     emit_cpy_delete_name,

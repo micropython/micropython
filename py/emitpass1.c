@@ -91,7 +91,8 @@ STATIC void emit_pass1_store_id(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
-    get_id_for_modification(emit->scope, qstr);
+    id_info_t *id = get_id_for_modification(emit->scope, qstr);
+    id->flags |= ID_FLAG_IS_DELETED;
 }
 
 const emit_method_table_t emit_pass1_method_table = {
@@ -107,7 +108,6 @@ const emit_method_table_t emit_pass1_method_table = {
     emit_pass1_store_id,
     emit_pass1_delete_id,
 
-    (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,

@@ -32,7 +32,7 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
     bool first = true;
     print(env, "{");
     for (int i = 0; i < self->set.alloc; i++) {
-        if (self->set.table[i] != MP_OBJ_NULL) {
+        if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
             if (!first) {
                 print(env, ", ");
             }
@@ -65,7 +65,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -80,12 +80,12 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set_it));
     mp_obj_set_it_t *self = self_in;
     machine_uint_t max = self->set->set.alloc;
-    mp_obj_t *table = self->set->set.table;
+    mp_set_t *set = &self->set->set;
 
     for (machine_uint_t i = self->cur; i < max; i++) {
-        if (table[i] != NULL) {
+        if (MP_SET_SLOT_IS_FILLED(set, i)) {
             self->cur = i + 1;
-            return table[i];
+            return set->table[i];
         }
     }
 
@@ -128,7 +128,7 @@ STATIC mp_obj_t set_copy(mp_obj_t self_in) {
 
     mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
     other->base.type = &mp_type_set;
-    mp_set_init(&other->set, self->set.alloc - 1);
+    mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
 
@@ -307,12 +307,10 @@ STATIC mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
 STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = self_in;
-
-    if (self->set.used == 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
+    mp_obj_t obj = mp_set_remove_first(&self->set);
+    if (obj == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
     }
-    mp_obj_t obj = mp_set_lookup(&self->set, NULL,
-                         MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_FIRST);
     return obj;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_pop_obj, set_pop);
@@ -321,7 +319,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = self_in;
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
-        nlr_jump(mp_obj_new_exception(&mp_type_KeyError));
+        nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
     }
     return mp_const_none;
 }
@@ -375,6 +373,14 @@ STATIC mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 
+STATIC mp_obj_t set_unary_op(int op, mp_obj_t self_in) {
+    mp_obj_set_t *self = self_in;
+    switch (op) {
+        case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->set.used);
+        default: return MP_OBJ_NULL; // op not supported for None
+    }
+}
 
 STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
@@ -450,6 +456,7 @@ const mp_obj_type_t mp_type_set = {
     .name = MP_QSTR_set,
     .print = set_print,
     .make_new = set_make_new,
+    .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
     .locals_dict = (mp_obj_t)&set_locals_dict,

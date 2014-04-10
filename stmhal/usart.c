@@ -145,7 +145,7 @@ STATIC void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void
 STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     if (!(n_args == 2 && n_kw == 0)) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "Usart accepts 2 arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Usart accepts 2 arguments"));
     }
 
     if (mp_obj_get_int(args[0]) > PYB_USART_MAX) {

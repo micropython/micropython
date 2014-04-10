@@ -12,6 +12,7 @@
 
 STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
+STATIC mp_obj_t dict_copy(mp_obj_t self_in);
 
 STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
@@ -32,8 +33,30 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO create from an iterable!
-    return mp_build_map(0);
+    mp_obj_t dict;
+    switch (n_args) {
+        case 0:
+            dict = mp_obj_new_dict(0);
+            break;
+
+        case 1:
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_dict)) {
+                return dict_copy(args[0]);
+            }
+            // TODO create dict from an arbitrary mapping!
+            // TODO create dict from an iterable!
+            assert(false);
+
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "dict takes at most 1 argument"));
+    }
+
+    // add to the new dict any keyword args
+    for (const mp_obj_t *a = args + n_args; n_kw > 0; n_kw--, a += 2) {
+        mp_obj_dict_store(dict, a[0], a[1]);
+    }
+
+    return dict;
 }
 
 STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
@@ -53,7 +76,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // dict load
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             if (elem == NULL) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 return elem->value;
             }
@@ -63,12 +86,42 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             return MP_BOOL(elem != NULL);
         }
+        case MP_BINARY_OP_EQUAL: {
+            // TODO: Support equality to other object types
+            if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
+                mp_obj_dict_t *rhs = rhs_in;
+                if (o->map.used != rhs->map.used) {
+                    return mp_const_false;
+                }
+
+                machine_uint_t size = o->map.alloc;
+                mp_map_t *map = &o->map;
+
+                for (machine_uint_t i = 0; i < size; i++) {
+                    if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+                        mp_map_elem_t *elem = mp_map_lookup(&rhs->map, map->table[i].key, MP_MAP_LOOKUP);
+                        if (elem == NULL || !mp_obj_equal(map->table[i].value, elem->value)) {
+                            return mp_const_false;
+                        }
+                    }
+                }
+                return mp_const_true;
+            }
+        }
         default:
             // op not supported
             return NULL;
     }
 }
 
+STATIC bool dict_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        mp_obj_dict_delete(self_in, index);
+    } else {
+        mp_obj_dict_store(self_in, index, value);
+    }
+    return true;
+}
 
 /******************************************************************************/
 /* dict iterator                                                              */
@@ -82,12 +135,12 @@ typedef struct _mp_obj_dict_it_t {
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
     mp_obj_dict_it_t *self = self_in;
     machine_uint_t max = self->dict->map.alloc;
-    mp_map_elem_t *table = self->dict->map.table;
+    mp_map_t *map = &self->dict->map;
 
     for (int i = self->cur; i < max; i++) {
-        if (table[i].key != NULL) {
+        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             self->cur = i + 1;
-            return &(table[i]);
+            return &(map->table[i]);
         }
     }
 
@@ -141,6 +194,8 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     mp_obj_dict_t *other = mp_obj_new_dict(self->map.alloc);
     other->map.used = self->map.used;
+    other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
+    other->map.table_is_fixed_array = 0;
     memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
     return other;
 }
@@ -181,7 +236,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     if (elem == NULL || elem->value == NULL) {
         if (deflt == NULL) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
             } else {
                 value = mp_const_none;
             }
@@ -190,10 +245,6 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
         }
     } else {
         value = elem->value;
-        if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-            // catch the leak (from mp_map_lookup)
-            m_free(elem, sizeof(mp_map_elem_t));
-        }
     }
     if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
         elem->value = value;
@@ -240,7 +291,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     if (self->map.used == 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
     }
     mp_obj_dict_it_t *iter = mp_obj_new_dict_iterator(self, 0);
 
@@ -269,7 +320,7 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
         if (key == MP_OBJ_NULL
             || value == MP_OBJ_NULL
             || stop != MP_OBJ_NULL) {
-            nlr_jump(mp_obj_new_exception_msg(
+            nlr_raise(mp_obj_new_exception_msg(
                          &mp_type_ValueError,
                          "dictionary update sequence has the wrong length"));
         } else {
@@ -441,14 +492,19 @@ const mp_obj_type_t mp_type_dict = {
     .make_new = dict_make_new,
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
+    .store_item = dict_store_item,
     .getiter = dict_getiter,
     .locals_dict = (mp_obj_t)&dict_locals_dict,
 };
 
+void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args) {
+    dict->base.type = &mp_type_dict;
+    mp_map_init(&dict->map, n_args);
+}
+
 mp_obj_t mp_obj_new_dict(int n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
-    o->base.type = &mp_type_dict;
-    mp_map_init(&o->map, n_args);
+    mp_obj_dict_init(o, n_args);
     return o;
 }
 
@@ -460,6 +516,13 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+    return self_in;
+}
+
+mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
+    mp_obj_dict_t *self = self_in;
+    dict_get_helper(&self->map, key, NULL, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     return self_in;
 }
 

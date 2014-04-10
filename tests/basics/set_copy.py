@@ -3,6 +3,4 @@ t = s.copy()
 s.add(5)
 t.add(7)
 for i in s, t:
-    l = list(i)
-    l.sort()
-    print(l)
+    print(sorted(i))

@@ -38,7 +38,7 @@ STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res != FR_OK) {
         // TODO should be mp_type_FileNotFoundError
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
     }
 
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);
@@ -91,9 +91,9 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
             return mp_const_none;
         case FR_EXIST:
             // TODO should be FileExistsError
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
     }
 }
 
@@ -107,7 +107,7 @@ STATIC mp_obj_t os_remove(mp_obj_t path_o) {
         case FR_OK:
             return mp_const_none;
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
     }
 }
 
@@ -121,7 +121,7 @@ STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
         case FR_OK:
             return mp_const_none;
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing directory '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing directory '%s'", path));
     }
 }
 
@@ -162,16 +162,19 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), (mp_obj_t)&os_urandom_obj },
 };
 
-STATIC const mp_map_t os_module_globals = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
-    .alloc = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
-    .table = (mp_map_elem_t*)os_module_globals_table,
+STATIC const mp_obj_dict_t os_module_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)os_module_globals_table,
+    },
 };
 
 const mp_obj_module_t os_module = {
     .base = { &mp_type_module },
     .name = MP_QSTR_os,
-    .globals = (mp_map_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t*)&os_module_globals,
 };

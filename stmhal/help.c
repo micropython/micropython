@@ -14,27 +14,36 @@ STATIC const char *help_text =
 "Specific commands for the board:\n"
 "  pyb.info()      -- print some general information\n"
 "  pyb.gc()        -- run the garbage collector\n"
-"  pyb.repl_info(<val>) -- enable/disable printing of info after each command\n"
-"  pyb.delay(<n>)  -- wait for n milliseconds\n"
-"  pyb.udelay(<n>) -- wait for n microseconds\n"
+"  pyb.repl_info(val) -- enable/disable printing of info after each command\n"
+"  pyb.delay(n)    -- wait for n milliseconds\n"
+"  pyb.udelay(n)   -- wait for n microseconds\n"
 "  pyb.switch()    -- return True/False if switch pressed or not\n"
-"  pyb.Led(<n>)    -- create Led object for LED n (n=1,2,3,4)\n"
+"  pyb.switch(f)   -- call the given function when the switch is pressed\n"
+"  pyb.Led(n)      -- create Led object for LED n (n=1,2,3,4)\n"
 "                     Led methods: on(), off(), toggle(), intensity(<n>)\n"
-"  pyb.Servo(<n>)  -- create Servo object for servo n (n=1,2,3,4)\n"
-"                     Servo methods: angle(<x>)\n"
+"  pyb.Servo(n)    -- create Servo object for servo n (n=1,2,3,4)\n"
+"                     Servo methods: calibrate(...), pulse_width([p]), angle([x, [t]]), speed([x, [t]])\n"
 "  pyb.Accel()     -- create an Accelerometer object\n"
-"                     Accelerometer methods: x(), y(), z(), tilt()\n"
+"                     Accelerometer methods: x(), y(), z(), tilt(), filtered_xyz()\n"
 "  pyb.rng()       -- get a 30-bit hardware random number\n"
-"  pyb.gpio(<port>)        -- get port value (port='A4' for example)\n"
-"  pyb.gpio(<port>, <val>) -- set port value, True or False, 1 or 0\n"
-"  pyb.ADC(<port>) -- make an analog port object (port='C0' for example)\n"
+"  pyb.gpio_in(port, [m])  -- set IO port to input, mode m\n"
+"  pyb.gpio_out(port, [m]) -- set IO port to output, mode m\n"
+"  pyb.gpio(port)      -- get digital port value\n"
+"  pyb.gpio(port, val) -- set digital port value, True or False, 1 or 0\n"
+"  pyb.ADC(port)   -- make an analog port object\n"
 "                     ADC methods: read()\n"
+"\n"
+"Ports are numbered X1-X12, X17-X22, Y1-Y12, or by their MCU name\n"
+"Port input modes are: pyb.PULL_NONE, pyb.PULL_UP, pyb.PULL_DOWN\n"
+"Port output modes are: pyb.PUSH_PULL, pyb.OPEN_DRAIN\n"
 "\n"
 "Control commands:\n"
 "  CTRL-A       -- on a blank line, enter raw REPL mode\n"
 "  CTRL-B       -- on a blank line, enter normal REPL mode\n"
 "  CTRL-C       -- interrupt a running program\n"
 "  CTRL-D       -- on a blank line, do a soft reset of the board\n"
+"\n"
+"For further help on a specific object, type help(obj)\n"
 ;
 
 STATIC void pyb_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
@@ -59,7 +68,7 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
 
         mp_map_t *map = NULL;
         if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            map = mp_obj_module_get_globals(args[0]);
+            map = mp_obj_dict_get_map(mp_obj_module_get_globals(args[0]));
         } else {
             mp_obj_type_t *type;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {

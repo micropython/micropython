@@ -142,7 +142,7 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
 
     mp_lexer_free(lex);
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
     mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
@@ -283,15 +283,12 @@ void pyexec_repl(void) {
             continue;
         }
 
-        if (mp_repl_is_compound_stmt(vstr_str(&line))) {
-            for (;;) {
-                vstr_add_char(&line, '\n');
-                int len = vstr_len(&line);
-                int ret = readline(&line, "... ");
-                if (ret == VCP_CHAR_CTRL_D || vstr_len(&line) == len) {
-                    // done entering compound statement
-                    break;
-                }
+        while (mp_repl_continue_with_input(vstr_str(&line))) {
+            vstr_add_char(&line, '\n');
+            int ret = readline(&line, "... ");
+            if (ret == VCP_CHAR_CTRL_D) {
+                // stop entering compound statement
+                break;
             }
         }
 

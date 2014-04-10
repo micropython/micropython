@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "nlr.h"
 #include "misc.h"
@@ -11,6 +12,7 @@
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
@@ -21,19 +23,41 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
     return o;
 }
 
-void int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        print(env, INT_FMT, MP_OBJ_SMALL_INT_VALUE(self_in));
-    } else {
-        // TODO would rather not allocate memory to print...
-        mp_obj_int_t *self = self_in;
-        char *str = mpz_as_str(&self->mpz, 10);
-        print(env, "%s", str);
-        m_free(str, 0);
+// This routine expects you to pass in a buffer and size (in *buf and buf_size).
+// If, for some reason, this buffer is too small, then it will allocate a
+// buffer and return the allocated buffer and size in *buf and *buf_size. It
+// is the callers responsibility to free this allocated buffer.
+//
+// The resulting formatted string will be returned from this function and the
+// formatted size will be in *fmt_size.
+//
+// This particular routine should only be called for the mpz representation of the int.
+char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+                                int base, const char *prefix, char base_char, char comma) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = self_in;
+
+    uint needed_size = mpz_as_str_size_formatted(&self->mpz, base, prefix, comma);
+    if (needed_size > *buf_size) {
+        *buf = m_new(char, needed_size);
+        *buf_size = needed_size;
     }
+    char *str = *buf;
+
+    *fmt_size = mpz_as_str_inpl(&self->mpz, base, prefix, base_char, comma, str);
+
+    return str;
 }
 
-mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
+bool mp_obj_int_is_positive(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
+    }
+    mp_obj_int_t *self = self_in;
+    return !self->mpz.neg;
+}
+
+mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
@@ -44,7 +68,7 @@ mp_obj_t int_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;
@@ -74,8 +98,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
 #endif
     } else {
-        // unsupported type
-        return MP_OBJ_NULL;
+        // delegate to generic function to check for extra cases
+        return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
     }
 
     if (0) {
@@ -106,7 +130,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
-		        if (zlhs->neg != zrhs->neg) {
+                if (zlhs->neg != zrhs->neg) {
                     if (!mpz_is_zero(&rem)) {
                         mpz_t mpzone; mpz_init_from_int(&mpzone, -1);
                         mpz_add_inpl(&res->mpz, &res->mpz, &mpzone);
@@ -120,8 +144,8 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
-		        // Check signs and do Python style modulo
-		        if (zlhs->neg != zrhs->neg) {
+                // Check signs and do Python style modulo
+                if (zlhs->neg != zrhs->neg) {
                     mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
                 }
                 break;
@@ -147,7 +171,7 @@ mp_obj_t int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 // TODO check conversion overflow
                 machine_int_t irhs = mpz_as_int(zrhs);
                 if (irhs < 0) {
-                    nlr_jump(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -221,7 +245,7 @@ mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
     len -= skip;
     uint n = mpz_set_from_str(&o->mpz, str, len, false, base);
     if (n != len) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
     }
     return o;
 }
@@ -236,8 +260,18 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
 }
 
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
-    // TODO: Check overflow
-    return mp_obj_int_get(self_in);
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        machine_int_t value;
+        if (mpz_as_int_checked(&self->mpz, &value)) {
+            return value;
+        } else {
+            // overflow
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
+        }
+    }
 }
 
 #if MICROPY_ENABLE_FLOAT

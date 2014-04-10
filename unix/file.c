@@ -17,14 +17,14 @@ typedef struct _mp_obj_fdfile_t {
     int fd;
 } mp_obj_fdfile_t;
 
-static const mp_obj_type_t rawfile_type;
+STATIC const mp_obj_type_t rawfile_type;
 
-static void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_fdfile_t *self = self_in;
     print(env, "<io.FileIO %d>", self->fd);
 }
 
-static machine_int_t fdfile_read(mp_obj_t o_in, void *buf, machine_uint_t size, int *errcode) {
+STATIC machine_int_t fdfile_read(mp_obj_t o_in, void *buf, machine_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     machine_int_t r = read(o->fd, buf, size);
     if (r == -1) {
@@ -33,7 +33,7 @@ static machine_int_t fdfile_read(mp_obj_t o_in, void *buf, machine_uint_t size, 
     return r;
 }
 
-static machine_int_t fdfile_write(mp_obj_t o_in, const void *buf, machine_uint_t size, int *errcode) {
+STATIC machine_int_t fdfile_write(mp_obj_t o_in, const void *buf, machine_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     machine_int_t r = write(o->fd, buf, size);
     if (r == -1) {
@@ -42,27 +42,32 @@ static machine_int_t fdfile_write(mp_obj_t o_in, const void *buf, machine_uint_t
     return r;
 }
 
-static mp_obj_t fdfile_close(mp_obj_t self_in) {
+STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     close(self->fd);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
-static mp_obj_t fdfile_fileno(mp_obj_t self_in) {
+mp_obj_t fdfile___exit__(uint n_args, const mp_obj_t *args) {
+    return fdfile_close(args[0]);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);
+
+STATIC mp_obj_t fdfile_fileno(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
 
-static mp_obj_fdfile_t *fdfile_new(int fd) {
+STATIC mp_obj_fdfile_t *fdfile_new(int fd) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     o->base.type = &rawfile_type;
     o->fd = fd;
     return o;
 }
 
-static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     o->base.type = type_in;
 
@@ -100,7 +105,7 @@ static mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
     int fd = open(fname, mode, 0644);
     if (fd == -1) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
     }
     return fdfile_new(fd);
 }
@@ -112,21 +117,25 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&fdfile___exit___obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
-static const mp_obj_type_t rawfile_type = {
+STATIC const mp_stream_p_t rawfile_stream_p = {
+    .read = fdfile_read,
+    .write = fdfile_write,
+};
+
+STATIC const mp_obj_type_t rawfile_type = {
     { &mp_type_type },
-    .name = MP_QSTR_io_dot_FileIO,
+    .name = MP_QSTR_FileIO,
     .print = fdfile_print,
     .make_new = fdfile_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = {
-        .read = fdfile_read,
-        .write = fdfile_write,
-    },
+    .stream_p = &rawfile_stream_p,
     .locals_dict = (mp_obj_t)&rawfile_locals_dict,
 };
 

@@ -4,7 +4,7 @@ include ../py/mkenv.mk
 PROG = micropython.exe
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS = ../unix/qstrdefsport.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -22,8 +22,8 @@ endif
 
 # source files
 SRC_C = \
-	main.c \
-	file.c \
+	unix/main.c \
+	unix/file.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 LIB = -lreadline

@@ -20,6 +20,7 @@ typedef struct _mp_obj_list_t {
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 STATIC mp_obj_list_t *list_new(uint n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
+STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args);
 
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
@@ -60,7 +61,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
     }
     return NULL;
 }
@@ -123,12 +124,11 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             list_extend(lhs, rhs);
             return o;
         }
-        case MP_BINARY_OP_MULTIPLY:
-        {
-            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+        case MP_BINARY_OP_MULTIPLY: {
+            machine_int_t n;
+            if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return NULL;
             }
-            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
             mp_obj_list_t *s = list_new(o->len * n);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return s;
@@ -146,6 +146,16 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             // op not supported
             return NULL;
     }
+}
+
+STATIC bool list_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        mp_obj_t args[2] = {self_in, index};
+        list_pop(2, args);
+    } else {
+        mp_obj_list_store(self_in, index, value);
+    }
+    return true;
 }
 
 STATIC mp_obj_t list_getiter(mp_obj_t o_in) {
@@ -186,7 +196,7 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = args[0];
     if (self->len == 0) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
     }
     uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
@@ -406,7 +416,7 @@ mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(n_args >= 1);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     if (n_args > 1) {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError,
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "list.sort takes no positional arguments"));
     }
     mp_obj_list_t *self = args[0];
@@ -531,6 +541,7 @@ const mp_obj_type_t mp_type_list = {
     .make_new = list_make_new,
     .unary_op = list_unary_op,
     .binary_op = list_binary_op,
+    .store_item = list_store_item,
     .getiter = list_getiter,
     .locals_dict = (mp_obj_t)&list_locals_dict,
 };
@@ -558,6 +569,13 @@ void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items) {
     mp_obj_list_t *self = self_in;
     *len = self->len;
     *items = self->items;
+}
+
+void mp_obj_list_set_len(mp_obj_t self_in, uint len) {
+    // trust that the caller knows what it's doing
+    // TODO realloc if len got much smaller than alloc
+    mp_obj_list_t *self = self_in;
+    self->len = len;
 }
 
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {

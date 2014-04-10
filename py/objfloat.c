@@ -24,6 +24,10 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     char buf[32];
     format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
     print(env, "%s", buf);
+    if (strchr(buf, '.') == NULL) {
+        // Python floats always have decimal point
+        print(env, ".0");
+    }
 #else
     char buf[32];
     sprintf(buf, "%.8g", (double) o->value);
@@ -57,7 +61,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
             }
 
         default:
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -121,9 +125,11 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
             lhs_val /= rhs_val; 
 check_zero_division:
             if (isinf(lhs_val)){ // check for division by zero
-                nlr_jump(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
             }
             break;
+        case MP_BINARY_OP_POWER:
+        case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
         case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
         case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);

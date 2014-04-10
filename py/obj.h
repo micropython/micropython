@@ -23,6 +23,11 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_OBJ_NULL ((mp_obj_t)NULL)
 
+// The SENTINEL object is used for various internal purposes where one needs
+// an object which is unique from all other objects, including MP_OBJ_NULL.
+
+#define MP_OBJ_SENTINEL ((mp_obj_t)8)
+
 // These macros check for small int, qstr or object, and access small int and qstr values
 //  - xxxx...xxx1: a small int, bits 1 and above are the value
 //  - xxxx...xx10: a qstr, bits 2 and above are the value
@@ -103,12 +108,14 @@ typedef struct _mp_map_t {
     mp_map_elem_t *table;
 } mp_map_t;
 
+// These can be or'd together
 typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP,                    // 0
     MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
-    MP_MAP_LOOKUP_FIRST = 4,
 } mp_map_lookup_kind_t;
+
+#define MP_MAP_SLOT_IS_FILLED(map, pos) ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL)
 
 void mp_map_init(mp_map_t *map, int n);
 void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
@@ -117,6 +124,7 @@ void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
+void mp_map_dump(mp_map_t *map);
 
 // Underlying set implementation (not set object)
 
@@ -126,8 +134,11 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
+#define MP_SET_SLOT_IS_FILLED(set, pos) ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL)
+
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
+mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
 
 // Type definitions for methods
@@ -152,8 +163,8 @@ typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, uint n_args, uint n_kw, const mp
 typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
 typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded
-typedef bool (*mp_store_item_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value); // return true if store succeeded
+typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
+typedef bool (*mp_store_item_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
 
 typedef struct _mp_method_t {
     qstr name;
@@ -185,6 +196,8 @@ typedef struct _buffer_info_t {
 typedef struct _mp_buffer_p_t {
     machine_int_t (*get_buffer)(mp_obj_t obj, buffer_info_t *bufinfo, int flags);
 } mp_buffer_p_t;
+bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo);
+void mp_get_buffer_raise(mp_obj_t obj, buffer_info_t *bufinfo);
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
@@ -206,9 +219,10 @@ struct _mp_obj_type_t {
     mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
 
     mp_load_attr_fun_t load_attr;
-    mp_store_attr_fun_t store_attr;
-    // Implements container[index] = val; note that load_item is implemented
-    // by binary_op(RT_BINARY_OP_SUBSCR)
+    mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
+
+    // Implements container[index] = val.  If val == MP_OBJ_NULL, then it's a delete.
+    // Note that load_item is implemented by binary_op(RT_BINARY_OP_SUBSCR)
     mp_store_item_fun_t store_item;
 
     mp_fun_1_t getiter;
@@ -218,7 +232,7 @@ struct _mp_obj_type_t {
     // in mp_obj_type_t at the expense of extra pointer and extra dereference
     // when actually used.
     mp_buffer_p_t buffer_p;
-    mp_stream_p_t stream_p;
+    const mp_stream_p_t *stream_p;
 
     // these are for dynamically created types (classes)
     mp_obj_t bases_tuple;
@@ -241,7 +255,6 @@ struct _mp_obj_type_t {
 typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant types, globally accessible
-extern const mp_obj_type_t mp_type_object;
 extern const mp_obj_type_t mp_type_type;
 extern const mp_obj_type_t mp_type_object;
 extern const mp_obj_type_t mp_type_NoneType;
@@ -249,6 +262,7 @@ extern const mp_obj_type_t mp_type_bool;
 extern const mp_obj_type_t mp_type_int;
 extern const mp_obj_type_t mp_type_str;
 extern const mp_obj_type_t mp_type_bytes;
+extern const mp_obj_type_t mp_type_bytearray;
 extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
 extern const mp_obj_type_t mp_type_tuple;
@@ -307,6 +321,7 @@ extern const struct _mp_obj_bool_t mp_const_false_obj;
 extern const struct _mp_obj_bool_t mp_const_true_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_ellipsis_t mp_const_ellipsis_obj;
+extern const struct _mp_obj_exception_t mp_const_MemoryError_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 // General API for objects
@@ -354,12 +369,13 @@ void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(mp_obj_t exc);
 
 int mp_obj_is_true(mp_obj_t arg);
+bool mp_obj_is_integer(mp_obj_t o_in); // returns true if o_in is bool, small int, or long int
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
-bool mp_obj_less(mp_obj_t o1, mp_obj_t o2);
 
 machine_int_t mp_obj_get_int(mp_obj_t arg);
+bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
@@ -429,6 +445,7 @@ mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 // list
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
+void mp_obj_list_set_len(mp_obj_t self_in, uint len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
@@ -437,8 +454,10 @@ typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
     mp_map_t map;
 } mp_obj_dict_t;
+void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args);
 uint mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
+mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
 mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 
 // set
@@ -475,9 +494,9 @@ MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     qstr name;
-    mp_map_t *globals;
+    mp_obj_dict_t *globals;
 } mp_obj_module_t;
-mp_map_t *mp_obj_module_get_globals(mp_obj_t self_in);
+mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod

@@ -1,6 +1,6 @@
 Build Instructions for Teensy 3.1
 
-This assumes that you have TeensyDuino installed and set the ARUINO environment
+This assumes that you have TeensyDuino installed and set the ARDUINO environment
 variable pointing to the where Arduino with TeensyDuino is installed.
 
 ```

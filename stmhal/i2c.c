@@ -86,7 +86,7 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
 
     // check i2c number
     if (!(0 <= i2c_id && i2c_id < PYB_NUM_I2C)) {
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C bus %d does not exist", i2c_id + 1));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C bus %d does not exist", i2c_id + 1));
     }
 
     // get i2c object
@@ -130,7 +130,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args) {
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Read failed with code %d", status));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Read failed with code %d", status));
     }
 
     return mp_obj_str_builder_end(o);
@@ -152,14 +152,14 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
         uint8_t data[1] = {mp_obj_get_int(args[3])};
         status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     } else {
-        nlr_jump(mp_obj_new_exception_msg(&mp_type_TypeError, "data argument must be an integer or support the buffer protocol"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "data argument must be an integer or support the buffer protocol"));
     }
 
     //printf("Write got %d\n", status);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Write failed with code %d", status));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Write failed with code %d", status));
     }
 
     return mp_const_none;

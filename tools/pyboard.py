@@ -12,6 +12,11 @@ Example usage:
     pyb.exec('pyb.Led(1).on()')
     pyb.exit_raw_repl()
 
+To run a script from the local machine on the board and print out the results:
+
+    import pyboard
+    pyboard.execfile('test.py', device='/dev/ttyACM0')
+
 """
 
 import time
@@ -45,28 +50,50 @@ class Pyboard:
 
     def exec(self, command):
         command_bytes = bytes(command, encoding='ascii')
-        for i in range(0, len(command_bytes), 10):
-            self.serial.write(command_bytes[i:min(i+10, len(command_bytes))])
+        for i in range(0, len(command_bytes), 32):
+            self.serial.write(command_bytes[i:min(i+32, len(command_bytes))])
             time.sleep(0.01)
         self.serial.write(b'\x04')
         data = self.serial.read(2)
         if data != b'OK':
             raise Exception('could not exec command')
         data = self.serial.read(2)
-        while self.serial.inWaiting() > 0:
-            data = data + self.serial.read(self.serial.inWaiting())
-            time.sleep(0.1)
+        timeout = 0
+        while True:
+            if self.serial.inWaiting() > 0:
+                data = data + self.serial.read(self.serial.inWaiting())
+                timeout = 0
+            elif data.endswith(b'\x04>'):
+                break
+            else:
+                timeout += 1
+                if timeout > 100:
+                    break
+                time.sleep(0.1)
         if not data.endswith(b'\x04>'):
             print(data)
-            raise Exception('could not exec command')
+            raise Exception('timeout waiting for EOF reception')
         if data.startswith(b'Traceback') or data.startswith(b'  File '):
             print(data)
             raise Exception('command failed')
         return data[:-2]
 
+    def execfile(self, filename):
+        with open(filename) as f:
+            pyfile = f.read()
+        return self.exec(pyfile)
+
     def get_time(self):
         t = str(self.exec('pyb.time()'), encoding='ascii').strip().split()[1].split(':')
         return int(t[0]) * 3600 + int(t[1]) * 60 + int(t[2])
+
+def execfile(filename, device='/dev/ttyACM0'):
+    pyb = Pyboard(device)
+    pyb.enter_raw_repl()
+    output = pyb.execfile(filename)
+    print(str(output, encoding='ascii'), end='')
+    pyb.exit_raw_repl()
+    pyb.close()
 
 def run_test():
     device = '/dev/ttyACM0'

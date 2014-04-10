@@ -38,8 +38,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "usbd_cdc_msc_hid.h"
-#include "usbd_cdc_interface.h"
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -47,30 +45,12 @@
 #include "obj.h"
 #include "servo.h"
 
-TIM_HandleTypeDef TIM3_Handle;
-
 /**
   * @brief  Initializes the Global MSP.
   * @param  None
   * @retval None
   */
 void HAL_MspInit(void) {
-    // set up the timer for USBD CDC
-    __TIM3_CLK_ENABLE();
-
-    TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
-    TIM3_Handle.Init.Prescaler = 84-1;
-    TIM3_Handle.Init.ClockDivision = 0;
-    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    HAL_TIM_Base_Init(&TIM3_Handle);
-
-    HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
-    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
-        /* Starting Error */
-    }
 }
 
 /**
@@ -79,9 +59,6 @@ void HAL_MspInit(void) {
   * @retval None
   */
 void HAL_MspDeInit(void) {
-    // reset TIM3 timer
-    __TIM3_FORCE_RESET();
-    __TIM3_RELEASE_RESET();
 }
 
 /**
@@ -144,14 +121,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 {
   /*##-1- Reset peripherals ##################################################*/
    __HAL_RCC_RTC_DISABLE();
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    if (htim == &TIM3_Handle) {
-        USBD_CDC_HAL_TIM_PeriodElapsedCallback();
-    } else if (htim == &TIM2_Handle) {
-        servo_timer_irq_callback();
-    }
 }
 
 /**
