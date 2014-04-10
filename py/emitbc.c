@@ -171,7 +171,7 @@ STATIC void emit_write_byte_code_byte_qstr(emit_t* emit, byte b, qstr qstr) {
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
-STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, int label) {
+STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, uint label) {
     uint byte_code_offset;
     if (emit->pass < PASS_3) {
         byte_code_offset = 0;
@@ -185,7 +185,7 @@ STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, int 
 }
 
 // signed labels are relative to ip following this instruction, stored as 16 bits, in excess
-STATIC void emit_write_byte_code_byte_signed_label(emit_t* emit, byte b1, int label) {
+STATIC void emit_write_byte_code_byte_signed_label(emit_t* emit, byte b1, uint label) {
     int byte_code_offset;
     if (emit->pass < PASS_3) {
         byte_code_offset = 0;
@@ -329,7 +329,7 @@ STATIC void emit_bc_pre(emit_t *emit, int stack_size_delta) {
     emit->last_emit_was_return_value = false;
 }
 
-STATIC void emit_bc_label_assign(emit_t *emit, int l) {
+STATIC void emit_bc_label_assign(emit_t *emit, uint l) {
     emit_bc_pre(emit, 0);
     assert(l < emit->max_num_labels);
     if (emit->pass == PASS_2) {
@@ -551,37 +551,37 @@ STATIC void emit_bc_rot_three(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_ROT_THREE);
 }
 
-STATIC void emit_bc_jump(emit_t *emit, int label) {
+STATIC void emit_bc_jump(emit_t *emit, uint label) {
     emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP, label);
 }
 
-STATIC void emit_bc_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_bc_pop_jump_if_true(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_POP_JUMP_IF_TRUE, label);
 }
 
-STATIC void emit_bc_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_bc_pop_jump_if_false(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_POP_JUMP_IF_FALSE, label);
 }
 
-STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP_IF_TRUE_OR_POP, label);
 }
 
-STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP_IF_FALSE_OR_POP, label);
 }
 
-STATIC void emit_bc_setup_loop(emit_t *emit, int label) {
+STATIC void emit_bc_setup_loop(emit_t *emit, uint label) {
     emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_LOOP, label);
 }
 
-STATIC void emit_bc_unwind_jump(emit_t *emit, int label, int except_depth) {
+STATIC void emit_bc_unwind_jump(emit_t *emit, uint label, int except_depth) {
     if (except_depth == 0) {
         emit_bc_jump(emit, label);
     } else {
@@ -591,7 +591,7 @@ STATIC void emit_bc_unwind_jump(emit_t *emit, int label, int except_depth) {
     }
 }
 
-STATIC void emit_bc_setup_with(emit_t *emit, int label) {
+STATIC void emit_bc_setup_with(emit_t *emit, uint label) {
     emit_bc_pre(emit, 7);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
 }
@@ -601,12 +601,12 @@ STATIC void emit_bc_with_cleanup(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_WITH_CLEANUP);
 }
 
-STATIC void emit_bc_setup_except(emit_t *emit, int label) {
+STATIC void emit_bc_setup_except(emit_t *emit, uint label) {
     emit_bc_pre(emit, 6);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_EXCEPT, label);
 }
 
-STATIC void emit_bc_setup_finally(emit_t *emit, int label) {
+STATIC void emit_bc_setup_finally(emit_t *emit, uint label) {
     emit_bc_pre(emit, 6);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_FINALLY, label);
 }
@@ -621,7 +621,7 @@ STATIC void emit_bc_get_iter(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_GET_ITER);
 }
 
-STATIC void emit_bc_for_iter(emit_t *emit, int label) {
+STATIC void emit_bc_for_iter(emit_t *emit, uint label) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_FOR_ITER, label);
 }

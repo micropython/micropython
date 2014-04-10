@@ -32,7 +32,7 @@ typedef struct _emit_method_table_t {
     void (*store_id)(emit_t *emit, qstr qstr);
     void (*delete_id)(emit_t *emit, qstr qstr);
 
-    void (*label_assign)(emit_t *emit, int l);
+    void (*label_assign)(emit_t *emit, uint l);
     void (*import_name)(emit_t *emit, qstr qstr);
     void (*import_from)(emit_t *emit, qstr qstr);
     void (*import_star)(emit_t *emit);
@@ -68,21 +68,21 @@ typedef struct _emit_method_table_t {
     void (*pop_top)(emit_t *emit);
     void (*rot_two)(emit_t *emit);
     void (*rot_three)(emit_t *emit);
-    void (*jump)(emit_t *emit, int label);
-    void (*pop_jump_if_true)(emit_t *emit, int label);
-    void (*pop_jump_if_false)(emit_t *emit, int label);
-    void (*jump_if_true_or_pop)(emit_t *emit, int label);
-    void (*jump_if_false_or_pop)(emit_t *emit, int label);
-    void (*setup_loop)(emit_t *emit, int label);
-    void (*break_loop)(emit_t *emit, int label, int except_depth);
-    void (*continue_loop)(emit_t *emit, int label, int except_depth);
-    void (*setup_with)(emit_t *emit, int label);
+    void (*jump)(emit_t *emit, uint label);
+    void (*pop_jump_if_true)(emit_t *emit, uint label);
+    void (*pop_jump_if_false)(emit_t *emit, uint label);
+    void (*jump_if_true_or_pop)(emit_t *emit, uint label);
+    void (*jump_if_false_or_pop)(emit_t *emit, uint label);
+    void (*setup_loop)(emit_t *emit, uint label);
+    void (*break_loop)(emit_t *emit, uint label, int except_depth);
+    void (*continue_loop)(emit_t *emit, uint label, int except_depth);
+    void (*setup_with)(emit_t *emit, uint label);
     void (*with_cleanup)(emit_t *emit);
-    void (*setup_except)(emit_t *emit, int label);
-    void (*setup_finally)(emit_t *emit, int label);
+    void (*setup_except)(emit_t *emit, uint label);
+    void (*setup_finally)(emit_t *emit, uint label);
     void (*end_finally)(emit_t *emit);
     void (*get_iter)(emit_t *emit);
-    void (*for_iter)(emit_t *emit, int label);
+    void (*for_iter)(emit_t *emit, uint label);
     void (*for_iter_end)(emit_t *emit);
     void (*pop_block)(emit_t *emit);
     void (*pop_except)(emit_t *emit);
@@ -136,7 +136,7 @@ typedef struct _emit_inline_asm_method_table_t {
     void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_inline_asm_t *emit);
     int (*count_params)(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params);
-    void (*label)(emit_inline_asm_t *emit, int label_num, qstr label_id);
+    void (*label)(emit_inline_asm_t *emit, uint label_num, qstr label_id);
     void (*op)(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args);
 } emit_inline_asm_method_table_t;
 

@@ -43,10 +43,10 @@ typedef struct _compiler_t {
     uint8_t had_error; // try to keep compiler clean from nlr
     uint8_t func_arg_is_super; // used to compile special case of super() function call
 
-    int next_label;
+    uint next_label;
 
-    int break_label;
-    int continue_label;
+    uint break_label;
+    uint continue_label;
     int break_continue_except_level;
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
@@ -196,7 +196,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
-STATIC int comp_next_label(compiler_t *comp) {
+STATIC uint comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
@@ -467,7 +467,7 @@ STATIC void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
             if (jump_if == false) {
-                int label2 = comp_next_label(comp);
+                uint label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     cpython_c_if_cond(comp, pns->nodes[i], true, label2, true);
                 }
@@ -485,7 +485,7 @@ STATIC void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if
                     cpython_c_if_cond(comp, pns->nodes[i], false, label, true);
                 }
             } else {
-                int label2 = comp_next_label(comp);
+                uint label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     cpython_c_if_cond(comp, pns->nodes[i], false, label2, true);
                 }
@@ -528,7 +528,7 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
             if (jump_if == false) {
-                int label2 = comp_next_label(comp);
+                uint label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     c_if_cond(comp, pns->nodes[i], true, label2);
                 }
@@ -546,7 +546,7 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
                     c_if_cond(comp, pns->nodes[i], false, label);
                 }
             } else {
-                int label2 = comp_next_label(comp);
+                uint label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
                     c_if_cond(comp, pns->nodes[i], false, label2);
                 }
@@ -1202,7 +1202,7 @@ void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns_test_if_expr = (mp_parse_node_struct_t*)pns->nodes[0];
         mp_parse_node_struct_t *pns_test_if_else = (mp_parse_node_struct_t*)pns_test_if_expr->nodes[1];
 
-        int l_fail = comp_next_label(comp);
+        uint l_fail = comp_next_label(comp);
         c_if_cond(comp, pns_test_if_else->nodes[0], false, l_fail); // condition
         compile_node(comp, pns_test_if_expr->nodes[0]); // success value
         EMIT(return_value);
@@ -1451,7 +1451,7 @@ void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int l_end = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);
     EMIT_ARG(load_global, MP_QSTR_AssertionError); // we load_global instead of load_id, to be consistent with CPython
     if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
@@ -1466,9 +1466,9 @@ void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // TODO proper and/or short circuiting
 
-    int l_end = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
 
-    int l_fail = comp_next_label(comp);
+    uint l_fail = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
     compile_node(comp, pns->nodes[1]); // if block
@@ -1529,10 +1529,10 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 #define START_BREAK_CONTINUE_BLOCK \
-    int old_break_label = comp->break_label; \
-    int old_continue_label = comp->continue_label; \
-    int break_label = comp_next_label(comp); \
-    int continue_label = comp_next_label(comp); \
+    uint old_break_label = comp->break_label; \
+    uint old_continue_label = comp->continue_label; \
+    uint break_label = comp_next_label(comp); \
+    uint continue_label = comp_next_label(comp); \
     comp->break_label = break_label; \
     comp->continue_label = continue_label; \
     comp->break_continue_except_level = comp->cur_except_level;
@@ -1547,7 +1547,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // compared to CPython, we have an optimised version of while loops
 #if MICROPY_EMIT_CPYTHON
-    int done_label = comp_next_label(comp);
+    uint done_label = comp_next_label(comp);
     EMIT_ARG(setup_loop, break_label);
     EMIT_ARG(label_assign, continue_label);
     c_if_cond(comp, pns->nodes[0], false, done_label); // condition
@@ -1562,7 +1562,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT(pop_block);
     }
 #else
-    int top_label = comp_next_label(comp);
+    uint top_label = comp_next_label(comp);
     EMIT_ARG(jump, continue_label);
     EMIT_ARG(label_assign, top_label);
     compile_node(comp, pns->nodes[1]); // body
@@ -1584,8 +1584,8 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
 
-    int top_label = comp_next_label(comp);
-    int entry_label = comp_next_label(comp);
+    uint top_label = comp_next_label(comp);
+    uint entry_label = comp_next_label(comp);
 
     // compile: start, duplicated on stack
     compile_node(comp, pn_start);
@@ -1682,8 +1682,8 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     START_BREAK_CONTINUE_BLOCK
 
-    int pop_label = comp_next_label(comp);
-    int end_label = comp_next_label(comp);
+    uint pop_label = comp_next_label(comp);
+    uint end_label = comp_next_label(comp);
 
     // I don't think our implementation needs SETUP_LOOP/POP_BLOCK for for-statements
 #if MICROPY_EMIT_CPYTHON
@@ -1721,8 +1721,8 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
 
     // setup code
     int stack_size = EMIT(get_stack_size);
-    int l1 = comp_next_label(comp);
-    int success_label = comp_next_label(comp);
+    uint l1 = comp_next_label(comp);
+    uint success_label = comp_next_label(comp);
 
     EMIT_ARG(setup_except, l1);
     compile_increase_except_level(comp);
@@ -1731,14 +1731,14 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     EMIT(pop_block);
     EMIT_ARG(jump, success_label);
     EMIT_ARG(label_assign, l1);
-    int l2 = comp_next_label(comp);
+    uint l2 = comp_next_label(comp);
 
     for (int i = 0; i < n_except; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_excepts[i], PN_try_stmt_except)); // should be
         mp_parse_node_struct_t *pns_except = (mp_parse_node_struct_t*)pn_excepts[i];
 
         qstr qstr_exception_local = 0;
-        int end_finally_label = comp_next_label(comp);
+        uint end_finally_label = comp_next_label(comp);
 
         if (MP_PARSE_NODE_IS_NULL(pns_except->nodes[0])) {
             // this is a catch all exception handler
@@ -1773,7 +1773,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
 
         EMIT(pop_top);
 
-        int l3 = 0;
+        uint l3 = 0;
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
             EMIT_ARG(setup_finally, l3);
@@ -1810,7 +1810,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
 void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_except, mp_parse_node_t pn_else, mp_parse_node_t pn_finally) {
     // don't understand how the stack works with exceptions, so we force it to return to the correct value
     int stack_size = EMIT(get_stack_size);
-    int l_finally_block = comp_next_label(comp);
+    uint l_finally_block = comp_next_label(comp);
 
     EMIT_ARG(setup_finally, l_finally_block);
     compile_increase_except_level(comp);
@@ -1866,7 +1866,7 @@ void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *nodes, m
         // no more pre-bits, compile the body of the with
         compile_node(comp, body);
     } else {
-        int l_end = comp_next_label(comp);
+        uint l_end = comp_next_label(comp);
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes[0], PN_with_item)) {
             // this pre-bit is of the form "a as b"
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)nodes[0];
@@ -2024,8 +2024,8 @@ void compile_test_if_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_parse_node_struct_t *pns_test_if_else = (mp_parse_node_struct_t*)pns->nodes[1];
 
     int stack_size = EMIT(get_stack_size);
-    int l_fail = comp_next_label(comp);
-    int l_end = comp_next_label(comp);
+    uint l_fail = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
     c_if_cond(comp, pns_test_if_else->nodes[0], false, l_fail); // condition
     compile_node(comp, pns->nodes[0]); // success value
     EMIT_ARG(jump, l_end);
@@ -2055,7 +2055,7 @@ void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int l_end = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
@@ -2067,7 +2067,7 @@ void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int l_end = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
@@ -2088,7 +2088,7 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
     bool multi = (num_nodes > 3);
-    int l_fail = 0;
+    uint l_fail = 0;
     if (multi) {
         l_fail = comp_next_label(comp);
     }
@@ -2135,7 +2135,7 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
         }
     }
     if (multi) {
-        int l_end = comp_next_label(comp);
+        uint l_end = comp_next_label(comp);
         EMIT_ARG(jump, l_end);
         EMIT_ARG(label_assign, l_fail);
         EMIT(rot_two);
@@ -2835,8 +2835,8 @@ void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, mp_parse
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
-        int l_end2 = comp_next_label(comp);
-        int l_top2 = comp_next_label(comp);
+        uint l_end2 = comp_next_label(comp);
+        uint l_top2 = comp_next_label(comp);
         EMIT(get_iter);
         EMIT_ARG(label_assign, l_top2);
         EMIT_ARG(for_iter, l_end2);
@@ -2982,8 +2982,8 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT_ARG(build_set, 0);
         }
 
-        int l_end = comp_next_label(comp);
-        int l_top = comp_next_label(comp);
+        uint l_end = comp_next_label(comp);
+        uint l_top = comp_next_label(comp);
         EMIT_ARG(load_id, qstr_arg);
         EMIT_ARG(label_assign, l_top);
         EMIT_ARG(for_iter, l_end);
@@ -3102,7 +3102,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
                 compile_syntax_error(comp, nodes[i], "inline assembler 'label' requires 1 argument");
                 return;
             }
-            int lab = comp_next_label(comp);
+            uint lab = comp_next_label(comp);
             if (pass > PASS_1) {
                 EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]));
             }

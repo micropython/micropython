@@ -75,7 +75,7 @@ STATIC int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params,
     return n_params;
 }
 
-STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, int label_num, qstr label_id) {
+STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, uint label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     emit->label_lookup[label_num] = label_id;
     asm_thumb_label_assign(emit->as, label_num);

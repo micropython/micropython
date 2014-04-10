@@ -585,7 +585,7 @@ STATIC void emit_native_delete_id(emit_t *emit, qstr qstr) {
     emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-STATIC void emit_native_label_assign(emit_t *emit, int l) {
+STATIC void emit_native_label_assign(emit_t *emit, uint l) {
     emit_native_pre(emit);
     // need to commit stack because we can jump here from elsewhere
     need_stack_settled(emit);
@@ -920,7 +920,7 @@ STATIC void emit_native_rot_three(emit_t *emit) {
     emit_post_push_reg_reg_reg(emit, vtype0, REG_TEMP0, vtype2, REG_TEMP2, vtype1, REG_TEMP1);
 }
 
-STATIC void emit_native_jump(emit_t *emit, int label) {
+STATIC void emit_native_jump(emit_t *emit, uint label) {
     emit_native_pre(emit);
 #if N_X64
     asm_x64_jmp_label(emit->as, label);
@@ -930,7 +930,7 @@ STATIC void emit_native_jump(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, uint label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
@@ -943,7 +943,7 @@ STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
     }
 }
 
-STATIC void emit_native_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_false(emit_t *emit, uint label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -955,7 +955,7 @@ STATIC void emit_native_pop_jump_if_false(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_true(emit_t *emit, uint label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -967,35 +967,35 @@ STATIC void emit_native_pop_jump_if_true(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, uint label) {
     assert(0);
 }
-STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
     assert(0);
 }
 
-STATIC void emit_native_setup_loop(emit_t *emit, int label) {
+STATIC void emit_native_setup_loop(emit_t *emit, uint label) {
     emit_native_pre(emit);
     emit_post(emit);
 }
 
-STATIC void emit_native_break_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_break_loop(emit_t *emit, uint label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
-STATIC void emit_native_continue_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_continue_loop(emit_t *emit, uint label, int except_depth) {
     assert(0);
 }
-STATIC void emit_native_setup_with(emit_t *emit, int label) {
+STATIC void emit_native_setup_with(emit_t *emit, uint label) {
     // not supported, or could be with runtime call
     assert(0);
 }
 STATIC void emit_native_with_cleanup(emit_t *emit) {
     assert(0);
 }
-STATIC void emit_native_setup_except(emit_t *emit, int label) {
+STATIC void emit_native_setup_except(emit_t *emit, uint label) {
     assert(0);
 }
-STATIC void emit_native_setup_finally(emit_t *emit, int label) {
+STATIC void emit_native_setup_finally(emit_t *emit, uint label) {
     assert(0);
 }
 STATIC void emit_native_end_finally(emit_t *emit) {
@@ -1013,7 +1013,7 @@ STATIC void emit_native_get_iter(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_for_iter(emit_t *emit, int label) {
+STATIC void emit_native_for_iter(emit_t *emit, uint label) {
     emit_native_pre(emit);
     vtype_kind_t vtype;
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);

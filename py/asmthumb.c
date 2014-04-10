@@ -22,7 +22,7 @@ struct _asm_thumb_t {
     byte *code_base;
     byte dummy_data[8];
 
-    int max_num_labels;
+    uint max_num_labels;
     int *label_offsets;
     int num_locals;
     uint push_reglist;
@@ -212,7 +212,7 @@ void asm_thumb_exit(asm_thumb_t *as) {
     asm_thumb_write_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }
 
-void asm_thumb_label_assign(asm_thumb_t *as, int label) {
+void asm_thumb_label_assign(asm_thumb_t *as, uint label) {
     assert(label < as->max_num_labels);
     if (as->pass == ASM_THUMB_PASS_2) {
         // assign label offset
@@ -225,7 +225,7 @@ void asm_thumb_label_assign(asm_thumb_t *as, int label) {
     }
 }
 
-STATIC int get_label_dest(asm_thumb_t *as, int label) {
+STATIC int get_label_dest(asm_thumb_t *as, uint label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
@@ -308,7 +308,7 @@ void asm_thumb_ite_ge(asm_thumb_t *as) {
 
 #define OP_B_N(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
 
-void asm_thumb_b_n(asm_thumb_t *as, int label) {
+void asm_thumb_b_n(asm_thumb_t *as, uint label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
@@ -321,7 +321,7 @@ void asm_thumb_b_n(asm_thumb_t *as, int label) {
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-void asm_thumb_bcc_n(asm_thumb_t *as, int cond, int label) {
+void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
@@ -380,7 +380,7 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
 
-void asm_thumb_b_label(asm_thumb_t *as, int label) {
+void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
@@ -403,7 +403,7 @@ void asm_thumb_b_label(asm_thumb_t *as, int label) {
 #define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
 #define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
 
-void asm_thumb_bcc_label(asm_thumb_t *as, int cond, int label) {
+void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     int dest = get_label_dest(as, label);
     int rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
