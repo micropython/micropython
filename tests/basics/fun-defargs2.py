@@ -11,3 +11,9 @@ foo(1, b=333)
 
 # override with keyword
 foo(a=2, b=333)
+
+def foo2(a=1, b=2):
+    print(a, b)
+
+# default and keyword
+foo2(b='two')
