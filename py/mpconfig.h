@@ -115,6 +115,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_MOD_IO (1)
 #endif
 
+// Whether to provide "struct" module
+#ifndef MICROPY_ENABLE_MOD_STRUCT
+#define MICROPY_ENABLE_MOD_STRUCT (1)
+#endif
+
 // Whether to support slice object and correspondingly
 // slice subscript operators
 #ifndef MICROPY_ENABLE_SLICE

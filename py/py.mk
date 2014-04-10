@@ -81,6 +81,7 @@ PY_O_BASENAME = \
 	modio.o \
 	modmath.o \
 	modmicropython.o \
+	modstruct.o \
 	vm.o \
 	showbc.o \
 	repl.o \

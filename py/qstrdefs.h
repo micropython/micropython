@@ -84,6 +84,9 @@ Q(bool)
 Q(bytearray)
 Q(bytes)
 Q(callable)
+#if MICROPY_ENABLE_MOD_STRUCT
+Q(calcsize)
+#endif
 Q(chr)
 Q(classmethod)
 Q(collections)
@@ -127,10 +130,16 @@ Q(staticmethod)
 Q(sum)
 Q(super)
 Q(str)
+#if MICROPY_ENABLE_MOD_STRUCT
+Q(struct)
+#endif
 Q(sys)
 Q(to_bytes)
 Q(tuple)
 Q(type)
+#if MICROPY_ENABLE_MOD_STRUCT
+Q(unpack)
+#endif
 Q(value)
 Q(zip)
 

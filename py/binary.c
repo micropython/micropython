@@ -77,6 +77,52 @@ mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
+mp_obj_t mp_binary_get_val_unaligned_le(char typecode, byte **ptr) {
+    machine_int_t val = 0;
+    byte *p = *ptr;
+    switch (typecode) {
+        case 'b':
+            val = (int8_t)*p++;
+            break;
+        case BYTEARRAY_TYPECODE:
+        case 'B':
+            val = *p++;
+            break;
+        case 'h':
+            val = (int16_t)((p[1] << 8) | p[0]);
+            break;
+        case 'H':
+            val = (p[1] << 8) | p[0];
+            break;
+        case 'i':
+        case 'l':
+            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
+            *ptr = p + 4;
+            return mp_obj_new_int(val);
+        case 'I':
+        case 'L':
+            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
+            *ptr = p + 4;
+            return mp_obj_new_int_from_uint(val);
+#if 0 //TODO
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+        case 'q':
+        case 'Q':
+            // TODO: Explode API more to cover signedness
+            return mp_obj_new_int_from_ll(((long long*)p)[index]);
+#endif
+#if MICROPY_ENABLE_FLOAT
+        case 'f':
+            return mp_obj_new_float(((float*)p)[index]);
+        case 'd':
+            return mp_obj_new_float(((double*)p)[index]);
+#endif
+#endif
+    }
+    *ptr = p;
+    return MP_OBJ_NEW_SMALL_INT(val);
+}
+
 void mp_binary_set_val(char typecode, void *p, int index, mp_obj_t val_in) {
     machine_int_t val = 0;
     if (MP_OBJ_IS_INT(val_in)) {
