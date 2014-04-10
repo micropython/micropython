@@ -134,7 +134,7 @@ static const char fresh_main_py[] =
 ;
 
 static const char fresh_pybcdc_inf[] =
-#include "pybcdc.h"
+#include "build/pybcdc_inf.h"
 ;
 
 static const char fresh_readme_txt[] =
