@@ -53,6 +53,20 @@ void *m_malloc(int num_bytes) {
     return ptr;
 }
 
+void *m_malloc_maybe(int num_bytes) {
+    void *ptr = malloc(num_bytes);
+    if (ptr == NULL) {
+        return NULL;
+    }
+#if MICROPY_MEM_STATS
+    total_bytes_allocated += num_bytes;
+    current_bytes_allocated += num_bytes;
+    UPDATE_PEAK();
+#endif
+    DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+    return ptr;
+}
+
 #if MICROPY_ENABLE_FINALISER
 void *m_malloc_with_finaliser(int num_bytes) {
     if (num_bytes == 0) {

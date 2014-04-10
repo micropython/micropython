@@ -38,6 +38,7 @@ typedef unsigned int uint;
 #define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
 
 void *m_malloc(int num_bytes);
+void *m_malloc_maybe(int num_bytes);
 void *m_malloc_with_finaliser(int num_bytes);
 void *m_malloc0(int num_bytes);
 void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes);
