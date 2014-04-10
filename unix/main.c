@@ -29,7 +29,8 @@
 #include <readline/history.h>
 #endif
 
-// Default emit options
+// Command line options, with their defaults
+bool compile_only = false;
 uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -84,6 +85,10 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
 
     if (module_fun == mp_const_none) {
         // compile error
+        return;
+    }
+
+    if (compile_only) {
         return;
     }
 
@@ -226,6 +231,7 @@ int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
+"  compile-only                 -- parse and compile only\n"
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
 );
     impl_opts_cnt++;
@@ -273,6 +279,8 @@ void pre_process_options(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 if (0) {
+                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
+                    compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTE_CODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
