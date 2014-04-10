@@ -1236,31 +1236,35 @@ void compile_raise_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-// q1 holds the base, q2 the full name
-// eg   a -> q1=q2=a
-//      a.b.c -> q1=a, q2=a.b.c
-void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
+// q_base holds the base of the name
+// eg   a -> q_base=a
+//      a.b.c -> q_base=a
+void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
     bool is_as = false;
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dotted_as_name)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         // a name of the form x as y; unwrap it
-        *q1 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
+        *q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
         pn = pns->nodes[0];
         is_as = true;
     }
-    if (MP_PARSE_NODE_IS_ID(pn)) {
+    if (MP_PARSE_NODE_IS_NULL(pn)) {
+        // empty name (eg, from . import x)
+        *q_base = MP_QSTR_;
+        EMIT_ARG(import_name, MP_QSTR_); // import the empty string
+    } else if (MP_PARSE_NODE_IS_ID(pn)) {
         // just a simple name
-        *q2 = MP_PARSE_NODE_LEAF_ARG(pn);
+        qstr q_full = MP_PARSE_NODE_LEAF_ARG(pn);
         if (!is_as) {
-            *q1 = *q2;
+            *q_base = q_full;
         }
-        EMIT_ARG(import_name, *q2);
+        EMIT_ARG(import_name, q_full);
     } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dotted_name) {
             // a name of the form a.b.c
             if (!is_as) {
-                *q1 = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                *q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             }
             int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
             int len = n - 1;
@@ -1278,33 +1282,29 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q1, qstr *q2) {
                 memcpy(str_dest, str_src, str_src_len);
                 str_dest += str_src_len;
             }
-            *q2 = qstr_build_end(q_ptr);
-            EMIT_ARG(import_name, *q2);
+            qstr q_full = qstr_build_end(q_ptr);
+            EMIT_ARG(import_name, q_full);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
                     EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
                 }
             }
         } else {
-            // TODO not implemented
-            // This covers relative imports starting with dot(s) like "from .foo import"
-            compile_syntax_error(comp, pn, "Relative imports not implemented");
-            return;
+            // shouldn't happen
+            assert(0);
         }
     } else {
-        // TODO not implemented
-        // This covers relative imports with dots only like "from .. import"
-        compile_syntax_error(comp, pn, "Relative imports not implemented");
-        return;
+        // shouldn't happen
+        assert(0);
     }
 }
 
 void compile_dotted_as_name(compiler_t *comp, mp_parse_node_t pn) {
-    EMIT_ARG(load_const_small_int, 0); // ??
-    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-    qstr q1, q2;
-    do_import_name(comp, pn, &q1, &q2);
-    EMIT_ARG(store_id, q1);
+    EMIT_ARG(load_const_small_int, 0); // level 0 import
+    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // not importing from anything
+    qstr q_base;
+    do_import_name(comp, pn, &q_base);
+    EMIT_ARG(store_id, q_base);
 }
 
 void compile_import_name(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1312,8 +1312,44 @@ void compile_import_name(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    mp_parse_node_t pn_import_source = pns->nodes[0];
+
+    // extract the preceeding .'s (if any) for a relative import, to compute the import level
+    uint import_level = 0;
+    do {
+        mp_parse_node_t pn_rel;
+        if (MP_PARSE_NODE_IS_TOKEN(pn_import_source) || MP_PARSE_NODE_IS_STRUCT_KIND(pn_import_source, PN_one_or_more_period_or_ellipsis)) {
+            // This covers relative imports with dots only like "from .. import"
+            pn_rel = pn_import_source;
+            pn_import_source = MP_PARSE_NODE_NULL;
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_import_source, PN_import_from_2b)) {
+            // This covers relative imports starting with dot(s) like "from .foo import"
+            mp_parse_node_struct_t *pns_2b = (mp_parse_node_struct_t*)pn_import_source;
+            pn_rel = pns_2b->nodes[0];
+            pn_import_source = pns_2b->nodes[1];
+            assert(!MP_PARSE_NODE_IS_NULL(pn_import_source)); // should not be
+        } else {
+            // Not a relative import
+            break;
+        }
+
+        // get the list of . and/or ...'s
+        mp_parse_node_t *nodes;
+        int n = list_get(&pn_rel, PN_one_or_more_period_or_ellipsis, &nodes);
+
+        // count the total number of .'s
+        for (int i = 0; i < n; i++) {
+            if (MP_PARSE_NODE_IS_TOKEN_KIND(nodes[i], MP_TOKEN_DEL_PERIOD)) {
+                import_level++;
+            } else {
+                // should be an MP_TOKEN_ELLIPSIS
+                import_level += 3;
+            }
+        }
+    } while (0);
+
     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
-        EMIT_ARG(load_const_small_int, 0); // level 0 for __import__
+        EMIT_ARG(load_const_small_int, import_level);
 
         // build the "fromlist" tuple
 #if MICROPY_EMIT_CPYTHON
@@ -1324,12 +1360,12 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #endif
 
         // do the import
-        qstr dummy_q, id1;
-        do_import_name(comp, pns->nodes[0], &dummy_q, &id1);
+        qstr dummy_q;
+        do_import_name(comp, pn_import_source, &dummy_q);
         EMIT(import_star);
 
     } else {
-        EMIT_ARG(load_const_small_int, 0); // level 0 for __import__
+        EMIT_ARG(load_const_small_int, import_level);
 
         // build the "fromlist" tuple
         mp_parse_node_t *pn_nodes;
@@ -1369,8 +1405,8 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #endif
 
         // do the import
-        qstr dummy_q, id1;
-        do_import_name(comp, pns->nodes[0], &dummy_q, &id1);
+        qstr dummy_q;
+        do_import_name(comp, pn_import_source, &dummy_q);
         for (int i = 0; i < n; i++) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
