@@ -77,8 +77,9 @@ SRC_C = \
 	pyexec.c \
 	help.c \
 	input.c \
-	modpyb.c \
 	modos.c \
+	modpyb.c \
+	modstm.c \
 	modtime.c \
 	import.c \
 	lexerfatfs.c \

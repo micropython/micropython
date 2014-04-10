@@ -130,3 +130,19 @@ Q(sleep)
 
 // for input
 Q(input)
+
+// for stm module
+Q(stm)
+Q(read8)
+Q(read16)
+Q(read32)
+Q(write8)
+Q(write16)
+Q(write32)
+Q(GPIOA)
+Q(GPIOB)
+Q(GPIOC)
+Q(GPIOD)
+Q(GPIO_IDR)
+Q(GPIO_BSRRL)
+Q(GPIO_BSRRH)
