@@ -77,50 +77,48 @@ mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-mp_obj_t mp_binary_get_val_unaligned_le(char typecode, byte **ptr) {
-    machine_int_t val = 0;
+#define is_signed(typecode) (typecode > 'Z')
+mp_obj_t mp_binary_get_val_unaligned(char typecode, byte **ptr) {
+    char type = '<';
     byte *p = *ptr;
-    switch (typecode) {
-        case 'b':
-            val = (int8_t)*p++;
+    uint size = 0, align = 0;
+    switch (type) {
+        case '<': case '>':
+            switch (typecode) {
+                case 'b': case 'B':
+                    size = 1; break;
+                case 'h': case 'H':
+                    size = 2; break;
+                case 'i': case 'I':
+                    size = 4; break;
+            }
             break;
-        case BYTEARRAY_TYPECODE:
-        case 'B':
-            val = *p++;
-            break;
-        case 'h':
-            val = (int16_t)((p[1] << 8) | p[0]);
-            break;
-        case 'H':
-            val = (p[1] << 8) | p[0];
-            break;
-        case 'i':
-        case 'l':
-            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
-            *ptr = p + 4;
-            return mp_obj_new_int(val);
-        case 'I':
-        case 'L':
-            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
-            *ptr = p + 4;
-            return mp_obj_new_int_from_uint(val);
-#if 0 //TODO
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-        case 'q':
-        case 'Q':
-            // TODO: Explode API more to cover signedness
-            return mp_obj_new_int_from_ll(((long long*)p)[index]);
-#endif
-#if MICROPY_ENABLE_FLOAT
-        case 'f':
-            return mp_obj_new_float(((float*)p)[index]);
-        case 'd':
-            return mp_obj_new_float(((double*)p)[index]);
-#endif
-#endif
     }
-    *ptr = p;
-    return MP_OBJ_NEW_SMALL_INT(val);
+
+    int delta;
+    if (type == '<') {
+        delta = -1;
+        p += size - 1;
+    } else {
+        delta = 1;
+    }
+
+    machine_int_t val = 0;
+    if (is_signed(typecode) && *p & 0x80) {
+        val = -1;
+    }
+    for (uint i = 0; i < size; i++) {
+        val <<= 8;
+        val |= *p;
+        p += delta;
+    }
+
+    *ptr += size + align;
+    if (is_signed(typecode)) {
+        return mp_obj_new_int(val);
+    } else {
+        return mp_obj_new_int_from_uint(val);
+    }
 }
 
 void mp_binary_set_val(char typecode, void *p, int index, mp_obj_t val_in) {
