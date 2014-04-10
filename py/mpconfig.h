@@ -150,6 +150,11 @@ typedef double mp_float_t;
 #define MICROPY_EXTRA_BUILTIN_MODULES
 #endif
 
+// Additional constant definitions for the compiler - see compile.c:mp_constants_table.
+#ifndef MICROPY_EXTRA_CONSTANTS
+#define MICROPY_EXTRA_CONSTANTS
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

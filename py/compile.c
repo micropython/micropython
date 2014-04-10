@@ -78,6 +78,19 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
     comp->had_error = true;
 }
 
+STATIC const mp_map_elem_t mp_constants_table[] = {
+    // Extra constants as defined by a port
+    MICROPY_EXTRA_CONSTANTS
+};
+
+STATIC const mp_map_t mp_constants_map = {
+    .all_keys_are_qstrs = 1,
+    .table_is_fixed_array = 1,
+    .used = sizeof(mp_constants_table) / sizeof(mp_map_elem_t),
+    .alloc = sizeof(mp_constants_table) / sizeof(mp_map_elem_t),
+    .table = (mp_map_elem_t*)mp_constants_table,
+};
+
 mp_parse_node_t fold_constants(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -168,10 +181,12 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 }
                 break;
 
-#if MICROPY_EMIT_CPYTHON
             case PN_power:
-                // can overflow; enabled only to compare with CPython
-                if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
+                if (0) {
+#if MICROPY_EMIT_CPYTHON
+                } else if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
+                    // int**x
+                    // can overflow; enabled only to compare with CPython
                     mp_parse_node_struct_t* pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
                     if (MP_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
                         int power = MP_PARSE_NODE_LEAF_SMALL_INT(pns2->nodes[0]);
@@ -184,9 +199,27 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, ans);
                         }
                     }
+#endif
+                } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_trailer_period) && MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
+                    // id.id
+                    // look it up in constant table, see if it can be replaced with an integer
+                    mp_parse_node_struct_t* pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
+                    assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
+                    qstr q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                    qstr q_attr = MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]);
+                    mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&mp_constants_map, MP_OBJ_NEW_QSTR(q_base), MP_MAP_LOOKUP);
+                    if (elem != NULL) {
+                        mp_obj_t dest[2];
+                        mp_load_method_maybe(elem->value, q_attr, dest);
+                        if (MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == NULL) {
+                            machine_int_t val = MP_OBJ_SMALL_INT_VALUE(dest[0]);
+                            if (MP_PARSE_FITS_SMALL_INT(val)) {
+                                pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, val);
+                            }
+                        }
+                    }
                 }
                 break;
-#endif
         }
     }
 
