@@ -35,6 +35,14 @@ STATIC void emit_pass1_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope
 STATIC void emit_pass1_end_pass(emit_t *emit) {
 }
 
+STATIC bool emit_pass1_last_emit_was_return_value(emit_t *emit) {
+    return false;
+}
+
+STATIC int emit_pass1_get_stack_size(emit_t *emit) {
+    return 0;
+}
+
 STATIC void emit_pass1_load_id(emit_t *emit, qstr qstr) {
     // name adding/lookup
     bool added;
@@ -99,8 +107,8 @@ const emit_method_table_t emit_pass1_method_table = {
     (void*)emit_pass1_dummy,
     emit_pass1_start_pass,
     emit_pass1_end_pass,
-    (void*)emit_pass1_dummy,
-    (void*)emit_pass1_dummy,
+    emit_pass1_last_emit_was_return_value,
+    emit_pass1_get_stack_size,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
 
