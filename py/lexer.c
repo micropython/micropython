@@ -218,8 +218,7 @@ STATIC const char *tok_enc =
     "%e="         // % %=
     "^e="         // ^ ^=
     "=e="         // = ==
-    "!E="         // !=
-    ".c.E.";      // . ...
+    "!E=";        // !=
 
 // TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
 STATIC const uint8_t tok_enc_kind[] = {
@@ -240,7 +239,6 @@ STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_OP_CARET, MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_EQUAL, MP_TOKEN_OP_DBL_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
-    MP_TOKEN_DEL_PERIOD, MP_TOKEN_ELLIPSIS,
 };
 
 // must have the same order as enum in lexer.h
@@ -560,6 +558,23 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
             }
         }
 
+    } else if (is_char(lex, '.')) {
+        // special handling for . and ... operators, because .. is not a valid operator
+
+        // get first char
+        vstr_add_char(&lex->vstr, '.');
+        next_char(lex);
+
+        if (is_char_and(lex, '.', '.')) {
+            vstr_add_char(&lex->vstr, '.');
+            vstr_add_char(&lex->vstr, '.');
+            next_char(lex);
+            next_char(lex);
+            tok->kind = MP_TOKEN_ELLIPSIS;
+        } else {
+            tok->kind = MP_TOKEN_DEL_PERIOD;
+        }
+
     } else {
         // search for encoded delimiter or operator
 
@@ -605,6 +620,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         tok_enc_index = t_index;
                     } else {
                         tok->kind = MP_TOKEN_INVALID;
+                        goto tok_enc_no_match;
                     }
                     break;
                 }
@@ -626,6 +642,8 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
 
             // set token kind
             tok->kind = tok_enc_kind[tok_enc_index];
+
+            tok_enc_no_match:
 
             // compute bracket level for implicit line joining
             if (tok->kind == MP_TOKEN_DEL_PAREN_OPEN || tok->kind == MP_TOKEN_DEL_BRACKET_OPEN || tok->kind == MP_TOKEN_DEL_BRACE_OPEN) {
