@@ -12,6 +12,8 @@
 #include "bc.h"
 #include "objgenerator.h"
 
+#define DETECT_VM_STACK_OVERFLOW (0)
+
 // Value stack grows up (this makes it incompatible with native C stack, but
 // makes sure that arguments to functions are in natural order arg1..argN
 // (Python semantics mandates left-to-right evaluation order, including for
@@ -74,9 +76,16 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     // allocate state for locals and stack
     mp_obj_t temp_state[10];
     mp_obj_t *state = &temp_state[0];
+#if DETECT_VM_STACK_OVERFLOW
+    if (n_state + 1 > 10) {
+        state = m_new(mp_obj_t, n_state + 1);
+    }
+    state[n_state - n_args - n_args2] = (void*)0xdeadbeef;
+#else
     if (n_state > 10) {
         state = m_new(mp_obj_t, n_state);
     }
+#endif
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
@@ -108,6 +117,13 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
 
     // execute the byte code
     mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
+
+#if DETECT_VM_STACK_OVERFLOW
+    if (state[n_state - n_args - n_args2] != (void*)0xdeadbeef) {
+        printf("VM stack overflow\n");
+        assert(0);
+    }
+#endif
 
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
