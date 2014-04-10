@@ -232,6 +232,12 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     {
         byte* c = emit_get_cur_to_write_byte_code(emit, 4);
         uint n_state = scope->num_locals + scope->stack_size;
+        if (n_state == 0) {
+            // Need at least 1 entry in the state, in the case an exception is
+            // propagated through this function, the exception is returned in
+            // the highest slot in the state (fastn[0], see vm.c).
+            n_state = 1;
+        }
         c[0] = n_state & 0xff;
         c[1] = (n_state >> 8) & 0xff;
         c[2] = scope->exc_stack_size & 0xff;
