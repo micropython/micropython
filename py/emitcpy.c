@@ -482,14 +482,14 @@ STATIC void emit_cpy_with_cleanup(emit_t *emit) {
 }
 
 STATIC void emit_cpy_setup_except(emit_t *emit, uint label) {
-    emit_pre(emit, 6, 3);
+    emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_EXCEPT %d\n", emit->label_offsets[label]);
     }
 }
 
 STATIC void emit_cpy_setup_finally(emit_t *emit, uint label) {
-    emit_pre(emit, 6, 3);
+    emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_FINALLY %d\n", emit->label_offsets[label]);
     }

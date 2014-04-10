@@ -288,11 +288,11 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
     }
 }
 
-bool emit_bc_last_emit_was_return_value(emit_t *emit) {
+STATIC bool emit_bc_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-int emit_bc_get_stack_size(emit_t *emit) {
+STATIC int emit_bc_get_stack_size(emit_t *emit) {
     return emit->stack_size;
 }
 
@@ -608,12 +608,12 @@ STATIC void emit_bc_with_cleanup(emit_t *emit) {
 }
 
 STATIC void emit_bc_setup_except(emit_t *emit, uint label) {
-    emit_bc_pre(emit, 6);
+    emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_EXCEPT, label);
 }
 
 STATIC void emit_bc_setup_finally(emit_t *emit, uint label) {
-    emit_bc_pre(emit, 6);
+    emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_FINALLY, label);
 }
 
