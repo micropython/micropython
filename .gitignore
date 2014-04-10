@@ -22,3 +22,8 @@
 # Build directory
 ######################
 build/
+
+# Test failure outputs
+######################
+tests/*.exp
+tests/*.out
