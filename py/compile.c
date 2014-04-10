@@ -1595,7 +1595,7 @@ void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, 
     EMIT_ARG(label_assign, top_label);
 
     // at this point we actually have 1 less element on the stack
-    EMIT_ARG(set_stack_size, EMIT(get_stack_size) - 1);
+    EMIT_ARG(adjust_stack_size, -1);
 
     // store next value to var
     c_assign(comp, pn_var, ASSIGN_STORE);
@@ -1728,7 +1728,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     EMIT_ARG(jump, success_label); // jump over exception handler
 
     EMIT_ARG(label_assign, l1); // start of exception handler
-    EMIT_ARG(set_stack_size, EMIT(get_stack_size) + 6); // stack adjust for the 3 exception items, +3 for possible UNWIND_JUMP state
+    EMIT_ARG(adjust_stack_size, 6); // stack adjust for the 3 exception items, +3 for possible UNWIND_JUMP state
 
     uint l2 = comp_next_label(comp);
 
@@ -1795,12 +1795,12 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
-        EMIT_ARG(set_stack_size, EMIT(get_stack_size) + 3); // stack adjust for the 3 exception items
+        EMIT_ARG(adjust_stack_size, 3); // stack adjust for the 3 exception items
     }
 
     compile_decrease_except_level(comp);
     EMIT(end_finally);
-    EMIT_ARG(set_stack_size, EMIT(get_stack_size) - 5); // stack adjust
+    EMIT_ARG(adjust_stack_size, -5); // stack adjust
 
     EMIT_ARG(label_assign, success_label);
     compile_node(comp, pn_else); // else block, can be null
@@ -1815,9 +1815,9 @@ void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except
 
     if (n_except == 0) {
         assert(MP_PARSE_NODE_IS_NULL(pn_else));
-        EMIT_ARG(set_stack_size, EMIT(get_stack_size) + 3); // stack adjust for possible UNWIND_JUMP state
+        EMIT_ARG(adjust_stack_size, 3); // stack adjust for possible UNWIND_JUMP state
         compile_node(comp, pn_body);
-        EMIT_ARG(set_stack_size, EMIT(get_stack_size) - 3);
+        EMIT_ARG(adjust_stack_size, -3);
     } else {
         compile_try_except(comp, pn_body, n_except, pn_except, pn_else);
     }
@@ -2027,7 +2027,7 @@ void compile_test_if_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]); // success value
     EMIT_ARG(jump, l_end);
     EMIT_ARG(label_assign, l_fail);
-    EMIT_ARG(set_stack_size, EMIT(get_stack_size) - 1); // adjust stack size
+    EMIT_ARG(adjust_stack_size, -1); // adjust stack size
     compile_node(comp, pns_test_if_else->nodes[1]); // failure value
     EMIT_ARG(label_assign, l_end);
 }
@@ -2134,7 +2134,7 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
         uint l_end = comp_next_label(comp);
         EMIT_ARG(jump, l_end);
         EMIT_ARG(label_assign, l_fail);
-        EMIT_ARG(set_stack_size, EMIT(get_stack_size) + 1);
+        EMIT_ARG(adjust_stack_size, 1);
         EMIT(rot_two);
         EMIT(pop_top);
         EMIT_ARG(label_assign, l_end);

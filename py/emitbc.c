@@ -292,12 +292,8 @@ STATIC bool emit_bc_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC int emit_bc_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_bc_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_bc_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_bc_set_source_line(emit_t *emit, int source_line) {
@@ -836,8 +832,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_start_pass,
     emit_bc_end_pass,
     emit_bc_last_emit_was_return_value,
-    emit_bc_get_stack_size,
-    emit_bc_set_stack_size,
+    emit_bc_adjust_stack_size,
     emit_bc_set_source_line,
 
     emit_bc_load_id,

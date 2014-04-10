@@ -60,12 +60,8 @@ STATIC bool emit_cpy_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC int emit_cpy_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_cpy_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_cpy_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_cpy_set_source_line(emit_t *emit, int source_line) {
@@ -793,8 +789,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_start_pass,
     emit_cpy_end_pass,
     emit_cpy_last_emit_was_return_value,
-    emit_cpy_get_stack_size,
-    emit_cpy_set_stack_size,
+    emit_cpy_adjust_stack_size,
     emit_cpy_set_source_line,
 
     emit_cpy_load_id,

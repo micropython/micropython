@@ -295,12 +295,8 @@ STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC int emit_native_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_native_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_native_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_native_set_source_line(emit_t *emit, int source_line) {
@@ -1304,8 +1300,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,
-    emit_native_get_stack_size,
-    emit_native_set_stack_size,
+    emit_native_adjust_stack_size,
     emit_native_set_source_line,
 
     emit_native_load_id,

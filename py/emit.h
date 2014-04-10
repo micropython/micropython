@@ -24,8 +24,7 @@ typedef struct _emit_method_table_t {
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);
-    int (*get_stack_size)(emit_t *emit);
-    void (*set_stack_size)(emit_t *emit, int size);
+    void (*adjust_stack_size)(emit_t *emit, int delta);
     void (*set_line_number)(emit_t *emit, int line);
 
     void (*load_id)(emit_t *emit, qstr qstr);
