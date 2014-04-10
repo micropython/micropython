@@ -136,7 +136,7 @@ check_zero_division:
         case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
 
         default:
-            return NULL; // op not supported
+            return MP_OBJ_NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);
 }

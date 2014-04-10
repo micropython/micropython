@@ -386,9 +386,19 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
 #if MICROPY_ENABLE_FLOAT
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
-            return mp_obj_float_binary_op(op, lhs_val, rhs);
+            mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
+            if (res == MP_OBJ_NULL) {
+                goto unsupported_op;
+            } else {
+                return res;
+            }
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_complex)) {
-            return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
+            mp_obj_t res = mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
+            if (res == MP_OBJ_NULL) {
+                goto unsupported_op;
+            } else {
+                return res;
+            }
 #endif
         }
     }
@@ -438,6 +448,7 @@ generic_binary_op:
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
+unsupported_op:
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));

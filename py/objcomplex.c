@@ -11,6 +11,8 @@
 
 #if MICROPY_ENABLE_FLOAT
 
+#include <math.h>
+
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #include "formatfloat.h"
 #endif
@@ -175,6 +177,33 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
                 goto multiply;
             }
             break;
+
+        case MP_BINARY_OP_POWER:
+        case MP_BINARY_OP_INPLACE_POWER: {
+            // z1**z2 = exp(z2*ln(z1))
+            //        = exp(z2*(ln(|z1|)+i*arg(z1)))
+            //        = exp( (x2*ln1 - y2*arg1) + i*(y2*ln1 + x2*arg1) )
+            //        = exp(x3 + i*y3)
+            //        = exp(x3)*(cos(y3) + i*sin(y3))
+            mp_float_t abs1 = MICROPY_FLOAT_C_FUN(sqrt)(lhs_real*lhs_real + lhs_imag*lhs_imag);
+            if (abs1 == 0) {
+                if (rhs_imag == 0) {
+                    lhs_real = 1;
+                    rhs_real = 0;
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power"));
+                }
+            } else {
+                mp_float_t ln1 = MICROPY_FLOAT_C_FUN(log)(abs1);
+                mp_float_t arg1 = MICROPY_FLOAT_C_FUN(atan2)(lhs_imag, lhs_real);
+                mp_float_t x3 = rhs_real * ln1 - rhs_imag * arg1;
+                mp_float_t y3 = rhs_imag * ln1 + rhs_real * arg1;
+                mp_float_t exp_x3 = MICROPY_FLOAT_C_FUN(exp)(x3);
+                lhs_real = exp_x3 * MICROPY_FLOAT_C_FUN(cos)(y3);
+                lhs_imag = exp_x3 * MICROPY_FLOAT_C_FUN(sin)(y3);
+            }
+            break;
+        }
 
         default:
             return MP_OBJ_NULL; // op not supported
