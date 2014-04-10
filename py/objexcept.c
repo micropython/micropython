@@ -54,7 +54,7 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
     }
 
-    mp_obj_exception_t *o = m_malloc_maybe(sizeof(mp_obj_exception_t) + n_args * sizeof(mp_obj_t));
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, n_args);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         o = &mp_emergency_exception_obj;
@@ -205,7 +205,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
     // make exception object
-    mp_obj_exception_t *o = m_malloc_maybe(sizeof(mp_obj_exception_t) + 1 * sizeof(mp_obj_t));
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 1);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         // Unfortunately, we won't be able to format the string...

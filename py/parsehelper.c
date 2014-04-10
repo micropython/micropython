@@ -11,6 +11,7 @@
 #include "obj.h"
 #include "parsehelper.h"
 
+#define STR_MEMORY "parser could not allocate enough memory"
 #define STR_UNEXPECTED_INDENT "unexpected indent"
 #define STR_UNMATCHED_UNINDENT "unindent does not match any outer indentation level"
 #define STR_INVALID_SYNTAX "invalid syntax"
@@ -18,6 +19,10 @@
 void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind) {
     printf("  File \"%s\", line %d, column %d\n", qstr_str(mp_lexer_source_name(lex)), mp_lexer_cur(lex)->src_line, mp_lexer_cur(lex)->src_column);
     switch (parse_error_kind) {
+        case MP_PARSE_ERROR_MEMORY:
+            printf("MemoryError: %s\n", STR_MEMORY);
+            break;
+
         case MP_PARSE_ERROR_UNEXPECTED_INDENT:
             printf("IndentationError: %s\n", STR_UNEXPECTED_INDENT);
             break;
@@ -36,6 +41,9 @@ void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_
 mp_obj_t mp_parse_make_exception(mp_parse_error_kind_t parse_error_kind) {
     // TODO add source file and line number to exception?
     switch (parse_error_kind) {
+        case MP_PARSE_ERROR_MEMORY:
+            return mp_obj_new_exception_msg(&mp_type_MemoryError, STR_MEMORY);
+
         case MP_PARSE_ERROR_UNEXPECTED_INDENT:
             return mp_obj_new_exception_msg(&mp_type_IndentationError, STR_UNEXPECTED_INDENT);
 

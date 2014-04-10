@@ -118,6 +118,26 @@ void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes) {
     return new_ptr;
 }
 
+void *m_realloc_maybe(void *ptr, int old_num_bytes, int new_num_bytes) {
+    void *new_ptr = realloc(ptr, new_num_bytes);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+#if MICROPY_MEM_STATS
+    // At first thought, "Total bytes allocated" should only grow,
+    // after all, it's *total*. But consider for example 2K block
+    // shrunk to 1K and then grown to 2K again. It's still 2K
+    // allocated total. If we process only positive increments,
+    // we'll count 3K.
+    int diff = new_num_bytes - old_num_bytes;
+    total_bytes_allocated += diff;
+    current_bytes_allocated += diff;
+    UPDATE_PEAK();
+#endif
+    DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
+    return new_ptr;
+}
+
 void m_free(void *ptr, int num_bytes) {
     if (ptr != NULL) {
         free(ptr);
