@@ -455,50 +455,55 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                 vstr_add_char(&lex->vstr, CUR_CHAR(lex));
             } else {
                 n_closing = 0;
-                if (!is_raw && is_char(lex, '\\')) {
+                if (is_char(lex, '\\')) {
                     next_char(lex);
                     unichar c = CUR_CHAR(lex);
-                    switch (c) {
-                        case MP_LEXER_CHAR_EOF: break; // TODO a proper error message?
-                        case '\n': c = MP_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
-                        case '\\': break;
-                        case '\'': break;
-                        case '"': break;
-                        case 'a': c = 0x07; break;
-                        case 'b': c = 0x08; break;
-                        case 't': c = 0x09; break;
-                        case 'n': c = 0x0a; break;
-                        case 'v': c = 0x0b; break;
-                        case 'f': c = 0x0c; break;
-                        case 'r': c = 0x0d; break;
-                        case 'x':
-                        {
-                            uint num = 0;
-                            if (!get_hex(lex, 2, &num)) {
-                                // TODO error message
-                                assert(0);
-                            }
-                            c = num;
-                            break;
-                        }
-                        case 'N': break; // TODO \N{name} only in strings
-                        case 'u': break; // TODO \uxxxx only in strings
-                        case 'U': break; // TODO \Uxxxxxxxx only in strings
-                        default:
-                            if (c >= '0' && c <= '7') {
-                                // Octal sequence, 1-3 chars
-                                int digits = 3;
-                                int num = c - '0';
-                                while (is_following_odigit(lex) && --digits != 0) {
-                                    next_char(lex);
-                                    num = num * 8 + (CUR_CHAR(lex) - '0');
+                    if (is_raw) {
+                        // raw strings allow escaping of quotes, but the backslash is also emitted
+                        vstr_add_char(&lex->vstr, '\\');
+                    } else {
+                        switch (c) {
+                            case MP_LEXER_CHAR_EOF: break; // TODO a proper error message?
+                            case '\n': c = MP_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                            case '\\': break;
+                            case '\'': break;
+                            case '"': break;
+                            case 'a': c = 0x07; break;
+                            case 'b': c = 0x08; break;
+                            case 't': c = 0x09; break;
+                            case 'n': c = 0x0a; break;
+                            case 'v': c = 0x0b; break;
+                            case 'f': c = 0x0c; break;
+                            case 'r': c = 0x0d; break;
+                            case 'x':
+                            {
+                                uint num = 0;
+                                if (!get_hex(lex, 2, &num)) {
+                                    // TODO error message
+                                    assert(0);
                                 }
                                 c = num;
-                            } else {
-                                // unrecognised escape character; CPython lets this through verbatim as '\' and then the character
-                                vstr_add_char(&lex->vstr, '\\');
+                                break;
                             }
-                            break;
+                            case 'N': break; // TODO \N{name} only in strings
+                            case 'u': break; // TODO \uxxxx only in strings
+                            case 'U': break; // TODO \Uxxxxxxxx only in strings
+                            default:
+                                if (c >= '0' && c <= '7') {
+                                    // Octal sequence, 1-3 chars
+                                    int digits = 3;
+                                    int num = c - '0';
+                                    while (is_following_odigit(lex) && --digits != 0) {
+                                        next_char(lex);
+                                        num = num * 8 + (CUR_CHAR(lex) - '0');
+                                    }
+                                    c = num;
+                                } else {
+                                    // unrecognised escape character; CPython lets this through verbatim as '\' and then the character
+                                    vstr_add_char(&lex->vstr, '\\');
+                                }
+                                break;
+                        }
                     }
                     if (c != MP_LEXER_CHAR_EOF) {
                         vstr_add_char(&lex->vstr, c);
