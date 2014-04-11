@@ -744,10 +744,10 @@ STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defau
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
             emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
         } else if (n_kw_defaults == 0) {
             // load dummy entry for non-existent keyword default dict
             emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
         }
         emit_bc_pre(emit, -1);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
@@ -762,11 +762,11 @@ STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaul
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
             emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
+            emit_bc_rot_three(emit);
         } else if (n_kw_defaults == 0) {
             // load dummy entry for non-existent keyword default dict
             emit_bc_load_null(emit);
-            emit_bc_rot_three(emit);
+            emit_bc_rot_two(emit);
         }
         emit_bc_pre(emit, -2);
         emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);

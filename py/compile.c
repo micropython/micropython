@@ -53,9 +53,8 @@ typedef struct _compiler_t {
     uint16_t n_arg_keyword;
     uint8_t star_flags;
     uint8_t have_bare_star;
-    uint8_t param_pass;
-    uint16_t param_pass_num_dict_params;
-    uint16_t param_pass_num_default_params;
+    uint16_t num_dict_params;
+    uint16_t num_default_params;
 
     scope_t *scope_head;
     scope_t *scope_cur;
@@ -897,7 +896,7 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             // this parameter does not have a default value
 
             // check for non-default parameters given after default parameters (allowed by parser, but not syntactically valid)
-            if (!comp->have_bare_star && comp->param_pass_num_default_params != 0) {
+            if (!comp->have_bare_star && comp->num_default_params != 0) {
                 compile_syntax_error(comp, pn, "non-default argument follows default argument");
                 return;
             }
@@ -907,27 +906,23 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             // in CPython, None (and True, False?) as default parameters are loaded with LOAD_NAME; don't understandy why
 
             if (comp->have_bare_star) {
-                comp->param_pass_num_dict_params += 1;
-                if (comp->param_pass == 1) {
+                comp->num_dict_params += 1;
 #if !MICROPY_EMIT_CPYTHON
-                    // in Micro Python we put the default dict parameters into a dictionary using the bytecode
-                    if (comp->param_pass_num_dict_params == 1) {
-                        // first default dict param, so make the map
-                        EMIT_ARG(build_map, 0);
-                    }
-#endif
-                    EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pn_id));
-                    compile_node(comp, pn_equal);
-#if !MICROPY_EMIT_CPYTHON
-                    // in Micro Python we put the default dict parameters into a dictionary using the bytecode
-                    EMIT(store_map);
-#endif
+                // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                if (comp->num_dict_params == 1) {
+                    // first default dict param, so make the map
+                    EMIT_ARG(build_map, 0);
                 }
+#endif
+                EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pn_id));
+                compile_node(comp, pn_equal);
+#if !MICROPY_EMIT_CPYTHON
+                // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                EMIT(store_map);
+#endif
             } else {
-                comp->param_pass_num_default_params += 1;
-                if (comp->param_pass == 2) {
-                    compile_node(comp, pn_equal);
-                }
+                comp->num_default_params += 1;
+                compile_node(comp, pn_equal);
             }
         }
 
@@ -948,34 +943,23 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
 
     // save variables (probably don't need to do this, since we can't have nested definitions..?)
     uint old_have_bare_star = comp->have_bare_star;
-    uint old_param_pass = comp->param_pass;
-    uint old_param_pass_num_dict_params = comp->param_pass_num_dict_params;
-    uint old_param_pass_num_default_params = comp->param_pass_num_default_params;
+    uint old_num_dict_params = comp->num_dict_params;
+    uint old_num_default_params = comp->num_default_params;
 
     // compile default parameters
-
-    // pass 1 does any default parameters after bare star
     comp->have_bare_star = false;
-    comp->param_pass = 1;
-    comp->param_pass_num_dict_params = 0;
-    comp->param_pass_num_default_params = 0;
+    comp->num_dict_params = 0;
+    comp->num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
 
     if (comp->had_error) {
         return MP_QSTR_NULL;
     }
 
-    // pass 2 does any default parameters before bare star
-    comp->have_bare_star = false;
-    comp->param_pass = 2;
-    comp->param_pass_num_dict_params = 0;
-    comp->param_pass_num_default_params = 0;
-    apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
-
 #if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the default positional parameters into a tuple using the bytecode
-    if (comp->param_pass_num_default_params > 0) {
-        EMIT_ARG(build_tuple, comp->param_pass_num_default_params);
+    if (comp->num_default_params > 0) {
+        EMIT_ARG(build_tuple, comp->num_default_params);
     }
 #endif
 
@@ -983,13 +967,12 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     scope_t *fscope = (scope_t*)pns->nodes[4];
 
     // make the function
-    close_over_variables_etc(comp, fscope, comp->param_pass_num_default_params, comp->param_pass_num_dict_params);
+    close_over_variables_etc(comp, fscope, comp->num_default_params, comp->num_dict_params);
 
     // restore variables
     comp->have_bare_star = old_have_bare_star;
-    comp->param_pass = old_param_pass;
-    comp->param_pass_num_dict_params = old_param_pass_num_dict_params;
-    comp->param_pass_num_default_params = old_param_pass_num_default_params;
+    comp->num_dict_params = old_num_dict_params;
+    comp->num_default_params = old_num_default_params;
 
     // return its name (the 'f' in "def f(...):")
     return fscope->simple_name;

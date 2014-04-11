@@ -361,6 +361,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
     if (def_args != MP_OBJ_NULL) {
+        assert(MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
         n_def_args = def_args->len;
         n_extra_args = def_args->len;
     }

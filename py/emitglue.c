@@ -197,6 +197,9 @@ mp_obj_t mp_make_function_from_id(uint unique_code_id, mp_obj_t def_args, mp_obj
         return mp_const_none;
     }
 
+    // def_args must be MP_OBJ_NULL or a tuple
+    assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
+
     // TODO implement default kw args
     assert(def_kw_args == MP_OBJ_NULL);
 

@@ -718,9 +718,9 @@ unwind_jump:
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
                         DECODE_UINT;
-                        // Stack layout: def_dict def_tuple <- TOS
+                        // Stack layout: def_tuple def_dict <- TOS
                         obj1 = POP();
-                        SET_TOP(mp_make_function_from_id(unum, obj1, TOP()));
+                        SET_TOP(mp_make_function_from_id(unum, TOP(), obj1));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
@@ -731,10 +731,10 @@ unwind_jump:
 
                     case MP_BC_MAKE_CLOSURE_DEFARGS:
                         DECODE_UINT;
-                        // Stack layout: def_dict def_tuple closure_tuple <- TOS
+                        // Stack layout: def_tuple def_dict closure_tuple <- TOS
                         obj1 = POP();
                         obj2 = POP();
-                        SET_TOP(mp_make_closure_from_id(unum, obj1, obj2, TOP()));
+                        SET_TOP(mp_make_closure_from_id(unum, obj1, TOP(), obj2));
                         break;
 
                     case MP_BC_CALL_FUNCTION:
