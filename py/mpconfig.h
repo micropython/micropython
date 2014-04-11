@@ -169,6 +169,11 @@ typedef double mp_float_t;
 // machine_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((machine_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
 
+#if !defined(MP_ENDIANNESS_LITTLE) && !defined(MP_ENDIANNESS_BIG)
+// Just because most archs are such?
+#define MP_ENDIANNESS_LITTLE (1)
+#endif
+
 // printf format spec to use for machine_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__
