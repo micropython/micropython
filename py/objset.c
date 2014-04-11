@@ -411,8 +411,6 @@ STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         return set_issubset(lhs, rhs);
     case MP_BINARY_OP_MORE_EQUAL:
         return set_issuperset(lhs, rhs);
-    case MP_BINARY_OP_NOT_EQUAL:
-        return MP_BOOL(set_equal(lhs, rhs) == mp_const_false);
     case MP_BINARY_OP_IN:
     {
         mp_obj_set_t *o = lhs;

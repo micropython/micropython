@@ -137,8 +137,6 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
-        case MP_BINARY_OP_NOT_EQUAL:
-            return MP_BOOL(!tuple_cmp_helper(MP_BINARY_OP_EQUAL, lhs, rhs));
 
         default:
             // op not supported

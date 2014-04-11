@@ -205,8 +205,6 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_BOOL(cmp >= 0);
             case MP_BINARY_OP_EQUAL:
                 return MP_BOOL(cmp == 0);
-            case MP_BINARY_OP_NOT_EQUAL:
-                return MP_BOOL(cmp != 0);
 
             default:
                 return MP_OBJ_NULL;
