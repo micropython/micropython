@@ -132,6 +132,7 @@ check_zero_division:
         case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
         case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_val == rhs_val);
         case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
         case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
 

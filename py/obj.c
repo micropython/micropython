@@ -149,40 +149,28 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
         if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
             return false;
         } else {
-            if (MP_OBJ_IS_SMALL_INT(o2)) {
-                mp_obj_t temp = o1; o1 = o2; o2 = temp;
+            if (MP_OBJ_IS_SMALL_INT(o1)) {
+                mp_obj_t temp = o2; o2 = o1; o1 = temp;
             }
-            // o1 is the SMALL_INT, o2 is not
-            mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(o1);
-            if (o2 == mp_const_false) {
-                return val == 0;
-            } else if (o2 == mp_const_true) {
-                return val == 1;
-            } else if (MP_OBJ_IS_TYPE(o2, &mp_type_int)) {
-                // If o2 is long int, dispatch to its virtual methods
-                mp_obj_base_t *o = o2;
-                if (o->type->binary_op != NULL) {
-                    mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o2, o1);
-                    return r == mp_const_true ? true : false;
-                }
-            }
-            return false;
+            // o2 is the SMALL_INT, o1 is not
+            // fall through to generic op
         }
     } else if (MP_OBJ_IS_STR(o1) && MP_OBJ_IS_STR(o2)) {
         return mp_obj_str_equal(o1, o2);
-    } else {
-        mp_obj_base_t *o = o1;
-        if (o->type->binary_op != NULL) {
-            mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
-            if (r != MP_OBJ_NULL) {
-                return r == mp_const_true ? true : false;
-            }
-        }
-
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
-            "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
-        return false;
     }
+
+    // generic type, call binary_op(MP_BINARY_OP_EQUAL)
+    mp_obj_type_t *type = mp_obj_get_type(o1);
+    if (type->binary_op != NULL) {
+        mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+        if (r != MP_OBJ_NULL) {
+            return r == mp_const_true ? true : false;
+        }
+    }
+
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
+        "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
+    return false;
 }
 
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
