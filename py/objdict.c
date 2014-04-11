@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -39,13 +40,22 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             dict = mp_obj_new_dict(0);
             break;
 
-        case 1:
+        case 1: {
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_dict)) {
                 return dict_copy(args[0]);
             }
             // TODO create dict from an arbitrary mapping!
-            // TODO create dict from an iterable!
-            assert(false);
+
+            // Make dict from iterable of pairs
+            mp_obj_t iterable = mp_getiter(args[0]);
+            mp_obj_t dict = mp_obj_new_dict(0);
+            // TODO: support arbitrary seq as a pair
+            mp_obj_tuple_t *item;
+            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+                mp_obj_dict_store(dict, item->items[0], item->items[1]);
+            }
+            return dict;
+        }
 
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "dict takes at most 1 argument"));
