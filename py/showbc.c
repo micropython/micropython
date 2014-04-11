@@ -106,6 +106,10 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_CONST_STRING %s", qstr_str(qstr));
                 break;
 
+            case MP_BC_LOAD_NULL:
+                printf("LOAD_NULL");
+                break;
+
             case MP_BC_LOAD_FAST_0:
                 printf("LOAD_FAST_0");
                 break;
