@@ -99,11 +99,6 @@ int mp_obj_is_true(mp_obj_t arg) {
     }
 }
 
-// returns true if o_in is bool, small int, or long int
-bool mp_obj_is_integer(mp_obj_t o_in) {
-    return MP_OBJ_IS_INT(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bool);
-}
-
 bool mp_obj_is_callable(mp_obj_t o_in) {
     return mp_obj_get_type(o_in)->call != NULL;
 }

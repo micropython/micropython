@@ -21,7 +21,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // The NULL object is used to indicate the absence of an object
 // It *cannot* be used when an mp_obj_t is expected, except where explicitly allowed
 
-#define MP_OBJ_NULL ((mp_obj_t)NULL)
+#define MP_OBJ_NULL ((mp_obj_t)0)
 
 // The SENTINEL object is used for various internal purposes where one needs
 // an object which is unique from all other objects, including MP_OBJ_NULL.
@@ -37,12 +37,13 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_SMALL_INT_MIN ((mp_small_int_t)(((machine_int_t)WORD_MSBIT_HIGH) >> 1))
 #define MP_SMALL_INT_MAX ((mp_small_int_t)(~(MP_SMALL_INT_MIN)))
 #define MP_OBJ_FITS_SMALL_INT(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
-#define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
-#define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
-#define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
-#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
-#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
-#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
+// these macros have now become inline functions; see below
+//#define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
+//#define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
+//#define MP_OBJ_IS_OBJ(o) ((((mp_small_int_t)(o)) & 3) == 0)
+//#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
+//#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
+//#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_small_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
@@ -115,7 +116,7 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
 } mp_map_lookup_kind_t;
 
-#define MP_MAP_SLOT_IS_FILLED(map, pos) ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL)
+inline bool MP_MAP_SLOT_IS_FILLED(mp_map_t *map, machine_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
 void mp_map_init(mp_map_t *map, int n);
 void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
@@ -134,7 +135,7 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
-#define MP_SET_SLOT_IS_FILLED(set, pos) ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL)
+inline bool MP_SET_SLOT_IS_FILLED(mp_set_t *set, machine_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
 
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -369,7 +370,16 @@ void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(mp_obj_t exc);
 
 int mp_obj_is_true(mp_obj_t arg);
-bool mp_obj_is_integer(mp_obj_t o_in); // returns true if o_in is bool, small int, or long int
+
+// TODO make these all lower case when they have proven themselves
+inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o) { return ((((mp_small_int_t)(o)) & 3) == 0); }
+inline bool MP_OBJ_IS_TYPE(mp_const_obj_t o, const mp_obj_type_t *t) { return (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))); } // this does not work for checking a string, use below macro for that
+inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o) { return ((((mp_small_int_t)(o)) & 1) != 0); }
+inline bool MP_OBJ_IS_INT(mp_const_obj_t o) { return (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int)); } // returns true if o is a small int or long int
+inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_bool); } // returns true if o is bool, small int or long int
+inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o) { return ((((mp_small_int_t)(o)) & 3) == 2); }
+inline bool MP_OBJ_IS_STR(mp_const_obj_t o) { return (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str)); }
+
 bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
@@ -384,10 +394,11 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
-mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return NULL */
+mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 
 // bool
-#define MP_BOOL(x) (x ? mp_const_true : mp_const_false)
+// TODO make lower case when it has proven itself
+inline mp_obj_t MP_BOOL(machine_int_t x) { return x ? mp_const_true : mp_const_false; }
 
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
