@@ -40,7 +40,7 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
                 if (i > 0) {
                     print(env, ", ");
                 }
-                mp_obj_print_helper(print, env, mp_binary_get_val(o->typecode, o->items, i), PRINT_REPR);
+                mp_obj_print_helper(print, env, mp_binary_get_val_array(o->typecode, o->items, i), PRINT_REPR);
             }
             print(env, "]");
         }
@@ -67,7 +67,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         if (len == 0) {
             array_append(array, item);
         } else {
-            mp_binary_set_val(typecode, array->items, i++, item);
+            mp_binary_set_val_array(typecode, array->items, i++, item);
         }
     }
 
@@ -118,7 +118,7 @@ STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_SUBSCR:
         {
             uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return mp_binary_get_val(o->typecode, o->items, index);
+            return mp_binary_get_val_array(o->typecode, o->items, index);
         }
 
         default:
@@ -136,7 +136,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         self->free = 8;
         self->items = m_realloc(self->items,  item_sz * self->len, item_sz * (self->len + self->free));
     }
-    mp_binary_set_val(self->typecode, self->items, self->len++, arg);
+    mp_binary_set_val_array(self->typecode, self->items, self->len++, arg);
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
@@ -149,7 +149,7 @@ STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
     }
     mp_obj_array_t *o = self_in;
     uint index = mp_get_index(o->base.type, o->len, index_in, false);
-    mp_binary_set_val(o->typecode, o->items, index, value);
+    mp_binary_set_val_array(o->typecode, o->items, index, value);
     return true;
 }
 
@@ -235,7 +235,7 @@ typedef struct _mp_obj_array_it_t {
 STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     mp_obj_array_it_t *self = self_in;
     if (self->cur < self->array->len) {
-        return mp_binary_get_val(self->array->typecode, self->array->items, self->cur++);
+        return mp_binary_get_val_array(self->array->typecode, self->array->items, self->cur++);
     } else {
         return MP_OBJ_NULL;
     }

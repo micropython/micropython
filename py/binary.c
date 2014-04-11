@@ -39,7 +39,7 @@ int mp_binary_get_size(char typecode) {
     return -1;
 }
 
-mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
+mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
     machine_int_t val = 0;
     switch (typecode) {
         case 'b':
@@ -121,7 +121,7 @@ mp_obj_t mp_binary_get_val_unaligned(char typecode, byte **ptr) {
     }
 }
 
-void mp_binary_set_val(char typecode, void *p, int index, mp_obj_t val_in) {
+void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
     machine_int_t val = 0;
     if (MP_OBJ_IS_INT(val_in)) {
         val = mp_obj_int_get(val_in);
