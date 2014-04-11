@@ -666,28 +666,42 @@ cannot_assign:
     compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
 }
 
-void c_assign_tuple(compiler_t *comp, int n, mp_parse_node_t *nodes) {
-    assert(n >= 0);
+// we need to allow for a caller passing in 1 initial node (node_head) followed by an array of nodes (nodes_tail)
+void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, mp_parse_node_t *nodes_tail) {
+    uint num_head = (node_head == MP_PARSE_NODE_NULL) ? 0 : 1;
+
+    // look for star expression
     int have_star_index = -1;
-    for (int i = 0; i < n; i++) {
-        if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes[i], PN_star_expr)) {
+    if (num_head != 0 && MP_PARSE_NODE_IS_STRUCT_KIND(node_head, PN_star_expr)) {
+        EMIT_ARG(unpack_ex, 0, num_tail);
+        have_star_index = 0;
+    }
+    for (int i = 0; i < num_tail; i++) {
+        if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes_tail[i], PN_star_expr)) {
             if (have_star_index < 0) {
-                EMIT_ARG(unpack_ex, i, n - i - 1);
-                have_star_index = i;
+                EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
+                have_star_index = num_head + i;
             } else {
-                compile_syntax_error(comp, nodes[i], "two starred expressions in assignment");
+                compile_syntax_error(comp, nodes_tail[i], "two starred expressions in assignment");
                 return;
             }
         }
     }
     if (have_star_index < 0) {
-        EMIT_ARG(unpack_sequence, n);
+        EMIT_ARG(unpack_sequence, num_head + num_tail);
     }
-    for (int i = 0; i < n; i++) {
-        if (i == have_star_index) {
-            c_assign(comp, ((mp_parse_node_struct_t*)nodes[i])->nodes[0], ASSIGN_STORE);
+    if (num_head != 0) {
+        if (0 == have_star_index) {
+            c_assign(comp, ((mp_parse_node_struct_t*)node_head)->nodes[0], ASSIGN_STORE);
         } else {
-            c_assign(comp, nodes[i], ASSIGN_STORE);
+            c_assign(comp, node_head, ASSIGN_STORE);
+        }
+    }
+    for (int i = 0; i < num_tail; i++) {
+        if (num_head + i == have_star_index) {
+            c_assign(comp, ((mp_parse_node_struct_t*)nodes_tail[i])->nodes[0], ASSIGN_STORE);
+        } else {
+            c_assign(comp, nodes_tail[i], ASSIGN_STORE);
         }
     }
 }
@@ -727,7 +741,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 if (assign_kind != ASSIGN_STORE) {
                     goto bad_aug;
                 }
-                c_assign_tuple(comp, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
+                c_assign_tuple(comp, MP_PARSE_NODE_NULL, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
                 break;
 
             case PN_atom_paren:
@@ -753,13 +767,13 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 }
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty list, assignment allowed
-                    c_assign_tuple(comp, 0, NULL);
+                    c_assign_tuple(comp, MP_PARSE_NODE_NULL, 0, NULL);
                 } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
                 } else {
                     // brackets around 1 item
-                    c_assign_tuple(comp, 1, &pns->nodes[0]);
+                    c_assign_tuple(comp, pns->nodes[0], 0, NULL);
                 }
                 break;
 
@@ -776,16 +790,11 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
             if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3b) {
                 // sequence of one item, with trailing comma
                 assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[0]));
-                c_assign_tuple(comp, 1, &pns->nodes[0]);
+                c_assign_tuple(comp, pns->nodes[0], 0, NULL);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3c) {
                 // sequence of many items
-                // TODO call c_assign_tuple instead
-                int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns2);
-                EMIT_ARG(unpack_sequence, 1 + n);
-                c_assign(comp, pns->nodes[0], ASSIGN_STORE);
-                for (int i = 0; i < n; i++) {
-                    c_assign(comp, pns2->nodes[i], ASSIGN_STORE);
-                }
+                uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns2);
+                c_assign_tuple(comp, pns->nodes[0], n, pns2->nodes);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
                 // TODO can we ever get here? can it be compiled?
                 compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
@@ -797,7 +806,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
         } else {
             // sequence with 2 items
             sequence_with_2_items:
-            c_assign_tuple(comp, 2, pns->nodes);
+            c_assign_tuple(comp, MP_PARSE_NODE_NULL, 2, pns->nodes);
         }
         return;
     }
