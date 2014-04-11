@@ -1,6 +1,6 @@
+#include "mpconfig.h"
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
-// TODO make it so we can use #defines here to select only those words that will be used
 
 Q(__build_class__)
 Q(__class__)
@@ -13,6 +13,7 @@ Q(__module__)
 Q(__name__)
 Q(__next__)
 Q(__qualname__)
+Q(__path__)
 Q(__repl_print__)
 
 Q(__bool__)
