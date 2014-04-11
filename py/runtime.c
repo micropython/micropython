@@ -1043,13 +1043,45 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
 mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
-    mp_obj_t x = mp_load_attr(module, name);
-    /* TODO convert AttributeError to ImportError
-    if (fail) {
-        (ImportError, "cannot import name %s", qstr_str(name), NULL)
+    mp_obj_t dest[2];
+
+    mp_load_method_maybe(module, name, dest);
+
+    if (dest[1] != MP_OBJ_NULL) {
+        // Hopefully we can't import bound method from an object
+import_error:
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "Cannot import name '%s'", qstr_str(name)));
     }
-    */
-    return x;
+
+    if (dest[0] != MP_OBJ_NULL) {
+        return dest[0];
+    }
+
+    // See if it's a package, then can try FS import
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        goto import_error;
+    }
+
+    mp_load_method_maybe(module, MP_QSTR___name__, dest);
+    uint pkg_name_len;
+    const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
+
+    char dot_name[pkg_name_len + 1 + qstr_len(name)];
+    memcpy(dot_name, pkg_name, pkg_name_len);
+    dot_name[pkg_name_len] = '.';
+    memcpy(dot_name + pkg_name_len + 1, qstr_str(name), qstr_len(name));
+    qstr dot_name_q = qstr_from_strn(dot_name, sizeof(dot_name));
+
+    mp_obj_t args[5];
+    args[0] = MP_OBJ_NEW_QSTR(dot_name_q);
+    args[1] = mp_const_none; // TODO should be globals
+    args[2] = mp_const_none; // TODO should be locals
+    args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
+    args[4] = 0;
+
+    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    return mp_builtin___import__(5, args);
 }
 
 void mp_import_all(mp_obj_t module) {
