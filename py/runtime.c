@@ -1078,7 +1078,7 @@ import_error:
     args[1] = mp_const_none; // TODO should be globals
     args[2] = mp_const_none; // TODO should be locals
     args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-    args[4] = 0;
+    args[4] = MP_OBJ_NEW_SMALL_INT(0);
 
     // TODO lookup __import__ and call that instead of going straight to builtin implementation
     return mp_builtin___import__(5, args);
