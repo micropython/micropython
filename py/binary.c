@@ -78,25 +78,54 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
 }
 
 #define is_signed(typecode) (typecode > 'Z')
-mp_obj_t mp_binary_get_val_unaligned(char typecode, byte **ptr) {
-    char type = '<';
+mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
-    uint size = 0, align = 0;
-    switch (type) {
+    uint size = 0;
+    switch (struct_type) {
         case '<': case '>':
-            switch (typecode) {
+            switch (val_type) {
                 case 'b': case 'B':
                     size = 1; break;
                 case 'h': case 'H':
                     size = 2; break;
                 case 'i': case 'I':
                     size = 4; break;
+                case 'l': case 'L':
+                    size = 4; break;
             }
             break;
+        case '@': {
+            // TODO:
+            // The simplest heuristic for alignment is to align by value
+            // size, but that doesn't work for "bigger than int" types,
+            // for example, long long may very well have long alignment
+            // So, we introduce separate alignment handling, but having
+            // formal support for that is different from actually supporting
+            // particular (or any) ABI.
+            uint align = 0;
+            switch (val_type) {
+                case 'b': case 'B':
+                    align = size = 1; break;
+                case 'h': case 'H':
+                    align = size = sizeof(short); break;
+                case 'i': case 'I':
+                    align = size = sizeof(int); break;
+                case 'l': case 'L':
+                    align = size = sizeof(long); break;
+            }
+            // Make pointer aligned
+            p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
+            #if MP_ENDIANNESS_LITTLE
+            struct_type = '<';
+            #else
+            struct_type = '>';
+            #endif
+            break;
+        }
     }
 
     int delta;
-    if (type == '<') {
+    if (struct_type == '<') {
         delta = -1;
         p += size - 1;
     } else {
@@ -104,7 +133,7 @@ mp_obj_t mp_binary_get_val_unaligned(char typecode, byte **ptr) {
     }
 
     machine_int_t val = 0;
-    if (is_signed(typecode) && *p & 0x80) {
+    if (is_signed(val_type) && *p & 0x80) {
         val = -1;
     }
     for (uint i = 0; i < size; i++) {
@@ -113,8 +142,8 @@ mp_obj_t mp_binary_get_val_unaligned(char typecode, byte **ptr) {
         p += delta;
     }
 
-    *ptr += size + align;
-    if (is_signed(typecode)) {
+    *ptr += size;
+    if (is_signed(val_type)) {
         return mp_obj_new_int(val);
     } else {
         return mp_obj_new_int_from_uint(val);
