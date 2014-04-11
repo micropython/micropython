@@ -220,27 +220,24 @@ STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, cons
 STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-            if (mp_obj_is_integer(rhs_in)) {
-                uint index = mp_get_index(mp_obj_get_type(lhs_in), lhs_len, rhs_in, false);
-                if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_bytes)) {
-                    return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
-                } else {
-                    return mp_obj_new_str(lhs_data + index, 1, true);
-                }
+        case MP_BINARY_OP_SUBSCR: {
 #if MICROPY_ENABLE_SLICE
-            } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_slice)) {
+            if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_slice)) {
                 machine_uint_t start, stop;
                 if (!m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop)) {
                     assert(0);
                 }
                 return mp_obj_new_str(lhs_data + start, stop - start, false);
-#endif
-            } else {
-                // Message doesn't match CPython, but we don't have so much bytes as they
-                // to spend them on verbose wording
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "index must be int"));
             }
+#endif
+            mp_obj_type_t *type = mp_obj_get_type(lhs_in);
+            uint index = mp_get_index(type, lhs_len, rhs_in, false);
+            if (type == &mp_type_bytes) {
+                return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
+            } else {
+                return mp_obj_new_str(lhs_data + index, 1, true);
+            }
+        }
 
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:

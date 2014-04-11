@@ -277,12 +277,10 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
 
 // is_slice determines whether the index is a slice index
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice) {
-    int i;
-    if (MP_OBJ_IS_INT(index)) {
-        i = mp_obj_int_get_checked(index);
-    } else if (MP_OBJ_IS_TYPE(index, &mp_type_bool)) {
-        i = (index == mp_const_true ? 1 : 0);
-    } else {
+    machine_int_t i;
+    if (MP_OBJ_IS_SMALL_INT(index)) {
+        i = MP_OBJ_SMALL_INT_VALUE(index);
+    } else if (!mp_obj_get_int_maybe(index, &i)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 
