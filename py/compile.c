@@ -52,7 +52,7 @@ typedef struct _compiler_t {
 
     uint16_t n_arg_keyword;
     uint8_t star_flags;
-    uint8_t have_bare_star;
+    uint8_t have_star;
     uint16_t num_dict_params;
     uint16_t num_default_params;
 
@@ -858,13 +858,18 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_d
 
 void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)) {
+        comp->have_star = true;
+        /* don't need to distinguish bare from named star
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
             // bare star
-            comp->have_bare_star = true;
+        } else {
+            // named star
         }
+        */
 
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_dbl_star)) {
+        // named double star
         // TODO do we need to do anything with this?
 
     } else {
@@ -896,7 +901,7 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             // this parameter does not have a default value
 
             // check for non-default parameters given after default parameters (allowed by parser, but not syntactically valid)
-            if (!comp->have_bare_star && comp->num_default_params != 0) {
+            if (!comp->have_star && comp->num_default_params != 0) {
                 compile_syntax_error(comp, pn, "non-default argument follows default argument");
                 return;
             }
@@ -905,7 +910,7 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             // this parameter has a default value
             // in CPython, None (and True, False?) as default parameters are loaded with LOAD_NAME; don't understandy why
 
-            if (comp->have_bare_star) {
+            if (comp->have_star) {
                 comp->num_dict_params += 1;
 #if !MICROPY_EMIT_CPYTHON
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
@@ -942,12 +947,12 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     }
 
     // save variables (probably don't need to do this, since we can't have nested definitions..?)
-    uint old_have_bare_star = comp->have_bare_star;
+    uint old_have_star = comp->have_star;
     uint old_num_dict_params = comp->num_dict_params;
     uint old_num_default_params = comp->num_default_params;
 
     // compile default parameters
-    comp->have_bare_star = false;
+    comp->have_star = false;
     comp->num_dict_params = 0;
     comp->num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
@@ -970,7 +975,7 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     close_over_variables_etc(comp, fscope, comp->num_default_params, comp->num_dict_params);
 
     // restore variables
-    comp->have_bare_star = old_have_bare_star;
+    comp->have_star = old_have_star;
     comp->num_dict_params = old_num_dict_params;
     comp->num_default_params = old_num_default_params;
 
@@ -2742,7 +2747,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
     mp_parse_node_t pn_annotation = MP_PARSE_NODE_NULL;
     if (MP_PARSE_NODE_IS_ID(pn)) {
         param_name = MP_PARSE_NODE_LEAF_ARG(pn);
-        if (comp->have_bare_star) {
+        if (comp->have_star) {
             // comes after a bare star, so doesn't count as a parameter
         } else {
             comp->scope_cur->num_params += 1;
@@ -2763,30 +2768,30 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
             /* this is obsolete now that num dict/default params are calculated in compile_funcdef_param
             if (!MP_PARSE_NODE_IS_NULL(pns->nodes[node_index])) {
                 // this parameter has a default value
-                if (comp->have_bare_star) {
+                if (comp->have_star) {
                     comp->scope_cur->num_dict_params += 1;
                 } else {
                     comp->scope_cur->num_default_params += 1;
                 }
             }
             */
-            if (comp->have_bare_star) {
+            if (comp->have_star) {
                 // comes after a bare star, so doesn't count as a parameter
             } else {
                 comp->scope_cur->num_params += 1;
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
+            comp->have_star = true;
             if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                 // bare star
                 // TODO see http://www.python.org/dev/peps/pep-3102/
-                comp->have_bare_star = true;
                 //assert(comp->scope_cur->num_dict_params == 0);
             } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
                 // named star
                 comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             } else if (allow_annotations && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)) {
-                // named star with annotation
+                // named star with possible annotation
                 comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 pns = (mp_parse_node_struct_t*)pns->nodes[0];
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
@@ -2951,7 +2956,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // work out number of parameters, keywords and default parameters, and add them to the id_info array
         // must be done before compiling the body so that arguments are numbered first (for LOAD_FAST etc)
         if (comp->pass == PASS_1) {
-            comp->have_bare_star = false;
+            comp->have_star = false;
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
         }
 
@@ -2971,7 +2976,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // work out number of parameters, keywords and default parameters, and add them to the id_info array
         // must be done before compiling the body so that arguments are numbered first (for LOAD_FAST etc)
         if (comp->pass == PASS_1) {
-            comp->have_bare_star = false;
+            comp->have_star = false;
             apply_to_single_or_list(comp, pns->nodes[0], PN_varargslist, compile_scope_lambda_param);
         }
 
