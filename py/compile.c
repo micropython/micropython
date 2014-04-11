@@ -2681,7 +2681,7 @@ void compile_argument(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->scope_cur->kind != SCOPE_FUNCTION) {
+    if (comp->scope_cur->kind != SCOPE_FUNCTION && comp->scope_cur->kind != SCOPE_LAMBDA) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'yield' outside function");
         return;
     }
@@ -2993,6 +2993,12 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         }
 
         compile_node(comp, pns->nodes[1]); // 1 is lambda body
+
+        // if the lambda is a generator, then we return None, not the result of the expression of the lambda
+        if (scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            EMIT(pop_top);
+            EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+        }
         EMIT(return_value);
     } else if (scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
         // a bit of a hack at the moment
@@ -3242,15 +3248,10 @@ void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 
 #if MICROPY_EMIT_CPYTHON
     // these flags computed here are for CPython compatibility only
-    if (scope->kind == SCOPE_FUNCTION) {
-        scope->scope_flags |= MP_SCOPE_FLAG_NEWLOCALS;
-    }
     if (scope->kind == SCOPE_FUNCTION || scope->kind == SCOPE_LAMBDA || scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
         assert(scope->parent != NULL);
+        scope->scope_flags |= MP_SCOPE_FLAG_NEWLOCALS;
         scope->scope_flags |= MP_SCOPE_FLAG_OPTIMISED;
-
-        // TODO possibly other ways it can be nested
-        // Note that we don't actually use this information at the moment (for CPython compat only)
         if ((SCOPE_FUNCTION <= scope->parent->kind && scope->parent->kind <= SCOPE_SET_COMP) || (scope->parent->kind == SCOPE_CLASS && scope->parent->parent->kind == SCOPE_FUNCTION)) {
             scope->scope_flags |= MP_SCOPE_FLAG_NESTED;
         }
