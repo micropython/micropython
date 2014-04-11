@@ -26,6 +26,7 @@ def compute_hash(qstr):
 def do_work(infiles):
     # read the qstrs in from the input files
     qstrs = {}
+    cpp_header_blocks = 3
     for infile in infiles:
         with open(infile, 'rt') as f:
             line_number = 0
@@ -35,6 +36,14 @@ def do_work(infiles):
 
                 # ignore blank lines and comments
                 if len(line) == 0 or line.startswith('//'):
+                    continue
+
+                # We'll have 3 line-number lines for py/qstrdefs.h - initial, leaving it to
+                # go into other headers, and returning to it.
+                if line.startswith('# ') and 'py/qstrdefs.h' in line:
+                    cpp_header_blocks -= 1
+                    continue
+                if cpp_header_blocks != 0:
                     continue
 
                 # verify line is of the correct form
