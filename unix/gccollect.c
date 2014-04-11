@@ -77,7 +77,7 @@ void gc_collect(void) {
     //gc_dump_info();
 
     gc_collect_start();
-    // this traces .data and .bss sections
+    // this traces the .bss section
 #ifdef __CYGWIN__
 #define BSS_START __bss_start__
 #else
