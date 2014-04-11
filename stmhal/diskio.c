@@ -15,7 +15,7 @@
 #include "storage.h"
 #include "sdcard.h"
 
-PARTITION VolToPart[] = {
+const PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
     {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
     /*
