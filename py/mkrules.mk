@@ -79,6 +79,7 @@ endif
 clean: clean-prog
 clean-prog:
 	$(RM) -f $(PROG)
+	$(RM) -f $(PROG).map
 
 .PHONY: clean-prog
 endif
