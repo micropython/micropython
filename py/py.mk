@@ -104,9 +104,10 @@ $(PY_BUILD)/py-version.h: FORCE
 # Adding an order only dependency on $(PY_BUILD) causes $(PY_BUILD) to get
 # created before we run the script to generate the .h
 $(PY_BUILD)/qstrdefs.generated.h: | $(PY_BUILD)/
-$(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py
+$(PY_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(PY_SRC)/mpconfig.h
 	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(PY_QSTR_DEFS) $(QSTR_DEFS) > $@
+	$(CPP) $(CFLAGS) $(PY_QSTR_DEFS) -o $(PY_BUILD)/qstrdefs.preprocessed.h
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(PY_BUILD)/qstrdefs.preprocessed.h $(QSTR_DEFS) > $@
 
 # We don't know which source files actually need the generated.h (since
 # it is #included from str.h). The compiler generated dependencies will cause
