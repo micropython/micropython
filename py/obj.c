@@ -143,20 +143,35 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (o1 == o2) {
         return true;
-    } else if (o1 == mp_const_none || o2 == mp_const_none) {
+    }
+    if (o1 == mp_const_none || o2 == mp_const_none) {
         return false;
-    } else if (MP_OBJ_IS_SMALL_INT(o1) || MP_OBJ_IS_SMALL_INT(o2)) {
-        if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
+    }
+
+    // fast path for small ints
+    if (MP_OBJ_IS_SMALL_INT(o1)) {
+        if (MP_OBJ_IS_SMALL_INT(o2)) {
+            // both SMALL_INT, and not equal if we get here
             return false;
         } else {
-            if (MP_OBJ_IS_SMALL_INT(o1)) {
-                mp_obj_t temp = o2; o2 = o1; o1 = temp;
-            }
-            // o2 is the SMALL_INT, o1 is not
+            mp_obj_t temp = o2; o2 = o1; o1 = temp;
+            // o2 is now the SMALL_INT, o1 is not
             // fall through to generic op
         }
-    } else if (MP_OBJ_IS_STR(o1) && MP_OBJ_IS_STR(o2)) {
-        return mp_obj_str_equal(o1, o2);
+    }
+
+    // fast path for strings
+    if (MP_OBJ_IS_STR(o1)) {
+        if (MP_OBJ_IS_STR(o2)) {
+            // both strings, use special function
+            return mp_obj_str_equal(o1, o2);
+        } else {
+            // a string is never equal to anything else
+            return false;
+        }
+    } else if (MP_OBJ_IS_STR(o2)) {
+        // o1 is not a string (else caught above), so the objects are not equal
+        return false;
     }
 
     // generic type, call binary_op(MP_BINARY_OP_EQUAL)

@@ -99,7 +99,6 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return MP_BOOL(elem != NULL);
         }
         case MP_BINARY_OP_EQUAL: {
-            // TODO: Support equality to other object types
             if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
                 mp_obj_dict_t *rhs = rhs_in;
                 if (o->map.used != rhs->map.used) {
@@ -118,6 +117,9 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                     }
                 }
                 return mp_const_true;
+            } else {
+                // dict is not equal to instance of any other type
+                return mp_const_false;
             }
         }
         default:
