@@ -50,9 +50,11 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             mp_obj_t iterable = mp_getiter(args[0]);
             mp_obj_t dict = mp_obj_new_dict(0);
             // TODO: support arbitrary seq as a pair
-            mp_obj_tuple_t *item;
+            mp_obj_t item;
             while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
-                mp_obj_dict_store(dict, item->items[0], item->items[1]);
+                mp_obj_t *sub_items;
+                mp_obj_get_array_fixed_n(item, 2, &sub_items);
+                mp_obj_dict_store(dict, sub_items[0], sub_items[1]);
             }
             return dict;
         }

@@ -280,7 +280,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
             mp_obj_list_get(o, &seq_len, items);
         }
         if (seq_len != len) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", len, seq_len));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "requested length %d but object has length %d", len, seq_len));
         }
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
