@@ -915,6 +915,11 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
 #if !MICROPY_EMIT_CPYTHON
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
                 if (comp->num_dict_params == 1) {
+                    // in Micro Python we put the default positional parameters into a tuple using the bytecode
+                    // we need to do this here before we start building the map for the default keywords
+                    if (comp->num_default_params > 0) {
+                        EMIT_ARG(build_tuple, comp->num_default_params);
+                    }
                     // first default dict param, so make the map
                     EMIT_ARG(build_map, 0);
                 }
@@ -963,7 +968,8 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
 
 #if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the default positional parameters into a tuple using the bytecode
-    if (comp->num_default_params > 0) {
+    // the default keywords args may have already made the tuple; if not, do it now
+    if (comp->num_default_params > 0 && comp->num_dict_params == 0) {
         EMIT_ARG(build_tuple, comp->num_default_params);
     }
 #endif
