@@ -310,13 +310,13 @@ STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *e
 
 STATIC mp_obj_t ffivar_get(mp_obj_t self_in) {
     mp_obj_ffivar_t *self = self_in;
-    return mp_binary_get_val(self->type, self->var, 0);
+    return mp_binary_get_val_array(self->type, self->var, 0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ffivar_get_obj, ffivar_get);
 
 STATIC mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
     mp_obj_ffivar_t *self = self_in;
-    mp_binary_set_val(self->type, self->var, 0, val_in);
+    mp_binary_set_val_array(self->type, self->var, 0, val_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffivar_set_obj, ffivar_set);
