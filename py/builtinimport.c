@@ -19,6 +19,13 @@
 #include "runtime.h"
 #include "builtin.h"
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 #define PATH_SEP_CHAR '/'
 
 mp_obj_t mp_sys_path;
@@ -129,14 +136,14 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
 }
 
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
-    /*
-    printf("import:\n");
+#if DEBUG_PRINT
+    printf("__import__:\n");
     for (int i = 0; i < n_args; i++) {
         printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
         printf("\n");
     }
-    */
+#endif
 
     mp_obj_t fromtuple = mp_const_none;
     int level = 0;
@@ -158,6 +165,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     // check if module already exists
     mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(args[0]));
     if (module_obj != MP_OBJ_NULL) {
+        DEBUG_printf("Module already loaded\n");
         // If it's not a package, return module right away
         char *p = strchr(mod_str, '.');
         if (p == NULL) {
@@ -171,6 +179,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
         return mp_module_get(pkg_name);
     }
+    DEBUG_printf("Module not yet loaded\n");
 
     uint last = 0;
     VSTR_FIXED(path, MICROPY_PATH_MAX)
@@ -182,6 +191,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         if (i == mod_len || mod_str[i] == '.') {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
+            DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;
@@ -207,6 +217,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                 module_obj = mp_obj_new_module(mod_name);
 
                 if (stat == MP_IMPORT_STAT_DIR) {
+                    DEBUG_printf("%s is dir\n", vstr_str(&path));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
