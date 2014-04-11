@@ -75,7 +75,7 @@ typedef struct _pyb_i2c_obj_t {
     I2C_HandleTypeDef *i2c_handle;
 } pyb_i2c_obj_t;
 
-STATIC pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2cHandle_X}, {{&pyb_i2c_type}, &I2cHandle_Y}};
+STATIC const pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2cHandle_X}, {{&pyb_i2c_type}, &I2cHandle_Y}};
 
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
@@ -90,12 +90,12 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     }
 
     // get i2c object
-    pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id];
+    const pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id];
 
     // start the peripheral
     i2c_start(i2c_obj->i2c_handle);
 
-    return &pyb_i2c_obj;
+    return (mp_obj_t)i2c_obj;
 }
 
 STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
