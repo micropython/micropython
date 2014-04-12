@@ -422,26 +422,35 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         // pointer to the string (it's probably constant though!)
         uint l;
         return (machine_uint_t)mp_obj_str_get_data(obj, &l);
-#if MICROPY_ENABLE_FLOAT
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_float)) {
-        // convert float to int (could also pass in float registers)
-        return (machine_int_t)mp_obj_float_get(obj);
-#endif
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_tuple)) {
-        // pointer to start of tuple (could pass length, but then could use len(x) for that)
-        uint len;
-        mp_obj_t *items;
-        mp_obj_tuple_get(obj, &len, &items);
-        return (machine_uint_t)items;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_list)) {
-        // pointer to start of list (could pass length, but then could use len(x) for that)
-        uint len;
-        mp_obj_t *items;
-        mp_obj_list_get(obj, &len, &items);
-        return (machine_uint_t)items;
     } else {
-        // just pass along a pointer to the object
-        return (machine_uint_t)obj;
+        mp_obj_type_t *type = mp_obj_get_type(obj);
+        if (0) {
+#if MICROPY_ENABLE_FLOAT
+        } else if (type == &mp_type_float) {
+            // convert float to int (could also pass in float registers)
+            return (machine_int_t)mp_obj_float_get(obj);
+#endif
+        } else if (type == &mp_type_tuple) {
+            // pointer to start of tuple (could pass length, but then could use len(x) for that)
+            uint len;
+            mp_obj_t *items;
+            mp_obj_tuple_get(obj, &len, &items);
+            return (machine_uint_t)items;
+        } else if (type == &mp_type_list) {
+            // pointer to start of list (could pass length, but then could use len(x) for that)
+            uint len;
+            mp_obj_t *items;
+            mp_obj_list_get(obj, &len, &items);
+            return (machine_uint_t)items;
+        } else if (type->buffer_p.get_buffer != NULL) {
+            // supports the buffer protocol, get a pointer to the data
+            buffer_info_t bufinfo;
+            type->buffer_p.get_buffer(obj, &bufinfo, BUFFER_READ);
+            return (machine_uint_t)bufinfo.buf;
+        } else {
+            // just pass along a pointer to the object
+            return (machine_uint_t)obj;
+        }
     }
 }
 

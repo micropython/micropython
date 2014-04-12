@@ -230,13 +230,49 @@ STATIC int get_label_dest(asm_thumb_t *as, uint label) {
     return as->label_offsets[label];
 }
 
-#define OP_MOVS_RLO_I8(rlo_dest, i8_src) (0x2000 | ((rlo_dest) << 8) | (i8_src))
+#define OP_FORMAT_2(op, rlo_dest, rlo_src, src_b) ((op) | ((src_b) << 6) | ((rlo_src) << 3) | (rlo_dest))
 
-// the i8_src value will be zero extended into the r32 register!
-void asm_thumb_movs_rlo_i8(asm_thumb_t *as, uint rlo_dest, int i8_src) {
+void asm_thumb_format_2(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src, int src_b) {
     assert(rlo_dest < REG_R8);
-    // movs rlo_dest, #i8_src
-    asm_thumb_write_op16(as, OP_MOVS_RLO_I8(rlo_dest, i8_src));
+    assert(rlo_src < REG_R8);
+    asm_thumb_write_op16(as, OP_FORMAT_2(op, rlo_dest, rlo_src, src_b));
+}
+
+#define OP_FORMAT_3(op, rlo, i8) ((op) | ((rlo) << 8) | (i8))
+
+void asm_thumb_format_3(asm_thumb_t *as, uint op, uint rlo, int i8) {
+    assert(rlo < REG_R8);
+    asm_thumb_write_op16(as, OP_FORMAT_3(op, rlo, i8));
+}
+
+#define OP_FORMAT_4(op, rlo_dest, rlo_src) ((op) | ((rlo_src) << 3) | (rlo_dest))
+
+void asm_thumb_format_4(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src) {
+    assert(rlo_dest < REG_R8);
+    assert(rlo_src < REG_R8);
+    asm_thumb_write_op16(as, OP_FORMAT_4(op, rlo_dest, rlo_src));
+}
+
+#define OP_FORMAT_9_10(op, rlo_dest, rlo_base, offset) ((op) | (((offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
+
+void asm_thumb_format_9_10(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_base, uint offset) {
+    asm_thumb_write_op16(as, OP_FORMAT_9_10(op, rlo_dest, rlo_base, offset));
+}
+
+void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
+    uint op_lo;
+    if (reg_src < 8) {
+        op_lo = reg_src << 3;
+    } else {
+        op_lo = 0x40 | ((reg_src - 8) << 3);
+    }
+    if (reg_dest < 8) {
+        op_lo |= reg_dest;
+    } else {
+        op_lo |= 0x80 | (reg_dest - 8);
+    }
+    // mov reg_dest, reg_src
+    asm_thumb_write_op16(as, 0x4600 | op_lo);
 }
 
 #define OP_MOVW (0xf240)
@@ -257,60 +293,6 @@ void asm_thumb_movw_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src) {
 // the i16_src value will be zero extended into the r32 register!
 void asm_thumb_movt_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src) {
     asm_thumb_mov_reg_i16(as, OP_MOVT, reg_dest, i16_src);
-}
-
-void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
-    uint op_lo;
-    if (reg_src < 8) {
-        op_lo = reg_src << 3;
-    } else {
-        op_lo = 0x40 | ((reg_src - 8) << 3);
-    }
-    if (reg_dest < 8) {
-        op_lo |= reg_dest;
-    } else {
-        op_lo |= 0x80 | (reg_dest - 8);
-    }
-    // mov reg_dest, reg_src
-    asm_thumb_write_op16(as, 0x4600 | op_lo);
-}
-
-#define OP_ADD_RLO_RLO_RLO(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))
-
-void asm_thumb_add_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b) {
-    asm_thumb_write_op16(as, OP_ADD_RLO_RLO_RLO(rlo_dest, rlo_src_a, rlo_src_b));
-}
-
-#define OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src) (0x1e00 | ((i3_src) << 6) | ((rlo_src) << 3) | (rlo_dest))
-
-void asm_thumb_subs_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint rlo_src, int i3_src) {
-    assert(rlo_dest < REG_R8);
-    assert(rlo_src < REG_R8);
-    asm_thumb_write_op16(as, OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src));
-}
-
-#define OP_CMP_REG_REG(rlo_a, rlo_b) (0x4280 | ((rlo_b) << 3) | (rlo_a))
-
-void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b) {
-    asm_thumb_write_op16(as, OP_CMP_REG_REG(rlo_a, rlo_b));
-}
-
-#define OP_CMP_RLO_I8(rlo, i8) (0x2800 | ((rlo) << 8) | (i8))
-
-void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
-    assert(rlo < REG_R8);
-    asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, i8));
-}
-
-#define OP_LDR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset) (0x6800 | (((word_offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
-#define OP_STR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset) (0x6000 | (((word_offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
-
-void asm_thumb_ldr_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint word_offset) {
-    asm_thumb_write_op16(as, OP_LDR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset));
-}
-
-void asm_thumb_str_rlo_rlo_i5(asm_thumb_t *as, uint rlo_src, uint rlo_base, uint word_offset) {
-    asm_thumb_write_op16(as, OP_STR_RLO_RLO_I5(rlo_src, rlo_base, word_offset));
 }
 
 void asm_thumb_ite_ge(asm_thumb_t *as) {
@@ -353,7 +335,7 @@ void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32) {
 
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
     if (reg_dest < 8 && UNSIGNED_FIT8(i32)) {
-        asm_thumb_movs_rlo_i8(as, reg_dest, i32);
+        asm_thumb_mov_rlo_i8(as, reg_dest, i32);
     } else if (UNSIGNED_FIT16(i32)) {
         asm_thumb_mov_reg_i16(as, OP_MOVW, reg_dest, i32);
     } else {
@@ -452,7 +434,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
         asm_thumb_mov_reg_i32(as, reg_temp, (machine_uint_t)fun_ptr);
         asm_thumb_write_op16(as, OP_BLX(reg_temp));
     } else if (1) {
-        asm_thumb_write_op16(as, OP_LDR_RLO_RLO_I5(reg_temp, REG_R7, fun_id));
+        asm_thumb_write_op16(as, OP_FORMAT_9_10(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, REG_R7, fun_id));
         asm_thumb_write_op16(as, OP_BLX(reg_temp));
     } else {
         // use SVC

@@ -17,6 +17,14 @@
 
 #if MICROPY_EMIT_INLINE_THUMB
 
+typedef enum {
+    PN_none = 0,
+#define DEF_RULE(rule, comp, kind, ...) PN_##rule,
+#include "grammar.h"
+#undef DEF_RULE
+    PN_maximum_number_of,
+} pn_kind_t;
+
 struct _emit_inline_asm_t {
     uint16_t pass;
     uint16_t success;
@@ -120,15 +128,15 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
-STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, uint wanted_arg_num, uint max_reg) {
-    if (MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint max_reg) {
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
         const char *reg_str = qstr_str(reg_qstr);
         for (uint i = 0; i < sizeof(reg_name_table) / sizeof(reg_name_table[0]); i++) {
             const reg_name_t *r = &reg_name_table[i];
             if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
                 if (r->reg > max_reg) {
-                    emit_inline_thumb_error(emit, "'%s' expects at most r%d in position %d\n", op, max_reg, wanted_arg_num);
+                    emit_inline_thumb_error(emit, "'%s' expects at most r%d\n", op, max_reg);
                     return 0;
                 } else {
                     return r->reg;
@@ -136,16 +144,16 @@ STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t
             }
         }
     }
-    emit_inline_thumb_error(emit, "'%s' expects a register in position %d\n", op, wanted_arg_num);
+    emit_inline_thumb_error(emit, "'%s' expects a register\n", op);
     return 0;
 }
 
-STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
-    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
-        emit_inline_thumb_error(emit, "'%s' expects an integer in position %d\n", op, wanted_arg_num);
+STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int fit_mask) {
+    if (!MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        emit_inline_thumb_error(emit, "'%s' expects an integer\n", op);
         return 0;
     }
-    int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn_args[wanted_arg_num]);
+    int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
     if ((i & (~fit_mask)) != 0) {
         emit_inline_thumb_error(emit, "'%s' integer 0x%x does not fit in mask 0x%x\n", op, i, fit_mask);
         return 0;
@@ -153,12 +161,34 @@ STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *p
     return i;
 }
 
-STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, int wanted_arg_num) {
-    if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        emit_inline_thumb_error(emit, "'%s' expects a label in position %d\n", op, wanted_arg_num);
+STATIC bool get_arg_addr(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_parse_node_t *pn_base, mp_parse_node_t *pn_offset) {
+    if (!MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_atom_bracket)) {
+        goto bad_arg;
+    }
+    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+    if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
+        goto bad_arg;
+    }
+    pns = (mp_parse_node_struct_t*)pns->nodes[0];
+    if (MP_PARSE_NODE_STRUCT_NUM_NODES(pns) != 2) {
+        goto bad_arg;
+    }
+
+    *pn_base = pns->nodes[0];
+    *pn_offset = pns->nodes[1];
+    return true;
+
+bad_arg:
+    emit_inline_thumb_error(emit, "'%s' expects an address of the form [a, b]\n", op);
+    return false;
+}
+
+STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    if (!MP_PARSE_NODE_IS_ID(pn)) {
+        emit_inline_thumb_error(emit, "'%s' expects a label\n", op);
         return 0;
     }
-    qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+    qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
     for (int i = 0; i < emit->max_num_labels; i++) {
         if (emit->label_lookup[i] == label_qstr) {
             return i;
@@ -212,7 +242,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
 
     } else if (n_args == 1) {
         if (strcmp(op_str, "b") == 0) {
-            int label_num = get_arg_label(emit, op_str, pn_args, 0);
+            int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_b_n(emit->as, label_num);
         } else if (op_str[0] == 'b' && op_len == 3) {
@@ -225,7 +255,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             if (cc == -1) {
                 goto unknown_op;
             }
-            int label_num = get_arg_label(emit, op_str, pn_args, 0);
+            int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_bcc_n(emit->as, cc, label_num);
         } else {
@@ -233,59 +263,131 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
         }
 
     } else if (n_args == 2) {
-        if (strcmp(op_str, "mov") == 0) {
-            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 1, 7);
-            asm_thumb_mov_reg_reg(emit->as, rlo_dest, rlo_src);
-        } else if (strcmp(op_str, "movs") == 0) {
-            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xff);
-            asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
-        } else if (strcmp(op_str, "movw") == 0) {
-            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
-            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffff);
-            asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src);
-        } else if (strcmp(op_str, "movt") == 0) {
-            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
-            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffff);
-            asm_thumb_movt_reg_i16(emit->as, reg_dest, i_src);
-        } else if (strcmp(op_str, "movwt") == 0) {
-            // this is a convenience instruction
-            // we clear the MSB since it might be set from extracting the small int value
-            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
-            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffffffff);
-            asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src & 0xffff);
-            asm_thumb_movt_reg_i16(emit->as, reg_dest, (i_src >> 16) & 0x7fff);
-        } else if (strcmp(op_str, "cmp") == 0) {
-            uint rlo = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            int i8 = get_arg_i(emit, op_str, pn_args, 1, 0xff);
-            asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
+        if (MP_PARSE_NODE_IS_ID(pn_args[1])) {
+            // second arg is a register (or should be)
+            uint op_code;
+            if (strcmp(op_str, "mov") == 0) {
+                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                uint reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
+                asm_thumb_mov_reg_reg(emit->as, reg_dest, reg_src);
+            } else if (strcmp(op_str, "and") == 0) {
+                op_code = ASM_THUMB_FORMAT_4_AND;
+                uint reg_dest, reg_src;
+                op_format_4:
+                reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+                reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
+                asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
+            // TODO probably uses less ROM if these ops are in a lookup table
+            } else if (strcmp(op_str, "and") == 0) { op_code = ASM_THUMB_FORMAT_4_AND; goto op_format_4;
+            } else if (strcmp(op_str, "eor") == 0) { op_code = ASM_THUMB_FORMAT_4_EOR; goto op_format_4;
+            } else if (strcmp(op_str, "lsl") == 0) { op_code = ASM_THUMB_FORMAT_4_LSL; goto op_format_4;
+            } else if (strcmp(op_str, "lsr") == 0) { op_code = ASM_THUMB_FORMAT_4_LSR; goto op_format_4;
+            } else if (strcmp(op_str, "asr") == 0) { op_code = ASM_THUMB_FORMAT_4_ASR; goto op_format_4;
+            } else if (strcmp(op_str, "adc") == 0) { op_code = ASM_THUMB_FORMAT_4_ADC; goto op_format_4;
+            } else if (strcmp(op_str, "sbc") == 0) { op_code = ASM_THUMB_FORMAT_4_SBC; goto op_format_4;
+            } else if (strcmp(op_str, "ror") == 0) { op_code = ASM_THUMB_FORMAT_4_ROR; goto op_format_4;
+            } else if (strcmp(op_str, "tst") == 0) { op_code = ASM_THUMB_FORMAT_4_TST; goto op_format_4;
+            } else if (strcmp(op_str, "neg") == 0) { op_code = ASM_THUMB_FORMAT_4_NEG; goto op_format_4;
+            } else if (strcmp(op_str, "cmp") == 0) { op_code = ASM_THUMB_FORMAT_4_CMP; goto op_format_4;
+            } else if (strcmp(op_str, "cmn") == 0) { op_code = ASM_THUMB_FORMAT_4_CMN; goto op_format_4;
+            } else if (strcmp(op_str, "orr") == 0) { op_code = ASM_THUMB_FORMAT_4_ORR; goto op_format_4;
+            } else if (strcmp(op_str, "mul") == 0) { op_code = ASM_THUMB_FORMAT_4_MUL; goto op_format_4;
+            } else if (strcmp(op_str, "bic") == 0) { op_code = ASM_THUMB_FORMAT_4_BIC; goto op_format_4;
+            } else if (strcmp(op_str, "mvn") == 0) { op_code = ASM_THUMB_FORMAT_4_MVN; goto op_format_4;
+            } else {
+                goto unknown_op;
+            }
         } else {
-            goto unknown_op;
+            // second arg is not a register
+            uint op_code;
+            if (strcmp(op_str, "mov") == 0) {
+                op_code = ASM_THUMB_FORMAT_3_MOV;
+                uint rlo_dest, i8_src;
+                op_format_3:
+                rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+                i8_src = get_arg_i(emit, op_str, pn_args[1], 0xff);
+                asm_thumb_format_3(emit->as, op_code, rlo_dest, i8_src);
+            } else if (strcmp(op_str, "cmp") == 0) {
+                op_code = ASM_THUMB_FORMAT_3_CMP;
+                goto op_format_3;
+            } else if (strcmp(op_str, "add") == 0) {
+                op_code = ASM_THUMB_FORMAT_3_ADD;
+                goto op_format_3;
+            } else if (strcmp(op_str, "sub") == 0) {
+                op_code = ASM_THUMB_FORMAT_3_SUB;
+                goto op_format_3;
+            } else if (strcmp(op_str, "movw") == 0) {
+                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
+                asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src);
+            } else if (strcmp(op_str, "movt") == 0) {
+                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
+                asm_thumb_movt_reg_i16(emit->as, reg_dest, i_src);
+            } else if (strcmp(op_str, "movwt") == 0) {
+                // this is a convenience instruction
+                // we clear the MSB since it might be set from extracting the small int value
+                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
+                asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src & 0xffff);
+                asm_thumb_movt_reg_i16(emit->as, reg_dest, (i_src >> 16) & 0x7fff);
+            } else if (strcmp(op_str, "ldr") == 0) {
+                op_code = ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER;
+                uint rlo_dest, rlo_base, i5;
+                mp_parse_node_t pn_base, pn_offset;
+                op_format_9_10:
+                rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+                if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
+                    rlo_base = get_arg_reg(emit, op_str, pn_base, 7);
+                    if (op_code & ASM_THUMB_FORMAT_9_BYTE_TRANSFER) {
+                        i5 = get_arg_i(emit, op_str, pn_offset, 0x1f);
+                    } else if (op_code & ASM_THUMB_FORMAT_10_STRH) { // also catches LDRH
+                        i5 = get_arg_i(emit, op_str, pn_offset, 0x3e) >> 1;
+                    } else {
+                        i5 = get_arg_i(emit, op_str, pn_offset, 0x7c) >> 2;
+                    }
+                    asm_thumb_format_9_10(emit->as, op_code, rlo_dest, rlo_base, i5);
+                }
+            } else if (strcmp(op_str, "ldrb") == 0) {
+                op_code = ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER;
+                goto op_format_9_10;
+            } else if (strcmp(op_str, "ldrh") == 0) {
+                op_code = ASM_THUMB_FORMAT_10_LDRH;
+                goto op_format_9_10;
+            } else if (strcmp(op_str, "str") == 0) {
+                op_code = ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_WORD_TRANSFER;
+                goto op_format_9_10;
+            } else if (strcmp(op_str, "strb") == 0) {
+                op_code = ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER;
+                goto op_format_9_10;
+            } else if (strcmp(op_str, "strh") == 0) {
+                op_code = ASM_THUMB_FORMAT_10_STRH;
+                goto op_format_9_10;
+            } else {
+                goto unknown_op;
+            }
         }
 
     } else if (n_args == 3) {
+        uint op_code;
         if (strcmp(op_str, "add") == 0) {
-            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            uint rlo_src_a = get_arg_reg(emit, op_str, pn_args, 1, 7);
-            uint rlo_src_b = get_arg_reg(emit, op_str, pn_args, 2, 7);
-            asm_thumb_add_rlo_rlo_rlo(emit->as, rlo_dest, rlo_src_a, rlo_src_b);
-        } else if (strcmp(op_str, "subs") == 0) {
-            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 1, 7);
-            int i3_src = get_arg_i(emit, op_str, pn_args, 2, 0x7);
-            asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
-        } else if (strcmp(op_str, "ldr") == 0) {
-            // TODO maybe use ldr(rd, [rb, 4]) syntax?
-            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            uint rlo_base = get_arg_reg(emit, op_str, pn_args, 1, 7);
-            int i5 = get_arg_i(emit, op_str, pn_args, 2, 0x7c);
-            asm_thumb_ldr_rlo_rlo_i5(emit->as, rlo_dest, rlo_base, i5 >> 2);
-        } else if (strcmp(op_str, "str") == 0) {
-            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 0, 7);
-            uint rlo_base = get_arg_reg(emit, op_str, pn_args, 1, 7);
-            int i5 = get_arg_i(emit, op_str, pn_args, 2, 0x7c);
-            asm_thumb_str_rlo_rlo_i5(emit->as, rlo_src, rlo_base, i5 >> 2);
+            op_code = ASM_THUMB_FORMAT_2_ADD;
+            uint rlo_dest, rlo_src;
+            op_format_2:
+            rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+            rlo_src = get_arg_reg(emit, op_str, pn_args[1], 7);
+            int src_b;
+            if (MP_PARSE_NODE_IS_ID(pn_args[2])) {
+                op_code |= ASM_THUMB_FORMAT_2_REG_OPERAND;
+                src_b = get_arg_reg(emit, op_str, pn_args[2], 7);
+            } else {
+                op_code |= ASM_THUMB_FORMAT_2_IMM_OPERAND;
+                src_b = get_arg_i(emit, op_str, pn_args[2], 0x7);
+            }
+            asm_thumb_format_2(emit->as, op_code, rlo_dest, rlo_src, src_b);
+        } else if (strcmp(op_str, "sub") == 0) {
+            op_code = ASM_THUMB_FORMAT_2_SUB;
+            goto op_format_2;
         } else {
             goto unknown_op;
         }
