@@ -12,7 +12,7 @@ enum {
 #include "build/py/qstrdefs.generated.h"
 #undef Q
     MP_QSTR_number_of,
-} category_t;
+};
 
 typedef machine_uint_t qstr;
 

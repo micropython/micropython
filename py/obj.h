@@ -398,7 +398,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 
 // bool
 // TODO make lower case when it has proven itself
-inline mp_obj_t MP_BOOL(machine_int_t x) { return x ? mp_const_true : mp_const_false; }
+static inline mp_obj_t MP_BOOL(machine_int_t x) { return x ? mp_const_true : mp_const_false; }
 
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
