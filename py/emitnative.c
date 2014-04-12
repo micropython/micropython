@@ -1058,7 +1058,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
 #if N_X64
             asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
 #elif N_THUMB
-            asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
+            asm_thumb_add_rlo_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_LESS) {

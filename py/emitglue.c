@@ -185,6 +185,7 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fwrite(fun_data, len, 1, fp_write_code);
+        fflush(fp_write_code);
     }
 #endif
 #endif

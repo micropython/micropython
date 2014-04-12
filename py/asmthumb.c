@@ -275,10 +275,10 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
     asm_thumb_write_op16(as, 0x4600 | op_lo);
 }
 
-#define OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))
+#define OP_ADD_RLO_RLO_RLO(rlo_dest, rlo_src_a, rlo_src_b) (0x1800 | ((rlo_src_b) << 6) | ((rlo_src_a) << 3) | (rlo_dest))
 
-void asm_thumb_add_reg_reg_reg(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b) {
-    asm_thumb_write_op16(as, OP_ADD_REG_REG_REG(rlo_dest, rlo_src_a, rlo_src_b));
+void asm_thumb_add_rlo_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src_a, uint rlo_src_b) {
+    asm_thumb_write_op16(as, OP_ADD_RLO_RLO_RLO(rlo_dest, rlo_src_a, rlo_src_b));
 }
 
 #define OP_SUBS_RLO_RLO_I3(rlo_dest, rlo_src, i3_src) (0x1e00 | ((i3_src) << 6) | ((rlo_src) << 3) | (rlo_dest))
@@ -300,6 +300,17 @@ void asm_thumb_cmp_reg_reg(asm_thumb_t *as, uint rlo_a, uint rlo_b) {
 void asm_thumb_cmp_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
     assert(rlo < REG_R8);
     asm_thumb_write_op16(as, OP_CMP_RLO_I8(rlo, i8));
+}
+
+#define OP_LDR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset) (0x6800 | (((word_offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
+#define OP_STR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset) (0x6000 | (((word_offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
+
+void asm_thumb_ldr_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint word_offset) {
+    asm_thumb_write_op16(as, OP_LDR_RLO_RLO_I5(rlo_dest, rlo_base, word_offset));
+}
+
+void asm_thumb_str_rlo_rlo_i5(asm_thumb_t *as, uint rlo_src, uint rlo_base, uint word_offset) {
+    asm_thumb_write_op16(as, OP_STR_RLO_RLO_I5(rlo_src, rlo_base, word_offset));
 }
 
 void asm_thumb_ite_ge(asm_thumb_t *as) {
@@ -424,7 +435,6 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
 #define OP_SVC(arg) (0xdf00 | (arg))
-#define OP_LDR_FROM_BASE_OFFSET(rlo_dest, rlo_base, word_offset) (0x6800 | (((word_offset) << 6) & 0x07c0) | ((rlo_base) << 3) | (rlo_dest))
 
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
     /* TODO make this use less bytes
@@ -442,7 +452,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
         asm_thumb_mov_reg_i32(as, reg_temp, (machine_uint_t)fun_ptr);
         asm_thumb_write_op16(as, OP_BLX(reg_temp));
     } else if (1) {
-        asm_thumb_write_op16(as, OP_LDR_FROM_BASE_OFFSET(reg_temp, REG_R7, fun_id));
+        asm_thumb_write_op16(as, OP_LDR_RLO_RLO_I5(reg_temp, REG_R7, fun_id));
         asm_thumb_write_op16(as, OP_BLX(reg_temp));
     } else {
         // use SVC

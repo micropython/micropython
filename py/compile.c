@@ -17,6 +17,7 @@
 #include "obj.h"
 #include "compile.h"
 #include "runtime.h"
+#include "builtin.h"
 #include "smallint.h"
 
 // TODO need to mangle __attr names
@@ -100,17 +101,44 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
             pns->nodes[i] = fold_constants(pns->nodes[i]);
         }
 
+        // now try to fold this parse node
         switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
+            case PN_atom_paren:
+                if (n == 1 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0])) {
+                    // (int)
+                    pn = pns->nodes[0];
+                }
+                break;
+
+            case PN_expr:
+                if (n == 2 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[1])) {
+                    // int | int
+                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[1]);
+                    pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 | arg1);
+                }
+                break;
+
+            case PN_and_expr:
+                if (n == 2 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[1])) {
+                    // int & int
+                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[1]);
+                    pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 & arg1);
+                }
+                break;
+
             case PN_shift_expr:
                 if (n == 3 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[2])) {
-                    int arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
-                    int arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
+                    machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
+                    machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_LESS)) {
-#if MICROPY_EMIT_CPYTHON
-                        // can overflow; enabled only to compare with CPython
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 << arg1);
-#endif
+                        // int << int
+                        if (!(arg1 >= BITS_PER_WORD || arg0 > (MP_SMALL_INT_MAX >> arg1) || arg0 < (MP_SMALL_INT_MIN >> arg1))) {
+                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 << arg1);
+                        }
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_MORE)) {
+                        // int >> int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 >> arg1);
                     } else {
                         // shouldn't happen
@@ -125,14 +153,17 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                     machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
                     machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PLUS)) {
+                        // int + int
                         arg0 += arg1;
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_MINUS)) {
+                        // int - int
                         arg0 -= arg1;
                     } else {
                         // shouldn't happen
                         assert(0);
                     }
                     if (MP_PARSE_FITS_SMALL_INT(arg0)) {
+                        //printf("%ld + %ld\n", arg0, arg1);
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
                     }
                 }
@@ -143,6 +174,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                     machine_int_t arg0 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
                     machine_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
+                        // int * int
                         if (!mp_small_int_mul_overflow(arg0, arg1)) {
                             arg0 *= arg1;
                             if (MP_PARSE_FITS_SMALL_INT(arg0)) {
@@ -150,11 +182,14 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                             }
                         }
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_SLASH)) {
-                        ; // pass
+                        // int / int
+                        // pass
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
+                        // int%int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, mp_small_int_modulo(arg0, arg1));
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
                         if (arg1 != 0) {
+                            // int // int
                             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, mp_small_int_floor_divide(arg0, arg1));
                         }
                     } else {
@@ -168,10 +203,13 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[1])) {
                     machine_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[1]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_PLUS)) {
+                        // +int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg);
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
+                        // -int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, -arg);
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)) {
+                        // ~int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, ~arg);
                     } else {
                         // shouldn't happen
@@ -184,7 +222,7 @@ mp_parse_node_t fold_constants(mp_parse_node_t pn) {
                 if (0) {
 #if MICROPY_EMIT_CPYTHON
                 } else if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
-                    // int**x
+                    // int ** x
                     // can overflow; enabled only to compare with CPython
                     mp_parse_node_struct_t* pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
                     if (MP_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
@@ -3121,7 +3159,16 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
     for (int i = 0; i < num; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT(nodes[i]));
         mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)nodes[i];
-        assert(MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_expr_stmt);
+        if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_pass_stmt) {
+            // no instructions
+            continue;
+        } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_expr_stmt) {
+            // an instruction; fall through
+        } else {
+            // not an instruction; error
+            compile_syntax_error(comp, nodes[i], "inline assembler expecting an instruction");
+            return;
+        }
         assert(MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
         assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[1]));
         pns2 = (mp_parse_node_struct_t*)pns2->nodes[0];
@@ -3152,7 +3199,10 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
     }
 
     if (comp->pass > PASS_1) {
-        EMIT_INLINE_ASM(end_pass);
+        bool success = EMIT_INLINE_ASM(end_pass);
+        if (!success) {
+            comp->had_error = true;
+        }
     }
 }
 #endif
@@ -3330,7 +3380,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
             comp->emit_inline_asm = emit_inline_thumb;
             comp->emit_inline_asm_method_table = &emit_inline_thumb_method_table;
             compile_scope_inline_asm(comp, s, PASS_2);
-            compile_scope_inline_asm(comp, s, PASS_3);
+            if (!comp->had_error) {
+                compile_scope_inline_asm(comp, s, PASS_3);
+            }
 #endif
 
         } else {
@@ -3374,7 +3426,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
             // compile pass 2 and pass 3
             compile_scope(comp, s, PASS_2);
-            compile_scope(comp, s, PASS_3);
+            if (!comp->had_error) {
+                compile_scope(comp, s, PASS_3);
+            }
         }
     }
 

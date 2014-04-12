@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -17,12 +18,22 @@
 #if MICROPY_EMIT_INLINE_THUMB
 
 struct _emit_inline_asm_t {
-    int pass;
+    uint16_t pass;
+    uint16_t success;
     scope_t *scope;
     uint max_num_labels;
     qstr *label_lookup;
     asm_thumb_t *as;
 };
+
+void emit_inline_thumb_error(emit_inline_asm_t *emit, const char *fmt, ...) {
+    printf("SyntaxError: ");
+    emit->success = false;
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
 
 emit_inline_asm_t *emit_inline_thumb_new(uint max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
@@ -41,12 +52,13 @@ void emit_inline_thumb_free(emit_inline_asm_t *emit) {
 
 STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
+    emit->success = true;
     emit->scope = scope;
     asm_thumb_start_pass(emit->as, pass);
     asm_thumb_entry(emit->as, 0);
 }
 
-STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
+STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     asm_thumb_exit(emit->as);
     asm_thumb_end_pass(emit->as);
 
@@ -54,21 +66,23 @@ STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
         void *f = asm_thumb_get_code(emit->as);
         mp_emit_glue_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
     }
+
+    return emit->success;
 }
 
 STATIC int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
-        printf("SyntaxError: can only have up to 4 parameters to inline thumb assembly\n");
+        emit_inline_thumb_error(emit, "can only have up to 4 parameters to inline thumb assembly\n");
         return 0;
     }
     for (int i = 0; i < n_params; i++) {
         if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
-            printf("SyntaxError: parameter to inline assembler must be an identifier\n");
+            emit_inline_thumb_error(emit, "parameter to inline assembler must be an identifier\n");
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
         if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
-            printf("SyntaxError: parameter %d to inline assembler must be r%d\n", i + 1, i);
+            emit_inline_thumb_error(emit, "parameter %d to inline assembler must be r%d\n", i + 1, i);
             return 0;
         }
     }
@@ -81,28 +95,59 @@ STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, uint label_num, qst
     asm_thumb_label_assign(emit->as, label_num);
 }
 
-STATIC uint get_arg_rlo(const char *op, mp_parse_node_t *pn_args, int wanted_arg_num) {
-    if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects a register in position %d\n", op, wanted_arg_num);
-        return 0;
+typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
+STATIC const reg_name_t reg_name_table[] = {
+    {0, "r0\0"},
+    {1, "r1\0"},
+    {2, "r2\0"},
+    {3, "r3\0"},
+    {4, "r4\0"},
+    {5, "r5\0"},
+    {6, "r6\0"},
+    {7, "r7\0"},
+    {8, "r8\0"},
+    {9, "r9\0"},
+    {10, "r10"},
+    {11, "r11"},
+    {12, "r12"},
+    {13, "r13"},
+    {14, "r14"},
+    {15, "r15"},
+    {10, "sl\0"},
+    {11, "fp\0"},
+    {13, "sp\0"},
+    {14, "lr\0"},
+    {15, "pc\0"},
+};
+
+STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, uint wanted_arg_num, uint max_reg) {
+    if (MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
+        qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
+        const char *reg_str = qstr_str(reg_qstr);
+        for (uint i = 0; i < sizeof(reg_name_table) / sizeof(reg_name_table[0]); i++) {
+            const reg_name_t *r = &reg_name_table[i];
+            if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
+                if (r->reg > max_reg) {
+                    emit_inline_thumb_error(emit, "'%s' expects at most r%d in position %d\n", op, max_reg, wanted_arg_num);
+                    return 0;
+                } else {
+                    return r->reg;
+                }
+            }
+        }
     }
-    qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
-    const char *reg_str = qstr_str(reg_qstr);
-    if (!(strlen(reg_str) == 2 && reg_str[0] == 'r' && ('0' <= reg_str[1] && reg_str[1] <= '7'))) {
-        printf("SyntaxError: '%s' expects a register in position %d\n", op, wanted_arg_num);
-        return 0;
-    }
-    return reg_str[1] - '0';
+    emit_inline_thumb_error(emit, "'%s' expects a register in position %d\n", op, wanted_arg_num);
+    return 0;
 }
 
-STATIC int get_arg_i(const char *op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
+STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, int wanted_arg_num, int fit_mask) {
     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects an integer in position %d\n", op, wanted_arg_num);
+        emit_inline_thumb_error(emit, "'%s' expects an integer in position %d\n", op, wanted_arg_num);
         return 0;
     }
     int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn_args[wanted_arg_num]);
     if ((i & (~fit_mask)) != 0) {
-        printf("SyntaxError: '%s' integer 0x%x does not fit in mask 0x%x\n", op, i, fit_mask);
+        emit_inline_thumb_error(emit, "'%s' integer 0x%x does not fit in mask 0x%x\n", op, i, fit_mask);
         return 0;
     }
     return i;
@@ -110,7 +155,7 @@ STATIC int get_arg_i(const char *op, mp_parse_node_t *pn_args, int wanted_arg_nu
 
 STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t *pn_args, int wanted_arg_num) {
     if (!MP_PARSE_NODE_IS_ID(pn_args[wanted_arg_num])) {
-        printf("SyntaxError: '%s' expects a label in position %d\n", op, wanted_arg_num);
+        emit_inline_thumb_error(emit, "'%s' expects a label in position %d\n", op, wanted_arg_num);
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn_args[wanted_arg_num]);
@@ -121,7 +166,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     }
     // only need to have the labels on the last pass
     if (emit->pass == PASS_3) {
-        printf("SyntaxError: label '%s' not defined\n", qstr_str(label_qstr));
+        emit_inline_thumb_error(emit, "label '%s' not defined\n", qstr_str(label_qstr));
     }
     return 0;
 }
@@ -189,24 +234,31 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
 
     } else if (n_args == 2) {
         if (strcmp(op_str, "mov") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
-            uint rlo_src = get_arg_rlo(op_str, pn_args, 1);
+            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 1, 7);
             asm_thumb_mov_reg_reg(emit->as, rlo_dest, rlo_src);
         } else if (strcmp(op_str, "movs") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
-            int i_src = get_arg_i(op_str, pn_args, 1, 0xff);
+            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xff);
             asm_thumb_movs_rlo_i8(emit->as, rlo_dest, i_src);
         } else if (strcmp(op_str, "movw") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0); // TODO can be reg lo or hi
-            int i_src = get_arg_i(op_str, pn_args, 1, 0xffff);
-            asm_thumb_movw_reg_i16(emit->as, rlo_dest, i_src);
+            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
+            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffff);
+            asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src);
         } else if (strcmp(op_str, "movt") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0); // TODO can be reg lo or hi
-            int i_src = get_arg_i(op_str, pn_args, 1, 0xffff);
-            asm_thumb_movt_reg_i16(emit->as, rlo_dest, i_src);
+            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
+            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffff);
+            asm_thumb_movt_reg_i16(emit->as, reg_dest, i_src);
+        } else if (strcmp(op_str, "movwt") == 0) {
+            // this is a convenience instruction
+            // we clear the MSB since it might be set from extracting the small int value
+            uint reg_dest = get_arg_reg(emit, op_str, pn_args, 0, 15);
+            int i_src = get_arg_i(emit, op_str, pn_args, 1, 0xffffffff);
+            asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src & 0xffff);
+            asm_thumb_movt_reg_i16(emit->as, reg_dest, (i_src >> 16) & 0x7fff);
         } else if (strcmp(op_str, "cmp") == 0) {
-            uint rlo = get_arg_rlo(op_str, pn_args, 0);
-            int i8 = get_arg_i(op_str, pn_args, 1, 0xff);
+            uint rlo = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            int i8 = get_arg_i(emit, op_str, pn_args, 1, 0xff);
             asm_thumb_cmp_rlo_i8(emit->as, rlo, i8);
         } else {
             goto unknown_op;
@@ -214,15 +266,26 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
 
     } else if (n_args == 3) {
         if (strcmp(op_str, "add") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
-            uint rlo_src_a = get_arg_rlo(op_str, pn_args, 1);
-            uint rlo_src_b = get_arg_rlo(op_str, pn_args, 2);
-            asm_thumb_add_reg_reg_reg(emit->as, rlo_dest, rlo_src_a, rlo_src_b);
+            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            uint rlo_src_a = get_arg_reg(emit, op_str, pn_args, 1, 7);
+            uint rlo_src_b = get_arg_reg(emit, op_str, pn_args, 2, 7);
+            asm_thumb_add_rlo_rlo_rlo(emit->as, rlo_dest, rlo_src_a, rlo_src_b);
         } else if (strcmp(op_str, "subs") == 0) {
-            uint rlo_dest = get_arg_rlo(op_str, pn_args, 0);
-            uint rlo_src = get_arg_rlo(op_str, pn_args, 1);
-            int i3_src = get_arg_i(op_str, pn_args, 2, 0x7);
+            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 1, 7);
+            int i3_src = get_arg_i(emit, op_str, pn_args, 2, 0x7);
             asm_thumb_subs_rlo_rlo_i3(emit->as, rlo_dest, rlo_src, i3_src);
+        } else if (strcmp(op_str, "ldr") == 0) {
+            // TODO maybe use ldr(rd, [rb, 4]) syntax?
+            uint rlo_dest = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            uint rlo_base = get_arg_reg(emit, op_str, pn_args, 1, 7);
+            int i5 = get_arg_i(emit, op_str, pn_args, 2, 0x7c);
+            asm_thumb_ldr_rlo_rlo_i5(emit->as, rlo_dest, rlo_base, i5 >> 2);
+        } else if (strcmp(op_str, "str") == 0) {
+            uint rlo_src = get_arg_reg(emit, op_str, pn_args, 0, 7);
+            uint rlo_base = get_arg_reg(emit, op_str, pn_args, 1, 7);
+            int i5 = get_arg_i(emit, op_str, pn_args, 2, 0x7c);
+            asm_thumb_str_rlo_rlo_i5(emit->as, rlo_src, rlo_base, i5 >> 2);
         } else {
             goto unknown_op;
         }
@@ -234,7 +297,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
     return;
 
 unknown_op:
-    printf("SyntaxError: unsupported ARM Thumb instruction '%s' with %d arguments\n", op_str, n_args);
+    emit_inline_thumb_error(emit, "unsupported Thumb instruction '%s' with %d arguments\n", op_str, n_args);
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
