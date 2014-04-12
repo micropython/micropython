@@ -132,11 +132,6 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_FAST_N " UINT_FMT, unum);
                 break;
 
-            case MP_BC_LOAD_FAST_CHECKED:
-                DECODE_UINT;
-                printf("LOAD_FAST_CHECKED " UINT_FMT, unum);
-                break;
-
             case MP_BC_LOAD_DEREF:
                 DECODE_UINT;
                 printf("LOAD_DEREF " UINT_FMT, unum);

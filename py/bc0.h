@@ -17,7 +17,6 @@
 #define MP_BC_LOAD_FAST_1        (0x21)
 #define MP_BC_LOAD_FAST_2        (0x22)
 #define MP_BC_LOAD_FAST_N        (0x23) // uint
-#define MP_BC_LOAD_FAST_CHECKED  (0x24) // uint
 #define MP_BC_LOAD_DEREF         (0x25) // uint
 #define MP_BC_LOAD_NAME          (0x26) // qstr
 #define MP_BC_LOAD_GLOBAL        (0x27) // qstr

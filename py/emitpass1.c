@@ -96,7 +96,9 @@ STATIC void emit_pass1_store_id(emit_t *emit, qstr qstr) {
 
 STATIC void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
     id_info_t *id = get_id_for_modification(emit->scope, qstr);
-    id->flags |= ID_FLAG_IS_DELETED;
+    // this flag is unused
+    //id->flags |= ID_FLAG_IS_DELETED;
+    (void)id; // suppress compiler warning
 }
 
 const emit_method_table_t emit_pass1_method_table = {

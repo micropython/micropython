@@ -413,17 +413,11 @@ STATIC void emit_bc_load_null(emit_t *emit) {
 STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
-    if (id_flags & ID_FLAG_IS_DELETED) {
-        // This local may be deleted, so need to do a checked load.
-        emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_CHECKED, local_num);
-    } else {
-        // This local is never deleted, so can do a fast, uncheched load.
-        switch (local_num) {
-            case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
-            case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
-            case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
-            default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
-        }
+    switch (local_num) {
+        case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
+        case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
+        case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
+        default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
     }
 }
 

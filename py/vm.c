@@ -252,25 +252,21 @@ dispatch_loop:
                         break;
 
                     case MP_BC_LOAD_FAST_0:
-                        PUSH(fastn[0]);
-                        break;
+                        obj1 = fastn[0];
+                        goto load_check;
 
                     case MP_BC_LOAD_FAST_1:
-                        PUSH(fastn[-1]);
-                        break;
+                        obj1 = fastn[-1];
+                        goto load_check;
 
                     case MP_BC_LOAD_FAST_2:
-                        PUSH(fastn[-2]);
-                        break;
+                        obj1 = fastn[-2];
+                        goto load_check;
 
                     case MP_BC_LOAD_FAST_N:
                         DECODE_UINT;
-                        PUSH(fastn[-unum]);
-                        break;
-
-                    case MP_BC_LOAD_FAST_CHECKED:
-                        DECODE_UINT;
                         obj1 = fastn[-unum];
+                        load_check:
                         if (obj1 == MP_OBJ_NULL) {
                             local_name_error:
                             nlr_raise(mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment"));
@@ -281,11 +277,7 @@ dispatch_loop:
                     case MP_BC_LOAD_DEREF:
                         DECODE_UINT;
                         obj1 = mp_obj_cell_get(fastn[-unum]);
-                        if (obj1 == MP_OBJ_NULL) {
-                            goto local_name_error;
-                        }
-                        PUSH(obj1);
-                        break;
+                        goto load_check;
 
                     case MP_BC_LOAD_NAME:
                         DECODE_QSTR;
