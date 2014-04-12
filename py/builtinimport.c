@@ -135,6 +135,16 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     mp_globals_set(old_globals);
 }
 
+// TODO: Move to objdict?
+STATIC inline mp_obj_t mp_obj_dict_get(mp_obj_t dict_in, mp_obj_t key) {
+    mp_obj_dict_t *dict = dict_in;
+    mp_map_elem_t *elem = mp_map_lookup(&dict->map, key, MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        return elem;
+    }
+    return elem->value;
+}
+
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 #if DEBUG_PRINT
     printf("__import__:\n");
@@ -145,6 +155,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     }
 #endif
 
+    mp_obj_t module_name = args[0];
     mp_obj_t fromtuple = mp_const_none;
     int level = 0;
     if (n_args >= 4) {
@@ -154,16 +165,73 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         }
     }
 
+    uint mod_len;
+    const char *mod_str = (const char*)mp_obj_str_get_data(module_name, &mod_len);
+
     if (level != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-            "Relative import is not implemented"));
+        // What we want to do here is to take name of current module,
+        // chop <level> trailing components, and concatenate with passed-in
+        // module name, thus resolving relative import name into absolue.
+        // This even appears to be correct per
+        // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
+        // "Relative imports use a module's __name__ attribute to determine that
+        // module's position in the package hierarchy."
+        mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
+        assert(this_name_q != MP_OBJ_NULL);
+#if DEBUG_PRINT
+        printf("Current module: ");
+        mp_obj_print(this_name_q, PRINT_REPR);
+        printf("\n");
+#endif
+
+        uint this_name_l;
+        const char *this_name = (const char*)mp_obj_str_get_data(this_name_q, &this_name_l);
+
+        uint dots_seen = 0;
+        const char *p = this_name + this_name_l - 1;
+        while (p > this_name) {
+            if (*p == '.') {
+                dots_seen++;
+                if (--level == 0) {
+                    break;
+                }
+            }
+            p--;
+        }
+
+        if (dots_seen == 0 && level == 1) {
+            // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
+            // "If the module's name does not contain any package information
+            // (e.g. it is set to '__main__') then relative imports are
+            // resolved as if the module were a top level module, regardless
+            // of where the module is actually located on the file system."
+            // Supposedly this if catches this condition and resolve it properly
+            // TODO: But nobody knows for sure. This condition happens when
+            // package's __init__.py does something like "import .submod". So,
+            // maybe we should check for package here? But quote above doesn't
+            // talk about packages, it talks about dot-less module names.
+            p = this_name + this_name_l;
+        } else if (level != 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
+        }
+
+        uint new_mod_l = (mod_len == 0 ? p - this_name : p - this_name + 1 + mod_len);
+        char *new_mod = alloca(new_mod_l);
+        memcpy(new_mod, this_name, p - this_name);
+        if (mod_len != 0) {
+            new_mod[p - this_name] = '.';
+            memcpy(new_mod + (p - this_name) + 1, mod_str, mod_len);
+        }
+
+        qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
+        DEBUG_printf("Resolved relative name: %s\n", qstr_str(new_mod_q));
+        module_name = MP_OBJ_NEW_QSTR(new_mod_q);
+        mod_str = new_mod;
+        mod_len = new_mod_l;
     }
 
-    uint mod_len;
-    const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
-
     // check if module already exists
-    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(args[0]));
+    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(module_name));
     if (module_obj != MP_OBJ_NULL) {
         DEBUG_printf("Module already loaded\n");
         // If it's not a package, return module right away
