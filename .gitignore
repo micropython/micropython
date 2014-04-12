@@ -27,3 +27,7 @@ build/
 ######################
 tests/*.exp
 tests/*.out
+
+# Python cache files
+######################
+__pycache__/
