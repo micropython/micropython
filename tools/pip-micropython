@@ -30,6 +30,21 @@ fi
 # installed if it's already installed for main python distribution.
 if [ ! -d /tmp/pip-micropy-venv ]; then
     virtualenv --no-site-packages /tmp/pip-micropy-venv
+    # distutils, setuptools, pip are buggy and allow target packages affect
+    # their execution environment. For example, if distribution they install
+    # has re.py, they will import that instead of system re. So, we need
+    # to remove current dir from sys.path, but that appear to be quite uneasy
+    # with CPython, so we hook __import__ and exterminate it persistently.
+    # See also https://bitbucket.org/pypa/setuptools/issue/187/
+    cat > $(ls -1d /tmp/pip-micropy-venv/lib/python*/)/sitecustomize.py <<EOF
+import sys
+import __builtin__
+old_imp = __import__
+def new_imp(*a, **kw):
+    if not sys.path[0]: sys.path.pop(0)
+    return old_imp(*a, **kw)
+__builtin__.__import__ = new_imp
+EOF
 fi
 . /tmp/pip-micropy-venv/bin/activate
 
