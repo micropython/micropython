@@ -1050,7 +1050,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     if (dest[1] != MP_OBJ_NULL) {
         // Hopefully we can't import bound method from an object
 import_error:
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "Cannot import name '%s'", qstr_str(name)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %s", qstr_str(name)));
     }
 
     if (dest[0] != MP_OBJ_NULL) {
@@ -1078,7 +1078,7 @@ import_error:
     args[1] = mp_const_none; // TODO should be globals
     args[2] = mp_const_none; // TODO should be locals
     args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-    args[4] = 0;
+    args[4] = MP_OBJ_NEW_SMALL_INT(0);
 
     // TODO lookup __import__ and call that instead of going straight to builtin implementation
     return mp_builtin___import__(5, args);
