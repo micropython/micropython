@@ -448,7 +448,9 @@ generic_binary_op:
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
+#if MICROPY_ENABLE_FLOAT
 unsupported_op:
+#endif
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
