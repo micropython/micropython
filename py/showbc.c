@@ -98,7 +98,7 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_LOAD_CONST_ID:
                 DECODE_QSTR;
-                printf("LOAD_CONST_ID %s", qstr_str(qstr));
+                printf("LOAD_CONST_ID '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_LOAD_CONST_BYTES:
@@ -108,7 +108,7 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_LOAD_CONST_STRING:
                 DECODE_QSTR;
-                printf("LOAD_CONST_STRING %s", qstr_str(qstr));
+                printf("LOAD_CONST_STRING '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_LOAD_NULL:
@@ -452,12 +452,12 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_IMPORT_NAME:
                 DECODE_QSTR;
-                printf("IMPORT_NAME %s", qstr_str(qstr));
+                printf("IMPORT_NAME '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_IMPORT_FROM:
                 DECODE_QSTR;
-                printf("IMPORT_FROM %s", qstr_str(qstr));
+                printf("IMPORT_FROM '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_IMPORT_STAR:
