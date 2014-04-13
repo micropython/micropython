@@ -362,12 +362,10 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
 
 void USBD_CDC_Tx(const char *str, uint32_t len) {
     for (int i = 0; i < len; i++) {
-        uint timeout = 200;
-        while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut) {
-            if (timeout-- == 0) {
-                break;
-            }
-            HAL_Delay(1);
+        // if the buffer is full, wait until it gets drained, with a timeout of 1000ms (wraparound of tick is taken care of by 2's complement arithmetic)
+        uint32_t start = HAL_GetTick();
+        while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut && HAL_GetTick() - start <= 1000) {
+            __WFI(); // enter sleep mode, waiting for interrupt
         }
         UserTxBuffer[UserTxBufPtrIn] = str[i];
         UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
