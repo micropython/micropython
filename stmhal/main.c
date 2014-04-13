@@ -263,10 +263,9 @@ soft_reset:
     // Micro Python init
     qstr_init();
     mp_init();
-    mp_obj_t def_path[2];
-    def_path[0] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_);
-    def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
-    mp_sys_path = mp_obj_new_list(2, def_path);
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_));
+    mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib));
 
     readline_init();
 
