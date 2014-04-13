@@ -6,14 +6,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
-
-
-#include <sys/stat.h>
-#include <sys/types.h>
 
 typedef struct _mp_lexer_file_buf_t {
     int fd;
