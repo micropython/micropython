@@ -273,7 +273,11 @@ Q(utf-8)
 
 #if MICROPY_ENABLE_MOD_SYS
 Q(argv)
+Q(byteorder)
+Q(big)
+Q(little)
 Q(stdin)
 Q(stdout)
 Q(stderr)
+Q(version_info)
 #endif
