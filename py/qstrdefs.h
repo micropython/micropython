@@ -263,3 +263,9 @@ Q(<setcomp>)
 Q(<genexpr>)
 Q(<string>)
 Q(<stdin>)
+
+#if MICROPY_CPYTHON_COMPAT
+Q(encode)
+Q(decode)
+Q(utf-8)
+#endif

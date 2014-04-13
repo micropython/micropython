@@ -1298,6 +1298,34 @@ STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, -1);
 }
 
+#if MICROPY_CPYTHON_COMPAT
+// These methods are superfluous in the presense of str() and bytes()
+// constructors.
+// TODO: should accept kwargs too
+STATIC mp_obj_t bytes_decode(uint n_args, const mp_obj_t *args) {
+    mp_obj_t new_args[2];
+    if (n_args == 1) {
+        new_args[0] = args[0];
+        new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
+        args = new_args;
+        n_args++;
+    }
+    return str_make_new(NULL, n_args, 0, args);
+}
+
+// TODO: should accept kwargs too
+STATIC mp_obj_t str_encode(uint n_args, const mp_obj_t *args) {
+    mp_obj_t new_args[2];
+    if (n_args == 1) {
+        new_args[0] = args[0];
+        new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
+        args = new_args;
+        n_args++;
+    }
+    return bytes_make_new(NULL, n_args, 0, args);
+}
+#endif
+
 STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
     if (flags == BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
@@ -1312,6 +1340,10 @@ STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, in
     }
 }
 
+#if MICROPY_CPYTHON_COMPAT
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
+#endif
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
@@ -1327,6 +1359,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 
 STATIC const mp_map_elem_t str_locals_dict_table[] = {
+#if MICROPY_CPYTHON_COMPAT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_decode), (mp_obj_t)&bytes_decode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_encode), (mp_obj_t)&str_encode_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_find), (mp_obj_t)&str_find_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rfind), (mp_obj_t)&str_rfind_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&str_index_obj },

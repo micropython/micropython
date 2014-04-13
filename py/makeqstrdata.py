@@ -10,6 +10,7 @@ if platform.python_version_tuple()[0] == '2':
     from htmlentitydefs import codepoint2name
 elif platform.python_version_tuple()[0] == '3':
     from html.entities import codepoint2name
+codepoint2name[ord('-')] = 'hyphen';
 
 # add some custom names to map characters that aren't in HTML
 codepoint2name[ord('.')] = 'dot'
