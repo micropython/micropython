@@ -277,8 +277,8 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
 
     // convert the bytes to an integer
     machine_uint_t value = 0;
-    for (uint i = 0; i < bufinfo.len; i++) {
-        value += ((byte*)bufinfo.buf)[i];
+    for (const byte* buf = bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+        value = (value << 8) | *buf;
     }
 
     return mp_obj_new_int_from_uint(value);
