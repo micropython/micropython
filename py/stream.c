@@ -1,4 +1,4 @@
-#include <unistd.h>
+#include <string.h>
 
 #include "nlr.h"
 #include "misc.h"
