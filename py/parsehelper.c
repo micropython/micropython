@@ -38,20 +38,30 @@ void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_
     }
 }
 
-mp_obj_t mp_parse_make_exception(mp_parse_error_kind_t parse_error_kind) {
-    // TODO add source file and line number to exception?
+mp_obj_t mp_parse_make_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind) {
+    // make exception object
+    mp_obj_t exc;
     switch (parse_error_kind) {
         case MP_PARSE_ERROR_MEMORY:
-            return mp_obj_new_exception_msg(&mp_type_MemoryError, STR_MEMORY);
+            exc = mp_obj_new_exception_msg(&mp_type_MemoryError, STR_MEMORY);
+            break;
 
         case MP_PARSE_ERROR_UNEXPECTED_INDENT:
-            return mp_obj_new_exception_msg(&mp_type_IndentationError, STR_UNEXPECTED_INDENT);
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError, STR_UNEXPECTED_INDENT);
+            break;
 
         case MP_PARSE_ERROR_UNMATCHED_UNINDENT:
-            return mp_obj_new_exception_msg(&mp_type_IndentationError, STR_UNMATCHED_UNINDENT);
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError, STR_UNMATCHED_UNINDENT);
+            break;
 
         case MP_PARSE_ERROR_INVALID_SYNTAX:
         default:
-            return mp_obj_new_exception_msg(&mp_type_SyntaxError, STR_INVALID_SYNTAX);
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError, STR_INVALID_SYNTAX);
+            break;
     }
+
+    // add traceback to give info about file name and location
+    mp_obj_exception_add_traceback(exc, mp_lexer_source_name(lex), mp_lexer_cur(lex)->src_line, mp_lexer_cur(lex)->src_column);
+
+    return exc;
 }

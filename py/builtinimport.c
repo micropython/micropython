@@ -100,14 +100,17 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     // parse the imported script
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
-    mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; clean up and raise exception
+        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
+        mp_lexer_free(lex);
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        nlr_raise(mp_parse_make_exception(parse_error_kind));
+        nlr_raise(exc);
     }
+
+    mp_lexer_free(lex);
 
     // compile the imported script
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
