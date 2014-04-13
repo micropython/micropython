@@ -46,7 +46,9 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
+#if MICROPY_ENABLE_MOD_SYS
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+#endif
 
     if (path_num == 0) {
         // mp_sys_path is empty, so just use the given file name

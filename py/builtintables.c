@@ -134,7 +134,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math },
 #endif
+#if MICROPY_ENABLE_MOD_SYS
     { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_EXTRA_BUILTIN_MODULES
