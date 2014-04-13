@@ -49,7 +49,7 @@ for test_file in tests:
     if test_on_pyboard:
         pyb.enter_raw_repl()
         try:
-            if test_file == 'basics/math-fun.py':
+            if test_file == 'basics/memoryerror.py':
                 # this test crashes the pyboard
                 output_mupy = b'CRASH'
             else:

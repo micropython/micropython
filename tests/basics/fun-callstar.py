@@ -31,3 +31,5 @@ a.foo(1, 2, *[100])
 
 # Iterator
 a.foo(*range(3))
+
+print('flush') # so that it works on pyboard...

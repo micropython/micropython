@@ -38,8 +38,8 @@ except ValueError:
 
 # These recursive try-finally tests are attempt to get some interpretation
 # of last phrase in http://docs.python.org/3.4/library/dis.html#opcode-WITH_CLEANUP
-# "If the stack represents an exception, and the function call returns a ‘true’
-# value, this information is “zapped” and replaced with a single WHY_SILENCED
+# "If the stack represents an exception, and the function call returns a 'true'
+# value, this information is "zapped" and replaced with a single WHY_SILENCED
 # to prevent END_FINALLY from re-raising the exception. (But non-local gotos
 # will still be resumed.)"
 print("===")

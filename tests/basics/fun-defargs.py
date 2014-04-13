@@ -18,3 +18,5 @@ try:
     fun2(1, 2, 3, 4)
 except TypeError:
     print("TypeError")
+
+print('flush') # so that it works on pyboard...
