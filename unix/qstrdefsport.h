@@ -2,10 +2,6 @@
 
 Q(Test)
 
-Q(argv)
-Q(stdin)
-Q(stdout)
-Q(stderr)
 Q(rawsocket)
 Q(socket)
 Q(sockaddr_in)
