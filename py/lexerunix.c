@@ -1,14 +1,16 @@
+#include "misc.h"
+#include "mpconfig.h"
+
+#if MICROPY_ENABLE_LEXER_UNIX
+
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
 
-#if MICROPY_ENABLE_LEXER_UNIX
 
 #include <sys/stat.h>
 #include <sys/types.h>
