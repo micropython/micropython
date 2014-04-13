@@ -229,7 +229,8 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     if (n_args > self->n_args) {
         // given more than enough arguments
         if (!self->takes_var_args) {
-            goto arg_error;
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                "function takes %d positional arguments but %d were given", self->n_args, n_args));
         }
         // put extra arguments in varargs tuple
         *extra_args = mp_obj_new_tuple(n_args - self->n_args, args + self->n_args);
@@ -249,7 +250,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
                 extra_args -= self->n_args - n_args;
                 n_extra_args += self->n_args - n_args;
             } else {
-                goto arg_error;
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "function takes at least %d positional arguments but %d were given",
+                    self->n_args - self->n_def_args, n_args));
             }
         }
     }
@@ -344,9 +347,6 @@ continue2:;
     } else { // MP_VM_RETURN_EXCEPTION
         nlr_raise(result);
     }
-
-arg_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
 const mp_obj_type_t mp_type_fun_bc = {
