@@ -442,14 +442,15 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
             mp_obj_t *items;
             mp_obj_list_get(obj, &len, &items);
             return (machine_uint_t)items;
-        } else if (type->buffer_p.get_buffer != NULL) {
-            // supports the buffer protocol, get a pointer to the data
-            buffer_info_t bufinfo;
-            type->buffer_p.get_buffer(obj, &bufinfo, BUFFER_READ);
-            return (machine_uint_t)bufinfo.buf;
         } else {
-            // just pass along a pointer to the object
-            return (machine_uint_t)obj;
+            buffer_info_t bufinfo;
+            if (mp_get_buffer(obj, &bufinfo)) {
+                // supports the buffer protocol, return a pointer to the data
+                return (machine_uint_t)bufinfo.buf;
+            } else {
+                // just pass along a pointer to the object
+                return (machine_uint_t)obj;
+            }
         }
     }
 }

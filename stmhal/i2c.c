@@ -143,16 +143,13 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
     machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
     machine_uint_t mem_addr = mp_obj_get_int(args[2]);
     HAL_StatusTypeDef status;
-    mp_obj_type_t *type = mp_obj_get_type(args[3]);
-    if (type->buffer_p.get_buffer != NULL) {
-        buffer_info_t bufinfo;
-        type->buffer_p.get_buffer(args[3], &bufinfo, BUFFER_READ);
-        status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, 200);
-    } else if (MP_OBJ_IS_INT(args[3])) {
+    if (MP_OBJ_IS_INT(args[3])) {
         uint8_t data[1] = {mp_obj_get_int(args[3])};
         status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "data argument must be an integer or support the buffer protocol"));
+        buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo);
+        status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, 200);
     }
 
     //printf("Write got %d\n", status);

@@ -333,11 +333,11 @@ mp_obj_t mp_identity(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
 bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
-    mp_obj_base_t *o = (mp_obj_base_t *)obj;
-    if (o->type->buffer_p.get_buffer == NULL) {
+    mp_obj_type_t *type = mp_obj_get_type(obj);
+    if (type->buffer_p.get_buffer == NULL) {
         return false;
     }
-    o->type->buffer_p.get_buffer(o, bufinfo, BUFFER_READ);
+    type->buffer_p.get_buffer(obj, bufinfo, BUFFER_READ);
     if (bufinfo->buf == NULL) {
         return false;
     }
