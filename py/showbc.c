@@ -22,6 +22,11 @@
         qstr = (qstr << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0); \
 }
+#define DECODE_PTR do { \
+    ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
+    unum = *(machine_uint_t*)ip; \
+    ip += sizeof(machine_uint_t); \
+} while (0)
 
 void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
@@ -389,22 +394,22 @@ void mp_byte_code_print(const byte *ip, int len) {
                 break;
 
             case MP_BC_MAKE_FUNCTION:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_FUNCTION " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_FUNCTION_DEFARGS:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_FUNCTION_DEFARGS " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_CLOSURE:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_CLOSURE " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_CLOSURE_DEFARGS:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_CLOSURE_DEFARGS " UINT_FMT, unum);
                 break;
 
