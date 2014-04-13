@@ -276,4 +276,5 @@ Q(argv)
 Q(stdin)
 Q(stdout)
 Q(stderr)
+Q(version_info)
 #endif

@@ -5,6 +5,7 @@
 #include "builtin.h"
 #include "runtime.h"
 #include "objlist.h"
+#include "objtuple.h"
 
 #if MICROPY_ENABLE_MOD_SYS
 
@@ -17,11 +18,16 @@ extern struct _dummy_t mp_sys_stderr_obj;
 
 mp_obj_list_t mp_sys_path_obj;
 mp_obj_list_t mp_sys_argv_obj;
+#define I(n) MP_OBJ_NEW_SMALL_INT(n)
+// TODO: CPython is now at 5-element array, but save 2 els so far...
+STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(3), I(5)}};
+#undef I
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&mp_sys_path_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&mp_sys_argv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
 
 #if MICROPY_MOD_SYS_STDFILES
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdin), (mp_obj_t)&mp_sys_stdin_obj },
