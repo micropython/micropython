@@ -270,3 +270,10 @@ Q(encode)
 Q(decode)
 Q(utf-8)
 #endif
+
+#if MICROPY_ENABLE_MOD_SYS
+Q(argv)
+Q(stdin)
+Q(stdout)
+Q(stderr)
+#endif

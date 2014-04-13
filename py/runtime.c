@@ -53,17 +53,6 @@ void mp_init(void) {
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     dict_locals = dict_globals = &dict_main;
-
-#if MICROPY_CPYTHON_COMPAT
-    // Precreate sys module, so "import sys" didn't throw exceptions.
-    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    // Avoid warning of unused var
-    (void)m_sys;
-#endif
-    // init sys.path
-    // for efficiency, left to platform-specific startup code
-    //mp_sys_path = mp_obj_new_list(0, NULL);
-    //mp_store_attr(m_sys, MP_QSTR_path, mp_sys_path);
 }
 
 void mp_deinit(void) {

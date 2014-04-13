@@ -28,8 +28,6 @@
 
 #define PATH_SEP_CHAR '/'
 
-mp_obj_t mp_sys_path;
-
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_str(path));
@@ -48,9 +46,7 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
-    if (mp_sys_path != MP_OBJ_NULL) {
-        mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    }
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 
     if (path_num == 0) {
         // mp_sys_path is empty, so just use the given file name

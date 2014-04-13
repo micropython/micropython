@@ -13,6 +13,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PATH_MAX            (PATH_MAX)
+#define MICROPY_MOD_SYS_STDFILES    (1)
 
 // type definitions for the specific machine
 

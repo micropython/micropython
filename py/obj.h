@@ -454,6 +454,8 @@ machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 // list
+struct _mp_obj_list_t;
+void mp_obj_list_init(struct _mp_obj_list_t *o, uint n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_set_len(mp_obj_t self_in, uint len);
