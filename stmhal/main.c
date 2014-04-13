@@ -264,8 +264,9 @@ soft_reset:
     qstr_init();
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_));
-    mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib));
+    mp_obj_list_init(mp_sys_argv, 0);
 
     readline_init();
 
