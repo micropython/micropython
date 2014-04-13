@@ -22,6 +22,9 @@ To run a script from the local machine on the board and print out the results:
 import time
 import serial
 
+class PyboardError(BaseException):
+    pass
+
 class Pyboard:
     def __init__(self, serial_device):
         self.serial = serial.Serial(serial_device)
@@ -38,7 +41,7 @@ class Pyboard:
             time.sleep(0.1)
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
-            raise Exception('could not enter raw repl')
+            raise PyboardError('could not enter raw repl')
 
     def exit_raw_repl(self):
         self.serial.write(b'\r\x02') # ctrl-B: enter friendly REPL
@@ -56,7 +59,7 @@ class Pyboard:
         self.serial.write(b'\x04')
         data = self.serial.read(2)
         if data != b'OK':
-            raise Exception('could not exec command')
+            raise PyboardError('could not exec command')
         data = self.serial.read(2)
         timeout = 0
         while True:
@@ -72,10 +75,10 @@ class Pyboard:
                 time.sleep(0.1)
         if not data.endswith(b'\x04>'):
             print(data)
-            raise Exception('timeout waiting for EOF reception')
+            raise PyboardError('timeout waiting for EOF reception')
         if data.startswith(b'Traceback') or data.startswith(b'  File '):
             print(data)
-            raise Exception('command failed')
+            raise PyboardError('command failed')
         return data[:-2]
 
     def execfile(self, filename):

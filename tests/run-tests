@@ -46,14 +46,21 @@ for test_file in tests:
         output_expected = b'CPYTHON3 CRASH'
 
     # run Micro Python
-    try:
-        if test_on_pyboard:
-            pyb.enter_raw_repl()
-            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
-        else:
+    if test_on_pyboard:
+        pyb.enter_raw_repl()
+        try:
+            if test_file == 'basics/math-fun.py':
+                # this test crashes the pyboard
+                output_mupy = b'CRASH'
+            else:
+                output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+        except pyboard.PyboardError:
+            output_mupy = b'CRASH\n' + output_mupy
+    else:
+        try:
             output_mupy = subprocess.check_output([MP_PY, '-X', 'emit=bytecode', test_file])
-    except subprocess.CalledProcessError:
-        output_mupy = b'CRASH'
+        except subprocess.CalledProcessError:
+            output_mupy = b'CRASH'
 
     testcase_count += len(output_expected.splitlines())
 
