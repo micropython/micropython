@@ -61,7 +61,8 @@ mp_obj_t mp_parse_make_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_er
     }
 
     // add traceback to give info about file name and location
-    mp_obj_exception_add_traceback(exc, mp_lexer_source_name(lex), mp_lexer_cur(lex)->src_line, mp_lexer_cur(lex)->src_column);
+    // we don't have a 'block' name, so just pass the NULL qstr to indicate this
+    mp_obj_exception_add_traceback(exc, mp_lexer_source_name(lex), mp_lexer_cur(lex)->src_line, MP_QSTR_NULL);
 
     return exc;
 }

@@ -55,10 +55,17 @@ void mp_obj_print_exception(mp_obj_t exc) {
             printf("Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                printf("  File \"%s\", line %d, in %s\n", qstr_str(values[i]), (int)values[i + 1], qstr_str(values[i + 2]));
+                printf("  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
 #else
-                printf("  File \"%s\", in %s\n", qstr_str(values[i]), qstr_str(values[i + 2]));
+                printf("  File \"%s\"", qstr_str(values[i]));
 #endif
+                // the block name can be NULL if it's unknown
+                qstr block = values[i + 2];
+                if (block == MP_QSTR_NULL) {
+                    printf("\n");
+                } else {
+                    printf(", in %s\n", qstr_str(block));
+                }
             }
         }
     }
