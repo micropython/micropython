@@ -1463,7 +1463,8 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     } else {
         GET_STR_HASH(s1, h1);
         GET_STR_HASH(s2, h2);
-        if (h1 != h2) {
+        // If any of hashes is 0, it means it's not valid
+        if (h1 != 0 && h2 != 0 && h1 != h2) {
             return false;
         }
         GET_STR_DATA_LEN(s1, d1, l1);
