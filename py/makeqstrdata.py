@@ -24,10 +24,17 @@ def compute_hash(qstr):
         hash = (hash * 33) ^ ord(char)
     return hash & 0xffff
 
+# given a list of (name,regex) pairs, find the first one that matches the given line
+def re_match(regexs, line):
+    for name, regex in regexs:
+        match = re.match(regex, line)
+        if match:
+            return name, match
+    return None, None
+
 def do_work(infiles):
     # read the qstrs in from the input files
     qstrs = {}
-    cpp_header_blocks = 3
     for infile in infiles:
         with open(infile, 'rt') as f:
             line_number = 0
@@ -35,23 +42,19 @@ def do_work(infiles):
                 line_number += 1
                 line = line.strip()
 
-                # ignore blank lines and comments
-                if len(line) == 0 or line.startswith('//'):
+                # ignore blank lines, comments and preprocessor directives
+                if len(line) == 0 or line.startswith('//') or line.startswith('#'):
                     continue
 
-                # We'll have 3 line-number lines for py/qstrdefs.h - initial, leaving it to
-                # go into other headers, and returning to it.
-                if line.startswith('# ') and 'py/qstrdefs.h' in line:
-                    cpp_header_blocks -= 1
-                    continue
-                if cpp_header_blocks != 0:
-                    continue
-
-                # verify line is of the correct form
-                match = re.match(r'Q\((.+)\)$', line)
-                if not match:
+                # work out what kind of line it is
+                match_kind, match = re_match([('qstr', r'Q\((.+)\)$'), ('cdecl', r'(typedef|extern) [A-Za-z0-9_* ]+;$')], line)
+                if match_kind is None:
+                    # unknown line format
                     print('({}:{}) bad qstr format, got {}'.format(infile, line_number, line), file=sys.stderr)
                     return False
+                elif match_kind != 'qstr':
+                    # not a line with a qstr
+                    continue
 
                 # get the qstr value
                 qstr = match.group(1)
