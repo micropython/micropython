@@ -90,7 +90,7 @@ Q(calcsize)
 #endif
 Q(chr)
 Q(classmethod)
-Q(collections)
+Q(_collections)
 Q(complex)
 Q(dict)
 Q(dir)
