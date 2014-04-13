@@ -32,7 +32,7 @@
 #include "ff.h"
 
 // get lots of info about the board
-STATIC mp_obj_t pyb_info(void) {
+STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
         byte *id = (byte*)0x1fff7a10;
@@ -89,10 +89,15 @@ STATIC mp_obj_t pyb_info(void) {
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 
+    if (n_args == 1) {
+        // arg given means dump gc allocation table
+        gc_dump_alloc_table();
+    }
+
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_info_obj, pyb_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 
 // sync all file systems
 STATIC mp_obj_t pyb_sync(void) {
