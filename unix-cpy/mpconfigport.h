@@ -22,5 +22,3 @@ typedef unsigned int machine_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef double machine_float_t;
-
-machine_float_t machine_sqrt(machine_float_t x);
