@@ -8,13 +8,7 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
-
-typedef struct _mp_obj_list_t {
-    mp_obj_base_t base;
-    machine_uint_t alloc;
-    machine_uint_t len;
-    mp_obj_t *items;
-} mp_obj_list_t;
+#include "objlist.h"
 
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 STATIC mp_obj_list_t *list_new(uint n);
@@ -363,12 +357,16 @@ const mp_obj_type_t mp_type_list = {
     .locals_dict = (mp_obj_t)&list_locals_dict,
 };
 
-STATIC mp_obj_list_t *list_new(uint n) {
-    mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
+void mp_obj_list_init(mp_obj_list_t *o, uint n) {
     o->base.type = &mp_type_list;
     o->alloc = n < LIST_MIN_ALLOC ? LIST_MIN_ALLOC : n;
     o->len = n;
     o->items = m_new(mp_obj_t, o->alloc);
+}
+
+STATIC mp_obj_list_t *list_new(uint n) {
+    mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
+    mp_obj_list_init(o, n);
     return o;
 }
 
