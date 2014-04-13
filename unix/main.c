@@ -42,7 +42,6 @@ long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
 // Stack top at the start of program
 void *stack_top;
 
-void file_init();
 void microsocket_init();
 void time_init();
 void ffi_init();
@@ -326,7 +325,7 @@ int main(int argc, char **argv) {
             p++;
         }
     }
-    mp_sys_path = mp_obj_new_list(path_num, NULL);
+    mp_obj_list_init(mp_sys_path, path_num);
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
@@ -348,10 +347,7 @@ int main(int argc, char **argv) {
         p = p1 + 1;
     }
 
-    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    mp_store_attr(m_sys, MP_QSTR_path, mp_sys_path);
-    mp_obj_t py_argv = mp_obj_new_list(0, NULL);
-    mp_store_attr(m_sys, MP_QSTR_argv, py_argv);
+    mp_obj_list_init(mp_sys_argv, 0);
 
     mp_store_name(qstr_from_str("test"), test_obj_new(42));
     mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
@@ -360,7 +356,6 @@ int main(int argc, char **argv) {
     mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
 #endif
 
-    file_init();
     microsocket_init();
 #if MICROPY_MOD_TIME
     time_init();
@@ -418,7 +413,7 @@ int main(int argc, char **argv) {
             free(basedir);
 
             for (int i = a; i < argc; i++) {
-                mp_obj_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
             do_file(argv[a]);
             executed = true;
