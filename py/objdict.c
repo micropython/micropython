@@ -10,6 +10,7 @@
 #include "objtuple.h"
 #include "runtime0.h"
 #include "runtime.h"
+#include "builtin.h"
 
 STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
@@ -136,12 +137,6 @@ STATIC bool dict_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
     return true;
 }
-
-STATIC mp_obj_t dict_getitem(mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    return dict_binary_op(MP_BINARY_OP_SUBSCR, lhs_in, rhs_in);
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(dict_getitem_obj, dict_getitem);
 
 /******************************************************************************/
 /* dict iterator                                                              */
@@ -501,7 +496,7 @@ STATIC const mp_map_elem_t dict_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setdefault), (mp_obj_t)&dict_setdefault_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&dict_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_values), (mp_obj_t)&dict_values_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___getitem__), (mp_obj_t)&dict_getitem_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___getitem__), (mp_obj_t)&mp_op_getitem_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
