@@ -110,7 +110,7 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return 1; // needs to hash to same as the integer 1, since True==1
     } else if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
-    } else if (MP_OBJ_IS_STR(o_in)) {
+    } else if (MP_OBJ_IS_STR(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (machine_int_t)o_in;
