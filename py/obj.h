@@ -283,6 +283,7 @@ extern const mp_obj_type_t mp_type_fun_bc;
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
+extern const mp_obj_type_t mp_type_property;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -517,6 +518,9 @@ typedef struct _mp_obj_static_class_method_t {
     mp_obj_base_t base;
     mp_obj_t fun;
 } mp_obj_static_class_method_t;
+
+// property
+const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // sequence helpers
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);

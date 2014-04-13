@@ -281,3 +281,10 @@ Q(stdout)
 Q(stderr)
 Q(version_info)
 #endif
+
+#if MICROPY_ENABLE_PROPERTY
+Q(property)
+Q(getter)
+Q(setter)
+Q(deleter)
+#endif

@@ -229,15 +229,35 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
+
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
+        // TODO should we check for properties?
         dest[0] = elem->value;
         return;
     }
+
     mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
     if (member != MP_OBJ_NULL) {
-        class_convert_return_attr(self_in, member, dest);
+        if (0) {
+#if MICROPY_ENABLE_PROPERTY
+        } else if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+            // object member is a property
+            // delegate the store to the property
+            // TODO should this be part of class_convert_return_attr?
+            const mp_obj_t *proxy = mp_obj_property_get(member);
+            if (proxy[0] == mp_const_none) {
+                // TODO
+            } else {
+                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
+                // TODO should we convert the returned value using class_convert_return_attr?
+            }
+#endif
+        } else {
+            // not a property
+            class_convert_return_attr(self_in, member, dest);
+        }
         return;
     }
 
@@ -257,10 +277,30 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
+
+#if MICROPY_ENABLE_PROPERTY
+    // for property, we need to do a lookup first in the class dict
+    // this makes all stores slow... how to fix?
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
+    if (member != MP_OBJ_NULL && MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+        // attribute already exists and is a property
+        // delegate the store to the property
+        const mp_obj_t *proxy = mp_obj_property_get(member);
+        if (proxy[1] == mp_const_none) {
+            // TODO better error message
+            return false;
+        } else {
+            mp_obj_t dest[2] = {self_in, value};
+            mp_call_function_n_kw(proxy[1], 2, 0, dest);
+            return true;
+        }
+    }
+#endif
+
     if (value == MP_OBJ_NULL) {
         // delete attribute
-        mp_map_elem_t *el = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
-        return el != NULL;
+        mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+        return elem != NULL;
     } else {
         // store attribute
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;

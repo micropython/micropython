@@ -135,6 +135,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_SLICE (1)
 #endif
 
+// Whether to support the property object
+#ifndef MICROPY_ENABLE_PROPERTY
+#define MICROPY_ENABLE_PROPERTY (0)
+#endif
+
 // Enable features which improve CPython compatibility
 // but may lead to more code size/memory usage.
 // TODO: Originally intended as generic category to not

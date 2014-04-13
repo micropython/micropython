@@ -31,6 +31,9 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_list), (mp_obj_t)&mp_type_list },
     { MP_OBJ_NEW_QSTR(MP_QSTR_map), (mp_obj_t)&mp_type_map },
     { MP_OBJ_NEW_QSTR(MP_QSTR_object), (mp_obj_t)&mp_type_object },
+#if MICROPY_ENABLE_PROPERTY
+    { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&mp_type_set },
     { MP_OBJ_NEW_QSTR(MP_QSTR_str), (mp_obj_t)&mp_type_str },
     { MP_OBJ_NEW_QSTR(MP_QSTR_super), (mp_obj_t)&mp_type_super },
