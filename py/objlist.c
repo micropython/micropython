@@ -39,6 +39,15 @@ STATIC void list_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "]");
 }
 
+STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
+    mp_obj_t iter = mp_getiter(iterable);
+    mp_obj_t item;
+    while ((item = mp_iternext(iter)) != MP_OBJ_NULL) {
+        mp_obj_list_append(list, item);
+    }
+    return list;
+}
+
 STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO check n_kw == 0
 
@@ -50,13 +59,9 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         case 1:
         {
             // make list from iterable
-            mp_obj_t iterable = mp_getiter(args[0]);
+            // TODO: optimize list/tuple
             mp_obj_t list = mp_obj_new_list(0, NULL);
-            mp_obj_t item;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
-                mp_obj_list_append(list, item);
-            }
-            return list;
+            return list_extend_from_iter(list, args[0]);
         }
 
         default:
@@ -173,18 +178,21 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
 
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
-    assert(MP_OBJ_IS_TYPE(arg_in, &mp_type_list));
-    mp_obj_list_t *self = self_in;
-    mp_obj_list_t *arg = arg_in;
+    if (MP_OBJ_IS_TYPE(arg_in, &mp_type_list)) {
+        mp_obj_list_t *self = self_in;
+        mp_obj_list_t *arg = arg_in;
 
-    if (self->len + arg->len > self->alloc) {
-        // TODO: use alloc policy for "4"
-        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + arg->len + 4);
-        self->alloc = self->len + arg->len + 4;
+        if (self->len + arg->len > self->alloc) {
+            // TODO: use alloc policy for "4"
+            self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + arg->len + 4);
+            self->alloc = self->len + arg->len + 4;
+        }
+
+        memcpy(self->items + self->len, arg->items, sizeof(mp_obj_t) * arg->len);
+        self->len += arg->len;
+    } else {
+        list_extend_from_iter(self_in, arg_in);
     }
-
-    memcpy(self->items + self->len, arg->items, sizeof(mp_obj_t) * arg->len);
-    self->len += arg->len;
     return mp_const_none; // return None, as per CPython
 }
 
