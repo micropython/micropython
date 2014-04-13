@@ -423,6 +423,13 @@ STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
+// TODO: Move to common file
+STATIC mp_obj_t set_contains(mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    return set_binary_op(MP_BINARY_OP_IN, lhs_in, rhs_in);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_contains_obj, set_contains);
+
 /******************************************************************************/
 /* set constructors & public C API                                            */
 
@@ -445,6 +452,7 @@ STATIC const mp_map_elem_t set_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference_update), (mp_obj_t)&set_symmetric_difference_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_union), (mp_obj_t)&set_union_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&set_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___contains__), (mp_obj_t)&set_contains_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
