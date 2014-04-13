@@ -79,15 +79,18 @@ STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
     c[3] = (qstr >> 24) & 0xff;
 }
 
+#if MICROPY_ENABLE_SOURCE_LINE
 STATIC void emit_write_code_info_bytes_lines(emit_t* emit, uint bytes_to_skip, uint lines_to_skip) {
-    for (; bytes_to_skip > 31; bytes_to_skip -= 31) {
-        *emit_get_cur_to_write_code_info(emit, 1) = 31;
+    assert(bytes_to_skip > 0 || lines_to_skip > 0);
+    while (bytes_to_skip > 0 || lines_to_skip > 0) {
+        uint b = MIN(bytes_to_skip, 31);
+        uint l = MIN(lines_to_skip, 7);
+        bytes_to_skip -= b;
+        lines_to_skip -= l;
+        *emit_get_cur_to_write_code_info(emit, 1) = b | (l << 5);
     }
-    for (; lines_to_skip > 7; lines_to_skip -= 7) {
-        *emit_get_cur_to_write_code_info(emit, 1) = 7 << 5;
-    }
-    *emit_get_cur_to_write_code_info(emit, 1) = bytes_to_skip | (lines_to_skip << 5);
 }
+#endif
 
 // all functions must go through this one to emit byte code
 STATIC byte* emit_get_cur_to_write_byte_code(emit_t* emit, int num_bytes_to_write) {
@@ -285,7 +288,7 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    emit_write_code_info_bytes_lines(emit, 0, 0); // end of line number info
+    *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
     emit_align_code_info_to_machine_word(emit); // align so that following byte_code is aligned
 
     if (emit->pass == PASS_2) {
