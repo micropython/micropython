@@ -7,8 +7,10 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
-#include "scope.h"
 #include "runtime0.h"
+#include "obj.h"
+#include "emitglue.h"
+#include "scope.h"
 #include "emit.h"
 
 #define EMIT(fun, ...) (emit_method_table->fun(emit, __VA_ARGS__))

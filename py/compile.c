@@ -10,11 +10,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
-#include "scope.h"
 #include "runtime0.h"
-#include "emit.h"
-#include "emitglue.h"
 #include "obj.h"
+#include "emitglue.h"
+#include "scope.h"
+#include "emit.h"
 #include "compile.h"
 #include "runtime.h"
 #include "builtin.h"
@@ -283,7 +283,7 @@ STATIC void compile_decrease_except_level(compiler_t *comp) {
 }
 
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
-    scope_t *scope = scope_new(kind, pn, comp->source_file, mp_emit_glue_get_unique_code_id(), emit_options);
+    scope_t *scope = scope_new(kind, pn, comp->source_file, emit_options);
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -3454,7 +3454,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif // !MICROPY_EMIT_CPYTHON
 
     // free the scopes
-    uint unique_code_id = module_scope->unique_code_id;
+    mp_raw_code_t *outer_raw_code = module_scope->raw_code;
     for (scope_t *s = module_scope; s;) {
         scope_t *next = s->next;
         scope_free(s);
@@ -3471,12 +3471,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     } else {
 #if MICROPY_EMIT_CPYTHON
         // can't create code, so just return true
-        (void)unique_code_id; // to suppress warning that unique_code_id is unused
+        (void)outer_raw_code; // to suppress warning that outer_raw_code is unused
         return mp_const_true;
 #else
         // return function that executes the outer module
-        // we can free the unique_code slot because no-one has reference to this unique_code_id anymore
-        return mp_make_function_from_id_and_free(unique_code_id, MP_OBJ_NULL, MP_OBJ_NULL);
+        return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
 #endif
     }
 }

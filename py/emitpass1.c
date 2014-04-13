@@ -7,6 +7,8 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"

@@ -9,10 +9,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
-#include "emitglue.h"
 #include "bc0.h"
 
 struct _emit_t {
@@ -65,6 +66,10 @@ STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_writ
     }
 }
 
+STATIC void emit_align_code_info_to_machine_word(emit_t* emit) {
+    emit->code_info_offset = (emit->code_info_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
+}
+
 STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
     byte* c = emit_get_cur_to_write_code_info(emit, 4);
     // TODO variable length encoding for qstr
@@ -96,6 +101,10 @@ STATIC byte* emit_get_cur_to_write_byte_code(emit_t* emit, int num_bytes_to_writ
         emit->byte_code_offset += num_bytes_to_write;
         return c;
     }
+}
+
+STATIC void emit_align_byte_code_to_machine_word(emit_t* emit) {
+    emit->byte_code_offset = (emit->byte_code_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
 }
 
 STATIC void emit_write_byte_code_byte(emit_t* emit, byte b1) {
@@ -158,6 +167,14 @@ STATIC void emit_write_byte_code_byte_uint(emit_t* emit, byte b, uint num) {
     emit_write_byte_code_uint(emit, num);
 }
 
+// aligns the pointer so it is friendly to GC
+STATIC void emit_write_byte_code_byte_ptr(emit_t* emit, byte b, void *ptr) {
+    emit_write_byte_code_byte(emit, b);
+    emit_align_byte_code_to_machine_word(emit);
+    machine_uint_t *c = (machine_uint_t*)emit_get_cur_to_write_byte_code(emit, sizeof(machine_uint_t));
+    *c = (machine_uint_t)ptr;
+}
+
 /* currently unused
 STATIC void emit_write_byte_code_byte_uint_uint(emit_t* emit, byte b, uint num1, uint num2) {
     emit_write_byte_code_byte(emit, b);
@@ -178,7 +195,7 @@ STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, uint
     } else {
         byte_code_offset = emit->label_offsets[label] - emit->byte_code_offset - 3;
     }
-    byte* c = emit_get_cur_to_write_byte_code(emit, 3);
+    byte *c = emit_get_cur_to_write_byte_code(emit, 3);
     c[0] = b1;
     c[1] = byte_code_offset;
     c[2] = byte_code_offset >> 8;
@@ -269,19 +286,20 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
     }
 
     emit_write_code_info_bytes_lines(emit, 0, 0); // end of line number info
+    emit_align_code_info_to_machine_word(emit); // align so that following byte_code is aligned
 
     if (emit->pass == PASS_2) {
         // calculate size of code in bytes
         emit->code_info_size = emit->code_info_offset;
         emit->byte_code_size = emit->byte_code_offset;
-        emit->code_base = m_new(byte, emit->code_info_size + emit->byte_code_size);
+        emit->code_base = m_new0(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
         qstr *arg_names = m_new(qstr, emit->scope->num_params);
         for (int i = 0; i < emit->scope->num_params; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
         }
-        mp_emit_glue_assign_byte_code(emit->scope->unique_code_id, emit->code_base,
+        mp_emit_glue_assign_byte_code(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->byte_code_size,
             emit->scope->num_params, emit->scope->num_locals,
             emit->scope->scope_flags, arg_names);
@@ -733,7 +751,7 @@ STATIC void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
 STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 1);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION, scope->raw_code);
     } else {
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
@@ -744,14 +762,14 @@ STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defau
             emit_bc_load_null(emit);
         }
         emit_bc_pre(emit, -1);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->raw_code);
     }
 }
 
 STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 0);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE, scope->raw_code);
     } else {
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
@@ -763,7 +781,7 @@ STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaul
             emit_bc_rot_two(emit);
         }
         emit_bc_pre(emit, -2);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
     }
 }
 

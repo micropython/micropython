@@ -7,6 +7,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "emitglue.h"
 #include "runtime.h"
 #include "bc0.h"
 #include "bc.h"
@@ -29,20 +30,25 @@ typedef enum {
     UNWIND_JUMP,
 } mp_unwind_reason_t;
 
-#define DECODE_UINT { \
+#define DECODE_UINT do { \
     unum = 0; \
     do { \
         unum = (unum << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0); \
-}
+} while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
-#define DECODE_QSTR { \
+#define DECODE_QSTR do { \
     qst = 0; \
     do { \
         qst = (qst << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0); \
-}
+} while (0)
+#define DECODE_PTR do { \
+    ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
+    unum = *(machine_uint_t*)ip; \
+    ip += sizeof(machine_uint_t); \
+} while (0)
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
 #define TOP() (*sp)
@@ -704,29 +710,29 @@ unwind_jump:
                         break;
 
                     case MP_BC_MAKE_FUNCTION:
-                        DECODE_UINT;
-                        PUSH(mp_make_function_from_id(unum, MP_OBJ_NULL, MP_OBJ_NULL));
+                        DECODE_PTR;
+                        PUSH(mp_make_function_from_raw_code((mp_raw_code_t*)unum, MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_FUNCTION_DEFARGS:
-                        DECODE_UINT;
+                        DECODE_PTR;
                         // Stack layout: def_tuple def_dict <- TOS
                         obj1 = POP();
-                        SET_TOP(mp_make_function_from_id(unum, TOP(), obj1));
+                        SET_TOP(mp_make_function_from_raw_code((mp_raw_code_t*)unum, TOP(), obj1));
                         break;
 
                     case MP_BC_MAKE_CLOSURE:
-                        DECODE_UINT;
+                        DECODE_PTR;
                         // Stack layout: closure_tuple <- TOS
-                        SET_TOP(mp_make_closure_from_id(unum, TOP(), MP_OBJ_NULL, MP_OBJ_NULL));
+                        SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, TOP(), MP_OBJ_NULL, MP_OBJ_NULL));
                         break;
 
                     case MP_BC_MAKE_CLOSURE_DEFARGS:
-                        DECODE_UINT;
+                        DECODE_PTR;
                         // Stack layout: def_tuple def_dict closure_tuple <- TOS
                         obj1 = POP();
                         obj2 = POP();
-                        SET_TOP(mp_make_closure_from_id(unum, obj1, TOP(), obj2));
+                        SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, obj1, TOP(), obj2));
                         break;
 
                     case MP_BC_CALL_FUNCTION:

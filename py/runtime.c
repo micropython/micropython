@@ -1143,7 +1143,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_dict_store,
     mp_obj_new_set,
     mp_obj_set_store,
-    mp_make_function_from_id,
+    mp_make_function_from_raw_code,
     mp_call_function_n_kw_for_native,
     mp_call_method_n_kw,
     mp_getiter,

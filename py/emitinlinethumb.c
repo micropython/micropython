@@ -9,10 +9,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
-#include "emitglue.h"
 #include "asmthumb.h"
 
 #if MICROPY_EMIT_INLINE_THUMB
@@ -72,7 +73,7 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
 
     if (emit->pass == PASS_3) {
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_inline_asm_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
     }
 
     return emit->success;

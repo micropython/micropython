@@ -27,11 +27,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
-#include "emitglue.h"
-#include "obj.h"
 #include "runtime.h"
 
 #if 0 // print debugging info
@@ -283,10 +283,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == PASS_3) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
 #endif
     }
 }
@@ -1188,7 +1188,9 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
-    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_ID, mp_make_function_from_id, scope->unique_code_id, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
+    assert(0);
+    // TODO we need to store the raw_code ptr aligned within the code for the GC
+    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
