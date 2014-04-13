@@ -38,6 +38,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_op_contains_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_op_getitem_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_op_setitem_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_op_delitem_obj);
 
 extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_array;
