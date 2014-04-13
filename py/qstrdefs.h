@@ -280,6 +280,7 @@ Q(little)
 Q(stdin)
 Q(stdout)
 Q(stderr)
+Q(version)
 Q(version_info)
 #endif
 
