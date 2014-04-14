@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import re
 import sys
+from collections import OrderedDict
 
 # codepoint2name is different in Python 2 to Python 3
 import platform
@@ -24,12 +25,11 @@ def compute_hash(qstr):
         hash = (hash * 33) ^ ord(char)
     return hash & 0xffff
 
-cpp_regexes = {
-    'qstr': r'Q\((.+)\)$',
-    'cdecl': r'(typedef|extern) [A-Za-z0-9_* ]+;$',
-}
+cpp_regexes = OrderedDict()
+cpp_regexes['qstr'] = r'Q\((.+)\)$'
+cpp_regexes['cdecl'] = r'(typedef|extern) [A-Za-z0-9_* ]+;$'
 
-# given a line, find which cpp regex it matches
+# given a line, find the first cpp regex it matches
 def get_line_match(line):
     for name in cpp_regexes:
         match = re.match(cpp_regexes[name], line)
