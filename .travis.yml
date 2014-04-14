@@ -7,4 +7,4 @@ before_script:
 
 script:
   - make -C unix
-  - tests/run-tests
+  - cd tests && ./run-tests
