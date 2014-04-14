@@ -25,7 +25,7 @@ elif [ -n "$MICROPYPATH" ]; then
     echo "Destination library directory: $libdest"
 else
     echo "Warning: MICROPYPATH is not set, assuming default value"
-    libdest=$HOME/.micropython/lib
+    libdest=~/.micropython/lib
     echo "Destination library directory: $libdest"
 fi
 
@@ -71,9 +71,9 @@ pip install "$@" \
     --install-option="--root=$dest"
 else
 # Here we assume that base dir is lib dir, and install scripts a level
-# higher. For default value of $HOME/.micropython/lib/ , this should give
+# higher. For default value of ~/.micropython/lib/ , this should give
 # reasonable behavior, though better would make it overridable (or
-# go bold and use $HOME/bin ?)
+# go bold and use ~/bin ?)
 pip install "$@" \
     --install-option="--install-base=." \
     --install-option="--install-purelib=." \
