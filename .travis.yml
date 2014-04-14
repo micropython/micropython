@@ -7,4 +7,4 @@ before_script:
 
 script:
   - make -C unix
-  - cd tests && ./run-tests
+  - cd tests && ./run-tests basics/[a-eistuw]*.py
