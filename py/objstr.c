@@ -662,7 +662,7 @@ mp_obj_t str_format(uint n_args, const mp_obj_t *args) {
             if (arg_i > 0) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "cannot switch from automatic field numbering to manual field specification"));
             }
-            int index;
+            int index = 0;
             if (str_to_int(vstr_str(field_name), &index) != vstr_len(field_name) - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "attributes not supported yet"));
             }

@@ -167,7 +167,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
                                            volatile mp_obj_t inject_exc) {
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
-#ifdef MICROPY_USE_COMPUTED_GOTO
+#if MICROPY_USE_COMPUTED_GOTO
 
 #   define DISPATCH() do { \
       save_ip = ip; \
@@ -299,7 +299,7 @@ outer_dispatch_loop:
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
-#ifdef MICROPY_USE_COMPUTED_GOTO
+#if MICROPY_USE_COMPUTED_GOTO
                 DISPATCH();
 #else
                 save_ip = ip;
@@ -1005,7 +1005,7 @@ yield:
                     nlr_pop();
                     fastn[0] = obj1;
                     return MP_VM_RETURN_EXCEPTION;
-#ifndef MICROPY_USE_COMPUTED_GOTO
+#if !MICROPY_USE_COMPUTED_GOTO
                 }
 #endif
             }
