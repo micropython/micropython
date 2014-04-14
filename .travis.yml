@@ -1,0 +1,10 @@
+language: c
+compiler:
+  - gcc
+
+before_script:
+  - sudo apt-get install python3
+
+script:
+  - make -C unix
+  - tests/run-tests
