@@ -1,5 +1,4 @@
-.. image:: https://travis-ci.org/micropython/micropython.png?branch=master
-   :target: https://travis-ci.org/micropython/micropython
+<img src="https://travis-ci.org/micropython/micropython.png?branch=master" alt="build status"/>
 
 The Micro Python project
 ========================
