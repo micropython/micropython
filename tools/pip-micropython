@@ -12,6 +12,11 @@ if [ "$1" != "install" ]; then
 fi
 shift
 
+if [ -n "$TMPDIR" ]; then
+    TMPDIR=/tmp
+fi
+TMPVENV="$TMPDIR/pip-micropy-venv"
+
 if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
     echo "Destination snapshot directory: $dest"
@@ -20,7 +25,7 @@ elif [ -n "$MICROPYPATH" ]; then
     echo "Destination library directory: $libdest"
 else
     echo "Warning: MICROPYPATH is not set, assuming default value"
-    libdest=~/.micropython/lib
+    libdest=$HOME/.micropython/lib
     echo "Destination library directory: $libdest"
 fi
 
@@ -28,15 +33,15 @@ fi
 # The issue (at least with pip 1.0 which is still what's shipped with many
 # distros) is that even if --ignore-installed is used, package is not
 # installed if it's already installed for main python distribution.
-if [ ! -d /tmp/pip-micropy-venv ]; then
-    virtualenv --no-site-packages /tmp/pip-micropy-venv
+if [ ! -d "$TMPVENV" ]; then
+    virtualenv --no-site-packages "$TMPVENV"
     # distutils, setuptools, pip are buggy and allow target packages affect
     # their execution environment. For example, if distribution they install
     # has re.py, they will import that instead of system re. So, we need
     # to remove current dir from sys.path, but that appear to be quite uneasy
     # with CPython, so we hook __import__ and exterminate it persistently.
     # See also https://bitbucket.org/pypa/setuptools/issue/187/
-    cat > $(ls -1d /tmp/pip-micropy-venv/lib/python*/)/sitecustomize.py <<EOF
+    cat > $(ls -1d "$TMPVENV"/lib/python*/)/sitecustomize.py <<EOF
 import sys
 import __builtin__
 old_imp = __import__
@@ -46,7 +51,7 @@ def new_imp(*a, **kw):
 __builtin__.__import__ = new_imp
 EOF
 fi
-. /tmp/pip-micropy-venv/bin/activate
+. "$TMPVENV"/bin/activate
 
 # We need to specify --record to override this switch as passed by pip
 # pip will try to parse this file (at the location in specifies), and try to
@@ -61,14 +66,14 @@ pip install "$@" \
     --install-option="--install-scripts=." \
     --install-option="--install-headers=headers" \
     --install-option="--install-data=lib" \
-    --install-option="--record=/tmp/setuptools-record.txt" \
+    --install-option="--record=$TMPDIR/setuptools-record.txt" \
     --install-option="--no-compile" \
     --install-option="--root=$dest"
 else
 # Here we assume that base dir is lib dir, and install scripts a level
-# higher. For default value of ~/micropython/lib/ , this should give
+# higher. For default value of $HOME/.micropython/lib/ , this should give
 # reasonable behavior, though better would make it overridable (or
-# go bold and use ~/bin ?)
+# go bold and use $HOME/bin ?)
 pip install "$@" \
     --install-option="--install-base=." \
     --install-option="--install-purelib=." \
@@ -76,7 +81,7 @@ pip install "$@" \
     --install-option="--install-scripts=.." \
     --install-option="--install-headers=../headers" \
     --install-option="--install-data=." \
-    --install-option="--record=/tmp/setuptools-record.txt" \
+    --install-option="--record=$TMPDIR/setuptools-record.txt" \
     --install-option="--no-compile" \
     --install-option="--root=$libdest"
 fi
