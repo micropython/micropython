@@ -32,13 +32,27 @@ class Pyboard:
     def close(self):
         self.serial.close()
 
+    def read_until(self, min_num_bytes, ending, timeout=10):
+        data = self.serial.read(min_num_bytes)
+        timeout_count = 0
+        while True:
+            if self.serial.inWaiting() > 0:
+                data = data + self.serial.read(self.serial.inWaiting())
+                time.sleep(0.01)
+                timeout_count = 0
+            elif data.endswith(ending):
+                break
+            else:
+                timeout_count += 1
+                if timeout_count >= 10 * timeout:
+                    break
+                time.sleep(0.1)
+        return data
+
     def enter_raw_repl(self):
         self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
         self.serial.write(b'\x04') # ctrl-D: soft reset
-        data = self.serial.read(1)
-        while self.serial.inWaiting() > 0:
-            data = data + self.serial.read(self.serial.inWaiting())
-            time.sleep(0.1)
+        data = self.read_until(1, b'to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
             raise PyboardError('could not enter raw repl')
@@ -60,19 +74,7 @@ class Pyboard:
         data = self.serial.read(2)
         if data != b'OK':
             raise PyboardError('could not exec command')
-        data = self.serial.read(2)
-        timeout = 0
-        while True:
-            if self.serial.inWaiting() > 0:
-                data = data + self.serial.read(self.serial.inWaiting())
-                timeout = 0
-            elif data.endswith(b'\x04>'):
-                break
-            else:
-                timeout += 1
-                if timeout > 100:
-                    break
-                time.sleep(0.1)
+        data = self.read_until(2, b'\x04>')
         if not data.endswith(b'\x04>'):
             print(data)
             raise PyboardError('timeout waiting for EOF reception')
