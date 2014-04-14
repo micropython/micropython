@@ -132,6 +132,13 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
+STATIC mp_obj_t pyb_wfi(void) {
+    __WFI();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
+
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
@@ -221,6 +228,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&pyb_gc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wfi), (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
