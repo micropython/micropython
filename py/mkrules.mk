@@ -59,7 +59,7 @@ $(BUILD)/%.pp: %.c
 # object directories (but only for existance), and the object directories
 # will be created if they don't exist.
 OBJ_DIRS = $(sort $(dir $(OBJ)))
-$(OBJ): | $(OBJ_DIRS)
+$(OBJ): $(PY_BUILD)/qstrdefs.generated.h | $(OBJ_DIRS)
 $(OBJ_DIRS):
 	$(MKDIR) -p $@
 
