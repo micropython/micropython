@@ -25,12 +25,19 @@ def compute_hash(qstr):
     return hash & 0xffff
 
 # given a list of (name,regex) pairs, find the first one that matches the given line
-def re_match(regexs, line):
+def re_match_first(regexs, line):
     for name, regex in regexs:
         match = re.match(regex, line)
         if match:
             return name, match
     return None, None
+
+# regexs to recognise lines that the CPP emits
+# use a list so that matching order is honoured
+cpp_regexs = [
+    ('qstr', r'Q\((.+)\)$'),
+    ('cdecl', r'(typedef|extern) [A-Za-z0-9_* ]+;$')
+]
 
 def do_work(infiles):
     # read the qstrs in from the input files
@@ -47,7 +54,7 @@ def do_work(infiles):
                     continue
 
                 # work out what kind of line it is
-                match_kind, match = re_match([('qstr', r'Q\((.+)\)$'), ('cdecl', r'(typedef|extern) [A-Za-z0-9_* ]+;$')], line)
+                match_kind, match = re_match_first(cpp_regexs, line)
                 if match_kind is None:
                     # unknown line format
                     print('({}:{}) bad qstr format, got {}'.format(infile, line_number, line), file=sys.stderr)
