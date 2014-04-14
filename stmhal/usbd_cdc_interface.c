@@ -60,7 +60,7 @@ static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRx
 
 static uint8_t UserTxBuffer[APP_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
 static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA_SIZE when new data is available
-static uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
+static __IO uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
 
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
@@ -265,6 +265,14 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
     }
     
     buffptr = UserTxBufPtrOut;
+
+    // dpgeorge: For some reason that I don't understand, a packet size of 64 bytes
+    // (CDC_DATA_FS_MAX_PACKET_SIZE) does not get through to the USB host until the
+    // next packet is sent.  To work around this, we just make sure that we never
+    // send a packet 64 bytes in length.
+    if (buffsize == CDC_DATA_FS_MAX_PACKET_SIZE) {
+        buffsize -= 1;
+    }
     
     USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
     
