@@ -12,7 +12,7 @@ if [ "$1" != "install" ]; then
 fi
 shift
 
-if [ -n "$TMPDIR" ]; then
+if [ -z "$TMPDIR" ]; then
     TMPDIR=/tmp
 fi
 TMPVENV="$TMPDIR/pip-micropy-venv"
