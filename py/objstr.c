@@ -10,13 +10,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "pfenv.h"
-
-typedef struct _mp_obj_str_t {
-    mp_obj_base_t base;
-    machine_uint_t hash : 16; // XXX here we assume the hash size is 16 bits (it is at the moment; see qstr.c)
-    machine_uint_t len : 16; // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
-    const byte *data;
-} mp_obj_str_t;
+#include "objstr.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args);
 const mp_obj_t mp_const_empty_bytes;
@@ -1463,7 +1457,8 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     } else {
         GET_STR_HASH(s1, h1);
         GET_STR_HASH(s2, h2);
-        if (h1 != h2) {
+        // If any of hashes is 0, it means it's not valid
+        if (h1 != 0 && h2 != 0 && h1 != h2) {
             return false;
         }
         GET_STR_DATA_LEN(s1, d1, l1);

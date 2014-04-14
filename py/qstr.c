@@ -35,7 +35,12 @@ machine_uint_t qstr_compute_hash(const byte *data, uint len) {
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
-    return hash & 0xffff;
+    hash &= 0xffff;
+    // Make sure that valid hash is never zero, zero means "hash not computed"
+    if (hash == 0) {
+        hash++;
+    }
+    return hash;
 }
 
 typedef struct _qstr_pool_t {
