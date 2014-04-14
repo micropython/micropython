@@ -11,7 +11,7 @@ QSTR_DEFS = qstrdefsport.h
 include ../py/py.mk
 
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -DMICROPY_USE_COMPUTED_GOTO
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
