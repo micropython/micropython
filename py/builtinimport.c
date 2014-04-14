@@ -292,11 +292,10 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "Per PEP-420 a dir without __init__.py (%s) is a namespace package; "
-                            "namespace packages are not supported", vstr_str(&path)));
+                        printf("Notice: %s is imported as namespace package\n", vstr_str(&path));
+                    } else {
+                        do_load(module_obj, &path);
                     }
-                    do_load(module_obj, &path);
                     vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                     // https://docs.python.org/3.3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
