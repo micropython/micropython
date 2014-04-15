@@ -60,6 +60,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getattr), (mp_obj_t)&mp_builtin_getattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_globals), (mp_obj_t)&mp_builtin_globals_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hash), (mp_obj_t)&mp_builtin_hash_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hex), (mp_obj_t)&mp_builtin_hex_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_id), (mp_obj_t)&mp_builtin_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isinstance), (mp_obj_t)&mp_builtin_isinstance_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_issubclass), (mp_obj_t)&mp_builtin_issubclass_obj },
