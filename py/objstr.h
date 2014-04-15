@@ -8,3 +8,5 @@ typedef struct _mp_obj_str_t {
 } mp_obj_str_t;
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str};
+
+mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args);

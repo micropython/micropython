@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objstr.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "builtin.h"
@@ -124,6 +125,13 @@ STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
+
+STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
+    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
+    return mp_obj_str_format(sizeof(args) / sizeof(args[0]), args);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);
 
 STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
     if (mp_obj_is_callable(o_in)) {
@@ -298,6 +306,12 @@ STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
+
+STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
+    return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_o), o_in);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
