@@ -4,11 +4,12 @@ compiler:
 
 before_script:
   - sudo add-apt-repository -y ppa:fkrull/deadsnakes
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
-  - sudo apt-get install -y python3.3 python3
+  - sudo apt-get install -y python3.3 python3 gcc-4.7
 
 script:
-  - make -C unix
+  - make -C unix CC=gcc-4.7
   - cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests
 
 after_failure: for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff $testbase.exp $testbase.out; done
