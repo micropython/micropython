@@ -61,10 +61,6 @@ STATIC mp_obj_t mp_builtin___build_class__(uint n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
-    if (o != mp_const_none) {
-        mp_obj_print(o, PRINT_REPR);
-        printf("\n");
-    }
     return mp_const_none;
 }
 
