@@ -136,6 +136,48 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 
+STATIC mp_obj_t pyb_i2c_read(uint n_args, const mp_obj_t *args) {
+    pyb_i2c_obj_t *self = args[0];
+    machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
+    machine_uint_t n = mp_obj_get_int(args[2]);
+
+    byte *data;
+    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
+    HAL_StatusTypeDef status = HAL_I2C_Master_Receive(self->i2c_handle, i2c_addr, data, n, 500);
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Master_Receive failed with code %d", status));
+    }
+
+    return mp_obj_str_builder_end(o);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_read_obj, 3, 3, pyb_i2c_read);
+
+STATIC mp_obj_t pyb_i2c_write(uint n_args, const mp_obj_t *args) {
+    pyb_i2c_obj_t *self = args[0];
+    machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
+    HAL_StatusTypeDef status;
+    if (MP_OBJ_IS_INT(args[2])) {
+        uint8_t data[1] = {mp_obj_get_int(args[2])};
+        status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, data, 1, 500);
+    } else {
+        buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[2], &bufinfo);
+        status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, bufinfo.buf, bufinfo.len, 500);
+    }
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Master_Transmit failed with code %d", status));
+    }
+
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_write_obj, 3, 3, pyb_i2c_write);
+
 STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args) {
     pyb_i2c_obj_t *self = args[0];
     machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
@@ -187,6 +229,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_mem_write_obj, 4, 4, pyb_i2c_
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready), (mp_obj_t)&pyb_i2c_is_ready_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&pyb_i2c_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&pyb_i2c_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_i2c_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read), (mp_obj_t)&pyb_i2c_mem_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write), (mp_obj_t)&pyb_i2c_mem_write_obj },
 };
