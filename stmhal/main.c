@@ -137,6 +137,21 @@ static const char fresh_pybcdc_inf[] =
 #include "pybcdc.h"
 ;
 
+static const char fresh_readme_txt[] =
+"This is a Micro Python board\r\n"
+"\r\n"
+"You can get started right away by writing your Python code in 'main.py'.\r\n"
+"\r\n"
+"For a serial prompt:\r\n"
+" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
+"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+"   Then use a terminal program like Hyperterminal or putty.\r\n"
+" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
+" - Linux: use the command: screen /dev/ttyACM0\r\n"
+"\r\n"
+"Please visit http://micropython.org/help/ for further help.\r\n"
+;
+
 int main(void) {
     // TODO disable JTAG
 
@@ -313,6 +328,11 @@ soft_reset:
             // create .inf driver file
             f_open(&fp, "0:/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
             f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
+            f_close(&fp);
+
+            // create readme file
+            f_open(&fp, "0:/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
+            f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
             f_close(&fp);
 
             // keep LED on for at least 200ms
