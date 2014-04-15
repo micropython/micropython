@@ -1,5 +1,8 @@
 l = list(range(10000))
-hex(1)
+try:
+    hex(1)
+except NameError:
+    print("NameError")
 try:
     100000000 * l
 except MemoryError:
