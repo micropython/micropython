@@ -17,6 +17,7 @@ codepoint2name[ord('.')] = 'dot'
 codepoint2name[ord(':')] = 'colon'
 codepoint2name[ord('/')] = 'slash'
 codepoint2name[ord('%')] = 'percent'
+codepoint2name[ord('#')] = 'hash'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
