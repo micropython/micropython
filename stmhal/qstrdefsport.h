@@ -97,6 +97,7 @@ Q(filtered_xyz)
 // for ADC object
 Q(ADC)
 Q(ADC_all)
+Q(read_timed)
 Q(read_channel)
 Q(read_core_temp)
 Q(read_core_vbat)

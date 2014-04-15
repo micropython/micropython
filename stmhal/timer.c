@@ -27,6 +27,7 @@
 
 TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
+TIM_HandleTypeDef TIM6_Handle;
 
 // TIM3 is set-up for the USB CDC interface
 void timer_tim3_init(void) {
@@ -57,6 +58,7 @@ void timer_tim3_deinit(void) {
 */
 
 // TIM5 is set-up for the servo controller
+// This function inits but does not start the timer
 void timer_tim5_init(void) {
     // TIM5 clock enable
     __TIM5_CLK_ENABLE();
@@ -72,6 +74,31 @@ void timer_tim5_init(void) {
     TIM5_Handle.Init.ClockDivision = 0;
     TIM5_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_PWM_Init(&TIM5_Handle);
+}
+
+// Init TIM6 with a counter-overflow at the given frequency (given in Hz)
+// TIM6 is used by the DAC and ADC for auto sampling at a given frequency
+// This function inits but does not start the timer
+void timer_tim6_init(uint freq) {
+    // TIM6 clock enable
+    __TIM6_CLK_ENABLE();
+
+    // Timer runs at SystemCoreClock / 2
+    // Compute the prescaler value so TIM6 triggers at freq-Hz
+    uint32_t period = (SystemCoreClock / 2) / freq;
+    uint32_t prescaler = 1;
+    while (period > 0xffff) {
+        period >>= 1;
+        prescaler <<= 1;
+    }
+
+    // Time base clock configuration
+    TIM6_Handle.Instance = TIM6;
+    TIM6_Handle.Init.Period = period - 1;
+    TIM6_Handle.Init.Prescaler = prescaler - 1;
+    TIM6_Handle.Init.ClockDivision = 0; // unused for TIM6
+    TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP; // unused for TIM6
+    HAL_TIM_Base_Init(&TIM6_Handle);
 }
 
 // Interrupt dispatch
