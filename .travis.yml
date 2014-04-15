@@ -15,10 +15,6 @@ script:
   - make -C bare-arm
   - make -C stmhal
   - cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests
-
-after_failure:
-  - pwd
-  - echo 'test'
   - cat tests/memoryerror.py.exp
-  - (cat tests/memoryerror.py.out)
+  - cat tests/memoryerror.py.out
   - cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff $testbase.exp $testbase.out; done
