@@ -82,6 +82,7 @@ Q(MODE_EVT_RISING_FALLING)
 // for I2C object
 Q(I2C)
 Q(is_ready)
+Q(scan)
 Q(mem_read)
 Q(mem_write)
 
