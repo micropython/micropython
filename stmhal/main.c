@@ -269,8 +269,15 @@ soft_reset:
     // Change #if 0 to #if 1 if you want REPL on USART_6 (or another usart)
     // as well as on USB VCP
 #if 0
-    pyb_usart_global_debug = pyb_Usart(MP_OBJ_NEW_SMALL_INT(PYB_USART_YA),
-                                       MP_OBJ_NEW_SMALL_INT(115200));
+    {
+        mp_obj_t args[2] = {
+            MP_OBJ_NEW_SMALL_INT(PYB_USART_6),
+            MP_OBJ_NEW_SMALL_INT(115200),
+        };
+        pyb_usart_global_debug = pyb_usart_type.make_new((mp_obj_t)&pyb_usart_type,
+                                                         sizeof(args) / sizeof(args[0]),
+                                                         0, args);
+    }
 #else
     pyb_usart_global_debug = NULL;
 #endif
