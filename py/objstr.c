@@ -1485,7 +1485,8 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
 }
 
 uint mp_obj_str_get_len(mp_obj_t self_in) {
-    if (MP_OBJ_IS_STR(self_in)) {
+    // TODO This has a double check for the type, one in obj.c and one here
+    if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
         GET_STR_LEN(self_in, l);
         return l;
     } else {
