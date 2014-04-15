@@ -182,7 +182,9 @@ STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     o->usart_id = 0;
     if (MP_OBJ_IS_STR(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
-        if (strcmp(port, "XA") == 0) {
+        if (0) {
+#if defined(PYBV10)
+        } else if (strcmp(port, "XA") == 0) {
             o->usart_id = PYB_USART_XA;
         } else if (strcmp(port, "XB") == 0) {
             o->usart_id = PYB_USART_XB;
@@ -190,10 +192,11 @@ STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
             o->usart_id = PYB_USART_YA;
         } else if (strcmp(port, "YB") == 0) {
             o->usart_id = PYB_USART_YB;
+#endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Usart port %s does not exist", port));
         }
-    } else if (MP_OBJ_IS_INT(args[0])) {
+    } else {
         o->usart_id = mp_obj_get_int(args[0]);
     }
 
