@@ -12,8 +12,8 @@ before_script:
 script:
   - make -C unix CC=gcc-4.7
   - make -C unix-cpy CC=gcc-4.7
-  - make -C bare-arm CC=gcc-4.7
-  - make -C stmhal CC=gcc-4.7
+  - make -C bare-arm
+  - make -C stmhal
   - cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests
 
 after_failure: for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff $testbase.exp $testbase.out; done
