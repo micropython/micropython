@@ -168,7 +168,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
 
 #if MICROPY_USE_COMPUTED_GOTOS
-    #include "entry_table.h"
+    #include "vmentrytable.h"
     #define DISPATCH() do { \
         save_ip = ip; \
         op = *ip++; \
