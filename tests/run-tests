@@ -70,8 +70,6 @@ for test_file in tests:
         rm_f(os.path.basename(test_file + ".exp"))
         rm_f(os.path.basename(test_file + ".out"))
     else:
-        print('EXP|{}|'.format(output_expected))
-        print('OUT|{}|'.format(output_mupy))
         with open(os.path.basename(test_file + ".exp"), "w") as f:
             f.write(str(output_expected, "ascii"))
         with open(os.path.basename(test_file + ".out"), "w") as f:
