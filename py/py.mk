@@ -10,6 +10,7 @@ PY_O_BASENAME = \
 	nlrx86.o \
 	nlrx64.o \
 	nlrthumb.o \
+	nlrsetjmp.o \
 	malloc.o \
 	gc.o \
 	qstr.o \
