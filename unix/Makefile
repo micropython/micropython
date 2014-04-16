@@ -10,8 +10,12 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)/includes
+
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
