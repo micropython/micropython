@@ -70,16 +70,11 @@ float tanhf(float x) { return sinhf(x) / coshf(x); }
 float acoshf(float x) { return 0.0; }
 float asinhf(float x) { return 0.0; }
 float atanhf(float x) { return 0.0; }
-float cosf(float x) { return 0.0; }
-float sinf(float x) { return 0.0; }
 float tanf(float x) { return 0.0; }
 float acosf(float x) { return 0.0; }
 float asinf(float x) { return 0.0; }
 float atanf(float x) { return 0.0; }
 float atan2f(float x, float y) { return 0.0; }
-float ceilf(float x) { return 0.0; }
-float floorf(float x) { return 0.0; }
-float truncf(float x) { return 0.0; }
 float fmodf(float x, float y) { return 0.0; }
 float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }
@@ -819,4 +814,80 @@ float sinhf(float x)
 	/* |x| > logf(FLT_MAX) or nan */
 	t = 2*h*__expo2f(absx);
 	return t;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+// ceilf, floorf and truncf from musl-0.9.15
+/*****************************************************************************/
+/*****************************************************************************/
+
+float ceilf(float x)
+{
+	union {float f; uint32_t i;} u = {x};
+	int e = (int)(u.i >> 23 & 0xff) - 0x7f;
+	uint32_t m;
+
+	if (e >= 23)
+		return x;
+	if (e >= 0) {
+		m = 0x007fffff >> e;
+		if ((u.i & m) == 0)
+			return x;
+		FORCE_EVAL(x + 0x1p120f);
+		if (u.i >> 31 == 0)
+			u.i += m;
+		u.i &= ~m;
+	} else {
+		FORCE_EVAL(x + 0x1p120f);
+		if (u.i >> 31)
+			u.f = -0.0;
+		else if (u.i << 1)
+			u.f = 1.0;
+	}
+	return u.f;
+}
+
+float floorf(float x)
+{
+	union {float f; uint32_t i;} u = {x};
+	int e = (int)(u.i >> 23 & 0xff) - 0x7f;
+	uint32_t m;
+
+	if (e >= 23)
+		return x;
+	if (e >= 0) {
+		m = 0x007fffff >> e;
+		if ((u.i & m) == 0)
+			return x;
+		FORCE_EVAL(x + 0x1p120f);
+		if (u.i >> 31)
+			u.i += m;
+		u.i &= ~m;
+	} else {
+		FORCE_EVAL(x + 0x1p120f);
+		if (u.i >> 31 == 0)
+			u.i = 0;
+		else if (u.i << 1)
+			u.f = -1.0;
+	}
+	return u.f;
+}
+
+float truncf(float x)
+{
+	union {float f; uint32_t i;} u = {x};
+	int e = (int)(u.i >> 23 & 0xff) - 0x7f + 9;
+	uint32_t m;
+
+	if (e >= 23 + 9)
+		return x;
+	if (e < 9)
+		e = 1;
+	m = -1U >> e;
+	if ((u.i & m) == 0)
+		return x;
+	FORCE_EVAL(x + 0x1p120f);
+	u.i &= ~m;
+	return u.f;
 }

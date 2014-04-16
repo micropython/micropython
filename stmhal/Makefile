@@ -70,6 +70,7 @@ SRC_C = \
 	usb.c \
 	printf.c \
 	math.c \
+	mathsincos.c \
 	malloc0.c \
 	gccollect.c \
 	pybstdio.c \
