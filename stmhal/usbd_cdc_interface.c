@@ -265,10 +265,11 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
     if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
         // We have sent data and are waiting for the low-level USB driver to
         // finish sending it over the USB in-endpoint.
-        if (UserTxBufPtrWaitCount < 10) {
+        // We have a 15 * 10ms = 150ms timeout
+        if (UserTxBufPtrWaitCount < 15) {
             PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-            if (USBx_INEP(3)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
+            if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
                 UserTxBufPtrWaitCount++;
                 return;
