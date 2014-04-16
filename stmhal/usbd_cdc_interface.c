@@ -63,6 +63,7 @@ static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA
 static __IO uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
 static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
 static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
+static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
@@ -257,7 +258,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
         return;
     }
 
-    if (UserTxBufPtrOut == UserTxBufPtrIn) {
+    if (UserTxBufPtrOut == UserTxBufPtrIn && !UserTxNeedEmptyPacket) {
         // No outstanding data to send
         return;
     }
@@ -278,7 +279,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
         UserTxBufPtrOut = UserTxBufPtrOutShadow;
     }
 
-    if (UserTxBufPtrOutShadow != UserTxBufPtrIn) {
+    if (UserTxBufPtrOutShadow != UserTxBufPtrIn || UserTxNeedEmptyPacket) {
         uint32_t buffptr;
         uint32_t buffsize;
 
@@ -290,14 +291,6 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
 
         buffptr = UserTxBufPtrOutShadow;
 
-        // dpgeorge: For some reason that I don't understand, a packet size of 64 bytes
-        // (CDC_DATA_FS_MAX_PACKET_SIZE) does not get through to the USB host until the
-        // next packet is sent.  To work around this, we just make sure that we never
-        // send a packet 64 bytes in length.
-        if (buffsize == CDC_DATA_FS_MAX_PACKET_SIZE) {
-            buffsize -= 1;
-        }
-
         USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
 
         if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
@@ -306,6 +299,14 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
                 UserTxBufPtrOutShadow = 0;
             }
             UserTxBufPtrWaitCount = 0;
+
+            // According to the USB specification, a packet size of 64 bytes (CDC_DATA_FS_MAX_PACKET_SIZE)
+            // gets held at the USB host until the next packet is sent.  This is because a
+            // packet of maximum size is considered to be part of a longer chunk of data, and
+            // the host waits for all data to arrive (ie, waits for a packet < max packet size).
+            // To flush a packet of exactly max packet size, we need to send a zero-size packet.
+            // See eg http://www.cypress.com/?id=4&rID=92719
+            UserTxNeedEmptyPacket = (buffsize == CDC_DATA_FS_MAX_PACKET_SIZE && UserTxBufPtrOutShadow == UserTxBufPtrIn);
         }
     }
 }
