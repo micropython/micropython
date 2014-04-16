@@ -5,7 +5,7 @@ You need to first build the 'cpy' executable in the directory micropython/unix-c
 This executable is a minimal version of Micro Python which compiles a single source
 file and outputs the corresponding byte code.
 
-The output of Micro Python is checked against CPython 3.3.
+The output of Micro Python is checked against CPython 3.4.
 
 To run the tests use:
 
