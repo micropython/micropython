@@ -54,4 +54,6 @@ STRIP = $(CROSS_COMPILE)strip
 all:
 .PHONY: all
 
+.DELETE_ON_ERROR:
+
 MKENV_INCLUDED = 1
