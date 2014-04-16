@@ -38,7 +38,10 @@
 // These are needed to support removal of the medium, so that the USB drive
 // can be unmounted, and won't be remounted automatically.
 static uint8_t flash_removed = 0;
+
+#if MICROPY_HW_HAS_SDCARD
 static uint8_t sdcard_removed = 0;
+#endif
 
 /******************************************************************************/
 // Callback functions for when the internal flash is the mass storage device
