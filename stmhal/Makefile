@@ -210,12 +210,22 @@ PREFIX_FILE = boards/stm32f4xx-prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(BUILD)/pins.h
 
+INSERT_USB_IDS = ../tools/insert-usb-ids.py
+FILE2H = ../tools/file2h.py
+
+USB_IDS_FILE = usbd_desc_cdc_msc.c
+CDCINF_TEMPLATE = pybcdc.inf_template
+GEN_CDCINF_FILE = $(BUILD)/pybcdc.inf
+GEN_CDCINF_HEADER = $(BUILD)/pybcdc_inf.h
+
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
 $(OBJ): | $(BUILD)/pins.h
+
+$(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
@@ -225,5 +235,13 @@ $(BUILD)/%_$(BOARD).c $(BUILD)/%.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
+
+$(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
 include ../py/mkrules.mk

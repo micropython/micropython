@@ -77,10 +77,10 @@ ServiceBinary=%12%\usbser.sys
 [SourceDisksFiles]
 [SourceDisksNames]
 [DeviceList]
-%DESCRIPTION%=DriverInstall, USB\VID_0483&PID_5740&MI_00, USB\VID_0483&PID_5740&MI_01
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID}&MI_01
 
 [DeviceList.NTamd64]
-%DESCRIPTION%=DriverInstall, USB\VID_0483&PID_5740&MI_00, USB\VID_0483&PID_5740&MI_01
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID}&MI_01
 
 ;---------------------------------------------------------------------
 ;  String Definitions
