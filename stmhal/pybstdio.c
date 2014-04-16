@@ -9,7 +9,6 @@
 #include "obj.h"
 #include "stream.h"
 #include "pybstdio.h"
-#include "storage.h"
 #include "usb.h"
 #include "usart.h"
 
@@ -50,9 +49,6 @@ int stdin_rx_chr(void) {
             return usart_rx_char(pyb_usart_global_debug);
         }
         __WFI();
-        if (storage_needs_flush()) {
-            storage_flush();
-        }
     }
 }
 

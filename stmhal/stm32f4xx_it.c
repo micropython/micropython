@@ -49,6 +49,7 @@
 #include "obj.h"
 #include "exti.h"
 #include "timer.h"
+#include "storage.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -262,6 +263,19 @@ void OTG_XX_WKUP_IRQHandler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+// Handle a flash (erase/program) interrupt.
+void FLASH_IRQHandler(void) {
+    // This calls the real flash IRQ handler, if needed
+    /*
+    uint32_t flash_cr = FLASH->CR;
+    if ((flash_cr & FLASH_IT_EOP) || (flash_cr & FLASH_IT_ERR)) {
+        HAL_FLASH_IRQHandler();
+    }
+    */
+    // This call the storage IRQ handler, to check if the flash cache needs flushing
+    storage_irq_handler();
+}
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.

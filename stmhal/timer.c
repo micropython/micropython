@@ -19,6 +19,7 @@
 // the interrupts to be dispatched, so they are all collected here.
 //
 // TIM3:
+//  - flash storage controller, to flush the cache
 //  - USB CDC interface, interval, to check for new data
 //  - LED 4, PWM to set the LED intensity
 //
@@ -29,14 +30,17 @@ TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
+// Used to divide down TIM3 and periodically call the flash storage IRQ
+static uint32_t tim3_counter = 0;
+
 // TIM3 is set-up for the USB CDC interface
 void timer_tim3_init(void) {
     // set up the timer for USBD CDC
     __TIM3_CLK_ENABLE();
 
     TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
-    TIM3_Handle.Init.Prescaler = 84-1;
+    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
+    TIM3_Handle.Init.Prescaler = 84-1; // for System clock at 168MHz, TIM3 runs at 1MHz
     TIM3_Handle.Init.ClockDivision = 0;
     TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_Base_Init(&TIM3_Handle);
@@ -105,6 +109,13 @@ void timer_tim6_init(uint freq) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim == &TIM3_Handle) {
         USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+
+        // Periodically raise a flash IRQ for the flash storage controller
+        if (tim3_counter++ >= 500 / USBD_CDC_POLLING_INTERVAL) {
+            tim3_counter = 0;
+            NVIC->STIR = FLASH_IRQn;
+        }
+
     } else if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }

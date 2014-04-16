@@ -472,6 +472,7 @@ static int8_t SCSI_AllowMediumRemoval(USBD_HandleTypeDef  *pdev, uint8_t lun, ui
 {
   USBD_MSC_BOT_HandleTypeDef  *hmsc = pdev->pClassData;   
   hmsc->bot_data_length = 0;
+  ((USBD_StorageTypeDef *)pdev->pUserData)->PreventAllowMediumRemoval(lun, params[0]);
   return 0;
 }
 

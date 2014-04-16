@@ -109,6 +109,12 @@ int8_t FLASH_STORAGE_StopUnit(uint8_t lun) {
     return 0;
 }
 
+int8_t FLASH_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
+    // sync the flash so that the cache is cleared and the device can be unplugged/turned off
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    return 0;
+}
+
 /**
   * @brief  Read data from the medium
   * @param  lun : logical unit number
@@ -146,7 +152,6 @@ int8_t FLASH_STORAGE_Write (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
         }
     }
     */
-    storage_flush(); // XXX hack for now so that the cache is always flushed
     return 0;
 }
 
@@ -165,6 +170,7 @@ const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops = {
     FLASH_STORAGE_IsReady,
     FLASH_STORAGE_IsWriteProtected,
     FLASH_STORAGE_StopUnit,
+    FLASH_STORAGE_PreventAllowMediumRemoval,
     FLASH_STORAGE_Read,
     FLASH_STORAGE_Write,
     FLASH_STORAGE_GetMaxLun,
@@ -295,6 +301,10 @@ int8_t SDCARD_STORAGE_StopUnit(uint8_t lun) {
     return 0;
 }
 
+int8_t SDCARD_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
+    return 0;
+}
+
 /**
   * @brief  Read data from the medium
   * @param  lun : logical unit number
@@ -340,6 +350,7 @@ const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops = {
     SDCARD_STORAGE_IsReady,
     SDCARD_STORAGE_IsWriteProtected,
     SDCARD_STORAGE_StopUnit,
+    SDCARD_STORAGE_PreventAllowMediumRemoval,
     SDCARD_STORAGE_Read,
     SDCARD_STORAGE_Write,
     SDCARD_STORAGE_GetMaxLun,

@@ -21,7 +21,6 @@
 #include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
-#include "storage.h"
 #include "usb.h"
 #include "build/py/py-version.h"
 
