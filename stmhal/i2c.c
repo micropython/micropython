@@ -136,10 +136,10 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 
-STATIC mp_obj_t pyb_i2c_read(uint n_args, const mp_obj_t *args) {
-    pyb_i2c_obj_t *self = args[0];
-    machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
-    machine_uint_t n = mp_obj_get_int(args[2]);
+STATIC mp_obj_t pyb_i2c_read(mp_obj_t self_in, mp_obj_t i2c_addr_in, mp_obj_t n_in) {
+    pyb_i2c_obj_t *self = self_in;
+    machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_in) << 1;
+    machine_uint_t n = mp_obj_get_int(n_in);
 
     byte *data;
     mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
@@ -153,18 +153,18 @@ STATIC mp_obj_t pyb_i2c_read(uint n_args, const mp_obj_t *args) {
     return mp_obj_str_builder_end(o);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_read_obj, 3, 3, pyb_i2c_read);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_i2c_read_obj, pyb_i2c_read);
 
-STATIC mp_obj_t pyb_i2c_write(uint n_args, const mp_obj_t *args) {
-    pyb_i2c_obj_t *self = args[0];
-    machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
+STATIC mp_obj_t pyb_i2c_write(mp_obj_t self_in, mp_obj_t i2c_addr_in, mp_obj_t data_in) {
+    pyb_i2c_obj_t *self = self_in;
+    machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_in) << 1;
     HAL_StatusTypeDef status;
-    if (MP_OBJ_IS_INT(args[2])) {
-        uint8_t data[1] = {mp_obj_get_int(args[2])};
+    if (MP_OBJ_IS_INT(data_in)) {
+        uint8_t data[1] = {mp_obj_get_int(data_in)};
         status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, data, 1, 500);
     } else {
         buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[2], &bufinfo);
+        mp_get_buffer_raise(data_in, &bufinfo);
         status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, bufinfo.buf, bufinfo.len, 500);
     }
 
@@ -176,7 +176,7 @@ STATIC mp_obj_t pyb_i2c_write(uint n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_write_obj, 3, 3, pyb_i2c_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_i2c_write_obj, pyb_i2c_write);
 
 STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args) {
     pyb_i2c_obj_t *self = args[0];
