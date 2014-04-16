@@ -10,4 +10,4 @@ MICROPY_USE_READLINE = 1
 MICROPY_MOD_TIME = 1
 
 # ffi module requires libffi (libffi-dev Debian package)
-MICROPY_MOD_FFI = 1
+MICROPY_MOD_FFI = $(shell if pkg-config --exists libffi; then echo 1; else echo 0; fi)
