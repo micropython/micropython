@@ -20,6 +20,16 @@ else
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
  endif
 
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CFLAGS += -m32
+LDFLAGS += -m32
+ifeq ($(MICROPY_MOD_FFI),1)
+ifeq ($(UNAME_S),Linux)
+CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+endif
+endif
+endif
+
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 LDFLAGS_MOD += -lreadline
