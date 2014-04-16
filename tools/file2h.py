@@ -10,7 +10,9 @@ from __future__ import print_function
 import sys
 
 # Can either be set explicitly, or left blank to auto-detect
-line_end = ''
+# Except auto-detect doesn't work because the file has been passed
+# through Python text processing, which makes all EOL a \n
+line_end = '\\r\\n'
 
 if __name__ == "__main__":
     filename = sys.argv[1]

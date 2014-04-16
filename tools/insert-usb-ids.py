@@ -13,7 +13,7 @@ def parse_usb_ids(filename):
     if filename == 'usbd_desc_cdc_msc.c':
         for line in open(filename).readlines():
             line = line.rstrip('\r\n')
-            match = re.match('^#define\s+(\w+)\s+0x(\d+)$', line)
+            match = re.match('^#define\s+(\w+)\s+0x([0-9A-Fa-f]+)$', line)
             if match:
                 if match.group(1) == 'USBD_VID':
                     rv['USB_VID'] = match.group(2)
