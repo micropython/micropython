@@ -60,7 +60,6 @@ const static qstr_pool_t const_pool = {
         (const byte*) "\0\0\0\0", // invalid/no qstr has empty data
         (const byte*) "\0\0\0\0", // empty qstr
 #define Q(id, str) str,
-// TODO having 'build/' here is a bit of a hack, should take config variable from Makefile
 #include "build/py/qstrdefs.generated.h"
 #undef Q
     },

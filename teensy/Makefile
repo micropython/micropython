@@ -17,7 +17,13 @@ CROSS_COMPILE = $(COMPILER_PATH)/arm-none-eabi-
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
-CFLAGS = -I. -I$(PY_SRC) -I$(CORE_PATH) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
+
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)/includes
+INC += -I$(CORE_PATH)
+
+CFLAGS = $(INC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld
 LIBS = -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
 

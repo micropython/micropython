@@ -17,12 +17,19 @@ DFU=../tools/dfu.py
 
 CROSS_COMPILE = arm-none-eabi-
 
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)/includes
+INC += -I$(CMSIS_DIR)
+INC += -I$(STMPERIPH_DIR)
+INC += -I$(STMUSB_DIR)
+INC += -I$(STMUSBD_DIR)
+INC += -I$(STMUSBH_DIR)
+INC += -I$(FATFS_DIR)
+#INC += -I$(CC3K_DIR)
+
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = -I. -I$(PY_SRC) -I$(CMSIS_DIR) -I$(STMPERIPH_DIR) -I$(STMUSB_DIR) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
-CFLAGS += -I$(STMUSBD_DIR)
-CFLAGS += -I$(STMUSBH_DIR)
-CFLAGS += -I$(FATFS_DIR)
-#CFLAGS += -I$(CC3K_DIR)
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
 
 BOARD ?= PYBOARD4
 ifeq ($(wildcard boards/$(BOARD)/.),)
