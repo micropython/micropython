@@ -10,10 +10,14 @@ Q(write)
 Q(makefile)
 
 Q(FileIO)
+
+Q(ffi)
 Q(ffimod)
 Q(ffifunc)
 Q(fficallback)
 Q(ffivar)
+Q(as_bytearray)
+Q(callback)
 Q(func)
 Q(var)
 

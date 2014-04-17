@@ -365,11 +365,26 @@ mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);
 
+STATIC const mp_map_elem_t mp_module_ffi_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ffi) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mod_ffi_open_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_ffi_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_as_bytearray), (mp_obj_t)&mod_ffi_as_bytearray_obj },
+};
 
-void ffi_init() {
-    mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("ffi"));
-    mp_store_attr(m, MP_QSTR_open, (mp_obj_t)&mod_ffi_open_obj);
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("callback"), (mp_obj_t)&mod_ffi_callback_obj);
-    // there would be as_bytes, but bytes currently is value, not reference type!
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("as_bytearray"), (mp_obj_t)&mod_ffi_as_bytearray_obj);
-}
+STATIC const mp_obj_dict_t mp_module_ffi_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_ffi_globals_table,
+    },
+};
+
+const mp_obj_module_t mp_module_ffi = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_ffi,
+    .globals = (mp_obj_dict_t*)&mp_module_ffi_globals,
+};
