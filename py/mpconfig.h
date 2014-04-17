@@ -137,7 +137,7 @@ typedef double mp_float_t;
 
 // Whether to support the property object
 #ifndef MICROPY_ENABLE_PROPERTY
-#define MICROPY_ENABLE_PROPERTY (0)
+#define MICROPY_ENABLE_PROPERTY (1)
 #endif
 
 // Enable features which improve CPython compatibility
