@@ -357,9 +357,6 @@ int main(int argc, char **argv) {
 #endif
 
     microsocket_init();
-#if MICROPY_MOD_TIME
-    time_init();
-#endif
 #if MICROPY_MOD_FFI
     ffi_init();
 #endif

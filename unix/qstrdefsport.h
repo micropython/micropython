@@ -30,3 +30,7 @@ Q(fficallback)
 Q(ffivar)
 Q(func)
 Q(var)
+
+Q(time)
+Q(clock)
+Q(sleep)
