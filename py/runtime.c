@@ -840,23 +840,6 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
-void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
-    DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
-    mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->store_item != NULL) {
-        bool r = type->store_item(base, index, value);
-        if (r) {
-            return;
-        }
-        // TODO: call base classes here?
-    }
-    if (value == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
-    }
-}
-
 mp_obj_t mp_getiter(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
@@ -1120,7 +1103,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_method,
     mp_store_name,
     mp_store_attr,
-    mp_store_subscr,
+    mp_obj_subscr,
     mp_obj_is_true,
     mp_unary_op,
     mp_binary_op,

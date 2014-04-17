@@ -342,6 +342,11 @@ dispatch_loop:
                     PUSH(mp_load_build_class());
                     DISPATCH();
 
+                ENTRY(MP_BC_LOAD_SUBSCR):
+                    obj1 = POP();
+                    SET_TOP(mp_obj_subscr(TOP(), obj1, MP_OBJ_SENTINEL));
+                    DISPATCH();
+
                 ENTRY(MP_BC_STORE_FAST_0):
                     fastn[0] = POP();
                     DISPATCH();
@@ -381,7 +386,7 @@ dispatch_loop:
                     DISPATCH();
 
                 ENTRY(MP_BC_STORE_SUBSCR):
-                    mp_store_subscr(sp[-1], sp[0], sp[-2]);
+                    mp_obj_subscr(sp[-1], sp[0], sp[-2]);
                     sp -= 3;
                     DISPATCH();
 

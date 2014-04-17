@@ -778,6 +778,18 @@ STATIC void emit_native_load_build_class(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
+STATIC void emit_native_load_subscr(emit_t *emit) {
+    vtype_kind_t vtype_lhs, vtype_rhs;
+    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
+    if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr, (machine_uint_t)MP_OBJ_SENTINEL, REG_ARG_3);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    } else {
+        printf("ViperTypeError: can't do subscr of types %d and %d\n", vtype_lhs, vtype_rhs);
+        assert(0);
+    }
+}
+
 STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
 #if N_X64
@@ -850,7 +862,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     assert(vtype_index == VTYPE_PYOBJ);
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_STORE_SUBSCR, mp_store_subscr);
+    emit_call(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr);
 }
 
 STATIC void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
@@ -882,8 +894,11 @@ STATIC void emit_native_delete_attr(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_native_delete_subscr(emit_t *emit) {
-    // not supported
-    assert(0);
+    vtype_kind_t vtype_index, vtype_base;
+    emit_pre_pop_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1); // index, base
+    assert(vtype_index == VTYPE_PYOBJ);
+    assert(vtype_base == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
 }
 
 STATIC void emit_native_dup_top(emit_t *emit) {
@@ -1328,6 +1343,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
+    emit_native_load_subscr,
     emit_native_store_fast,
     emit_native_store_deref,
     emit_native_store_name,

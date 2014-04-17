@@ -95,22 +95,6 @@ mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
 mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-#if MICROPY_ENABLE_SLICE
-            if (MP_OBJ_IS_TYPE(rhs, &mp_type_slice)) {
-                machine_uint_t start, stop;
-                if (!m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop)) {
-                    assert(0);
-                }
-                mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
-                m_seq_copy(res->items, o->items + start, res->len, mp_obj_t);
-                return res;
-            }
-#endif
-            uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return o->items[index];
-        }
         case MP_BINARY_OP_ADD:
         {
             if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&mp_type_tuple)) {
@@ -141,6 +125,28 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         default:
             // op not supported
             return NULL;
+    }
+}
+
+mp_obj_t tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_SENTINEL) {
+        // load
+        mp_obj_tuple_t *self = self_in;
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+            mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
+            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            return res;
+        }
+#endif
+        uint index_value = mp_get_index(self->base.type, self->len, index, false);
+        return self->items[index_value];
+    } else {
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -176,6 +182,7 @@ const mp_obj_type_t mp_type_tuple = {
     .make_new = mp_obj_tuple_make_new,
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
+    .subscr = tuple_subscr,
     .getiter = tuple_getiter,
     .locals_dict = (mp_obj_t)&tuple_locals_dict,
 };

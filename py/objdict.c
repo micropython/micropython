@@ -84,18 +84,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
 STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-            // dict load
-            mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
-            if (elem == NULL) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
-            } else {
-                return elem->value;
-            }
-        }
-        case MP_BINARY_OP_IN:
-        {
+        case MP_BINARY_OP_IN: {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             return MP_BOOL(elem != NULL);
         }
@@ -129,13 +118,25 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
-STATIC bool dict_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
+        // delete
         mp_obj_dict_delete(self_in, index);
+        return mp_const_none;
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load
+        mp_obj_dict_t *self = self_in;
+        mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
+        if (elem == NULL) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+        } else {
+            return elem->value;
+        }
     } else {
+        // store
         mp_obj_dict_store(self_in, index, value);
+        return mp_const_none;
     }
-    return true;
 }
 
 /******************************************************************************/
@@ -510,7 +511,7 @@ const mp_obj_type_t mp_type_dict = {
     .make_new = dict_make_new,
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
-    .store_item = dict_store_item,
+    .subscr = dict_subscr,
     .getiter = dict_getiter,
     .locals_dict = (mp_obj_t)&dict_locals_dict,
 };

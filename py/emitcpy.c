@@ -281,6 +281,13 @@ STATIC void emit_cpy_load_build_class(emit_t *emit) {
     }
 }
 
+STATIC void emit_cpy_load_subscr(emit_t *emit) {
+    emit_pre(emit, -1, 1);
+    if (emit->pass == PASS_3) {
+        printf("BINARY_SUBSCR\n");
+    }
+}
+
 STATIC void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
@@ -555,7 +562,6 @@ STATIC void emit_cpy_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
     if (emit->pass == PASS_3) {
         switch (op) {
-            case MP_BINARY_OP_SUBSCR: printf("BINARY_SUBSCR\n"); break;
             case MP_BINARY_OP_OR: printf("BINARY_OR\n"); break;
             case MP_BINARY_OP_XOR: printf("BINARY_XOR\n"); break;
             case MP_BINARY_OP_AND: printf("BINARY_AND\n"); break;
@@ -817,6 +823,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_attr,
     emit_cpy_load_method,
     emit_cpy_load_build_class,
+    emit_cpy_load_subscr,
     emit_cpy_store_fast,
     emit_cpy_store_deref,
     emit_cpy_store_name,

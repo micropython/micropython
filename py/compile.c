@@ -670,7 +670,7 @@ void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign_kind_t
                 compile_node(comp, pns1->nodes[0]);
                 if (assign_kind == ASSIGN_AUG_LOAD) {
                     EMIT(dup_top_two);
-                    EMIT_ARG(binary_op, MP_BINARY_OP_SUBSCR);
+                    EMIT(load_subscr);
                 } else {
                     EMIT(store_subscr);
                 }
@@ -2599,7 +2599,7 @@ void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_trailer_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // object who's index we want is on top of stack
     compile_node(comp, pns->nodes[0]); // the index
-    EMIT_ARG(binary_op, MP_BINARY_OP_SUBSCR);
+    EMIT(load_subscr);
 }
 
 void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns) {

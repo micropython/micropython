@@ -88,24 +88,7 @@ STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
 STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = lhs;
     switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-#if MICROPY_ENABLE_SLICE
-            if (MP_OBJ_IS_TYPE(rhs, &mp_type_slice)) {
-                machine_uint_t start, stop;
-                if (!m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop)) {
-                    assert(0);
-                }
-                mp_obj_list_t *res = list_new(stop - start);
-                m_seq_copy(res->items, o->items + start, res->len, mp_obj_t);
-                return res;
-            }
-#endif
-            uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return o->items[index];
-        }
-        case MP_BINARY_OP_ADD:
-        {
+        case MP_BINARY_OP_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
                 return NULL;
             }
@@ -114,8 +97,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
-        case MP_BINARY_OP_INPLACE_ADD:
-        {
+        case MP_BINARY_OP_INPLACE_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
                 return NULL;
             }
@@ -144,14 +126,32 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
-STATIC bool list_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
+        // delete
         mp_obj_t args[2] = {self_in, index};
         list_pop(2, args);
+        return mp_const_none;
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load
+        mp_obj_list_t *self = self_in;
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+            mp_obj_list_t *res = list_new(stop - start);
+            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            return res;
+        }
+#endif
+        uint index_val = mp_get_index(self->base.type, self->len, index, false);
+        return self->items[index_val];
     } else {
         mp_obj_list_store(self_in, index, value);
+        return mp_const_none;
     }
-    return true;
 }
 
 STATIC mp_obj_t list_getiter(mp_obj_t o_in) {
@@ -360,7 +360,7 @@ const mp_obj_type_t mp_type_list = {
     .make_new = list_make_new,
     .unary_op = list_unary_op,
     .binary_op = list_binary_op,
-    .store_item = list_store_item,
+    .subscr = list_subscr,
     .getiter = list_getiter,
     .locals_dict = (mp_obj_t)&list_locals_dict,
 };

@@ -182,6 +182,10 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("LOAD_BUILD_CLASS");
                 break;
 
+            case MP_BC_LOAD_SUBSCR:
+                printf("LOAD_SUBSCR");
+                break;
+
             case MP_BC_STORE_FAST_0:
                 printf("STORE_FAST_0");
                 break;

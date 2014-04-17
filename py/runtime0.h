@@ -24,7 +24,6 @@ typedef enum {
 } mp_unary_op_t;
 
 typedef enum {
-    MP_BINARY_OP_SUBSCR,
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -75,7 +74,7 @@ typedef enum {
     MP_F_LOAD_METHOD,
     MP_F_STORE_NAME,
     MP_F_STORE_ATTR,
-    MP_F_STORE_SUBSCR,
+    MP_F_OBJ_SUBSCR,
     MP_F_OBJ_IS_TRUE,
     MP_F_UNARY_OP,
     MP_F_BINARY_OP,

@@ -28,6 +28,10 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #define MP_OBJ_SENTINEL ((mp_obj_t)8)
 
+// The NOT_SUPPORTED object is a return value that indicates an unsupported operation.
+
+#define MP_OBJ_NOT_SUPPORTED ((mp_obj_t)16)
+
 // These macros check for small int, qstr or object, and access small int and qstr values
 //  - xxxx...xxx1: a small int, bits 1 and above are the value
 //  - xxxx...xx10: a qstr, bits 2 and above are the value
@@ -165,7 +169,7 @@ typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
 typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
-typedef bool (*mp_store_item_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
+typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 
 typedef struct _mp_method_t {
     qstr name;
@@ -222,16 +226,13 @@ struct _mp_obj_type_t {
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
 
-    // Implements container[index] = val.  If val == MP_OBJ_NULL, then it's a delete.
-    // Note that load_item is implemented by binary_op(RT_BINARY_OP_SUBSCR)
-    mp_store_item_fun_t store_item;
+    mp_subscr_fun_t subscr;         // implements load, store, delete subscripting
+                                    // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store
+                                    // can return MP_OBJ_NOT_SUPPORTED
 
     mp_fun_1_t getiter;
     mp_fun_1_t iternext; // may return MP_OBJ_NULL as an optimisation instead of raising StopIteration() (with no args)
 
-    // Alternatively, pointer(s) to interfaces to save space
-    // in mp_obj_type_t at the expense of extra pointer and extra dereference
-    // when actually used.
     mp_buffer_p_t buffer_p;
     const mp_stream_p_t *stream_p;
 
@@ -241,8 +242,6 @@ struct _mp_obj_type_t {
 
     /*
     What we might need to add here:
-
-    store_subscr    list dict
 
     len             str tuple list map
     abs             float complex
@@ -395,6 +394,7 @@ void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
+mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 
 // bool
 // TODO make lower case when it has proven itself

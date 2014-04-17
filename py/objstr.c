@@ -214,25 +214,6 @@ STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, cons
 STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     switch (op) {
-        case MP_BINARY_OP_SUBSCR: {
-#if MICROPY_ENABLE_SLICE
-            if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_slice)) {
-                machine_uint_t start, stop;
-                if (!m_seq_get_fast_slice_indexes(lhs_len, rhs_in, &start, &stop)) {
-                    assert(0);
-                }
-                return mp_obj_new_str(lhs_data + start, stop - start, false);
-            }
-#endif
-            mp_obj_type_t *type = mp_obj_get_type(lhs_in);
-            uint index = mp_get_index(type, lhs_len, rhs_in, false);
-            if (type == &mp_type_bytes) {
-                return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)lhs_data[index]);
-            } else {
-                return mp_obj_new_str(lhs_data + index, 1, true);
-            }
-        }
-
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:
             if (MP_OBJ_IS_STR(rhs_in)) {
@@ -305,6 +286,31 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 
     return MP_OBJ_NULL; // op not supported
+}
+
+STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    if (value == MP_OBJ_SENTINEL) {
+        // load
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
+                assert(0);
+            }
+            return mp_obj_new_str(self_data + start, stop - start, false);
+        }
+#endif
+        mp_obj_type_t *type = mp_obj_get_type(self_in);
+        uint index_val = mp_get_index(type, self_len, index, false);
+        if (type == &mp_type_bytes) {
+            return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
+        } else {
+            return mp_obj_new_str(self_data + index_val, 1, true);
+        }
+    } else {
+        return MP_OBJ_NOT_SUPPORTED;
+    }
 }
 
 STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
@@ -1380,6 +1386,7 @@ const mp_obj_type_t mp_type_str = {
     .print = str_print,
     .make_new = str_make_new,
     .binary_op = str_binary_op,
+    .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
@@ -1392,6 +1399,7 @@ const mp_obj_type_t mp_type_bytes = {
     .print = str_print,
     .make_new = bytes_make_new,
     .binary_op = str_binary_op,
+    .subscr = str_subscr,
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,

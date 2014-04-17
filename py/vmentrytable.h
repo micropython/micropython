@@ -21,6 +21,7 @@ static void* entry_table[256] = {
     [MP_BC_LOAD_ATTR] = &&entry_MP_BC_LOAD_ATTR,
     [MP_BC_LOAD_METHOD] = &&entry_MP_BC_LOAD_METHOD,
     [MP_BC_LOAD_BUILD_CLASS] = &&entry_MP_BC_LOAD_BUILD_CLASS,
+    [MP_BC_LOAD_SUBSCR] = &&entry_MP_BC_LOAD_SUBSCR,
     [MP_BC_STORE_FAST_0] = &&entry_MP_BC_STORE_FAST_0,
     [MP_BC_STORE_FAST_1] = &&entry_MP_BC_STORE_FAST_1,
     [MP_BC_STORE_FAST_2] = &&entry_MP_BC_STORE_FAST_2,

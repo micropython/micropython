@@ -477,6 +477,11 @@ STATIC void emit_bc_load_build_class(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_LOAD_BUILD_CLASS);
 }
 
+STATIC void emit_bc_load_subscr(emit_t *emit) {
+    emit_bc_pre(emit, -1);
+    emit_write_byte_code_byte(emit, MP_BC_LOAD_SUBSCR);
+}
+
 STATIC void emit_bc_store_fast(emit_t *emit, qstr qstr, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, -1);
@@ -873,6 +878,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_attr,
     emit_bc_load_method,
     emit_bc_load_build_class,
+    emit_bc_load_subscr,
     emit_bc_store_fast,
     emit_bc_store_deref,
     emit_bc_store_name,

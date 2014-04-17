@@ -50,6 +50,7 @@ typedef struct _emit_method_table_t {
     void (*load_attr)(emit_t *emit, qstr qstr);
     void (*load_method)(emit_t *emit, qstr qstr);
     void (*load_build_class)(emit_t *emit);
+    void (*load_subscr)(emit_t *emit);
     void (*store_fast)(emit_t *emit, qstr qstr, int local_num);
     void (*store_deref)(emit_t *emit, qstr qstr, int local_num);
     void (*store_name)(emit_t *emit, qstr qstr);

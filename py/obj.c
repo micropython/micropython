@@ -332,6 +332,24 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     }
 }
 
+mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
+    mp_obj_type_t *type = mp_obj_get_type(base);
+    if (type->subscr != NULL) {
+        mp_obj_t ret = type->subscr(base, index, value);
+        if (ret != MP_OBJ_NOT_SUPPORTED) {
+            return ret;
+        }
+        // TODO: call base classes here?
+    }
+    if (value == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
+    } else if (value == MP_OBJ_SENTINEL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not subscriptable", mp_obj_get_type_str(base)));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+    }
+}
+
 // Return input argument. Useful as .getiter for objects which are
 // their own iterators, etc.
 mp_obj_t mp_identity(mp_obj_t self) {

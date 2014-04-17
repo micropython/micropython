@@ -112,21 +112,6 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
-    mp_obj_array_t *o = lhs;
-    switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-            uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return mp_binary_get_val_array(o->typecode, o->items, index);
-        }
-
-        default:
-            // op not supported
-            return MP_OBJ_NULL;
-    }
-}
-
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
@@ -142,15 +127,22 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
-STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item; does this need to be implemented?
-        return false;
+        return MP_OBJ_NOT_SUPPORTED;
+    } else {
+        mp_obj_array_t *o = self_in;
+        uint index = mp_get_index(o->base.type, o->len, index_in, false);
+        if (value == MP_OBJ_SENTINEL) {
+            // load
+            return mp_binary_get_val_array(o->typecode, o->items, index);
+        } else {
+            // store
+            mp_binary_set_val_array(o->typecode, o->items, index, value);
+            return mp_const_none;
+        }
     }
-    mp_obj_array_t *o = self_in;
-    uint index = mp_get_index(o->base.type, o->len, index_in, false);
-    mp_binary_set_val_array(o->typecode, o->items, index, value);
-    return true;
 }
 
 STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int flags) {
@@ -173,8 +165,7 @@ const mp_obj_type_t mp_type_array = {
     .make_new = array_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .store_item = array_store_item,
+    .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };
@@ -186,8 +177,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .make_new = bytearray_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .store_item = array_store_item,
+    .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };

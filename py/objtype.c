@@ -144,7 +144,6 @@ STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
 }
 
 STATIC const qstr binary_op_method_name[] = {
-    [MP_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
@@ -308,7 +307,7 @@ STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     }
 }
 
-bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
     mp_obj_t member;
     uint meth_args;
@@ -316,16 +315,26 @@ bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // delete item
         member = mp_obj_class_lookup(self->base.type, MP_QSTR___delitem__);
         meth_args = 2;
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load item
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___getitem__);
+        meth_args = 2;
     } else {
+        // store item
         member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
         meth_args = 3;
     }
     if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
-        mp_call_function_n_kw(member, meth_args, 0, args);
-        return true;
+        // TODO probably need to call class_convert_return_attr, and use mp_call_method_n_kw
+        mp_obj_t ret = mp_call_function_n_kw(member, meth_args, 0, args);
+        if (value == MP_OBJ_SENTINEL) {
+            return ret;
+        } else {
+            return mp_const_none;
+        }
     } else {
-        return false;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -464,7 +473,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->binary_op = class_binary_op;
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
-    o->store_item = class_store_item;
+    o->subscr = class_subscr;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
     return o;

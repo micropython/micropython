@@ -23,6 +23,7 @@
 #define MP_BC_LOAD_ATTR          (0x28) // qstr
 #define MP_BC_LOAD_METHOD        (0x29) // qstr
 #define MP_BC_LOAD_BUILD_CLASS   (0x2a)
+#define MP_BC_LOAD_SUBSCR        (0x2b)
 
 #define MP_BC_STORE_FAST_0       (0x30)
 #define MP_BC_STORE_FAST_1       (0x31)
