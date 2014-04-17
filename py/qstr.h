@@ -8,7 +8,7 @@ enum {
     MP_QSTR_NULL = 0, // indicates invalid/no qstr
     MP_QSTR_ = 1, // the empty qstr
 #define Q(id, str) MP_QSTR_##id,
-#include "build/py/qstrdefs.generated.h"
+#include "genhdr/qstrdefs.generated.h"
 #undef Q
     MP_QSTR_number_of,
 };

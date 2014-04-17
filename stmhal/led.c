@@ -10,7 +10,7 @@
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
 
 typedef struct _pyb_led_obj_t {
     mp_obj_base_t base;

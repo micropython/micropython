@@ -22,7 +22,7 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
-#include "build/py/py-version.h"
+#include "genhdr/py-version.h"
 
 #if MICROPY_USE_READLINE
 #include <readline/readline.h>

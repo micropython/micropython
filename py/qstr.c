@@ -60,7 +60,7 @@ const static qstr_pool_t const_pool = {
         (const byte*) "\0\0\0\0", // invalid/no qstr has empty data
         (const byte*) "\0\0\0\0", // empty qstr
 #define Q(id, str) str,
-#include "build/py/qstrdefs.generated.h"
+#include "genhdr/qstrdefs.generated.h"
 #undef Q
     },
 };

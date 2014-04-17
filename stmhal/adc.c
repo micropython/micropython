@@ -10,7 +10,7 @@
 #include "runtime.h"
 #include "adc.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
 #include "timer.h"
 
 // Usage Model:

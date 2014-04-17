@@ -51,22 +51,19 @@ $(BUILD)/%.pp: %.c
 
 # The following rule uses | to create an order only prereuisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
-# checkng to be performed.
+# checking to be performed.
 #
 # $(sort $(var)) removes duplicates
 #
 # The net effect of this, is it causes the objects to depend on the
-# object directories (but only for existance), and the object directories
+# object directories (but only for existence), and the object directories
 # will be created if they don't exist.
 OBJ_DIRS = $(sort $(dir $(OBJ)))
-$(OBJ): $(HEADER_PY_BUILD)/qstrdefs.generated.h | $(OBJ_DIRS)
+$(OBJ): $(HEADER_BUILD)/qstrdefs.generated.h | $(OBJ_DIRS)
 $(OBJ_DIRS):
 	$(MKDIR) -p $@
 
 $(HEADER_BUILD):
-	$(MKDIR) -p $@
-
-$(HEADER_PY_BUILD):
 	$(MKDIR) -p $@
 
 ifneq ($(PROG),)

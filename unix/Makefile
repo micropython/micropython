@@ -12,7 +12,7 @@ include ../py/py.mk
 
 INC =  -I.
 INC += -I$(PY_SRC)
-INC += -I$(BUILD)/includes
+INC += -I$(BUILD)
 
 # compiler settings
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)

@@ -20,7 +20,7 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-c
 
 INC =  -I.
 INC += -I$(PY_SRC)
-INC += -I$(BUILD)/includes
+INC += -I$(BUILD)
 INC += -I$(CORE_PATH)
 
 CFLAGS = $(INC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)

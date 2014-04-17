@@ -11,7 +11,7 @@
 #include "exti.h"
 #include "gpio.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
 
 // Usage Model:
 //

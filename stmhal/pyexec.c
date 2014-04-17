@@ -22,7 +22,7 @@
 #include "readline.h"
 #include "pyexec.h"
 #include "usb.h"
-#include "build/py/py-version.h"
+#include "genhdr/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;

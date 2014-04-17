@@ -18,7 +18,7 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I$(PY_SRC)
-INC += -I$(BUILD)/includes
+INC += -I$(BUILD)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc

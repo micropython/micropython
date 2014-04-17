@@ -9,7 +9,7 @@
 #include "runtime.h"
 #include "sdcard.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
 
 #if MICROPY_HW_HAS_SDCARD
 
