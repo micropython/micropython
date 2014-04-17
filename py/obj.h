@@ -1,3 +1,8 @@
+// A Micro Python object is a machine word having the following form:
+//  - xxxx...xxx1 : a small int, bits 1 and above are the value
+//  - xxxx...xx10 : a qstr, bits 2 and above are the value
+//  - xxxx...xx00 : a pointer to an mp_obj_base_t (unless a fake object)
+
 // All Micro Python objects are at least this type
 // It must be of pointer size
 
@@ -10,7 +15,7 @@ typedef machine_const_ptr_t mp_const_obj_t;
 typedef machine_int_t mp_small_int_t;
 
 // Anything that wants to be a Micro Python object must have
-// mp_obj_base_t as its first member (except NULL and small ints)
+// mp_obj_base_t as its first member (except small ints and qstrs)
 
 struct _mp_obj_type_t;
 struct _mp_obj_base_t {
@@ -18,24 +23,31 @@ struct _mp_obj_base_t {
 };
 typedef struct _mp_obj_base_t mp_obj_base_t;
 
-// The NULL object is used to indicate the absence of an object
-// It *cannot* be used when an mp_obj_t is expected, except where explicitly allowed
+// These fake objects are used to indicate certain things in arguments or return
+// values, and should only be used when explicitly allowed.
+//
+//  - MP_OBJ_NULL : used to indicate the absence of an object.
+//  - MP_OBJ_NOT_SUPPORTED : a return value that indicates an unsupported operation.
+//  - MP_OBJ_STOP_ITERATION : used instead of throwing a StopIteration, for efficiency.
+//  - MP_OBJ_SENTINEL : used for various internal purposes where one needs
+//    an object which is unique from all other objects, including MP_OBJ_NULL.
+//
+// For debugging purposes they are all different.  For non-debug mode, we alias
+// as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
 
-#define MP_OBJ_NULL ((mp_obj_t)0)
-
-// The SENTINEL object is used for various internal purposes where one needs
-// an object which is unique from all other objects, including MP_OBJ_NULL.
-
-#define MP_OBJ_SENTINEL ((mp_obj_t)8)
-
-// The NOT_SUPPORTED object is a return value that indicates an unsupported operation.
-
-#define MP_OBJ_NOT_SUPPORTED ((mp_obj_t)16)
+#if NDEBUG
+#define MP_OBJ_NULL             ((mp_obj_t)0)
+#define MP_OBJ_NOT_SUPPORTED    ((mp_obj_t)0)
+#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)0)
+#define MP_OBJ_SENTINEL         ((mp_obj_t)4)
+#else
+#define MP_OBJ_NULL             ((mp_obj_t)0)
+#define MP_OBJ_NOT_SUPPORTED    ((mp_obj_t)4)
+#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)8)
+#define MP_OBJ_SENTINEL         ((mp_obj_t)12)
+#endif
 
 // These macros check for small int, qstr or object, and access small int and qstr values
-//  - xxxx...xxx1: a small int, bits 1 and above are the value
-//  - xxxx...xx10: a qstr, bits 2 and above are the value
-//  - xxxx...xx00: a pointer to an mp_obj_base_t
 
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
 #define MP_SMALL_INT_MIN ((mp_small_int_t)(((machine_int_t)WORD_MSBIT_HIGH) >> 1))

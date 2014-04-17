@@ -36,7 +36,7 @@ STATIC void list_print(void (*print)(void *env, const char *fmt, ...), void *env
 STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     mp_obj_t iter = mp_getiter(iterable);
     mp_obj_t item;
-    while ((item = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_obj_list_append(list, item);
     }
     return list;
@@ -81,7 +81,7 @@ STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported for None
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -121,8 +121,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return MP_BOOL(list_cmp_helper(op, lhs, rhs));
 
         default:
-            // op not supported
-            return NULL;
+            return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -423,7 +422,7 @@ mp_obj_t list_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

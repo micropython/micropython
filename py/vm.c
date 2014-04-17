@@ -623,7 +623,7 @@ unwind_jump:
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     save_sp = sp;
                     obj1 = mp_iternext_allow_raise(TOP());
-                    if (obj1 == MP_OBJ_NULL) {
+                    if (obj1 == MP_OBJ_STOP_ITERATION) {
                         --sp; // pop the exhausted iterator
                         ip += unum; // jump to after for-block
                     } else {

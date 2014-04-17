@@ -25,7 +25,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
         o->cur += o->step;
         return o_out;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

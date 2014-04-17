@@ -103,7 +103,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
     mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!mp_obj_is_true(item)) {
             return mp_const_false;
         }
@@ -116,7 +116,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_all_obj, mp_builtin_all);
 STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
     mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (mp_obj_is_true(item)) {
             return mp_const_true;
         }
@@ -244,7 +244,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t max_obj = NULL;
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (max_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, max_obj, item)) {
                 max_obj = item;
             }
@@ -273,7 +273,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t min_obj = NULL;
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (min_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, item, min_obj)) {
                 min_obj = item;
             }
@@ -298,7 +298,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_min_obj, 1, mp_builtin_min);
 
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
-    if (ret == MP_OBJ_NULL) {
+    if (ret == MP_OBJ_STOP_ITERATION) {
         nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
@@ -381,7 +381,7 @@ STATIC mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
     }
     mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_binary_op(MP_BINARY_OP_ADD, value, item);
     }
     return value;

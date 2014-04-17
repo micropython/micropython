@@ -63,7 +63,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     mp_obj_t iterable = mp_getiter(initializer);
     mp_obj_t item;
     int i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (len == 0) {
             array_append(array, item);
         } else {
@@ -108,7 +108,7 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
-        default: return MP_OBJ_NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -227,7 +227,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     if (self->cur < self->array->len) {
         return mp_binary_get_val_array(self->array->typecode, self->array->items, self->cur++);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

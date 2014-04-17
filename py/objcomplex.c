@@ -98,7 +98,7 @@ STATIC mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->real != 0 || o->imag != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
-        default: return MP_OBJ_NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -208,7 +208,7 @@ mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_im
         case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_real == rhs_real && lhs_imag == rhs_imag);
 
         default:
-            return MP_OBJ_NULL; // op not supported
+            return MP_OBJ_NOT_SUPPORTED;
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
 }

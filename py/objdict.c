@@ -22,7 +22,7 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "{");
     mp_obj_t *dict_iter = mp_obj_new_dict_iterator(self, 0);
     mp_map_elem_t *next = NULL;
-    while ((next = dict_it_iternext_elem(dict_iter)) != NULL) {
+    while ((next = dict_it_iternext_elem(dict_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!first) {
             print(env, ", ");
         }
@@ -52,7 +52,7 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             mp_obj_t dict = mp_obj_new_dict(0);
             // TODO: support arbitrary seq as a pair
             mp_obj_t item;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 mp_obj_t *sub_items;
                 mp_obj_get_array_fixed_n(item, 2, &sub_items);
                 mp_obj_dict_store(dict, sub_items[0], sub_items[1]);
@@ -77,7 +77,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
-        default: return MP_OBJ_NULL; // op not supported for None
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -114,7 +114,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         }
         default:
             // op not supported
-            return NULL;
+            return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -160,16 +160,16 @@ STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
         }
     }
 
-    return NULL;
+    return MP_OBJ_STOP_ITERATION;
 }
 
 mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     mp_map_elem_t *next = dict_it_iternext_elem(self_in);
 
-    if (next != NULL) {
+    if (next != MP_OBJ_STOP_ITERATION) {
         return next->key;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 
@@ -237,7 +237,7 @@ STATIC mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
         self = mp_obj_new_dict(MP_OBJ_SMALL_INT_VALUE(len));
     }
 
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     }
 
@@ -328,14 +328,14 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
     /* TODO: check for the "keys" method */
     mp_obj_t iter = mp_getiter(iterable);
     mp_obj_t next = NULL;
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_obj_t inneriter = mp_getiter(next);
         mp_obj_t key = mp_iternext(inneriter);
         mp_obj_t value = mp_iternext(inneriter);
         mp_obj_t stop = mp_iternext(inneriter);
-        if (key == MP_OBJ_NULL
-            || value == MP_OBJ_NULL
-            || stop != MP_OBJ_NULL) {
+        if (key == MP_OBJ_STOP_ITERATION
+            || value == MP_OBJ_STOP_ITERATION
+            || stop != MP_OBJ_STOP_ITERATION) {
             nlr_raise(mp_obj_new_exception_msg(
                          &mp_type_ValueError,
                          "dictionary update sequence has the wrong length"));
@@ -381,7 +381,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     mp_obj_dict_view_it_t *self = self_in;
     mp_map_elem_t *next = dict_it_iternext_elem(self->iter);
 
-    if (next != NULL) {
+    if (next != MP_OBJ_STOP_ITERATION) {
         switch (self->kind) {
             case MP_DICT_VIEW_ITEMS:
             {
@@ -397,7 +397,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
                 return mp_const_none;
         }
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 
@@ -426,7 +426,7 @@ STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "([");
     mp_obj_t *self_iter = dict_view_getiter(self);
     mp_obj_t *next = NULL;
-    while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_NULL) {
+    while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!first) {
             print(env, ", ");
         }

@@ -154,7 +154,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     if (sz != 0) {
         return l_in;
     }
-    return MP_OBJ_NULL;
+    return MP_OBJ_STOP_ITERATION;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);

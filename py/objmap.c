@@ -41,9 +41,9 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 
     for (int i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
-        if (next == MP_OBJ_NULL) {
+        if (next == MP_OBJ_STOP_ITERATION) {
             m_del(mp_obj_t, nextses, self->n_iters);
-            return MP_OBJ_NULL;
+            return MP_OBJ_STOP_ITERATION;
         }
         nextses[i] = next;
     }

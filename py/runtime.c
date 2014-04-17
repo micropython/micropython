@@ -163,7 +163,7 @@ mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(op, arg);
-            if (result != NULL) {
+            if (result != MP_OBJ_NOT_SUPPORTED) {
                 return result;
             }
         }
@@ -402,7 +402,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         mp_obj_type_t *type = mp_obj_get_type(rhs);
         if (type->binary_op != NULL) {
             mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != MP_OBJ_NULL) {
+            if (res != MP_OBJ_NOT_SUPPORTED) {
                 return res;
             }
         }
@@ -410,7 +410,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             /* second attempt, walk the iterator */
             mp_obj_t next = NULL;
             mp_obj_t iter = mp_getiter(rhs);
-            while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+            while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 if (mp_obj_equal(next, lhs)) {
                     return mp_const_true;
                 }
@@ -430,7 +430,7 @@ generic_binary_op:
     type = mp_obj_get_type(lhs);
     if (type->binary_op != NULL) {
         mp_obj_t result = type->binary_op(op, lhs, rhs);
-        if (result != MP_OBJ_NULL) {
+        if (result != MP_OBJ_NOT_SUPPORTED) {
             return result;
         }
     }
@@ -580,7 +580,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         // extract the variable position args from the iterator
         mp_obj_t iterable = mp_getiter(pos_seq);
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len >= args2_alloc) {
                 args2 = m_renew(mp_obj_t, args2, args2_alloc, args2_alloc * 2);
                 args2_alloc *= 2;
@@ -617,7 +617,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         mp_load_method(kw_dict, MP_QSTR_items, dest);
         mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest));
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len + 1 >= args2_alloc) {
                 uint new_alloc = args2_alloc * 2;
                 if (new_alloc < 4) {
@@ -662,12 +662,12 @@ void mp_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
 
         for (seq_len = 0; seq_len < num; seq_len++) {
             mp_obj_t el = mp_iternext(iterable);
-            if (el == MP_OBJ_NULL) {
+            if (el == MP_OBJ_STOP_ITERATION) {
                 goto too_short;
             }
             items[num - 1 - seq_len] = el;
         }
-        if (mp_iternext(iterable) != MP_OBJ_NULL) {
+        if (mp_iternext(iterable) != MP_OBJ_STOP_ITERATION) {
             goto too_long;
         }
     }
@@ -716,13 +716,13 @@ void mp_unpack_ex(mp_obj_t seq_in, uint num_in, mp_obj_t *items) {
         mp_obj_t item;
         for (seq_len = 0; seq_len < num_left; seq_len++) {
             item = mp_iternext(iterable);
-            if (item == MP_OBJ_NULL) {
+            if (item == MP_OBJ_STOP_ITERATION) {
                 goto too_short;
             }
             items[num_left + num_right + 1 - 1 - seq_len] = item;
         }
         mp_obj_t rest = mp_obj_new_list(0, NULL);
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             mp_obj_list_append(rest, item);
         }
         uint rest_len;
@@ -864,7 +864,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
     }
 }
 
-// may return MP_OBJ_NULL as an optimisation instead of raise StopIteration()
+// may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
@@ -883,7 +883,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     }
 }
 
-// will always return MP_OBJ_NULL instead of raising StopIteration() (or any subclass thereof)
+// will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration() (or any subclass thereof)
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
@@ -902,7 +902,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 return ret;
             } else {
                 if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
-                    return MP_OBJ_NULL;
+                    return MP_OBJ_STOP_ITERATION;
                 } else {
                     nlr_raise(nlr.ret_val);
                 }

@@ -38,8 +38,8 @@ STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_enumerate));
     mp_obj_enumerate_t *self = self_in;
     mp_obj_t next = mp_iternext(self->iter);
-    if (next == MP_OBJ_NULL) {
-        return MP_OBJ_NULL;
+    if (next == MP_OBJ_STOP_ITERATION) {
+        return MP_OBJ_STOP_ITERATION;
     } else {
         mp_obj_t items[] = {MP_OBJ_NEW_SMALL_INT(self->cur++), next};
         return mp_obj_new_tuple(2, items);

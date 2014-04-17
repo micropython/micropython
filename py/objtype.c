@@ -43,14 +43,14 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
 
         // for a const struct, this entry might be NULL
         if (type->bases_tuple == MP_OBJ_NULL) {
-            return NULL;
+            return MP_OBJ_NULL;
         }
 
         uint len;
         mp_obj_t *items;
         mp_obj_tuple_get(type->bases_tuple, &len, &items);
         if (len == 0) {
-            return NULL;
+            return MP_OBJ_NULL;
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
@@ -133,13 +133,13 @@ STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
     mp_obj_class_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
     if (op_name == 0) {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
     mp_obj_t member = mp_obj_class_lookup(self->base.type, op_name);
     if (member != MP_OBJ_NULL) {
         return mp_call_function_1(member, self_in);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -211,7 +211,7 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_class_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
     if (op_name == 0) {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
     mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name);
     if (member != MP_OBJ_NULL) {
@@ -221,7 +221,7 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         dest[2] = rhs_in;
         return mp_call_method_n_kw(1, 0, dest);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 

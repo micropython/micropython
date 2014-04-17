@@ -90,7 +90,7 @@ int mp_obj_is_true(mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
-            if (result != MP_OBJ_NULL) {
+            if (result != MP_OBJ_NOT_SUPPORTED) {
                 return result == mp_const_true;
             }
         }
@@ -180,7 +180,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     mp_obj_type_t *type = mp_obj_get_type(o1);
     if (type->binary_op != NULL) {
         mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
-        if (r != MP_OBJ_NULL) {
+        if (r != MP_OBJ_NOT_SUPPORTED) {
             return r == mp_const_true ? true : false;
         }
     }

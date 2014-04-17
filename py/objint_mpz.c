@@ -82,7 +82,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
     } else {
         // unsupported type
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 
     // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
@@ -187,7 +187,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
 
             default:
-                return MP_OBJ_NULL;
+                return MP_OBJ_NOT_SUPPORTED;
         }
 
         return res;
@@ -207,7 +207,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_BOOL(cmp == 0);
 
             default:
-                return MP_OBJ_NULL;
+                return MP_OBJ_NOT_SUPPORTED;
         }
     }
 }

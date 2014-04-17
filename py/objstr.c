@@ -161,7 +161,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
     mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (len == -1) {
             vstr_add_char(vstr, MP_OBJ_SMALL_INT_VALUE(item));
         } else {
@@ -285,7 +285,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
     }
 
-    return MP_OBJ_NULL; // op not supported
+    return MP_OBJ_NOT_SUPPORTED;
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
@@ -1554,7 +1554,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 
@@ -1573,7 +1573,7 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

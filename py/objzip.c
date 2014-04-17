@@ -30,16 +30,16 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     mp_obj_zip_t *self = self_in;
     mp_obj_t *items;
     if (self->n_iters == 0) {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
     mp_obj_t o = mp_obj_new_tuple(self->n_iters, NULL);
     mp_obj_tuple_get(o, NULL, &items);
 
     for (int i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
-        if (next == MP_OBJ_NULL) {
+        if (next == MP_OBJ_STOP_ITERATION) {
             mp_obj_tuple_del(o);
-            return MP_OBJ_NULL;
+            return MP_OBJ_STOP_ITERATION;
         }
         items[i] = next;
     }

@@ -26,8 +26,8 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     } else {
         // an exception was raised
         if (mp_obj_get_type(nlr.ret_val) == &mp_type_StopIteration) {
-            // return MP_OBJ_NULL instead of raising StopIteration
-            return MP_OBJ_NULL;
+            // return MP_OBJ_STOP_ITERATION instead of raising StopIteration
+            return MP_OBJ_STOP_ITERATION;
         } else {
             // re-raise exception
             nlr_raise(nlr.ret_val);

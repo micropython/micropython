@@ -79,7 +79,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = self_in;
     if (self->ip == 0) {
-        *ret_val = MP_OBJ_NULL;
+        *ret_val = MP_OBJ_STOP_ITERATION;
         return MP_VM_RETURN_NORMAL;
     }
     if (self->sp == self->state - 1) {
@@ -130,8 +130,8 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
     switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
         case MP_VM_RETURN_NORMAL:
             // Optimize return w/o value in case generator is used in for loop
-            if (ret == mp_const_none || ret == MP_OBJ_NULL) {
-                return MP_OBJ_NULL;
+            if (ret == mp_const_none || ret == MP_OBJ_STOP_ITERATION) {
+                return MP_OBJ_STOP_ITERATION;
             } else {
                 nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
             }
@@ -143,11 +143,11 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
-            // TODO: Optimization of returning MP_OBJ_NULL is really part
+            // TODO: Optimization of returning MP_OBJ_STOP_ITERATION is really part
             // of mp_iternext() protocol, but this function is called by other methods
-            // too, which may not handled MP_OBJ_NULL.
+            // too, which may not handled MP_OBJ_STOP_ITERATION.
             if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
-                return MP_OBJ_NULL;
+                return MP_OBJ_STOP_ITERATION;
             } else {
                 nlr_raise(ret);
             }
@@ -164,7 +164,7 @@ mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL);
-    if (ret == MP_OBJ_NULL) {
+    if (ret == MP_OBJ_STOP_ITERATION) {
         nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
@@ -179,7 +179,7 @@ STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
     exc = mp_make_raise_obj(exc);
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
-    if (ret == MP_OBJ_NULL) {
+    if (ret == MP_OBJ_STOP_ITERATION) {
         nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
