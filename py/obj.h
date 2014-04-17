@@ -496,7 +496,6 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
     // such functions won't be able to access the global scope, but that's probably okay
 } mp_obj_fun_native_t;
 
-void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code);
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2);
 

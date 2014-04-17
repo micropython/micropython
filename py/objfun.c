@@ -375,13 +375,6 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     return o;
 }
 
-void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_bc));
-    mp_obj_fun_bc_t *self = self_in;
-    *n_args = self->n_args;
-    *code = self->bytecode;
-}
-
 /******************************************************************************/
 /* inline assembler functions                                                 */
 

@@ -26,9 +26,6 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
-    int bc_n_args;
-    const byte *bc_code;
-    mp_obj_fun_bc_get(self_fun, &bc_n_args, &bc_code);
 
     const mp_obj_t *args1, *args2;
     uint len1, len2;
@@ -36,7 +33,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
         assert(0);
     }
 
-    return mp_obj_new_gen_instance(self_fun->globals, bc_code, len1, args1, len2, args2);
+    return mp_obj_new_gen_instance(self_fun->globals, self_fun->bytecode, len1, args1, len2, args2);
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
