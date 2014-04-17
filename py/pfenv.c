@@ -29,6 +29,7 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
     int right_pad = 0;
     int pad = width - len;
     int pad_size;
+    int total_chars_printed = 0;
     const char *pad_chars;
 
     if (!fill || fill == ' ' ) {
@@ -53,7 +54,8 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
         left_pad = pad;
     }
 
-    if (left_pad) {
+    if (left_pad > 0) {
+        total_chars_printed += left_pad;
         while (left_pad > 0) {
             int p = left_pad;
             if (p > pad_size) {
@@ -64,7 +66,9 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
         }
     }
     pfenv->print_strn(pfenv->data, str, len);
-    if (right_pad) {
+    total_chars_printed += len;
+    if (right_pad > 0) {
+        total_chars_printed += right_pad;
         while (right_pad > 0) {
             int p = right_pad;
             if (p > pad_size) {
@@ -74,7 +78,7 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
             right_pad -= p;
         }
     }
-    return len;
+    return total_chars_printed;
 }
 
 // 32-bits is 10 digits, add 3 for commas, 1 for sign, 1 for terminating null

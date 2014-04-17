@@ -244,7 +244,7 @@ void strn_print_strn(void *data, const char *str, unsigned int len) {
     strn_pfenv->cur += len;
     strn_pfenv->remain -= len;
 }
-    
+
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
     strn_pfenv_t strn_pfenv;
     strn_pfenv.cur = str;
