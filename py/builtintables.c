@@ -34,6 +34,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
 #if MICROPY_ENABLE_PROPERTY
     { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
 #endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_range), (mp_obj_t)&mp_type_range },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&mp_type_set },
     { MP_OBJ_NEW_QSTR(MP_QSTR_str), (mp_obj_t)&mp_type_str },
     { MP_OBJ_NEW_QSTR(MP_QSTR_super), (mp_obj_t)&mp_type_super },
@@ -75,7 +76,6 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ord), (mp_obj_t)&mp_builtin_ord_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pow), (mp_obj_t)&mp_builtin_pow_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print), (mp_obj_t)&mp_builtin_print_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_range), (mp_obj_t)&mp_builtin_range_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repr), (mp_obj_t)&mp_builtin_repr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sorted), (mp_obj_t)&mp_builtin_sorted_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&mp_builtin_sum_obj },

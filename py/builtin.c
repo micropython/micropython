@@ -362,17 +362,6 @@ STATIC mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args, mp_map_t *kw
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 
-STATIC mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
-    assert(1 <= n_args && n_args <= 3);
-    switch (n_args) {
-        case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
-        case 2: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), 1);
-        default: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]));
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range);
-
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
