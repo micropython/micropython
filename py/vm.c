@@ -165,7 +165,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
                                            mp_obj_t *fastn, mp_obj_t **sp_in_out,
                                            mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
                                            volatile mp_obj_t inject_exc) {
-#if MICROPY_USE_COMPUTED_GOTOS
+#if MICROPY_USE_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
         save_ip = ip; \
@@ -220,7 +220,7 @@ outer_dispatch_loop:
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
-#if MICROPY_USE_COMPUTED_GOTOS
+#if MICROPY_USE_COMPUTED_GOTO
                 DISPATCH();
 #else
                 save_ip = ip;
@@ -935,7 +935,7 @@ yield:
                     fastn[0] = obj1;
                     return MP_VM_RETURN_EXCEPTION;
 
-#if !MICROPY_USE_COMPUTED_GOTOS
+#if !MICROPY_USE_COMPUTED_GOTO
                 } // switch
 #endif
             } // for loop

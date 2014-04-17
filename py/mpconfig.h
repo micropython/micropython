@@ -166,8 +166,8 @@ typedef double mp_float_t;
 
 // Whether to use computed gotos in the VM, or a switch
 // Computed gotos are roughly 10% faster, and increase VM code size by a little
-#ifndef MICROPY_USE_COMPUTED_GOTOS
-#define MICROPY_USE_COMPUTED_GOTOS (0)
+#ifndef MICROPY_USE_COMPUTED_GOTO
+#define MICROPY_USE_COMPUTED_GOTO (0)
 #endif
 
 // Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
