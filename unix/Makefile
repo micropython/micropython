@@ -71,4 +71,4 @@ include ../py/mkrules.mk
 
 test: $(PROG) ../tests/run-tests
 	$(eval DIRNAME=$(notdir $(CURDIR)))
-	cd ../tests && MICROPY_MP_PY=../$(DIRNAME)/$(PROG) ./run-tests
+	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
