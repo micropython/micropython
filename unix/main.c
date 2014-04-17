@@ -357,10 +357,6 @@ int main(int argc, char **argv) {
     mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
 #endif
 
-#if MICROPY_MOD_FFI
-    ffi_init();
-#endif
-
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
     //
