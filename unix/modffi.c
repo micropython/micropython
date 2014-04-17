@@ -61,6 +61,8 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'I': return &ffi_type_uint;
         case 'l': return &ffi_type_slong;
         case 'L': return &ffi_type_ulong;
+        case 'f': return &ffi_type_float;
+        case 'd': return &ffi_type_double;
         case 'p':
         case 's': return &ffi_type_pointer;
         case 'v': return &ffi_type_void;
@@ -92,6 +94,14 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
         }
         case 'v':
             return mp_const_none;
+        case 'f': {
+            float *p = (float*)&val;
+            return mp_obj_new_float(*p);
+        }
+        case 'd': {
+            double *p = (double*)&val;
+            return mp_obj_new_float(*p);
+        }
         default:
             return mp_obj_new_int(val);
     }
