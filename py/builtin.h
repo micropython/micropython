@@ -48,6 +48,7 @@ extern const mp_obj_module_t mp_module_array;
 extern const mp_obj_module_t mp_module_collections;
 extern const mp_obj_module_t mp_module_io;
 extern const mp_obj_module_t mp_module_math;
+extern const mp_obj_module_t mp_module_cmath;
 extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_struct;
 extern const mp_obj_module_t mp_module_sys;

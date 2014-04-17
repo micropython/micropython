@@ -217,6 +217,7 @@ Q(iterator)
 Q(module)
 Q(slice)
 
+#if MICROPY_ENABLE_MOD_MATH || MICROPY_ENABLE_MOD_CMATH
 Q(math)
 Q(e)
 Q(pi)
@@ -258,6 +259,14 @@ Q(erf)
 Q(erfc)
 Q(gamma)
 Q(lgamma)
+#endif
+
+#if MICROPY_ENABLE_MOD_CMATH
+Q(cmath)
+Q(phase)
+Q(polar)
+Q(rect)
+#endif
 
 Q(mem_total)
 Q(mem_current)

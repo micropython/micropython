@@ -139,6 +139,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math },
+#if MICROPY_ENABLE_MOD_CMATH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cmath), (mp_obj_t)&mp_module_cmath },
+#endif
 #endif
 #if MICROPY_ENABLE_MOD_SYS
     { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },

@@ -6,7 +6,7 @@
 #include "obj.h"
 #include "builtin.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_MATH
 
 //TODO: Change macros to check for overflow and raise OverflowError or RangeError
 #define MATH_FUN_1(py_name, c_name) \
@@ -25,8 +25,9 @@
     mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int((machine_int_t)MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
-STATIC const mp_obj_float_t mp_math_e_obj = {{&mp_type_float}, M_E};
-STATIC const mp_obj_float_t mp_math_pi_obj = {{&mp_type_float}, M_PI};
+// These are also used by cmath.c
+const mp_obj_float_t mp_math_e_obj = {{&mp_type_float}, M_E};
+const mp_obj_float_t mp_math_pi_obj = {{&mp_type_float}, M_PI};
 
 MATH_FUN_1(sqrt, sqrt)
 MATH_FUN_2(pow, pow)
@@ -156,4 +157,4 @@ const mp_obj_module_t mp_module_math = {
     .globals = (mp_obj_dict_t*)&mp_module_math_globals,
 };
 
-#endif // MICROPY_ENABLE_FLOAT
+#endif // MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_MATH
