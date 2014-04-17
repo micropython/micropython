@@ -165,8 +165,6 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
                                            mp_obj_t *fastn, mp_obj_t **sp_in_out,
                                            mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
                                            volatile mp_obj_t inject_exc) {
-    // careful: be sure to declare volatile any variables read in the exception handler (written is ok, I think)
-
 #if MICROPY_USE_COMPUTED_GOTOS
     #include "vmentrytable.h"
     #define DISPATCH() do { \
@@ -182,32 +180,43 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     #define ENTRY_DEFAULT default
 #endif
 
-    int op = 0;
-    const byte *ip = *ip_in_out;
-    mp_obj_t *sp = *sp_in_out;
-    machine_uint_t unum;
-    qstr qst;
-    mp_obj_t obj1, obj2;
-    nlr_buf_t nlr;
+    // nlr_raise needs to be implemented as a goto, so that the C compiler's flow analyser
+    // sees that it's possible for us to jump from the dispatch loop to the exception
+    // handler.  Without this, the code may have a different stack layout in the dispatch
+    // loop and the exception handler, leading to very obscure bugs.
+    #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while(0)
 
+    // variables that are visible to the exception handler (declared volatile)
     volatile bool currently_in_except_block = MP_TAGPTR_TAG(*exc_sp_in_out); // 0 or 1, to detect nested exceptions
     mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(*exc_sp_in_out); // stack grows up, exc_sp points to top of stack
-    const byte *volatile save_ip = ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
+    const byte *volatile save_ip = *ip_in_out; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
+    mp_obj_t *volatile save_sp = *sp_in_out; // this is so we can access sp in the exception handler when needed
 
     // outer exception handling loop
     for (;;) {
+        nlr_buf_t nlr;
 outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
+            // local variables that are not visible to the exception handler
+            byte op = 0;
+            const byte *ip = *ip_in_out;
+            mp_obj_t *sp = *sp_in_out;
+            machine_uint_t unum;
+            qstr qst;
+            mp_obj_t obj1, obj2;
+
             // If we have exception to inject, now that we finish setting up
             // execution context, raise it. This works as if RAISE_VARARGS
             // bytecode was executed.
             // Injecting exc into yield from generator is a special case,
             // handled by MP_BC_YIELD_FROM itself
             if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
-                mp_obj_t t = inject_exc;
+                obj1 = inject_exc;
                 inject_exc = MP_OBJ_NULL;
-                nlr_raise(mp_make_raise_obj(t));
+                obj1 = mp_make_raise_obj(obj1);
+                RAISE(obj1);
             }
+
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
@@ -297,7 +306,8 @@ dispatch_loop:
                     load_check:
                     if (obj1 == MP_OBJ_NULL) {
                         local_name_error:
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment"));
+                        obj1 = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                        RAISE(obj1);
                     }
                     PUSH(obj1);
                     DISPATCH();
@@ -580,7 +590,7 @@ unwind_jump:
                     // if TOS is an integer, does something else
                     // else error
                     if (mp_obj_is_exception_type(TOP())) {
-                        nlr_raise(sp[-1]);
+                        RAISE(sp[-1]);
                     }
                     if (TOP() == mp_const_none) {
                         sp--;
@@ -606,6 +616,7 @@ unwind_jump:
 
                 ENTRY(MP_BC_FOR_ITER):
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
+                    save_sp = sp;
                     obj1 = mp_iternext_allow_raise(TOP());
                     if (obj1 == MP_OBJ_NULL) {
                         --sp; // pop the exhausted iterator
@@ -829,12 +840,14 @@ unwind_return:
                             }
                         }
                         if (obj1 == MP_OBJ_NULL) {
-                            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise"));
+                            obj1 = mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise");
+                            RAISE(obj1);
                         }
                     } else {
                         obj1 = POP();
                     }
-                    nlr_raise(mp_make_raise_obj(obj1));
+                    obj1 = mp_make_raise_obj(obj1);
+                    RAISE(obj1);
 
                 ENTRY(MP_BC_YIELD_VALUE):
 yield:
@@ -847,7 +860,7 @@ yield:
                 ENTRY(MP_BC_YIELD_FROM): {
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
-#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { nlr_raise(t); }
+#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { RAISE(t); }
                     mp_vm_return_kind_t ret_kind;
                     obj1 = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
@@ -890,7 +903,7 @@ yield:
                             GENERATOR_EXIT_IF_NEEDED(t_exc);
                             DISPATCH();
                         } else {
-                            nlr_raise(obj2);
+                            RAISE(obj2);
                         }
                     }
                 }
@@ -912,25 +925,27 @@ yield:
                     DISPATCH();
 
                 ENTRY_DEFAULT:
-                    printf("code %p, byte code 0x%02x not implemented\n", ip, op);
                     obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                     nlr_pop();
                     fastn[0] = obj1;
                     return MP_VM_RETURN_EXCEPTION;
+
 #if !MICROPY_USE_COMPUTED_GOTOS
                 } // switch
 #endif
-            }
+            } // for loop
 
         } else {
+exception_handler:
             // exception occurred
 
             // check if it's a StopIteration within a for block
             if (*save_ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
-                ip = save_ip + 1;
+                const byte *ip = save_ip + 1;
+                machine_uint_t unum;
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                --sp; // pop the exhausted iterator
-                ip += unum; // jump to after for-block
+                *ip_in_out = ip + unum; // jump to after for-block
+                *sp_in_out = save_sp - 1; // pop the exhausted iterator
                 goto outer_dispatch_loop; // continue with dispatch loop
             }
 
@@ -969,14 +984,15 @@ yield:
                 currently_in_except_block = 1;
 
                 // catch exception and pass to byte code
-                sp = MP_TAGPTR_PTR(exc_sp->val_sp);
-                ip = exc_sp->handler;
+                *ip_in_out = exc_sp->handler;
+                mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
                 // save this exception in the stack so it can be used in a reraise, if needed
                 exc_sp->prev_exc = nlr.ret_val;
                 // push(traceback, exc-val, exc-type)
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
                 PUSH(mp_obj_get_type(nlr.ret_val));
+                *sp_in_out = sp;
 
             } else {
                 // propagate exception to higher level
