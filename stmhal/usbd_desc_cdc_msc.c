@@ -32,6 +32,23 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+
+// So we don't clash with existing ST boards, we use the unofficial FOSS VID.
+// This needs a proper solution.
+#define USBD_VID                      0xf055
+#define USBD_PID                      0x9800
+#define USBD_LANGID_STRING            0x409
+#define USBD_MANUFACTURER_STRING      "Micro Python"
+#define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#define USBD_SERIALNUMBER_HS_STRING   "000000000010"
+#define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#define USBD_SERIALNUMBER_FS_STRING   "000000000011"
+#define USBD_CONFIGURATION_HS_STRING  "VCP Config"
+#define USBD_INTERFACE_HS_STRING      "VCP Interface"
+#define USBD_CONFIGURATION_FS_STRING  "VCP Config"
+#define USBD_INTERFACE_FS_STRING      "VCP Interface"
+
+/*
 #define USBD_VID                      0x0483
 #define USBD_PID                      0x5740
 #define USBD_LANGID_STRING            0x409
@@ -44,6 +61,7 @@
 #define USBD_INTERFACE_HS_STRING      "VCP Interface"
 #define USBD_CONFIGURATION_FS_STRING  "VCP Config"
 #define USBD_INTERFACE_FS_STRING      "VCP Interface"
+*/
 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
