@@ -67,3 +67,8 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk
 
+.PHONY: test
+
+test: $(PROG) ../tests/run-tests
+	$(eval DIRNAME=$(notdir $(CURDIR)))
+	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
