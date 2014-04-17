@@ -10,10 +10,10 @@ from glob import glob
 # to the correct executable.
 if os.name == 'nt':
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3.exe')
-    MP_PY = os.getenv('MICROPY_MP_PY', '../windows/micropython.exe')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../windows/micropython.exe')
 else:
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
-    MP_PY = os.getenv('MICROPY_MP_PY', '../unix/micropython')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
 
 # Set of tests that we shouldn't run under Travis CI
 skip_travis_tests = set(['basics/memoryerror.py'])
@@ -65,7 +65,7 @@ for test_file in tests:
             output_mupy = b'CRASH\n' + output_mupy
     else:
         try:
-            output_mupy = subprocess.check_output([MP_PY, '-X', 'emit=bytecode', test_file])
+            output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=bytecode', test_file])
         except subprocess.CalledProcessError:
             output_mupy = b'CRASH'
 
