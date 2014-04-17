@@ -365,7 +365,8 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;
                 case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val); break;
 
-                default: assert(0);
+                default:
+                    goto unsupported_op;
             }
             // TODO: We just should make mp_obj_new_int() inline and use that
             if (MP_OBJ_FITS_SMALL_INT(lhs_val)) {
@@ -437,9 +438,7 @@ generic_binary_op:
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
-#if MICROPY_ENABLE_FLOAT
 unsupported_op:
-#endif
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
