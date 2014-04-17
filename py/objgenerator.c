@@ -9,6 +9,7 @@
 #include "runtime.h"
 #include "bc.h"
 #include "objgenerator.h"
+#include "objfun.h"
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -18,11 +19,12 @@ typedef struct _mp_obj_gen_wrap_t {
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
-mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj_t *args, uint n_args2, const mp_obj_t *args2);
+mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode, uint n_args, const mp_obj_t *args,
+    uint n_args2, const mp_obj_t *args2);
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
-    mp_obj_t self_fun = self->fun;
+    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
     int bc_n_args;
     const byte *bc_code;
@@ -34,7 +36,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
         assert(0);
     }
 
-    return mp_obj_new_gen_instance(bc_code, len1, args1, len2, args2);
+    return mp_obj_new_gen_instance(self_fun->globals, bc_code, len1, args1, len2, args2);
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
@@ -55,6 +57,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
+    mp_obj_dict_t *globals;
     const byte *code_info;
     const byte *ip;
     mp_obj_t *sp;
@@ -89,9 +92,12 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     } else {
         *self->sp = send_value;
     }
+    mp_obj_dict_t *old_globals = mp_globals_get();
+    mp_globals_set(self->globals);
     mp_vm_return_kind_t ret_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
         &self->state[self->n_state - 1], &self->sp, (mp_exc_stack_t*)(self->state + self->n_state),
         &self->exc_sp, throw_value);
+    mp_globals_set(old_globals);
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
@@ -225,7 +231,8 @@ const mp_obj_type_t mp_type_gen_instance = {
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
-mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj_t *args, uint n_args2, const mp_obj_t *args2) {
+mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode, uint n_args, const mp_obj_t *args,
+                                 uint n_args2, const mp_obj_t *args2) {
     const byte *code_info = bytecode;
     // get code info size, and skip the line number table
     machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
@@ -239,6 +246,7 @@ mp_obj_t mp_obj_new_gen_instance(const byte *bytecode, uint n_args, const mp_obj
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
+    o->globals = globals;
     o->code_info = code_info;
     o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
     o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;

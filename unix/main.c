@@ -250,6 +250,7 @@ int usage(char **argv) {
 
 mp_obj_t mem_info(void) {
     printf("mem: total=%d, current=%d, peak=%d\n", m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
+    gc_dump_info();
     return mp_const_none;
 }
 
@@ -356,10 +357,6 @@ int main(int argc, char **argv) {
     mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
 #endif
 
-    microsocket_init();
-#if MICROPY_MOD_TIME
-    time_init();
-#endif
 #if MICROPY_MOD_FFI
     ffi_init();
 #endif
