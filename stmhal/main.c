@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_gpio.h>
-#include "std.h"
+#include "stm32f4xx_hal.h"
 
 #include "misc.h"
 #include "systick.h"
@@ -14,11 +12,10 @@
 #include "lexer.h"
 #include "parse.h"
 #include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
 #include "runtime.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
 #include "usart.h"
@@ -64,12 +61,25 @@ void flash_error(int n) {
 }
 
 void __fatal_error(const char *msg) {
-#if MICROPY_HW_HAS_LCD
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    led_state(1, 1);
+    led_state(2, 1);
+    led_state(3, 1);
+    led_state(4, 1);
+    stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    stdout_tx_strn(msg, strlen(msg));
+#if 0 && MICROPY_HW_HAS_LCD
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
 #endif
-    for (;;) {
-        flash_error(1);
+    for (uint i = 0;;) {
+        led_toggle(((i++) & 3) + 1);
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
+        }
+        if (i >= 8) {
+            __WFI();
+        }
     }
 }
 
@@ -108,16 +118,6 @@ STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
-
-void fatality(void) {
-    led_state(PYB_LED_R1, 1);
-    led_state(PYB_LED_G1, 1);
-    led_state(PYB_LED_R2, 1);
-    led_state(PYB_LED_G2, 1);
-    for (;;) {
-        flash_error(1);
-    }
-}
 
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\n"
