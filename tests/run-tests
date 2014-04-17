@@ -29,7 +29,8 @@ failed_tests = []
 tests = []
 
 if not sys.argv[1:]:
-    tests = sorted(glob('basics/*.py') + glob('io/*.py') + glob('misc/*.py'))
+    test_dirs = ('basics', 'float', 'import', 'io', 'misc')
+    tests = sorted(test_file for test_files in (glob('{}/*.py'.format(dir)) for dir in test_dirs) for test_file in test_files)
 else:
     tests = sys.argv[1:]
 
@@ -56,13 +57,9 @@ for test_file in tests:
     if test_on_pyboard:
         pyb.enter_raw_repl()
         try:
-            if test_file == 'basics/memoryerror.py':
-                # this test crashes the pyboard
-                output_mupy = b'CRASH'
-            else:
-                output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
         except pyboard.PyboardError:
-            output_mupy = b'CRASH\n' + output_mupy
+            output_mupy = b'CRASH'
     else:
         try:
             output_mupy = subprocess.check_output([MP_PY, '-X', 'emit=bytecode', test_file])

@@ -2,3 +2,7 @@ This directory contains tests for various functionality areas of MicroPython.
 To run all stable tests, run "run-tests" script in this directory. Note
 that bytecode tests are not yet stable and should be run separately in
 "bytecode" subdirectory.
+
+When creating new tests, anything that relies on float support should go in the 
+float/ subdirectory.  Anything that relies on import x, where x is not a built-in
+module, should go in the import/ subdirectory.

@@ -9,12 +9,6 @@ if not None:
 if not 0:
     print("0")
 
-if not 0.0:
-    print("float 0")
-
-if not 0+0j:
-    print("complex 0")
-
 if not "":
     print("Empty string")
 if "foo":

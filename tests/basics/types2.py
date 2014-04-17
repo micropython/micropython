@@ -9,4 +9,6 @@ print(int == int)
 print(int != list)
 
 d = {}
-d[int] = float
+d[int] = list
+d[list] = int
+print(len(d))
