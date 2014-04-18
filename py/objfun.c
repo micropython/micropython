@@ -30,26 +30,27 @@ STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
 }
 
 void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
+    // TODO maybe take the function name as an argument so we can print nicer error messages
+
     if (n_kw && !is_kw) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                                          "function does not take keyword arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
     if (n_args_min == n_args_max) {
         if (n_args != n_args_min) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                     "function takes %d positional arguments but %d were given",
-                                                     n_args_min, n_args));
+                                                    "function takes %d positional arguments but %d were given",
+                                                    n_args_min, n_args));
         }
     } else {
         if (n_args < n_args_min) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                    "<fun name>() missing %d required positional arguments: <list of names of params>",
+                                                    "function missing %d required positional arguments",
                                                     n_args_min - n_args));
         } else if (n_args > n_args_max) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                     "<fun name> expected at most %d arguments, got %d",
-                                                     n_args_max, n_args));
+                                                    "function expected at most %d arguments, got %d",
+                                                    n_args_max, n_args));
         }
     }
 }
