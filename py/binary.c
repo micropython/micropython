@@ -151,11 +151,21 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
 }
 
 void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
-    machine_int_t val = 0;
-    if (MP_OBJ_IS_INT(val_in)) {
-        val = mp_obj_int_get(val_in);
+    switch (typecode) {
+#if MICROPY_ENABLE_FLOAT
+        case 'f':
+            ((float*)p)[index] = mp_obj_float_get(val_in);
+            break;
+        case 'd':
+            ((double*)p)[index] = mp_obj_float_get(val_in);
+            break;
+#endif
+        default:
+            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
     }
+}
 
+void mp_binary_set_val_array_from_int(char typecode, void *p, int index, machine_int_t val) {
     switch (typecode) {
         case 'b':
             ((int8_t*)p)[index] = val;
@@ -187,10 +197,10 @@ void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in)
 #endif
 #if MICROPY_ENABLE_FLOAT
         case 'f':
-            ((float*)p)[index] = mp_obj_float_get(val_in);
+            ((float*)p)[index] = val;
             break;
         case 'd':
-            ((double*)p)[index] = mp_obj_float_get(val_in);
+            ((double*)p)[index] = val;
             break;
 #endif
     }
