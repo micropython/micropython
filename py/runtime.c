@@ -1060,10 +1060,14 @@ import_error:
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
+    // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
     for (uint i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-            mp_store_name(MP_OBJ_QSTR_VALUE(map->table[i].key), map->table[i].value);
+            qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
+            if (*qstr_str(name) != '_') {
+                mp_store_name(name, map->table[i].value);
+            }
         }
     }
 }
