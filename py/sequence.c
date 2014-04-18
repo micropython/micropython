@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -109,18 +110,24 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
 
     int len = len1 < len2 ? len1 : len2;
     bool eq_status = true; // empty lists are equal
-    bool rel_status;
     for (int i = 0; i < len; i++) {
         eq_status = mp_obj_equal(items1[i], items2[i]);
-        if (op == MP_BINARY_OP_EQUAL && !eq_status) {
+        // If current elements equal, can't decide anything - go on
+        if (eq_status) {
+            continue;
+        }
+
+        // Othewise, if they are not equal, we can have final decision based on them
+        if (op == MP_BINARY_OP_EQUAL) {
+            // In particular, if we are checking for equality, here're the answer
             return false;
         }
-        rel_status = (mp_binary_op(op, items1[i], items2[i]) == mp_const_true);
-        if (!eq_status && !rel_status) {
-            return false;
-        }
+
+        // Otherwise, application of relation op gives the answer
+        return (mp_binary_op(op, items1[i], items2[i]) == mp_const_true);
     }
 
+    assert(eq_status);
     // If we had tie in the last element...
     if (eq_status) {
         // ... and we have lists of different lengths...
