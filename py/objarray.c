@@ -35,7 +35,7 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
     } else {
         print(env, "array('%c'", o->typecode);
         if (o->len > 0) {
-            print(env, ", [", o->typecode);
+            print(env, ", [");
             for (int i = 0; i < o->len; i++) {
                 if (i > 0) {
                     print(env, ", ");
@@ -75,32 +75,37 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 }
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    if (n_args < 1 || n_args > 2) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
-    }
-    // TODO check args
+    mp_check_nargs(n_args, 1, 2, n_kw, false);
+
+    // get typecode
     uint l;
     const char *typecode = mp_obj_str_get_data(args[0], &l);
-    if (n_args == 1) {
-        return array_new(*typecode, 0);
-    }
 
-    return array_construct(*typecode, args[1]);
+    if (n_args == 1) {
+        // 1 arg: make an empty array
+        return array_new(*typecode, 0);
+    } else {
+        // 2 args: construct the array from the given iterator
+        return array_construct(*typecode, args[1]);
+    }
 }
 
 STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    if (n_args > 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
-    }
+    mp_check_nargs(n_args, 0, 1, n_kw, false);
 
-    if (MP_OBJ_IS_SMALL_INT(args[0])) {
+    if (n_args == 0) {
+        // no args: construct an empty bytearray
+        return array_new(BYTEARRAY_TYPECODE, 0);
+    } else if (MP_OBJ_IS_SMALL_INT(args[0])) {
+        // 1 arg, an integer: construct a blank bytearray of that length
         uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
         memset(o->items, 0, len);
         return o;
+    } else {
+        // 1 arg, an iterator: construct the bytearray from that
+        return array_construct(BYTEARRAY_TYPECODE, args[0]);
     }
-
-    return array_construct(BYTEARRAY_TYPECODE, args[0]);
 }
 
 STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
@@ -129,7 +134,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
 STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
-        // delete item; does this need to be implemented?
+        // delete item
+        // TODO implement
         return MP_OBJ_NOT_SUPPORTED;
     } else {
         mp_obj_array_t *o = self_in;
@@ -183,12 +189,16 @@ const mp_obj_type_t mp_type_bytearray = {
 };
 
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {
+    int typecode_size = mp_binary_get_size(typecode);
+    if (typecode_size <= 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
+    }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_malloc(mp_binary_get_size(typecode) * o->len);
+    o->items = m_malloc(typecode_size * o->len);
     return o;
 }
 
