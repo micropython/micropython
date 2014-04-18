@@ -165,13 +165,13 @@ void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len)
 
 STATIC void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_usart_obj_t *self = self_in;
-    print(env, "<Usart %lu>", self->usart_id);
+    print(env, "<USART %lu>", self->usart_id);
 }
 
 STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     if (!(n_args == 2 && n_kw == 0)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Usart accepts 2 arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "USART accepts 2 arguments"));
     }
 
     // create object
@@ -194,7 +194,7 @@ STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
             o->usart_id = PYB_USART_YB;
 #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Usart port %s does not exist", port));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %s does not exist", port));
         }
     } else {
         o->usart_id = mp_obj_get_int(args[0]);
@@ -202,7 +202,7 @@ STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 
     // init USART (if it fails, it's because the port doesn't exist)
     if (!usart_init(o, mp_obj_get_int(args[1]))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Usart port %d does not exist", o->usart_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %d does not exist", o->usart_id));
     }
 
     o->is_enabled = true;
@@ -267,7 +267,7 @@ STATIC MP_DEFINE_CONST_DICT(usart_locals_dict, usart_locals_dict_table);
 
 const mp_obj_type_t pyb_usart_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Usart,
+    .name = MP_QSTR_USART,
     .print = usart_obj_print,
     .make_new = usart_obj_make_new,
     .locals_dict = (mp_obj_t)&usart_locals_dict,

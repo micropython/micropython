@@ -47,7 +47,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "exti.h"
+#include "extint.h"
 #include "timer.h"
 #include "storage.h"
 

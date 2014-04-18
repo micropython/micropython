@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <stm32f4xx_hal.h>
+#include "stm32f4xx_hal.h"
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -15,7 +15,7 @@
 #include "led.h"
 #include "gpio.h"
 #include "pin.h"
-#include "exti.h"
+#include "extint.h"
 #include "usrsw.h"
 #include "rng.h"
 #include "rtc.h"
@@ -139,6 +139,20 @@ STATIC mp_obj_t pyb_wfi(void) {
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
 
+STATIC mp_obj_t pyb_disable_irq(void) {
+    __disable_irq();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
+
+STATIC mp_obj_t pyb_enable_irq(void) {
+    __enable_irq();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_irq_obj, pyb_enable_irq);
+
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
     /* After wake-up from STOP reconfigure the system clock */
@@ -235,6 +249,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_wfi), (mp_obj_t)&pyb_wfi_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq), (mp_obj_t)&pyb_disable_irq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq), (mp_obj_t)&pyb_enable_irq_obj },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
@@ -258,6 +275,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rtc_info), (mp_obj_t)&pyb_rtc_info_obj },
 #endif
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ExtInt), (mp_obj_t)&extint_type },
+
 #if MICROPY_HW_ENABLE_SERVO
     { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_pwm_set_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servo), (mp_obj_t)&pyb_servo_set_obj },
@@ -274,10 +294,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_led_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_usart_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_USART), (mp_obj_t)&pyb_usart_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ADCAll), (mp_obj_t)&pyb_adc_all_type },
 
 #if MICROPY_HW_ENABLE_DAC
     { MP_OBJ_NEW_QSTR(MP_QSTR_DAC), (mp_obj_t)&pyb_dac_type },
@@ -290,21 +310,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     // input
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&pyb_input_obj },
 
-    // pin mapper
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_map_obj },
-
-    // GPIO bindings
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio), (mp_obj_t)&pyb_gpio_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_in), (mp_obj_t)&pyb_gpio_input_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_out), (mp_obj_t)&pyb_gpio_output_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_NOPULL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP), MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PUSH_PULL), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_OD) },
-
-    // EXTI bindings
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Exti), (mp_obj_t)&exti_obj_type },
 };
 
 STATIC const mp_obj_dict_t pyb_module_globals = {

@@ -65,7 +65,6 @@ SRC_C = \
 	timer.c \
 	led.c \
 	pin.c \
-	pin_map.c \
 	pin_named_pins.c \
 	usart.c \
 	usb.c \
@@ -84,8 +83,7 @@ SRC_C = \
 	modtime.c \
 	import.c \
 	lexerfatfs.c \
-	gpio.c \
-	exti.c \
+	extint.c \
 	usrsw.c \
 	rng.c \
 	rtc.c \

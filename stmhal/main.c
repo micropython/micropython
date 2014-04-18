@@ -21,7 +21,8 @@
 #include "usart.h"
 #include "timer.h"
 #include "led.h"
-#include "exti.h"
+#include "pin.h"
+#include "extint.h"
 #include "usrsw.h"
 #include "usb.h"
 #include "rtc.h"
@@ -34,7 +35,6 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "pin.h"
 #if 0
 #include "pybwlan.h"
 #endif
@@ -292,10 +292,11 @@ soft_reset:
 
     readline_init();
 
-    exti_init();
+    pin_init();
+    extint_init();
 
 #if MICROPY_HW_HAS_SWITCH
-    // must come after exti_init
+    // must come after extint_init
     switch_init();
 #endif
 
@@ -303,8 +304,6 @@ soft_reset:
     // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();
 #endif
-
-    pin_map_init();
 
     // local filesystem init
     {

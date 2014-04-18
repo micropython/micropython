@@ -86,40 +86,29 @@ typedef struct {
   const pin_af_obj_t *af;
 } pin_obj_t;
 
-extern const mp_obj_type_t pin_obj_type;
-extern const mp_obj_type_t pin_af_obj_type;
+extern const mp_obj_type_t pin_type;
+extern const mp_obj_type_t pin_af_type;
 
 typedef struct {
-  const char  *name;
+  const char *name;
   const pin_obj_t *pin;
 } pin_named_pin_t;
 
 extern const pin_named_pin_t pin_board_pins[];
 extern const pin_named_pin_t pin_cpu_pins[];
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t mapper;
-    mp_obj_t map_dict;
-    bool debug;
-} pin_map_obj_t;
-
-extern pin_map_obj_t pin_map_obj;
+//extern pin_map_obj_t pin_map_obj;
 
 typedef struct {
     mp_obj_base_t base;
-    const char *name;
+    qstr name;
     const pin_named_pin_t *named_pins;
 } pin_named_pins_obj_t;
 
 extern const pin_named_pins_obj_t pin_board_pins_obj;
 extern const pin_named_pins_obj_t pin_cpu_pins_obj;
 
+void pin_init(void);
+const pin_obj_t *pin_find(mp_obj_t user_obj);
 const pin_obj_t *pin_find_named_pin(const pin_named_pin_t *pins, const char *name);
 const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit, uint8_t pin_type);
-
-void pin_map_init(void);
-
-// C function for mapping python pin identifier into an ordinal pin number.
-const pin_obj_t *pin_map_user_obj(mp_obj_t user_obj);
-

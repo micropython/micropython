@@ -8,7 +8,7 @@
 #include "runtime.h"
 #include "usrsw.h"
 
-#include "exti.h"
+#include "extint.h"
 #include "gpio.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -70,12 +70,11 @@ static mp_obj_t pyb_switch(uint n_args, mp_obj_t *args) {
         // Init the EXTI each time this function is called, since the EXTI
         // may have been disabled by an exception in the interrupt, or the
         // user disabling the line explicitly.
-        exti_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
-                      MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_EXTI_MODE),
-                      MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_PULL),
-                      switch_user_callback_obj == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
-                      true,
-                      NULL);
+        extint_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
+                        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_EXTI_MODE),
+                        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_USRSW_PULL),
+                        switch_user_callback_obj == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
+                        true, NULL);
         return mp_const_none;
     }
 }

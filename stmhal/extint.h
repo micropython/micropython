@@ -20,19 +20,14 @@
 #define EXTI_TRIGGER_FALLING        (offsetof(EXTI_TypeDef, FTSR))
 #define EXTI_TRIGGER_RISING_FALLING (EXTI_TRIGGER_RISING + EXTI_TRIGGER_FALLING)  // just different from RISING or FALLING
 
-void exti_init(void);
+void extint_init(void);
 
-uint exti_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param);
+uint extint_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param);
 
-void exti_enable(uint line);
-void exti_disable(uint line);
-void exti_swint(uint line);
+void extint_enable(uint line);
+void extint_disable(uint line);
+void extint_swint(uint line);
 
 void Handle_EXTI_Irq(uint32_t line);
 
-typedef struct {
-  mp_obj_t callback;
-  void *param;
-} exti_t;
-
-extern const mp_obj_type_t exti_obj_type;
+extern const mp_obj_type_t extint_type;
