@@ -18,7 +18,7 @@
 //
 //   x1_pin = pyb.Pin.board.X1
 //
-//   g = pyb.gpio(pyb.Pin.board.X1, 0)
+//   g = pyb.Pin(pyb.Pin.board.X1, pyb.Pin.IN)
 //
 // CPU pins which correspond to the board pins are available
 // as pyb.cpu.Name. For the CPU pins, the names are the port letter
@@ -27,16 +27,16 @@
 //
 // You can also use strings:
 //
-//   g = pyb.gpio('X1', 0)
+//   g = pyb.Pin('X1', pyb.Pin.OUT_PP)
 //
 // Users can add their own names:
 //
-//   pyb.Pin("LeftMotorDir", pyb.Pin.cpu.C12)
-//   g = pyb.gpio("LeftMotorDir", 0)
+//   pyb.Pin.dict["LeftMotorDir"] = pyb.Pin.cpu.C12
+//   g = pyb.Pin("LeftMotorDir", pyb.Pin.OUT_OD)
 //
 // and can query mappings
 //
-//   pin = pyb.Pin("LeftMotorDir");
+//   pin = pyb.Pin("LeftMotorDir")
 //
 // Users can also add their own mapping function:
 //
@@ -46,7 +46,7 @@
 //
 //   pyb.Pin.mapper(MyMapper)
 //
-// So, if you were to call: pyb.gpio("LeftMotorDir", 0)
+// So, if you were to call: pyb.Pin("LeftMotorDir", pyb.Pin.OUT_PP)
 // then "LeftMotorDir" is passed directly to the mapper function.
 //
 // To summarize, the following order determines how things get mapped into

@@ -6,12 +6,10 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
-#include "usrsw.h"
-
 #include "extint.h"
-#include "gpio.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "usrsw.h"
 
 // Usage Model:
 //

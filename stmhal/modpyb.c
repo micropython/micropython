@@ -13,7 +13,6 @@
 #include "pybstdio.h"
 #include "pyexec.h"
 #include "led.h"
-#include "gpio.h"
 #include "pin.h"
 #include "extint.h"
 #include "usrsw.h"
