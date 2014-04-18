@@ -92,6 +92,8 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
                     size = 4; break;
                 case 'l': case 'L':
                     size = 4; break;
+                case 'q': case 'Q':
+                    size = 8; break;
             }
             break;
         case '@': {
@@ -112,6 +114,9 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
                     align = size = sizeof(int); break;
                 case 'l': case 'L':
                     align = size = sizeof(long); break;
+                case 'q': case 'Q':
+                    // TODO: This is for x86
+                    align = sizeof(int); size = sizeof(long long); break;
             }
             // Make pointer aligned
             p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
