@@ -235,7 +235,11 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
     uint op_len = strlen(op_str);
 
     if (n_args == 0) {
-        if (strcmp(op_str, "ite.ge") == 0) { // TODO correct name for this op?
+        if (strcmp(op_str, "nop") == 0) {
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);
+        } else if (strcmp(op_str, "wfi") == 0) {
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
+        } else if (strcmp(op_str, "ite.ge") == 0) { // TODO correct name for this op?
             asm_thumb_ite_ge(emit->as);
         } else {
             goto unknown_op;
@@ -259,6 +263,12 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_bcc_n(emit->as, cc, label_num);
+        } else if (strcmp(op_str, "cpsid")) {
+            // TODO check pn_args[0] == i
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_CPSID_I);
+        } else if (strcmp(op_str, "cpsie")) {
+            // TODO check pn_args[0] == i
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_CPSIE_I);
         } else {
             goto unknown_op;
         }

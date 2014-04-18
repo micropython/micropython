@@ -58,6 +58,14 @@ void asm_thumb_label_assign(asm_thumb_t *as, uint label);
 // argument order follows ARM, in general dest is first
 // note there is a difference between movw and mov.w, and many others!
 
+#define ASM_THUMB_OP_NOP        (0xbf00)
+#define ASM_THUMB_OP_WFI        (0xbf30)
+#define ASM_THUMB_OP_CPSID_I    (0xb672) // cpsid i, disable irq
+#define ASM_THUMB_OP_CPSIE_I    (0xb662) // cpsie i, enable irq
+
+void asm_thumb_op16(asm_thumb_t *as, uint op);
+void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2);
+
 // FORMAT 2: add/subtract
 
 #define ASM_THUMB_FORMAT_2_ADD (0x1800)
