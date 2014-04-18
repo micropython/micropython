@@ -37,12 +37,14 @@ STATIC uint calcsize_items(const char *fmt) {
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
-    (void)fmt_type;
     machine_uint_t size;
     for (size = 0; *fmt; fmt++) {
-        int sz = mp_binary_get_size(*fmt);
+        uint align;
+        int sz = mp_binary_get_size(fmt_type, *fmt, &align);
         // TODO
         assert(sz != -1);
+        // Apply alignment
+        size = (size + align - 1) & ~(align - 1);
         size += sz;
     }
     return MP_OBJ_NEW_SMALL_INT(size);

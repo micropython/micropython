@@ -121,7 +121,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
-        int item_sz = mp_binary_get_size(self->typecode);
+        int item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
         self->free = 8;
         self->items = m_realloc(self->items,  item_sz * self->len, item_sz * (self->len + self->free));
@@ -154,7 +154,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
 STATIC machine_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
-    bufinfo->len = o->len * mp_binary_get_size(o->typecode);
+    bufinfo->len = o->len * mp_binary_get_size('@', o->typecode, NULL);
     bufinfo->typecode = o->typecode;
     return 0;
 }
@@ -190,7 +190,7 @@ const mp_obj_type_t mp_type_bytearray = {
 };
 
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {
-    int typecode_size = mp_binary_get_size(typecode);
+    int typecode_size = mp_binary_get_size('@', typecode, NULL);
     if (typecode_size <= 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
     }

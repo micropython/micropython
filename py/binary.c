@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -9,34 +10,52 @@
 
 // Helpers to work with binary-encoded data
 
-int mp_binary_get_size(char typecode) {
-    // This assumes that unsigned and signed types are of the same type,
-    // which is invariant for [u]intN_t.
-    switch (typecode) {
-        case BYTEARRAY_TYPECODE:
-        case 'b':
-        case 'B':
-            return sizeof(int8_t);
-        case 'h':
-        case 'H':
-            return sizeof(int16_t);
-        case 'i':
-        case 'I':
-            return sizeof(int32_t);
-        case 'l':
-        case 'L':
-            return sizeof(int32_t);
-        case 'q':
-        case 'Q':
-            return sizeof(long long);
-#if MICROPY_ENABLE_FLOAT
-        case 'f':
-            return sizeof(float);
-        case 'd':
-            return sizeof(double);
-#endif
+int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
+    int size = 0;
+    int align = 1;
+    switch (struct_type) {
+        case '<': case '>':
+            switch (val_type) {
+                case 'b': case 'B':
+                    size = 1; break;
+                case 'h': case 'H':
+                    size = 2; break;
+                case 'i': case 'I':
+                    size = 4; break;
+                case 'l': case 'L':
+                    size = 4; break;
+                case 'q': case 'Q':
+                    size = 8; break;
+            }
+            break;
+        case '@': {
+            // TODO:
+            // The simplest heuristic for alignment is to align by value
+            // size, but that doesn't work for "bigger than int" types,
+            // for example, long long may very well have long alignment
+            // So, we introduce separate alignment handling, but having
+            // formal support for that is different from actually supporting
+            // particular (or any) ABI.
+            switch (val_type) {
+                case BYTEARRAY_TYPECODE:
+                case 'b': case 'B':
+                    align = size = 1; break;
+                case 'h': case 'H':
+                    align = size = sizeof(short); break;
+                case 'i': case 'I':
+                    align = size = sizeof(int); break;
+                case 'l': case 'L':
+                    align = size = sizeof(long); break;
+                case 'q': case 'Q':
+                    // TODO: This is for x86
+                    align = sizeof(int); size = sizeof(long long); break;
+            }
+        }
     }
-    return -1;
+    if (palign != NULL) {
+        *palign = align;
+    }
+    return size;
 }
 
 mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
@@ -80,53 +99,17 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
 #define is_signed(typecode) (typecode > 'Z')
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
-    uint size = 0;
-    switch (struct_type) {
-        case '<': case '>':
-            switch (val_type) {
-                case 'b': case 'B':
-                    size = 1; break;
-                case 'h': case 'H':
-                    size = 2; break;
-                case 'i': case 'I':
-                    size = 4; break;
-                case 'l': case 'L':
-                    size = 4; break;
-                case 'q': case 'Q':
-                    size = 8; break;
-            }
-            break;
-        case '@': {
-            // TODO:
-            // The simplest heuristic for alignment is to align by value
-            // size, but that doesn't work for "bigger than int" types,
-            // for example, long long may very well have long alignment
-            // So, we introduce separate alignment handling, but having
-            // formal support for that is different from actually supporting
-            // particular (or any) ABI.
-            uint align = 0;
-            switch (val_type) {
-                case 'b': case 'B':
-                    align = size = 1; break;
-                case 'h': case 'H':
-                    align = size = sizeof(short); break;
-                case 'i': case 'I':
-                    align = size = sizeof(int); break;
-                case 'l': case 'L':
-                    align = size = sizeof(long); break;
-                case 'q': case 'Q':
-                    // TODO: This is for x86
-                    align = sizeof(int); size = sizeof(long long); break;
-            }
-            // Make pointer aligned
-            p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
-            #if MP_ENDIANNESS_LITTLE
-            struct_type = '<';
-            #else
-            struct_type = '>';
-            #endif
-            break;
-        }
+    uint align;
+
+    int size = mp_binary_get_size(struct_type, val_type, &align);
+    if (struct_type == '@') {
+        // Make pointer aligned
+        p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
+        #if MP_ENDIANNESS_LITTLE
+        struct_type = '<';
+        #else
+        struct_type = '>';
+        #endif
     }
 
     int delta;
