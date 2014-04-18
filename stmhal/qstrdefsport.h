@@ -66,8 +66,8 @@ Q(PULL_NONE)
 Q(PULL_UP)
 Q(PULL_DOWN)
 
-// for Led object
-Q(Led)
+// for LED object
+Q(LED)
 Q(on)
 Q(off)
 Q(toggle)
