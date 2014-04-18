@@ -97,13 +97,7 @@ STATIC const mp_map_elem_t stm_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem16), (mp_obj_t)&stm_mem16_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem32), (mp_obj_t)&stm_mem32_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIOA), MP_OBJ_NEW_SMALL_INT(GPIOA_BASE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIOB), MP_OBJ_NEW_SMALL_INT(GPIOB_BASE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIOC), MP_OBJ_NEW_SMALL_INT(GPIOC_BASE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIOD), MP_OBJ_NEW_SMALL_INT(GPIOD_BASE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO_IDR), MP_OBJ_NEW_SMALL_INT(0x10) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO_BSRRL), MP_OBJ_NEW_SMALL_INT(0x18) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO_BSRRH), MP_OBJ_NEW_SMALL_INT(0x1a) },
+#include "modstmconst.gen.c"
 };
 
 STATIC const mp_obj_dict_t stm_module_globals = {
