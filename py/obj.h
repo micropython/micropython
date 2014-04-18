@@ -209,8 +209,8 @@ typedef struct _mp_buffer_info_t {
 typedef struct _mp_buffer_p_t {
     machine_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 } mp_buffer_p_t;
-bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo);
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo);
+bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
+void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
