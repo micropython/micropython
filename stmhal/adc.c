@@ -8,6 +8,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "binary.h"
 #include "adc.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -166,8 +167,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
     pyb_obj_adc_t *self = self_in;
 
-    buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    int typesize = mp_binary_get_size(bufinfo.typecode);
 
     // Init TIM6 at the required frequency (in Hz)
     timer_tim6_init(mp_obj_get_int(freq_in));
@@ -176,13 +178,17 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     HAL_TIM_Base_Start(&TIM6_Handle);
 
     // This uses the timer in polling mode to do the sampling
-    // TODO use DMA
-    for (uint i = 0; i < bufinfo.len; i++) {
+    // We could use DMA, but then we can't convert the values correctly for the buffer
+    for (uint index = 0; index < bufinfo.len; index++) {
         // Wait for the timer to trigger
         while (__HAL_TIM_GET_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE) == RESET) {
         }
         __HAL_TIM_CLEAR_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE);
-        ((byte*)bufinfo.buf)[i] = adc_read_channel(&self->handle) >> 4;
+        uint value = adc_read_channel(&self->handle);
+        if (typesize == 1) {
+            value >>= 4;
+        }
+        mp_binary_set_val_array_from_int(bufinfo.typecode, bufinfo.buf, index, value);
     }
 
     // Stop timer

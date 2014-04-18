@@ -163,8 +163,8 @@ STATIC mp_obj_t pyb_i2c_write(mp_obj_t self_in, mp_obj_t i2c_addr_in, mp_obj_t d
         uint8_t data[1] = {mp_obj_get_int(data_in)};
         status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, data, 1, 500);
     } else {
-        buffer_info_t bufinfo;
-        mp_get_buffer_raise(data_in, &bufinfo);
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
         status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, bufinfo.buf, bufinfo.len, 500);
     }
 
@@ -209,8 +209,8 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
         uint8_t data[1] = {mp_obj_get_int(args[3])};
         status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     } else {
-        buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[3], &bufinfo);
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
         status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, 200);
     }
 

@@ -169,8 +169,8 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(args[2]));
 
-    buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
     __DMA1_CLK_ENABLE();
 
