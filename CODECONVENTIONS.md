@@ -1,7 +1,21 @@
-Code conventions
-================
+Python code conventions
+=======================
 
-When writing new code, please adhere to the following conventions.
+Python code follows [PEP 8](http://legacy.python.org/dev/peps/pep-0008/).
+
+Naming conventions:
+- Module names are short and all lowercase; eg pyb, stm.
+- Class names are CamelCase, with abreviations all uppercase; eg I2C, not
+  I2c.
+- Function and method names are all lowercase with words separated by
+  a single underscore as necessary to improve readability; eg mem_read.
+- Constants are all uppercase with words separated by a single underscore;
+  eg GPIO_IDR.
+
+C code conventions
+==================
+
+When writing new C code, please adhere to the following conventions.
 
 White space:
 - Expand tabs to 4 spaces.
@@ -18,8 +32,10 @@ Braces:
 - For else-statements, put the else on the same line as the previous
   closing brace.
 
-Include directives:
-- Don't include within a header file.
+Header files:
+- Try to stick to the Plan 9 header style, where header files do not
+  include other header files.
+- Don't protect a header file from multiple inclusion with #if directives.
 
 Type names and declarations:
 - When defining a type, put '_t' after it.
