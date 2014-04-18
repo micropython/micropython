@@ -1326,16 +1326,18 @@ STATIC mp_obj_t str_encode(uint n_args, const mp_obj_t *args) {
 }
 #endif
 
-STATIC machine_int_t str_get_buffer(mp_obj_t self_in, buffer_info_t *bufinfo, int flags) {
-    if (flags == BUFFER_READ) {
+STATIC machine_int_t str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, int flags) {
+    if (flags == MP_BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
         bufinfo->buf = (void*)str_data;
         bufinfo->len = str_len;
+        bufinfo->typecode = 'b';
         return 0;
     } else {
         // can't write to a string
         bufinfo->buf = NULL;
         bufinfo->len = 0;
+        bufinfo->typecode = -1;
         return 1;
     }
 }

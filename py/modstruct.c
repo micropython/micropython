@@ -55,7 +55,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     char fmt_type = get_fmt_type(&fmt);
     uint size = calcsize_items(fmt);
     mp_obj_tuple_t *res = mp_obj_new_tuple(size, NULL);
-    buffer_info_t bufinfo;
+    mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo);
     byte *p = bufinfo.buf;
 

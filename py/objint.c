@@ -272,7 +272,7 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False at the moment)
 
     // get the buffer info
-    buffer_info_t bufinfo;
+    mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo);
 
     // convert the bytes to an integer

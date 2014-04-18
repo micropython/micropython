@@ -426,7 +426,7 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
             mp_obj_list_get(obj, &len, &items);
             return (machine_uint_t)items;
         } else {
-            buffer_info_t bufinfo;
+            mp_buffer_info_t bufinfo;
             if (mp_get_buffer(obj, &bufinfo)) {
                 // supports the buffer protocol, return a pointer to the data
                 return (machine_uint_t)bufinfo.buf;

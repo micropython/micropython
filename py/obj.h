@@ -189,32 +189,28 @@ typedef struct _mp_method_t {
 } mp_method_t;
 
 // Buffer protocol
-typedef struct _buffer_info_t {
+typedef struct _mp_buffer_info_t {
     // if we'd bother to support various versions of structure
     // (with different number of fields), we can distinguish
     // them with ver = sizeof(struct). Cons: overkill for *micro*?
     //int ver; // ?
 
     void *buf;
-    machine_int_t len;
-
-    // Rationale: have array.array and have SIMD operations on them
-    // Cons: users can pass item size to processing functions themselves,
-    // though that's not "plug&play"
-    // int itemsize;
+    machine_int_t len; // in bytes
+    int typecode; // as per binary.h
 
     // Rationale: to load arbitrary-sized sprites directly to LCD
     // Cons: a bit adhoc usecase
     // int stride;
-} buffer_info_t;
-#define BUFFER_READ  (1)
-#define BUFFER_WRITE (2)
-#define BUFFER_RW (BUFFER_READ | BUFFER_WRITE)
+} mp_buffer_info_t;
+#define MP_BUFFER_READ  (1)
+#define MP_BUFFER_WRITE (2)
+#define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
 typedef struct _mp_buffer_p_t {
-    machine_int_t (*get_buffer)(mp_obj_t obj, buffer_info_t *bufinfo, int flags);
+    machine_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 } mp_buffer_p_t;
-bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo);
-void mp_get_buffer_raise(mp_obj_t obj, buffer_info_t *bufinfo);
+bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo);
+void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo);
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
