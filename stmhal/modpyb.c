@@ -226,16 +226,6 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
-#if 0
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_I2C_obj, pyb_I2C); // TODO put this in i2c.c
-#endif
-
-STATIC mp_obj_t pyb_input(void ) {
-    return mp_obj_new_int(stdin_rx_chr());
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_input_obj, pyb_input);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
@@ -305,10 +295,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_HAS_MMA7660
     { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_accel_type },
 #endif
-
-    // input
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&pyb_input_obj },
-
 };
 
 STATIC const mp_obj_dict_t pyb_module_globals = {
