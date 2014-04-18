@@ -109,11 +109,9 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
     }
 
     int len = len1 < len2 ? len1 : len2;
-    bool eq_status = true; // empty lists are equal
     for (int i = 0; i < len; i++) {
-        eq_status = mp_obj_equal(items1[i], items2[i]);
         // If current elements equal, can't decide anything - go on
-        if (eq_status) {
+        if (mp_obj_equal(items1[i], items2[i])) {
             continue;
         }
 
@@ -127,19 +125,16 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
         return (mp_binary_op(op, items1[i], items2[i]) == mp_const_true);
     }
 
-    assert(eq_status);
     // If we had tie in the last element...
-    if (eq_status) {
-        // ... and we have lists of different lengths...
-        if (len1 != len2) {
-            if (len1 < len2) {
-                // ... then longer list length wins (we deal only with >)
-                return false;
-            }
-        } else if (op == MP_BINARY_OP_MORE) {
-            // Otherwise, if we have strict relation, equality means failure
+    // ... and we have lists of different lengths...
+    if (len1 != len2) {
+        if (len1 < len2) {
+            // ... then longer list length wins (we deal only with >)
             return false;
         }
+    } else if (op == MP_BINARY_OP_MORE) {
+        // Otherwise, if we have strict relation, sequence equality means failure
+        return false;
     }
 
     return true;
