@@ -268,9 +268,9 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = (ffi_arg)s;
         } else if (((mp_obj_base_t*)a)->type->buffer_p.get_buffer != NULL) {
             mp_obj_base_t *o = (mp_obj_base_t*)a;
-            buffer_info_t bufinfo;
-            o->type->buffer_p.get_buffer(o, &bufinfo, BUFFER_READ); // TODO: BUFFER_READ?
-            if (bufinfo.buf == NULL) {
+            mp_buffer_info_t bufinfo;
+            int ret = o->type->buffer_p.get_buffer(o, &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+            if (ret != 0 || bufinfo.buf == NULL) {
                 goto error;
             }
             values[i] = (ffi_arg)bufinfo.buf;

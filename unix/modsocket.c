@@ -80,7 +80,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
-    buffer_info_t bufinfo;
+    mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
@@ -90,7 +90,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
-    buffer_info_t bufinfo;
+    mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo);
     int r = bind(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
@@ -168,7 +168,7 @@ STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
         optval = &val;
         optlen = sizeof(val);
     } else {
-        buffer_info_t bufinfo;
+        mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[3], &bufinfo);
         optval = bufinfo.buf;
         optlen = bufinfo.len;
