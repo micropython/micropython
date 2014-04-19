@@ -160,7 +160,6 @@ STATIC const mp_arg_parse_t pyb_spi_init_accepted_args[] = {
     { MP_QSTR_ti,       MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_BOOL, {.u_bool = false} },
     { MP_QSTR_crcpoly,  MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
 };
-
 #define PYB_SPI_INIT_NUM_ARGS (sizeof(pyb_spi_init_accepted_args) / sizeof(pyb_spi_init_accepted_args[0]))
 
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {

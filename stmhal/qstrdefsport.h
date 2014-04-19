@@ -88,6 +88,10 @@ Q(send)
 
 // for ExtInt class
 Q(ExtInt)
+Q(pin)
+Q(mode)
+Q(trigger)
+Q(callback)
 Q(line)
 Q(enable)
 Q(disable)

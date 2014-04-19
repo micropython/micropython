@@ -28,7 +28,7 @@
 //     print("line =", line)
 //
 // # Note: ExtInt will automatically configure the gpio line as an input.
-// extint = pyb.ExtInt(pin, pyb.ExtInt.MODE_IRQ_FALLING, pyb.GPIO.PULL_UP, callback)
+// extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.GPIO.PULL_UP, callback)
 //
 // Now every time a falling edge is seen on the X1 pin, the callback will be
 // called. Caution: mechanical pushbuttons have "bounce" and pushing or
@@ -46,11 +46,11 @@
 //
 // extint = pyb.ExtInt(pin, mode, pull, callback)
 //
-// Valid modes are pyb.ExtInt.MODE_IRQ_RISING, pyb.ExtInt.MODE_IRQ_FALLING,
-// pyb.ExtInt.MODE_IRQ_RISING_FALLING, pyb.ExtInt.MODE_EVT_RISING,
-// pyb.ExtInt.MODE_EVT_FALLING, and pyb.ExtInt.MODE_EVT_RISING_FALLING.
+// Valid modes are pyb.ExtInt.IRQ_RISING, pyb.ExtInt.IRQ_FALLING,
+// pyb.ExtInt.IRQ_RISING_FALLING, pyb.ExtInt.EVT_RISING,
+// pyb.ExtInt.EVT_FALLING, and pyb.ExtInt.EVT_RISING_FALLING.
 //
-// Only the MODE_IRQ_xxx modes have been tested. The MODE_EVT_xxx modes have
+// Only the IRQ_xxx modes have been tested. The EVT_xxx modes have
 // something to do with sleep mode and the WFE instruction.
 //
 // Valid pull values are pyb.GPIO.PULL_UP, pyb.GPIO.PULL_DOWN, pyb.GPIO.PULL_NONE.
@@ -241,18 +241,26 @@ STATIC mp_obj_t extint_regs(void) {
 
 // line_obj = pyb.ExtInt(pin, mode, trigger, callback)
 
+STATIC const mp_arg_parse_t pyb_extint_make_new_accepted_args[] = {
+    { MP_QSTR_pin,      MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_trigger,  MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_callback, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+};
+#define PYB_EXTINT_MAKE_NEW_NUM_ARGS (sizeof(pyb_extint_make_new_accepted_args) / sizeof(pyb_extint_make_new_accepted_args[0]))
+
 STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
 
-    mp_arg_check_num(n_args, n_kw, 4, 4, false);
+    // parse args
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    mp_arg_parse_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, &kw_args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_accepted_args, vals);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;
-    mp_obj_t line_obj = args[0];
-    mp_obj_t mode_obj = args[1];
-    mp_obj_t trigger_obj = args[2];
-    mp_obj_t callback_obj = args[3];
-    self->line = extint_register(line_obj, mode_obj, trigger_obj, callback_obj, false, NULL);
+    self->line = extint_register(vals[0].u_obj, vals[1].u_obj, vals[2].u_obj, vals[3].u_obj, false, NULL);
 
     return self;
 }
