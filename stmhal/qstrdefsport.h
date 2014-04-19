@@ -2,6 +2,7 @@
 
 Q(help)
 Q(pyb)
+Q(unique_id)
 Q(info)
 Q(sd_test)
 Q(present)

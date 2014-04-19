@@ -30,6 +30,13 @@
 #include "modpyb.h"
 #include "ff.h"
 
+STATIC mp_obj_t pyb_unique_id(void) {
+    // get unique id; 96 bits
+    byte *id = (byte*)0x1fff7a10;
+    return mp_obj_new_bytes(id, 12);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
+
 // get lots of info about the board
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
@@ -233,6 +240,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&pyb_gc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
