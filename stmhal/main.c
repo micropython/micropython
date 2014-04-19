@@ -467,7 +467,7 @@ soft_reset:
     //timer_init();
 #endif
 
-    i2c_init();
+    i2c_init0();
     spi_init0();
 
 #if MICROPY_HW_HAS_MMA7660

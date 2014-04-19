@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
+#include "stm32f4xx_hal.h"
 
 #include "nlr.h"
 #include "misc.h"
@@ -34,7 +34,7 @@ void accel_init(void) {
 
 STATIC void accel_start(void) {
     // start the I2C bus
-    i2c_start(&I2cHandle_X);
+    i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 20ms, turn on AVDD, wait 20ms again
     GPIOB->BSRRH = GPIO_PIN_5; // turn off
@@ -46,7 +46,7 @@ STATIC void accel_start(void) {
 
     //printf("IsDeviceReady\n");
     for (int i = 0; i < 10; i++) {
-        status = HAL_I2C_IsDeviceReady(&I2cHandle_X, MMA_ADDR, 10, 200);
+        status = HAL_I2C_IsDeviceReady(&I2CHandle1, MMA_ADDR, 10, 200);
         //printf("  got %d\n", status);
         if (status == HAL_OK) {
             break;
@@ -56,7 +56,7 @@ STATIC void accel_start(void) {
     //printf("MemWrite\n");
     uint8_t data[1];
     data[0] = 1; // active mode
-    status = HAL_I2C_Mem_Write(&I2cHandle_X, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     //printf("  got %d\n", status);
 }
 
@@ -86,7 +86,7 @@ STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 
 STATIC mp_obj_t read_axis(int axis) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
 }
 
@@ -110,7 +110,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
 
@@ -122,7 +122,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
     uint8_t data[NUM_AXIS];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
 
     mp_obj_t tuple[NUM_AXIS];
     for (int i = 0; i < NUM_AXIS; i++) {
@@ -141,7 +141,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
 
@@ -150,7 +150,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     uint8_t data[1];
     data[0] = mp_obj_get_int(val);
-    HAL_I2C_Mem_Write(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_const_none;
 }
 

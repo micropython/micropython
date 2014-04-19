@@ -33,30 +33,34 @@ void spi_init0(void) {
 
 // TODO allow to take a list of pins to use
 void spi_init(SPI_HandleTypeDef *spi) {
-    // auto-detect the GPIO pins to use
+    // init the GPIO lines
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStructure.Pull = GPIO_PULLUP; // ST examples use PULLUP
+
     const pin_obj_t *pins[4];
-    uint32_t af_type;
     if (spi->Instance == SPI1) {
         // X-skin: X5=PA4=SPI1_NSS, X6=PA5=SPI1_SCK, X7=PA6=SPI1_MISO, X8=PA7=SPI1_MOSI
         pins[0] = &pin_A4;
         pins[1] = &pin_A5;
         pins[2] = &pin_A6;
         pins[3] = &pin_A7;
-        af_type = GPIO_AF5_SPI1;
+        GPIO_InitStructure.Alternate = GPIO_AF5_SPI1;
     } else if (spi->Instance == SPI2) {
         // Y-skin: Y5=PB12=SPI2_NSS, Y6=PB13=SPI2_SCK, Y7=PB14=SPI2_MISO, Y8=PB15=SPI2_MOSI
         pins[0] = &pin_B12;
         pins[1] = &pin_B13;
         pins[2] = &pin_B14;
         pins[3] = &pin_B15;
-        af_type = GPIO_AF5_SPI2;
+        GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
 #if MICROPY_HW_ENABLE_SPI3
     } else if (spi->Instance == SPI3) {
         pins[0] = &pin_A4;
         pins[1] = &pin_B3;
         pins[2] = &pin_B4;
         pins[3] = &pin_B5;
-        af_type = GPIO_AF6_SPI3;
+        GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
 #endif
     } else {
         // SPI does not exist for this board
@@ -64,14 +68,8 @@ void spi_init(SPI_HandleTypeDef *spi) {
         return;
     }
 
-    // init the GPIO lines
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_PULLUP; // ST examples use PULLUP
     for (uint i = 0; i < 4; i++) {
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
-        GPIO_InitStructure.Alternate = af_type;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
     }
 
