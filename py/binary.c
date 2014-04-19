@@ -138,6 +138,45 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
 }
 
+void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr) {
+    byte *p = *ptr;
+    uint align;
+
+    int size = mp_binary_get_size(struct_type, val_type, &align);
+    if (struct_type == '@') {
+        // Make pointer aligned
+        p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
+        #if MP_ENDIANNESS_LITTLE
+        struct_type = '<';
+        #else
+        struct_type = '>';
+        #endif
+    }
+
+#if MP_ENDIANNESS_BIG
+#error Not implemented
+#endif
+    machine_int_t val = mp_obj_int_get_checked(val_in);
+    byte *in = (byte*)&val;
+    int in_delta, out_delta;
+    uint val_sz = MIN(size, sizeof(val));
+    if (struct_type == '>') {
+        in_delta = -1;
+        out_delta = 1;
+        in += val_sz - 1;
+    } else {
+        in_delta = out_delta = 1;
+    }
+
+    for (uint i = val_sz; i > 0; i--) {
+        *p = *in;
+        p += out_delta;
+        in += in_delta;
+    }
+
+    *ptr += size;
+}
+
 void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
     switch (typecode) {
 #if MICROPY_ENABLE_FLOAT

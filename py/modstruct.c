@@ -6,6 +6,7 @@
 #include "obj.h"
 #include "builtin.h"
 #include "objtuple.h"
+#include "objstr.h"
 #include "binary.h"
 
 #if MICROPY_ENABLE_MOD_STRUCT
@@ -69,9 +70,26 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(struct_unpack_obj, struct_unpack);
 
+STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
+    // TODO: "The arguments must match the values required by the format exactly."
+    const char *fmt = mp_obj_str_get_str(args[0]);
+    char fmt_type = get_fmt_type(&fmt);
+    int size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
+    byte *p;
+    mp_obj_t res = mp_obj_str_builder_start(&mp_type_bytes, size, &p);
+    memset(p, 0, size);
+
+    for (uint i = 1; i < n_args; i++) {
+        mp_binary_set_val(fmt_type, *fmt++, args[i], &p);
+    }
+    return res;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, -1, struct_pack);
+
 STATIC const mp_map_elem_t mp_module_struct_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_struct) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_calcsize), (mp_obj_t)&struct_calcsize_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pack), (mp_obj_t)&struct_pack_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unpack), (mp_obj_t)&struct_unpack_obj },
 };
 
