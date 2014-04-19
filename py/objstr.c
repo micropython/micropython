@@ -1415,6 +1415,7 @@ mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **da
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
+    o->hash = 0;
     byte *p = m_new(byte, len + 1);
     o->data = p;
     *data = p;
