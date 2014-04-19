@@ -157,6 +157,8 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     print(env, "<Pin %s>", self->name);
 }
 
+STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args);
+
 // Pin constructor
 STATIC mp_obj_t pin_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_check_nargs(n_args, 1, 3, n_kw, false);
@@ -166,30 +168,11 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 
     if (n_args >= 2) {
         // pin mode given, so configure this GPIO
-
-        // get io mode
-        uint mode = mp_obj_get_int(args[1]);
-        if (!IS_GPIO_MODE(mode)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
+        mp_obj_t args2[3] = {(mp_obj_t)pin, args2[1], MP_OBJ_NULL};
+        if (n_args == 3) {
+            args2[2] = args[2];
         }
-
-        // get pull mode
-        uint pull = GPIO_NOPULL;
-        if (n_args >= 3) {
-            pull = mp_obj_get_int(args[2]);
-            if (!IS_GPIO_PULL(pull)) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull));
-            }
-        }
-
-        // configure the GPIO as requested
-        GPIO_InitTypeDef GPIO_InitStructure;
-        GPIO_InitStructure.Pin = pin->pin_mask;
-        GPIO_InitStructure.Mode = mode;
-        GPIO_InitStructure.Pull = pull;
-        GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-        GPIO_InitStructure.Alternate = 0;
-        HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+        pin_obj_init(n_args, args2);
     }
 
     return (mp_obj_t)pin;
@@ -227,6 +210,37 @@ STATIC mp_obj_t pin_debug(uint n_args, mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);
+
+STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args) {
+    pin_obj_t *self = args[0];
+
+    // get io mode
+    uint mode = mp_obj_get_int(args[1]);
+    if (!IS_GPIO_MODE(mode)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
+    }
+
+    // get pull mode
+    uint pull = GPIO_NOPULL;
+    if (n_args >= 3) {
+        pull = mp_obj_get_int(args[2]);
+        if (!IS_GPIO_PULL(pull)) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull));
+        }
+    }
+
+    // configure the GPIO as requested
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.Pin = self->pin_mask;
+    GPIO_InitStructure.Mode = mode;
+    GPIO_InitStructure.Pull = pull;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStructure.Alternate = 0;
+    HAL_GPIO_Init(self->gpio, &GPIO_InitStructure);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_init_obj, 2, 3, pin_obj_init);
 
 STATIC mp_obj_t pin_value(uint n_args, mp_obj_t *args) {
     pin_obj_t *self = args[0];
@@ -279,6 +293,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
 
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pin_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&pin_value_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_low),     (mp_obj_t)&pin_low_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_high),    (mp_obj_t)&pin_high_obj },
