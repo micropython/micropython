@@ -141,7 +141,7 @@ STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
     mp_obj_t iterable = mp_getiter(args[3]);
     mp_obj_t item;
     int i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         o->params[i++] = get_ffi_type(item);
     }
 
@@ -178,7 +178,7 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
     mp_obj_t iterable = mp_getiter(paramtypes_in);
     mp_obj_t item;
     int i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         o->params[i++] = get_ffi_type(item);
     }
 
