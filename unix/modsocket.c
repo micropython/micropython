@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -179,6 +180,22 @@ STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
 
+STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    mp_obj_socket_t *self = self_in;
+    int val = mp_obj_is_true(flag_in);
+    int flags = fcntl(self->fd, F_GETFL, 0);
+    RAISE_ERRNO(flags, errno);
+    if (val) {
+        flags &= ~O_NONBLOCK;
+    } else {
+        flags |= O_NONBLOCK;
+    }
+    flags = fcntl(self->fd, F_SETFL, flags);
+    RAISE_ERRNO(flags, errno);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
+
 STATIC mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -216,6 +233,7 @@ STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&mp_stream_read_obj },
