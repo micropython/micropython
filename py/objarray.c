@@ -139,14 +139,27 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         return MP_OBJ_NOT_SUPPORTED;
     } else {
         mp_obj_array_t *o = self_in;
-        uint index = mp_get_index(o->base.type, o->len, index_in, false);
-        if (value == MP_OBJ_SENTINEL) {
-            // load
-            return mp_binary_get_val_array(o->typecode, o->items, index);
+        if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
+                assert(0);
+            }
+            mp_obj_array_t *res = array_new(o->typecode, stop - start);
+            int sz = mp_binary_get_size('@', o->typecode, NULL);
+            assert(sz > 0);
+            byte *p = o->items;
+            memcpy(res->items, p + start * sz, (stop - start) * sz);
+            return res;
         } else {
-            // store
-            mp_binary_set_val_array(o->typecode, o->items, index, value);
-            return mp_const_none;
+            uint index = mp_get_index(o->base.type, o->len, index_in, false);
+            if (value == MP_OBJ_SENTINEL) {
+                // load
+                return mp_binary_get_val_array(o->typecode, o->items, index);
+            } else {
+                // store
+                mp_binary_set_val_array(o->typecode, o->items, index, value);
+                return mp_const_none;
+            }
         }
     }
 }
