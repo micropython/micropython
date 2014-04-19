@@ -127,8 +127,8 @@ mp_obj_t pyb_audio_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     if (type->buffer_p.get_buffer == NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "buffer argument must support buffer protocol"));
     }
-    buffer_info_t bufinfo;
-    type->buffer_p.get_buffer(args[1], &bufinfo, BUFFER_READ);
+    mp_buffer_info_t bufinfo;
+    type->buffer_p.get_buffer(args[1], &bufinfo, MP_BUFFER_READ);
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 
