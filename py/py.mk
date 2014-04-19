@@ -40,6 +40,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	argcheck.o \
 	map.o \
 	obj.o \
 	objarray.o \

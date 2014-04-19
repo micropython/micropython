@@ -25,36 +25,6 @@
 
 // mp_obj_fun_native_t defined in obj.h
 
-STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
-    mp_check_nargs(n_args, self->n_args_min, self->n_args_max, n_kw, self->is_kw);
-}
-
-void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
-    // TODO maybe take the function name as an argument so we can print nicer error messages
-
-    if (n_kw && !is_kw) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
-    }
-
-    if (n_args_min == n_args_max) {
-        if (n_args != n_args_min) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                    "function takes %d positional arguments but %d were given",
-                                                    n_args_min, n_args));
-        }
-    } else {
-        if (n_args < n_args_min) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                    "function missing %d required positional arguments",
-                                                    n_args_min - n_args));
-        } else if (n_args > n_args_max) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                    "function expected at most %d arguments, got %d",
-                                                    n_args_max, n_args));
-        }
-    }
-}
-
 STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL:
@@ -70,7 +40,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
     mp_obj_fun_native_t *self = self_in;
 
     // check number of arguments
-    check_nargs(self, n_args, n_kw);
+    mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
 
     if (self->is_kw) {
         // function allows keywords

@@ -4,10 +4,32 @@ typedef enum {
     MP_VM_RETURN_EXCEPTION,
 } mp_vm_return_kind_t;
 
+typedef enum {
+    MP_ARG_PARSE_BOOL      = 0x001,
+    MP_ARG_PARSE_INT       = 0x002,
+    MP_ARG_PARSE_OBJ       = 0x003,
+    MP_ARG_PARSE_KIND_MASK = 0x0ff,
+    MP_ARG_PARSE_REQUIRED  = 0x100,
+    MP_ARG_PARSE_KW_ONLY   = 0x200,
+} mp_arg_parse_flag_t;
+
+typedef union _mp_arg_parse_val_t {
+    bool u_bool;
+    machine_int_t u_int;
+    mp_obj_t u_obj;
+} mp_arg_parse_val_t;
+
+typedef struct _mp_arg_parse_t {
+    qstr qstr;
+    machine_uint_t flags;
+    mp_arg_parse_val_t defval;
+} mp_arg_parse_t;
+
 void mp_init(void);
 void mp_deinit(void);
 
-void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw);
+void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, bool takes_kw);
+void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_parse_t *allowed, mp_arg_parse_val_t *out_vals);
 
 mp_obj_dict_t *mp_locals_get(void);
 void mp_locals_set(mp_obj_dict_t *d);

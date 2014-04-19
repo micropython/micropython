@@ -75,7 +75,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 }
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 1, 2, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
     uint l;
@@ -91,7 +91,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 }
 
 STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 0, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
