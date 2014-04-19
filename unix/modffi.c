@@ -63,7 +63,8 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'L': return &ffi_type_ulong;
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;
-        case 'p':
+        case 'p': // Deprecated - conflicts with struct module
+        case 'P':
         case 's': return &ffi_type_pointer;
         case 'v': return &ffi_type_void;
         default: return NULL;

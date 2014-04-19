@@ -418,7 +418,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 #endif
-// Will rains exception if value doesn't fit into machine_int_t
+// Will raise exception if value doesn't fit into machine_int_t
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 
 // exception
