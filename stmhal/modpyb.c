@@ -18,6 +18,8 @@
 #include "usrsw.h"
 #include "rng.h"
 #include "rtc.h"
+#include "i2c.h"
+#include "spi.h"
 #include "usart.h"
 #include "adc.h"
 #include "storage.h"
@@ -25,7 +27,6 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "i2c.h"
 #include "usb.h"
 #include "modpyb.h"
 #include "ff.h"
@@ -290,6 +291,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED), (mp_obj_t)&pyb_led_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI), (mp_obj_t)&pyb_spi_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_USART), (mp_obj_t)&pyb_usart_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },

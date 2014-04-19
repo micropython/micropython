@@ -98,6 +98,7 @@ SRC_C = \
 	dac.c \
 	adc.c \
 	i2c.c \
+	spi.c \
 
 #	pybwlan.c \
 
@@ -124,6 +125,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_rtc.c \
 	stm32f4xx_hal_rtc_ex.c \
 	stm32f4xx_hal_sd.c \
+	stm32f4xx_hal_spi.c \
 	stm32f4xx_hal_tim.c \
 	stm32f4xx_hal_tim_ex.c \
 	stm32f4xx_hal_uart.c \

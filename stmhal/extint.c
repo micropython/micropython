@@ -244,7 +244,7 @@ STATIC mp_obj_t extint_regs(void) {
 STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
 
-    mp_check_nargs(n_args, 4, 4, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 4, 4, false);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;

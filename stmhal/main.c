@@ -18,6 +18,8 @@
 #include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
+#include "i2c.h"
+#include "spi.h"
 #include "usart.h"
 #include "timer.h"
 #include "led.h"
@@ -31,7 +33,6 @@
 #include "ff.h"
 #include "lcd.h"
 #include "rng.h"
-#include "i2c.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
@@ -466,8 +467,8 @@ soft_reset:
     //timer_init();
 #endif
 
-    // I2C
     i2c_init();
+    spi_init0();
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset

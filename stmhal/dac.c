@@ -53,7 +53,7 @@ STATIC pyb_dac_obj_t pyb_dac_channel_2 = {{&pyb_dac_type}, DAC_CHANNEL_2, DMA1_S
 
 STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     machine_int_t dac_id = mp_obj_get_int(args[0]);
     uint32_t pin;

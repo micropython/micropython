@@ -231,7 +231,7 @@ STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
 STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 0, 0, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return constant object
     return (mp_obj_t)&pyb_rtc_obj;
