@@ -156,7 +156,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 #if MP_ENDIANNESS_BIG
 #error Not implemented
 #endif
-    machine_int_t val = mp_obj_int_get_checked(val_in);
+    machine_int_t val = mp_obj_get_int(val_in);
     byte *in = (byte*)&val;
     int in_delta, out_delta;
     uint val_sz = MIN(size, sizeof(val));
