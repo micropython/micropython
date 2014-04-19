@@ -1,16 +1,16 @@
 #include <stdio.h>
 
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_rtc.h"
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "systick.h"
+#include "runtime.h"
+//#include "systick.h"
 #include "rtc.h"
 
-static RTC_HandleTypeDef RtcHandle;
+RTC_HandleTypeDef RTCHandle;
 static machine_uint_t rtc_info;
 
 #define RTC_INFO_USE_EXISTING (0)
@@ -125,7 +125,7 @@ static void RTC_CalendarConfig(void);
 
 void rtc_init(void) {
   /*##-1- Configure the RTC peripheral #######################################*/
-  RtcHandle.Instance = RTC;
+  RTCHandle.Instance = RTC;
 
   /* Configure RTC prescaler and RTC data registers */
   /* RTC configured as follow:
@@ -135,16 +135,16 @@ void rtc_init(void) {
       - OutPut         = Output Disable
       - OutPutPolarity = High Polarity
       - OutPutType     = Open Drain */ 
-  RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
-  RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
-  RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
-  RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
-  RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  RTCHandle.Init.HourFormat = RTC_HOURFORMAT_24;
+  RTCHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
+  RTCHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
+  RTCHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
+  RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
   
     machine_uint_t tick = HAL_GetTick();
 
-  if(HAL_RTC_Init(&RtcHandle) != HAL_OK)
+  if(HAL_RTC_Init(&RTCHandle) != HAL_OK)
   {
     /* Initialization Error */
     //Error_Handler(); 
@@ -156,7 +156,7 @@ void rtc_init(void) {
 
   /*##-2- Check if Data stored in BackUp register0: No Need to reconfigure RTC#*/
   /* Read the Back Up Register 0 Data */
-  if(HAL_RTCEx_BKUPRead(&RtcHandle, RTC_BKP_DR0) != 0x32F2)
+  if(HAL_RTCEx_BKUPRead(&RTCHandle, RTC_BKP_DR0) != 0x32F2)
   {  
     /* Configure RTC Calendar */
     RTC_CalendarConfig();
@@ -193,7 +193,7 @@ static void RTC_CalendarConfig(void)
   sdatestructure.Date = 0x18;
   sdatestructure.WeekDay = RTC_WEEKDAY_TUESDAY;
   
-  if(HAL_RTC_SetDate(&RtcHandle,&sdatestructure,FORMAT_BCD) != HAL_OK)
+  if(HAL_RTC_SetDate(&RTCHandle,&sdatestructure,FORMAT_BCD) != HAL_OK)
   {
     /* Initialization Error */
     //Error_Handler(); 
@@ -209,7 +209,7 @@ static void RTC_CalendarConfig(void)
   stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE ;
   stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
   
-  if(HAL_RTC_SetTime(&RtcHandle,&stimestructure,FORMAT_BCD) != HAL_OK)
+  if(HAL_RTC_SetTime(&RTCHandle,&stimestructure,FORMAT_BCD) != HAL_OK)
   {
     /* Initialization Error */
     //Error_Handler(); 
@@ -217,25 +217,86 @@ static void RTC_CalendarConfig(void)
   }
   
   /*##-3- Writes a data in a RTC Backup data Register0 #######################*/
-  HAL_RTCEx_BKUPWrite(&RtcHandle,RTC_BKP_DR0,0x32F2);  
+  HAL_RTCEx_BKUPWrite(&RTCHandle,RTC_BKP_DR0,0x32F2);  
 }
 
 /******************************************************************************/
 // Micro Python bindings
 
-mp_obj_t pyb_rtc_info(void) {
+typedef struct _pyb_rtc_obj_t {
+    mp_obj_base_t base;
+} pyb_rtc_obj_t;
+
+STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
+
+STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_check_nargs(n_args, 0, 0, n_kw, false);
+
+    // return constant object
+    return (mp_obj_t)&pyb_rtc_obj;
+}
+
+mp_obj_t pyb_rtc_info(mp_obj_t self_in) {
     return mp_obj_new_int(rtc_info);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_rtc_info_obj, pyb_rtc_info);
+mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        // get date and time
+        // note: need to call get time then get date to correctly access the registers
+        RTC_DateTypeDef date;
+        RTC_TimeTypeDef time;
+        HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
+        HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+        mp_obj_t tuple[8] = {
+            mp_obj_new_int(2000 + date.Year),
+            mp_obj_new_int(date.Month),
+            mp_obj_new_int(date.Date),
+            mp_obj_new_int(date.WeekDay),
+            mp_obj_new_int(time.Hours),
+            mp_obj_new_int(time.Minutes),
+            mp_obj_new_int(time.Seconds),
+            mp_obj_new_int(time.SubSeconds),
+        };
+        return mp_obj_new_tuple(8, tuple);
+    } else {
+        // set date and time
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(args[1], 8, &items);
 
-mp_obj_t pyb_rtc_read(void) {
-    RTC_TimeTypeDef time;
-    RTC_DateTypeDef date;
-    HAL_RTC_GetTime(&RtcHandle, &time, FORMAT_BIN);
-    HAL_RTC_GetDate(&RtcHandle, &date, FORMAT_BIN);
-    printf("%02d-%02d-%04d %02d:%02d:%02d\n",date.Date, date.Month, 2000 + date.Year, time.Hours, time.Minutes, time.Seconds);
-    return mp_const_none;
+        RTC_DateTypeDef date;
+        date.Year = mp_obj_get_int(items[0]) - 2000;
+        date.Month = mp_obj_get_int(items[1]);
+        date.Date = mp_obj_get_int(items[2]);
+        date.WeekDay = mp_obj_get_int(items[3]);
+        HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BCD);
+
+        RTC_TimeTypeDef time;
+        time.Hours = mp_obj_get_int(items[4]);
+        time.Minutes = mp_obj_get_int(items[5]);
+        time.Seconds = mp_obj_get_int(items[6]);
+        time.SubSeconds = mp_obj_get_int(items[7]);
+        time.TimeFormat = RTC_HOURFORMAT12_AM;
+        time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+        time.StoreOperation = RTC_STOREOPERATION_SET;
+        HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BCD);
+
+        return mp_const_none;
+    }
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_rtc_read_obj, pyb_rtc_read);
+STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
+};
+STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
+
+const mp_obj_type_t pyb_rtc_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_RTC,
+    .make_new = pyb_rtc_make_new,
+    .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
+};

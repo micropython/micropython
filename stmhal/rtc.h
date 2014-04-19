@@ -1,4 +1,4 @@
-void rtc_init(void);
+extern RTC_HandleTypeDef RTCHandle;
+extern const mp_obj_type_t pyb_rtc_type;
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_rtc_info_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_rtc_read_obj);
+void rtc_init(void);

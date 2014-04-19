@@ -39,8 +39,12 @@ Q(FileIO)
 // Entries for sys.path
 Q(0:/)
 Q(0:/lib)
-Q(rtc_info)
 Q(millis)
+
+// for RTC class
+Q(RTC)
+Q(info)
+Q(datetime)
 
 // for Pin class
 Q(Pin)

@@ -268,8 +268,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
 #if MICROPY_HW_ENABLE_RTC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&pyb_rtc_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rtc_info), (mp_obj_t)&pyb_rtc_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC), (mp_obj_t)&pyb_rtc_type },
 #endif
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_type },

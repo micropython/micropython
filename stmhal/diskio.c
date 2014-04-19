@@ -9,11 +9,19 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include "ff.h"        /* FatFs lower layer API */
-#include "diskio.h"        /* FatFs lower layer API */
+
+#include "stm32f4xx_hal.h"
+
 #include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "obj.h"
+#include "systick.h"
+#include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
+#include "ff.h"        /* FatFs lower layer API */
+#include "diskio.h"        /* FatFs lower layer API */
 
 const PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
@@ -190,12 +198,9 @@ DWORD get_fattime (
     void
 )
 {
-    // TODO replace with call to RTC
-    int year = 2013;
-    int month = 10;
-    int day = 12;
-    int hour = 21;
-    int minute = 42;
-    int second = 13;
-    return ((year - 1980) << 25) | ((month) << 21) | ((day) << 16) | ((hour) << 11) | ((minute) << 5) | (second / 2);
+    RTC_TimeTypeDef time;
+    RTC_DateTypeDef date;
+    HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
+    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+    return ((2000 + date.Year - 1980) << 25) | ((date.Month) << 21) | ((date.Date) << 16) | ((time.Hours) << 11) | ((time.Minutes) << 5) | (time.Seconds / 2);
 }
