@@ -7,9 +7,11 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
+#define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PATH_MAX            (128)
+#define MICROPY_USE_COMPUTED_GOTO   (1)
 /* Enable FatFS LFNs
     0: Disable LFN feature.
     1: Enable LFN with static working buffer on the BSS. Always NOT reentrant.
@@ -18,6 +20,7 @@
 */
 #define MICROPY_ENABLE_LFN          (1)
 #define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_MOD_SYS_STDFILES    (1)
 
 // extra built in names to add to the global namespace
 extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;
@@ -31,11 +34,18 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t time_module;
 #define MICROPY_EXTRA_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+
+// extra constants
+#define MICROPY_EXTRA_CONSTANTS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
 // type definitions for the specific machine
 

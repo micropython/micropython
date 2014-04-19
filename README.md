@@ -1,3 +1,7 @@
+[![Build Status][travis-img]][travis-repo]
+[travis-img]:  https://travis-ci.org/micropython/micropython.png?branch=master
+[travis-repo]: https://travis-ci.org/micropython/micropython
+
 The Micro Python project
 ========================
 <p align="center">
@@ -9,8 +13,7 @@ of Python 3.x on a microcontroller.
 
 WARNING: this project is in its early stages and is subject to large
 changes of the code-base, including project-wide name changes and API
-changes.  The software will not start to mature until March 2014 at the
-earliest.
+changes.
 
 See the repository www.github.com/micropython/pyboard for the Micro
 Python board.
@@ -20,19 +23,21 @@ Major components in this repository:
 - unix/ -- a version of Micro Python that runs on Unix.
 - stmhal/ -- a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG (using ST's new Cube HAL drivers).
-- stm/ -- obsolete version of Micro Python for the Micro Python board
-  that uses ST's old peripheral drivers.
 - teensy/ -- a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 
 Additional components:
+- bare-arm/ -- a bare minimum version of Micro Python for ARM MCUs.  Start
+  with this if you want to port Micro Python to another microcontroller.
+- stm/ -- obsolete version of Micro Python for the Micro Python board
+  that uses ST's old peripheral drivers.
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and python (2.7 or 3.3).
+You will also need bash and Python (at least 2.7 or 3.3).
 
 The Unix version
 ----------------
@@ -54,7 +59,8 @@ Then to test it:
 
 Debian/Ubuntu/Mint derivative Linux distros will require build-essentials and
 libreadline-dev packages installed. To build FFI (Foreign Function Interface)
-module (recommended, enable in unix/mpconfigport.mk), libffi-dev is required.
+module, libffi-dev package is required. If you have problems with some
+dependencies, they can be disabled in unix/mpconfigport.mk .
 
 The STM version
 ---------------

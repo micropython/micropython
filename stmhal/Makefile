@@ -18,6 +18,7 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I$(PY_SRC)
+INC += -I$(BUILD)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
@@ -64,26 +65,25 @@ SRC_C = \
 	timer.c \
 	led.c \
 	pin.c \
-	pin_map.c \
 	pin_named_pins.c \
 	usart.c \
 	usb.c \
 	printf.c \
 	math.c \
-	malloc0.c \
+	mathsincos.c \
 	gccollect.c \
 	pybstdio.c \
 	readline.c \
 	pyexec.c \
 	help.c \
 	input.c \
-	modpyb.c \
 	modos.c \
+	modpyb.c \
+	modstm.c \
 	modtime.c \
 	import.c \
 	lexerfatfs.c \
-	gpio.c \
-	exti.c \
+	extint.c \
 	usrsw.c \
 	rng.c \
 	rtc.c \
@@ -207,22 +207,40 @@ BOARD_PINS = boards/$(BOARD)/pins.csv
 AF_FILE = boards/stm32f4xx-af.csv
 PREFIX_FILE = boards/stm32f4xx-prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
-GEN_PINS_HDR = $(BUILD)/pins.h
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+
+INSERT_USB_IDS = ../tools/insert-usb-ids.py
+FILE2H = ../tools/file2h.py
+
+USB_IDS_FILE = usbd_desc_cdc_msc.c
+CDCINF_TEMPLATE = pybcdc.inf_template
+GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
+GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(BUILD)/pins.h
+$(OBJ): | $(HEADER_BUILD)/pins.h
+
+$(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(BUILD)/%.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
+
+$(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(FILE2H) $< > $@
+
+$(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
 include ../py/mkrules.mk

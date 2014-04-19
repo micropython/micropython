@@ -29,12 +29,9 @@ mp_obj_t mp_load_const_dec(qstr qstr);
 mp_obj_t mp_load_const_str(qstr qstr);
 mp_obj_t mp_load_const_bytes(qstr qstr);
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args);
-mp_obj_t mp_make_function_from_id_and_free(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_function_n(int n_args, void *fun); // fun must have the correct signature for n_args fixed arguments
 mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun);
 mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun); // min and max are inclusive
-mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args);
 
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);
@@ -51,20 +48,20 @@ mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
-void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 
 mp_obj_t mp_getiter(mp_obj_t o);
-mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_NULL instead of raising StopIteration()
-mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_NULL instead of raising StopIteration(...)
+mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATION instead of raising StopIteration()
+mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
 
-extern mp_obj_t mp_sys_path;
 mp_map_t *mp_loaded_modules_get(void);
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
-mp_obj_t mp_import_module_from(mp_obj_t module, qstr name);
-
+extern struct _mp_obj_list_t mp_sys_path_obj;
+extern struct _mp_obj_list_t mp_sys_argv_obj;
+#define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)
+#define mp_sys_argv ((mp_obj_t)&mp_sys_argv_obj)

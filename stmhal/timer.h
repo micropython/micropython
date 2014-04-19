@@ -5,6 +5,8 @@
 
 extern TIM_HandleTypeDef TIM3_Handle;
 extern TIM_HandleTypeDef TIM5_Handle;
+extern TIM_HandleTypeDef TIM6_Handle;
 
 void timer_tim3_init(void);
 void timer_tim5_init(void);
+void timer_tim6_init(uint freq);

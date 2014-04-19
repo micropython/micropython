@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_gpio.h>
-#include "std.h"
+#include "stm32f4xx_hal.h"
 
 #include "misc.h"
 #include "systick.h"
@@ -14,17 +12,17 @@
 #include "lexer.h"
 #include "parse.h"
 #include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
 #include "runtime.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
 #include "usart.h"
 #include "timer.h"
 #include "led.h"
-#include "exti.h"
+#include "pin.h"
+#include "extint.h"
 #include "usrsw.h"
 #include "usb.h"
 #include "rtc.h"
@@ -37,7 +35,6 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "pin.h"
 #if 0
 #include "pybwlan.h"
 #endif
@@ -64,12 +61,25 @@ void flash_error(int n) {
 }
 
 void __fatal_error(const char *msg) {
-#if MICROPY_HW_HAS_LCD
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    led_state(1, 1);
+    led_state(2, 1);
+    led_state(3, 1);
+    led_state(4, 1);
+    stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    stdout_tx_strn(msg, strlen(msg));
+#if 0 && MICROPY_HW_HAS_LCD
     lcd_print_strn("\nFATAL ERROR:\n", 14);
     lcd_print_strn(msg, strlen(msg));
 #endif
-    for (;;) {
-        flash_error(1);
+    for (uint i = 0;;) {
+        led_toggle(((i++) & 3) + 1);
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
+        }
+        if (i >= 8) {
+            __WFI();
+        }
     }
 }
 
@@ -109,16 +119,6 @@ STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
 
-void fatality(void) {
-    led_state(PYB_LED_R1, 1);
-    led_state(PYB_LED_G1, 1);
-    led_state(PYB_LED_R2, 1);
-    led_state(PYB_LED_G2, 1);
-    for (;;) {
-        flash_error(1);
-    }
-}
-
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\n"
 "# can run arbitrary Python, but best to keep it minimal\n"
@@ -134,7 +134,22 @@ static const char fresh_main_py[] =
 ;
 
 static const char fresh_pybcdc_inf[] =
-#include "pybcdc.h"
+#include "genhdr/pybcdc_inf.h"
+;
+
+static const char fresh_readme_txt[] =
+"This is a Micro Python board\r\n"
+"\r\n"
+"You can get started right away by writing your Python code in 'main.py'.\r\n"
+"\r\n"
+"For a serial prompt:\r\n"
+" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
+"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+"   Then use a terminal program like Hyperterminal or putty.\r\n"
+" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
+" - Linux: use the command: screen /dev/ttyACM0\r\n"
+"\r\n"
+"Please visit http://micropython.org/help/ for further help.\r\n"
 ;
 
 int main(void) {
@@ -254,8 +269,15 @@ soft_reset:
     // Change #if 0 to #if 1 if you want REPL on USART_6 (or another usart)
     // as well as on USB VCP
 #if 0
-    pyb_usart_global_debug = pyb_Usart(MP_OBJ_NEW_SMALL_INT(PYB_USART_YA),
-                                       MP_OBJ_NEW_SMALL_INT(115200));
+    {
+        mp_obj_t args[2] = {
+            MP_OBJ_NEW_SMALL_INT(PYB_USART_6),
+            MP_OBJ_NEW_SMALL_INT(115200),
+        };
+        pyb_usart_global_debug = pyb_usart_type.make_new((mp_obj_t)&pyb_usart_type,
+                                                         sizeof(args) / sizeof(args[0]),
+                                                         0, args);
+    }
 #else
     pyb_usart_global_debug = NULL;
 #endif
@@ -263,17 +285,18 @@ soft_reset:
     // Micro Python init
     qstr_init();
     mp_init();
-    mp_obj_t def_path[2];
-    def_path[0] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_);
-    def_path[1] = MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib);
-    mp_sys_path = mp_obj_new_list(2, def_path);
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_0_colon__slash_lib));
+    mp_obj_list_init(mp_sys_argv, 0);
 
     readline_init();
 
-    exti_init();
+    pin_init();
+    extint_init();
 
 #if MICROPY_HW_HAS_SWITCH
-    // must come after exti_init
+    // must come after extint_init
     switch_init();
 #endif
 
@@ -281,8 +304,6 @@ soft_reset:
     // LCD init (just creates class, init hardware by calling LCD())
     lcd_init();
 #endif
-
-    pin_map_init();
 
     // local filesystem init
     {
@@ -313,6 +334,11 @@ soft_reset:
             // create .inf driver file
             f_open(&fp, "0:/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
             f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
+            f_close(&fp);
+
+            // create readme file
+            f_open(&fp, "0:/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
+            f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
             f_close(&fp);
 
             // keep LED on for at least 200ms

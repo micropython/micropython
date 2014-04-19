@@ -20,6 +20,9 @@ typedef struct _mp_obj_exception_t {
 // Instance of MemoryError exception - needed by mp_malloc_fail
 const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, {{&mp_type_tuple}, 0}};
 
+// Local non-heap memory for allocating an exception when we run out of RAM
+STATIC mp_obj_exception_t mp_emergency_exception_obj;
+
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
@@ -51,7 +54,13 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
     }
 
-    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, n_args);
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, n_args);
+    if (o == NULL) {
+        // Couldn't allocate heap memory; use local data instead.
+        o = &mp_emergency_exception_obj;
+        // We can't store any args.
+        n_args = 0;
+    }
     o->base.type = type;
     o->traceback = MP_OBJ_NULL;
     o->args.base.type = &mp_type_tuple;
@@ -196,25 +205,35 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
     // make exception object
-    mp_obj_exception_t *o = m_new_obj_var(mp_obj_exception_t, mp_obj_t, 1);
-    o->base.type = exc_type;
-    o->traceback = MP_OBJ_NULL;
-    o->args.base.type = &mp_type_tuple;
-    o->args.len = 1;
-
-    if (fmt == NULL) {
-        // no message
-        assert(0);
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 1);
+    if (o == NULL) {
+        // Couldn't allocate heap memory; use local data instead.
+        // Unfortunately, we won't be able to format the string...
+        o = &mp_emergency_exception_obj;
+        o->base.type = exc_type;
+        o->traceback = MP_OBJ_NULL;
+        o->args.base.type = &mp_type_tuple;
+        o->args.len = 0;
     } else {
-        // render exception message and store as .args[0]
-        // TODO: optimize bufferbloat
-        vstr_t *vstr = vstr_new();
-        va_list ap;
-        va_start(ap, fmt);
-        vstr_vprintf(vstr, fmt, ap);
-        va_end(ap);
-        o->args.items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
-        vstr_free(vstr);
+        o->base.type = exc_type;
+        o->traceback = MP_OBJ_NULL;
+        o->args.base.type = &mp_type_tuple;
+        o->args.len = 1;
+
+        if (fmt == NULL) {
+            // no message
+            assert(0);
+        } else {
+            // render exception message and store as .args[0]
+            // TODO: optimize bufferbloat
+            vstr_t *vstr = vstr_new();
+            va_list ap;
+            va_start(ap, fmt);
+            vstr_vprintf(vstr, fmt, ap);
+            va_end(ap);
+            o->args.items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+            vstr_free(vstr);
+        }
     }
 
     return o;
@@ -259,7 +278,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
     // make sure self_in is an exception instance
     // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
-    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new) {
+    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new && self_in != &mp_emergency_exception_obj) {
         mp_obj_exception_t *self = self_in;
 
         // for traceback, we are just using the list object for convenience, it's not really a list of Python objects

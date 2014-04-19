@@ -22,12 +22,18 @@
         qstr = (qstr << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0); \
 }
+#define DECODE_PTR do { \
+    ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
+    unum = *(machine_uint_t*)ip; \
+    ip += sizeof(machine_uint_t); \
+} while (0)
 
 void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
     machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    const byte *code_info = ip;
     ip += code_info_size;
 
     // bytecode prelude: state size and exception stack size; 16 bit uints
@@ -49,6 +55,21 @@ void mp_byte_code_print(const byte *ip, int len) {
         }
         len -= ip - ip_start;
         ip_start = ip;
+    }
+
+    // print out line number info
+    {
+        qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
+        qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
+        printf("File %s, block %s\n", qstr_str(source_file), qstr_str(block_name));
+        machine_int_t bc = (code_info + code_info_size) - ip;
+        machine_uint_t source_line = 1;
+        printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
+        for (const byte* ci = code_info + 12; *ci; ci++) {
+            bc += *ci & 31;
+            source_line += *ci >> 5;
+            printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
+        }
     }
 
     machine_uint_t unum;
@@ -98,12 +119,21 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_LOAD_CONST_ID:
                 DECODE_QSTR;
-                printf("LOAD_CONST_ID %s", qstr_str(qstr));
+                printf("LOAD_CONST_ID '%s'", qstr_str(qstr));
+                break;
+
+            case MP_BC_LOAD_CONST_BYTES:
+                DECODE_QSTR;
+                printf("LOAD_CONST_BYTES %s", qstr_str(qstr));
                 break;
 
             case MP_BC_LOAD_CONST_STRING:
                 DECODE_QSTR;
-                printf("LOAD_CONST_STRING %s", qstr_str(qstr));
+                printf("LOAD_CONST_STRING '%s'", qstr_str(qstr));
+                break;
+
+            case MP_BC_LOAD_NULL:
+                printf("LOAD_NULL");
                 break;
 
             case MP_BC_LOAD_FAST_0:
@@ -121,11 +151,6 @@ void mp_byte_code_print(const byte *ip, int len) {
             case MP_BC_LOAD_FAST_N:
                 DECODE_UINT;
                 printf("LOAD_FAST_N " UINT_FMT, unum);
-                break;
-
-            case MP_BC_LOAD_FAST_CHECKED:
-                DECODE_UINT;
-                printf("LOAD_FAST_CHECKED " UINT_FMT, unum);
                 break;
 
             case MP_BC_LOAD_DEREF:
@@ -155,6 +180,10 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_LOAD_BUILD_CLASS:
                 printf("LOAD_BUILD_CLASS");
+                break;
+
+            case MP_BC_LOAD_SUBSCR:
+                printf("LOAD_SUBSCR");
                 break;
 
             case MP_BC_STORE_FAST_0:
@@ -385,22 +414,22 @@ void mp_byte_code_print(const byte *ip, int len) {
                 break;
 
             case MP_BC_MAKE_FUNCTION:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_FUNCTION " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_FUNCTION_DEFARGS:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_FUNCTION_DEFARGS " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_CLOSURE:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_CLOSURE " UINT_FMT, unum);
                 break;
 
             case MP_BC_MAKE_CLOSURE_DEFARGS:
-                DECODE_UINT;
+                DECODE_PTR;
                 printf("MAKE_CLOSURE_DEFARGS " UINT_FMT, unum);
                 break;
 
@@ -443,12 +472,12 @@ void mp_byte_code_print(const byte *ip, int len) {
 
             case MP_BC_IMPORT_NAME:
                 DECODE_QSTR;
-                printf("IMPORT_NAME %s", qstr_str(qstr));
+                printf("IMPORT_NAME '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_IMPORT_FROM:
                 DECODE_QSTR;
-                printf("IMPORT_FROM %s", qstr_str(qstr));
+                printf("IMPORT_FROM '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_IMPORT_STAR:

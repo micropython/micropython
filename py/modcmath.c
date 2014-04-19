@@ -1,0 +1,131 @@
+#include <math.h>
+
+#include "misc.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "obj.h"
+#include "builtin.h"
+
+#if MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_CMATH
+
+// These are defined in modmath.c
+extern const mp_obj_float_t mp_math_e_obj;
+extern const mp_obj_float_t mp_math_pi_obj;
+
+mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    return mp_obj_new_float(MICROPY_FLOAT_C_FUN(atan2)(imag, real));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_phase_obj, mp_cmath_phase);
+
+mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    mp_obj_t tuple[2] = {
+        mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag)),
+        mp_obj_new_float(MICROPY_FLOAT_C_FUN(atan2)(imag, real)),
+    };
+    return mp_obj_new_tuple(2, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_polar_obj, mp_cmath_polar);
+
+mp_obj_t mp_cmath_rect(mp_obj_t r_obj, mp_obj_t phi_obj) {
+    mp_float_t r = mp_obj_get_float(r_obj);
+    mp_float_t phi = mp_obj_get_float(phi_obj);
+    return mp_obj_new_complex(r * MICROPY_FLOAT_C_FUN(cos)(phi), r * MICROPY_FLOAT_C_FUN(sin)(phi));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_cmath_rect_obj, mp_cmath_rect);
+
+mp_obj_t mp_cmath_exp(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    mp_float_t exp_real = MICROPY_FLOAT_C_FUN(exp)(real);
+    return mp_obj_new_complex(exp_real * MICROPY_FLOAT_C_FUN(cos)(imag), exp_real * MICROPY_FLOAT_C_FUN(sin)(imag));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_exp_obj, mp_cmath_exp);
+
+// TODO can take second argument, being the base
+mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    return mp_obj_new_complex(0.5 * MICROPY_FLOAT_C_FUN(log)(real*real + imag*imag), MICROPY_FLOAT_C_FUN(atan2)(imag, real));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
+
+mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    return mp_obj_new_complex(0.5 * MICROPY_FLOAT_C_FUN(log10)(real*real + imag*imag), MICROPY_FLOAT_C_FUN(atan2)(imag, real));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
+
+mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    mp_float_t sqrt_abs = MICROPY_FLOAT_C_FUN(pow)(real*real + imag*imag, 0.25);
+    mp_float_t theta = 0.5 * MICROPY_FLOAT_C_FUN(atan2)(imag, real);
+    return mp_obj_new_complex(sqrt_abs * cos(theta), sqrt_abs * sin(theta));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
+
+mp_obj_t mp_cmath_cos(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    return mp_obj_new_complex(MICROPY_FLOAT_C_FUN(cos)(real) * MICROPY_FLOAT_C_FUN(cosh)(imag), -MICROPY_FLOAT_C_FUN(sin)(real) * MICROPY_FLOAT_C_FUN(sinh)(imag));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_cos_obj, mp_cmath_cos);
+
+mp_obj_t mp_cmath_sin(mp_obj_t z_obj) {
+    mp_float_t real, imag;
+    mp_obj_get_complex(z_obj, &real, &imag);
+    return mp_obj_new_complex(MICROPY_FLOAT_C_FUN(sin)(real) * MICROPY_FLOAT_C_FUN(cosh)(imag), MICROPY_FLOAT_C_FUN(cos)(real) * MICROPY_FLOAT_C_FUN(sinh)(imag));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
+
+STATIC const mp_map_elem_t mp_module_cmath_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_cmath) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_e), (mp_obj_t)&mp_math_e_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pi), (mp_obj_t)&mp_math_pi_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_phase), (mp_obj_t)&mp_cmath_phase_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_polar), (mp_obj_t)&mp_cmath_polar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rect), (mp_obj_t)&mp_cmath_rect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&mp_cmath_exp_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&mp_cmath_log_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&mp_cmath_log10_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&mp_cmath_sqrt_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&mp_cmath_acos_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&mp_cmath_asin_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_atan), (mp_obj_t)&mp_cmath_atan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&mp_cmath_cos_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&mp_cmath_sin_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&mp_cmath_tan_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&mp_cmath_acosh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&mp_cmath_asinh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_atanh), (mp_obj_t)&mp_cmath_atanh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&mp_cmath_cosh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&mp_cmath_sinh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&mp_cmath_tanh_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isfinite), (mp_obj_t)&mp_cmath_isfinite_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isinf), (mp_obj_t)&mp_cmath_isinf_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_isnan), (mp_obj_t)&mp_cmath_isnan_obj },
+};
+
+STATIC const mp_obj_dict_t mp_module_cmath_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_cmath_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_cmath_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_cmath_globals_table,
+    },
+};
+
+const mp_obj_module_t mp_module_cmath = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_cmath,
+    .globals = (mp_obj_dict_t*)&mp_module_cmath_globals,
+};
+
+#endif // MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_CMATH

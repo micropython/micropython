@@ -35,6 +35,14 @@
 #include "diskio.h"
 #include "sdcard.h"
 
+// These are needed to support removal of the medium, so that the USB drive
+// can be unmounted, and won't be remounted automatically.
+static uint8_t flash_removed = 0;
+
+#if MICROPY_HW_HAS_SDCARD
+static uint8_t sdcard_removed = 0;
+#endif
+
 /******************************************************************************/
 // Callback functions for when the internal flash is the mass storage device
 
@@ -83,6 +91,9 @@ int8_t FLASH_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *blo
   * @retval Status
   */
 int8_t FLASH_STORAGE_IsReady(uint8_t lun) {
+    if (flash_removed) {
+        return -1;
+    }
     return 0;
 }
 
@@ -93,6 +104,18 @@ int8_t FLASH_STORAGE_IsReady(uint8_t lun) {
   */
 int8_t FLASH_STORAGE_IsWriteProtected(uint8_t lun) {
     return  0;
+}
+
+// Remove the lun
+int8_t FLASH_STORAGE_StopUnit(uint8_t lun) {
+    flash_removed = 1;
+    return 0;
+}
+
+int8_t FLASH_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
+    // sync the flash so that the cache is cleared and the device can be unplugged/turned off
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    return 0;
 }
 
 /**
@@ -132,7 +155,6 @@ int8_t FLASH_STORAGE_Write (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
         }
     }
     */
-    storage_flush(); // XXX hack for now so that the cache is always flushed
     return 0;
 }
 
@@ -150,6 +172,8 @@ const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops = {
     FLASH_STORAGE_GetCapacity,
     FLASH_STORAGE_IsReady,
     FLASH_STORAGE_IsWriteProtected,
+    FLASH_STORAGE_StopUnit,
+    FLASH_STORAGE_PreventAllowMediumRemoval,
     FLASH_STORAGE_Read,
     FLASH_STORAGE_Write,
     FLASH_STORAGE_GetMaxLun,
@@ -236,6 +260,9 @@ int8_t SDCARD_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *bl
   * @retval Status
   */
 int8_t SDCARD_STORAGE_IsReady(uint8_t lun) {
+    if (sdcard_removed) {
+        return -1;
+    }
     /*
 #ifndef USE_STM3210C_EVAL  
   
@@ -268,6 +295,16 @@ int8_t SDCARD_STORAGE_IsReady(uint8_t lun) {
   * @retval Status
   */
 int8_t SDCARD_STORAGE_IsWriteProtected(uint8_t lun) {
+    return 0;
+}
+
+// Remove the lun
+int8_t SDCARD_STORAGE_StopUnit(uint8_t lun) {
+    sdcard_removed = 1;
+    return 0;
+}
+
+int8_t SDCARD_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
     return 0;
 }
 
@@ -315,6 +352,8 @@ const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops = {
     SDCARD_STORAGE_GetCapacity,
     SDCARD_STORAGE_IsReady,
     SDCARD_STORAGE_IsWriteProtected,
+    SDCARD_STORAGE_StopUnit,
+    SDCARD_STORAGE_PreventAllowMediumRemoval,
     SDCARD_STORAGE_Read,
     SDCARD_STORAGE_Write,
     SDCARD_STORAGE_GetMaxLun,

@@ -9,6 +9,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "objfun.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "bc.h"
@@ -29,26 +30,27 @@ STATIC void check_nargs(mp_obj_fun_native_t *self, int n_args, int n_kw) {
 }
 
 void mp_check_nargs(int n_args, machine_uint_t n_args_min, machine_uint_t n_args_max, int n_kw, bool is_kw) {
+    // TODO maybe take the function name as an argument so we can print nicer error messages
+
     if (n_kw && !is_kw) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                                          "function does not take keyword arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
     }
 
     if (n_args_min == n_args_max) {
         if (n_args != n_args_min) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                     "function takes %d positional arguments but %d were given",
-                                                     n_args_min, n_args));
+                                                    "function takes %d positional arguments but %d were given",
+                                                    n_args_min, n_args));
         }
     } else {
         if (n_args < n_args_min) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                    "<fun name>() missing %d required positional arguments: <list of names of params>",
+                                                    "function missing %d required positional arguments",
                                                     n_args_min - n_args));
         } else if (n_args > n_args_max) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                                     "<fun name> expected at most %d arguments, got %d",
-                                                     n_args_max, n_args));
+                                                    "function expected at most %d arguments, got %d",
+                                                    n_args_max, n_args));
         }
     }
 }
@@ -150,18 +152,6 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 /******************************************************************************/
 /* byte code functions                                                        */
 
-typedef struct _mp_obj_fun_bc_t {
-    mp_obj_base_t base;
-    mp_obj_dict_t *globals; // the context within which this function was defined
-    machine_uint_t n_args : 15;         // number of arguments this function takes
-    machine_uint_t n_def_args : 15;     // number of default arguments
-    machine_uint_t takes_var_args : 1;  // set if this function takes variable args
-    machine_uint_t takes_kw_args : 1;   // set if this function takes keyword args
-    const byte *bytecode;   // bytecode for the function
-    qstr *args;             // argument names (needed to resolve positional args passed as keywords)
-    mp_obj_t extra_args[];  // values of default args (if any), plus a slot at the end for var args and/or kw args (if it takes them)
-} mp_obj_fun_bc_t;
-
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, int sz) {
     DEBUG_printf("%p: ", a);
@@ -229,7 +219,8 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     if (n_args > self->n_args) {
         // given more than enough arguments
         if (!self->takes_var_args) {
-            goto arg_error;
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                "function takes %d positional arguments but %d were given", self->n_args, n_args));
         }
         // put extra arguments in varargs tuple
         *extra_args = mp_obj_new_tuple(n_args - self->n_args, args + self->n_args);
@@ -249,7 +240,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
                 extra_args -= self->n_args - n_args;
                 n_extra_args += self->n_args - n_args;
             } else {
-                goto arg_error;
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "function takes at least %d positional arguments but %d were given",
+                    self->n_args - self->n_def_args, n_args));
             }
         }
     }
@@ -344,9 +337,6 @@ continue2:;
     } else { // MP_VM_RETURN_EXCEPTION
         nlr_raise(result);
     }
-
-arg_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
 }
 
 const mp_obj_type_t mp_type_fun_bc = {
@@ -361,6 +351,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
     if (def_args != MP_OBJ_NULL) {
+        assert(MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
         n_def_args = def_args->len;
         n_extra_args = def_args->len;
     }
@@ -383,13 +374,6 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
         memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
     }
     return o;
-}
-
-void mp_obj_fun_bc_get(mp_obj_t self_in, int *n_args, const byte **code) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_bc));
-    mp_obj_fun_bc_t *self = self_in;
-    *n_args = self->n_args;
-    *code = self->bytecode;
 }
 
 /******************************************************************************/
@@ -421,26 +405,36 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         // pointer to the string (it's probably constant though!)
         uint l;
         return (machine_uint_t)mp_obj_str_get_data(obj, &l);
-#if MICROPY_ENABLE_FLOAT
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_float)) {
-        // convert float to int (could also pass in float registers)
-        return (machine_int_t)mp_obj_float_get(obj);
-#endif
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_tuple)) {
-        // pointer to start of tuple (could pass length, but then could use len(x) for that)
-        uint len;
-        mp_obj_t *items;
-        mp_obj_tuple_get(obj, &len, &items);
-        return (machine_uint_t)items;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_list)) {
-        // pointer to start of list (could pass length, but then could use len(x) for that)
-        uint len;
-        mp_obj_t *items;
-        mp_obj_list_get(obj, &len, &items);
-        return (machine_uint_t)items;
     } else {
-        // just pass along a pointer to the object
-        return (machine_uint_t)obj;
+        mp_obj_type_t *type = mp_obj_get_type(obj);
+        if (0) {
+#if MICROPY_ENABLE_FLOAT
+        } else if (type == &mp_type_float) {
+            // convert float to int (could also pass in float registers)
+            return (machine_int_t)mp_obj_float_get(obj);
+#endif
+        } else if (type == &mp_type_tuple) {
+            // pointer to start of tuple (could pass length, but then could use len(x) for that)
+            uint len;
+            mp_obj_t *items;
+            mp_obj_tuple_get(obj, &len, &items);
+            return (machine_uint_t)items;
+        } else if (type == &mp_type_list) {
+            // pointer to start of list (could pass length, but then could use len(x) for that)
+            uint len;
+            mp_obj_t *items;
+            mp_obj_list_get(obj, &len, &items);
+            return (machine_uint_t)items;
+        } else {
+            mp_buffer_info_t bufinfo;
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_WRITE)) {
+                // supports the buffer protocol, return a pointer to the data
+                return (machine_uint_t)bufinfo.buf;
+            } else {
+                // just pass along a pointer to the object
+                return (machine_uint_t)obj;
+            }
+        }
     }
 }
 

@@ -43,14 +43,14 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
 
         // for a const struct, this entry might be NULL
         if (type->bases_tuple == MP_OBJ_NULL) {
-            return NULL;
+            return MP_OBJ_NULL;
         }
 
         uint len;
         mp_obj_t *items;
         mp_obj_tuple_get(type->bases_tuple, &len, &items);
         if (len == 0) {
-            return NULL;
+            return MP_OBJ_NULL;
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
@@ -133,18 +133,17 @@ STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
     mp_obj_class_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
     if (op_name == 0) {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
     mp_obj_t member = mp_obj_class_lookup(self->base.type, op_name);
     if (member != MP_OBJ_NULL) {
         return mp_call_function_1(member, self_in);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
 STATIC const qstr binary_op_method_name[] = {
-    [MP_BINARY_OP_SUBSCR] = MP_QSTR___getitem__,
     /*
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
@@ -212,7 +211,7 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_class_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
     if (op_name == 0) {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
     mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name);
     if (member != MP_OBJ_NULL) {
@@ -222,22 +221,42 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         dest[2] = rhs_in;
         return mp_call_method_n_kw(1, 0, dest);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
 STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     mp_obj_class_t *self = self_in;
+
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
+        // TODO should we check for properties?
         dest[0] = elem->value;
         return;
     }
+
     mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
     if (member != MP_OBJ_NULL) {
-        class_convert_return_attr(self_in, member, dest);
+        if (0) {
+#if MICROPY_ENABLE_PROPERTY
+        } else if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+            // object member is a property
+            // delegate the store to the property
+            // TODO should this be part of class_convert_return_attr?
+            const mp_obj_t *proxy = mp_obj_property_get(member);
+            if (proxy[0] == mp_const_none) {
+                // TODO
+            } else {
+                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
+                // TODO should we convert the returned value using class_convert_return_attr?
+            }
+#endif
+        } else {
+            // not a property
+            class_convert_return_attr(self_in, member, dest);
+        }
         return;
     }
 
@@ -257,10 +276,30 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_class_t *self = self_in;
+
+#if MICROPY_ENABLE_PROPERTY
+    // for property, we need to do a lookup first in the class dict
+    // this makes all stores slow... how to fix?
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
+    if (member != MP_OBJ_NULL && MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+        // attribute already exists and is a property
+        // delegate the store to the property
+        const mp_obj_t *proxy = mp_obj_property_get(member);
+        if (proxy[1] == mp_const_none) {
+            // TODO better error message
+            return false;
+        } else {
+            mp_obj_t dest[2] = {self_in, value};
+            mp_call_function_n_kw(proxy[1], 2, 0, dest);
+            return true;
+        }
+    }
+#endif
+
     if (value == MP_OBJ_NULL) {
         // delete attribute
-        mp_map_elem_t *el = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
-        return el != NULL;
+        mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+        return elem != NULL;
     } else {
         // store attribute
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
@@ -268,20 +307,34 @@ STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     }
 }
 
-bool class_store_item(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_class_t *self = self_in;
+    mp_obj_t member;
+    uint meth_args;
     if (value == MP_OBJ_NULL) {
         // delete item
-        // TODO implement me!
-        return false;
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___delitem__);
+        meth_args = 2;
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load item
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___getitem__);
+        meth_args = 2;
+    } else {
+        // store item
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
+        meth_args = 3;
     }
-    mp_obj_class_t *self = self_in;
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
     if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
-        mp_call_function_n_kw(member, 3, 0, args);
-        return true;
+        // TODO probably need to call class_convert_return_attr, and use mp_call_method_n_kw
+        mp_obj_t ret = mp_call_function_n_kw(member, meth_args, 0, args);
+        if (value == MP_OBJ_SENTINEL) {
+            return ret;
+        } else {
+            return mp_const_none;
+        }
     } else {
-        return false;
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -420,7 +473,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->binary_op = class_binary_op;
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
-    o->store_item = class_store_item;
+    o->subscr = class_subscr;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
     return o;

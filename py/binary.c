@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -9,37 +10,55 @@
 
 // Helpers to work with binary-encoded data
 
-int mp_binary_get_size(char typecode) {
-    // This assumes that unsigned and signed types are of the same type,
-    // which is invariant for [u]intN_t.
-    switch (typecode) {
-        case BYTEARRAY_TYPECODE:
-        case 'b':
-        case 'B':
-            return sizeof(int8_t);
-        case 'h':
-        case 'H':
-            return sizeof(int16_t);
-        case 'i':
-        case 'I':
-            return sizeof(int32_t);
-        case 'l':
-        case 'L':
-            return sizeof(int32_t);
-        case 'q':
-        case 'Q':
-            return sizeof(long long);
-#if MICROPY_ENABLE_FLOAT
-        case 'f':
-            return sizeof(float);
-        case 'd':
-            return sizeof(double);
-#endif
+int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
+    int size = 0;
+    int align = 1;
+    switch (struct_type) {
+        case '<': case '>':
+            switch (val_type) {
+                case 'b': case 'B':
+                    size = 1; break;
+                case 'h': case 'H':
+                    size = 2; break;
+                case 'i': case 'I':
+                    size = 4; break;
+                case 'l': case 'L':
+                    size = 4; break;
+                case 'q': case 'Q':
+                    size = 8; break;
+            }
+            break;
+        case '@': {
+            // TODO:
+            // The simplest heuristic for alignment is to align by value
+            // size, but that doesn't work for "bigger than int" types,
+            // for example, long long may very well have long alignment
+            // So, we introduce separate alignment handling, but having
+            // formal support for that is different from actually supporting
+            // particular (or any) ABI.
+            switch (val_type) {
+                case BYTEARRAY_TYPECODE:
+                case 'b': case 'B':
+                    align = size = 1; break;
+                case 'h': case 'H':
+                    align = size = sizeof(short); break;
+                case 'i': case 'I':
+                    align = size = sizeof(int); break;
+                case 'l': case 'L':
+                    align = size = sizeof(long); break;
+                case 'q': case 'Q':
+                    // TODO: This is for x86
+                    align = sizeof(int); size = sizeof(long long); break;
+            }
+        }
     }
-    return -1;
+    if (palign != NULL) {
+        *palign = align;
+    }
+    return size;
 }
 
-mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
+mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
     machine_int_t val = 0;
     switch (typecode) {
         case 'b':
@@ -77,58 +96,103 @@ mp_obj_t mp_binary_get_val(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-mp_obj_t mp_binary_get_val_unaligned_le(char typecode, byte **ptr) {
-    machine_int_t val = 0;
+#define is_signed(typecode) (typecode > 'Z')
+mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
-    switch (typecode) {
-        case 'b':
-            val = (int8_t)*p++;
-            break;
-        case BYTEARRAY_TYPECODE:
-        case 'B':
-            val = *p++;
-            break;
-        case 'h':
-            val = (int16_t)((p[1] << 8) | p[0]);
-            break;
-        case 'H':
-            val = (p[1] << 8) | p[0];
-            break;
-        case 'i':
-        case 'l':
-            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
-            *ptr = p + 4;
-            return mp_obj_new_int(val);
-        case 'I':
-        case 'L':
-            val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
-            *ptr = p + 4;
-            return mp_obj_new_int_from_uint(val);
-#if 0 //TODO
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-        case 'q':
-        case 'Q':
-            // TODO: Explode API more to cover signedness
-            return mp_obj_new_int_from_ll(((long long*)p)[index]);
-#endif
-#if MICROPY_ENABLE_FLOAT
-        case 'f':
-            return mp_obj_new_float(((float*)p)[index]);
-        case 'd':
-            return mp_obj_new_float(((double*)p)[index]);
-#endif
-#endif
+    uint align;
+
+    int size = mp_binary_get_size(struct_type, val_type, &align);
+    if (struct_type == '@') {
+        // Make pointer aligned
+        p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
+        #if MP_ENDIANNESS_LITTLE
+        struct_type = '<';
+        #else
+        struct_type = '>';
+        #endif
     }
-    *ptr = p;
-    return MP_OBJ_NEW_SMALL_INT(val);
+
+    int delta;
+    if (struct_type == '<') {
+        delta = -1;
+        p += size - 1;
+    } else {
+        delta = 1;
+    }
+
+    machine_int_t val = 0;
+    if (is_signed(val_type) && *p & 0x80) {
+        val = -1;
+    }
+    for (uint i = 0; i < size; i++) {
+        val <<= 8;
+        val |= *p;
+        p += delta;
+    }
+
+    *ptr += size;
+    if (is_signed(val_type)) {
+        return mp_obj_new_int(val);
+    } else {
+        return mp_obj_new_int_from_uint(val);
+    }
 }
 
-void mp_binary_set_val(char typecode, void *p, int index, mp_obj_t val_in) {
-    machine_int_t val = 0;
-    if (MP_OBJ_IS_INT(val_in)) {
-        val = mp_obj_int_get(val_in);
+void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr) {
+    byte *p = *ptr;
+    uint align;
+
+    int size = mp_binary_get_size(struct_type, val_type, &align);
+    if (struct_type == '@') {
+        // Make pointer aligned
+        p = (byte*)(((machine_uint_t)p + align - 1) & ~(align - 1));
+        #if MP_ENDIANNESS_LITTLE
+        struct_type = '<';
+        #else
+        struct_type = '>';
+        #endif
     }
 
+#if MP_ENDIANNESS_BIG
+#error Not implemented
+#endif
+    machine_int_t val = mp_obj_int_get_checked(val_in);
+    byte *in = (byte*)&val;
+    int in_delta, out_delta;
+    uint val_sz = MIN(size, sizeof(val));
+    if (struct_type == '>') {
+        in_delta = -1;
+        out_delta = 1;
+        in += val_sz - 1;
+    } else {
+        in_delta = out_delta = 1;
+    }
+
+    for (uint i = val_sz; i > 0; i--) {
+        *p = *in;
+        p += out_delta;
+        in += in_delta;
+    }
+
+    *ptr += size;
+}
+
+void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
+    switch (typecode) {
+#if MICROPY_ENABLE_FLOAT
+        case 'f':
+            ((float*)p)[index] = mp_obj_float_get(val_in);
+            break;
+        case 'd':
+            ((double*)p)[index] = mp_obj_float_get(val_in);
+            break;
+#endif
+        default:
+            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
+    }
+}
+
+void mp_binary_set_val_array_from_int(char typecode, void *p, int index, machine_int_t val) {
     switch (typecode) {
         case 'b':
             ((int8_t*)p)[index] = val;
@@ -160,10 +224,10 @@ void mp_binary_set_val(char typecode, void *p, int index, mp_obj_t val_in) {
 #endif
 #if MICROPY_ENABLE_FLOAT
         case 'f':
-            ((float*)p)[index] = mp_obj_float_get(val_in);
+            ((float*)p)[index] = val;
             break;
         case 'd':
-            ((double*)p)[index] = mp_obj_float_get(val_in);
+            ((double*)p)[index] = val;
             break;
 #endif
     }

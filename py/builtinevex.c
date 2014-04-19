@@ -25,12 +25,15 @@ STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse
     // parse the string
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_error_kind);
-    mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; raise exception
-        nlr_raise(mp_parse_make_exception(parse_error_kind));
+        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
+        mp_lexer_free(lex);
+        nlr_raise(exc);
     }
+
+    mp_lexer_free(lex);
 
     // compile the string
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);

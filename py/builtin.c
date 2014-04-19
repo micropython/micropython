@@ -6,6 +6,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objstr.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "builtin.h"
@@ -102,7 +103,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
     mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!mp_obj_is_true(item)) {
             return mp_const_false;
         }
@@ -115,7 +116,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_all_obj, mp_builtin_all);
 STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
     mp_obj_t iterable = mp_getiter(o_in);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (mp_obj_is_true(item)) {
             return mp_const_true;
         }
@@ -124,6 +125,13 @@ STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
+
+STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
+    mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
+    return mp_obj_str_format(sizeof(args) / sizeof(args[0]), args);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);
 
 STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
     if (mp_obj_is_callable(o_in)) {
@@ -207,6 +215,12 @@ STATIC mp_obj_t mp_builtin_hash(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hash_obj, mp_builtin_hash);
 
+STATIC mp_obj_t mp_builtin_hex(mp_obj_t o_in) {
+    return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_x), o_in);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
+
 STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
     return mp_getiter(o_in);
 }
@@ -230,7 +244,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t max_obj = NULL;
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (max_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, max_obj, item)) {
                 max_obj = item;
             }
@@ -259,7 +273,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         mp_obj_t iterable = mp_getiter(args[0]);
         mp_obj_t min_obj = NULL;
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (min_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, item, min_obj)) {
                 min_obj = item;
             }
@@ -284,7 +298,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin_min_obj, 1, mp_builtin_min);
 
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
-    if (ret == MP_OBJ_NULL) {
+    if (ret == MP_OBJ_STOP_ITERATION) {
         nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
@@ -292,6 +306,12 @@ STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
+
+STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
+    return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_o), o_in);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
@@ -342,17 +362,6 @@ STATIC mp_obj_t mp_builtin_print(uint n_args, const mp_obj_t *args, mp_map_t *kw
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 
-STATIC mp_obj_t mp_builtin_range(uint n_args, const mp_obj_t *args) {
-    assert(1 <= n_args && n_args <= 3);
-    switch (n_args) {
-        case 1: return mp_obj_new_range(0, mp_obj_get_int(args[0]), 1);
-        case 2: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), 1);
-        default: return mp_obj_new_range(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]));
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_range_obj, 1, 3, mp_builtin_range);
-
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
@@ -372,7 +381,7 @@ STATIC mp_obj_t mp_builtin_sum(uint n_args, const mp_obj_t *args) {
     }
     mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_binary_op(MP_BINARY_OP_ADD, value, item);
     }
     return value;

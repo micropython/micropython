@@ -22,14 +22,15 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
-#include "build/py/py-version.h"
+#include "genhdr/py-version.h"
 
 #if MICROPY_USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
 
-// Default emit options
+// Command line options, with their defaults
+bool compile_only = false;
 uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -41,7 +42,6 @@ long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
 // Stack top at the start of program
 void *stack_top;
 
-void file_init();
 void microsocket_init();
 void time_init();
 void ffi_init();
@@ -84,6 +84,10 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
 
     if (module_fun == mp_const_none) {
         // compile error
+        return;
+    }
+
+    if (compile_only) {
         return;
     }
 
@@ -226,6 +230,7 @@ int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
+"  compile-only                 -- parse and compile only\n"
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
 );
     impl_opts_cnt++;
@@ -245,6 +250,7 @@ int usage(char **argv) {
 
 mp_obj_t mem_info(void) {
     printf("mem: total=%d, current=%d, peak=%d\n", m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
+    gc_dump_info();
     return mp_const_none;
 }
 
@@ -273,6 +279,8 @@ void pre_process_options(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 if (0) {
+                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
+                    compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTE_CODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
@@ -318,7 +326,7 @@ int main(int argc, char **argv) {
             p++;
         }
     }
-    mp_sys_path = mp_obj_new_list(path_num, NULL);
+    mp_obj_list_init(mp_sys_path, path_num);
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
@@ -340,25 +348,13 @@ int main(int argc, char **argv) {
         p = p1 + 1;
     }
 
-    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    mp_store_attr(m_sys, MP_QSTR_path, mp_sys_path);
-    mp_obj_t py_argv = mp_obj_new_list(0, NULL);
-    mp_store_attr(m_sys, MP_QSTR_argv, py_argv);
+    mp_obj_list_init(mp_sys_argv, 0);
 
     mp_store_name(qstr_from_str("test"), test_obj_new(42));
     mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
     mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
 #if MICROPY_ENABLE_GC
     mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
-#endif
-
-    file_init();
-    microsocket_init();
-#if MICROPY_MOD_TIME
-    time_init();
-#endif
-#if MICROPY_MOD_FFI
-    ffi_init();
 #endif
 
     // Here is some example code to create a class and instance of that class.
@@ -410,7 +406,7 @@ int main(int argc, char **argv) {
             free(basedir);
 
             for (int i = a; i < argc; i++) {
-                mp_obj_list_append(py_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+                mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
             do_file(argv[a]);
             executed = true;

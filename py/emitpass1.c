@@ -7,6 +7,8 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
@@ -33,6 +35,10 @@ STATIC void emit_pass1_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope
 }
 
 STATIC void emit_pass1_end_pass(emit_t *emit) {
+}
+
+STATIC bool emit_pass1_last_emit_was_return_value(emit_t *emit) {
+    return false;
 }
 
 STATIC void emit_pass1_load_id(emit_t *emit, qstr qstr) {
@@ -92,15 +98,16 @@ STATIC void emit_pass1_store_id(emit_t *emit, qstr qstr) {
 
 STATIC void emit_pass1_delete_id(emit_t *emit, qstr qstr) {
     id_info_t *id = get_id_for_modification(emit->scope, qstr);
-    id->flags |= ID_FLAG_IS_DELETED;
+    // this flag is unused
+    //id->flags |= ID_FLAG_IS_DELETED;
+    (void)id; // suppress compiler warning
 }
 
 const emit_method_table_t emit_pass1_method_table = {
     (void*)emit_pass1_dummy,
     emit_pass1_start_pass,
     emit_pass1_end_pass,
-    (void*)emit_pass1_dummy,
-    (void*)emit_pass1_dummy,
+    emit_pass1_last_emit_was_return_value,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
 
@@ -108,6 +115,7 @@ const emit_method_table_t emit_pass1_method_table = {
     emit_pass1_store_id,
     emit_pass1_delete_id,
 
+    (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,
     (void*)emit_pass1_dummy,

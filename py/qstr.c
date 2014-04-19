@@ -35,7 +35,12 @@ machine_uint_t qstr_compute_hash(const byte *data, uint len) {
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
-    return hash & 0xffff;
+    hash &= 0xffff;
+    // Make sure that valid hash is never zero, zero means "hash not computed"
+    if (hash == 0) {
+        hash++;
+    }
+    return hash;
 }
 
 typedef struct _qstr_pool_t {
@@ -55,8 +60,7 @@ const static qstr_pool_t const_pool = {
         (const byte*) "\0\0\0\0", // invalid/no qstr has empty data
         (const byte*) "\0\0\0\0", // empty qstr
 #define Q(id, str) str,
-// TODO having 'build/' here is a bit of a hack, should take config variable from Makefile
-#include "build/py/qstrdefs.generated.h"
+#include "genhdr/qstrdefs.generated.h"
 #undef Q
     },
 };

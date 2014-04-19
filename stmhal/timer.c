@@ -19,6 +19,7 @@
 // the interrupts to be dispatched, so they are all collected here.
 //
 // TIM3:
+//  - flash storage controller, to flush the cache
 //  - USB CDC interface, interval, to check for new data
 //  - LED 4, PWM to set the LED intensity
 //
@@ -27,6 +28,10 @@
 
 TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
+TIM_HandleTypeDef TIM6_Handle;
+
+// Used to divide down TIM3 and periodically call the flash storage IRQ
+static uint32_t tim3_counter = 0;
 
 // TIM3 is set-up for the USB CDC interface
 void timer_tim3_init(void) {
@@ -34,8 +39,8 @@ void timer_tim3_init(void) {
     __TIM3_CLK_ENABLE();
 
     TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1;
-    TIM3_Handle.Init.Prescaler = 84-1;
+    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
+    TIM3_Handle.Init.Prescaler = 84-1; // for System clock at 168MHz, TIM3 runs at 1MHz
     TIM3_Handle.Init.ClockDivision = 0;
     TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_Base_Init(&TIM3_Handle);
@@ -57,6 +62,7 @@ void timer_tim3_deinit(void) {
 */
 
 // TIM5 is set-up for the servo controller
+// This function inits but does not start the timer
 void timer_tim5_init(void) {
     // TIM5 clock enable
     __TIM5_CLK_ENABLE();
@@ -74,10 +80,42 @@ void timer_tim5_init(void) {
     HAL_TIM_PWM_Init(&TIM5_Handle);
 }
 
+// Init TIM6 with a counter-overflow at the given frequency (given in Hz)
+// TIM6 is used by the DAC and ADC for auto sampling at a given frequency
+// This function inits but does not start the timer
+void timer_tim6_init(uint freq) {
+    // TIM6 clock enable
+    __TIM6_CLK_ENABLE();
+
+    // Timer runs at SystemCoreClock / 2
+    // Compute the prescaler value so TIM6 triggers at freq-Hz
+    uint32_t period = (SystemCoreClock / 2) / freq;
+    uint32_t prescaler = 1;
+    while (period > 0xffff) {
+        period >>= 1;
+        prescaler <<= 1;
+    }
+
+    // Time base clock configuration
+    TIM6_Handle.Instance = TIM6;
+    TIM6_Handle.Init.Period = period - 1;
+    TIM6_Handle.Init.Prescaler = prescaler - 1;
+    TIM6_Handle.Init.ClockDivision = 0; // unused for TIM6
+    TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP; // unused for TIM6
+    HAL_TIM_Base_Init(&TIM6_Handle);
+}
+
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim == &TIM3_Handle) {
         USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+
+        // Periodically raise a flash IRQ for the flash storage controller
+        if (tim3_counter++ >= 500 / USBD_CDC_POLLING_INTERVAL) {
+            tim3_counter = 0;
+            NVIC->STIR = FLASH_IRQn;
+        }
+
     } else if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }

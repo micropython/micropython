@@ -6,8 +6,12 @@ PROG = cpy
 # include py core make definitions
 include ../py/py.mk
 
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)
+
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX
 LDFLAGS = -lm
 
 # Debugging/Optimization

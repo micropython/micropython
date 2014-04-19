@@ -37,7 +37,7 @@ typedef struct {
 	BYTE pd;	/* Physical drive number */
 	BYTE pt;	/* Partition: 0:Auto detect, 1-4:Forced partition) */
 } PARTITION;
-extern PARTITION VolToPart[];	/* Volume - Partition resolution table */
+extern const PARTITION VolToPart[];	/* Volume - Partition resolution table */
 #define LD2PD(vol) (VolToPart[vol].pd)	/* Get physical drive number */
 #define LD2PT(vol) (VolToPart[vol].pt)	/* Get partition index */
 

@@ -80,8 +80,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
-    buffer_info_t bufinfo;
-    mp_get_buffer_raise(addr_in, &bufinfo);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
     return mp_const_none;
@@ -90,8 +90,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
-    buffer_info_t bufinfo;
-    mp_get_buffer_raise(addr_in, &bufinfo);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
     int r = bind(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
     RAISE_ERRNO(r, errno);
     return mp_const_none;
@@ -168,8 +168,8 @@ STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
         optval = &val;
         optlen = sizeof(val);
     } else {
-        buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[3], &bufinfo);
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
         optval = bufinfo.buf;
         optlen = bufinfo.len;
     }
@@ -322,12 +322,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod
 
 extern mp_obj_type_t sockaddr_in_type;
 
-#define C(name) { #name, name }
+STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_microsocket) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&microsocket_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_socket_getaddrinfo_obj },
+#if MICROPY_SOCKET_EXTRA
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr_in), (mp_obj_t)&sockaddr_in_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_htons), (mp_obj_t)&mod_socket_htons_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_inet_aton), (mp_obj_t)&mod_socket_inet_aton_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_gethostbyname), (mp_obj_t)&mod_socket_gethostbyname_obj },
+#endif
 
-STATIC const struct sym_entry {
-    const char *sym;
-    int val;
-} constants[] = {
+#define C(name) { MP_OBJ_NEW_QSTR(MP_QSTR_ ## name), MP_OBJ_NEW_SMALL_INT(name) }
     C(AF_UNIX),
     C(AF_INET),
     C(AF_INET6),
@@ -344,23 +350,22 @@ STATIC const struct sym_entry {
     C(SO_KEEPALIVE),
     C(SO_LINGER),
     C(SO_REUSEADDR),
-
-    {NULL}
+#undef C
 };
 
-#undef C
+STATIC const mp_obj_dict_t mp_module_socket_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_socket_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_socket_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_socket_globals_table,
+    },
+};
 
-void microsocket_init() {
-    mp_obj_t m = mp_obj_new_module(MP_QSTR_microsocket);
-    mp_store_attr(m, MP_QSTR_socket, (mp_obj_t)&microsocket_type);
-#if MICROPY_SOCKET_EXTRA
-    mp_store_attr(m, MP_QSTR_sockaddr_in, (mp_obj_t)&sockaddr_in_type);
-    mp_store_attr(m, MP_QSTR_htons, (mp_obj_t)&mod_socket_htons_obj);
-    mp_store_attr(m, MP_QSTR_inet_aton, (mp_obj_t)&mod_socket_inet_aton_obj);
-    mp_store_attr(m, MP_QSTR_gethostbyname, (mp_obj_t)&mod_socket_gethostbyname_obj);
-#endif
-    mp_store_attr(m, MP_QSTR_getaddrinfo, (mp_obj_t)&mod_socket_getaddrinfo_obj);
-    for (const struct sym_entry *p = constants; p->sym != NULL; p++) {
-        mp_store_attr(m, QSTR_FROM_STR_STATIC(p->sym), MP_OBJ_NEW_SMALL_INT((machine_int_t)p->val));
-    }
-}
+const mp_obj_module_t mp_module_socket = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_microsocket,
+    .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
+};

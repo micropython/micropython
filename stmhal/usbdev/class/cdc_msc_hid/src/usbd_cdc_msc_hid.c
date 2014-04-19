@@ -4,9 +4,6 @@
 #define USB_CDC_MSC_CONFIG_DESC_SIZ (98)
 #define USB_CDC_HID_CONFIG_DESC_SIZ (100)
 #define CDC_IFACE_NUM (1)
-#define CDC_IN_EP     (0x83)
-#define CDC_OUT_EP    (0x03)
-#define CDC_CMD_EP    (0x82)
 #define MSC_IFACE_NUM (0)
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
@@ -583,11 +580,18 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
 
     /*
     printf("SU: %x %x %x %x\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex);
+
     This is what we get when MSC is IFACE=0 and CDC is IFACE=1,2:
         SU: 21 22 0 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_CONTROL_LINE_STATE
         SU: 21 20 0 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_LINE_CODING
         SU: a1 fe 0 0 -- 0x80 | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; BOT_GET_MAX_LUN; 0; 0
         SU: 21 22 3 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_CONTROL_LINE_STATE
+
+    On a Mac OS X, with MSC then CDC:
+        SU: a1 fe 0 0
+        SU: 21 22 2 1
+        SU: 21 22 3 1
+        SU: 21 20 0 1
     */
 
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
@@ -722,6 +726,11 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     }
     return USBD_OK;
 }
+
+/* unused
+static uint8_t EP0_TxSent(USBD_HandleTypeDef *pdev) {
+}
+*/
 
 static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
   if((CDC_fops != NULL) && (CDC_ClassData.CmdOpCode != 0xFF)) {
@@ -902,8 +911,8 @@ USBD_ClassTypeDef USBD_CDC_MSC_HID = {
     USBD_CDC_MSC_HID_DataIn,
     USBD_CDC_MSC_HID_DataOut,
     NULL, // SOF
-    NULL,
-    NULL,
+    NULL, // IsoINIncomplete
+    NULL, // IsoOUTIncomplete
     USBD_CDC_MSC_HID_GetCfgDesc,
     USBD_CDC_MSC_HID_GetCfgDesc,
     USBD_CDC_MSC_HID_GetCfgDesc,

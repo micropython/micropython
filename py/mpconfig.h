@@ -115,6 +115,16 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_FLOAT (0)
 #endif
 
+// Whether to provide "math" module
+#ifndef MICROPY_ENABLE_MOD_MATH
+#define MICROPY_ENABLE_MOD_MATH (1)
+#endif
+
+// Whether to provide "cmath" module
+#ifndef MICROPY_ENABLE_MOD_CMATH
+#define MICROPY_ENABLE_MOD_CMATH (0)
+#endif
+
 // Whether to provide "io" module
 #ifndef MICROPY_ENABLE_MOD_IO
 #define MICROPY_ENABLE_MOD_IO (1)
@@ -125,10 +135,24 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_MOD_STRUCT (1)
 #endif
 
+// Whether to provide "sys" module
+#ifndef MICROPY_ENABLE_MOD_SYS
+#define MICROPY_ENABLE_MOD_SYS (1)
+#endif
+
+#ifndef MICROPY_MOD_SYS_STDFILES
+#define MICROPY_MOD_SYS_STDFILES (0)
+#endif
+
 // Whether to support slice object and correspondingly
 // slice subscript operators
 #ifndef MICROPY_ENABLE_SLICE
 #define MICROPY_ENABLE_SLICE (1)
+#endif
+
+// Whether to support the property object
+#ifndef MICROPY_ENABLE_PROPERTY
+#define MICROPY_ENABLE_PROPERTY (1)
 #endif
 
 // Enable features which improve CPython compatibility
@@ -145,6 +169,12 @@ typedef double mp_float_t;
 #define MICROPY_PATH_MAX (512)
 #endif
 
+// Whether to use computed gotos in the VM, or a switch
+// Computed gotos are roughly 10% faster, and increase VM code size by a little
+#ifndef MICROPY_USE_COMPUTED_GOTO
+#define MICROPY_USE_COMPUTED_GOTO (0)
+#endif
+
 // Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
 #ifndef MICROPY_EXTRA_BUILTINS
 #define MICROPY_EXTRA_BUILTINS
@@ -153,6 +183,11 @@ typedef double mp_float_t;
 // Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
 #ifndef MICROPY_EXTRA_BUILTIN_MODULES
 #define MICROPY_EXTRA_BUILTIN_MODULES
+#endif
+
+// Additional constant definitions for the compiler - see compile.c:mp_constants_table.
+#ifndef MICROPY_EXTRA_CONSTANTS
+#define MICROPY_EXTRA_CONSTANTS
 #endif
 
 /*****************************************************************************/
@@ -168,6 +203,15 @@ typedef double mp_float_t;
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // machine_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((machine_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
+
+#if !defined(MP_ENDIANNESS_LITTLE) && !defined(MP_ENDIANNESS_BIG)
+// Just because most archs are such?
+#define MP_ENDIANNESS_LITTLE (1)
+#endif
+// Ensure we don't accidentally set both endiannesses
+#if MP_ENDIANNESS_BIG
+#define MP_ENDIANNESS_LITTLE (0)
+#endif
 
 // printf format spec to use for machine_int_t and friends
 #ifndef INT_FMT

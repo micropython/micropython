@@ -146,9 +146,6 @@ mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, mp_builtin_open);
 
-void file_init() {
-    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    mp_store_attr(m_sys, MP_QSTR_stdin, fdfile_new(STDIN_FILENO));
-    mp_store_attr(m_sys, MP_QSTR_stdout, fdfile_new(STDOUT_FILENO));
-    mp_store_attr(m_sys, MP_QSTR_stderr, fdfile_new(STDERR_FILENO));
-}
+const mp_obj_fdfile_t mp_sys_stdin_obj  = { .base = {&rawfile_type}, .fd = STDIN_FILENO };
+const mp_obj_fdfile_t mp_sys_stdout_obj = { .base = {&rawfile_type}, .fd = STDOUT_FILENO };
+const mp_obj_fdfile_t mp_sys_stderr_obj = { .base = {&rawfile_type}, .fd = STDERR_FILENO };

@@ -10,7 +10,7 @@
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
 
 typedef struct _pyb_led_obj_t {
     mp_obj_base_t base;
@@ -204,7 +204,7 @@ STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
 
     // check led number
     if (!(0 <= led_id && led_id < NUM_LEDS)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Led %d does not exist", led_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED %d does not exist", led_id));
     }
 
     // return static led object
@@ -255,7 +255,7 @@ STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
 const mp_obj_type_t pyb_led_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Led,
+    .name = MP_QSTR_LED,
     .print = led_obj_print,
     .make_new = led_obj_make_new,
     .locals_dict = (mp_obj_t)&led_locals_dict,

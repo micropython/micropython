@@ -27,11 +27,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
-#include "emitglue.h"
-#include "obj.h"
 #include "runtime.h"
 
 #if 0 // print debugging info
@@ -283,10 +283,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == PASS_3) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->unique_code_id, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
 #endif
     }
 }
@@ -295,12 +295,8 @@ STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC int emit_native_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_native_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_native_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_native_set_source_line(emit_t *emit, int source_line) {
@@ -585,7 +581,7 @@ STATIC void emit_native_delete_id(emit_t *emit, qstr qstr) {
     emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
-STATIC void emit_native_label_assign(emit_t *emit, int l) {
+STATIC void emit_native_label_assign(emit_t *emit, uint l) {
     emit_native_pre(emit);
     // need to commit stack because we can jump here from elsewhere
     need_stack_settled(emit);
@@ -782,6 +778,18 @@ STATIC void emit_native_load_build_class(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
+STATIC void emit_native_load_subscr(emit_t *emit) {
+    vtype_kind_t vtype_lhs, vtype_rhs;
+    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
+    if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr, (machine_uint_t)MP_OBJ_SENTINEL, REG_ARG_3);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    } else {
+        printf("ViperTypeError: can't do subscr of types %d and %d\n", vtype_lhs, vtype_rhs);
+        assert(0);
+    }
+}
+
 STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     vtype_kind_t vtype;
 #if N_X64
@@ -854,7 +862,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     assert(vtype_index == VTYPE_PYOBJ);
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_value == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_STORE_SUBSCR, mp_store_subscr);
+    emit_call(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr);
 }
 
 STATIC void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
@@ -886,8 +894,11 @@ STATIC void emit_native_delete_attr(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_native_delete_subscr(emit_t *emit) {
-    // not supported
-    assert(0);
+    vtype_kind_t vtype_index, vtype_base;
+    emit_pre_pop_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1); // index, base
+    assert(vtype_index == VTYPE_PYOBJ);
+    assert(vtype_base == VTYPE_PYOBJ);
+    emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, mp_obj_subscr, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
 }
 
 STATIC void emit_native_dup_top(emit_t *emit) {
@@ -920,7 +931,7 @@ STATIC void emit_native_rot_three(emit_t *emit) {
     emit_post_push_reg_reg_reg(emit, vtype0, REG_TEMP0, vtype2, REG_TEMP2, vtype1, REG_TEMP1);
 }
 
-STATIC void emit_native_jump(emit_t *emit, int label) {
+STATIC void emit_native_jump(emit_t *emit, uint label) {
     emit_native_pre(emit);
 #if N_X64
     asm_x64_jmp_label(emit->as, label);
@@ -930,7 +941,7 @@ STATIC void emit_native_jump(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, uint label) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
@@ -943,7 +954,7 @@ STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, int label) {
     }
 }
 
-STATIC void emit_native_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_false(emit_t *emit, uint label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -955,7 +966,7 @@ STATIC void emit_native_pop_jump_if_false(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_native_pop_jump_if_true(emit_t *emit, uint label) {
     emit_native_pop_jump_pre_helper(emit, label);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
@@ -967,35 +978,35 @@ STATIC void emit_native_pop_jump_if_true(emit_t *emit, int label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, uint label) {
     assert(0);
 }
-STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
     assert(0);
 }
 
-STATIC void emit_native_setup_loop(emit_t *emit, int label) {
+STATIC void emit_native_setup_loop(emit_t *emit, uint label) {
     emit_native_pre(emit);
     emit_post(emit);
 }
 
-STATIC void emit_native_break_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_break_loop(emit_t *emit, uint label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
-STATIC void emit_native_continue_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_native_continue_loop(emit_t *emit, uint label, int except_depth) {
     assert(0);
 }
-STATIC void emit_native_setup_with(emit_t *emit, int label) {
+STATIC void emit_native_setup_with(emit_t *emit, uint label) {
     // not supported, or could be with runtime call
     assert(0);
 }
 STATIC void emit_native_with_cleanup(emit_t *emit) {
     assert(0);
 }
-STATIC void emit_native_setup_except(emit_t *emit, int label) {
+STATIC void emit_native_setup_except(emit_t *emit, uint label) {
     assert(0);
 }
-STATIC void emit_native_setup_finally(emit_t *emit, int label) {
+STATIC void emit_native_setup_finally(emit_t *emit, uint label) {
     assert(0);
 }
 STATIC void emit_native_end_finally(emit_t *emit) {
@@ -1013,7 +1024,7 @@ STATIC void emit_native_get_iter(emit_t *emit) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_for_iter(emit_t *emit, int label) {
+STATIC void emit_native_for_iter(emit_t *emit, uint label) {
     emit_native_pre(emit);
     vtype_kind_t vtype;
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);
@@ -1024,7 +1035,7 @@ STATIC void emit_native_for_iter(emit_t *emit, int label) {
     asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
     asm_x64_jcc_label(emit->as, JCC_JE, label);
 #elif N_THUMB
-    asm_thumb_cmp_reg_reg(emit->as, REG_RET, REG_TEMP1);
+    asm_thumb_cmp_rlo_rlo(emit->as, REG_RET, REG_TEMP1);
     asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
 #endif
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
@@ -1062,7 +1073,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
 #if N_X64
             asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
 #elif N_THUMB
-            asm_thumb_add_reg_reg_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
+            asm_thumb_add_rlo_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_LESS) {
@@ -1071,10 +1082,10 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
             asm_x64_setcc_r8(emit->as, JCC_JL, REG_RET);
 #elif N_THUMB
-            asm_thumb_cmp_reg_reg(emit->as, REG_ARG_2, REG_ARG_3);
+            asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_3);
             asm_thumb_ite_ge(emit->as);
-            asm_thumb_movs_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
-            asm_thumb_movs_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
 #endif
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {
@@ -1192,7 +1203,9 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
-    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_ID, mp_make_function_from_id, scope->unique_code_id, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
+    assert(0);
+    // TODO we need to store the raw_code ptr aligned within the code for the GC
+    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1304,8 +1317,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,
-    emit_native_get_stack_size,
-    emit_native_set_stack_size,
+    emit_native_adjust_stack_size,
     emit_native_set_source_line,
 
     emit_native_load_id,
@@ -1331,6 +1343,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
+    emit_native_load_subscr,
     emit_native_store_fast,
     emit_native_store_deref,
     emit_native_store_name,

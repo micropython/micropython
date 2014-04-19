@@ -28,7 +28,7 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
         } else {
             USBD_SelectMode(USBD_MODE_CDC_HID);
         }
-        USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
+        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&VCP_Desc, 0);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
         USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
 #if MICROPY_HW_HAS_SDCARD

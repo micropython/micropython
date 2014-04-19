@@ -86,6 +86,7 @@ static int8_t SCSI_ReadFormatCapacity(USBD_HandleTypeDef  *pdev, uint8_t lun, ui
 static int8_t SCSI_ReadCapacity10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_RequestSense (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_StartStopUnit(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
+static int8_t SCSI_AllowMediumRemoval(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_Write10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *params);
@@ -122,6 +123,11 @@ int8_t SCSI_ProcessCmd(USBD_HandleTypeDef  *pdev,
                            uint8_t lun, 
                            uint8_t *params)
 {
+    /*
+    if (params[0] != SCSI_READ10 && params[0] != SCSI_WRITE10) {
+        printf("SCSI_ProcessCmd(lun=%d, params=%x, %x)\n", lun, params[0], params[1]);
+    }
+    */
   
   switch (params[0])
   {
@@ -137,7 +143,7 @@ int8_t SCSI_ProcessCmd(USBD_HandleTypeDef  *pdev,
     return SCSI_StartStopUnit(pdev, lun, params);
     
   case SCSI_ALLOW_MEDIUM_REMOVAL:
-    return SCSI_StartStopUnit(pdev, lun, params);
+    return SCSI_AllowMediumRemoval(pdev, lun, params);
     
   case SCSI_MODE_SENSE6:
     return SCSI_ModeSense6 (pdev, lun, params);
@@ -442,6 +448,31 @@ static int8_t SCSI_StartStopUnit(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t
 {
   USBD_MSC_BOT_HandleTypeDef  *hmsc = pdev->pClassData;   
   hmsc->bot_data_length = 0;
+
+  // On Mac OS X, when the device is ejected a SCSI_START_STOP_UNIT command is sent.
+  // params[1]==0 means stop, param[1]==1 seems to be something else (happens after the
+  // device is plugged in and mounted for some time, probably a keep alive).
+  // If we get a stop, we must really stop the device so that the Mac does not
+  // automatically remount it.
+  if (params[1] == 0) {
+      ((USBD_StorageTypeDef *)pdev->pUserData)->StopUnit(lun);
+  }
+
+  return 0;
+}
+
+/**
+* @brief  SCSI_AllowMediumRemoval
+*         Process Allow Medium Removal command
+* @param  lun: Logical unit number
+* @param  params: Command parameters
+* @retval status
+*/
+static int8_t SCSI_AllowMediumRemoval(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
+{
+  USBD_MSC_BOT_HandleTypeDef  *hmsc = pdev->pClassData;   
+  hmsc->bot_data_length = 0;
+  ((USBD_StorageTypeDef *)pdev->pUserData)->PreventAllowMediumRemoval(lun, params[0]);
   return 0;
 }
 

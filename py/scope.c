@@ -6,10 +6,12 @@
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
+#include "obj.h"
 #include "parse.h"
+#include "emitglue.h"
 #include "scope.h"
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint unique_code_id, uint emit_options) {
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;
@@ -41,7 +43,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
         default:
             assert(0);
     }
-    scope->unique_code_id = unique_code_id;
+    scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
     scope->id_info_alloc = 8;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);

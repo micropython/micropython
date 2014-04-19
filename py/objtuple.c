@@ -52,7 +52,7 @@ mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
             mp_obj_t iterable = mp_getiter(args[0]);
             mp_obj_t item;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 if (len >= alloc) {
                     items = m_renew(mp_obj_t, items, alloc, alloc * 2);
                     alloc *= 2;
@@ -88,29 +88,13 @@ mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported for None
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
 mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-#if MICROPY_ENABLE_SLICE
-            if (MP_OBJ_IS_TYPE(rhs, &mp_type_slice)) {
-                machine_uint_t start, stop;
-                if (!m_seq_get_fast_slice_indexes(o->len, rhs, &start, &stop)) {
-                    assert(0);
-                }
-                mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
-                m_seq_copy(res->items, o->items + start, res->len, mp_obj_t);
-                return res;
-            }
-#endif
-            uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return o->items[index];
-        }
         case MP_BINARY_OP_ADD:
         {
             if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&mp_type_tuple)) {
@@ -137,12 +121,32 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
             return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
-        case MP_BINARY_OP_NOT_EQUAL:
-            return MP_BOOL(!tuple_cmp_helper(MP_BINARY_OP_EQUAL, lhs, rhs));
 
         default:
             // op not supported
             return NULL;
+    }
+}
+
+mp_obj_t tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_SENTINEL) {
+        // load
+        mp_obj_tuple_t *self = self_in;
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+            mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
+            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            return res;
+        }
+#endif
+        uint index_value = mp_get_index(self->base.type, self->len, index, false);
+        return self->items[index_value];
+    } else {
+        return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -178,6 +182,7 @@ const mp_obj_type_t mp_type_tuple = {
     .make_new = mp_obj_tuple_make_new,
     .unary_op = tuple_unary_op,
     .binary_op = tuple_binary_op,
+    .subscr = tuple_subscr,
     .getiter = tuple_getiter,
     .locals_dict = (mp_obj_t)&tuple_locals_dict,
 };
@@ -244,7 +249,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
         self->cur += 1;
         return o_out;
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

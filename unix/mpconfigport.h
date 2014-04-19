@@ -2,13 +2,6 @@
 
 #define MICROPY_RUNTIME_DEBUG       (0)
 
-// Linking with GNU readline causes binary to be licensed under GPL
-#ifndef MICROPY_USE_READLINE
-#define MICROPY_USE_READLINE        (1)
-#endif
-
-#define MICROPY_ENABLE_GC           (1)
-
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -22,6 +15,17 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PATH_MAX            (PATH_MAX)
+#define MICROPY_USE_COMPUTED_GOTO   (1)
+#define MICROPY_MOD_SYS_STDFILES    (1)
+#define MICROPY_ENABLE_MOD_CMATH    (1)
+
+extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_socket;
+extern const struct _mp_obj_module_t mp_module_ffi;
+#define MICROPY_EXTRA_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
 
 // type definitions for the specific machine
 

@@ -1,2 +1,1 @@
-extern USBD_DescriptorsTypeDef VCP_Desc;
-extern USBD_DescriptorsTypeDef MSC_Desc;
+extern const USBD_DescriptorsTypeDef VCP_Desc;

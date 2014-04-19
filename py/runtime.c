@@ -53,17 +53,6 @@ void mp_init(void) {
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     dict_locals = dict_globals = &dict_main;
-
-#if MICROPY_CPYTHON_COMPAT
-    // Precreate sys module, so "import sys" didn't throw exceptions.
-    mp_obj_t m_sys = mp_obj_new_module(MP_QSTR_sys);
-    // Avoid warning of unused var
-    (void)m_sys;
-#endif
-    // init sys.path
-    // for efficiency, left to platform-specific startup code
-    //mp_sys_path = mp_obj_new_list(0, NULL);
-    //mp_store_attr(m_sys, MP_QSTR_path, mp_sys_path);
 }
 
 void mp_deinit(void) {
@@ -174,7 +163,7 @@ mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(op, arg);
-            if (result != NULL) {
+            if (result != MP_OBJ_NOT_SUPPORTED) {
                 return result;
             }
         }
@@ -376,7 +365,8 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;
                 case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val); break;
 
-                default: assert(0);
+                default:
+                    goto unsupported_op;
             }
             // TODO: We just should make mp_obj_new_int() inline and use that
             if (MP_OBJ_FITS_SMALL_INT(lhs_val)) {
@@ -386,9 +376,19 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
 #if MICROPY_ENABLE_FLOAT
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
-            return mp_obj_float_binary_op(op, lhs_val, rhs);
+            mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
+            if (res == MP_OBJ_NULL) {
+                goto unsupported_op;
+            } else {
+                return res;
+            }
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_complex)) {
-            return mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
+            mp_obj_t res = mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
+            if (res == MP_OBJ_NULL) {
+                goto unsupported_op;
+            } else {
+                return res;
+            }
 #endif
         }
     }
@@ -402,7 +402,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         mp_obj_type_t *type = mp_obj_get_type(rhs);
         if (type->binary_op != NULL) {
             mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != MP_OBJ_NULL) {
+            if (res != MP_OBJ_NOT_SUPPORTED) {
                 return res;
             }
         }
@@ -410,7 +410,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             /* second attempt, walk the iterator */
             mp_obj_t next = NULL;
             mp_obj_t iter = mp_getiter(rhs);
-            while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+            while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 if (mp_obj_equal(next, lhs)) {
                     return mp_const_true;
                 }
@@ -430,7 +430,7 @@ generic_binary_op:
     type = mp_obj_get_type(lhs);
     if (type->binary_op != NULL) {
         mp_obj_t result = type->binary_op(op, lhs, rhs);
-        if (result != MP_OBJ_NULL) {
+        if (result != MP_OBJ_NOT_SUPPORTED) {
             return result;
         }
     }
@@ -438,6 +438,7 @@ generic_binary_op:
     // TODO implement dispatch for reverse binary ops
 
     // TODO specify in error message what the operator is
+unsupported_op:
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "unsupported operand types for binary operator: '%s', '%s'",
         mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
@@ -579,7 +580,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         // extract the variable position args from the iterator
         mp_obj_t iterable = mp_getiter(pos_seq);
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len >= args2_alloc) {
                 args2 = m_renew(mp_obj_t, args2, args2_alloc, args2_alloc * 2);
                 args2_alloc *= 2;
@@ -616,7 +617,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         mp_load_method(kw_dict, MP_QSTR_items, dest);
         mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest));
         mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len + 1 >= args2_alloc) {
                 uint new_alloc = args2_alloc * 2;
                 if (new_alloc < 4) {
@@ -661,12 +662,12 @@ void mp_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
 
         for (seq_len = 0; seq_len < num; seq_len++) {
             mp_obj_t el = mp_iternext(iterable);
-            if (el == MP_OBJ_NULL) {
+            if (el == MP_OBJ_STOP_ITERATION) {
                 goto too_short;
             }
             items[num - 1 - seq_len] = el;
         }
-        if (mp_iternext(iterable) != MP_OBJ_NULL) {
+        if (mp_iternext(iterable) != MP_OBJ_STOP_ITERATION) {
             goto too_long;
         }
     }
@@ -715,13 +716,13 @@ void mp_unpack_ex(mp_obj_t seq_in, uint num_in, mp_obj_t *items) {
         mp_obj_t item;
         for (seq_len = 0; seq_len < num_left; seq_len++) {
             item = mp_iternext(iterable);
-            if (item == MP_OBJ_NULL) {
+            if (item == MP_OBJ_STOP_ITERATION) {
                 goto too_short;
             }
             items[num_left + num_right + 1 - 1 - seq_len] = item;
         }
         mp_obj_t rest = mp_obj_new_list(0, NULL);
-        while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             mp_obj_list_append(rest, item);
         }
         uint rest_len;
@@ -839,23 +840,6 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
 }
 
-void mp_store_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
-    DEBUG_OP_printf("store subscr %p[%p] <- %p\n", base, index, value);
-    mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->store_item != NULL) {
-        bool r = type->store_item(base, index, value);
-        if (r) {
-            return;
-        }
-        // TODO: call base classes here?
-    }
-    if (value == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
-    }
-}
-
 mp_obj_t mp_getiter(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
@@ -880,7 +864,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
     }
 }
 
-// may return MP_OBJ_NULL as an optimisation instead of raise StopIteration()
+// may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
@@ -899,7 +883,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     }
 }
 
-// will always return MP_OBJ_NULL instead of raising StopIteration() (or any subclass thereof)
+// will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration() (or any subclass thereof)
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     mp_obj_type_t *type = mp_obj_get_type(o_in);
@@ -918,7 +902,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 return ret;
             } else {
                 if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
-                    return MP_OBJ_NULL;
+                    return MP_OBJ_STOP_ITERATION;
                 } else {
                     nlr_raise(nlr.ret_val);
                 }
@@ -1032,62 +1016,58 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
 mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
-    mp_obj_t dest[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
-    
-    mp_obj_type_t *module_type = mp_obj_get_type(module);
-    if (module_type->load_attr != NULL) {
-        module_type->load_attr(module, name, dest);
-    }
-    
-    if (dest[0] == MP_OBJ_NULL) {
-        dest[0] = mp_import_module_from(module, name);
-        
-        if (dest[0] == MP_OBJ_NULL) {
-            nlr_jump(mp_obj_new_exception_msg_varg(&mp_type_ImportError, 
-                    "cannot import name '%s' from module '%s'", name, qstr_str(module_type->name)));
-        }
-        
-        return dest[0];
-        
-    } else {
-        if (dest[1] == MP_OBJ_NULL) {
-            // load_method returned just a normal attribute
-            return dest[0];
-        } else {
-            // load_method returned a method, so build a bound method object
-            return mp_obj_new_bound_meth(dest[0], dest[1]);
-        }
-    }
-}
+    mp_obj_t dest[2];
 
-mp_obj_t mp_import_module_from(mp_obj_t module, qstr name) {
-    DEBUG_printf("import module %s from %p \n", qstr_str(name), module);
-    
-    vstr_t *new_name = vstr_new();
-    vstr_printf(new_name, "%s.%s", qstr_str(((mp_obj_module_t *)module)->name), qstr_str(name));
-    
+    mp_load_method_maybe(module, name, dest);
+
+    if (dest[1] != MP_OBJ_NULL) {
+        // Hopefully we can't import bound method from an object
+import_error:
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %s", qstr_str(name)));
+    }
+
+    if (dest[0] != MP_OBJ_NULL) {
+        return dest[0];
+    }
+
+    // See if it's a package, then can try FS import
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        goto import_error;
+    }
+
+    mp_load_method_maybe(module, MP_QSTR___name__, dest);
+    uint pkg_name_len;
+    const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
+
+    char dot_name[pkg_name_len + 1 + qstr_len(name)];
+    memcpy(dot_name, pkg_name, pkg_name_len);
+    dot_name[pkg_name_len] = '.';
+    memcpy(dot_name + pkg_name_len + 1, qstr_str(name), qstr_len(name));
+    qstr dot_name_q = qstr_from_strn(dot_name, sizeof(dot_name));
+
     mp_obj_t args[5];
-    args[0] = MP_OBJ_NEW_QSTR( qstr_from_str(vstr_str(new_name)) );
-    args[1] = mp_const_none; 
-    args[2] = mp_const_none; 
-    args[3] = mp_const_empty_tuple;
-    args[4] = 0; // must be 0; we don't yet support other values
-    
-    mp_obj_t m = mp_builtin___import__(5, args);
-    
-    vstr_free(new_name);
-    
-    return m;
-    
+    args[0] = MP_OBJ_NEW_QSTR(dot_name_q);
+    args[1] = mp_const_none; // TODO should be globals
+    args[2] = mp_const_none; // TODO should be locals
+    args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
+    args[4] = MP_OBJ_NEW_SMALL_INT(0);
+
+    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    return mp_builtin___import__(5, args);
 }
 
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
+    // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
     for (uint i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-            mp_store_name(MP_OBJ_QSTR_VALUE(map->table[i].key), map->table[i].value);
+            qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
+            if (*qstr_str(name) != '_') {
+                mp_store_name(name, map->table[i].value);
+            }
         }
     }
 }
@@ -1127,7 +1107,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_method,
     mp_store_name,
     mp_store_attr,
-    mp_store_subscr,
+    mp_obj_subscr,
     mp_obj_is_true,
     mp_unary_op,
     mp_binary_op,
@@ -1138,7 +1118,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_dict_store,
     mp_obj_new_set,
     mp_obj_set_store,
-    mp_make_function_from_id,
+    mp_make_function_from_raw_code,
     mp_call_function_n_kw_for_native,
     mp_call_method_n_kw,
     mp_getiter,

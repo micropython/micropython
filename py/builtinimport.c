@@ -19,10 +19,15 @@
 #include "runtime.h"
 #include "builtin.h"
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 #define PATH_SEP_CHAR '/'
 
-
-mp_obj_t mp_sys_path;
 vstr_t current_path;
 char vstr_current_path_buf[MICROPY_PATH_MAX];
 
@@ -53,7 +58,6 @@ void set_current_path(const char* path) {
 mp_obj_t get_current_path() {
     return mp_obj_new_str((byte *)vstr_str(&current_path), current_path.len, 1);
 }
-
 
 mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
@@ -94,9 +98,9 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
-    if (mp_sys_path != MP_OBJ_NULL) {
-        mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    }
+#if MICROPY_ENABLE_MOD_SYS
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+#endif
 
     if (path_num == 0) {
         vstr_reset(dest);
@@ -147,14 +151,17 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     // parse the imported script
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
-    mp_lexer_free(lex);
 
     if (pn == MP_PARSE_NODE_NULL) {
         // parse error; clean up and raise exception
+        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
+        mp_lexer_free(lex);
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        nlr_raise(mp_parse_make_exception(parse_error_kind));
+        nlr_raise(exc);
     }
+
+    mp_lexer_free(lex);
 
     // compile the imported script
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
@@ -187,16 +194,27 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     mp_globals_set(old_globals);
 }
 
+// TODO: Move to objdict?
+STATIC inline mp_obj_t mp_obj_dict_get(mp_obj_t dict_in, mp_obj_t key) {
+    mp_obj_dict_t *dict = dict_in;
+    mp_map_elem_t *elem = mp_map_lookup(&dict->map, key, MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        return elem;
+    }
+    return elem->value;
+}
+
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
-    /*
-    printf("import:\n");
+#if DEBUG_PRINT
+    printf("__import__:\n");
     for (int i = 0; i < n_args; i++) {
         printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
         printf("\n");
     }
-    */
+#endif
 
+    mp_obj_t module_name = args[0];
     mp_obj_t fromtuple = mp_const_none;
     int level = 0;
     if (n_args >= 4) {
@@ -206,17 +224,75 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         }
     }
 
+    uint mod_len;
+    const char *mod_str = (const char*)mp_obj_str_get_data(module_name, &mod_len);
+
     if (level != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-            "Relative import is not implemented"));
+        // What we want to do here is to take name of current module,
+        // chop <level> trailing components, and concatenate with passed-in
+        // module name, thus resolving relative import name into absolue.
+        // This even appears to be correct per
+        // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
+        // "Relative imports use a module's __name__ attribute to determine that
+        // module's position in the package hierarchy."
+        mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
+        assert(this_name_q != MP_OBJ_NULL);
+#if DEBUG_PRINT
+        printf("Current module: ");
+        mp_obj_print(this_name_q, PRINT_REPR);
+        printf("\n");
+#endif
+
+        uint this_name_l;
+        const char *this_name = (const char*)mp_obj_str_get_data(this_name_q, &this_name_l);
+
+        uint dots_seen = 0;
+        const char *p = this_name + this_name_l - 1;
+        while (p > this_name) {
+            if (*p == '.') {
+                dots_seen++;
+                if (--level == 0) {
+                    break;
+                }
+            }
+            p--;
+        }
+
+        if (dots_seen == 0 && level == 1) {
+            // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
+            // "If the module's name does not contain any package information
+            // (e.g. it is set to '__main__') then relative imports are
+            // resolved as if the module were a top level module, regardless
+            // of where the module is actually located on the file system."
+            // Supposedly this if catches this condition and resolve it properly
+            // TODO: But nobody knows for sure. This condition happens when
+            // package's __init__.py does something like "import .submod". So,
+            // maybe we should check for package here? But quote above doesn't
+            // talk about packages, it talks about dot-less module names.
+            p = this_name + this_name_l;
+        } else if (level != 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
+        }
+
+        uint new_mod_l = (mod_len == 0 ? p - this_name : p - this_name + 1 + mod_len);
+        char *new_mod = alloca(new_mod_l);
+        memcpy(new_mod, this_name, p - this_name);
+        if (mod_len != 0) {
+            new_mod[p - this_name] = '.';
+            memcpy(new_mod + (p - this_name) + 1, mod_str, mod_len);
+        }
+
+        qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
+        DEBUG_printf("Resolved relative name: %s\n", qstr_str(new_mod_q));
+        module_name = MP_OBJ_NEW_QSTR(new_mod_q);
+        mod_str = new_mod;
+        mod_len = new_mod_l;
     }
 
-    uint mod_len;
-    const char *mod_str = (const char*)mp_obj_str_get_data(args[0], &mod_len);
-
     // check if module already exists
-    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(args[0]));
+    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(module_name));
     if (module_obj != MP_OBJ_NULL) {
+        DEBUG_printf("Module already loaded\n");
         // If it's not a package, return module right away
         char *p = strchr(mod_str, '.');
         if (p == NULL) {
@@ -230,6 +306,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
         return mp_module_get(pkg_name);
     }
+    DEBUG_printf("Module not yet loaded\n");
 
     uint last = 0;
     VSTR_FIXED(path, MICROPY_PATH_MAX)
@@ -241,6 +318,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         if (i == mod_len || mod_str[i] == '.') {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
+            DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;
@@ -266,16 +344,19 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                 module_obj = mp_obj_new_module(mod_name);
 
                 if (stat == MP_IMPORT_STAT_DIR) {
+                    DEBUG_printf("%s is dir\n", vstr_str(&path));
+                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str((byte*)vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "Per PEP-420 a dir without __init__.py (%s) is a namespace package; "
-                            "namespace packages are not supported", vstr_str(&path)));
+                        printf("Notice: %s is imported as namespace package\n", vstr_str(&path));
+                    } else {
+                        do_load(module_obj, &path);
                     }
-                    do_load(module_obj, &path);
                     vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
+                    // https://docs.python.org/3.3/reference/import.html
+                    // "Specifically, any module that contains a __path__ attribute is considered a package."
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute

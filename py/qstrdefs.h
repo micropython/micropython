@@ -1,6 +1,6 @@
+#include "mpconfig.h"
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
-// TODO make it so we can use #defines here to select only those words that will be used
 
 Q(__build_class__)
 Q(__class__)
@@ -13,15 +13,18 @@ Q(__module__)
 Q(__name__)
 Q(__next__)
 Q(__qualname__)
+Q(__path__)
 Q(__repl_print__)
 
 Q(__bool__)
+Q(__contains__)
 Q(__enter__)
 Q(__exit__)
 Q(__len__)
 Q(__iter__)
 Q(__getitem__)
 Q(__setitem__)
+Q(__delitem__)
 Q(__add__)
 Q(__sub__)
 Q(__repr__)
@@ -81,6 +84,8 @@ Q(all)
 Q(any)
 Q(args)
 Q(array)
+Q(bin)
+Q({:#b})
 Q(bool)
 Q(bytearray)
 Q(bytes)
@@ -90,7 +95,7 @@ Q(calcsize)
 #endif
 Q(chr)
 Q(classmethod)
-Q(collections)
+Q(_collections)
 Q(complex)
 Q(dict)
 Q(dir)
@@ -104,6 +109,8 @@ Q(from_bytes)
 Q(getattr)
 Q(globals)
 Q(hash)
+Q(hex)
+Q(%#x)
 Q(id)
 Q(io)
 Q(int)
@@ -118,6 +125,8 @@ Q(max)
 Q(min)
 Q(namedtuple)
 Q(next)
+Q(oct)
+Q(%#o)
 Q(open)
 Q(ord)
 Q(path)
@@ -131,16 +140,10 @@ Q(staticmethod)
 Q(sum)
 Q(super)
 Q(str)
-#if MICROPY_ENABLE_MOD_STRUCT
-Q(struct)
-#endif
 Q(sys)
 Q(to_bytes)
 Q(tuple)
 Q(type)
-#if MICROPY_ENABLE_MOD_STRUCT
-Q(unpack)
-#endif
 Q(value)
 Q(zip)
 
@@ -209,6 +212,7 @@ Q(iterator)
 Q(module)
 Q(slice)
 
+#if MICROPY_ENABLE_MOD_MATH || MICROPY_ENABLE_MOD_CMATH
 Q(math)
 Q(e)
 Q(pi)
@@ -250,6 +254,14 @@ Q(erf)
 Q(erfc)
 Q(gamma)
 Q(lgamma)
+#endif
+
+#if MICROPY_ENABLE_MOD_CMATH
+Q(cmath)
+Q(phase)
+Q(polar)
+Q(rect)
+#endif
 
 Q(mem_total)
 Q(mem_current)
@@ -263,3 +275,34 @@ Q(<setcomp>)
 Q(<genexpr>)
 Q(<string>)
 Q(<stdin>)
+
+#if MICROPY_CPYTHON_COMPAT
+Q(encode)
+Q(decode)
+Q(utf-8)
+#endif
+
+#if MICROPY_ENABLE_MOD_SYS
+Q(argv)
+Q(byteorder)
+Q(big)
+Q(little)
+Q(stdin)
+Q(stdout)
+Q(stderr)
+Q(version)
+Q(version_info)
+#endif
+
+#if MICROPY_ENABLE_MOD_STRUCT
+Q(struct)
+Q(pack)
+Q(unpack)
+#endif
+
+#if MICROPY_ENABLE_PROPERTY
+Q(property)
+Q(getter)
+Q(setter)
+Q(deleter)
+#endif

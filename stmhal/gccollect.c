@@ -21,10 +21,9 @@ void gc_collect(void) {
     // start the GC
     gc_collect_start();
 
-    // scan everything in RAM before the heap
-    // this includes the data and bss segments
-    // TODO possibly don't need to scan data, since all pointers should start out NULL and be in bss
-    gc_collect_root((void**)&_ram_start, ((uint32_t)&_ebss - (uint32_t)&_ram_start) / sizeof(uint32_t));
+    // We need to scan everything in RAM that can hold a pointer.
+    // The data segment is used, but should not contain pointers, so we just scan the bss.
+    gc_collect_root((void**)&_sbss, ((uint32_t)&_ebss - (uint32_t)&_sbss) / sizeof(uint32_t));
 
     // get the registers and the sp
     machine_uint_t regs[10];

@@ -16,20 +16,22 @@
 #define FLASH_PART1_NUM_BLOCKS (224) // 16k+16k+16k+64k=112k
 #define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 
+#define FLASH_FLAG_DIRTY        (1)
+#define FLASH_FLAG_FORCE_WRITE  (2)
+#define FLASH_FLAG_ERASED       (4)
 static bool flash_is_initialised = false;
-static bool flash_cache_dirty;
+static __IO uint8_t flash_flags = 0;
 static uint32_t flash_cache_sector_id;
 static uint32_t flash_cache_sector_start;
 static uint32_t flash_cache_sector_size;
 static uint32_t flash_tick_counter_last_write;
 
 static void flash_cache_flush(void) {
-    if (flash_cache_dirty) {
-        // sync the cache RAM buffer by writing it to the flash page
-        flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
-        flash_cache_dirty = false;
-        // indicate a clean cache with LED off
-        led_state(PYB_LED_R1, 0);
+    if (flash_flags & FLASH_FLAG_DIRTY) {
+        flash_flags |= FLASH_FLAG_FORCE_WRITE;
+        while (flash_flags & FLASH_FLAG_DIRTY) {
+           NVIC->STIR = FLASH_IRQn;
+        }
     }
 }
 
@@ -44,9 +46,9 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_cache_sector_start = flash_sector_start;
         flash_cache_sector_size = flash_sector_size;
     }
-    flash_cache_dirty = true;
-    // indicate a dirty cache with LED on
-    led_state(PYB_LED_R1, 1);
+    flash_flags |= FLASH_FLAG_DIRTY;
+    led_state(PYB_LED_R1, 1); // indicate a dirty cache with LED on
+    flash_tick_counter_last_write = HAL_GetTick();
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
 
@@ -64,11 +66,17 @@ static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
 
 void storage_init(void) {
     if (!flash_is_initialised) {
-        flash_cache_dirty = false;
+        flash_flags = 0;
         flash_cache_sector_id = 0;
-        flash_is_initialised = true;
         flash_tick_counter_last_write = 0;
+        flash_is_initialised = true;
     }
+
+    // Enable the flash IRQ, which is used to also call our storage IRQ handler
+    // It needs to go at a higher priority than all those components that rely on
+    // the flash storage (eg higher than USB MSC).
+    HAL_NVIC_SetPriority(FLASH_IRQn, 1, 1);
+    HAL_NVIC_EnableIRQ(FLASH_IRQn);
 }
 
 uint32_t storage_get_block_size(void) {
@@ -79,9 +87,47 @@ uint32_t storage_get_block_count(void) {
     return FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS;
 }
 
-bool storage_needs_flush(void) {
-    // wait 2 seconds after last write to flush
-    return flash_cache_dirty && sys_tick_has_passed(flash_tick_counter_last_write, 2000);
+void storage_irq_handler(void) {
+    if (!(flash_flags & FLASH_FLAG_DIRTY)) {
+        return;
+    }
+
+    // This code uses interrupts to erase the flash
+    /*
+    if (flash_erase_state == 0) {
+        flash_erase_it(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_erase_state = 1;
+        return;
+    }
+
+    if (flash_erase_state == 1) {
+        // wait for erase
+        // TODO add timeout
+        #define flash_erase_done() (__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY) == RESET)
+        if (!flash_erase_done()) {
+            return;
+        }
+        flash_erase_state = 2;
+    }
+    */
+
+    // This code erases the flash directly, waiting for it to finish
+    if (!(flash_flags & FLASH_FLAG_ERASED)) {
+        flash_erase(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_flags |= FLASH_FLAG_ERASED;
+        return;
+    }
+
+    // If not a forced write, wait at least 5 seconds after last write to flush
+    // On file close and flash unmount we get a forced write, so we can afford to wait a while
+    if ((flash_flags & FLASH_FLAG_FORCE_WRITE) || sys_tick_has_passed(flash_tick_counter_last_write, 5000)) {
+        // sync the cache RAM buffer by writing it to the flash page
+        flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        // clear the flash flags now that we have a clean cache
+        flash_flags = 0;
+        // indicate a clean cache with LED off
+        led_state(PYB_LED_R1, 0);
+    }
 }
 
 void storage_flush(void) {
@@ -167,7 +213,6 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
         uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);
         memcpy(dest, src, FLASH_BLOCK_SIZE);
-        flash_tick_counter_last_write = HAL_GetTick();
         return true;
 
     } else {

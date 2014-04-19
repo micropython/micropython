@@ -193,7 +193,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
-    return MP_OBJ_NULL;
+    return MP_OBJ_NOT_SUPPORTED;
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_binary_op
@@ -262,21 +262,30 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
             return mp_binary_op(op, rhs_in, lhs_in);
         }
     }
-    return MP_OBJ_NULL;
+    return MP_OBJ_NOT_SUPPORTED;
 }
 
+// this is a classmethod
 STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
-    buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo);
-
-    assert(bufinfo.len >= sizeof(machine_int_t));
     // TODO: Support long ints
-    // TODO: Support byteorder param
-    // TODO: Support signed param
-    return mp_obj_new_int_from_uint(*(machine_uint_t*)bufinfo.buf);
+    // TODO: Support byteorder param (assumes 'little' at the moment)
+    // TODO: Support signed param (assumes signed=False at the moment)
+
+    // get the buffer info
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+
+    // convert the bytes to an integer
+    machine_uint_t value = 0;
+    for (const byte* buf = bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+        value = (value << 8) | *buf;
+    }
+
+    return mp_obj_new_int_from_uint(value);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_obj, 1, 3, int_from_bytes);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_from_bytes);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, (const mp_obj_t)&int_from_bytes_fun_obj);
 
 STATIC mp_obj_t int_to_bytes(uint n_args, const mp_obj_t *args) {
     machine_int_t val = mp_obj_int_get_checked(args[0]);

@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <stm32f4xx_hal.h>
+#include "stm32f4xx_hal.h"
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -13,9 +13,8 @@
 #include "pybstdio.h"
 #include "pyexec.h"
 #include "led.h"
-#include "gpio.h"
 #include "pin.h"
-#include "exti.h"
+#include "extint.h"
 #include "usrsw.h"
 #include "rng.h"
 #include "rtc.h"
@@ -31,8 +30,15 @@
 #include "modpyb.h"
 #include "ff.h"
 
+STATIC mp_obj_t pyb_unique_id(void) {
+    // get unique id; 96 bits
+    byte *id = (byte*)0x1fff7a10;
+    return mp_obj_new_bytes(id, 12);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
+
 // get lots of info about the board
-STATIC mp_obj_t pyb_info(void) {
+STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
         byte *id = (byte*)0x1fff7a10;
@@ -89,10 +95,15 @@ STATIC mp_obj_t pyb_info(void) {
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 
+    if (n_args == 1) {
+        // arg given means dump gc allocation table
+        gc_dump_alloc_table();
+    }
+
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_info_obj, pyb_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 
 // sync all file systems
 STATIC mp_obj_t pyb_sync(void) {
@@ -126,6 +137,27 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
+
+STATIC mp_obj_t pyb_wfi(void) {
+    __WFI();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
+
+STATIC mp_obj_t pyb_disable_irq(void) {
+    __disable_irq();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
+
+STATIC mp_obj_t pyb_enable_irq(void) {
+    __enable_irq();
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_irq_obj, pyb_enable_irq);
 
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
@@ -181,6 +213,12 @@ STATIC mp_obj_t pyb_standby(void) {
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
+STATIC mp_obj_t pyb_have_cdc(void ) {
+    return MP_BOOL(usb_vcp_is_connected());
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
+
 STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(arg, 4, &items);
@@ -195,16 +233,6 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
-#if 0
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_I2C_obj, pyb_I2C); // TODO put this in i2c.c
-#endif
-
-STATIC mp_obj_t pyb_input(void ) {
-    return mp_obj_new_int(stdin_rx_chr());
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_input_obj, pyb_input);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
@@ -212,15 +240,23 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&pyb_gc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wfi), (mp_obj_t)&pyb_wfi_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq), (mp_obj_t)&pyb_disable_irq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq), (mp_obj_t)&pyb_enable_irq_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
@@ -232,9 +268,11 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
 #if MICROPY_HW_ENABLE_RTC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&pyb_rtc_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rtc_info), (mp_obj_t)&pyb_rtc_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC), (mp_obj_t)&pyb_rtc_type },
 #endif
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ExtInt), (mp_obj_t)&extint_type },
 
 #if MICROPY_HW_ENABLE_SERVO
     { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_pwm_set_obj },
@@ -250,12 +288,12 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pyb_sdcard_obj },
 #endif
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Led), (mp_obj_t)&pyb_led_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), (mp_obj_t)&pyb_led_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Usart), (mp_obj_t)&pyb_usart_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_USART), (mp_obj_t)&pyb_usart_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ADC_all), (mp_obj_t)&pyb_ADC_all_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ADCAll), (mp_obj_t)&pyb_adc_all_type },
 
 #if MICROPY_HW_ENABLE_DAC
     { MP_OBJ_NEW_QSTR(MP_QSTR_DAC), (mp_obj_t)&pyb_dac_type },
@@ -264,27 +302,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_HAS_MMA7660
     { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_accel_type },
 #endif
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
-
-    // input
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&pyb_input_obj },
-
-    // pin mapper
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_map_obj },
-
-    // GPIO bindings
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio), (mp_obj_t)&pyb_gpio_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_in), (mp_obj_t)&pyb_gpio_input_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gpio_out), (mp_obj_t)&pyb_gpio_output_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_NOPULL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP), MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PUSH_PULL), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_OD) },
-
-    // EXTI bindings
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Exti), (mp_obj_t)&exti_obj_type },
 };
 
 STATIC const mp_obj_dict_t pyb_module_globals = {

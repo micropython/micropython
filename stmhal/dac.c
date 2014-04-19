@@ -10,9 +10,9 @@
 #include "parse.h"
 #include "obj.h"
 #include "runtime.h"
+#include "timer.h"
 #include "dac.h"
 
-TIM_HandleTypeDef TIM6_Handle;
 STATIC DAC_HandleTypeDef DAC_Handle;
 
 void dac_init(void) {
@@ -22,19 +22,8 @@ void dac_init(void) {
 }
 
 STATIC void TIM6_Config(uint freq) {
-    // TIM6 clock enable
-    __TIM6_CLK_ENABLE();
-
-    // Compute the prescaler value so TIM6 triggers at freq-Hz
-    uint16_t period = (uint16_t) ((SystemCoreClock / 2) / freq) - 1;
-
-    // time base clock configuration
-    TIM6_Handle.Instance = TIM6;
-    TIM6_Handle.Init.Period = period;
-    TIM6_Handle.Init.Prescaler = 0; // timer runs at SystemCoreClock / 2
-    TIM6_Handle.Init.ClockDivision = 0; // unused for TIM6
-    TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP; // unused for TIM6
-    HAL_TIM_Base_Init(&TIM6_Handle);
+    // Init TIM6 at the required frequency (in Hz)
+    timer_tim6_init(freq);
 
     // TIM6 TRGO selection
     TIM_MasterConfigTypeDef config;
@@ -180,12 +169,8 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(args[2]));
 
-    mp_obj_type_t *type = mp_obj_get_type(args[1]);
-    if (type->buffer_p.get_buffer == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "buffer argument must support buffer protocol"));
-    }
-    buffer_info_t bufinfo;
-    type->buffer_p.get_buffer(args[1], &bufinfo, BUFFER_READ);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
     __DMA1_CLK_ENABLE();
 
@@ -207,17 +192,14 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     DAC_Init(self->dac_channel, &DAC_InitStructure);
     */
 
-    if (self->state != 3) {
-        DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
-        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = 3;
-    }
-
     // DMA1_Stream[67] channel7 configuration
     DMA_HandleTypeDef DMA_Handle;
     DMA_Handle.Instance = self->dma_stream;
+
+    // Need to deinit DMA first
+    DMA_Handle.State = HAL_DMA_STATE_READY;
+    HAL_DMA_DeInit(&DMA_Handle);
+
     DMA_Handle.Init.Channel = DMA_CHANNEL_7;
     DMA_Handle.Init.Direction = DMA_MEMORY_TO_PERIPH;
     DMA_Handle.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -234,6 +216,18 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     HAL_DMA_Init(&DMA_Handle);
 
     __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+
+    DAC_Handle.Instance = DAC;
+    DAC_Handle.State = HAL_DAC_STATE_RESET;
+    HAL_DAC_Init(&DAC_Handle);
+
+    if (self->state != 3) {
+        DAC_ChannelConfTypeDef config;
+        config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
+        self->state = 3;
+    }
 
     HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel, (uint32_t*)bufinfo.buf, bufinfo.len, DAC_ALIGN_8B_R);
 

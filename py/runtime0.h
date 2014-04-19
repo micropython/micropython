@@ -24,7 +24,6 @@ typedef enum {
 } mp_unary_op_t;
 
 typedef enum {
-    MP_BINARY_OP_SUBSCR,
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -75,7 +74,7 @@ typedef enum {
     MP_F_LOAD_METHOD,
     MP_F_STORE_NAME,
     MP_F_STORE_ATTR,
-    MP_F_STORE_SUBSCR,
+    MP_F_OBJ_SUBSCR,
     MP_F_OBJ_IS_TRUE,
     MP_F_UNARY_OP,
     MP_F_BINARY_OP,
@@ -86,7 +85,7 @@ typedef enum {
     MP_F_STORE_MAP,
     MP_F_BUILD_SET,
     MP_F_STORE_SET,
-    MP_F_MAKE_FUNCTION_FROM_ID,
+    MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
     MP_F_CALL_FUNCTION_N_KW_FOR_NATIVE,
     MP_F_CALL_METHOD_N_KW,
     MP_F_GETITER,

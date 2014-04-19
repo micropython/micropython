@@ -60,7 +60,10 @@ static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRx
 
 static uint8_t UserTxBuffer[APP_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
 static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA_SIZE when new data is available
-static uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
+static __IO uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
+static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
+static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
+static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
@@ -250,33 +253,62 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
   * @retval None
   */
 void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
-  uint32_t buffptr;
-  uint32_t buffsize;
-  
-  if(UserTxBufPtrOut != UserTxBufPtrIn)
-  {
-    if(UserTxBufPtrOut > UserTxBufPtrIn) /* rollback */
-    {
-      buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOut;
+    if (!dev_is_connected) {
+        // CDC device is not connected to a host, so we are unable to send any data
+        return;
     }
-    else 
-    {
-      buffsize = UserTxBufPtrIn - UserTxBufPtrOut;
+
+    if (UserTxBufPtrOut == UserTxBufPtrIn && !UserTxNeedEmptyPacket) {
+        // No outstanding data to send
+        return;
     }
-    
-    buffptr = UserTxBufPtrOut;
-    
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
-    
-    if(USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK)
-    {
-      UserTxBufPtrOut += buffsize;
-      if (UserTxBufPtrOut == APP_TX_DATA_SIZE)
-      {
-        UserTxBufPtrOut = 0;
-      }
+
+    if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
+        // We have sent data and are waiting for the low-level USB driver to
+        // finish sending it over the USB in-endpoint.
+        // We have a 15 * 10ms = 150ms timeout
+        if (UserTxBufPtrWaitCount < 15) {
+            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+            USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+            if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
+                // USB in-endpoint is still reading the data
+                UserTxBufPtrWaitCount++;
+                return;
+            }
+        }
+        UserTxBufPtrOut = UserTxBufPtrOutShadow;
     }
-  }
+
+    if (UserTxBufPtrOutShadow != UserTxBufPtrIn || UserTxNeedEmptyPacket) {
+        uint32_t buffptr;
+        uint32_t buffsize;
+
+        if (UserTxBufPtrOutShadow > UserTxBufPtrIn) { // rollback
+            buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOutShadow;
+        } else {
+            buffsize = UserTxBufPtrIn - UserTxBufPtrOutShadow;
+        }
+
+        buffptr = UserTxBufPtrOutShadow;
+
+        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
+
+        if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
+            UserTxBufPtrOutShadow += buffsize;
+            if (UserTxBufPtrOutShadow == APP_TX_DATA_SIZE) {
+                UserTxBufPtrOutShadow = 0;
+            }
+            UserTxBufPtrWaitCount = 0;
+
+            // According to the USB specification, a packet size of 64 bytes (CDC_DATA_FS_MAX_PACKET_SIZE)
+            // gets held at the USB host until the next packet is sent.  This is because a
+            // packet of maximum size is considered to be part of a longer chunk of data, and
+            // the host waits for all data to arrive (ie, waits for a packet < max packet size).
+            // To flush a packet of exactly max packet size, we need to send a zero-size packet.
+            // See eg http://www.cypress.com/?id=4&rID=92719
+            UserTxNeedEmptyPacket = (buffsize == CDC_DATA_FS_MAX_PACKET_SIZE && UserTxBufPtrOutShadow == UserTxBufPtrIn);
+        }
+    }
 }
 
 /**
@@ -362,13 +394,38 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
 
 void USBD_CDC_Tx(const char *str, uint32_t len) {
     for (int i = 0; i < len; i++) {
-        uint timeout = 200;
-        while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut) {
-            if (timeout-- == 0) {
-                break;
+        // If the CDC device is not connected to the host then we don't have anyone to receive our data.
+        // The device may become connected in the future, so we should at least try to fill the buffer
+        // and hope that it doesn't overflow by the time the device connects.
+        // If the device is not connected then we should go ahead and fill the buffer straight away,
+        // ignoring overflow.  Otherwise, we should make sure that we have enough room in the buffer.
+        if (dev_is_connected) {
+            // If the buffer is full, wait until it gets drained, with a timeout of 500ms
+            // (wraparound of tick is taken care of by 2's complement arithmetic).
+            uint32_t start = HAL_GetTick();
+            while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut && HAL_GetTick() - start <= 500) {
+                __WFI(); // enter sleep mode, waiting for interrupt
             }
-            HAL_Delay(1);
+
+            // Some unused code that makes sure the low-level USB buffer is drained.
+            // Waiting for low-level is handled in USBD_CDC_HAL_TIM_PeriodElapsedCallback.
+            /*
+            start = HAL_GetTick();
+            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+            if (hpcd->IN_ep[0x83 & 0x7f].is_in) {
+                //volatile uint32_t *xfer_count = &hpcd->IN_ep[0x83 & 0x7f].xfer_count;
+                //volatile uint32_t *xfer_len = &hpcd->IN_ep[0x83 & 0x7f].xfer_len;
+                USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+                while (
+                    // *xfer_count < *xfer_len // using this works
+                    // (USBx_INEP(3)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) // using this works
+                    && HAL_GetTick() - start <= 2000) {
+                    __WFI(); // enter sleep mode, waiting for interrupt
+                }
+            }
+            */
         }
+
         UserTxBuffer[UserTxBufPtrIn] = str[i];
         UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
     }

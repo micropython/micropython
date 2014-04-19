@@ -10,8 +10,12 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)
+
 # compiler settings
-CFLAGS = -I. -I$(PY_SRC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
@@ -19,6 +23,16 @@ UNAME_S := $(shell uname -s)
 else
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
  endif
+
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CFLAGS += -m32
+LDFLAGS += -m32
+ifeq ($(MICROPY_MOD_FFI),1)
+ifeq ($(UNAME_S),Linux)
+CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+endif
+endif
+endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
@@ -57,3 +71,8 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk
 
+.PHONY: test
+
+test: $(PROG) ../tests/run-tests
+	$(eval DIRNAME=$(notdir $(CURDIR)))
+	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests

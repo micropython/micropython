@@ -1,22 +1,22 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <stm32f4xx_hal.h>
+
+#include "stm32f4xx_hal.h"
 
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
-
 #include "pin.h"
 
-static void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;
-    print(env, "<Pin.%s>", self->name);
+    print(env, "<Pin.%s>", qstr_str(self->name));
 }
 
-static void pin_named_pins_obj_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
+STATIC void pin_named_pins_obj_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
     pin_named_pins_obj_t *self = self_in;
     const char *attr = qstr_str(attr_qstr);
     const pin_obj_t *pin = pin_find_named_pin(self->named_pins, attr);
@@ -35,13 +35,13 @@ static const mp_obj_type_t pin_named_pins_obj_type = {
 
 const pin_named_pins_obj_t pin_board_pins_obj = {
     { &pin_named_pins_obj_type },
-    .name = "board",
+    .name = MP_QSTR_board,
     .named_pins = pin_board_pins,
 };
 
 const pin_named_pins_obj_t pin_cpu_pins_obj = {
     { &pin_named_pins_obj_type },
-    .name = "cpu",
+    .name = MP_QSTR_cpu,
     .named_pins = pin_cpu_pins,
 };
 

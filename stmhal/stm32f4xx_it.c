@@ -47,8 +47,9 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
-#include "exti.h"
+#include "extint.h"
 #include "timer.h"
+#include "storage.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -63,7 +64,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-extern void fatality();
+extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef hpcd;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,12 +88,10 @@ void NMI_Handler(void)
   * @param  None
   * @retval None
   */
-void HardFault_Handler(void)
-{
+void HardFault_Handler(void) {
   /* Go to infinite loop when Hard Fault exception occurs */
-  while (1)
-  {
-    fatality();
+  while (1) {
+    __fatal_error("HardFault");
   }
 }
 
@@ -101,12 +100,10 @@ void HardFault_Handler(void)
   * @param  None
   * @retval None
   */
-void MemManage_Handler(void)
-{
+void MemManage_Handler(void) {
   /* Go to infinite loop when Memory Manage exception occurs */
-  while (1)
-  {
-    fatality();
+  while (1) {
+    __fatal_error("MemManage");
   }
 }
 
@@ -115,12 +112,10 @@ void MemManage_Handler(void)
   * @param  None
   * @retval None
   */
-void BusFault_Handler(void)
-{
+void BusFault_Handler(void) {
   /* Go to infinite loop when Bus Fault exception occurs */
-  while (1)
-  {
-    fatality();
+  while (1) {
+    __fatal_error("BusFault");
   }
 }
 
@@ -129,12 +124,10 @@ void BusFault_Handler(void)
   * @param  None
   * @retval None
   */
-void UsageFault_Handler(void)
-{
+void UsageFault_Handler(void) {
   /* Go to infinite loop when Usage Fault exception occurs */
-  while (1)
-  {
-    fatality();
+  while (1) {
+    __fatal_error("UsageFault");
   }
 }
 
@@ -262,6 +255,19 @@ void OTG_XX_WKUP_IRQHandler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+// Handle a flash (erase/program) interrupt.
+void FLASH_IRQHandler(void) {
+    // This calls the real flash IRQ handler, if needed
+    /*
+    uint32_t flash_cr = FLASH->CR;
+    if ((flash_cr & FLASH_IT_EOP) || (flash_cr & FLASH_IT_ERR)) {
+        HAL_FLASH_IRQHandler();
+    }
+    */
+    // This call the storage IRQ handler, to check if the flash cache needs flushing
+    storage_irq_handler();
+}
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.

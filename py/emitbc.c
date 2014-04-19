@@ -9,10 +9,11 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
-#include "emitglue.h"
 #include "bc0.h"
 
 struct _emit_t {
@@ -65,6 +66,10 @@ STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_writ
     }
 }
 
+STATIC void emit_align_code_info_to_machine_word(emit_t* emit) {
+    emit->code_info_offset = (emit->code_info_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
+}
+
 STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
     byte* c = emit_get_cur_to_write_code_info(emit, 4);
     // TODO variable length encoding for qstr
@@ -74,15 +79,18 @@ STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
     c[3] = (qstr >> 24) & 0xff;
 }
 
+#if MICROPY_ENABLE_SOURCE_LINE
 STATIC void emit_write_code_info_bytes_lines(emit_t* emit, uint bytes_to_skip, uint lines_to_skip) {
-    for (; bytes_to_skip > 31; bytes_to_skip -= 31) {
-        *emit_get_cur_to_write_code_info(emit, 1) = 31;
+    assert(bytes_to_skip > 0 || lines_to_skip > 0);
+    while (bytes_to_skip > 0 || lines_to_skip > 0) {
+        uint b = MIN(bytes_to_skip, 31);
+        uint l = MIN(lines_to_skip, 7);
+        bytes_to_skip -= b;
+        lines_to_skip -= l;
+        *emit_get_cur_to_write_code_info(emit, 1) = b | (l << 5);
     }
-    for (; lines_to_skip > 7; lines_to_skip -= 7) {
-        *emit_get_cur_to_write_code_info(emit, 1) = 7 << 5;
-    }
-    *emit_get_cur_to_write_code_info(emit, 1) = bytes_to_skip | (lines_to_skip << 5);
 }
+#endif
 
 // all functions must go through this one to emit byte code
 STATIC byte* emit_get_cur_to_write_byte_code(emit_t* emit, int num_bytes_to_write) {
@@ -96,6 +104,10 @@ STATIC byte* emit_get_cur_to_write_byte_code(emit_t* emit, int num_bytes_to_writ
         emit->byte_code_offset += num_bytes_to_write;
         return c;
     }
+}
+
+STATIC void emit_align_byte_code_to_machine_word(emit_t* emit) {
+    emit->byte_code_offset = (emit->byte_code_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
 }
 
 STATIC void emit_write_byte_code_byte(emit_t* emit, byte b1) {
@@ -158,6 +170,14 @@ STATIC void emit_write_byte_code_byte_uint(emit_t* emit, byte b, uint num) {
     emit_write_byte_code_uint(emit, num);
 }
 
+// aligns the pointer so it is friendly to GC
+STATIC void emit_write_byte_code_byte_ptr(emit_t* emit, byte b, void *ptr) {
+    emit_write_byte_code_byte(emit, b);
+    emit_align_byte_code_to_machine_word(emit);
+    machine_uint_t *c = (machine_uint_t*)emit_get_cur_to_write_byte_code(emit, sizeof(machine_uint_t));
+    *c = (machine_uint_t)ptr;
+}
+
 /* currently unused
 STATIC void emit_write_byte_code_byte_uint_uint(emit_t* emit, byte b, uint num1, uint num2) {
     emit_write_byte_code_byte(emit, b);
@@ -171,21 +191,21 @@ STATIC void emit_write_byte_code_byte_qstr(emit_t* emit, byte b, qstr qstr) {
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
-STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, int label) {
+STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, uint label) {
     uint byte_code_offset;
     if (emit->pass < PASS_3) {
         byte_code_offset = 0;
     } else {
         byte_code_offset = emit->label_offsets[label] - emit->byte_code_offset - 3;
     }
-    byte* c = emit_get_cur_to_write_byte_code(emit, 3);
+    byte *c = emit_get_cur_to_write_byte_code(emit, 3);
     c[0] = b1;
     c[1] = byte_code_offset;
     c[2] = byte_code_offset >> 8;
 }
 
 // signed labels are relative to ip following this instruction, stored as 16 bits, in excess
-STATIC void emit_write_byte_code_byte_signed_label(emit_t* emit, byte b1, int label) {
+STATIC void emit_write_byte_code_byte_signed_label(emit_t* emit, byte b1, uint label) {
     int byte_code_offset;
     if (emit->pass < PASS_3) {
         byte_code_offset = 0;
@@ -232,6 +252,12 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     {
         byte* c = emit_get_cur_to_write_byte_code(emit, 4);
         uint n_state = scope->num_locals + scope->stack_size;
+        if (n_state == 0) {
+            // Need at least 1 entry in the state, in the case an exception is
+            // propagated through this function, the exception is returned in
+            // the highest slot in the state (fastn[0], see vm.c).
+            n_state = 1;
+        }
         c[0] = n_state & 0xff;
         c[1] = (n_state >> 8) & 0xff;
         c[2] = scope->exc_stack_size & 0xff;
@@ -262,36 +288,33 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    emit_write_code_info_bytes_lines(emit, 0, 0); // end of line number info
+    *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
+    emit_align_code_info_to_machine_word(emit); // align so that following byte_code is aligned
 
     if (emit->pass == PASS_2) {
         // calculate size of code in bytes
         emit->code_info_size = emit->code_info_offset;
         emit->byte_code_size = emit->byte_code_offset;
-        emit->code_base = m_new(byte, emit->code_info_size + emit->byte_code_size);
+        emit->code_base = m_new0(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
         qstr *arg_names = m_new(qstr, emit->scope->num_params);
         for (int i = 0; i < emit->scope->num_params; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
         }
-        mp_emit_glue_assign_byte_code(emit->scope->unique_code_id, emit->code_base,
+        mp_emit_glue_assign_byte_code(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->byte_code_size,
             emit->scope->num_params, emit->scope->num_locals,
             emit->scope->scope_flags, arg_names);
     }
 }
 
-bool emit_bc_last_emit_was_return_value(emit_t *emit) {
+STATIC bool emit_bc_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-int emit_bc_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_bc_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_bc_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_bc_set_source_line(emit_t *emit, int source_line) {
@@ -329,7 +352,7 @@ STATIC void emit_bc_pre(emit_t *emit, int stack_size_delta) {
     emit->last_emit_was_return_value = false;
 }
 
-STATIC void emit_bc_label_assign(emit_t *emit, int l) {
+STATIC void emit_bc_label_assign(emit_t *emit, uint l) {
     emit_bc_pre(emit, 0);
     assert(l < emit->max_num_labels);
     if (emit->pass == PASS_2) {
@@ -411,17 +434,11 @@ STATIC void emit_bc_load_null(emit_t *emit) {
 STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
-    if (id_flags & ID_FLAG_IS_DELETED) {
-        // This local may be deleted, so need to do a checked load.
-        emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_CHECKED, local_num);
-    } else {
-        // This local is never deleted, so can do a fast, uncheched load.
-        switch (local_num) {
-            case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
-            case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
-            case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
-            default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
-        }
+    switch (local_num) {
+        case 0: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_0); break;
+        case 1: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_1); break;
+        case 2: emit_write_byte_code_byte(emit, MP_BC_LOAD_FAST_2); break;
+        default: emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
     }
 }
 
@@ -458,6 +475,11 @@ STATIC void emit_bc_load_method(emit_t *emit, qstr qstr) {
 STATIC void emit_bc_load_build_class(emit_t *emit) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte(emit, MP_BC_LOAD_BUILD_CLASS);
+}
+
+STATIC void emit_bc_load_subscr(emit_t *emit) {
+    emit_bc_pre(emit, -1);
+    emit_write_byte_code_byte(emit, MP_BC_LOAD_SUBSCR);
 }
 
 STATIC void emit_bc_store_fast(emit_t *emit, qstr qstr, int local_num) {
@@ -551,37 +573,37 @@ STATIC void emit_bc_rot_three(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_ROT_THREE);
 }
 
-STATIC void emit_bc_jump(emit_t *emit, int label) {
+STATIC void emit_bc_jump(emit_t *emit, uint label) {
     emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP, label);
 }
 
-STATIC void emit_bc_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_bc_pop_jump_if_true(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_POP_JUMP_IF_TRUE, label);
 }
 
-STATIC void emit_bc_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_bc_pop_jump_if_false(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_POP_JUMP_IF_FALSE, label);
 }
 
-STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP_IF_TRUE_OR_POP, label);
 }
 
-STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP_IF_FALSE_OR_POP, label);
 }
 
-STATIC void emit_bc_setup_loop(emit_t *emit, int label) {
+STATIC void emit_bc_setup_loop(emit_t *emit, uint label) {
     emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_LOOP, label);
 }
 
-STATIC void emit_bc_unwind_jump(emit_t *emit, int label, int except_depth) {
+STATIC void emit_bc_unwind_jump(emit_t *emit, uint label, int except_depth) {
     if (except_depth == 0) {
         emit_bc_jump(emit, label);
     } else {
@@ -591,7 +613,7 @@ STATIC void emit_bc_unwind_jump(emit_t *emit, int label, int except_depth) {
     }
 }
 
-STATIC void emit_bc_setup_with(emit_t *emit, int label) {
+STATIC void emit_bc_setup_with(emit_t *emit, uint label) {
     emit_bc_pre(emit, 7);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
 }
@@ -601,13 +623,13 @@ STATIC void emit_bc_with_cleanup(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_WITH_CLEANUP);
 }
 
-STATIC void emit_bc_setup_except(emit_t *emit, int label) {
-    emit_bc_pre(emit, 6);
+STATIC void emit_bc_setup_except(emit_t *emit, uint label) {
+    emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_EXCEPT, label);
 }
 
-STATIC void emit_bc_setup_finally(emit_t *emit, int label) {
-    emit_bc_pre(emit, 6);
+STATIC void emit_bc_setup_finally(emit_t *emit, uint label) {
+    emit_bc_pre(emit, 0);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_FINALLY, label);
 }
 
@@ -621,7 +643,7 @@ STATIC void emit_bc_get_iter(emit_t *emit) {
     emit_write_byte_code_byte(emit, MP_BC_GET_ITER);
 }
 
-STATIC void emit_bc_for_iter(emit_t *emit, int label) {
+STATIC void emit_bc_for_iter(emit_t *emit, uint label) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte_unsigned_label(emit, MP_BC_FOR_ITER, label);
 }
@@ -737,37 +759,37 @@ STATIC void emit_bc_unpack_ex(emit_t *emit, int n_left, int n_right) {
 STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 1);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION, scope->raw_code);
     } else {
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
             emit_bc_load_null(emit);
+            emit_bc_rot_two(emit);
         } else if (n_kw_defaults == 0) {
             // load dummy entry for non-existent keyword default dict
             emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
         }
         emit_bc_pre(emit, -1);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->raw_code);
     }
 }
 
 STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 0);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE, scope->raw_code);
     } else {
         if (n_pos_defaults == 0) {
             // load dummy entry for non-existent positional default tuple
             emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
+            emit_bc_rot_three(emit);
         } else if (n_kw_defaults == 0) {
             // load dummy entry for non-existent keyword default dict
             emit_bc_load_null(emit);
-            emit_bc_rot_three(emit);
+            emit_bc_rot_two(emit);
         }
         emit_bc_pre(emit, -2);
-        emit_write_byte_code_byte_uint(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->unique_code_id);
+        emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
     }
 }
 
@@ -830,8 +852,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_start_pass,
     emit_bc_end_pass,
     emit_bc_last_emit_was_return_value,
-    emit_bc_get_stack_size,
-    emit_bc_set_stack_size,
+    emit_bc_adjust_stack_size,
     emit_bc_set_source_line,
 
     emit_bc_load_id,
@@ -857,6 +878,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_attr,
     emit_bc_load_method,
     emit_bc_load_build_class,
+    emit_bc_load_subscr,
     emit_bc_store_fast,
     emit_bc_store_deref,
     emit_bc_store_name,

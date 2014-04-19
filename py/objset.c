@@ -9,6 +9,7 @@
 #include "obj.h"
 #include "runtime.h"
 #include "runtime0.h"
+#include "builtin.h"
 
 typedef struct _mp_obj_set_t {
     mp_obj_base_t base;
@@ -58,7 +59,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             mp_obj_t set = mp_obj_new_set(0, NULL);
             mp_obj_t iterable = mp_getiter(args[0]);
             mp_obj_t item;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+            while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 mp_obj_set_store(set, item);
             }
             return set;
@@ -89,7 +90,7 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
         }
     }
 
-    return MP_OBJ_NULL;
+    return MP_OBJ_STOP_ITERATION;
 }
 
 STATIC mp_obj_t set_getiter(mp_obj_t set_in) {
@@ -162,7 +163,7 @@ STATIC mp_obj_t set_diff_int(int n_args, const mp_obj_t *args, bool update) {
         } else {
             mp_obj_t iter = mp_getiter(other);
             mp_obj_t next;
-            while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+            while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 set_discard(self, next);
             }
         }
@@ -193,7 +194,7 @@ STATIC mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update)
 
     mp_obj_t iter = mp_getiter(other);
     mp_obj_t next;
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             set_add(out, next);
         }
@@ -225,7 +226,7 @@ STATIC mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
 
     mp_obj_t iter = mp_getiter(other);
     mp_obj_t next;
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
             return mp_const_false;
         }
@@ -258,7 +259,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     } else {
         mp_obj_t iter = set_getiter(self);
         mp_obj_t next;
-        while ((next = set_it_iternext(iter)) != MP_OBJ_NULL) {
+        while ((next = set_it_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
             if (!mp_set_lookup(&other->set, next, MP_MAP_LOOKUP)) {
                 out = false;
                 break;
@@ -330,7 +331,7 @@ STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other
     mp_obj_set_t *self = self_in;
     mp_obj_t iter = mp_getiter(other_in);
     mp_obj_t next;
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND | MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return mp_const_none;
@@ -348,7 +349,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_dif
 STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     mp_obj_t iter = mp_getiter(other_in);
     mp_obj_t next;
-    while ((next = mp_iternext(iter)) != MP_OBJ_NULL) {
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
 }
@@ -378,7 +379,7 @@ STATIC mp_obj_t set_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->set.used);
-        default: return MP_OBJ_NULL; // op not supported for None
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -411,8 +412,6 @@ STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         return set_issubset(lhs, rhs);
     case MP_BINARY_OP_MORE_EQUAL:
         return set_issuperset(lhs, rhs);
-    case MP_BINARY_OP_NOT_EQUAL:
-        return MP_BOOL(set_equal(lhs, rhs) == mp_const_false);
     case MP_BINARY_OP_IN:
     {
         mp_obj_set_t *o = lhs;
@@ -447,6 +446,7 @@ STATIC const mp_map_elem_t set_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference_update), (mp_obj_t)&set_symmetric_difference_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_union), (mp_obj_t)&set_union_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&set_update_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___contains__), (mp_obj_t)&mp_op_contains_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);

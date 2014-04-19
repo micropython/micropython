@@ -23,46 +23,11 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
-typedef enum {
-    MP_CODE_UNUSED,
-    MP_CODE_RESERVED,
-    MP_CODE_BYTE,
-    MP_CODE_NATIVE,
-    MP_CODE_INLINE_ASM,
-} mp_code_kind_t;
-
-typedef struct _mp_code_t {
-    mp_code_kind_t kind : 8;
-    uint scope_flags : 8;
-    uint n_args : 16;
-    union {
-        struct {
-            byte *code;
-            uint len;
-        } u_byte;
-        struct {
-            mp_fun_t fun;
-        } u_native;
-        struct {
-            void *fun;
-        } u_inline_asm;
-    };
-    qstr *arg_names;
-} mp_code_t;
-
-STATIC machine_uint_t unique_codes_alloc = 0;
-STATIC machine_uint_t unique_codes_total = 0; // always >= unique_codes_alloc
-STATIC mp_code_t *unique_codes = NULL;
-
 #ifdef WRITE_CODE
 FILE *fp_write_code = NULL;
 #endif
 
 void mp_emit_glue_init(void) {
-    unique_codes_alloc = 0;
-    unique_codes_total = 0;
-    unique_codes = NULL;
-
 #ifdef WRITE_CODE
     fp_write_code = fopen("out-code", "wb");
 #endif
@@ -74,50 +39,24 @@ void mp_emit_glue_deinit(void) {
         fclose(fp_write_code);
     }
 #endif
-
-    m_del(mp_code_t, unique_codes, unique_codes_alloc);
 }
 
-uint mp_emit_glue_get_unique_code_id(void) {
-    // look for an existing unused slot
-    for (uint i = 0; i < unique_codes_alloc; i++) {
-        if (unique_codes[i].kind == MP_CODE_UNUSED) {
-            unique_codes[i].kind = MP_CODE_RESERVED;
-            return i;
-        }
-    }
-    // no existing slot
-    // return next available id, memory will be allocated later
-    return unique_codes_total++;
+mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
+    mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
+    rc->kind = MP_CODE_RESERVED;
+    return rc;
 }
 
-STATIC void mp_emit_glue_alloc_unique_codes(void) {
-    if (unique_codes_total > unique_codes_alloc) {
-        DEBUG_printf("allocate more unique codes: " UINT_FMT " -> %u\n", unique_codes_alloc, unique_codes_total);
-        // increase size of unique_codes table (all new entries are already reserved)
-        unique_codes = m_renew(mp_code_t, unique_codes, unique_codes_alloc, unique_codes_total);
-        for (uint i = unique_codes_alloc; i < unique_codes_total; i++) {
-            unique_codes[i].kind = MP_CODE_RESERVED;
-        }
-        unique_codes_alloc = unique_codes_total;
-    }
-}
-
-void mp_emit_glue_assign_byte_code(uint unique_code_id, byte *code, uint len, int n_args, int n_locals, uint scope_flags, qstr *arg_names) {
-    mp_emit_glue_alloc_unique_codes();
-
-    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
-    unique_codes[unique_code_id].kind = MP_CODE_BYTE;
-    unique_codes[unique_code_id].scope_flags = scope_flags;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_byte.code = code;
-    unique_codes[unique_code_id].u_byte.len = len;
-    unique_codes[unique_code_id].arg_names = arg_names;
-
-    //printf("byte code: %d bytes\n", len);
+void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, int n_args, int n_locals, uint scope_flags, qstr *arg_names) {
+    rc->kind = MP_CODE_BYTE;
+    rc->scope_flags = scope_flags;
+    rc->n_args = n_args;
+    rc->u_byte.code = code;
+    rc->u_byte.len = len;
+    rc->arg_names = arg_names;
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign byte code: id=%d code=%p len=%u n_args=%d n_locals=%d\n", unique_code_id, code, len, n_args, n_locals);
+    DEBUG_printf("assign byte code: code=%p len=%u n_args=%d n_locals=%d\n", code, len, n_args, n_locals);
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
@@ -131,19 +70,14 @@ void mp_emit_glue_assign_byte_code(uint unique_code_id, byte *code, uint len, in
 #endif
 }
 
-void mp_emit_glue_assign_native_code(uint unique_code_id, void *fun, uint len, int n_args) {
-    mp_emit_glue_alloc_unique_codes();
-
-    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
-    unique_codes[unique_code_id].kind = MP_CODE_NATIVE;
-    unique_codes[unique_code_id].scope_flags = 0;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_native.fun = fun;
-
-    //printf("native code: %d bytes\n", len);
+void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
+    rc->kind = MP_CODE_NATIVE;
+    rc->scope_flags = 0;
+    rc->n_args = n_args;
+    rc->u_native.fun = fun;
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign native code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
+    DEBUG_printf("assign native code: fun=%p len=%u n_args=%d\n", fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
@@ -162,17 +96,14 @@ void mp_emit_glue_assign_native_code(uint unique_code_id, void *fun, uint len, i
 #endif
 }
 
-void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint len, int n_args) {
-    mp_emit_glue_alloc_unique_codes();
-
-    assert(unique_code_id < unique_codes_alloc && unique_codes[unique_code_id].kind == MP_CODE_RESERVED);
-    unique_codes[unique_code_id].kind = MP_CODE_INLINE_ASM;
-    unique_codes[unique_code_id].scope_flags = 0;
-    unique_codes[unique_code_id].n_args = n_args;
-    unique_codes[unique_code_id].u_inline_asm.fun = fun;
+void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
+    rc->kind = MP_CODE_INLINE_ASM;
+    rc->scope_flags = 0;
+    rc->n_args = n_args;
+    rc->u_inline_asm.fun = fun;
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign inline asm code: id=%d fun=%p len=%u n_args=%d\n", unique_code_id, fun, len, n_args);
+    DEBUG_printf("assign inline asm code: fun=%p len=%u n_args=%d\n", fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
@@ -185,64 +116,52 @@ void mp_emit_glue_assign_inline_asm_code(uint unique_code_id, void *fun, uint le
 #ifdef WRITE_CODE
     if (fp_write_code != NULL) {
         fwrite(fun_data, len, 1, fp_write_code);
+        fflush(fp_write_code);
     }
 #endif
 #endif
 }
 
-mp_obj_t mp_make_function_from_id(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args) {
-    DEBUG_OP_printf("make_function_from_id %d\n", unique_code_id);
-    if (unique_code_id >= unique_codes_total) {
-        // illegal code id
-        return mp_const_none;
-    }
+mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args) {
+    DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
+    assert(rc != NULL);
+
+    // def_args must be MP_OBJ_NULL or a tuple
+    assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
 
     // TODO implement default kw args
     assert(def_kw_args == MP_OBJ_NULL);
 
-    // make the function, depending on the code kind
-    mp_code_t *c = &unique_codes[unique_code_id];
+    // make the function, depending on the raw code kind
     mp_obj_t fun;
-    switch (c->kind) {
+    switch (rc->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(c->scope_flags, c->arg_names, c->n_args, def_args, c->u_byte.code);
+            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_args, def_args, rc->u_byte.code);
             break;
         case MP_CODE_NATIVE:
-            fun = mp_make_function_n(c->n_args, c->u_native.fun);
+            fun = mp_make_function_n(rc->n_args, rc->u_native.fun);
             break;
         case MP_CODE_INLINE_ASM:
-            fun = mp_obj_new_fun_asm(c->n_args, c->u_inline_asm.fun);
+            fun = mp_obj_new_fun_asm(rc->n_args, rc->u_inline_asm.fun);
             break;
         default:
-            // code id was never assigned (this should not happen)
+            // raw code was never set (this should not happen)
             assert(0);
             return mp_const_none;
     }
 
     // check for generator functions and if so wrap in generator object
-    if ((c->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+    if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
         fun = mp_obj_new_gen_wrap(fun);
     }
 
     return fun;
 }
 
-mp_obj_t mp_make_function_from_id_and_free(uint unique_code_id, mp_obj_t def_args, mp_obj_t def_kw_args) {
-    mp_obj_t f = mp_make_function_from_id(unique_code_id, def_args, def_kw_args);
-
-    // in some cases we can free the unique_code slot
-    // any dynamically allocated memory is now owned by the fun object
-    mp_code_t *c = &unique_codes[unique_code_id];
-    memset(c, 0, sizeof *c); // make sure all pointers are zeroed
-    c->kind = MP_CODE_UNUSED;
-
-    return f;
-}
-
-mp_obj_t mp_make_closure_from_id(uint unique_code_id, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args) {
-    DEBUG_OP_printf("make_closure_from_id %d\n", unique_code_id);
+mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args) {
+    DEBUG_OP_printf("make_closure_from_raw_code %p\n", rc);
     // make function object
-    mp_obj_t ffun = mp_make_function_from_id(unique_code_id, def_args, def_kw_args);
+    mp_obj_t ffun = mp_make_function_from_raw_code(rc, def_args, def_kw_args);
     // wrap function in closure object
     return mp_obj_new_closure(ffun, closure_tuple);
 }

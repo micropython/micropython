@@ -1,4 +1,7 @@
-from collections import namedtuple
+try:
+    from collections import namedtuple
+except ImportError:
+    from _collections import namedtuple
 
 T = namedtuple("Tup", "foo bar")
 # CPython prints fully qualified name, what we don't bother to do so far

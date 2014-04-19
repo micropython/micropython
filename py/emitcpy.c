@@ -9,6 +9,8 @@
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
+#include "obj.h"
+#include "emitglue.h"
 #include "scope.h"
 #include "runtime0.h"
 #include "emit.h"
@@ -60,12 +62,8 @@ STATIC bool emit_cpy_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC int emit_cpy_get_stack_size(emit_t *emit) {
-    return emit->stack_size;
-}
-
-STATIC void emit_cpy_set_stack_size(emit_t *emit, int size) {
-    emit->stack_size = size;
+STATIC void emit_cpy_adjust_stack_size(emit_t *emit, int delta) {
+    emit->stack_size += delta;
 }
 
 STATIC void emit_cpy_set_source_line(emit_t *emit, int source_line) {
@@ -100,7 +98,7 @@ static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
     emit->byte_code_offset += byte_code_size;
 }
 
-STATIC void emit_cpy_label_assign(emit_t *emit, int l) {
+STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
     emit_pre(emit, 0, 0);
     assert(l < emit->max_num_labels);
     if (emit->pass == PASS_2) {
@@ -283,6 +281,13 @@ STATIC void emit_cpy_load_build_class(emit_t *emit) {
     }
 }
 
+STATIC void emit_cpy_load_subscr(emit_t *emit) {
+    emit_pre(emit, -1, 1);
+    if (emit->pass == PASS_3) {
+        printf("BINARY_SUBSCR\n");
+    }
+}
+
 STATIC void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
@@ -402,7 +407,7 @@ STATIC void emit_cpy_rot_three(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_jump(emit_t *emit, int label) {
+STATIC void emit_cpy_jump(emit_t *emit, uint label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         int dest = emit->label_offsets[label];
@@ -414,49 +419,49 @@ STATIC void emit_cpy_jump(emit_t *emit, int label) {
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_true(emit_t *emit, int label) {
+STATIC void emit_cpy_pop_jump_if_true(emit_t *emit, uint label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("POP_JUMP_IF_TRUE %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_false(emit_t *emit, int label) {
+STATIC void emit_cpy_pop_jump_if_false(emit_t *emit, uint label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("POP_JUMP_IF_FALSE %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_jump_if_true_or_pop(emit_t *emit, int label) {
+STATIC void emit_cpy_jump_if_true_or_pop(emit_t *emit, uint label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("JUMP_IF_TRUE_OR_POP %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, int label) {
+STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, uint label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("JUMP_IF_FALSE_OR_POP %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_setup_loop(emit_t *emit, int label) {
+STATIC void emit_cpy_setup_loop(emit_t *emit, uint label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_LOOP %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_break_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_cpy_break_loop(emit_t *emit, uint label, int except_depth) {
     emit_pre(emit, 0, 1);
     if (emit->pass == PASS_3) {
         printf("BREAK_LOOP\n");
     }
 }
 
-STATIC void emit_cpy_continue_loop(emit_t *emit, int label, int except_depth) {
+STATIC void emit_cpy_continue_loop(emit_t *emit, uint label, int except_depth) {
     if (except_depth == 0) {
         emit_cpy_jump(emit, label);
     } else {
@@ -467,7 +472,7 @@ STATIC void emit_cpy_continue_loop(emit_t *emit, int label, int except_depth) {
     }
 }
 
-STATIC void emit_cpy_setup_with(emit_t *emit, int label) {
+STATIC void emit_cpy_setup_with(emit_t *emit, uint label) {
     emit_pre(emit, 7, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_WITH %d\n", emit->label_offsets[label]);
@@ -481,15 +486,15 @@ STATIC void emit_cpy_with_cleanup(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_setup_except(emit_t *emit, int label) {
-    emit_pre(emit, 6, 3);
+STATIC void emit_cpy_setup_except(emit_t *emit, uint label) {
+    emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_EXCEPT %d\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_setup_finally(emit_t *emit, int label) {
-    emit_pre(emit, 6, 3);
+STATIC void emit_cpy_setup_finally(emit_t *emit, uint label) {
+    emit_pre(emit, 0, 3);
     if (emit->pass == PASS_3) {
         printf("SETUP_FINALLY %d\n", emit->label_offsets[label]);
     }
@@ -509,7 +514,7 @@ STATIC void emit_cpy_get_iter(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_for_iter(emit_t *emit, int label) {
+STATIC void emit_cpy_for_iter(emit_t *emit, uint label) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("FOR_ITER %d\n", emit->label_offsets[label]);
@@ -557,7 +562,6 @@ STATIC void emit_cpy_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
     if (emit->pass == PASS_3) {
         switch (op) {
-            case MP_BINARY_OP_SUBSCR: printf("BINARY_SUBSCR\n"); break;
             case MP_BINARY_OP_OR: printf("BINARY_OR\n"); break;
             case MP_BINARY_OP_XOR: printf("BINARY_XOR\n"); break;
             case MP_BINARY_OP_AND: printf("BINARY_AND\n"); break;
@@ -793,8 +797,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_start_pass,
     emit_cpy_end_pass,
     emit_cpy_last_emit_was_return_value,
-    emit_cpy_get_stack_size,
-    emit_cpy_set_stack_size,
+    emit_cpy_adjust_stack_size,
     emit_cpy_set_source_line,
 
     emit_cpy_load_id,
@@ -820,6 +823,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_attr,
     emit_cpy_load_method,
     emit_cpy_load_build_class,
+    emit_cpy_load_subscr,
     emit_cpy_store_fast,
     emit_cpy_store_deref,
     emit_cpy_store_name,

@@ -8,16 +8,18 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "binary.h"
 #include "adc.h"
 #include "pin.h"
-#include "build/pins.h"
+#include "genhdr/pins.h"
+#include "timer.h"
 
 // Usage Model:
 //
 // adc = pyb.ADC(pin)
 // val = adc.read()
 //
-// adc = pyb.ADC_all(resolution)
+// adc = pyb.ADCAll(resolution)
 // val = adc.read_channel(channel)
 // val = adc.read_core_temp()
 // val = adc.read_core_vbat()
@@ -128,7 +130,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     if (MP_OBJ_IS_INT(pin_obj)) {
         channel = mp_obj_get_int(pin_obj);
     } else {
-        const pin_obj_t *pin = pin_map_user_obj(pin_obj);
+        const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC1) == 0) {
             // No ADC1 function on that pin
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have ADC capabilities", pin->name));
@@ -137,10 +139,10 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     }
 
     if (!IS_ADC_CHANNEL(channel)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Not a valid ADC Channel: %d", channel));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
     }
     if (pin_adc1[channel] == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Channel %d not available on this board", channel));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
     }
 
     pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
@@ -162,8 +164,44 @@ STATIC mp_obj_t adc_read(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
+STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
+    pyb_obj_adc_t *self = self_in;
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    int typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
+
+    // Init TIM6 at the required frequency (in Hz)
+    timer_tim6_init(mp_obj_get_int(freq_in));
+
+    // Start timer
+    HAL_TIM_Base_Start(&TIM6_Handle);
+
+    // This uses the timer in polling mode to do the sampling
+    // We could use DMA, but then we can't convert the values correctly for the buffer
+    for (uint index = 0; index < bufinfo.len; index++) {
+        // Wait for the timer to trigger
+        while (__HAL_TIM_GET_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE) == RESET) {
+        }
+        __HAL_TIM_CLEAR_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE);
+        uint value = adc_read_channel(&self->handle);
+        if (typesize == 1) {
+            value >>= 4;
+        }
+        mp_binary_set_val_array_from_int(bufinfo.typecode, bufinfo.buf, index, value);
+    }
+
+    // Stop timer
+    HAL_TIM_Base_Stop(&TIM6_Handle);
+
+    return mp_obj_new_int(bufinfo.len);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
+
 STATIC const mp_map_elem_t adc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&adc_read_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_timed), (mp_obj_t)&adc_read_timed_obj},
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
@@ -179,12 +217,12 @@ const mp_obj_type_t pyb_adc_type = {
 /******************************************************************************/
 /* adc all object                                                             */
 
-typedef struct _pyb_obj_adc_all_t {
+typedef struct _pyb_adc_all_obj_t {
     mp_obj_base_t base;
     ADC_HandleTypeDef handle;
-} pyb_obj_adc_all_t;
+} pyb_adc_all_obj_t;
 
-void adc_init_all(pyb_obj_adc_all_t *adc_all, uint32_t resolution) {
+void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
 
     switch (resolution) {
         case 6:  resolution = ADC_RESOLUTION6b;  break;
@@ -282,46 +320,49 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 /******************************************************************************/
 /* Micro Python bindings : adc_all object                                     */
 
-STATIC void adc_all_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    print(env, "<ADC all>");
+STATIC mp_obj_t adc_all_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check number of arguments
+    mp_check_nargs(n_args, 1, 1, n_kw, false);
+
+    // make ADCAll object
+    pyb_adc_all_obj_t *o = m_new_obj(pyb_adc_all_obj_t);
+    o->base.type = &pyb_adc_all_type;
+    adc_init_all(o, mp_obj_get_int(args[0])); // args[0] is the resolution
+
+    return o;
 }
 
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
-    pyb_obj_adc_all_t *self = self_in;
-
+    pyb_adc_all_obj_t *self = self_in;
     uint32_t chan = mp_obj_get_int(channel);
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
 
 STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
-    pyb_obj_adc_all_t *self = self_in;
-
+    pyb_adc_all_obj_t *self = self_in;
     int data  = adc_read_core_temp(&self->handle);
     return mp_obj_new_int(data);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
 
 STATIC mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
-    pyb_obj_adc_all_t *self = self_in;
-
+    pyb_adc_all_obj_t *self = self_in;
     float data = adc_read_core_vbat(&self->handle);
     return mp_obj_new_float(data);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
 
 STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
-    pyb_obj_adc_all_t *self = self_in;
-
+    pyb_adc_all_obj_t *self = self_in;
     float data  = adc_read_core_vref(&self->handle);
     return mp_obj_new_float(data);
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
 STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_channel), (mp_obj_t)  &adc_all_read_channel_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_channel),   (mp_obj_t)&adc_all_read_channel_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_temp), (mp_obj_t)&adc_all_read_core_temp_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
@@ -329,18 +370,9 @@ STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);
 
-STATIC const mp_obj_type_t adc_all_type = {
+const mp_obj_type_t pyb_adc_all_type = {
     { &mp_type_type },
-    .name = MP_QSTR_ADC,
-    .print = adc_all_print,
+    .name = MP_QSTR_ADCAll,
+    .make_new = adc_all_make_new,
     .locals_dict = (mp_obj_t)&adc_all_locals_dict,
 };
-
-STATIC mp_obj_t pyb_ADC_all(mp_obj_t resolution) {
-    pyb_obj_adc_all_t *o = m_new_obj(pyb_obj_adc_all_t);
-    o->base.type = &adc_all_type;
-    adc_init_all(o, mp_obj_get_int(resolution));
-    return o;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_ADC_all_obj, pyb_ADC_all);

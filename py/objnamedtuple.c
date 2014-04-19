@@ -131,6 +131,7 @@ mp_obj_t mp_obj_new_namedtuple_type(qstr name, const char *fields) {
     o->base.binary_op = tuple_binary_op;
     o->base.load_attr = namedtuple_load_attr;
     o->base.store_attr = namedtuple_store_attr;
+    o->base.subscr = tuple_subscr;
     o->base.bases_tuple = (mp_obj_t)&namedtuple_base_tuple;
     o->fields = fields;
     return o;

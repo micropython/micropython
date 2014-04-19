@@ -75,7 +75,7 @@ typedef struct _pyb_i2c_obj_t {
     I2C_HandleTypeDef *i2c_handle;
 } pyb_i2c_obj_t;
 
-STATIC pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2cHandle_X}, {{&pyb_i2c_type}, &I2cHandle_Y}};
+STATIC const pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2cHandle_X}, {{&pyb_i2c_type}, &I2cHandle_Y}};
 
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
@@ -90,22 +90,21 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     }
 
     // get i2c object
-    pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id];
+    const pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id];
 
     // start the peripheral
     i2c_start(i2c_obj->i2c_handle);
 
-    return &pyb_i2c_obj;
+    return (mp_obj_t)i2c_obj;
 }
 
+// Check if an I2C device responds to the given address.
 STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
     pyb_i2c_obj_t *self = self_in;
     machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_o) << 1;
 
-    //printf("IsDeviceReady\n");
     for (int i = 0; i < 10; i++) {
         HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c_handle, i2c_addr, 10, 200);
-        //printf("  got %d\n", status);
         if (status == HAL_OK) {
             return mp_const_true;
         }
@@ -115,6 +114,69 @@ STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_i2c_is_ready_obj, pyb_i2c_is_ready);
+
+// Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
+STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
+    pyb_i2c_obj_t *self = self_in;
+
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+
+    for (uint addr = 1; addr <= 127; addr++) {
+        for (int i = 0; i < 10; i++) {
+            HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c_handle, addr << 1, 10, 200);
+            if (status == HAL_OK) {
+                mp_obj_list_append(list, mp_obj_new_int(addr));
+                break;
+            }
+        }
+    }
+
+    return list;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
+
+STATIC mp_obj_t pyb_i2c_read(mp_obj_t self_in, mp_obj_t i2c_addr_in, mp_obj_t n_in) {
+    pyb_i2c_obj_t *self = self_in;
+    machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_in) << 1;
+    machine_uint_t n = mp_obj_get_int(n_in);
+
+    byte *data;
+    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
+    HAL_StatusTypeDef status = HAL_I2C_Master_Receive(self->i2c_handle, i2c_addr, data, n, 500);
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Master_Receive failed with code %d", status));
+    }
+
+    return mp_obj_str_builder_end(o);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_i2c_read_obj, pyb_i2c_read);
+
+STATIC mp_obj_t pyb_i2c_write(mp_obj_t self_in, mp_obj_t i2c_addr_in, mp_obj_t data_in) {
+    pyb_i2c_obj_t *self = self_in;
+    machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_in) << 1;
+    HAL_StatusTypeDef status;
+    if (MP_OBJ_IS_INT(data_in)) {
+        uint8_t data[1] = {mp_obj_get_int(data_in)};
+        status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, data, 1, 500);
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
+        status = HAL_I2C_Master_Transmit(self->i2c_handle, i2c_addr, bufinfo.buf, bufinfo.len, 500);
+    }
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Master_Transmit failed with code %d", status));
+    }
+
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_i2c_write_obj, pyb_i2c_write);
 
 STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args) {
     pyb_i2c_obj_t *self = args[0];
@@ -143,16 +205,13 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args) {
     machine_uint_t i2c_addr = mp_obj_get_int(args[1]) << 1;
     machine_uint_t mem_addr = mp_obj_get_int(args[2]);
     HAL_StatusTypeDef status;
-    mp_obj_type_t *type = mp_obj_get_type(args[3]);
-    if (type->buffer_p.get_buffer != NULL) {
-        buffer_info_t bufinfo;
-        type->buffer_p.get_buffer(args[3], &bufinfo, BUFFER_READ);
-        status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, 200);
-    } else if (MP_OBJ_IS_INT(args[3])) {
+    if (MP_OBJ_IS_INT(args[3])) {
         uint8_t data[1] = {mp_obj_get_int(args[3])};
         status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "data argument must be an integer or support the buffer protocol"));
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+        status = HAL_I2C_Mem_Write(self->i2c_handle, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, 200);
     }
 
     //printf("Write got %d\n", status);
@@ -169,6 +228,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2c_mem_write_obj, 4, 4, pyb_i2c_
 
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready), (mp_obj_t)&pyb_i2c_is_ready_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&pyb_i2c_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&pyb_i2c_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_i2c_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read), (mp_obj_t)&pyb_i2c_mem_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write), (mp_obj_t)&pyb_i2c_mem_write_obj },
 };

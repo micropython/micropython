@@ -22,7 +22,12 @@
 # Build directory
 ######################
 build/
-*.vpj
-*.vpw
-*.vpwhist
-*.vtg
+
+# Test failure outputs
+######################
+tests/*.exp
+tests/*.out
+
+# Python cache files
+######################
+__pycache__/

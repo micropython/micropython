@@ -67,6 +67,7 @@ typedef enum {
 } mp_parse_input_kind_t;
 
 typedef enum {
+    MP_PARSE_ERROR_MEMORY,
     MP_PARSE_ERROR_UNEXPECTED_INDENT,
     MP_PARSE_ERROR_UNMATCHED_UNINDENT,
     MP_PARSE_ERROR_INVALID_SYNTAX,

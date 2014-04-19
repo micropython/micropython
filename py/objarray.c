@@ -35,12 +35,12 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
     } else {
         print(env, "array('%c'", o->typecode);
         if (o->len > 0) {
-            print(env, ", [", o->typecode);
+            print(env, ", [");
             for (int i = 0; i < o->len; i++) {
                 if (i > 0) {
                     print(env, ", ");
                 }
-                mp_obj_print_helper(print, env, mp_binary_get_val(o->typecode, o->items, i), PRINT_REPR);
+                mp_obj_print_helper(print, env, mp_binary_get_val_array(o->typecode, o->items, i), PRINT_REPR);
             }
             print(env, "]");
         }
@@ -63,11 +63,11 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     mp_obj_t iterable = mp_getiter(initializer);
     mp_obj_t item;
     int i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_NULL) {
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (len == 0) {
             array_append(array, item);
         } else {
-            mp_binary_set_val(typecode, array->items, i++, item);
+            mp_binary_set_val_array(typecode, array->items, i++, item);
         }
     }
 
@@ -75,32 +75,37 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 }
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    if (n_args < 1 || n_args > 2) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
-    }
-    // TODO check args
+    mp_check_nargs(n_args, 1, 2, n_kw, false);
+
+    // get typecode
     uint l;
     const char *typecode = mp_obj_str_get_data(args[0], &l);
-    if (n_args == 1) {
-        return array_new(*typecode, 0);
-    }
 
-    return array_construct(*typecode, args[1]);
+    if (n_args == 1) {
+        // 1 arg: make an empty array
+        return array_new(*typecode, 0);
+    } else {
+        // 2 args: construct the array from the given iterator
+        return array_construct(*typecode, args[1]);
+    }
 }
 
 STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    if (n_args > 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unexpected # of arguments, %d given", n_args));
-    }
+    mp_check_nargs(n_args, 0, 1, n_kw, false);
 
-    if (MP_OBJ_IS_SMALL_INT(args[0])) {
+    if (n_args == 0) {
+        // no args: construct an empty bytearray
+        return array_new(BYTEARRAY_TYPECODE, 0);
+    } else if (MP_OBJ_IS_SMALL_INT(args[0])) {
+        // 1 arg, an integer: construct a blank bytearray of that length
         uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
         memset(o->items, 0, len);
         return o;
+    } else {
+        // 1 arg, an iterator: construct the bytearray from that
+        return array_construct(BYTEARRAY_TYPECODE, args[0]);
     }
-
-    return array_construct(BYTEARRAY_TYPECODE, args[0]);
 }
 
 STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
@@ -108,22 +113,7 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
-        default: return MP_OBJ_NULL; // op not supported
-    }
-}
-
-STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
-    mp_obj_array_t *o = lhs;
-    switch (op) {
-        case MP_BINARY_OP_SUBSCR:
-        {
-            uint index = mp_get_index(o->base.type, o->len, rhs, false);
-            return mp_binary_get_val(o->typecode, o->items, index);
-        }
-
-        default:
-            // op not supported
-            return MP_OBJ_NULL;
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -131,32 +121,41 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
     if (self->free == 0) {
-        int item_sz = mp_binary_get_size(self->typecode);
+        int item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
         self->free = 8;
         self->items = m_realloc(self->items,  item_sz * self->len, item_sz * (self->len + self->free));
     }
-    mp_binary_set_val(self->typecode, self->items, self->len++, arg);
+    mp_binary_set_val_array(self->typecode, self->items, self->len++, arg);
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
-STATIC bool array_store_item(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
-        // delete item; does this need to be implemented?
-        return false;
+        // delete item
+        // TODO implement
+        return MP_OBJ_NOT_SUPPORTED;
+    } else {
+        mp_obj_array_t *o = self_in;
+        uint index = mp_get_index(o->base.type, o->len, index_in, false);
+        if (value == MP_OBJ_SENTINEL) {
+            // load
+            return mp_binary_get_val_array(o->typecode, o->items, index);
+        } else {
+            // store
+            mp_binary_set_val_array(o->typecode, o->items, index, value);
+            return mp_const_none;
+        }
     }
-    mp_obj_array_t *o = self_in;
-    uint index = mp_get_index(o->base.type, o->len, index_in, false);
-    mp_binary_set_val(o->typecode, o->items, index, value);
-    return true;
 }
 
-STATIC machine_int_t array_get_buffer(mp_obj_t o_in, buffer_info_t *bufinfo, int flags) {
+STATIC machine_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
-    bufinfo->len = o->len * mp_binary_get_size(o->typecode);
+    bufinfo->len = o->len * mp_binary_get_size('@', o->typecode, NULL);
+    bufinfo->typecode = o->typecode;
     return 0;
 }
 
@@ -173,8 +172,7 @@ const mp_obj_type_t mp_type_array = {
     .make_new = array_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .store_item = array_store_item,
+    .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };
@@ -186,19 +184,22 @@ const mp_obj_type_t mp_type_bytearray = {
     .make_new = bytearray_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .store_item = array_store_item,
+    .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };
 
 STATIC mp_obj_array_t *array_new(char typecode, uint n) {
+    int typecode_size = mp_binary_get_size('@', typecode, NULL);
+    if (typecode_size <= 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
+    }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_malloc(mp_binary_get_size(typecode) * o->len);
+    o->items = m_malloc(typecode_size * o->len);
     return o;
 }
 
@@ -235,9 +236,9 @@ typedef struct _mp_obj_array_it_t {
 STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     mp_obj_array_it_t *self = self_in;
     if (self->cur < self->array->len) {
-        return mp_binary_get_val(self->array->typecode, self->array->items, self->cur++);
+        return mp_binary_get_val_array(self->array->typecode, self->array->items, self->cur++);
     } else {
-        return MP_OBJ_NULL;
+        return MP_OBJ_STOP_ITERATION;
     }
 }
 

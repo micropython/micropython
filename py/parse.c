@@ -86,6 +86,8 @@ typedef struct _rule_stack_t {
 } rule_stack_t;
 
 typedef struct _parser_t {
+    bool had_memory_error;
+
     uint rule_stack_alloc;
     uint rule_stack_top;
     rule_stack_t *rule_stack;
@@ -97,9 +99,21 @@ typedef struct _parser_t {
     mp_lexer_t *lexer;
 } parser_t;
 
+STATIC inline void memory_error(parser_t *parser) {
+    parser->had_memory_error = true;
+}
+
 STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int arg_i) {
+    if (parser->had_memory_error) {
+        return;
+    }
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
-        parser->rule_stack = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
+        rule_stack_t *rs = m_renew_maybe(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
+        if (rs == NULL) {
+            memory_error(parser);
+            return;
+        }
+        parser->rule_stack = rs;
         parser->rule_stack_alloc *= 2;
     }
     rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
@@ -116,6 +130,7 @@ STATIC void push_rule_from_arg(parser_t *parser, uint arg) {
 }
 
 STATIC void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *src_line) {
+    assert(!parser->had_memory_error);
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
@@ -127,15 +142,6 @@ mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
         return (mp_parse_node_t)(kind | (arg << 1));
     }
     return (mp_parse_node_t)(kind | (arg << 5));
-}
-
-//int num_parse_nodes_allocated = 0;
-mp_parse_node_struct_t *parse_node_new_struct(int src_line, int rule_id, int num_args) {
-    mp_parse_node_struct_t *pn = m_new_obj_var(mp_parse_node_struct_t, mp_parse_node_t, num_args);
-    pn->source_line = src_line;
-    pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
-    //num_parse_nodes_allocated += 1;
-    return pn;
 }
 
 uint mp_parse_node_free(mp_parse_node_t pn) {
@@ -211,18 +217,32 @@ STATIC void result_stack_show(parser_t *parser) {
 */
 
 STATIC mp_parse_node_t pop_result(parser_t *parser) {
+    if (parser->had_memory_error) {
+        return MP_PARSE_NODE_NULL;
+    }
     assert(parser->result_stack_top > 0);
     return parser->result_stack[--parser->result_stack_top];
 }
 
 STATIC mp_parse_node_t peek_result(parser_t *parser, int pos) {
+    if (parser->had_memory_error) {
+        return MP_PARSE_NODE_NULL;
+    }
     assert(parser->result_stack_top > pos);
     return parser->result_stack[parser->result_stack_top - 1 - pos];
 }
 
 STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
+    if (parser->had_memory_error) {
+        return;
+    }
     if (parser->result_stack_top >= parser->result_stack_alloc) {
-        parser->result_stack = m_renew(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc * 2);
+        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc * 2);
+        if (pn == NULL) {
+            memory_error(parser);
+            return;
+        }
+        parser->result_stack = pn;
         parser->result_stack_alloc *= 2;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
@@ -283,7 +303,13 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
 }
 
 STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
-    mp_parse_node_struct_t *pn = parse_node_new_struct(src_line, rule->rule_id, num_args);
+    mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, num_args);
+    if (pn == NULL) {
+        memory_error(parser);
+        return;
+    }
+    pn->source_line = src_line;
+    pn->kind_num_nodes = (rule->rule_id & 0xff) | (num_args << 8);
     for (int i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
@@ -295,6 +321,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
     // allocate memory for the parser and its stacks
 
     parser_t *parser = m_new_obj(parser_t);
+
+    parser->had_memory_error = false;
 
     parser->rule_stack_alloc = 64;
     parser->rule_stack_top = 0;
@@ -327,7 +355,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
     for (;;) {
         next_rule:
-        if (parser->rule_stack_top == 0) {
+        if (parser->rule_stack_top == 0 || parser->had_memory_error) {
             break;
         }
 
@@ -596,6 +624,16 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
         }
     }
 
+    mp_parse_node_t result;
+
+    // check if we had a memory error
+    if (parser->had_memory_error) {
+        *parse_error_kind_out = MP_PARSE_ERROR_MEMORY;
+        result = MP_PARSE_NODE_NULL;
+        goto finished;
+
+    }
+
     // check we are at the end of the token stream
     if (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
         goto syntax_error;
@@ -609,7 +647,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
     // get the root parse node that we created
     assert(parser->result_stack_top == 1);
-    mp_parse_node_t result = parser->result_stack[0];
+    result = parser->result_stack[0];
 
 finished:
     // free the memory that we don't need anymore

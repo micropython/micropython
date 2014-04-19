@@ -61,7 +61,10 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'I': return &ffi_type_uint;
         case 'l': return &ffi_type_slong;
         case 'L': return &ffi_type_ulong;
-        case 'p':
+        case 'f': return &ffi_type_float;
+        case 'd': return &ffi_type_double;
+        case 'p': // Deprecated - conflicts with struct module
+        case 'P':
         case 's': return &ffi_type_pointer;
         case 'v': return &ffi_type_void;
         default: return NULL;
@@ -92,6 +95,14 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
         }
         case 'v':
             return mp_const_none;
+        case 'f': {
+            float *p = (float*)&val;
+            return mp_obj_new_float(*p);
+        }
+        case 'd': {
+            double *p = (double*)&val;
+            return mp_obj_new_float(*p);
+        }
         default:
             return mp_obj_new_int(val);
     }
@@ -258,9 +269,9 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
             values[i] = (ffi_arg)s;
         } else if (((mp_obj_base_t*)a)->type->buffer_p.get_buffer != NULL) {
             mp_obj_base_t *o = (mp_obj_base_t*)a;
-            buffer_info_t bufinfo;
-            o->type->buffer_p.get_buffer(o, &bufinfo, BUFFER_READ); // TODO: BUFFER_READ?
-            if (bufinfo.buf == NULL) {
+            mp_buffer_info_t bufinfo;
+            int ret = o->type->buffer_p.get_buffer(o, &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+            if (ret != 0 || bufinfo.buf == NULL) {
                 goto error;
             }
             values[i] = (ffi_arg)bufinfo.buf;
@@ -310,13 +321,13 @@ STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *e
 
 STATIC mp_obj_t ffivar_get(mp_obj_t self_in) {
     mp_obj_ffivar_t *self = self_in;
-    return mp_binary_get_val(self->type, self->var, 0);
+    return mp_binary_get_val_array(self->type, self->var, 0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ffivar_get_obj, ffivar_get);
 
 STATIC mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
     mp_obj_ffivar_t *self = self_in;
-    mp_binary_set_val(self->type, self->var, 0, val_in);
+    mp_binary_set_val_array(self->type, self->var, 0, val_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffivar_set_obj, ffivar_set);
@@ -355,11 +366,26 @@ mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);
 
+STATIC const mp_map_elem_t mp_module_ffi_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ffi) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mod_ffi_open_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_ffi_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_as_bytearray), (mp_obj_t)&mod_ffi_as_bytearray_obj },
+};
 
-void ffi_init() {
-    mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("ffi"));
-    mp_store_attr(m, MP_QSTR_open, (mp_obj_t)&mod_ffi_open_obj);
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("callback"), (mp_obj_t)&mod_ffi_callback_obj);
-    // there would be as_bytes, but bytes currently is value, not reference type!
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("as_bytearray"), (mp_obj_t)&mod_ffi_as_bytearray_obj);
-}
+STATIC const mp_obj_dict_t mp_module_ffi_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
+        .alloc = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
+        .table = (mp_map_elem_t*)mp_module_ffi_globals_table,
+    },
+};
+
+const mp_obj_module_t mp_module_ffi = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_ffi,
+    .globals = (mp_obj_dict_t*)&mp_module_ffi_globals,
+};

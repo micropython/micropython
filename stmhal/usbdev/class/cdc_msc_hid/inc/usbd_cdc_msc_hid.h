@@ -13,6 +13,11 @@
 #define MSC_IN_EP     (0x81)
 #define MSC_OUT_EP    (0x01)
 
+// Need to define here for usbd_cdc_interface.c (it needs CDC_IN_EP)
+#define CDC_IN_EP     (0x83)
+#define CDC_OUT_EP    (0x03)
+#define CDC_CMD_EP    (0x82)
+
 // only CDC_MSC and CDC_HID are available
 #define USBD_MODE_CDC (0x01)
 #define USBD_MODE_MSC (0x02)
@@ -53,6 +58,8 @@ typedef struct _USBD_STORAGE {
   int8_t (* GetCapacity) (uint8_t lun, uint32_t *block_num, uint16_t *block_size);
   int8_t (* IsReady) (uint8_t lun);
   int8_t (* IsWriteProtected) (uint8_t lun);
+  int8_t (* StopUnit)(uint8_t lun);
+  int8_t (* PreventAllowMediumRemoval)(uint8_t lun, uint8_t param0);
   int8_t (* Read) (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
   int8_t (* Write)(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
   int8_t (* GetMaxLun)(void);

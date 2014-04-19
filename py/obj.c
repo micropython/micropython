@@ -55,10 +55,17 @@ void mp_obj_print_exception(mp_obj_t exc) {
             printf("Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                printf("  File \"%s\", line %d, in %s\n", qstr_str(values[i]), (int)values[i + 1], qstr_str(values[i + 2]));
+                printf("  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
 #else
-                printf("  File \"%s\", in %s\n", qstr_str(values[i]), qstr_str(values[i + 2]));
+                printf("  File \"%s\"", qstr_str(values[i]));
 #endif
+                // the block name can be NULL if it's unknown
+                qstr block = values[i + 2];
+                if (block == MP_QSTR_NULL) {
+                    printf("\n");
+                } else {
+                    printf(", in %s\n", qstr_str(block));
+                }
             }
         }
     }
@@ -83,7 +90,7 @@ int mp_obj_is_true(mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
-            if (result != MP_OBJ_NULL) {
+            if (result != MP_OBJ_NOT_SUPPORTED) {
                 return result == mp_const_true;
             }
         }
@@ -99,11 +106,6 @@ int mp_obj_is_true(mp_obj_t arg) {
     }
 }
 
-// returns true if o_in is bool, small int, or long int
-bool mp_obj_is_integer(mp_obj_t o_in) {
-    return MP_OBJ_IS_INT(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bool);
-}
-
 bool mp_obj_is_callable(mp_obj_t o_in) {
     return mp_obj_get_type(o_in)->call != NULL;
 }
@@ -115,7 +117,7 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
         return 1; // needs to hash to same as the integer 1, since True==1
     } else if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
-    } else if (MP_OBJ_IS_STR(o_in)) {
+    } else if (MP_OBJ_IS_STR(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (machine_int_t)o_in;
@@ -143,46 +145,49 @@ machine_int_t mp_obj_hash(mp_obj_t o_in) {
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (o1 == o2) {
         return true;
-    } else if (o1 == mp_const_none || o2 == mp_const_none) {
-        return false;
-    } else if (MP_OBJ_IS_SMALL_INT(o1) || MP_OBJ_IS_SMALL_INT(o2)) {
-        if (MP_OBJ_IS_SMALL_INT(o1) && MP_OBJ_IS_SMALL_INT(o2)) {
-            return false;
-        } else {
-            if (MP_OBJ_IS_SMALL_INT(o2)) {
-                mp_obj_t temp = o1; o1 = o2; o2 = temp;
-            }
-            // o1 is the SMALL_INT, o2 is not
-            mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(o1);
-            if (o2 == mp_const_false) {
-                return val == 0;
-            } else if (o2 == mp_const_true) {
-                return val == 1;
-            } else if (MP_OBJ_IS_TYPE(o2, &mp_type_int)) {
-                // If o2 is long int, dispatch to its virtual methods
-                mp_obj_base_t *o = o2;
-                if (o->type->binary_op != NULL) {
-                    mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o2, o1);
-                    return r == mp_const_true ? true : false;
-                }
-            }
-            return false;
-        }
-    } else if (MP_OBJ_IS_STR(o1) && MP_OBJ_IS_STR(o2)) {
-        return mp_obj_str_equal(o1, o2);
-    } else {
-        mp_obj_base_t *o = o1;
-        if (o->type->binary_op != NULL) {
-            mp_obj_t r = o->type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
-            if (r != MP_OBJ_NULL) {
-                return r == mp_const_true ? true : false;
-            }
-        }
-
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
-            "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
+    }
+    if (o1 == mp_const_none || o2 == mp_const_none) {
         return false;
     }
+
+    // fast path for small ints
+    if (MP_OBJ_IS_SMALL_INT(o1)) {
+        if (MP_OBJ_IS_SMALL_INT(o2)) {
+            // both SMALL_INT, and not equal if we get here
+            return false;
+        } else {
+            mp_obj_t temp = o2; o2 = o1; o1 = temp;
+            // o2 is now the SMALL_INT, o1 is not
+            // fall through to generic op
+        }
+    }
+
+    // fast path for strings
+    if (MP_OBJ_IS_STR(o1)) {
+        if (MP_OBJ_IS_STR(o2)) {
+            // both strings, use special function
+            return mp_obj_str_equal(o1, o2);
+        } else {
+            // a string is never equal to anything else
+            return false;
+        }
+    } else if (MP_OBJ_IS_STR(o2)) {
+        // o1 is not a string (else caught above), so the objects are not equal
+        return false;
+    }
+
+    // generic type, call binary_op(MP_BINARY_OP_EQUAL)
+    mp_obj_type_t *type = mp_obj_get_type(o1);
+    if (type->binary_op != NULL) {
+        mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+        if (r != MP_OBJ_NOT_SUPPORTED) {
+            return r == mp_const_true ? true : false;
+        }
+    }
+
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
+        "Equality for '%s' and '%s' types not yet implemented", mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
+    return false;
 }
 
 machine_int_t mp_obj_get_int(mp_obj_t arg) {
@@ -280,7 +285,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
             mp_obj_list_get(o, &seq_len, items);
         }
         if (seq_len != len) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "requested length %d but object has length %d", len, seq_len));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "requested length %d but object has length %d", len, seq_len));
         }
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
@@ -289,12 +294,10 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
 
 // is_slice determines whether the index is a slice index
 uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index, bool is_slice) {
-    int i;
-    if (MP_OBJ_IS_INT(index)) {
-        i = mp_obj_int_get_checked(index);
-    } else if (MP_OBJ_IS_TYPE(index, &mp_type_bool)) {
-        i = (index == mp_const_true ? 1 : 0);
-    } else {
+    machine_int_t i;
+    if (MP_OBJ_IS_SMALL_INT(index)) {
+        i = MP_OBJ_SMALL_INT_VALUE(index);
+    } else if (!mp_obj_get_int_maybe(index, &i)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
     }
 
@@ -317,7 +320,7 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index,
 
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
-    if (MP_OBJ_IS_STR(o_in)) {
+    if (MP_OBJ_IS_STR(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         return MP_OBJ_NEW_SMALL_INT((machine_int_t)mp_obj_str_get_len(o_in));
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
@@ -329,6 +332,24 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     }
 }
 
+mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
+    mp_obj_type_t *type = mp_obj_get_type(base);
+    if (type->subscr != NULL) {
+        mp_obj_t ret = type->subscr(base, index, value);
+        if (ret != MP_OBJ_NOT_SUPPORTED) {
+            return ret;
+        }
+        // TODO: call base classes here?
+    }
+    if (value == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
+    } else if (value == MP_OBJ_SENTINEL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not subscriptable", mp_obj_get_type_str(base)));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+    }
+}
+
 // Return input argument. Useful as .getiter for objects which are
 // their own iterators, etc.
 mp_obj_t mp_identity(mp_obj_t self) {
@@ -336,20 +357,20 @@ mp_obj_t mp_identity(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
-bool mp_get_buffer(mp_obj_t obj, buffer_info_t *bufinfo) {
-    mp_obj_base_t *o = (mp_obj_base_t *)obj;
-    if (o->type->buffer_p.get_buffer == NULL) {
+bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
+    mp_obj_type_t *type = mp_obj_get_type(obj);
+    if (type->buffer_p.get_buffer == NULL) {
         return false;
     }
-    o->type->buffer_p.get_buffer(o, bufinfo, BUFFER_READ);
-    if (bufinfo->buf == NULL) {
+    int ret = type->buffer_p.get_buffer(obj, bufinfo, flags);
+    if (ret != 0 || bufinfo->buf == NULL) {
         return false;
     }
     return true;
 }
 
-void mp_get_buffer_raise(mp_obj_t obj, buffer_info_t *bufinfo) {
-    if (!mp_get_buffer(obj, bufinfo)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Object with buffer protocol required"));
+void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
+    if (!mp_get_buffer(obj, bufinfo, flags)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object with buffer protocol required"));
     }
 }

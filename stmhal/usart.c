@@ -19,7 +19,7 @@ struct _pyb_usart_obj_t {
 
 pyb_usart_obj_t *pyb_usart_global_debug = NULL;
 
-void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
+bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
     USART_TypeDef *USARTx=NULL;
 
     uint32_t GPIO_Pin=0;
@@ -27,50 +27,74 @@ void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
     GPIO_TypeDef* GPIO_Port=NULL;
 
     switch (usart_obj->usart_id) {
-        case PYB_USART_NONE:
-            return;
-
+        // USART1 is on PA9/PA10, PB6/PB7
         case PYB_USART_1:
             USARTx = USART1;
-
-            GPIO_Port = GPIOA;
             GPIO_AF_USARTx = GPIO_AF7_USART1;
+
+#if defined(PYBV10)
+            GPIO_Port = GPIOB;
+            GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
+#else
+            GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_9 | GPIO_PIN_10;
+#endif
 
             __USART1_CLK_ENABLE();
             break;
+
+#if !defined(PYBV10)
+        // USART2 is on PA2/PA3, PD5/PD6
         case PYB_USART_2:
             USARTx = USART2;
+            GPIO_AF_USARTx = GPIO_AF7_USART2;
 
             GPIO_Port = GPIOD;
-            GPIO_AF_USARTx = GPIO_AF7_USART2;
             GPIO_Pin = GPIO_PIN_5 | GPIO_PIN_6;
 
             __USART2_CLK_ENABLE();
             break;
+#endif
+
+        // USART3 is on PB10/PB11, PC10/PC11, PD8/PD9
         case PYB_USART_3:
             USARTx = USART3;
-
-#if defined(PYBV3) || defined(PYBV4)
-            GPIO_Port = GPIOB;
             GPIO_AF_USARTx = GPIO_AF7_USART3;
+
+#if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
+            GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
 #else
             GPIO_Port = GPIOD;
-            GPIO_AF_USARTx = GPIO_AF7_USART3;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
 #endif
             __USART3_CLK_ENABLE();
             break;
+
+        // USART4 is on PA0/PA1, PC10/PC11
+        case PYB_USART_4:
+            USARTx = UART4;
+            GPIO_AF_USARTx = GPIO_AF8_UART4;
+
+            GPIO_Port = GPIOA;
+            GPIO_Pin = GPIO_PIN_0 | GPIO_PIN_1;
+
+            __UART4_CLK_ENABLE();
+            break;
+
+        // USART6 is on PC6/PC7
         case PYB_USART_6:
             USARTx = USART6;
+            GPIO_AF_USARTx = GPIO_AF8_USART6;
 
             GPIO_Port = GPIOC;
-            GPIO_AF_USARTx = GPIO_AF8_USART6;
             GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
 
             __USART6_CLK_ENABLE();
             break;
+
+        default:
+            return false;
     }
 
     // Initialize USARTx
@@ -94,6 +118,8 @@ void usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
     uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
     uh->Init.OverSampling = UART_OVERSAMPLING_16;
     HAL_UART_Init(uh);
+
+    return true;
 }
 
 bool usart_rx_any(pyb_usart_obj_t *usart_obj) {
@@ -139,26 +165,47 @@ void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len)
 
 STATIC void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_usart_obj_t *self = self_in;
-    print(env, "<Usart %lu>", self->usart_id);
+    print(env, "<USART %lu>", self->usart_id);
 }
 
 STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     if (!(n_args == 2 && n_kw == 0)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Usart accepts 2 arguments"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "USART accepts 2 arguments"));
     }
 
-    if (mp_obj_get_int(args[0]) > PYB_USART_MAX) {
-        return mp_const_none;
-    }
-
+    // create object
     pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
     o->base.type = &pyb_usart_type;
-    o->usart_id = mp_obj_get_int(args[0]);
-    o->is_enabled = true;
 
-    /* init USART */
-    usart_init(o, mp_obj_get_int(args[1]));
+    // work out port
+    o->usart_id = 0;
+    if (MP_OBJ_IS_STR(args[0])) {
+        const char *port = mp_obj_str_get_str(args[0]);
+        if (0) {
+#if defined(PYBV10)
+        } else if (strcmp(port, "XA") == 0) {
+            o->usart_id = PYB_USART_XA;
+        } else if (strcmp(port, "XB") == 0) {
+            o->usart_id = PYB_USART_XB;
+        } else if (strcmp(port, "YA") == 0) {
+            o->usart_id = PYB_USART_YA;
+        } else if (strcmp(port, "YB") == 0) {
+            o->usart_id = PYB_USART_YB;
+#endif
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %s does not exist", port));
+        }
+    } else {
+        o->usart_id = mp_obj_get_int(args[0]);
+    }
+
+    // init USART (if it fails, it's because the port doesn't exist)
+    if (!usart_init(o, mp_obj_get_int(args[1]))) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %d does not exist", o->usart_id));
+    }
+
+    o->is_enabled = true;
 
     return o;
 }
@@ -220,7 +267,7 @@ STATIC MP_DEFINE_CONST_DICT(usart_locals_dict, usart_locals_dict_table);
 
 const mp_obj_type_t pyb_usart_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Usart,
+    .name = MP_QSTR_USART,
     .print = usart_obj_print,
     .make_new = usart_obj_make_new,
     .locals_dict = (mp_obj_t)&usart_locals_dict,
