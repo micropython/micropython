@@ -458,8 +458,7 @@ soft_reset:
 #endif
 
 #if MICROPY_HW_ENABLE_RNG
-    // RNG
-    rng_init();
+    rng_init0();
 #endif
 
 #if MICROPY_HW_ENABLE_TIMER
