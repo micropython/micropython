@@ -99,6 +99,7 @@ SRC_C = \
 	adc.c \
 	i2c.c \
 	spi.c \
+	reg.c \
 
 #	pybwlan.c \
 
