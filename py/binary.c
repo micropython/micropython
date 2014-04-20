@@ -49,6 +49,8 @@ int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
                 case 'q': case 'Q':
                     // TODO: This is for x86
                     align = sizeof(int); size = sizeof(long long); break;
+                case 'P': case 'O':
+                    align = size = sizeof(void*); break;
             }
         }
     }
@@ -131,7 +133,9 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
 
     *ptr += size;
-    if (is_signed(val_type)) {
+    if (val_type == 'O') {
+        return (mp_obj_t)val;
+    } else if (is_signed(val_type)) {
         return mp_obj_new_int(val);
     } else {
         return mp_obj_new_int_from_uint(val);
@@ -156,8 +160,16 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 #if MP_ENDIANNESS_BIG
 #error Not implemented
 #endif
-    machine_int_t val = mp_obj_get_int(val_in);
+    machine_int_t val;
     byte *in = (byte*)&val;
+    switch (val_type) {
+        case 'O':
+            in = (byte*)&val_in;
+            break;
+        default:
+            val = mp_obj_get_int(val_in);
+    }
+
     int in_delta, out_delta;
     uint val_sz = MIN(size, sizeof(val));
     if (struct_type == '>') {
