@@ -12,6 +12,8 @@
 #include "i2c.h"
 #include "accel.h"
 
+#if MICROPY_HW_HAS_MMA7660
+
 #define MMA_ADDR (0x98)
 #define MMA_REG_X (0)
 #define MMA_REG_Y (1)
@@ -174,3 +176,5 @@ const mp_obj_type_t pyb_accel_type = {
     .make_new = pyb_accel_make_new,
     .locals_dict = (mp_obj_t)&pyb_accel_locals_dict,
 };
+
+#endif // MICROPY_HW_HAS_MMA7660

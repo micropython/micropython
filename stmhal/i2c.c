@@ -13,17 +13,17 @@
 #include "genhdr/pins.h"
 #include "i2c.h"
 
-#if !defined(MICROPU_HW_ENABLE_I2C1)
-#define MICROPY_HW_ENABLE_I2C1      (1)
-#endif
-
+#if MICROPY_HW_ENABLE_I2C1
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
+#endif
 I2C_HandleTypeDef I2CHandle2 = {.Instance = NULL};
 
 void i2c_init0(void) {
     // reset the I2C1 handles
+#if MICROPY_HW_ENABLE_I2C1
     memset(&I2CHandle1, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle1.Instance = I2C1;
+#endif
     memset(&I2CHandle2, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle2.Instance = I2C2;
 }
@@ -36,23 +36,26 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     GPIO_InitStructure.Pull = GPIO_NOPULL; // have external pull-up resistors on both lines
 
     const pin_obj_t *pins[2];
+    if (0) {
 #if MICROPY_HW_ENABLE_I2C1
-    if (i2c == &I2CHandle1) {
+    } else if (i2c == &I2CHandle1) {
         // X-skin: X9=PB6=SCL, X10=PB7=SDA
         pins[0] = &pin_B6;
         pins[1] = &pin_B7;
         GPIO_InitStructure.Alternate = GPIO_AF4_I2C1;
         // enable the I2C clock
         __I2C1_CLK_ENABLE();
-    } else
 #endif
-    if (i2c == &I2CHandle2) {
+    } else if (i2c == &I2CHandle2) {
         // Y-skin: Y9=PB10=SCL, Y10=PB11=SDA
         pins[0] = &pin_B10;
         pins[1] = &pin_B11;
         GPIO_InitStructure.Alternate = GPIO_AF4_I2C2;
         // enable the I2C clock
         __I2C2_CLK_ENABLE();
+    } else {
+        // I2C does not exist for this board (shouldn't get here, should be checked by caller)
+        return;
     }
 
     // init the GPIO lines
@@ -73,6 +76,8 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 
     if (HAL_I2C_Init(i2c) != HAL_OK) {
         // init error
+        // TODO should raise an exception, but this function is not necessarily going to be
+        // called via Python, so may not be properly wrapped in an NLR handler
         printf("HardwareError: HAL_I2C_Init failed\n");
         return;
     }
@@ -81,17 +86,20 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-#define PYB_NUM_I2C (2)
-
 typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
     I2C_HandleTypeDef *i2c;
 } pyb_i2c_obj_t;
 
-STATIC const pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {
+STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
+#if MICROPY_HW_ENABLE_I2C1
     {{&pyb_i2c_type}, &I2CHandle1},
+#else
+    {{&pyb_i2c_type}, NULL},
+#endif
     {{&pyb_i2c_type}, &I2CHandle2}
 };
+#define PYB_NUM_I2C (sizeof(pyb_i2c_obj) / sizeof(pyb_i2c_obj[0]))
 
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
@@ -101,7 +109,7 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     machine_int_t i2c_id = mp_obj_get_int(args[0]) - 1;
 
     // check i2c number
-    if (!(0 <= i2c_id && i2c_id < PYB_NUM_I2C)) {
+    if (!(0 <= i2c_id && i2c_id < PYB_NUM_I2C && pyb_i2c_obj[i2c_id].i2c != NULL)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C bus %d does not exist", i2c_id + 1));
     }
 
