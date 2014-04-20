@@ -35,7 +35,15 @@ void accel_init(void) {
 }
 
 STATIC void accel_start(void) {
-    // start the I2C bus
+    // start the I2C bus in master mode
+    I2CHandle1.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
+    I2CHandle1.Init.ClockSpeed      = 400000;
+    I2CHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+    I2CHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
+    I2CHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLED;
+    I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
+    I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
     i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 20ms, turn on AVDD, wait 20ms again

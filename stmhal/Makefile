@@ -97,6 +97,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	bufhelper.c \
 	i2c.c \
 	spi.c \
 

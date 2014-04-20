@@ -11,6 +11,7 @@
 #include "runtime.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "bufhelper.h"
 #include "spi.h"
 
 #if MICROPY_HW_ENABLE_SPI1
@@ -41,7 +42,7 @@ void spi_init(SPI_HandleTypeDef *spi) {
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_PULLUP; // ST examples use PULLUP
+    GPIO_InitStructure.Pull = spi->Init.CLKPolarity == SPI_POLARITY_LOW ? GPIO_PULLDOWN : GPIO_PULLUP;
 
     const pin_obj_t *pins[4];
     if (0) {
@@ -100,12 +101,18 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
     if (0) {
 #if MICROPY_HW_ENABLE_SPI1
     } else if (spi->Instance == SPI1) {
+        __SPI1_FORCE_RESET();
+        __SPI1_RELEASE_RESET();
         __SPI1_CLK_DISABLE();
 #endif
     } else if (spi->Instance == SPI2) {
+        __SPI2_FORCE_RESET();
+        __SPI2_RELEASE_RESET();
         __SPI2_CLK_DISABLE();
 #if MICROPY_HW_ENABLE_SPI3
     } else if (spi->Instance == SPI3) {
+        __SPI3_FORCE_RESET();
+        __SPI3_RELEASE_RESET();
         __SPI3_CLK_DISABLE();
 #endif
     }
@@ -156,29 +163,34 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
                 spi_clock = HAL_RCC_GetPCLK1Freq();
             }
             uint baudrate = spi_clock >> ((self->spi->Init.BaudRatePrescaler >> 3) + 1);
-            print(env, "SPI(%u, SPI.MASTER, clock=%u, baudrate=%u)", spi_num, spi_clock, baudrate);
+            print(env, "SPI(%u, SPI.MASTER, baudrate=%u", spi_num, baudrate);
         } else {
-            print(env, "SPI(%u, SPI.SLAVE)", spi_num);
+            print(env, "SPI(%u, SPI.SLAVE", spi_num);
         }
+        print(env, ", polarity=%u, phase=%u, size=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 1 : 2, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        if (self->spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
+            print(env, ", crc=0x%x", self->spi->Init.CRCPolynomial);
+        }
+        print(env, ")");
     }
 }
 
 STATIC const mp_arg_parse_t pyb_spi_init_accepted_args[] = {
     { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_baudrate, MP_ARG_PARSE_INT,  {.u_int = 328125} },
-    { MP_QSTR_clkpol,   MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_POLARITY_LOW} },
-    { MP_QSTR_clkphase, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_PHASE_1EDGE} },
+    { MP_QSTR_baudrate, MP_ARG_PARSE_INT, {.u_int = 328125} },
+    { MP_QSTR_polarity, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
+    { MP_QSTR_phase,    MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
     { MP_QSTR_dir,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_DIRECTION_2LINES} },
     { MP_QSTR_size,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
     { MP_QSTR_nss,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_NSS_SOFT} },
     { MP_QSTR_firstbit, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
     { MP_QSTR_ti,       MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_BOOL, {.u_bool = false} },
-    { MP_QSTR_crcpoly,  MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_crc,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
 };
 #define PYB_SPI_INIT_NUM_ARGS (sizeof(pyb_spi_init_accepted_args) / sizeof(pyb_spi_init_accepted_args[0]))
 
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    // parse keyword args
+    // parse args
     mp_arg_parse_val_t vals[PYB_SPI_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_SPI_INIT_NUM_ARGS, pyb_spi_init_accepted_args, vals);
 
@@ -206,8 +218,8 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, cons
     else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
     else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
 
-    init->CLKPolarity = vals[2].u_int;
-    init->CLKPhase = vals[3].u_int;
+    init->CLKPolarity = vals[2].u_int == 0 ? SPI_POLARITY_LOW : SPI_POLARITY_HIGH;
+    init->CLKPhase = vals[3].u_int == 1 ? SPI_PHASE_1EDGE : SPI_PHASE_2EDGE;
     init->Direction = vals[4].u_int;
     init->DataSize = (vals[5].u_int == 16) ? SPI_DATASIZE_16BIT : SPI_DATASIZE_8BIT;
     init->NSS = vals[6].u_int;
@@ -264,24 +276,28 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);
 
-STATIC mp_obj_t pyb_spi_send(mp_obj_t self_in, mp_obj_t data_in) {
+STATIC const mp_arg_parse_t pyb_spi_send_accepted_args[] = {
+    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+};
+#define PYB_SPI_SEND_NUM_ARGS (sizeof(pyb_spi_send_accepted_args) / sizeof(pyb_spi_send_accepted_args[0]))
+
+STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
-    // TODO accept timeout as keyword argument
 
-    pyb_spi_obj_t *self = self_in;
+    pyb_spi_obj_t *self = args[0];
 
-    uint8_t data[1];
+    // parse args
+    mp_arg_parse_val_t vals[PYB_SPI_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_NUM_ARGS, pyb_spi_send_accepted_args, vals);
+
+    // get the buffer to send from
     mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_INT(data_in)) {
-        data[0] = mp_obj_get_int(data_in);
-        bufinfo.buf = data;
-        bufinfo.len = 1;
-        bufinfo.typecode = 'B';
-    } else {
-        mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
-    }
+    uint8_t data[1];
+    pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
 
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, 1000);
+    // send the data
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
@@ -290,57 +306,104 @@ STATIC mp_obj_t pyb_spi_send(mp_obj_t self_in, mp_obj_t data_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_send_obj, pyb_spi_send);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_obj, 1, pyb_spi_send);
 
-STATIC mp_obj_t pyb_spi_recv(mp_obj_t self_in, mp_obj_t n_in) {
+STATIC const mp_arg_parse_t pyb_spi_recv_accepted_args[] = {
+    { MP_QSTR_recv,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+};
+#define PYB_SPI_RECV_NUM_ARGS (sizeof(pyb_spi_recv_accepted_args) / sizeof(pyb_spi_recv_accepted_args[0]))
+
+STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
-    // TODO accept timeout as keyword argument
 
-    pyb_spi_obj_t *self = self_in;
-    machine_uint_t n = mp_obj_get_int(n_in);
+    pyb_spi_obj_t *self = args[0];
 
-    byte *data;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
-    HAL_StatusTypeDef status = HAL_SPI_Receive(self->spi, data, n, 1000);
+    // parse args
+    mp_arg_parse_val_t vals[PYB_SPI_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_RECV_NUM_ARGS, pyb_spi_recv_accepted_args, vals);
+
+    // get the buffer to receive into
+    mp_buffer_info_t bufinfo;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &bufinfo);
+
+    // receive the data
+    HAL_StatusTypeDef status = HAL_SPI_Receive(self->spi, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_SPI_Receive failed with code %d", status));
     }
 
-    return mp_obj_str_builder_end(o);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_recv_obj, pyb_spi_recv);
-
-STATIC mp_obj_t pyb_spi_send_recv(mp_obj_t self_in, mp_obj_t data_in) {
-    // TODO assumes transmission size is 8-bits wide
-    // TODO accept timeout as keyword argument
-
-    pyb_spi_obj_t *self = self_in;
-
-    uint8_t data_send[1];
-    mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_INT(data_in)) {
-        data_send[0] = mp_obj_get_int(data_in);
-        bufinfo.buf = data_send;
-        bufinfo.len = 1;
-        bufinfo.typecode = 'B';
+    // return the received data
+    if (o_ret == MP_OBJ_NULL) {
+        return vals[0].u_obj;
     } else {
-        mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
+        return mp_obj_str_builder_end(o_ret);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_recv_obj, 1, pyb_spi_recv);
+
+STATIC const mp_arg_parse_t pyb_spi_send_recv_accepted_args[] = {
+    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_recv,    MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+};
+#define PYB_SPI_SEND_RECV_NUM_ARGS (sizeof(pyb_spi_send_recv_accepted_args) / sizeof(pyb_spi_send_recv_accepted_args[0]))
+
+STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    pyb_spi_obj_t *self = args[0];
+
+    // parse args
+    mp_arg_parse_val_t vals[PYB_SPI_SEND_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_RECV_NUM_ARGS, pyb_spi_send_recv_accepted_args, vals);
+
+    // get buffers to send from/receive to
+    mp_buffer_info_t bufinfo_send;
+    uint8_t data_send[1];
+    mp_buffer_info_t bufinfo_recv;
+    mp_obj_t o_ret;
+
+    if (vals[0].u_obj == vals[1].u_obj) {
+        // same object for send and receive, it must be a r/w buffer
+        mp_get_buffer_raise(vals[0].u_obj, &bufinfo_send, MP_BUFFER_RW);
+        bufinfo_recv = bufinfo_send;
+        o_ret = MP_OBJ_NULL;
+    } else {
+        // get the buffer to send from
+        pyb_buf_get_for_send(vals[0].u_obj, &bufinfo_send, data_send);
+
+        // get the buffer to receive into
+        if (vals[1].u_obj == MP_OBJ_NULL) {
+            // only send argument given, so create a fresh buffer of the send length
+            bufinfo_recv.len = bufinfo_send.len;
+            bufinfo_recv.typecode = 'B';
+            o_ret = mp_obj_str_builder_start(&mp_type_bytes, bufinfo_recv.len, (byte**)&bufinfo_recv.buf);
+        } else {
+            // recv argument given
+            mp_get_buffer_raise(vals[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
+            o_ret = MP_OBJ_NULL;
+        }
     }
 
-    byte *data_recv;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, bufinfo.len, &data_recv);
-    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(self->spi, bufinfo.buf, data_recv, bufinfo.len, 1000);
+    // send and receive the data
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, vals[2].u_int);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_SPI_TransmitReceive failed with code %d", status));
     }
 
-    return mp_obj_str_builder_end(o);
+    // return the received data
+    if (o_ret == MP_OBJ_NULL) {
+        return vals[1].u_obj;
+    } else {
+        return mp_obj_str_builder_end(o_ret);
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_send_recv_obj, pyb_spi_send_recv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);
 
 STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
@@ -351,21 +414,17 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER),        MP_OBJ_NEW_SMALL_INT(SPI_MODE_MASTER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),        MP_OBJ_NEW_SMALL_INT(SPI_MODE_SLAVE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER), MP_OBJ_NEW_SMALL_INT(SPI_MODE_MASTER) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),  MP_OBJ_NEW_SMALL_INT(SPI_MODE_SLAVE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_MSB) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_LSB) },
     /* TODO
     { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES             ((uint32_t)0x00000000)
     { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES_RXONLY      SPI_CR1_RXONLY
     { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_1LINE              SPI_CR1_BIDIMODE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLARITY_LOW                ((uint32_t)0x00000000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLARITY_HIGH               SPI_CR1_CPOL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHASE_1EDGE                 ((uint32_t)0x00000000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHASE_2EDGE                 SPI_CR1_CPHA
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_SOFT                    SPI_CR1_SSM
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_INPUT              ((uint32_t)0x00000000)
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_OUTPUT             ((uint32_t)0x00040000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FIRSTBIT_MSB                ((uint32_t)0x00000000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FIRSTBIT_LSB                SPI_CR1_LSBFIRST
     */
 };
 
