@@ -13,6 +13,10 @@
 #include "genhdr/pins.h"
 #include "i2c.h"
 
+#if !defined(MICROPU_HW_ENABLE_I2C1)
+#define MICROPY_HW_ENABLE_I2C1      (1)
+#endif
+
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
 I2C_HandleTypeDef I2CHandle2 = {.Instance = NULL};
 
@@ -32,6 +36,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     GPIO_InitStructure.Pull = GPIO_NOPULL; // have external pull-up resistors on both lines
 
     const pin_obj_t *pins[2];
+#if MICROPY_HW_ENABLE_I2C1
     if (i2c == &I2CHandle1) {
         // X-skin: X9=PB6=SCL, X10=PB7=SDA
         pins[0] = &pin_B6;
@@ -39,7 +44,9 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
         GPIO_InitStructure.Alternate = GPIO_AF4_I2C1;
         // enable the I2C clock
         __I2C1_CLK_ENABLE();
-    } else {
+    } else
+#endif
+    if (i2c == &I2CHandle2) {
         // Y-skin: Y9=PB10=SCL, Y10=PB11=SDA
         pins[0] = &pin_B10;
         pins[1] = &pin_B11;
@@ -52,13 +59,6 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     for (uint i = 0; i < 2; i++) {
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
-    }
-
-    // enable the I2C clock
-    if (i2c == &I2CHandle1) {
-        __I2C1_CLK_ENABLE();
-    } else {
-        __I2C2_CLK_ENABLE();
     }
 
     // init the I2C device
@@ -88,7 +88,10 @@ typedef struct _pyb_i2c_obj_t {
     I2C_HandleTypeDef *i2c;
 } pyb_i2c_obj_t;
 
-STATIC const pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {{{&pyb_i2c_type}, &I2CHandle1}, {{&pyb_i2c_type}, &I2CHandle2}};
+STATIC const pyb_i2c_obj_t pyb_i2c_obj[PYB_NUM_I2C] = {
+    {{&pyb_i2c_type}, &I2CHandle1},
+    {{&pyb_i2c_type}, &I2CHandle2}
+};
 
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
