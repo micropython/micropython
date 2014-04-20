@@ -434,8 +434,14 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     if (n_bytes <= n_existing) {
         return ptr;
     } else {
-        // TODO check if we can grow inplace
-        void *ptr2 = gc_alloc(n_bytes);
+        // TODO false is incorrect! Should get value from current block!
+        void *ptr2 = gc_alloc(n_bytes,
+#if MICROPY_ENABLE_FINALISER
+                        FTB_GET(BLOCK_FROM_PTR((machine_uint_t)ptr))
+#else
+                        false
+#endif
+        );
         if (ptr2 == NULL) {
             return ptr2;
         }
@@ -444,7 +450,8 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
         return ptr2;
     }
 }
-#endif
+
+#else // Alternative gc_realloc impl
 
 void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
     if (gc_lock_depth > 0) {
@@ -524,6 +531,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 
     return ptr_out;
 }
+#endif // Alternative gc_realloc impl
 
 void gc_dump_info() {
     gc_info_t info;
