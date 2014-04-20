@@ -45,7 +45,6 @@ static void* entry_table[256] = {
     [MP_BC_POP_JUMP_IF_FALSE] = &&entry_MP_BC_POP_JUMP_IF_FALSE,
     [MP_BC_JUMP_IF_TRUE_OR_POP] = &&entry_MP_BC_JUMP_IF_TRUE_OR_POP,
     [MP_BC_JUMP_IF_FALSE_OR_POP] = &&entry_MP_BC_JUMP_IF_FALSE_OR_POP,
-//        [MP_BC_SETUP_LOOP] = &&entry_MP_BC_SETUP_LOOP,
     [MP_BC_SETUP_WITH] = &&entry_MP_BC_SETUP_WITH,
     [MP_BC_WITH_CLEANUP] = &&entry_MP_BC_WITH_CLEANUP,
     [MP_BC_UNWIND_JUMP] = &&entry_MP_BC_UNWIND_JUMP,

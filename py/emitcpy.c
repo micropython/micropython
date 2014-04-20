@@ -221,13 +221,6 @@ STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_CONST %s\n", str);
-    }
-}
-
 STATIC void emit_cpy_load_null(emit_t *emit) {
     // unused for cpy
     assert(0);
@@ -244,13 +237,6 @@ STATIC void emit_cpy_load_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == PASS_3) {
         printf("LOAD_DEREF %d %s\n", local_num, qstr_str(qstr));
-    }
-}
-
-STATIC void emit_cpy_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == PASS_3) {
-        printf("LOAD_CLOSURE %d %s\n", local_num, qstr_str(qstr));
     }
 }
 
@@ -449,13 +435,6 @@ STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, uint label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == PASS_3) {
         printf("JUMP_IF_FALSE_OR_POP %d\n", emit->label_offsets[label]);
-    }
-}
-
-STATIC void emit_cpy_setup_loop(emit_t *emit, uint label) {
-    emit_pre(emit, 0, 3);
-    if (emit->pass == PASS_3) {
-        printf("SETUP_LOOP %d\n", emit->label_offsets[label]);
     }
 }
 
@@ -798,6 +777,27 @@ STATIC void emit_cpy_yield_from(emit_t *emit) {
     }
 }
 
+STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == PASS_3) {
+        printf("LOAD_CONST %s\n", str);
+    }
+}
+
+STATIC void emit_cpy_load_closure(emit_t *emit, qstr qstr, int local_num) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == PASS_3) {
+        printf("LOAD_CLOSURE %d %s\n", local_num, qstr_str(qstr));
+    }
+}
+
+STATIC void emit_cpy_setup_loop(emit_t *emit, uint label) {
+    emit_pre(emit, 0, 3);
+    if (emit->pass == PASS_3) {
+        printf("SETUP_LOOP %d\n", emit->label_offsets[label]);
+    }
+}
+
 const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_set_native_types,
     emit_cpy_start_pass,
@@ -820,11 +820,9 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_const_dec,
     emit_cpy_load_const_id,
     emit_cpy_load_const_str,
-    emit_cpy_load_const_verbatim_str,
     emit_cpy_load_null,
     emit_cpy_load_fast,
     emit_cpy_load_deref,
-    emit_cpy_load_closure,
     emit_cpy_load_name,
     emit_cpy_load_global,
     emit_cpy_load_attr,
@@ -853,7 +851,6 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_pop_jump_if_false,
     emit_cpy_jump_if_true_or_pop,
     emit_cpy_jump_if_false_or_pop,
-    emit_cpy_setup_loop,
     emit_cpy_break_loop,
     emit_cpy_continue_loop,
     emit_cpy_setup_with,
@@ -887,6 +884,11 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_raise_varargs,
     emit_cpy_yield_value,
     emit_cpy_yield_from,
+
+    // emitcpy specific functions
+    emit_cpy_load_const_verbatim_str,
+    emit_cpy_load_closure,
+    emit_cpy_setup_loop,
 };
 
 #endif // MICROPY_EMIT_CPYTHON

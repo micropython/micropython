@@ -481,13 +481,6 @@ dispatch_loop:
                     }
                     DISPATCH();
 
-                    /* we are trying to get away without using this opcode
-                ENTRY(MP_BC_SETUP_LOOP):
-                    DECODE_UINT;
-                    // push_block(MP_BC_SETUP_LOOP, ip + unum, sp)
-                    DISPATCH();
-                    */
-
                 ENTRY(MP_BC_SETUP_WITH):
                     obj1 = TOP();
                     SET_TOP(mp_load_attr(obj1, MP_QSTR___exit__));

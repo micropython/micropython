@@ -16,6 +16,8 @@
 #include "emit.h"
 #include "bc0.h"
 
+#if !MICROPY_EMIT_CPYTHON
+
 struct _emit_t {
     pass_kind_t pass;
     int stack_size;
@@ -421,11 +423,6 @@ STATIC void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-STATIC void emit_bc_load_const_verbatim_str(emit_t *emit, const char *str) {
-    // not needed/supported for BC
-    assert(0);
-}
-
 STATIC void emit_bc_load_null(emit_t *emit) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte(emit, MP_BC_LOAD_NULL);
@@ -445,11 +442,6 @@ STATIC void emit_bc_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_
 STATIC void emit_bc_load_deref(emit_t *emit, qstr qstr, int local_num) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte_uint(emit, MP_BC_LOAD_DEREF, local_num);
-}
-
-STATIC void emit_bc_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    // not needed/supported for BC
-    assert(0);
 }
 
 STATIC void emit_bc_load_name(emit_t *emit, qstr qstr) {
@@ -596,11 +588,6 @@ STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, uint label) {
 STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, uint label) {
     emit_bc_pre(emit, -1);
     emit_write_byte_code_byte_signed_label(emit, MP_BC_JUMP_IF_FALSE_OR_POP, label);
-}
-
-STATIC void emit_bc_setup_loop(emit_t *emit, uint label) {
-    emit_bc_pre(emit, 0);
-    emit_write_byte_code_byte_unsigned_label(emit, MP_BC_SETUP_LOOP, label);
 }
 
 STATIC void emit_bc_unwind_jump(emit_t *emit, uint label, int except_depth) {
@@ -855,11 +842,9 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_dec,
     emit_bc_load_const_id,
     emit_bc_load_const_str,
-    emit_bc_load_const_verbatim_str,
     emit_bc_load_null,
     emit_bc_load_fast,
     emit_bc_load_deref,
-    emit_bc_load_closure,
     emit_bc_load_name,
     emit_bc_load_global,
     emit_bc_load_attr,
@@ -888,7 +873,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_pop_jump_if_false,
     emit_bc_jump_if_true_or_pop,
     emit_bc_jump_if_false_or_pop,
-    emit_bc_setup_loop,
     emit_bc_unwind_jump,
     emit_bc_unwind_jump,
     emit_bc_setup_with,
@@ -923,3 +907,5 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_yield_value,
     emit_bc_yield_from,
 };
+
+#endif // !MICROPY_EMIT_CPYTHON
