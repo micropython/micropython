@@ -2,10 +2,10 @@
 
 // Linking with GNU readline causes binary to be licensed under GPL
 #ifndef MICROPY_USE_READLINE
-#define MICROPY_USE_READLINE        (1)
+#define MICROPY_USE_READLINE        (0)
 #endif
 
-#define MICROPY_EMIT_X64            (1)
+#define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_MEM_STATS           (1)
