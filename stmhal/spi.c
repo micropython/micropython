@@ -13,11 +13,13 @@
 #include "genhdr/pins.h"
 #include "spi.h"
 
+#if !defined(MICROPU_HW_ENABLE_SPI1)
+#define MICROPY_HW_ENABLE_SPI1  (1)
+#endif
+
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
-#if MICROPY_HW_ENABLE_SPI3
 SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
-#endif
 
 void spi_init0(void) {
     // reset the SPI handles
@@ -25,10 +27,8 @@ void spi_init0(void) {
     SPIHandle1.Instance = SPI1;
     memset(&SPIHandle2, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle2.Instance = SPI2;
-#if MICROPY_HW_ENABLE_SPI3
     memset(&SPIHandle3, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle3.Instance = SPI3;
-#endif
 }
 
 // TODO allow to take a list of pins to use
@@ -40,6 +40,7 @@ void spi_init(SPI_HandleTypeDef *spi) {
     GPIO_InitStructure.Pull = GPIO_PULLUP; // ST examples use PULLUP
 
     const pin_obj_t *pins[4];
+#if MICROPY_HW_ENABLE_SPI1
     if (spi->Instance == SPI1) {
         // X-skin: X5=PA4=SPI1_NSS, X6=PA5=SPI1_SCK, X7=PA6=SPI1_MISO, X8=PA7=SPI1_MOSI
         pins[0] = &pin_A4;
@@ -47,25 +48,28 @@ void spi_init(SPI_HandleTypeDef *spi) {
         pins[2] = &pin_A6;
         pins[3] = &pin_A7;
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI1;
-    } else if (spi->Instance == SPI2) {
+    } else
+#endif
+    if (spi->Instance == SPI2) {
         // Y-skin: Y5=PB12=SPI2_NSS, Y6=PB13=SPI2_SCK, Y7=PB14=SPI2_MISO, Y8=PB15=SPI2_MOSI
         pins[0] = &pin_B12;
         pins[1] = &pin_B13;
         pins[2] = &pin_B14;
         pins[3] = &pin_B15;
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
+    } else
 #if MICROPY_HW_ENABLE_SPI3
-    } else if (spi->Instance == SPI3) {
+    if (spi->Instance == SPI3) {
         pins[0] = &pin_A4;
         pins[1] = &pin_B3;
         pins[2] = &pin_B4;
         pins[3] = &pin_B5;
         GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
+    } else
 #endif
-    } else {
+    {
         // SPI does not exist for this board
-        printf("HardwareError: invalid SPI\n");
-        return;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "SPI bus does not exist"));
     }
 
     for (uint i = 0; i < 4; i++) {
@@ -78,10 +82,8 @@ void spi_init(SPI_HandleTypeDef *spi) {
         __SPI1_CLK_ENABLE();
     } else if (spi->Instance == SPI2) {
         __SPI2_CLK_ENABLE();
-#if MICROPY_HW_ENABLE_SPI3
-    } else {
+    } else if (spi->Instance == SPI3) {
         __SPI3_CLK_ENABLE();
-#endif
     }
 
     // init the I2C device
@@ -100,24 +102,25 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
         __SPI1_CLK_DISABLE();
     } else if (spi->Instance == SPI2) {
         __SPI2_CLK_DISABLE();
-#if MICROPY_HW_ENABLE_SPI3
-    } else {
+    } else if (spi->Instance == SPI3) {
         __SPI3_CLK_DISABLE();
-#endif
     }
 }
 
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-#define PYB_SPI_NUM (2)
+#define PYB_NUM_SPI (2)
 
 typedef struct _pyb_spi_obj_t {
     mp_obj_base_t base;
     SPI_HandleTypeDef *spi;
 } pyb_spi_obj_t;
 
-STATIC const pyb_spi_obj_t pyb_spi_obj[PYB_SPI_NUM] = {{{&pyb_spi_type}, &SPIHandle1}, {{&pyb_spi_type}, &SPIHandle2}};
+STATIC const pyb_spi_obj_t pyb_spi_obj[PYB_NUM_SPI] = {
+    {{&pyb_spi_type}, &SPIHandle1},
+    {{&pyb_spi_type}, &SPIHandle2}
+};
 
 STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
@@ -220,7 +223,7 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     machine_int_t spi_id = mp_obj_get_int(args[0]) - 1;
 
     // check SPI number
-    if (!(0 <= spi_id && spi_id < PYB_SPI_NUM)) {
+    if (!(0 <= spi_id && spi_id < PYB_NUM_SPI)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "SPI bus %d does not exist", spi_id + 1));
     }
 
