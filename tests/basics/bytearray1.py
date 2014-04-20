@@ -13,3 +13,7 @@ s = 0
 for i in a:
     s += i
 print(s)
+
+print(a[1:])
+print(a[:-1])
+print(a[2:3])
