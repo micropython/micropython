@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -459,16 +460,18 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
     }
 
     void *ptr_out = NULL;
-    machine_uint_t block = 0;
     machine_uint_t ptr = (machine_uint_t)ptr_in;
 
     if (ptr_in == NULL) {
         return gc_alloc(n_bytes, false);
     }
 
-    if (VERIFY_PTR(ptr)                         // verify pointer
-        && (block = BLOCK_FROM_PTR(ptr))        // get first block
-        && ATB_GET_KIND(block) == AT_HEAD) {    // make sure it's a HEAD block
+    machine_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK) / BYTES_PER_BLOCK;
+    // get first block
+    machine_uint_t block = BLOCK_FROM_PTR(ptr);
+
+    // Sabity checks
+    if (VERIFY_PTR(ptr) && ATB_GET_KIND(block) == AT_HEAD) {
 
         byte block_type;
         machine_uint_t n_free   = 0;
@@ -478,42 +481,39 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         // get the number of consecutive tail blocks and
         // the number of free blocks after last tail block
         // stop if we reach (or are at) end of heap
-        while ((block + n_blocks + n_free) < max_block
+        while (block + n_blocks + n_free < max_block) {
+            if (n_blocks + n_free >= new_blocks) {
                 // stop as soon as we find enough blocks for n_bytes
-                && (n_bytes > ((n_blocks+n_free) * BYTES_PER_BLOCK))
-                // stop if block is HEAD
-                && (block_type = ATB_GET_KIND(block + n_blocks + n_free)) != AT_HEAD) {
-            switch (block_type) {
-                case AT_FREE: n_free++; break;
-                case AT_TAIL: n_blocks++; break;
-                default: break;
+                break;
             }
+            block_type = ATB_GET_KIND(block + n_blocks + n_free);
+            switch (block_type) {
+                case AT_FREE: n_free++; continue;
+                case AT_TAIL: n_blocks++; continue;
+                case AT_MARK: assert(0);
+            }
+            break;
         }
-        // number of allocated bytes
-        machine_uint_t n_existing = n_blocks * BYTES_PER_BLOCK;
 
-        // check if realloc'ing to a smaller size
-        if (n_bytes <= n_existing) {
-            ptr_out = ptr_in;
+        if (new_blocks == n_blocks) {
+            return ptr_in;
+        }
+
+        if (new_blocks < n_blocks) {
             // free unneeded tail blocks
-            for (machine_uint_t bl = block + n_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
+            for (machine_uint_t bl = block + new_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
                 ATB_ANY_TO_FREE(bl);
             }
+            return ptr_in;
 
         // check if we can expand in place
-        } else if (n_bytes <= (n_existing + (n_free * BYTES_PER_BLOCK))) {
-            // number of blocks needed to expand +1 if there's a remainder
-            machine_uint_t n_diff = ( n_bytes - n_existing)/BYTES_PER_BLOCK+
-                                    ((n_bytes - n_existing)%BYTES_PER_BLOCK!=0);
-
-            DEBUG_printf("gc_realloc: expanding " UINT_FMT " blocks (" UINT_FMT " bytes) to " UINT_FMT " blocks (" UINT_FMT " bytes)\n",
-                    n_existing/BYTES_PER_BLOCK, n_existing, n_existing/BYTES_PER_BLOCK+n_diff, n_existing + n_diff*BYTES_PER_BLOCK);
-
-            // mark rest of blocks as used tail
-            for (machine_uint_t bl = block + n_blocks; bl < (block + n_blocks + n_diff); bl++) {
+        } else if (new_blocks <= n_blocks + n_free) {
+            // mark few more blocks as used tail
+            for (machine_uint_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
+                assert(ATB_GET_KIND(bl) == AT_FREE);
                 ATB_FREE_TO_TAIL(bl);
             }
-            ptr_out = ptr_in;
+            return ptr_in;
 
         // try to find a new contiguous chain
         } else if ((ptr_out = gc_alloc(n_bytes,
@@ -524,12 +524,13 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
 #endif
                         )) != NULL) {
             DEBUG_printf("gc_realloc: allocating new block\n");
-            memcpy(ptr_out, ptr_in, n_existing);
+            memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
             gc_free(ptr_in);
+            return ptr_out;
         }
     }
 
-    return ptr_out;
+    return NULL;
 }
 #endif // Alternative gc_realloc impl
 
