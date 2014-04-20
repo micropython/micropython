@@ -480,7 +480,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
     }
 
     // compute number of new blocks that are requested
-    machine_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK) / BYTES_PER_BLOCK;
+    machine_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
 
     // get the number of consecutive tail blocks and
     // the number of free blocks after last tail block

@@ -136,10 +136,18 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
     if (value == MP_OBJ_NULL) {
         // delete item
         // TODO implement
+        // TODO: confirmed that both bytearray and array.array support
+        // slice deletion
         return MP_OBJ_NOT_SUPPORTED;
     } else {
         mp_obj_array_t *o = self_in;
         if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+            if (value != MP_OBJ_SENTINEL) {
+                // Only getting a slice is suported so far, not assignment
+                // TODO: confirmed that both bytearray and array.array support
+                // slice assignment (incl. of different size)
+                return MP_OBJ_NOT_SUPPORTED;
+            }
             machine_uint_t start, stop;
             if (!m_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
                 assert(0);
