@@ -110,7 +110,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 //
 // NOTE: param is for C callers. Python can use closure to get an object bound
 //       with the function.
-uint extint_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param) {
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj, void *param) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -129,20 +129,18 @@ uint extint_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t pull_obj, mp_
         pin = pin_find(pin_obj);
         v_line = pin->pin;
     }
-    int mode = mp_obj_get_int(mode_obj);
     if (mode != GPIO_MODE_IT_RISING &&
         mode != GPIO_MODE_IT_FALLING &&
         mode != GPIO_MODE_IT_RISING_FALLING &&
         mode != GPIO_MODE_EVT_RISING &&
         mode != GPIO_MODE_EVT_FALLING &&
         mode != GPIO_MODE_EVT_RISING_FALLING) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid ExtInt Mode: %d", mode));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid ExtInt Mode: %d", mode));
     }
-    int pull = mp_obj_get_int(pull_obj);
     if (pull != GPIO_NOPULL &&
         pull != GPIO_PULLUP &&
         pull != GPIO_PULLDOWN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid ExtInt Pull: %d", pull));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid ExtInt Pull: %d", pull));
     }
 
     extint_vector_t *v = &extint_vector[v_line];
@@ -239,12 +237,12 @@ STATIC mp_obj_t extint_regs(void) {
     return mp_const_none;
 }
 
-// line_obj = pyb.ExtInt(pin, mode, trigger, callback)
+// line_obj = pyb.ExtInt(pin, mode, pull, callback)
 
 STATIC const mp_arg_parse_t pyb_extint_make_new_accepted_args[] = {
     { MP_QSTR_pin,      MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_trigger,  MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
+    { MP_QSTR_pull,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
     { MP_QSTR_callback, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
 #define PYB_EXTINT_MAKE_NEW_NUM_ARGS (sizeof(pyb_extint_make_new_accepted_args) / sizeof(pyb_extint_make_new_accepted_args[0]))
@@ -260,7 +258,7 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;
-    self->line = extint_register(vals[0].u_obj, vals[1].u_obj, vals[2].u_obj, vals[3].u_obj, false, NULL);
+    self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false, NULL);
 
     return self;
 }

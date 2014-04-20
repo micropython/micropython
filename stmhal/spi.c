@@ -189,7 +189,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, cons
     else if (br_prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
     else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
     else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
-    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
+    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
 
     init->CLKPolarity = vals[2].u_int;
     init->CLKPhase = vals[3].u_int;
