@@ -700,6 +700,11 @@ STATIC void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
     assert(0);
 }
 
+STATIC void emit_native_load_null(emit_t *emit) {
+    emit_native_pre(emit);
+    emit_post_push_imm(emit, VTYPE_PYOBJ, 0);
+}
+
 STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
@@ -1209,7 +1214,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults) {
     assert(0);
 }
 
@@ -1335,6 +1340,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_id,
     emit_native_load_const_str,
     emit_native_load_const_verbatim_str,
+    emit_native_load_null,
     emit_native_load_fast,
     emit_native_load_deref,
     emit_native_load_closure,

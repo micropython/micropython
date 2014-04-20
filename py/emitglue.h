@@ -37,4 +37,4 @@ void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *f, uint len, int n
 void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
-mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args);
+mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args);

@@ -42,6 +42,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
     void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
+    void (*load_null)(emit_t *emit);
     void (*load_fast)(emit_t *emit, qstr qstr, uint id_flags, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
     void (*load_closure)(emit_t *emit, qstr qstr, int local_num); // only needed for emitcpy
@@ -100,7 +101,7 @@ typedef struct _emit_method_table_t {
     void (*unpack_sequence)(emit_t *emit, int n_args);
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
     void (*make_function)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
-    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
+    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults);
     void (*call_function)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*call_method)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*return_value)(emit_t *emit);

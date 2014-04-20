@@ -761,35 +761,21 @@ STATIC void emit_bc_make_function(emit_t *emit, scope_t *scope, uint n_pos_defau
         emit_bc_pre(emit, 1);
         emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION, scope->raw_code);
     } else {
-        if (n_pos_defaults == 0) {
-            // load dummy entry for non-existent positional default tuple
-            emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
-        } else if (n_kw_defaults == 0) {
-            // load dummy entry for non-existent keyword default dict
-            emit_bc_load_null(emit);
-        }
         emit_bc_pre(emit, -1);
         emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->raw_code);
     }
 }
 
-STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+STATIC void emit_bc_make_closure(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
-        emit_bc_pre(emit, 0);
+        emit_bc_pre(emit, -n_closed_over + 1);
         emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE, scope->raw_code);
+        emit_write_byte_code_byte(emit, n_closed_over);
     } else {
-        if (n_pos_defaults == 0) {
-            // load dummy entry for non-existent positional default tuple
-            emit_bc_load_null(emit);
-            emit_bc_rot_three(emit);
-        } else if (n_kw_defaults == 0) {
-            // load dummy entry for non-existent keyword default dict
-            emit_bc_load_null(emit);
-            emit_bc_rot_two(emit);
-        }
-        emit_bc_pre(emit, -2);
+        assert(n_closed_over <= 255);
+        emit_bc_pre(emit, -2 - n_closed_over + 1);
         emit_write_byte_code_byte_ptr(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
+        emit_write_byte_code_byte(emit, n_closed_over);
     }
 }
 
@@ -870,6 +856,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_id,
     emit_bc_load_const_str,
     emit_bc_load_const_verbatim_str,
+    emit_bc_load_null,
     emit_bc_load_fast,
     emit_bc_load_deref,
     emit_bc_load_closure,

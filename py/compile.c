@@ -889,8 +889,7 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_d
     if (nfree == 0) {
         EMIT_ARG(make_function, this_scope, n_pos_defaults, n_kw_defaults);
     } else {
-        EMIT_ARG(build_tuple, nfree);
-        EMIT_ARG(make_closure, this_scope, n_pos_defaults, n_kw_defaults);
+        EMIT_ARG(make_closure, this_scope, nfree, n_pos_defaults, n_kw_defaults);
     }
 }
 
@@ -957,6 +956,8 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
                     // we need to do this here before we start building the map for the default keywords
                     if (comp->num_default_params > 0) {
                         EMIT_ARG(build_tuple, comp->num_default_params);
+                    } else {
+                        EMIT(load_null); // sentinel indicating empty default positional args
                     }
                     // first default dict param, so make the map
                     EMIT_ARG(build_map, 0);
@@ -1009,6 +1010,7 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     // the default keywords args may have already made the tuple; if not, do it now
     if (comp->num_default_params > 0 && comp->num_dict_params == 0) {
         EMIT_ARG(build_tuple, comp->num_default_params);
+        EMIT(load_null); // sentinel indicating empty default keyword args
     }
 #endif
 
