@@ -40,7 +40,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
         mp_obj_t given_arg;
         if (i < n_pos) {
             if (allowed[i].flags & MP_ARG_PARSE_KW_ONLY) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' argument must be given by a keyword", qstr_str(allowed[i].qstr)));
+                goto extra_positional;
             }
             pos_found++;
             given_arg = pos[i];
@@ -69,6 +69,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
     }
     if (pos_found < n_pos) {
         // TODO better error message
+        extra_positional:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "extra positional arguments given"));
     }
     if (kws_found < kws->used) {
