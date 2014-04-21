@@ -12,6 +12,22 @@
 #include "runtime.h"
 #include "binary.h"
 
+/*
+ * modffi uses character codes to encode a value type, based on "struct"
+ * module type codes, with some extensions and overridings.
+ *
+ * Extra/overridden typecodes:
+ *      v - void, can be used only as return type
+ *      P - const void*, pointer to read-only memory
+ *      p - void*, meaning pointer to a writable memory (note that this
+ *          clashes with struct's "p" as "Pascal string").
+ *      s - as argument, the same as "p", as return value, causes string
+ *          to be allocated and returned, instead of pointer value.
+ *
+ * Note: all constraint specified by typecode can be not enforced at this time,
+ * but may be later.
+ */
+
 typedef struct _mp_obj_opaque_t {
     mp_obj_base_t base;
     void *val;
@@ -63,8 +79,8 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'L': return &ffi_type_ulong;
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;
-        case 'p': // Deprecated - conflicts with struct module
-        case 'P':
+        case 'P': // const void*
+        case 'p': // void*
         case 's': return &ffi_type_pointer;
         case 'v': return &ffi_type_void;
         default: return NULL;
