@@ -100,6 +100,7 @@ SRC_C = \
 	bufhelper.c \
 	i2c.c \
 	spi.c \
+	reg.c \
 
 #	pybwlan.c \
 

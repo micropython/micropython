@@ -454,3 +454,7 @@ Q(WWDG)
 Q(WWDG_CFR)
 Q(WWDG_CR)
 Q(WWDG_SR)
+
+Q(reg)
+Q(RegBase)
+Q(RegMap)
