@@ -33,7 +33,7 @@ STATIC const mp_obj_type_t microsocket_type;
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
-        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }
+        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)error_val))); } }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
@@ -283,7 +283,7 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
         // CPython: socket.herror
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(h_errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)h_errno)));
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
