@@ -3184,7 +3184,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
         int n_args = list_get(&pns2->nodes[0], PN_arglist, &pn_arg);
 
         // emit instructions
-        if (strcmp(qstr_str(op), "label") == 0) {
+        if (op == MP_QSTR_label) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_ID(pn_arg[0]))) {
                 compile_syntax_error(comp, nodes[i], "inline assembler 'label' requires 1 argument");
                 return;
@@ -3192,6 +3192,29 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
             uint lab = comp_next_label(comp);
             if (pass > PASS_1) {
                 EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]));
+            }
+        } else if (op == MP_QSTR_align) {
+            if (!(n_args == 1 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
+                compile_syntax_error(comp, nodes[i], "inline assembler 'align' requires 1 argument");
+                return;
+            }
+            if (pass > PASS_1) {
+                EMIT_INLINE_ASM_ARG(align, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]));
+            }
+        } else if (op == MP_QSTR_data) {
+            if (!(n_args >= 2 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
+                compile_syntax_error(comp, nodes[i], "inline assembler 'data' requires at least 2 arguments");
+                return;
+            }
+            if (pass > PASS_1) {
+                machine_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
+                for (uint i = 1; i < n_args; i++) {
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[i])) {
+                        compile_syntax_error(comp, nodes[i], "inline assembler 'data' requires integer arguments");
+                        return;
+                    }
+                    EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[i]));
+                }
             }
         } else {
             if (pass > PASS_1) {

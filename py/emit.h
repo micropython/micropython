@@ -143,6 +143,8 @@ typedef struct _emit_inline_asm_method_table_t {
     bool (*end_pass)(emit_inline_asm_t *emit);
     int (*count_params)(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params);
     void (*label)(emit_inline_asm_t *emit, uint label_num, qstr label_id);
+    void (*align)(emit_inline_asm_t *emit, uint align);
+    void (*data)(emit_inline_asm_t *emit, uint bytesize, uint val);
     void (*op)(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args);
 } emit_inline_asm_method_table_t;
 
