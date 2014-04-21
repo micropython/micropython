@@ -91,6 +91,16 @@ Q(all)
 Q(send)
 Q(recv)
 
+// for Timer class
+Q(Timer)
+Q(counter)
+Q(prescaler)
+Q(period)
+Q(callback)
+Q(freq)
+Q(mode)
+Q(div)
+
 // for ExtInt class
 Q(ExtInt)
 Q(pin)

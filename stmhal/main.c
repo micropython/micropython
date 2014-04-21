@@ -78,7 +78,8 @@ void __fatal_error(const char *msg) {
         led_toggle(((i++) & 3) + 1);
         for (volatile uint delay = 0; delay < 10000000; delay++) {
         }
-        if (i >= 8) {
+        if (i >= 16) {
+            // to conserve power
             __WFI();
         }
     }
@@ -457,13 +458,10 @@ soft_reset:
     }
 #endif
 
+    timer_init0();
+
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
-#endif
-
-#if MICROPY_HW_ENABLE_TIMER
-    // timer
-    //timer_init();
 #endif
 
     i2c_init0();
