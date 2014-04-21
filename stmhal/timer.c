@@ -354,9 +354,6 @@ mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer_period);
 
-// TIM6 is used as an internal interrupt to schedule something at a specific rate
-mp_obj_t timer_py_callback;
-
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_timer_obj_t *self = self_in;
     if (callback == mp_const_none) {
