@@ -66,7 +66,10 @@ SRC_C = \
 	led.c \
 	pin.c \
 	pin_named_pins.c \
-	usart.c \
+	bufhelper.c \
+	i2c.c \
+	spi.c \
+	uart.c \
 	usb.c \
 	printf.c \
 	math.c \
@@ -97,9 +100,6 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
-	bufhelper.c \
-	i2c.c \
-	spi.c \
 
 #	pybwlan.c \
 

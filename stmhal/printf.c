@@ -12,7 +12,7 @@
 #if 0
 #include "lcd.h"
 #endif
-#include "usart.h"
+#include "uart.h"
 #include "usb.h"
 
 #if MICROPY_ENABLE_FLOAT
@@ -170,11 +170,11 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 }
 
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
-    // send stdout to USART, USB CDC VCP, and LCD if nothing else
+    // send stdout to UART, USB CDC VCP, and LCD if nothing else
     bool any = false;
 
-    if (pyb_usart_global_debug != PYB_USART_NONE) {
-        usart_tx_strn_cooked(pyb_usart_global_debug, str, len);
+    if (pyb_uart_global_debug != PYB_UART_NONE) {
+        uart_tx_strn_cooked(pyb_uart_global_debug, str, len);
         any = true;
     }
     if (usb_vcp_is_enabled()) {

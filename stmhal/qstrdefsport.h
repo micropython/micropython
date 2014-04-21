@@ -79,8 +79,8 @@ Q(off)
 Q(toggle)
 Q(intensity)
 
-// for USART class
-Q(USART)
+// for UART class
+Q(UART)
 Q(baudrate)
 Q(bits)
 Q(stop)

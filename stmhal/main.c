@@ -20,7 +20,7 @@
 #include "pyexec.h"
 #include "i2c.h"
 #include "spi.h"
-#include "usart.h"
+#include "uart.h"
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
@@ -267,20 +267,20 @@ soft_reset:
     // GC init
     gc_init(&_heap_start, &_heap_end);
 
-    // Change #if 0 to #if 1 if you want REPL on USART_6 (or another usart)
+    // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
     // as well as on USB VCP
 #if 0
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(PYB_USART_6),
+            MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        pyb_usart_global_debug = pyb_usart_type.make_new((mp_obj_t)&pyb_usart_type,
-                                                         sizeof(args) / sizeof(args[0]),
-                                                         0, args);
+        pyb_uart_global_debug = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type,
+                                                       sizeof(args) / sizeof(args[0]),
+                                                       0, args);
     }
 #else
-    pyb_usart_global_debug = NULL;
+    pyb_uart_global_debug = NULL;
 #endif
 
     // Micro Python init

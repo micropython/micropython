@@ -10,11 +10,11 @@
 #include "stream.h"
 #include "pybstdio.h"
 #include "usb.h"
-#include "usart.h"
+#include "uart.h"
 
 void stdout_tx_str(const char *str) {
-    if (pyb_usart_global_debug != PYB_USART_NONE) {
-        usart_tx_str(pyb_usart_global_debug, str);
+    if (pyb_uart_global_debug != PYB_UART_NONE) {
+        uart_tx_str(pyb_uart_global_debug, str);
     }
 #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_str(str);
@@ -23,8 +23,8 @@ void stdout_tx_str(const char *str) {
 }
 
 void stdout_tx_strn(const char *str, uint len) {
-    if (pyb_usart_global_debug != PYB_USART_NONE) {
-        usart_tx_strn(pyb_usart_global_debug, str, len);
+    if (pyb_uart_global_debug != PYB_UART_NONE) {
+        uart_tx_strn(pyb_uart_global_debug, str, len);
     }
 #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
@@ -45,8 +45,8 @@ int stdin_rx_chr(void) {
 #endif
         if (usb_vcp_rx_num() != 0) {
             return usb_vcp_rx_get();
-        } else if (pyb_usart_global_debug != PYB_USART_NONE && usart_rx_any(pyb_usart_global_debug)) {
-            return usart_rx_char(pyb_usart_global_debug);
+        } else if (pyb_uart_global_debug != PYB_UART_NONE && uart_rx_any(pyb_uart_global_debug)) {
+            return uart_rx_char(pyb_uart_global_debug);
         }
         __WFI();
     }
