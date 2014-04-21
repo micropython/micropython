@@ -269,7 +269,7 @@ STATIC mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct in_addr addr;
     if (!inet_aton(s, &addr)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Invalid IP address"));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
 
     return mp_obj_new_int(addr.s_addr);
@@ -282,7 +282,8 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        // CPython: socket.herror
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(h_errno)));
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
@@ -314,6 +315,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr);
 
     if (res != 0) {
+        // CPython: socket.gaierror
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
     }
     assert(addr);
