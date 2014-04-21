@@ -14,19 +14,15 @@
 
 // Usage Model:
 //
-// pyb.switch() returns True if the user switch is pressed, False otherwise.
-//
-// pyb.switch(callback) will register a callback to be called when the user
-//                      switch is pressed.
-//
-// pyb.switch(None) will remove the callback.
+//      sw = pyb.Switch()       # create a switch object
+//      sw()                    # get state (True if pressed, False otherwise)
+//      sw.callback(f)          # register a callback to be called when the
+//                              #   switch is pressed down
+//      sw.callback(None)       # remove the callback
 //
 // Example:
 //
-// def switch_pressed():
-//     print("User Switch pressed")
-//
-// pyb.switch(switch_pressed)
+// pyb.Switch().callback(lambda: pyb.LED(1).toggle())
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
