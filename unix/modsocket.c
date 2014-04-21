@@ -33,7 +33,7 @@ STATIC const mp_obj_type_t microsocket_type;
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
-        { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error_val)); } }
+        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
