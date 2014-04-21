@@ -246,7 +246,7 @@ STATIC mp_obj_t pin_value(uint n_args, mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT((self->gpio->IDR >> self->port) & 1);
+        return MP_OBJ_NEW_SMALL_INT((self->gpio->IDR >> self->pin) & 1);
     } else {
         // set pin
         if (mp_obj_is_true(args[1])) {
