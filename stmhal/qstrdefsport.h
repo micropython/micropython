@@ -191,7 +191,7 @@ Q(CIRCULAR)
 // for Servo object
 Q(Servo)
 Q(pulse_width)
-Q(calibrate)
+Q(calibration)
 Q(angle)
 Q(speed)
 
