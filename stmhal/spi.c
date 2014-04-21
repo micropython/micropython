@@ -167,7 +167,7 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
         } else {
             print(env, "SPI(%u, SPI.SLAVE", spi_num);
         }
-        print(env, ", polarity=%u, phase=%u, size=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 1 : 2, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        print(env, ", polarity=%u, phase=%u, bits=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 1 : 2, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
         if (self->spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
             print(env, ", crc=0x%x", self->spi->Init.CRCPolynomial);
         }
@@ -181,7 +181,7 @@ STATIC const mp_arg_parse_t pyb_spi_init_accepted_args[] = {
     { MP_QSTR_polarity, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
     { MP_QSTR_phase,    MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
     { MP_QSTR_dir,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_DIRECTION_2LINES} },
-    { MP_QSTR_size,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
+    { MP_QSTR_bits,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
     { MP_QSTR_nss,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_NSS_SOFT} },
     { MP_QSTR_firstbit, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
     { MP_QSTR_ti,       MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_BOOL, {.u_bool = false} },

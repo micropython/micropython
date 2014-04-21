@@ -8,23 +8,26 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
+#include "bufhelper.h"
 #include "usart.h"
 
 struct _pyb_usart_obj_t {
     mp_obj_base_t base;
     pyb_usart_t usart_id;
     bool is_enabled;
-    UART_HandleTypeDef handle;
+    UART_HandleTypeDef uart;
 };
 
 pyb_usart_obj_t *pyb_usart_global_debug = NULL;
 
-bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
-    USART_TypeDef *USARTx=NULL;
+// assumes Init parameters have been set up correctly
+bool usart_init2(pyb_usart_obj_t *usart_obj) {
+    USART_TypeDef *USARTx = NULL;
 
-    uint32_t GPIO_Pin=0;
-    uint8_t  GPIO_AF_USARTx=0;
-    GPIO_TypeDef* GPIO_Port=NULL;
+    uint32_t GPIO_Pin = 0;
+    uint8_t  GPIO_AF_USARTx = 0;
+    GPIO_TypeDef* GPIO_Port = NULL;
 
     switch (usart_obj->usart_id) {
         // USART1 is on PA9/PA10, PB6/PB7
@@ -71,7 +74,7 @@ bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
             __USART3_CLK_ENABLE();
             break;
 
-        // USART4 is on PA0/PA1, PC10/PC11
+        // UART4 is on PA0/PA1, PC10/PC11
         case PYB_USART_4:
             USARTx = UART4;
             GPIO_AF_USARTx = GPIO_AF8_UART4;
@@ -97,8 +100,7 @@ bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
             return false;
     }
 
-    // Initialize USARTx
-
+    // init GPIO
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Pin = GPIO_Pin;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
@@ -107,28 +109,62 @@ bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
     GPIO_InitStructure.Alternate = GPIO_AF_USARTx;
     HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
 
-    UART_HandleTypeDef *uh = &usart_obj->handle;
-    memset(uh, 0, sizeof(*uh));
-    uh->Instance = USARTx;
-    uh->Init.BaudRate = baudrate;
-    uh->Init.WordLength = USART_WORDLENGTH_8B;
-    uh->Init.StopBits = USART_STOPBITS_1;
-    uh->Init.Parity = USART_PARITY_NONE;
-    uh->Init.Mode = USART_MODE_TX_RX;
-    uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    uh->Init.OverSampling = UART_OVERSAMPLING_16;
-    HAL_UART_Init(uh);
+    // init USARTx
+    usart_obj->uart.Instance = USARTx;
+    HAL_UART_Init(&usart_obj->uart);
+
+    usart_obj->is_enabled = true;
 
     return true;
 }
 
+bool usart_init(pyb_usart_obj_t *usart_obj, uint32_t baudrate) {
+    UART_HandleTypeDef *uh = &usart_obj->uart;
+    memset(uh, 0, sizeof(*uh));
+    uh->Init.BaudRate = baudrate;
+    uh->Init.WordLength = UART_WORDLENGTH_8B;
+    uh->Init.StopBits = UART_STOPBITS_1;
+    uh->Init.Parity = UART_PARITY_NONE;
+    uh->Init.Mode = UART_MODE_TX_RX;
+    uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    uh->Init.OverSampling = UART_OVERSAMPLING_16;
+    return usart_init2(usart_obj);
+}
+
+void usart_deinit(pyb_usart_obj_t *usart_obj) {
+    usart_obj->is_enabled = false;
+    UART_HandleTypeDef *uart = &usart_obj->uart;
+    HAL_UART_DeInit(uart);
+    if (uart->Instance == USART1) {
+        __USART1_FORCE_RESET();
+        __USART1_RELEASE_RESET();
+        __USART1_CLK_DISABLE();
+    } else if (uart->Instance == USART2) {
+        __USART2_FORCE_RESET();
+        __USART2_RELEASE_RESET();
+        __USART2_CLK_DISABLE();
+    } else if (uart->Instance == USART3) {
+        __USART3_FORCE_RESET();
+        __USART3_RELEASE_RESET();
+        __USART3_CLK_DISABLE();
+    } else if (uart->Instance == UART4) {
+        __UART4_FORCE_RESET();
+        __UART4_RELEASE_RESET();
+        __UART4_CLK_DISABLE();
+    } else if (uart->Instance == USART6) {
+        __USART6_FORCE_RESET();
+        __USART6_RELEASE_RESET();
+        __USART6_CLK_DISABLE();
+    }
+}
+
 bool usart_rx_any(pyb_usart_obj_t *usart_obj) {
-    return __HAL_UART_GET_FLAG(&usart_obj->handle, USART_FLAG_RXNE);
+    return __HAL_UART_GET_FLAG(&usart_obj->uart, UART_FLAG_RXNE);
 }
 
 int usart_rx_char(pyb_usart_obj_t *usart_obj) {
     uint8_t ch;
-    if (HAL_UART_Receive(&usart_obj->handle, &ch, 1, 0) != HAL_OK) {
+    if (HAL_UART_Receive(&usart_obj->uart, &ch, 1, 0) != HAL_OK) {
         ch = 0;
     }
     return ch;
@@ -136,19 +172,15 @@ int usart_rx_char(pyb_usart_obj_t *usart_obj) {
 
 void usart_tx_char(pyb_usart_obj_t *usart_obj, int c) {
     uint8_t ch = c;
-    HAL_UART_Transmit(&usart_obj->handle, &ch, 1, 100000);
+    HAL_UART_Transmit(&usart_obj->uart, &ch, 1, 100000);
 }
 
 void usart_tx_str(pyb_usart_obj_t *usart_obj, const char *str) {
-    for (; *str; str++) {
-        usart_tx_char(usart_obj, *str);
-    }
+    HAL_UART_Transmit(&usart_obj->uart, (uint8_t*)str, strlen(str), 100000);
 }
 
 void usart_tx_strn(pyb_usart_obj_t *usart_obj, const char *str, uint len) {
-    for (; len > 0; str++, len--) {
-        usart_tx_char(usart_obj, *str);
-    }
+    HAL_UART_Transmit(&usart_obj->uart, (uint8_t*)str, len, 100000);
 }
 
 void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len) {
@@ -163,16 +195,66 @@ void usart_tx_strn_cooked(pyb_usart_obj_t *usart_obj, const char *str, uint len)
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-STATIC void usart_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_usart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_usart_obj_t *self = self_in;
-    print(env, "<USART %lu>", self->usart_id);
+    if (!self->is_enabled) {
+        print(env, "USART(%lu)", self->usart_id);
+    } else {
+        print(env, "USART(%lu, baudrate=%u, bits=%u, stop=%u",
+            self->usart_id, self->uart.Init.BaudRate,
+            self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9,
+            self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2);
+        if (self->uart.Init.Parity == UART_PARITY_NONE) {
+            print(env, ", parity=None)");
+        } else {
+            print(env, ", parity=%u)", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
+        }
+    }
 }
 
-STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // check arguments
-    if (!(n_args == 2 && n_kw == 0)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "USART accepts 2 arguments"));
+STATIC const mp_arg_parse_t pyb_usart_init_accepted_args[] = {
+    { MP_QSTR_baudrate, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 9600} },
+    { MP_QSTR_bits,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
+    { MP_QSTR_stop,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
+    { MP_QSTR_parity,   MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
+};
+#define PYB_USART_INIT_NUM_ARGS (sizeof(pyb_usart_init_accepted_args) / sizeof(pyb_usart_init_accepted_args[0]))
+
+STATIC mp_obj_t pyb_usart_init_helper(pyb_usart_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_parse_val_t vals[PYB_USART_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, PYB_USART_INIT_NUM_ARGS, pyb_usart_init_accepted_args, vals);
+
+    // set the USART configuration values
+    memset(&self->uart, 0, sizeof(self->uart));
+    UART_InitTypeDef *init = &self->uart.Init;
+    init->BaudRate = vals[0].u_int;
+    init->WordLength = vals[1].u_int == 8 ? UART_WORDLENGTH_8B : UART_WORDLENGTH_9B;
+    switch (vals[2].u_int) {
+        case 1: init->StopBits = UART_STOPBITS_1; break;
+        default: init->StopBits = UART_STOPBITS_2; break;
     }
+    if (vals[3].u_obj == mp_const_none) {
+        init->Parity = UART_PARITY_NONE;
+    } else {
+        machine_int_t parity = mp_obj_get_int(vals[3].u_obj);
+        init->Parity = (parity & 1) ? UART_PARITY_ODD : UART_PARITY_EVEN;
+    }
+    init->Mode = UART_MODE_TX_RX;
+    init->HwFlowCtl = UART_HWCONTROL_NONE;
+    init->OverSampling = UART_OVERSAMPLING_16;
+
+    // init USART (if it fails, it's because the port doesn't exist)
+    if (!usart_init2(self)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %d does not exist", self->usart_id));
+    }
+
+    return mp_const_none;
+}
+
+STATIC mp_obj_t pyb_usart_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create object
     pyb_usart_obj_t *o = m_new_obj(pyb_usart_obj_t);
@@ -200,17 +282,29 @@ STATIC mp_obj_t usart_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
         o->usart_id = mp_obj_get_int(args[0]);
     }
 
-    // init USART (if it fails, it's because the port doesn't exist)
-    if (!usart_init(o, mp_obj_get_int(args[1]))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "USART port %d does not exist", o->usart_id));
+    if (n_args > 1 || n_kw > 0) {
+        // start the peripheral
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        pyb_usart_init_helper(o, n_args - 1, args + 1, &kw_args);
     }
-
-    o->is_enabled = true;
 
     return o;
 }
 
-STATIC mp_obj_t usart_obj_status(mp_obj_t self_in) {
+STATIC mp_obj_t pyb_usart_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    return pyb_usart_init_helper(args[0], n_args - 1, args + 1, kw_args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usart_init_obj, 1, pyb_usart_init);
+
+STATIC mp_obj_t pyb_usart_deinit(mp_obj_t self_in) {
+    pyb_usart_obj_t *self = self_in;
+    usart_deinit(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usart_deinit_obj, pyb_usart_deinit);
+
+STATIC mp_obj_t pyb_usart_any(mp_obj_t self_in) {
     pyb_usart_obj_t *self = self_in;
     if (usart_rx_any(self)) {
         return mp_const_true;
@@ -218,57 +312,91 @@ STATIC mp_obj_t usart_obj_status(mp_obj_t self_in) {
         return mp_const_false;
     }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usart_any_obj, pyb_usart_any);
 
-STATIC mp_obj_t usart_obj_rx_char(mp_obj_t self_in) {
-    mp_obj_t ret = mp_const_none;
-    pyb_usart_obj_t *self = self_in;
+STATIC const mp_arg_parse_t pyb_usart_send_accepted_args[] = {
+    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+};
+#define PYB_USART_SEND_NUM_ARGS (sizeof(pyb_usart_send_accepted_args) / sizeof(pyb_usart_send_accepted_args[0]))
 
-    if (self->is_enabled) {
-        ret =  mp_obj_new_int(usart_rx_char(self));
+STATIC mp_obj_t pyb_usart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    pyb_usart_obj_t *self = args[0];
+
+    // parse args
+    mp_arg_parse_val_t vals[PYB_USART_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USART_SEND_NUM_ARGS, pyb_usart_send_accepted_args, vals);
+
+    // get the buffer to send from
+    mp_buffer_info_t bufinfo;
+    uint8_t data[1];
+    pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
+
+    // send the data
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, bufinfo.buf, bufinfo.len, vals[1].u_int);
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status));
     }
-    return ret;
-}
 
-STATIC mp_obj_t usart_obj_tx_char(mp_obj_t self_in, mp_obj_t c) {
-    pyb_usart_obj_t *self = self_in;
-    uint len;
-    const char *str = mp_obj_str_get_data(c, &len);
-    if (len == 1 && self->is_enabled) {
-        usart_tx_char(self, str[0]);
-    }
     return mp_const_none;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usart_send_obj, 1, pyb_usart_send);
 
-STATIC mp_obj_t usart_obj_tx_str(mp_obj_t self_in, mp_obj_t s) {
-    pyb_usart_obj_t *self = self_in;
-    if (self->is_enabled) {
-        if (MP_OBJ_IS_STR(s)) {
-            uint len;
-            const char *data = mp_obj_str_get_data(s, &len);
-            usart_tx_strn(self, data, len);
-        }
+STATIC const mp_arg_parse_t pyb_usart_recv_accepted_args[] = {
+    { MP_QSTR_recv,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+};
+#define PYB_USART_RECV_NUM_ARGS (sizeof(pyb_usart_recv_accepted_args) / sizeof(pyb_usart_recv_accepted_args[0]))
+
+STATIC mp_obj_t pyb_usart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    pyb_usart_obj_t *self = args[0];
+
+    // parse args
+    mp_arg_parse_val_t vals[PYB_USART_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USART_RECV_NUM_ARGS, pyb_usart_recv_accepted_args, vals);
+
+    // get the buffer to receive into
+    mp_buffer_info_t bufinfo;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &bufinfo);
+
+    // receive the data
+    HAL_StatusTypeDef status = HAL_UART_Receive(&self->uart, bufinfo.buf, bufinfo.len, vals[1].u_int);
+
+    if (status != HAL_OK) {
+        // TODO really need a HardwareError object, or something
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Receive failed with code %d", status));
     }
-    return mp_const_none;
+
+    // return the received data
+    if (o_ret == MP_OBJ_NULL) {
+        return vals[0].u_obj;
+    } else {
+        return mp_obj_str_builder_end(o_ret);
+    }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usart_recv_obj, 1, pyb_usart_recv);
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_status_obj, usart_obj_status);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(usart_obj_rx_char_obj, usart_obj_rx_char);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_char_obj, usart_obj_tx_char);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(usart_obj_tx_str_obj, usart_obj_tx_str);
-
-STATIC const mp_map_elem_t usart_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&usart_obj_status_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_chr), (mp_obj_t)&usart_obj_rx_char_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send_chr), (mp_obj_t)&usart_obj_tx_char_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&usart_obj_tx_str_obj },
+STATIC const mp_map_elem_t pyb_usart_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_usart_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_usart_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usart_any_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usart_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usart_recv_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usart_locals_dict, usart_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pyb_usart_locals_dict, pyb_usart_locals_dict_table);
 
 const mp_obj_type_t pyb_usart_type = {
     { &mp_type_type },
     .name = MP_QSTR_USART,
-    .print = usart_obj_print,
-    .make_new = usart_obj_make_new,
-    .locals_dict = (mp_obj_t)&usart_locals_dict,
+    .print = pyb_usart_print,
+    .make_new = pyb_usart_make_new,
+    .locals_dict = (mp_obj_t)&pyb_usart_locals_dict,
 };
