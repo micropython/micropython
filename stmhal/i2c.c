@@ -14,6 +14,51 @@
 #include "bufhelper.h"
 #include "i2c.h"
 
+// Usage model:
+//
+// I2C objects are created attached to a specific bus.  They can be initialised
+// when created, or initialised later on:
+//
+//     from pyb import I2C
+//
+//     i2c = I2C(1)                         # create on bus 1
+//     i2c = I2C(1, I2C.MASTER)             # create and init as a master
+//     i2c.deinit()                         # turn off the peripheral
+//     i2c.init(I2C.MASTER, baudrate=20000) # init as a master
+//     i2c.init(I2C.SLAVE, addr=0x42)       # init as a slave with given address
+//
+// Printing the i2c object gives you information about its configuration.
+//
+// Basic methods for slave are send and recv:
+//
+//     i2c.send('abc')      # send 3 bytes
+//     i2c.send(0x42)       # send a single byte, given by the number
+//     data = i2c.recv(3)   # receive 3 bytes
+//
+// To receive inplace, first create a bytearray:
+//
+//     data = bytearray(3)  # create a buffer
+//     i2c.recv(data)       # receive 3 bytes, writing them into data
+//
+// You can specify a timeout (in ms):
+//
+//     i2c.send(b'123', timeout=2000)   # timout after 2 seconds
+//
+// A master must specify the recipient's address:
+//
+//     i2c.init(I2C.MASTER)
+//     i2c.send('123', 0x42)        # send 3 bytes to slave with address 0x42
+//     i2c.send(b'456', addr=0x42)  # keyword for address
+//
+// Master also has other methods:
+//
+//     i2c.is_ready(0x42)           # check if slave 0x42 is ready
+//     i2c.scan()                   # scan for slaves on the bus, returning
+//                                  #   a list of valid addresses
+//     i2c.mem_read(3, 0x42, 2)     # read 3 bytes from memory of slave 0x42,
+//                                  #   starting at address 2 in the slave
+//     i2c.mem_write('abc', 0x42, 2, timeout=1000)
+
 #define PYB_I2C_MASTER (0)
 #define PYB_I2C_SLAVE  (1)
 

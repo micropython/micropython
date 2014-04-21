@@ -12,6 +12,21 @@
 #include "bufhelper.h"
 #include "usart.h"
 
+// Usage model:
+//
+// See usage model of I2C in i2c.c.  USART is very similar.  Main difference is
+// parameters to init the USART bus:
+//
+//     from pyb import USART
+//     usart = USART(1, 9600)                        # init with given baudrate
+//     usart.init(9600, bits=8, stop=1, parity=None) # init with given parameters
+//
+// Bits can be 8 or 9, stop can be 1 or 2, parity can be None, 0 (even), 1 (odd).
+//
+// Extra method:
+//
+//     usart.any()              # returns True if any characters waiting
+
 struct _pyb_usart_obj_t {
     mp_obj_base_t base;
     pyb_usart_t usart_id;

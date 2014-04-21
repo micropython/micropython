@@ -14,6 +14,25 @@
 #include "bufhelper.h"
 #include "spi.h"
 
+// Usage model:
+//
+// See usage model of I2C in i2c.c.  SPI is very similar.  Main difference is
+// parameters to init the SPI bus:
+//
+//     from pyb import SPI
+//     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=1, crc=0x7)
+//
+// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+// 0 or 1, and is the level the idle clock line sits at.  Phase can be 1 or 2
+// for number of edges.  Crc can be None for no CRC, or a polynomial specifier.
+//
+// Additional method for SPI:
+//
+//     data = spi.send_recv(b'1234')        # send 4 bytes and receive 4 bytes
+//     buf = bytearray(4)
+//     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
+//     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
+
 #if MICROPY_HW_ENABLE_SPI1
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
@@ -384,6 +403,9 @@ STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *k
         } else {
             // recv argument given
             mp_get_buffer_raise(vals[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
+            if (bufinfo_recv.len != bufinfo_send.len) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "recv must be same length as send"));
+            }
             o_ret = MP_OBJ_NULL;
         }
     }
