@@ -166,11 +166,17 @@ Q(read_core_temp)
 Q(read_core_vbat)
 Q(read_core_vref)
 
-// for DAC object
+// for DAC class
 Q(DAC)
 Q(noise)
 Q(triangle)
-Q(dma)
+Q(write)
+Q(write_timed)
+Q(data)
+Q(freq)
+Q(mode)
+Q(NORMAL)
+Q(CIRCULAR)
 
 // for Servo object
 Q(Servo)
