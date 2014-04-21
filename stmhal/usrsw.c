@@ -12,6 +12,8 @@
 #include "genhdr/pins.h"
 #include "usrsw.h"
 
+#if MICROPY_HW_HAS_SWITCH
+
 // Usage Model:
 //
 //      sw = pyb.Switch()       # create a switch object
@@ -111,3 +113,5 @@ const mp_obj_type_t pyb_switch_type = {
     .call = pyb_switch_call,
     .locals_dict = (mp_obj_t)&pyb_switch_locals_dict,
 };
+
+#endif // MICROPY_HW_HAS_SWITCH
