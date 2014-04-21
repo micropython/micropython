@@ -167,6 +167,7 @@ STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
 STATIC const mp_map_elem_t pyb_accel_locals_dict_table[] = {
+    // TODO add init, deinit, and perhaps reset methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_x), (mp_obj_t)&pyb_accel_x_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_y), (mp_obj_t)&pyb_accel_y_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_z), (mp_obj_t)&pyb_accel_z_obj },
