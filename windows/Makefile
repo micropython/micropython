@@ -1,4 +1,5 @@
 include ../py/mkenv.mk
+-include mpconfigport.mk
 
 # define main target
 PROG = micropython.exe
@@ -14,14 +15,15 @@ INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 
 # compiler settings
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX
-LDFLAGS = -lm
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+LDFLAGS = $(LDFLAGS_MOD) -lm
 
 # Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -O0 -g
+CFLAGS += -g
+COPT = -O0
 else
-CFLAGS += -Os #-DNDEBUG
+COPT = -Os #-DNDEBUG
 endif
 
 # source files
@@ -30,11 +32,16 @@ SRC_C = \
 	unix/file.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-LIB = -lreadline
-LIB += -lws2_32
-LIB += -lmman
+
+ifeq ($(MICROPY_USE_READLINE),1)
+CFLAGS_MOD += -DMICROPY_USE_READLINE=1
+LDFLAGS_MOD += -lreadline
 # the following is needed for BSD
-#LIB += -ltermcap
+#LDFLAGS_MOD += -ltermcap
+endif
+
+LIB += -lws2_32
+#LIB += -lmman
 
 include ../py/mkrules.mk
 

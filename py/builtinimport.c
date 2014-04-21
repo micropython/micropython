@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#ifdef __MINGW32__
+// For alloca()
+#include <malloc.h>
+#endif
 
 #include "nlr.h"
 #include "misc.h"
