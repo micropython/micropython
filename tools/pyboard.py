@@ -89,8 +89,8 @@ class Pyboard:
         return self.exec(pyfile)
 
     def get_time(self):
-        t = str(self.exec('pyb.time()'), encoding='ascii').strip().split()[1].split(':')
-        return int(t[0]) * 3600 + int(t[1]) * 60 + int(t[2])
+        t = str(self.eval('pyb.RTC().datetime()'), encoding='ascii')[1:-1].split(', ')
+        return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
 def execfile(filename, device='/dev/ttyACM0'):
     pyb = Pyboard(device)
