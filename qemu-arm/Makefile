@@ -9,8 +9,12 @@ include ../py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
+INC =  -I.
+INC += -I$(PY_SRC)
+INC += -I$(BUILD)
+
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3
-CFLAGS = -I. -I$(PY_SRC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
 	 -flto -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
