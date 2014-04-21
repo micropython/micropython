@@ -20,8 +20,6 @@ Q(gc)
 Q(repl_info)
 Q(delay)
 Q(udelay)
-Q(switch)
-Q(SW)
 Q(servo)
 Q(pwm)
 Q(read)
@@ -78,6 +76,10 @@ Q(on)
 Q(off)
 Q(toggle)
 Q(intensity)
+
+// for Switch class
+Q(Switch)
+Q(callback)
 
 // for UART class
 Q(UART)

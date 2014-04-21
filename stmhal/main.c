@@ -205,7 +205,9 @@ int main(void) {
     pendsv_init();
     timer_tim3_init();
     led_init();
+#if MICROPY_HW_HAS_SWITCH
     switch_init0();
+#endif
 
     int first_soft_reset = true;
 
@@ -296,11 +298,6 @@ soft_reset:
 
     pin_init();
     extint_init();
-
-#if MICROPY_HW_HAS_SWITCH
-    // must come after extint_init
-    switch_init();
-#endif
 
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
