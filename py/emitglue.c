@@ -159,7 +159,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
 }
 
 mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args) {
-    DEBUG_OP_printf("make_closure_from_raw_code %p %u %p\n", rc, n_closed_over, argrs);
+    DEBUG_OP_printf("make_closure_from_raw_code %p %u %p\n", rc, n_closed_over, args);
     // make function object
     mp_obj_t ffun;
     if (n_closed_over & 0x100) {
