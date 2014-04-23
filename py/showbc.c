@@ -28,6 +28,8 @@
     ip += sizeof(machine_uint_t); \
 } while (0)
 
+void mp_byte_code_print2(const byte *ip, int len);
+
 void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
 
@@ -71,7 +73,11 @@ void mp_byte_code_print(const byte *ip, int len) {
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
+    mp_byte_code_print2(ip, len - 0);
+}
 
+void mp_byte_code_print2(const byte *ip, int len) {
+    const byte *ip_start = ip;
     machine_uint_t unum;
     qstr qstr;
     while (ip - ip_start < len) {
