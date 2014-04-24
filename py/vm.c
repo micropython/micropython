@@ -13,6 +13,12 @@
 #include "bc.h"
 #include "objgenerator.h"
 
+// With these macros you can tune the maximum number of state slots
+// that will be allocated on the stack.  Any function that needs more
+// than this will use the heap.
+#define VM_MAX_STATE_ON_STACK (10)
+#define VM_MAX_EXC_STATE_ON_STACK (4)
+
 #define DETECT_VM_STACK_OVERFLOW (0)
 #if 0
 #define TRACE(ip) mp_byte_code_print2(ip, 1);
@@ -85,20 +91,20 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     ip += 4;
 
     // allocate state for locals and stack
-    mp_obj_t temp_state[10];
+    mp_obj_t temp_state[VM_MAX_STATE_ON_STACK];
     mp_obj_t *state = &temp_state[0];
 #if DETECT_VM_STACK_OVERFLOW
     n_state += 1;
 #endif
-    if (n_state > 10) {
+    if (n_state > VM_MAX_STATE_ON_STACK) {
         state = m_new(mp_obj_t, n_state);
     }
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
-    mp_exc_stack_t exc_state[4];
+    mp_exc_stack_t exc_state[VM_MAX_EXC_STATE_ON_STACK];
     mp_exc_stack_t *exc_stack = &exc_state[0];
-    if (n_exc_stack > 4) {
+    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
         exc_stack = m_new(mp_exc_stack_t, n_exc_stack);
     }
     mp_exc_stack_t *exc_sp = &exc_stack[0] - 1;
@@ -145,12 +151,23 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     }
 #endif
 
+    // get possible exception object before we free the state
+    *ret = state[n_state - 1];
+
+    // free the state if it was allocated on the heap
+    if (n_state > VM_MAX_STATE_ON_STACK) {
+        m_free(state, n_state);
+    }
+    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
+        m_free(exc_stack, n_exc_stack);
+    }
+
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
-            *ret = *sp;
+            *ret = *sp; // return value is in *sp
             return MP_VM_RETURN_NORMAL;
         case MP_VM_RETURN_EXCEPTION:
-            *ret = state[n_state - 1];
+            // return value is in state[n_state - 1], already loaded into *ret
             return MP_VM_RETURN_EXCEPTION;
         case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
         default:
