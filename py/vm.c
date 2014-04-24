@@ -151,30 +151,38 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     }
 #endif
 
-    // get possible exception object before we free the state
-    *ret = state[n_state - 1];
+    mp_vm_return_kind_t ret_kind;
+    switch (vm_return_kind) {
+        case MP_VM_RETURN_NORMAL:
+            // return value is in *sp
+            *ret = *sp;
+            ret_kind = MP_VM_RETURN_NORMAL;
+            break;
+
+        case MP_VM_RETURN_EXCEPTION:
+            // return value is in state[n_state - 1]
+            *ret = state[n_state - 1];
+            ret_kind = MP_VM_RETURN_EXCEPTION;
+            break;
+
+        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
+        default:
+            assert(0);
+            *ret = mp_const_none;
+            ret_kind = MP_VM_RETURN_NORMAL;
+    }
 
     // free the state if it was allocated on the heap
     if (n_state > VM_MAX_STATE_ON_STACK) {
         m_free(state, n_state);
     }
+
+    // free the exception state if it was allocated on the heap
     if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
         m_free(exc_stack, n_exc_stack);
     }
 
-    switch (vm_return_kind) {
-        case MP_VM_RETURN_NORMAL:
-            *ret = *sp; // return value is in *sp
-            return MP_VM_RETURN_NORMAL;
-        case MP_VM_RETURN_EXCEPTION:
-            // return value is in state[n_state - 1], already loaded into *ret
-            return MP_VM_RETURN_EXCEPTION;
-        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
-        default:
-            assert(0);
-            *ret = mp_const_none;
-            return MP_VM_RETURN_NORMAL;
-    }
+    return ret_kind;
 }
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
