@@ -270,12 +270,12 @@ DEF_RULE(dictorsetmaker_list2, nc, list_with_end, rule(dictorsetmaker_item), tok
 // classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
 
 DEF_RULE(classdef, c(classdef), and(5), tok(KW_CLASS), tok(NAME), opt_rule(classdef_2), tok(DEL_COLON), rule(suite))
-DEF_RULE(classdef_2, c(classdef_2), and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
+DEF_RULE(classdef_2, nc, and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
 
 // arglist: (argument ',')* (argument [','] | '*' test (',' argument)* [',' '**' test] | '**' test)
 
 // TODO arglist lets through more than is allowed, compiler needs to do further verification
-DEF_RULE(arglist, c(arglist), list_with_end, rule(arglist_2), tok(DEL_COMMA))
+DEF_RULE(arglist, c(generic_all_nodes), list_with_end, rule(arglist_2), tok(DEL_COMMA))
 DEF_RULE(arglist_2, nc, or(3), rule(arglist_star), rule(arglist_dbl_star), rule(argument))
 DEF_RULE(arglist_star, c(arglist_star), and(2), tok(OP_STAR), rule(test))
 DEF_RULE(arglist_dbl_star, c(arglist_dbl_star), and(2), tok(OP_DBL_STAR), rule(test))

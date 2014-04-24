@@ -306,9 +306,6 @@ STATIC int list_len(mp_parse_node_t pn, int pn_kind) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) != pn_kind) {
-            if(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_classdef_2 ) {
-                return 0;
-            } 
             return 1;
         } else {
             return MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -2678,66 +2675,6 @@ void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     qstr cname = compile_classdef_helper(comp, pns, comp->scope_cur->emit_options);
     // store class object into class name
     EMIT_ARG(store_id, cname);
-}
-
-void compile_classdef_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    //do nothing
-}
-
-void compile_arglist(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-
-    int first_keyword_pos = -1;
-    int star_arg_pos = -1;
-    int dbl_star_arg_pos = -1;
-
-    for (int i = 0; i < num_nodes; i++) {
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
-            if (first_keyword_pos != -1) {
-                if (i > first_keyword_pos) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns, "non-keyword arg after keyword arg");
-                    return;
-                }
-            }
-            if (star_arg_pos != -1) {
-                if (i > star_arg_pos) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns, "only named arguments may follow *expression");
-                    return;
-                }
-            }
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_argument)) {
-            if (first_keyword_pos == -1) {
-                first_keyword_pos = i;
-            }
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_arglist_star)) {
-            if (star_arg_pos == -1) {
-                star_arg_pos = i;
-            } else {
-                compile_syntax_error(comp, (mp_parse_node_t)pns, "can't have multiple *expression");
-                return;    
-            }
-
-            continue;    // skip compile here, wait for last arg
-
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_arglist_dbl_star)) {
-            // dbl_star must be the last one
-            if (i < num_nodes - 1) {
-                compile_syntax_error(comp, (mp_parse_node_t)pns, "**expression must be the last one");
-                return;
-            }
-            dbl_star_arg_pos = i;
-
-            continue;  // skip compile here, wait for last arg
-        } 
-        compile_node(comp, pns->nodes[i]);       
-    }
-
-    if (star_arg_pos != -1) {
-        compile_node(comp, pns->nodes[star_arg_pos]);
-    }
-    if (dbl_star_arg_pos != -1) {
-        compile_node(comp, pns->nodes[dbl_star_arg_pos]);
-    }
 }
 
 void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
