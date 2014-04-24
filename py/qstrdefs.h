@@ -36,7 +36,13 @@ Q(micropython)
 Q(byte_code)
 Q(native)
 Q(viper)
+
+#if MICROPY_EMIT_INLINE_THUMB
 Q(asm_thumb)
+Q(label)
+Q(align)
+Q(data)
+#endif
 
 Q(object)
 Q(Ellipsis)

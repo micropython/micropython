@@ -197,7 +197,7 @@ void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
 
 STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // get led number
     machine_int_t led_id = mp_obj_get_int(args[0]) - 1;

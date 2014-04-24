@@ -14,6 +14,11 @@
 #include "objgenerator.h"
 
 #define DETECT_VM_STACK_OVERFLOW (0)
+#if 0
+#define TRACE(ip) mp_byte_code_print2(ip, 1);
+#else
+#define TRACE(ip)
+#endif
 
 // Value stack grows up (this makes it incompatible with native C stack, but
 // makes sure that arguments to functions are in natural order arg1..argN
@@ -168,6 +173,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
 #if MICROPY_USE_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
+        TRACE(ip); \
         save_ip = ip; \
         op = *ip++; \
         goto *entry_table[op]; \
@@ -223,6 +229,7 @@ dispatch_loop:
 #if MICROPY_USE_COMPUTED_GOTO
                 DISPATCH();
 #else
+                TRACE(ip);
                 save_ip = ip;
                 op = *ip++;
 
@@ -480,13 +487,6 @@ dispatch_loop:
                         ip += unum;
                     }
                     DISPATCH();
-
-                    /* we are trying to get away without using this opcode
-                ENTRY(MP_BC_SETUP_LOOP):
-                    DECODE_UINT;
-                    // push_block(MP_BC_SETUP_LOOP, ip + unum, sp)
-                    DISPATCH();
-                    */
 
                 ENTRY(MP_BC_SETUP_WITH):
                     obj1 = TOP();
@@ -759,19 +759,23 @@ unwind_jump:
                     SET_TOP(mp_make_function_from_raw_code((mp_raw_code_t*)unum, TOP(), obj1));
                     DISPATCH();
 
-                ENTRY(MP_BC_MAKE_CLOSURE):
+                ENTRY(MP_BC_MAKE_CLOSURE): {
                     DECODE_PTR;
-                    // Stack layout: closure_tuple <- TOS
-                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, TOP(), MP_OBJ_NULL, MP_OBJ_NULL));
+                    machine_uint_t n_closed_over = *ip++;
+                    // Stack layout: closed_overs <- TOS
+                    sp -= n_closed_over - 1;
+                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, n_closed_over, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_MAKE_CLOSURE_DEFARGS):
+                ENTRY(MP_BC_MAKE_CLOSURE_DEFARGS): {
                     DECODE_PTR;
-                    // Stack layout: def_tuple def_dict closure_tuple <- TOS
-                    obj1 = POP();
-                    obj2 = POP();
-                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, obj1, TOP(), obj2));
+                    machine_uint_t n_closed_over = *ip++;
+                    // Stack layout: def_tuple def_dict closed_overs <- TOS
+                    sp -= 2 + n_closed_over - 1;
+                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, 0x100 | n_closed_over, sp));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_CALL_FUNCTION):
                     DECODE_UINT;

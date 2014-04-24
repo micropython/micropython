@@ -68,7 +68,7 @@ static void pin_map_obj_print(void (*print)(void *env, const char *fmt, ...), vo
 
 static mp_obj_t pin_map_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     pin_map_obj_t *self = self_in;
-    mp_check_nargs(n_args, 1, 2, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     if (n_args > 1) {
         if (!self->map_dict) {

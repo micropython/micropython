@@ -355,12 +355,55 @@ void RTC_WKUP_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
 }
 
+void TIM1_BRK_TIM9_IRQHandler(void) {
+    timer_irq_handler(9);
+}
+
+void TIM1_UP_TIM10_IRQHandler(void) {
+    timer_irq_handler(1);
+    timer_irq_handler(10);
+}
+
+void TIM1_TRG_COM_TIM11_IRQHandler(void) {
+    timer_irq_handler(11);
+}
+
+void TIM2_IRQHandler(void) {
+    timer_irq_handler(2);
+}
+
 void TIM3_IRQHandler(void) {
     HAL_TIM_IRQHandler(&TIM3_Handle);
 }
 
+void TIM4_IRQHandler(void) {
+    timer_irq_handler(4);
+}
+
 void TIM5_IRQHandler(void) {
+    timer_irq_handler(5);
     HAL_TIM_IRQHandler(&TIM5_Handle);
+}
+
+void TIM6_DAC_IRQHandler(void) {
+    timer_irq_handler(6);
+}
+
+void TIM7_IRQHandler(void) {
+    timer_irq_handler(7);
+}
+
+void TIM8_BRK_TIM12_IRQHandler(void) {
+    timer_irq_handler(12);
+}
+
+void TIM8_UP_TIM13_IRQHandler(void) {
+    timer_irq_handler(8);
+    timer_irq_handler(13);
+}
+
+void TIM8_TRG_COM_TIM14_IRQHandler(void) {
+    timer_irq_handler(14);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

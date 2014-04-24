@@ -51,7 +51,6 @@
 #define MP_BC_POP_JUMP_IF_FALSE  (0x47) // rel byte code offset, 16-bit signed, in excess
 #define MP_BC_JUMP_IF_TRUE_OR_POP    (0x48) // rel byte code offset, 16-bit signed, in excess
 #define MP_BC_JUMP_IF_FALSE_OR_POP   (0x49) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_SETUP_LOOP         (0x4a) // rel byte code offset, 16-bit unsigned
 #define MP_BC_SETUP_WITH         (0x4d) // rel byte code offset, 16-bit unsigned
 #define MP_BC_WITH_CLEANUP       (0x4e)
 #define MP_BC_SETUP_EXCEPT       (0x4f) // rel byte code offset, 16-bit unsigned

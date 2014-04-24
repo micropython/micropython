@@ -28,6 +28,8 @@
     ip += sizeof(machine_uint_t); \
 } while (0)
 
+void mp_byte_code_print2(const byte *ip, int len);
+
 void mp_byte_code_print(const byte *ip, int len) {
     const byte *ip_start = ip;
 
@@ -71,7 +73,11 @@ void mp_byte_code_print(const byte *ip, int len) {
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
+    mp_byte_code_print2(ip, len - 0);
+}
 
+void mp_byte_code_print2(const byte *ip, int len) {
+    const byte *ip_start = ip;
     machine_uint_t unum;
     qstr qstr;
     while (ip - ip_start < len) {
@@ -287,11 +293,6 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("JUMP_IF_FALSE_OR_POP " UINT_FMT, ip + unum - ip_start);
                 break;
 
-            case MP_BC_SETUP_LOOP:
-                DECODE_ULABEL; // loop labels are always forward
-                printf("SETUP_LOOP " UINT_FMT, ip + unum - ip_start);
-                break;
-
             case MP_BC_SETUP_WITH:
                 DECODE_ULABEL; // loop-like labels are always forward
                 printf("SETUP_WITH " UINT_FMT, ip + unum - ip_start);
@@ -423,15 +424,19 @@ void mp_byte_code_print(const byte *ip, int len) {
                 printf("MAKE_FUNCTION_DEFARGS " UINT_FMT, unum);
                 break;
 
-            case MP_BC_MAKE_CLOSURE:
+            case MP_BC_MAKE_CLOSURE: {
                 DECODE_PTR;
-                printf("MAKE_CLOSURE " UINT_FMT, unum);
+                machine_uint_t n_closed_over = *ip++;
+                printf("MAKE_CLOSURE " UINT_FMT " " UINT_FMT, unum, n_closed_over);
                 break;
+            }
 
-            case MP_BC_MAKE_CLOSURE_DEFARGS:
+            case MP_BC_MAKE_CLOSURE_DEFARGS: {
                 DECODE_PTR;
-                printf("MAKE_CLOSURE_DEFARGS " UINT_FMT, unum);
+                machine_uint_t n_closed_over = *ip++;
+                printf("MAKE_CLOSURE_DEFARGS " UINT_FMT " " UINT_FMT, unum, n_closed_over);
                 break;
+            }
 
             case MP_BC_CALL_FUNCTION:
                 DECODE_UINT;

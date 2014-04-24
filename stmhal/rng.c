@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "stm32f4xx_hal.h"
 
 #include "misc.h"
@@ -6,20 +8,35 @@
 #include "obj.h"
 #include "rng.h"
 
-STATIC RNG_HandleTypeDef RngHandle;
+#if MICROPY_HW_ENABLE_RNG
+
+STATIC RNG_HandleTypeDef RNGHandle = {.Instance = NULL};
+
+void rng_init0(void) {
+    // reset the RNG handle
+    memset(&RNGHandle, 0, sizeof(RNG_HandleTypeDef));
+    RNGHandle.Instance = RNG;
+}
 
 void rng_init(void) {
     __RNG_CLK_ENABLE();
-    RngHandle.Instance = RNG;
-    HAL_RNG_Init(&RngHandle);
+    HAL_RNG_Init(&RNGHandle);
 }
 
 uint32_t rng_get(void) {
-    return HAL_RNG_GetRandomNumber(&RngHandle);
+    if (RNGHandle.State == HAL_RNG_STATE_RESET) {
+        rng_init();
+    }
+    return HAL_RNG_GetRandomNumber(&RNGHandle);
 }
 
 STATIC mp_obj_t pyb_rng_get(void) {
-    return mp_obj_new_int(HAL_RNG_GetRandomNumber(&RngHandle) >> 2);
+    if (RNGHandle.State == HAL_RNG_STATE_RESET) {
+        rng_init();
+    }
+    return mp_obj_new_int(HAL_RNG_GetRandomNumber(&RNGHandle) >> 2);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
+
+#endif // MICROPY_HW_ENABLE_RNG

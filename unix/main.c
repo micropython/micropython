@@ -250,7 +250,9 @@ int usage(char **argv) {
 
 mp_obj_t mem_info(void) {
     printf("mem: total=%d, current=%d, peak=%d\n", m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
+#if MICROPY_ENABLE_GC
     gc_dump_info();
+#endif
     return mp_const_none;
 }
 
@@ -392,7 +394,11 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
+#ifdef __MINGW32__
+            char *basedir = _fullpath(NULL, argv[a], _MAX_PATH);
+#else
             char *basedir = realpath(argv[a], NULL);
+#endif
             if (basedir == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
                 perror("");

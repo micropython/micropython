@@ -351,13 +351,14 @@ mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
+mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args, const byte *code);
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
-mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple);
+mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(int n_args);

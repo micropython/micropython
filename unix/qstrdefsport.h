@@ -38,6 +38,7 @@ Q(listen)
 Q(accept)
 Q(recv)
 Q(setsockopt)
+Q(setblocking)
 
 Q(AF_UNIX)
 Q(AF_INET)

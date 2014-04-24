@@ -14,11 +14,11 @@
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
-    mp_obj_tuple_t args;
+    mp_obj_tuple_t *args;
 } mp_obj_exception_t;
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
-const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, {{&mp_type_tuple}, 0}};
+const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, mp_const_empty_tuple};
 
 // Local non-heap memory for allocating an exception when we run out of RAM
 STATIC mp_obj_exception_t mp_emergency_exception_obj;
@@ -26,7 +26,7 @@ STATIC mp_obj_exception_t mp_emergency_exception_obj;
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, {{&mp_type_tuple}, 0}};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, mp_const_empty_tuple};
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
@@ -36,15 +36,15 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
         print(env, "%s: ", qstr_str(o->base.type->name));
     }
     if (kind == PRINT_STR || kind == PRINT_EXC) {
-        if (o->args.len == 0) {
+        if (o->args == NULL || o->args->len == 0) {
             print(env, "");
             return;
-        } else if (o->args.len == 1) {
-            mp_obj_print_helper(print, env, o->args.items[0], PRINT_STR);
+        } else if (o->args->len == 1) {
+            mp_obj_print_helper(print, env, o->args->items[0], PRINT_STR);
             return;
         }
     }
-    tuple_print(print, env, &o->args, kind);
+    tuple_print(print, env, o->args, kind);
 }
 
 STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -54,35 +54,35 @@ STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
     }
 
-    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, n_args);
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 0);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         o = &mp_emergency_exception_obj;
         // We can't store any args.
         n_args = 0;
+        o->args = mp_const_empty_tuple;
+    } else {
+        o->args = mp_obj_new_tuple(n_args, args);
     }
     o->base.type = type;
     o->traceback = MP_OBJ_NULL;
-    o->args.base.type = &mp_type_tuple;
-    o->args.len = n_args;
-    memcpy(o->args.items, args, n_args * sizeof(mp_obj_t));
     return o;
 }
 
 // Get exception "value" - that is, first argument, or None
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     mp_obj_exception_t *self = self_in;
-    if (self->args.len == 0) {
+    if (self->args->len == 0) {
         return mp_const_none;
     } else {
-        return self->args.items[0];
+        return self->args->items[0];
     }
 }
 
 STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = self_in;
     if (attr == MP_QSTR_args) {
-        dest[0] = &self->args;
+        dest[0] = self->args;
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
         dest[0] = mp_obj_exception_get_value(self);
     }
@@ -191,6 +191,11 @@ mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     return mp_obj_new_exception_args(exc_type, 0, NULL);
 }
 
+// "Optimized" version for common(?) case of having 1 exception arg
+mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    return mp_obj_new_exception_args(exc_type, 1, &arg);
+}
+
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
     return exc_type->make_new((mp_obj_t)exc_type, n_args, 0, args);
@@ -205,20 +210,18 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
     // make exception object
-    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 1);
+    mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 0);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         // Unfortunately, we won't be able to format the string...
         o = &mp_emergency_exception_obj;
         o->base.type = exc_type;
         o->traceback = MP_OBJ_NULL;
-        o->args.base.type = &mp_type_tuple;
-        o->args.len = 0;
+        o->args = mp_const_empty_tuple;
     } else {
         o->base.type = exc_type;
         o->traceback = MP_OBJ_NULL;
-        o->args.base.type = &mp_type_tuple;
-        o->args.len = 1;
+        o->args = mp_obj_new_tuple(1, NULL);
 
         if (fmt == NULL) {
             // no message
@@ -231,7 +234,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             va_start(ap, fmt);
             vstr_vprintf(vstr, fmt, ap);
             va_end(ap);
-            o->args.items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+            o->args->items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
             vstr_free(vstr);
         }
     }

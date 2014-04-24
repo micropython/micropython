@@ -55,6 +55,9 @@ void asm_thumb_exit(asm_thumb_t *as);
 
 void asm_thumb_label_assign(asm_thumb_t *as, uint label);
 
+void asm_thumb_align(asm_thumb_t* as, uint align);
+void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val);
+
 // argument order follows ARM, in general dest is first
 // note there is a difference between movw and mov.w, and many others!
 

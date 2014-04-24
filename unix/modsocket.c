@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -32,7 +33,7 @@ STATIC const mp_obj_type_t microsocket_type;
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
-        { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error_val)); } }
+        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)error_val))); } }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
@@ -179,6 +180,22 @@ STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
 
+STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    mp_obj_socket_t *self = self_in;
+    int val = mp_obj_is_true(flag_in);
+    int flags = fcntl(self->fd, F_GETFL, 0);
+    RAISE_ERRNO(flags, errno);
+    if (val) {
+        flags &= ~O_NONBLOCK;
+    } else {
+        flags |= O_NONBLOCK;
+    }
+    flags = fcntl(self->fd, F_SETFL, flags);
+    RAISE_ERRNO(flags, errno);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
+
 STATIC mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -216,6 +233,7 @@ STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
 #if MICROPY_SOCKET_EXTRA
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&mp_stream_read_obj },
@@ -251,7 +269,7 @@ STATIC mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct in_addr addr;
     if (!inet_aton(s, &addr)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Invalid IP address"));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
 
     return mp_obj_new_int(addr.s_addr);
@@ -264,7 +282,8 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     const char *s = mp_obj_str_get_str(arg);
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        // CPython: socket.herror
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)h_errno)));
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
@@ -296,6 +315,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr);
 
     if (res != 0) {
+        // CPython: socket.gaierror
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
     }
     assert(addr);

@@ -695,9 +695,9 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     }
 }
 
-STATIC void emit_native_load_const_verbatim_str(emit_t *emit, const char *str) {
-    // not supported/needed for viper
-    assert(0);
+STATIC void emit_native_load_null(emit_t *emit) {
+    emit_native_pre(emit);
+    emit_post_push_imm(emit, VTYPE_PYOBJ, 0);
 }
 
 STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
@@ -732,11 +732,6 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
 STATIC void emit_native_load_deref(emit_t *emit, qstr qstr, int local_num) {
     // not implemented
     // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
-    assert(0);
-}
-
-STATIC void emit_native_load_closure(emit_t *emit, qstr qstr, int local_num) {
-    // not implemented
     assert(0);
 }
 
@@ -985,11 +980,6 @@ STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
     assert(0);
 }
 
-STATIC void emit_native_setup_loop(emit_t *emit, uint label) {
-    emit_native_pre(emit);
-    emit_post(emit);
-}
-
 STATIC void emit_native_break_loop(emit_t *emit, uint label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
@@ -1209,7 +1199,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults) {
     assert(0);
 }
 
@@ -1334,10 +1324,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_dec,
     emit_native_load_const_id,
     emit_native_load_const_str,
-    emit_native_load_const_verbatim_str,
+    emit_native_load_null,
     emit_native_load_fast,
     emit_native_load_deref,
-    emit_native_load_closure,
     emit_native_load_name,
     emit_native_load_global,
     emit_native_load_attr,
@@ -1366,7 +1355,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_pop_jump_if_false,
     emit_native_jump_if_true_or_pop,
     emit_native_jump_if_false_or_pop,
-    emit_native_setup_loop,
     emit_native_break_loop,
     emit_native_continue_loop,
     emit_native_setup_with,

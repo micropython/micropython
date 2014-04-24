@@ -158,7 +158,7 @@ STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void
 
 STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // get servo number
     machine_int_t servo_id = mp_obj_get_int(args[0]) - 1;
@@ -193,7 +193,7 @@ STATIC mp_obj_t pyb_servo_pulse_width(uint n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_servo_pulse_width);
 
-STATIC mp_obj_t pyb_servo_calibrate(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_calibration(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get calibration values
@@ -219,10 +219,10 @@ STATIC mp_obj_t pyb_servo_calibrate(uint n_args, const mp_obj_t *args) {
     }
 
     // bad number of arguments
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "calibrate expecting 1, 4 or 6 arguments, got %d", n_args));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "calibration expecting 1, 4 or 6 arguments, got %d", n_args));
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibrate_obj, 1, 6, pyb_servo_calibrate);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
 
 STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
@@ -278,7 +278,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_speed_obj, 1, 3, pyb_servo_
 
 STATIC const mp_map_elem_t pyb_servo_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_servo_pulse_width_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_calibrate), (mp_obj_t)&pyb_servo_calibrate_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_calibration), (mp_obj_t)&pyb_servo_calibration_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_angle), (mp_obj_t)&pyb_servo_angle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_speed), (mp_obj_t)&pyb_servo_speed_obj },
 };

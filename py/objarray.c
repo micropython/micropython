@@ -75,7 +75,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 }
 
 STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 1, 2, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
     uint l;
@@ -91,7 +91,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 }
 
 STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 0, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
@@ -136,17 +136,38 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
     if (value == MP_OBJ_NULL) {
         // delete item
         // TODO implement
+        // TODO: confirmed that both bytearray and array.array support
+        // slice deletion
         return MP_OBJ_NOT_SUPPORTED;
     } else {
         mp_obj_array_t *o = self_in;
-        uint index = mp_get_index(o->base.type, o->len, index_in, false);
-        if (value == MP_OBJ_SENTINEL) {
-            // load
-            return mp_binary_get_val_array(o->typecode, o->items, index);
+        if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+            if (value != MP_OBJ_SENTINEL) {
+                // Only getting a slice is suported so far, not assignment
+                // TODO: confirmed that both bytearray and array.array support
+                // slice assignment (incl. of different size)
+                return MP_OBJ_NOT_SUPPORTED;
+            }
+            machine_uint_t start, stop;
+            if (!m_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
+                assert(0);
+            }
+            mp_obj_array_t *res = array_new(o->typecode, stop - start);
+            int sz = mp_binary_get_size('@', o->typecode, NULL);
+            assert(sz > 0);
+            byte *p = o->items;
+            memcpy(res->items, p + start * sz, (stop - start) * sz);
+            return res;
         } else {
-            // store
-            mp_binary_set_val_array(o->typecode, o->items, index, value);
-            return mp_const_none;
+            uint index = mp_get_index(o->base.type, o->len, index_in, false);
+            if (value == MP_OBJ_SENTINEL) {
+                // load
+                return mp_binary_get_val_array(o->typecode, o->items, index);
+            } else {
+                // store
+                mp_binary_set_val_array(o->typecode, o->items, index, value);
+                return mp_const_none;
+            }
         }
     }
 }

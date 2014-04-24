@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -105,7 +106,7 @@ STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
     int fd = open(fname, mode, 0644);
     if (fd == -1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", errno));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)errno)));
     }
     return fdfile_new(fd);
 }

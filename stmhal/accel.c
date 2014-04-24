@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
+#include "stm32f4xx_hal.h"
 
 #include "nlr.h"
 #include "misc.h"
@@ -11,6 +11,8 @@
 #include "runtime.h"
 #include "i2c.h"
 #include "accel.h"
+
+#if MICROPY_HW_HAS_MMA7660
 
 #define MMA_ADDR (0x98)
 #define MMA_REG_X (0)
@@ -33,8 +35,16 @@ void accel_init(void) {
 }
 
 STATIC void accel_start(void) {
-    // start the I2C bus
-    i2c_start(&I2cHandle_X);
+    // start the I2C bus in master mode
+    I2CHandle1.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
+    I2CHandle1.Init.ClockSpeed      = 400000;
+    I2CHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+    I2CHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
+    I2CHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLED;
+    I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
+    I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
+    i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 20ms, turn on AVDD, wait 20ms again
     GPIOB->BSRRH = GPIO_PIN_5; // turn off
@@ -46,7 +56,7 @@ STATIC void accel_start(void) {
 
     //printf("IsDeviceReady\n");
     for (int i = 0; i < 10; i++) {
-        status = HAL_I2C_IsDeviceReady(&I2cHandle_X, MMA_ADDR, 10, 200);
+        status = HAL_I2C_IsDeviceReady(&I2CHandle1, MMA_ADDR, 10, 200);
         //printf("  got %d\n", status);
         if (status == HAL_OK) {
             break;
@@ -56,7 +66,7 @@ STATIC void accel_start(void) {
     //printf("MemWrite\n");
     uint8_t data[1];
     data[0] = 1; // active mode
-    status = HAL_I2C_Mem_Write(&I2cHandle_X, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     //printf("  got %d\n", status);
 }
 
@@ -75,7 +85,7 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 
 STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 0, 0, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // init accel object
     pyb_accel_obj.base.type = &pyb_accel_type;
@@ -86,7 +96,7 @@ STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 
 STATIC mp_obj_t read_axis(int axis) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
 }
 
@@ -110,7 +120,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
 
@@ -122,7 +132,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
     uint8_t data[NUM_AXIS];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
 
     mp_obj_t tuple[NUM_AXIS];
     for (int i = 0; i < NUM_AXIS; i++) {
@@ -141,7 +151,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
 
@@ -150,13 +160,14 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     uint8_t data[1];
     data[0] = mp_obj_get_int(val);
-    HAL_I2C_Mem_Write(&I2cHandle_X, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
 STATIC const mp_map_elem_t pyb_accel_locals_dict_table[] = {
+    // TODO add init, deinit, and perhaps reset methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_x), (mp_obj_t)&pyb_accel_x_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_y), (mp_obj_t)&pyb_accel_y_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_z), (mp_obj_t)&pyb_accel_z_obj },
@@ -174,3 +185,5 @@ const mp_obj_type_t pyb_accel_type = {
     .make_new = pyb_accel_make_new,
     .locals_dict = (mp_obj_t)&pyb_accel_locals_dict,
 };
+
+#endif // MICROPY_HW_HAS_MMA7660

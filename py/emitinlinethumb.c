@@ -104,6 +104,14 @@ STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, uint label_num, qst
     asm_thumb_label_assign(emit->as, label_num);
 }
 
+STATIC void emit_inline_thumb_align(emit_inline_asm_t *emit, uint align) {
+    asm_thumb_align(emit->as, align);
+}
+
+STATIC void emit_inline_thumb_data(emit_inline_asm_t *emit, uint bytesize, uint val) {
+    asm_thumb_data(emit->as, bytesize, val);
+}
+
 typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
 STATIC const reg_name_t reg_name_table[] = {
     {0, "r0\0"},
@@ -418,6 +426,8 @@ const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
     emit_inline_thumb_end_pass,
     emit_inline_thumb_count_params,
     emit_inline_thumb_label,
+    emit_inline_thumb_align,
+    emit_inline_thumb_data,
     emit_inline_thumb_op,
 };
 

@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#ifdef __MINGW32__
+// For alloca()
+#include <malloc.h>
+#endif
 
 #include "nlr.h"
 #include "misc.h"
@@ -171,7 +175,7 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
         // TODO handle compile error correctly
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        return;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "Syntax error in imported module"));
     }
 
     mp_obj_t saved_cur_path = get_current_path();

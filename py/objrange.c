@@ -57,7 +57,7 @@ typedef struct _mp_obj_range_t {
 } mp_obj_range_t;
 
 STATIC mp_obj_t range_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 1, 3, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
     o->base.type = &mp_type_range;

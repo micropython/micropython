@@ -161,7 +161,7 @@ STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args);
 
 // Pin constructor
 STATIC mp_obj_t pin_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 1, 3, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     // Run an argument through the mapper and return the result.
     const pin_obj_t *pin = pin_find(args[0]);
@@ -246,7 +246,7 @@ STATIC mp_obj_t pin_value(uint n_args, mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT((self->gpio->IDR >> self->port) & 1);
+        return MP_OBJ_NEW_SMALL_INT((self->gpio->IDR >> self->pin) & 1);
     } else {
         // set pin
         if (mp_obj_is_true(args[1])) {

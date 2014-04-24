@@ -22,7 +22,7 @@
 
 void extint_init(void);
 
-uint extint_register(mp_obj_t pin_obj, mp_obj_t mode_obj, mp_obj_t trigger_obj, mp_obj_t callback_obj, bool override_callback_obj, void *param);
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj, void *param);
 
 void extint_enable(uint line);
 void extint_disable(uint line);

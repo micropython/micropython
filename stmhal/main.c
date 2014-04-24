@@ -18,7 +18,9 @@
 #include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
-#include "usart.h"
+#include "i2c.h"
+#include "spi.h"
+#include "uart.h"
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
@@ -31,7 +33,6 @@
 #include "ff.h"
 #include "lcd.h"
 #include "rng.h"
-#include "i2c.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
@@ -77,7 +78,8 @@ void __fatal_error(const char *msg) {
         led_toggle(((i++) & 3) + 1);
         for (volatile uint delay = 0; delay < 10000000; delay++) {
         }
-        if (i >= 8) {
+        if (i >= 16) {
+            // to conserve power
             __WFI();
         }
     }
@@ -203,7 +205,9 @@ int main(void) {
     pendsv_init();
     timer_tim3_init();
     led_init();
+#if MICROPY_HW_HAS_SWITCH
     switch_init0();
+#endif
 
     int first_soft_reset = true;
 
@@ -266,20 +270,20 @@ soft_reset:
     // GC init
     gc_init(&_heap_start, &_heap_end);
 
-    // Change #if 0 to #if 1 if you want REPL on USART_6 (or another usart)
+    // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
     // as well as on USB VCP
 #if 0
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(PYB_USART_6),
+            MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        pyb_usart_global_debug = pyb_usart_type.make_new((mp_obj_t)&pyb_usart_type,
-                                                         sizeof(args) / sizeof(args[0]),
-                                                         0, args);
+        pyb_uart_global_debug = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type,
+                                                       sizeof(args) / sizeof(args[0]),
+                                                       0, args);
     }
 #else
-    pyb_usart_global_debug = NULL;
+    pyb_uart_global_debug = NULL;
 #endif
 
     // Micro Python init
@@ -294,11 +298,6 @@ soft_reset:
 
     pin_init();
     extint_init();
-
-#if MICROPY_HW_HAS_SWITCH
-    // must come after extint_init
-    switch_init();
-#endif
 
 #if MICROPY_HW_HAS_LCD
     // LCD init (just creates class, init hardware by calling LCD())
@@ -456,18 +455,14 @@ soft_reset:
     }
 #endif
 
+    timer_init0();
+
 #if MICROPY_HW_ENABLE_RNG
-    // RNG
-    rng_init();
+    rng_init0();
 #endif
 
-#if MICROPY_HW_ENABLE_TIMER
-    // timer
-    //timer_init();
-#endif
-
-    // I2C
-    i2c_init();
+    i2c_init0();
+    spi_init0();
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset

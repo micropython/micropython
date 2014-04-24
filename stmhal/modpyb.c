@@ -14,30 +14,25 @@
 #include "pyexec.h"
 #include "led.h"
 #include "pin.h"
+#include "timer.h"
 #include "extint.h"
 #include "usrsw.h"
 #include "rng.h"
 #include "rtc.h"
-#include "usart.h"
+#include "i2c.h"
+#include "spi.h"
+#include "uart.h"
 #include "adc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "i2c.h"
 #include "usb.h"
 #include "modpyb.h"
 #include "ff.h"
 
-STATIC mp_obj_t pyb_unique_id(void) {
-    // get unique id; 96 bits
-    byte *id = (byte*)0x1fff7a10;
-    return mp_obj_new_bytes(id, 12);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
-
-// get lots of info about the board
+// print lots of info about the board
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
@@ -102,28 +97,44 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
+
+// get unique MCU id; 96 bits = 12 bytes
+STATIC mp_obj_t pyb_unique_id(void) {
+    byte *id = (byte*)0x1fff7a10;
+    return mp_obj_new_bytes(id, 12);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
+
+// get clock frequencies
+// TODO should also be able to set frequency via this function
+STATIC mp_obj_t pyb_freq(void) {
+    mp_obj_t tuple[4] = {
+       mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
+       mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
+       mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+       mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
+    };
+    return mp_obj_new_tuple(4, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
 
 // sync all file systems
 STATIC mp_obj_t pyb_sync(void) {
     storage_flush();
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 
 STATIC mp_obj_t pyb_millis(void) {
     return mp_obj_new_int(HAL_GetTick());
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
 STATIC mp_obj_t pyb_delay(mp_obj_t count) {
     HAL_Delay(mp_obj_get_int(count));
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 
 STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
@@ -240,8 +251,9 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&pyb_gc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
 
@@ -263,6 +275,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
+
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_rng), (mp_obj_t)&pyb_rng_get_obj },
 #endif
@@ -281,7 +295,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 
 #if MICROPY_HW_HAS_SWITCH
-    { MP_OBJ_NEW_QSTR(MP_QSTR_switch), (mp_obj_t)&pyb_switch_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Switch), (mp_obj_t)&pyb_switch_type },
 #endif
 
 #if MICROPY_HW_HAS_SDCARD
@@ -290,7 +304,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED), (mp_obj_t)&pyb_led_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_USART), (mp_obj_t)&pyb_usart_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI), (mp_obj_t)&pyb_spi_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_UART), (mp_obj_t)&pyb_uart_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADCAll), (mp_obj_t)&pyb_adc_all_type },

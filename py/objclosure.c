@@ -5,13 +5,14 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
 #include "runtime.h"
 
 typedef struct _mp_obj_closure_t {
     mp_obj_base_t base;
     mp_obj_t fun;
-    uint n_closed;
-    mp_obj_t *closed;
+    machine_uint_t n_closed;
+    mp_obj_t closed[];
 } mp_obj_closure_t;
 
 mp_obj_t closure_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -37,16 +38,34 @@ mp_obj_t closure_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *
     }
 }
 
+#if 0
+STATIC void closure_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_obj_closure_t *o = o_in;
+    print(env, "<closure %p, n_closed=%u ", o, o->n_closed);
+    for (int i = 0; i < o->n_closed; i++) {
+        if (o->closed[i] == MP_OBJ_NULL) {
+            print(env, "(nil)");
+        } else {
+            mp_obj_print_helper(print, env, o->closed[i], PRINT_REPR);
+        }
+        print(env, " ");
+    }
+    print(env, ">");
+}
+#endif
+
 const mp_obj_type_t closure_type = {
     { &mp_type_type },
     .name = MP_QSTR_closure,
+    //.print = closure_print,
     .call = closure_call,
 };
 
-mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_obj_t closure_tuple) {
-    mp_obj_closure_t *o = m_new_obj(mp_obj_closure_t);
+mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed_over, const mp_obj_t *closed) {
+    mp_obj_closure_t *o = m_new_obj_var(mp_obj_closure_t, mp_obj_t, n_closed_over);
     o->base.type = &closure_type;
     o->fun = fun;
-    mp_obj_tuple_get(closure_tuple, &o->n_closed, &o->closed);
+    o->n_closed = n_closed_over;
+    memcpy(o->closed, closed, n_closed_over * sizeof(mp_obj_t));
     return o;
 }

@@ -209,6 +209,20 @@ void asm_thumb_label_assign(asm_thumb_t *as, uint label) {
     }
 }
 
+void asm_thumb_align(asm_thumb_t* as, uint align) {
+    // TODO fill unused data with NOPs?
+    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
+}
+
+void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val) {
+    byte *c = asm_thumb_get_cur_to_write_bytes(as, bytesize);
+    // little endian
+    for (uint i = 0; i < bytesize; i++) {
+        *c++ = val;
+        val >>= 8;
+    }
+}
+
 STATIC int get_label_dest(asm_thumb_t *as, uint label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];

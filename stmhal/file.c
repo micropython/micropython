@@ -79,7 +79,7 @@ STATIC const mp_obj_type_t file_obj_type = {
 };
 
 STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_check_nargs(n_args, 1, 2, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
     const char *filename = mp_obj_str_get_str(args[0]);
     const char *mode = "r";
     if (n_args > 1) {

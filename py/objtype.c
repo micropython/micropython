@@ -527,7 +527,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
         if (member != MP_OBJ_NULL) {
-            class_convert_return_attr(self, member, dest);
+            class_convert_return_attr(self->obj, member, dest);
             return;
         }
     }

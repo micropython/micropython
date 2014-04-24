@@ -66,7 +66,10 @@ SRC_C = \
 	led.c \
 	pin.c \
 	pin_named_pins.c \
-	usart.c \
+	bufhelper.c \
+	i2c.c \
+	spi.c \
+	uart.c \
 	usb.c \
 	printf.c \
 	math.c \
@@ -97,7 +100,6 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
-	i2c.c \
 
 #	pybwlan.c \
 
@@ -124,6 +126,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_rtc.c \
 	stm32f4xx_hal_rtc_ex.c \
 	stm32f4xx_hal_sd.c \
+	stm32f4xx_hal_spi.c \
 	stm32f4xx_hal_tim.c \
 	stm32f4xx_hal_tim_ex.c \
 	stm32f4xx_hal_uart.c \

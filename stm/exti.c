@@ -283,7 +283,7 @@ static void exti_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
 static mp_obj_t exti_call(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == exti_obj_type
 
-    mp_check_nargs(n_args, 4, 4, n_kw, 0);
+    mp_arg_check_num(n_args, n_kw, 4, 4, 0);
 
     exti_obj_t *self = m_new_obj(exti_obj_t);
     self->base.type = type_in;

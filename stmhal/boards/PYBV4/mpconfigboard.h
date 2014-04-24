@@ -13,6 +13,9 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_I2C1      (1)
+#define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI3      (0)
 
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define MICROPY_HW_USRSW_PIN        (pin_B3)
@@ -20,7 +23,7 @@
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
-// LEDs
+// The pyboard has 4 LEDs
 #define MICROPY_HW_LED1             (pin_A13) // red
 #define MICROPY_HW_LED2             (pin_A14) // green
 #define MICROPY_HW_LED3             (pin_A15) // yellow

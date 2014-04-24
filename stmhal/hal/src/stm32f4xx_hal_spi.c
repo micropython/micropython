@@ -589,6 +589,7 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
 
       /* Read CRC to Flush RXNE flag */
       tmpreg = hspi->Instance->DR;
+      (void)tmpreg; // suppress compiler warning
     }
     
     if((hspi->Init.Mode == SPI_MODE_MASTER)&&((hspi->Init.Direction == SPI_DIRECTION_1LINE)||(hspi->Init.Direction == SPI_DIRECTION_2LINES_RXONLY)))
@@ -829,6 +830,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       }
       /* Read CRC */
       tmpreg = hspi->Instance->DR;
+      (void)tmpreg; // suppress compiler warning
     }
 
     /* Wait until Busy flag is reset before disabling SPI */
@@ -1630,6 +1632,7 @@ static void SPI_RxCloseIRQHandler(SPI_HandleTypeDef *hspi)
 
     /* Read CRC to reset RXNE flag */
     tmpreg = hspi->Instance->DR;
+    (void)tmpreg; // suppress compiler warning
 
     /* Wait until RXNE flag is set to send data */
     if(SPI_WaitOnFlagUntilTimeout(hspi, SPI_FLAG_RXNE, SET, SPI_TIMEOUT_VALUE) != HAL_OK)
@@ -1823,6 +1826,7 @@ static void SPI_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
 
     /* Read CRC */
     tmpreg = hspi->Instance->DR;
+    (void)tmpreg; // suppress compiler warning
 
     /* Wait until RXNE flag is set to send data */
     if(SPI_WaitOnFlagUntilTimeout(hspi, SPI_FLAG_RXNE, SET, SPI_TIMEOUT_VALUE) != HAL_OK)
@@ -1877,6 +1881,7 @@ static void SPI_DMATransmitReceiveCplt(DMA_HandleTypeDef *hdma)
     }
     /* Read CRC */
     tmpreg = hspi->Instance->DR;
+    (void)tmpreg; // suppress compiler warning
   }
 
   /* Wait until TXE flag is set to send data */

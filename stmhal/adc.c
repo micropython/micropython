@@ -120,7 +120,7 @@ STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env,
 
 STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check number of arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin name
     mp_obj_t pin_obj = args[0];
@@ -322,7 +322,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 
 STATIC mp_obj_t adc_all_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check number of arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // make ADCAll object
     pyb_adc_all_obj_t *o = m_new_obj(pyb_adc_all_obj_t);

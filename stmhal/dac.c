@@ -45,28 +45,28 @@ typedef struct _pyb_dac_obj_t {
     machine_uint_t state;
 } pyb_dac_obj_t;
 
-STATIC pyb_dac_obj_t pyb_dac_channel_1 = {{&pyb_dac_type}, DAC_CHANNEL_1, DMA1_Stream5};
-STATIC pyb_dac_obj_t pyb_dac_channel_2 = {{&pyb_dac_type}, DAC_CHANNEL_2, DMA1_Stream6};
-
 // create the dac object
 // currently support either DAC1 on X5 (id = 1) or DAC2 on X6 (id = 2)
 
 STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_check_nargs(n_args, 1, 1, n_kw, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+
+    pyb_dac_obj_t *dac = m_new_obj(pyb_dac_obj_t);
+    dac->base.type = &pyb_dac_type;
 
     machine_int_t dac_id = mp_obj_get_int(args[0]);
     uint32_t pin;
-    pyb_dac_obj_t *dac_obj;
-
     if (dac_id == 1) {
         pin = GPIO_PIN_4;
-        dac_obj = &pyb_dac_channel_1;
+        dac->dac_channel = DAC_CHANNEL_1;
+        dac->dma_stream = DMA1_Stream5;
     } else if (dac_id == 2) {
         pin = GPIO_PIN_5;
-        dac_obj = &pyb_dac_channel_2;
+        dac->dac_channel = DAC_CHANNEL_2;
+        dac->dma_stream = DMA1_Stream6;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Dac %d does not exist", dac_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC %d does not exist", dac_id));
     }
 
     // GPIO configuration
@@ -80,13 +80,13 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     __DAC_CLK_ENABLE();
 
     // stop anything already going on
-    HAL_DAC_Stop(&DAC_Handle, dac_obj->dac_channel);
-    HAL_DAC_Stop_DMA(&DAC_Handle, dac_obj->dac_channel);
+    HAL_DAC_Stop(&DAC_Handle, dac->dac_channel);
+    HAL_DAC_Stop_DMA(&DAC_Handle, dac->dac_channel);
 
-    dac_obj->state = 0;
+    dac->state = 0;
 
     // return object
-    return dac_obj;
+    return dac;
 }
 
 STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
@@ -111,7 +111,6 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
 
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
@@ -136,7 +135,6 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
 
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 
 // direct access to DAC (8 bit only at the moment)
@@ -156,21 +154,34 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
 
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 
 // initiates a burst of RAM->DAC using DMA
 // input data is treated as an array of bytes (8 bit data)
 // TIM6 is used to set the frequency of the transfer
-// TODO still needs some attention to get it working properly
-mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+// TODO add callback argument, to call when transfer is finished
+// TODO add double buffer argument
+
+STATIC const mp_arg_parse_t pyb_dac_write_timed_accepted_args[] = {
+    { MP_QSTR_data, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_freq, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
+    { MP_QSTR_mode, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = DMA_NORMAL} },
+};
+#define PYB_DAC_WRITE_TIMED_NUM_ARGS (sizeof(pyb_dac_write_timed_accepted_args) / sizeof(pyb_dac_write_timed_accepted_args[0]))
+
+mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_dac_obj_t *self = args[0];
 
-    // set TIM6 to trigger the DAC at the given frequency
-    TIM6_Config(mp_obj_get_int(args[2]));
+    // parse args
+    mp_arg_parse_val_t vals[PYB_DAC_WRITE_TIMED_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_DAC_WRITE_TIMED_NUM_ARGS, pyb_dac_write_timed_accepted_args, vals);
 
+    // get the data to write
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(vals[0].u_obj, &bufinfo, MP_BUFFER_READ);
+
+    // set TIM6 to trigger the DAC at the given frequency
+    TIM6_Config(vals[1].u_int);
 
     __DMA1_CLK_ENABLE();
 
@@ -206,8 +217,7 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     DMA_Handle.Init.MemInc = DMA_MINC_ENABLE;
     DMA_Handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     DMA_Handle.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    mp_map_elem_t *kw_mode = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(qstr_from_str("mode")), MP_MAP_LOOKUP);
-    DMA_Handle.Init.Mode = kw_mode == NULL ? DMA_NORMAL : mp_obj_get_int(kw_mode->value); // normal = 0, circular = 0x100
+    DMA_Handle.Init.Mode = vals[2].u_int;
     DMA_Handle.Init.Priority = DMA_PRIORITY_HIGH;
     DMA_Handle.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     DMA_Handle.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL;
@@ -248,17 +258,18 @@ mp_obj_t pyb_dac_dma(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 
     return mp_const_none;
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_dma_obj, 3, pyb_dac_dma);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_write_timed_obj, 1, pyb_dac_write_timed);
 
 STATIC const mp_map_elem_t pyb_dac_locals_dict_table[] = {
+    // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_noise), (mp_obj_t)&pyb_dac_noise_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_triangle), (mp_obj_t)&pyb_dac_triangle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_dac_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_dma), (mp_obj_t)&pyb_dac_dma_obj },
-    // TODO add function that does double buffering:
-    //  dma2(freq, buf1, buf2, callback)
-    //  where callback is called when the buffer has been drained
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write_timed), (mp_obj_t)&pyb_dac_write_timed_obj },
+
+    // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_NORMAL),      MP_OBJ_NEW_SMALL_INT(DMA_NORMAL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CIRCULAR),    MP_OBJ_NEW_SMALL_INT(DMA_CIRCULAR) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_dac_locals_dict, pyb_dac_locals_dict_table);

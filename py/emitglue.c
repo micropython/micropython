@@ -158,10 +158,17 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     return fun;
 }
 
-mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_obj_t closure_tuple, mp_obj_t def_args, mp_obj_t def_kw_args) {
-    DEBUG_OP_printf("make_closure_from_raw_code %p\n", rc);
+mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args) {
+    DEBUG_OP_printf("make_closure_from_raw_code %p %u %p\n", rc, n_closed_over, args);
     // make function object
-    mp_obj_t ffun = mp_make_function_from_raw_code(rc, def_args, def_kw_args);
+    mp_obj_t ffun;
+    if (n_closed_over & 0x100) {
+        // default positional and keyword args given
+        ffun = mp_make_function_from_raw_code(rc, args[0], args[1]);
+    } else {
+        // default positional and keyword args not given
+        ffun = mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
+    }
     // wrap function in closure object
-    return mp_obj_new_closure(ffun, closure_tuple);
+    return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
 }

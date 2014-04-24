@@ -41,10 +41,9 @@ typedef struct _emit_method_table_t {
     void (*load_const_dec)(emit_t *emit, qstr qstr);
     void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
-    void (*load_const_verbatim_str)(emit_t *emit, const char *str); // only needed for emitcpy
+    void (*load_null)(emit_t *emit);
     void (*load_fast)(emit_t *emit, qstr qstr, uint id_flags, int local_num);
     void (*load_deref)(emit_t *emit, qstr qstr, int local_num);
-    void (*load_closure)(emit_t *emit, qstr qstr, int local_num); // only needed for emitcpy
     void (*load_name)(emit_t *emit, qstr qstr);
     void (*load_global)(emit_t *emit, qstr qstr);
     void (*load_attr)(emit_t *emit, qstr qstr);
@@ -73,7 +72,6 @@ typedef struct _emit_method_table_t {
     void (*pop_jump_if_false)(emit_t *emit, uint label);
     void (*jump_if_true_or_pop)(emit_t *emit, uint label);
     void (*jump_if_false_or_pop)(emit_t *emit, uint label);
-    void (*setup_loop)(emit_t *emit, uint label);
     void (*break_loop)(emit_t *emit, uint label, int except_depth);
     void (*continue_loop)(emit_t *emit, uint label, int except_depth);
     void (*setup_with)(emit_t *emit, uint label);
@@ -100,13 +98,21 @@ typedef struct _emit_method_table_t {
     void (*unpack_sequence)(emit_t *emit, int n_args);
     void (*unpack_ex)(emit_t *emit, int n_left, int n_right);
     void (*make_function)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
-    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults);
+    void (*make_closure)(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults);
     void (*call_function)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*call_method)(emit_t *emit, int n_positional, int n_keyword, uint star_flags);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, int n_args);
     void (*yield_value)(emit_t *emit);
     void (*yield_from)(emit_t *emit);
+
+#if MICROPY_EMIT_CPYTHON
+    // these methods are only needed for emitcpy
+    void (*load_const_verbatim_str)(emit_t *emit, const char *str);
+    void (*load_closure)(emit_t *emit, qstr qstr, int local_num);
+    void (*setup_loop)(emit_t *emit, uint label);
+#endif
+
 } emit_method_table_t;
 
 void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qstr);
@@ -137,6 +143,8 @@ typedef struct _emit_inline_asm_method_table_t {
     bool (*end_pass)(emit_inline_asm_t *emit);
     int (*count_params)(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params);
     void (*label)(emit_inline_asm_t *emit, uint label_num, qstr label_id);
+    void (*align)(emit_inline_asm_t *emit, uint align);
+    void (*data)(emit_inline_asm_t *emit, uint bytesize, uint val);
     void (*op)(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args);
 } emit_inline_asm_method_table_t;
 

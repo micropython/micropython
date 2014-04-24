@@ -7,6 +7,9 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+# some code is performance bottleneck and compiled with other optimization options
+CSUPEROPT = -O3
+
 # py object files
 PY_O_BASENAME = \
 	nlrx86.o \
@@ -40,6 +43,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	argcheck.o \
 	map.o \
 	obj.o \
 	objarray.o \
@@ -134,8 +138,8 @@ $(PY_BUILD)/emitnthumb.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
-$(PY_BUILD)/gc.o: CFLAGS += -O3
+$(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
-$(PY_BUILD)/vm.o: CFLAGS += -O3
+$(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 
