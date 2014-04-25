@@ -435,14 +435,17 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     if (n_bytes <= n_existing) {
         return ptr;
     } else {
-        // TODO false is incorrect! Should get value from current block!
-        void *ptr2 = gc_alloc(n_bytes,
+        bool has_finaliser;
+        if (ptr == NULL) {
+            has_finaliser = false;
+        } else {
 #if MICROPY_ENABLE_FINALISER
-                        FTB_GET(BLOCK_FROM_PTR((machine_uint_t)ptr))
+            has_finaliser = FTB_GET(BLOCK_FROM_PTR((machine_uint_t)ptr));
 #else
-                        false
+            has_finaliser = false;
 #endif
-        );
+        }
+        void *ptr2 = gc_alloc(n_bytes, has_finaliser);
         if (ptr2 == NULL) {
             return ptr2;
         }
