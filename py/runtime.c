@@ -481,10 +481,13 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
 
     // do the call
     if (type->call != NULL) {
-        return type->call(fun_in, n_args, n_kw, args);
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
+        mp_obj_t res = type->call(fun_in, n_args, n_kw, args);
+        if (res != NULL) {
+            return res;
+        }
     }
+
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
 }
 
 // args contains: fun  self/NULL  arg(0)  ...  arg(n_args-2)  arg(n_args-1)  kw_key(0)  kw_val(0)  ... kw_key(n_kw-1)  kw_val(n_kw-1)
