@@ -366,10 +366,17 @@ found:
     // get pointer to first block
     void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 
+    // zero out the newly allocated blocks
+    // This is needed because the blocks may have previously held pointers
+    // to the heap and will not be set to something else if the caller
+    // doesn't actually use the entire block.  As such they will continue
+    // to point to the heap and may prevent other blocks from being reclaimed.
+    memset(ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
-        // clear type pointer in case it is never set
-        ((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
+        // clear type pointer in case it is never set (now done above in memset)
+        //((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
         // set mp_obj flag only if it has a finaliser
         FTB_SET(start_block);
     }
@@ -523,6 +530,10 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
             assert(ATB_GET_KIND(bl) == AT_FREE);
             ATB_FREE_TO_TAIL(bl);
         }
+
+        // zero out the newly allocated blocks (see comment above in gc_alloc)
+        memset(ptr_in + n_blocks * BYTES_PER_BLOCK, 0, (new_blocks - n_blocks) * BYTES_PER_BLOCK);
+
         return ptr_in;
     }
 
@@ -556,7 +567,7 @@ void gc_dump_info() {
 }
 
 void gc_dump_alloc_table(void) {
-    printf("GC memory layout:");
+    printf("GC memory layout; from %p:", gc_pool_start);
     for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
         if (bl % 64 == 0) {
             printf("\n%04x: ", (uint)bl);
@@ -565,6 +576,18 @@ void gc_dump_alloc_table(void) {
         switch (ATB_GET_KIND(bl)) {
             case AT_FREE: c = '.'; break;
             case AT_HEAD: c = 'h'; break;
+            /* this prints the uPy object type of the head block
+            case AT_HEAD: {
+                machine_uint_t *ptr = gc_pool_start + bl * WORDS_PER_BLOCK;
+                if (*ptr == (machine_uint_t)&mp_type_tuple) { c = 'T'; }
+                else if (*ptr == (machine_uint_t)&mp_type_list) { c = 'L'; }
+                else if (*ptr == (machine_uint_t)&mp_type_dict) { c = 'D'; }
+                else if (*ptr == (machine_uint_t)&mp_type_float) { c = 'F'; }
+                else if (*ptr == (machine_uint_t)&mp_type_fun_bc) { c = 'B'; }
+                else { c = 'h'; }
+                break;
+            }
+            */
             case AT_TAIL: c = 't'; break;
             case AT_MARK: c = 'm'; break;
         }
