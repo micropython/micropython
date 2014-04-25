@@ -338,6 +338,16 @@ STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
+STATIC mp_obj_t class_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    mp_obj_class_t *self = self_in;
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___call__);
+    if (member == MP_OBJ_NULL) {
+        return member;
+    }
+    mp_obj_t meth = mp_obj_new_bound_meth(member, self);
+    return mp_call_function_n_kw(meth, n_args, n_kw, args);
+}
+
 /******************************************************************************/
 // type object
 //  - the struct is mp_obj_type_t and is defined in obj.h so const types can be made
@@ -474,6 +484,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->load_attr = class_load_attr;
     o->store_attr = class_store_attr;
     o->subscr = class_subscr;
+    o->call = class_call;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
     return o;

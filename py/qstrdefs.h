@@ -31,6 +31,7 @@ Q(__repr__)
 Q(__str__)
 Q(__getattr__)
 Q(__del__)
+Q(__call__)
 
 Q(micropython)
 Q(byte_code)
