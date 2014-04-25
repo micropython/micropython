@@ -91,7 +91,7 @@ STATIC const mp_map_t mp_constants_map = {
     .table = (mp_map_elem_t*)mp_constants_table,
 };
 
-mp_parse_node_t fold_constants(mp_parse_node_t pn) {
+STATIC mp_parse_node_t fold_constants(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -2923,7 +2923,8 @@ void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, mp_parse
     }
 }
 
-void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
+#if MICROPY_EMIT_CPYTHON || MICROPY_ENABLE_DOC_STRING
     // see http://www.python.org/dev/peps/pep-0257/
 
     // look for the first statement
@@ -2960,9 +2961,10 @@ void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
             }
         }
     }
+#endif
 }
 
-void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
+STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
     comp->next_label = 1;
@@ -3117,7 +3119,7 @@ void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 }
 
 #if MICROPY_EMIT_INLINE_THUMB
-void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
+STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
     comp->next_label = 1;
@@ -3232,7 +3234,7 @@ void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass
 }
 #endif
 
-void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
+STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals
     // compute the index of each local
     scope->num_locals = 0;

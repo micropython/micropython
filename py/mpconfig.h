@@ -89,6 +89,11 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_SOURCE_LINE (0)
 #endif
 
+// Whether to include doc strings (increases RAM usage)
+#ifndef MICROPY_ENABLE_DOC_STRING
+#define MICROPY_ENABLE_DOC_STRING (0)
+#endif
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)
