@@ -42,10 +42,11 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
 
-    uint sz;
-    const char *buf = mp_obj_str_get_data(arg, &sz);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+
     int error;
-    machine_int_t out_sz = o->type->stream_p->write(self_in, buf, sz, &error);
+    machine_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
     if (out_sz == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
