@@ -9,6 +9,8 @@
 #include "runtime.h"
 #include "stream.h"
 
+#if MICROPY_ENABLE_MOD_IO
+
 typedef struct _mp_obj_stringio_t {
     mp_obj_base_t base;
     vstr_t *vstr;
@@ -117,3 +119,5 @@ const mp_obj_type_t mp_type_stringio = {
     .stream_p = &stringio_stream_p,
     .locals_dict = (mp_obj_t)&stringio_locals_dict,
 };
+
+#endif
