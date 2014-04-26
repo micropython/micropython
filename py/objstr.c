@@ -518,19 +518,29 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     machine_uint_t first_good_char_pos = 0;
     bool first_good_char_pos_set = false;
     machine_uint_t last_good_char_pos = 0;
-    // TODO: For RSPLIT, scan from end
-    for (machine_uint_t i = 0; i < orig_str_len; i++) {
+    machine_uint_t i = 0;
+    machine_int_t delta = 1;
+    if (type == RSTRIP) {
+        i = orig_str_len - 1;
+        delta = -1;
+    }
+    for (machine_uint_t len = orig_str_len; len > 0; len--) {
         if (find_subbytes(chars_to_del, chars_to_del_len, &orig_str[i], 1, 1) == NULL) {
             if (!first_good_char_pos_set) {
                 first_good_char_pos = i;
                 if (type == LSTRIP) {
                     last_good_char_pos = orig_str_len - 1;
                     break;
+                } else if (type == RSTRIP) {
+                    first_good_char_pos = 0;
+                    last_good_char_pos = i;
+                    break;
                 }
                 first_good_char_pos_set = true;
             }
             last_good_char_pos = i;
         }
+        i += delta;
     }
 
     if (first_good_char_pos == 0 && last_good_char_pos == 0) {
@@ -539,9 +549,6 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
-    if (type == RSTRIP) {
-        first_good_char_pos = 0;
-    }
     //+1 to accomodate the last character
     machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
