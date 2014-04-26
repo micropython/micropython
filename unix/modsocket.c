@@ -148,9 +148,9 @@ STATIC mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
         flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
     }
 
-    uint sz;
-    const char *buf = mp_obj_str_get_data(args[1], &sz);
-    int out_sz = send(self->fd, buf, sz, flags);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    int out_sz = send(self->fd, bufinfo.buf, bufinfo.len, flags);
     RAISE_ERRNO(out_sz, errno);
 
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)out_sz);
