@@ -118,7 +118,6 @@ Q(hash)
 Q(hex)
 Q(%#x)
 Q(id)
-Q(io)
 Q(int)
 Q(isinstance)
 Q(issubclass)
@@ -306,6 +305,13 @@ Q(version_info)
 Q(struct)
 Q(pack)
 Q(unpack)
+#endif
+
+#if MICROPY_ENABLE_MOD_IO
+Q(io)
+Q(StringIO)
+Q(BytesIO)
+Q(getvalue)
 #endif
 
 #if MICROPY_ENABLE_PROPERTY
