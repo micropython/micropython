@@ -30,7 +30,7 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 #endif
 #endif
 };
-#define NUM_LEDS (sizeof(pyb_led_obj) / sizeof(pyb_led_obj[0]))
+#define NUM_LEDS ARRAY_SIZE(pyb_led_obj)
 
 void led_init(void) {
     /* GPIO structure */

@@ -128,7 +128,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
 STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
     mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
-    return mp_obj_str_format(sizeof(args) / sizeof(args[0]), args);
+    return mp_obj_str_format(ARRAY_SIZE(args), args);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);

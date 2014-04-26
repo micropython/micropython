@@ -394,8 +394,8 @@ STATIC const mp_obj_dict_t mp_module_ffi_globals = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_module_ffi_globals_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_module_ffi_globals_table),
+        .alloc = ARRAY_SIZE(mp_module_ffi_globals_table),
         .table = (mp_map_elem_t*)mp_module_ffi_globals_table,
     },
 };

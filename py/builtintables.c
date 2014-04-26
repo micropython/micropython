@@ -118,8 +118,8 @@ const mp_obj_dict_t mp_builtin_object_dict_obj = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_builtin_object_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_builtin_object_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_builtin_object_table),
+        .alloc = ARRAY_SIZE(mp_builtin_object_table),
         .table = (mp_map_elem_t*)mp_builtin_object_table,
     },
 };
@@ -158,8 +158,8 @@ const mp_obj_dict_t mp_builtin_module_dict_obj = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_builtin_module_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_builtin_module_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_builtin_module_table),
+        .alloc = ARRAY_SIZE(mp_builtin_module_table),
         .table = (mp_map_elem_t*)mp_builtin_module_table,
     },
 };

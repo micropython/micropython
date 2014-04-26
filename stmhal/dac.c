@@ -167,7 +167,7 @@ STATIC const mp_arg_parse_t pyb_dac_write_timed_accepted_args[] = {
     { MP_QSTR_freq, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
     { MP_QSTR_mode, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = DMA_NORMAL} },
 };
-#define PYB_DAC_WRITE_TIMED_NUM_ARGS (sizeof(pyb_dac_write_timed_accepted_args) / sizeof(pyb_dac_write_timed_accepted_args[0]))
+#define PYB_DAC_WRITE_TIMED_NUM_ARGS ARRAY_SIZE(pyb_dac_write_timed_accepted_args)
 
 mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_dac_obj_t *self = args[0];

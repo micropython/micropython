@@ -52,6 +52,11 @@ int m_get_total_bytes_allocated(void);
 int m_get_current_bytes_allocated(void);
 int m_get_peak_bytes_allocated(void);
 
+/** array helpers ***********************************************/
+
+// get the number of elements in a fixed-size array
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
 /** unichar / UTF-8 *********************************************/
 
 typedef int unichar; // TODO

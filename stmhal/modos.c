@@ -167,8 +167,8 @@ STATIC const mp_obj_dict_t os_module_globals = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(os_module_globals_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(os_module_globals_table),
+        .alloc = ARRAY_SIZE(os_module_globals_table),
         .table = (mp_map_elem_t*)os_module_globals_table,
     },
 };

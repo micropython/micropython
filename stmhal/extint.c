@@ -245,7 +245,7 @@ STATIC const mp_arg_parse_t pyb_extint_make_new_accepted_args[] = {
     { MP_QSTR_pull,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
     { MP_QSTR_callback, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-#define PYB_EXTINT_MAKE_NEW_NUM_ARGS (sizeof(pyb_extint_make_new_accepted_args) / sizeof(pyb_extint_make_new_accepted_args[0]))
+#define PYB_EXTINT_MAKE_NEW_NUM_ARGS ARRAY_SIZE(pyb_extint_make_new_accepted_args)
 
 STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
