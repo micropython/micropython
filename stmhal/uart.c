@@ -225,18 +225,18 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
     }
 }
 
-STATIC const mp_arg_parse_t pyb_uart_init_accepted_args[] = {
-    { MP_QSTR_baudrate, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 9600} },
-    { MP_QSTR_bits,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
-    { MP_QSTR_stop,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
-    { MP_QSTR_parity,   MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
+STATIC const mp_arg_t pyb_uart_init_args[] = {
+    { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
+    { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
+    { MP_QSTR_stop,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
+    { MP_QSTR_parity,   MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
 };
-#define PYB_UART_INIT_NUM_ARGS ARRAY_SIZE(pyb_uart_init_accepted_args)
+#define PYB_UART_INIT_NUM_ARGS ARRAY_SIZE(pyb_uart_init_args)
 
 STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
-    mp_arg_parse_val_t vals[PYB_UART_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, PYB_UART_INIT_NUM_ARGS, pyb_uart_init_accepted_args, vals);
+    mp_arg_val_t vals[PYB_UART_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, PYB_UART_INIT_NUM_ARGS, pyb_uart_init_args, vals);
 
     // set the UART configuration values
     memset(&self->uart, 0, sizeof(self->uart));
@@ -327,11 +327,11 @@ STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
-STATIC const mp_arg_parse_t pyb_uart_send_accepted_args[] = {
-    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+STATIC const mp_arg_t pyb_uart_send_args[] = {
+    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_UART_SEND_NUM_ARGS ARRAY_SIZE(pyb_uart_send_accepted_args)
+#define PYB_UART_SEND_NUM_ARGS ARRAY_SIZE(pyb_uart_send_args)
 
 STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -339,8 +339,8 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
     pyb_uart_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_UART_SEND_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_SEND_NUM_ARGS, pyb_uart_send_accepted_args, vals);
+    mp_arg_val_t vals[PYB_UART_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_SEND_NUM_ARGS, pyb_uart_send_args, vals);
 
     // get the buffer to send from
     mp_buffer_info_t bufinfo;
@@ -359,11 +359,11 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_obj, 1, pyb_uart_send);
 
-STATIC const mp_arg_parse_t pyb_uart_recv_accepted_args[] = {
-    { MP_QSTR_recv,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+STATIC const mp_arg_t pyb_uart_recv_args[] = {
+    { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_UART_RECV_NUM_ARGS ARRAY_SIZE(pyb_uart_recv_accepted_args)
+#define PYB_UART_RECV_NUM_ARGS ARRAY_SIZE(pyb_uart_recv_args)
 
 STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -371,8 +371,8 @@ STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
     pyb_uart_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_UART_RECV_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_RECV_NUM_ARGS, pyb_uart_recv_accepted_args, vals);
+    mp_arg_val_t vals[PYB_UART_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_RECV_NUM_ARGS, pyb_uart_recv_args, vals);
 
     // get the buffer to receive into
     mp_buffer_info_t bufinfo;

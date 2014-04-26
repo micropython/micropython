@@ -34,12 +34,12 @@ void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, 
     }
 }
 
-void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_parse_t *allowed, mp_arg_parse_val_t *out_vals) {
+void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
     uint pos_found = 0, kws_found = 0;
     for (uint i = 0; i < n_allowed; i++) {
         mp_obj_t given_arg;
         if (i < n_pos) {
-            if (allowed[i].flags & MP_ARG_PARSE_KW_ONLY) {
+            if (allowed[i].flags & MP_ARG_KW_ONLY) {
                 goto extra_positional;
             }
             pos_found++;
@@ -47,7 +47,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
         } else {
             mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qstr), MP_MAP_LOOKUP);
             if (kw == NULL) {
-                if (allowed[i].flags & MP_ARG_PARSE_REQUIRED) {
+                if (allowed[i].flags & MP_ARG_REQUIRED) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' argument required", qstr_str(allowed[i].qstr)));
                 }
                 out_vals[i] = allowed[i].defval;
@@ -57,11 +57,11 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
                 given_arg = kw->value;
             }
         }
-        if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_BOOL) {
+        if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_BOOL) {
             out_vals[i].u_bool = mp_obj_is_true(given_arg);
-        } else if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_INT) {
+        } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_INT) {
             out_vals[i].u_int = mp_obj_get_int(given_arg);
-        } else if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_OBJ) {
+        } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_OBJ) {
             out_vals[i].u_obj = given_arg;
         } else {
             assert(0);

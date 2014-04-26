@@ -162,19 +162,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 // TODO add callback argument, to call when transfer is finished
 // TODO add double buffer argument
 
-STATIC const mp_arg_parse_t pyb_dac_write_timed_accepted_args[] = {
-    { MP_QSTR_data, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_freq, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_mode, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = DMA_NORMAL} },
+STATIC const mp_arg_t pyb_dac_write_timed_args[] = {
+    { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL} },
 };
-#define PYB_DAC_WRITE_TIMED_NUM_ARGS ARRAY_SIZE(pyb_dac_write_timed_accepted_args)
+#define PYB_DAC_WRITE_TIMED_NUM_ARGS ARRAY_SIZE(pyb_dac_write_timed_args)
 
 mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_dac_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_DAC_WRITE_TIMED_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_DAC_WRITE_TIMED_NUM_ARGS, pyb_dac_write_timed_accepted_args, vals);
+    mp_arg_val_t vals[PYB_DAC_WRITE_TIMED_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_DAC_WRITE_TIMED_NUM_ARGS, pyb_dac_write_timed_args, vals);
 
     // get the data to write
     mp_buffer_info_t bufinfo;

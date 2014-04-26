@@ -194,24 +194,24 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
     }
 }
 
-STATIC const mp_arg_parse_t pyb_spi_init_accepted_args[] = {
-    { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_baudrate, MP_ARG_PARSE_INT, {.u_int = 328125} },
-    { MP_QSTR_polarity, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
-    { MP_QSTR_phase,    MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 1} },
-    { MP_QSTR_dir,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_DIRECTION_2LINES} },
-    { MP_QSTR_bits,     MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = 8} },
-    { MP_QSTR_nss,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_NSS_SOFT} },
-    { MP_QSTR_firstbit, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
-    { MP_QSTR_ti,       MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_BOOL, {.u_bool = false} },
-    { MP_QSTR_crc,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_OBJ,  {.u_obj = mp_const_none} },
+STATIC const mp_arg_t pyb_spi_init_args[] = {
+    { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 328125} },
+    { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
+    { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
+    { MP_QSTR_dir,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_DIRECTION_2LINES} },
+    { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
+    { MP_QSTR_nss,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
+    { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
+    { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
 };
-#define PYB_SPI_INIT_NUM_ARGS ARRAY_SIZE(pyb_spi_init_accepted_args)
+#define PYB_SPI_INIT_NUM_ARGS ARRAY_SIZE(pyb_spi_init_args)
 
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
-    mp_arg_parse_val_t vals[PYB_SPI_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, PYB_SPI_INIT_NUM_ARGS, pyb_spi_init_accepted_args, vals);
+    mp_arg_val_t vals[PYB_SPI_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, PYB_SPI_INIT_NUM_ARGS, pyb_spi_init_args, vals);
 
     // set the SPI configuration values
     SPI_InitTypeDef *init = &self->spi->Init;
@@ -295,11 +295,11 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);
 
-STATIC const mp_arg_parse_t pyb_spi_send_accepted_args[] = {
-    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+STATIC const mp_arg_t pyb_spi_send_args[] = {
+    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_SEND_NUM_ARGS ARRAY_SIZE(pyb_spi_send_accepted_args)
+#define PYB_SPI_SEND_NUM_ARGS ARRAY_SIZE(pyb_spi_send_args)
 
 STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -307,8 +307,8 @@ STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
     pyb_spi_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_SPI_SEND_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_NUM_ARGS, pyb_spi_send_accepted_args, vals);
+    mp_arg_val_t vals[PYB_SPI_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_NUM_ARGS, pyb_spi_send_args, vals);
 
     // get the buffer to send from
     mp_buffer_info_t bufinfo;
@@ -327,11 +327,11 @@ STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_obj, 1, pyb_spi_send);
 
-STATIC const mp_arg_parse_t pyb_spi_recv_accepted_args[] = {
-    { MP_QSTR_recv,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+STATIC const mp_arg_t pyb_spi_recv_args[] = {
+    { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_recv_accepted_args)
+#define PYB_SPI_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_recv_args)
 
 STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -339,8 +339,8 @@ STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
     pyb_spi_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_SPI_RECV_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_RECV_NUM_ARGS, pyb_spi_recv_accepted_args, vals);
+    mp_arg_val_t vals[PYB_SPI_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_RECV_NUM_ARGS, pyb_spi_recv_args, vals);
 
     // get the buffer to receive into
     mp_buffer_info_t bufinfo;
@@ -363,12 +363,12 @@ STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_recv_obj, 1, pyb_spi_recv);
 
-STATIC const mp_arg_parse_t pyb_spi_send_recv_accepted_args[] = {
-    { MP_QSTR_send,    MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_recv,    MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 5000} },
+STATIC const mp_arg_t pyb_spi_send_recv_args[] = {
+    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_recv,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_SEND_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_send_recv_accepted_args)
+#define PYB_SPI_SEND_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_send_recv_args)
 
 STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -376,8 +376,8 @@ STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *k
     pyb_spi_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_SPI_SEND_RECV_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_RECV_NUM_ARGS, pyb_spi_send_recv_accepted_args, vals);
+    mp_arg_val_t vals[PYB_SPI_SEND_RECV_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_SPI_SEND_RECV_NUM_ARGS, pyb_spi_send_recv_args, vals);
 
     // get buffers to send from/receive to
     mp_buffer_info_t bufinfo_send;

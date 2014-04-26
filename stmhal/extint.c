@@ -239,13 +239,13 @@ STATIC mp_obj_t extint_regs(void) {
 
 // line_obj = pyb.ExtInt(pin, mode, pull, callback)
 
-STATIC const mp_arg_parse_t pyb_extint_make_new_accepted_args[] = {
-    { MP_QSTR_pin,      MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_mode,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_pull,     MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_callback, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
+STATIC const mp_arg_t pyb_extint_make_new_args[] = {
+    { MP_QSTR_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_pull,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-#define PYB_EXTINT_MAKE_NEW_NUM_ARGS ARRAY_SIZE(pyb_extint_make_new_accepted_args)
+#define PYB_EXTINT_MAKE_NEW_NUM_ARGS ARRAY_SIZE(pyb_extint_make_new_args)
 
 STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
@@ -253,8 +253,8 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_arg_parse_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, &kw_args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_accepted_args, vals);
+    mp_arg_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, &kw_args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;

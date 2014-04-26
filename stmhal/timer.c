@@ -173,19 +173,19 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
     }
 }
 
-STATIC const mp_arg_parse_t pyb_timer_init_accepted_args[] = {
-    { MP_QSTR_freq,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_prescaler, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_period,    MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_mode,      MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = TIM_COUNTERMODE_UP} },
-    { MP_QSTR_div,       MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = TIM_CLOCKDIVISION_DIV1} },
+STATIC const mp_arg_t pyb_timer_init_args[] = {
+    { MP_QSTR_freq,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_period,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_mode,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
+    { MP_QSTR_div,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_CLOCKDIVISION_DIV1} },
 };
-#define PYB_TIMER_INIT_NUM_ARGS ARRAY_SIZE(pyb_timer_init_accepted_args)
+#define PYB_TIMER_INIT_NUM_ARGS ARRAY_SIZE(pyb_timer_init_args)
 
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
-    mp_arg_parse_val_t vals[PYB_TIMER_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, PYB_TIMER_INIT_NUM_ARGS, pyb_timer_init_accepted_args, vals);
+    mp_arg_val_t vals[PYB_TIMER_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, PYB_TIMER_INIT_NUM_ARGS, pyb_timer_init_args, vals);
 
     // set the TIM configuration values
     TIM_Base_InitTypeDef *init = &self->tim.Init;
