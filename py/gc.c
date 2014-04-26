@@ -366,17 +366,17 @@ found:
     // get pointer to first block
     void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 
-    // zero out the newly allocated blocks
+    // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset(ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+    memset(ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
 
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
-        // clear type pointer in case it is never set (now done above in memset)
-        //((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
         // set mp_obj flag only if it has a finaliser
         FTB_SET(start_block);
     }
@@ -534,8 +534,8 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
             ATB_FREE_TO_TAIL(bl);
         }
 
-        // zero out the newly allocated blocks (see comment above in gc_alloc)
-        memset(ptr_in + n_blocks * BYTES_PER_BLOCK, 0, (new_blocks - n_blocks) * BYTES_PER_BLOCK);
+        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+        memset(ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
 
         return ptr_in;
     }

@@ -88,13 +88,9 @@ void *m_malloc_with_finaliser(int num_bytes) {
 
 void *m_malloc0(int num_bytes) {
     void *ptr = m_malloc(num_bytes);
-#if MICROPY_ENABLE_GC
-    // the GC already zeros out all memory
-#else
     if (ptr != NULL) {
         memset(ptr, 0, num_bytes);
     }
-#endif
     return ptr;
 }
 
