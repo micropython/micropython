@@ -115,6 +115,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_FLOAT (0)
 #endif
 
+// Whether to provide "collections" module
+#ifndef MICROPY_ENABLE_MOD_COLLECTIONS
+#define MICROPY_ENABLE_MOD_COLLECTIONS (1)
+#endif
+
 // Whether to provide "math" module
 #ifndef MICROPY_ENABLE_MOD_MATH
 #define MICROPY_ENABLE_MOD_MATH (1)
