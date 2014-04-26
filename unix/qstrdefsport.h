@@ -3,10 +3,6 @@
 Q(Test)
 
 Q(fileno)
-Q(read)
-Q(readall)
-Q(readline)
-Q(write)
 Q(makefile)
 
 Q(FileIO)
