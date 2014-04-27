@@ -539,3 +539,5 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
+// Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
+#define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))

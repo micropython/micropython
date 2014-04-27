@@ -163,6 +163,7 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     if (self->len >= self->alloc) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
         self->alloc *= 2;
+        mp_seq_clear(self->items, self->len + 1, self->alloc, sizeof(*self->items));
     }
     self->items[self->len++] = arg;
     return mp_const_none; // return None, as per CPython
@@ -178,6 +179,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
             // TODO: use alloc policy for "4"
             self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + arg->len + 4);
             self->alloc = self->len + arg->len + 4;
+            mp_seq_clear(self->items, self->len + arg->len, self->alloc, sizeof(*self->items));
         }
 
         memcpy(self->items + self->len, arg->items, sizeof(mp_obj_t) * arg->len);
@@ -199,6 +201,8 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
+    // Clear stale pointer from slot which just got freed to prevent GC issues
+    self->items[self->len] = MP_OBJ_NULL;
     if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
         self->alloc /= 2;
@@ -253,6 +257,7 @@ STATIC mp_obj_t list_clear(mp_obj_t self_in) {
     self->len = 0;
     self->items = m_renew(mp_obj_t, self->items, self->alloc, LIST_MIN_ALLOC);
     self->alloc = LIST_MIN_ALLOC;
+    mp_seq_clear(self->items, 0, self->alloc, sizeof(*self->items));
     return mp_const_none;
 }
 
@@ -368,6 +373,7 @@ void mp_obj_list_init(mp_obj_list_t *o, uint n) {
     o->alloc = n < LIST_MIN_ALLOC ? LIST_MIN_ALLOC : n;
     o->len = n;
     o->items = m_new(mp_obj_t, o->alloc);
+    mp_seq_clear(o->items, n, o->alloc, sizeof(*o->items));
 }
 
 STATIC mp_obj_list_t *list_new(uint n) {
