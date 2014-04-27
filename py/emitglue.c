@@ -47,16 +47,22 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     return rc;
 }
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, int n_args, int n_locals, uint scope_flags, qstr *arg_names) {
+void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags) {
     rc->kind = MP_CODE_BYTE;
     rc->scope_flags = scope_flags;
-    rc->n_args = n_args;
+    rc->n_pos_args = n_pos_args;
+    rc->n_kwonly_args = n_kwonly_args;
+    rc->arg_names = arg_names;
     rc->u_byte.code = code;
     rc->u_byte.len = len;
-    rc->arg_names = arg_names;
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign byte code: code=%p len=%u n_args=%d n_locals=%d\n", code, len, n_args, n_locals);
+    DEBUG_printf("assign byte code: code=%p len=%u n_pos_args=%d n_kwonly_args=%d flags=%x\n", code, len, n_pos_args, n_kwonly_args, scope_flags);
+    DEBUG_printf("  arg names:");
+    for (int i = 0; i < n_pos_args + n_kwonly_args; i++) {
+        DEBUG_printf(" %s", qstr_str(arg_names[i]));
+    }
+    DEBUG_printf("\n");
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
@@ -73,7 +79,7 @@ void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, int 
 void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
     rc->kind = MP_CODE_NATIVE;
     rc->scope_flags = 0;
-    rc->n_args = n_args;
+    rc->n_pos_args = n_args;
     rc->u_native.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -99,7 +105,7 @@ void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *fun, uint len, int
 void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
     rc->kind = MP_CODE_INLINE_ASM;
     rc->scope_flags = 0;
-    rc->n_args = n_args;
+    rc->n_pos_args = n_args;
     rc->u_inline_asm.fun = fun;
 
 #ifdef DEBUG_PRINT
@@ -136,13 +142,13 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     mp_obj_t fun;
     switch (rc->kind) {
         case MP_CODE_BYTE:
-            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_args, def_args, rc->u_byte.code);
+            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, rc->u_byte.code);
             break;
         case MP_CODE_NATIVE:
-            fun = mp_make_function_n(rc->n_args, rc->u_native.fun);
+            fun = mp_make_function_n(rc->n_pos_args, rc->u_native.fun);
             break;
         case MP_CODE_INLINE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_args, rc->u_inline_asm.fun);
+            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->u_inline_asm.fun);
             break;
         default:
             // raw code was never set (this should not happen)

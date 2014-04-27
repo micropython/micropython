@@ -73,7 +73,7 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
 
     if (emit->pass == PASS_3) {
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
     }
 
     return emit->success;

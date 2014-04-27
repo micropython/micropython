@@ -9,9 +9,11 @@ typedef enum {
 } mp_raw_code_kind_t;
 
 typedef struct _mp_code_t {
-    mp_raw_code_kind_t kind : 8;
-    uint scope_flags : 8;
-    uint n_args : 16;
+    mp_raw_code_kind_t kind : 3;
+    uint scope_flags : 7;
+    uint n_pos_args : 11;
+    uint n_kwonly_args : 11;
+    qstr *arg_names;
     union {
         struct {
             byte *code;
@@ -24,7 +26,6 @@ typedef struct _mp_code_t {
             void *fun;
         } u_inline_asm;
     };
-    qstr *arg_names;
 } mp_raw_code_t;
 
 void mp_emit_glue_init(void);
@@ -32,7 +33,7 @@ void mp_emit_glue_deinit(void);
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, int n_args, int n_locals, uint scope_flags, qstr *arg_names);
+void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
 void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
 void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
 

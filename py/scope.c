@@ -236,7 +236,7 @@ void scope_print_info(scope_t *s) {
     printf("\n");
     */
     printf("     flags %04x\n", s->scope_flags);
-    printf("     argcount %d\n", s->num_params);
+    printf("     argcount %d\n", s->num_pos_args);
     printf("     nlocals %d\n", s->num_locals);
     printf("     stacksize %d\n", s->stack_size);
 }

@@ -8,7 +8,8 @@ enum {
 
 enum {
     ID_FLAG_IS_PARAM = 0x01,
-    ID_FLAG_IS_DELETED = 0x02,
+    ID_FLAG_IS_STAR_PARAM = 0x02,
+    ID_FLAG_IS_DBL_STAR_PARAM = 0x04,
 };
 
 typedef struct _id_info_t {
@@ -32,7 +33,8 @@ typedef struct _scope_t {
     mp_raw_code_t *raw_code;
     uint8_t scope_flags;  // see runtime0.h
     uint8_t emit_options; // see compile.h
-    uint16_t num_params;
+    uint16_t num_pos_args;
+    uint16_t num_kwonly_args;
     uint16_t num_locals;
     uint16_t stack_size;     // maximum size of the locals stack
     uint16_t exc_stack_size; // maximum size of the exception stack

@@ -1,8 +1,9 @@
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals; // the context within which this function was defined
-    machine_uint_t n_args : 15;         // number of arguments this function takes
-    machine_uint_t n_def_args : 15;     // number of default arguments
+    machine_uint_t n_pos_args : 16;     // number of arguments this function takes
+    machine_uint_t n_kwonly_args : 16;  // number of arguments this function takes
+    machine_uint_t n_def_args : 16;     // number of default arguments
     machine_uint_t takes_var_args : 1;  // set if this function takes variable args
     machine_uint_t takes_kw_args : 1;   // set if this function takes keyword args
     const byte *bytecode;   // bytecode for the function

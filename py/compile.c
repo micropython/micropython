@@ -2789,14 +2789,17 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
 
 void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star, bool allow_annotations) {
     // TODO verify that *k and **k are last etc
-    qstr param_name = 0;
+    qstr param_name = MP_QSTR_NULL;
+    uint param_flag = ID_FLAG_IS_PARAM;
     mp_parse_node_t pn_annotation = MP_PARSE_NODE_NULL;
     if (MP_PARSE_NODE_IS_ID(pn)) {
         param_name = MP_PARSE_NODE_LEAF_ARG(pn);
         if (comp->have_star) {
-            // comes after a bare star, so doesn't count as a parameter
+            // comes after a star, so counts as a keyword-only parameter
+            comp->scope_cur->num_kwonly_args += 1;
         } else {
-            comp->scope_cur->num_params += 1;
+            // comes before a star, so counts as a positional parameter
+            comp->scope_cur->num_pos_args += 1;
         }
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
@@ -2822,12 +2825,15 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
             }
             */
             if (comp->have_star) {
-                // comes after a bare star, so doesn't count as a parameter
+                // comes after a star, so counts as a keyword-only parameter
+                comp->scope_cur->num_kwonly_args += 1;
             } else {
-                comp->scope_cur->num_params += 1;
+                // comes before a star, so counts as a positional parameter
+                comp->scope_cur->num_pos_args += 1;
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
             comp->have_star = true;
+            param_flag = ID_FLAG_IS_PARAM | ID_FLAG_IS_STAR_PARAM;
             if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                 // bare star
                 // TODO see http://www.python.org/dev/peps/pep-3102/
@@ -2848,6 +2854,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_dbl_star) {
             param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+            param_flag = ID_FLAG_IS_PARAM | ID_FLAG_IS_DBL_STAR_PARAM;
             if (allow_annotations && !MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
                 // this parameter has an annotation
                 pn_annotation = pns->nodes[1];
@@ -2859,7 +2866,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
         }
     }
 
-    if (param_name != 0) {
+    if (param_name != MP_QSTR_NULL) {
         if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
             // TODO this parameter has an annotation
         }
@@ -2870,15 +2877,15 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
             return;
         }
         id_info->kind = ID_INFO_KIND_LOCAL;
-        id_info->flags |= ID_FLAG_IS_PARAM;
+        id_info->flags = param_flag;
     }
 }
 
-void compile_scope_func_param(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void compile_scope_func_param(compiler_t *comp, mp_parse_node_t pn) {
     compile_scope_func_lambda_param(comp, pn, PN_typedargslist_name, PN_typedargslist_star, PN_typedargslist_dbl_star, true);
 }
 
-void compile_scope_lambda_param(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void compile_scope_lambda_param(compiler_t *comp, mp_parse_node_t pn) {
     compile_scope_func_lambda_param(comp, pn, PN_varargslist_name, PN_varargslist_star, PN_varargslist_dbl_star, false);
 }
 
@@ -3051,7 +3058,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);
             assert(added);
             id_info->kind = ID_INFO_KIND_LOCAL;
-            scope->num_params = 1;
+            scope->num_pos_args = 1;
         }
 
         if (scope->kind == SCOPE_LIST_COMP) {
@@ -3144,7 +3151,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     if (comp->pass == PASS_2) {
         mp_parse_node_t *pn_params;
         int n_params = list_get(&pns->nodes[1], PN_typedargslist, &pn_params);
-        scope->num_params = EMIT_INLINE_ASM_ARG(count_params, n_params, pn_params);
+        scope->num_pos_args = EMIT_INLINE_ASM_ARG(count_params, n_params, pn_params);
     }
 
     assert(MP_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
@@ -3235,6 +3242,25 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 #endif
 
 STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
+#if !MICROPY_EMIT_CPYTHON
+    // in Micro Python we put the *x parameter after all other parameters (except **y)
+    if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
+        id_info_t *id_param = NULL;
+        for (int i = scope->id_info_len - 1; i >= 0; i--) {
+            id_info_t *id = &scope->id_info[i];
+            if (id->flags & ID_FLAG_IS_STAR_PARAM) {
+                if (id_param != NULL) {
+                    // swap star param with last param
+                    id_info_t temp = *id_param; *id_param = *id; *id = temp;
+                }
+                break;
+            } else if (id_param == NULL && id->flags == ID_FLAG_IS_PARAM) {
+                id_param = id;
+            }
+        }
+    }
+#endif
+
     // in functions, turn implicit globals into explicit globals
     // compute the index of each local
     scope->num_locals = 0;
@@ -3247,10 +3273,9 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
         if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
-        // note: params always count for 1 local, even if they are a cell
+        // params always count for 1 local, even if they are a cell
         if (id->kind == ID_INFO_KIND_LOCAL || (id->flags & ID_FLAG_IS_PARAM)) {
-            id->local_num = scope->num_locals;
-            scope->num_locals += 1;
+            id->local_num = scope->num_locals++;
         }
     }
 
@@ -3309,7 +3334,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
                     id->local_num += num_free;
                 }
             }
-            scope->num_params += num_free; // free vars are counted as params for passing them into the function
+            scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
         }
 #endif

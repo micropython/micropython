@@ -230,7 +230,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // initialise locals from parameters
 #if N_X64
-    for (int i = 0; i < scope->num_params; i++) {
+    for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
         } else if (i == 1) {
@@ -243,7 +243,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 #elif N_THUMB
-    for (int i = 0; i < scope->num_params; i++) {
+    for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
             asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
         } else if (i == 1) {
@@ -283,10 +283,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == PASS_3) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
 #endif
     }
 }

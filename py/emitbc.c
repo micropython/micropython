@@ -300,14 +300,14 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new0(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
-        qstr *arg_names = m_new(qstr, emit->scope->num_params);
-        for (int i = 0; i < emit->scope->num_params; i++) {
+        qstr *arg_names = m_new(qstr, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
         }
         mp_emit_glue_assign_byte_code(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->byte_code_size,
-            emit->scope->num_params, emit->scope->num_locals,
-            emit->scope->scope_flags, arg_names);
+            emit->scope->num_pos_args, emit->scope->num_kwonly_args, arg_names,
+            emit->scope->scope_flags);
     }
 }
 
