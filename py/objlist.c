@@ -162,7 +162,6 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_list_t *self = self_in;
     if (self->len >= self->alloc) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
-        assert(self->items);
         self->alloc *= 2;
     }
     self->items[self->len++] = arg;
