@@ -68,7 +68,7 @@ typedef enum {
 #define PUSH_EXC_BLOCK() \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
-    exc_sp->opcode = op; \
+    exc_sp->opcode = *save_ip; \
     exc_sp->handler = ip + unum; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
     exc_sp->prev_exc = MP_OBJ_NULL; \
@@ -200,8 +200,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     #define DISPATCH() do { \
         TRACE(ip); \
         save_ip = ip; \
-        op = *ip++; \
-        goto *entry_table[op]; \
+        goto *entry_table[*ip++]; \
     } while(0)
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
@@ -229,7 +228,6 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
 outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
             // local variables that are not visible to the exception handler
-            byte op = 0;
             const byte *ip = *ip_in_out;
             mp_obj_t *sp = *sp_in_out;
             machine_uint_t unum;
@@ -256,11 +254,8 @@ dispatch_loop:
 #else
                 TRACE(ip);
                 save_ip = ip;
-                op = *ip++;
-
-                switch (op) {
+                switch (*ip++) {
 #endif
-                //printf("ip=%p sp=%p op=%u\n", save_ip, sp, op);
 
                 ENTRY(MP_BC_LOAD_CONST_FALSE):
                     PUSH(mp_const_false);
