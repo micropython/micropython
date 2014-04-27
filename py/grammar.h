@@ -275,10 +275,10 @@ DEF_RULE(classdef_2, nc, and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL
 // arglist: (argument ',')* (argument [','] | '*' test (',' argument)* [',' '**' test] | '**' test)
 
 // TODO arglist lets through more than is allowed, compiler needs to do further verification
-DEF_RULE(arglist, c(generic_all_nodes), list_with_end, rule(arglist_2), tok(DEL_COMMA))
+DEF_RULE(arglist, nc, list_with_end, rule(arglist_2), tok(DEL_COMMA))
 DEF_RULE(arglist_2, nc, or(3), rule(arglist_star), rule(arglist_dbl_star), rule(argument))
-DEF_RULE(arglist_star, c(arglist_star), and(2), tok(OP_STAR), rule(test))
-DEF_RULE(arglist_dbl_star, c(arglist_dbl_star), and(2), tok(OP_DBL_STAR), rule(test))
+DEF_RULE(arglist_star, nc, and(2), tok(OP_STAR), rule(test))
+DEF_RULE(arglist_dbl_star, nc, and(2), tok(OP_DBL_STAR), rule(test))
 
 // # The reason that keywords are test nodes instead of NAME is that using NAME
 // # results in an ambiguity. ast.c makes sure it's a NAME.
@@ -287,7 +287,7 @@ DEF_RULE(arglist_dbl_star, c(arglist_dbl_star), and(2), tok(OP_DBL_STAR), rule(t
 // comp_for: 'for' exprlist 'in' or_test [comp_iter]
 // comp_if: 'if' test_nocond [comp_iter]
 
-DEF_RULE(argument, c(argument), and(2), rule(test), opt_rule(argument_2))
+DEF_RULE(argument, nc, and(2), rule(test), opt_rule(argument_2))
 DEF_RULE(argument_2, nc, or(2), rule(comp_for), rule(argument_3))
 DEF_RULE(argument_3, nc, and(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE(comp_iter, nc, or(2), rule(comp_for), rule(comp_if))

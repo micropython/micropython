@@ -51,8 +51,6 @@ typedef struct _compiler_t {
     int break_continue_except_level;
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
-    uint16_t n_arg_keyword;
-    uint8_t star_flags;
     uint8_t have_star;
     uint16_t num_dict_params;
     uint16_t num_default_params;
@@ -264,6 +262,7 @@ STATIC mp_parse_node_t fold_constants(mp_parse_node_t pn) {
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
+void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind);
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 STATIC uint comp_next_label(compiler_t *comp) {
@@ -296,21 +295,6 @@ STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse
         s->next = scope;
     }
     return scope;
-}
-
-STATIC int list_len(mp_parse_node_t pn, int pn_kind) {
-    if (MP_PARSE_NODE_IS_NULL(pn)) {
-        return 0;
-    } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        return 1;
-    } else {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        if (MP_PARSE_NODE_STRUCT_KIND(pns) != pn_kind) {
-            return 1;
-        } else {
-            return MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-        }
-    }
 }
 
 STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
@@ -485,7 +469,7 @@ STATIC void cpython_c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_
 #endif
 
 // funnelling all tuple creations through this function is purely so we can optionally agree with CPython
-void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
+STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
 #if MICROPY_EMIT_CPYTHON
     cpython_c_tuple(comp, pn, pns_list);
 #else
@@ -2331,30 +2315,70 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     }
 #endif
 
-    uint old_n_arg_keyword = comp->n_arg_keyword;
-    uint old_star_flags = comp->star_flags;
-    comp->n_arg_keyword = 0;
-    comp->star_flags = 0;
+    // get the list of arguments
+    mp_parse_node_t *args;
+    int n_args = list_get(&pn_arglist, PN_arglist, &args);
 
-    compile_node(comp, pn_arglist); // arguments to function call; can be null
-
-    // compute number of positional arguments
-    int n_positional = n_positional_extra + list_len(pn_arglist, PN_arglist) - comp->n_arg_keyword;
-    if (comp->star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
-        n_positional -= 1;
+    // compile the arguments
+    // Rather than calling compile_node on the list, we go through the list of args
+    // explicitly here so that we can count the number of arguments and give sensible
+    // error messages.
+    int n_positional = n_positional_extra;
+    uint n_keyword = 0;
+    uint star_flags = 0;
+    for (int i = 0; i < n_args; i++) {
+        if (MP_PARSE_NODE_IS_STRUCT(args[i])) {
+            mp_parse_node_struct_t *pns_arg = (mp_parse_node_struct_t*)args[i];
+            if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_star) {
+                if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "can't have multiple *x");
+                    return;
+                }
+                star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
+                compile_node(comp, pns_arg->nodes[0]);
+            } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
+                if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "can't have multiple **x");
+                    return;
+                }
+                star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
+                compile_node(comp, pns_arg->nodes[0]);
+            } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
+                assert(MP_PARSE_NODE_IS_STRUCT(pns_arg->nodes[1])); // should always be
+                mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns_arg->nodes[1];
+                if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_argument_3) {
+                    if (!MP_PARSE_NODE_IS_ID(pns_arg->nodes[0])) {
+                        compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "LHS of keyword arg must be an id");
+                        return;
+                    }
+                    EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
+                    compile_node(comp, pns2->nodes[0]);
+                    n_keyword += 1;
+                } else {
+                    assert(MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for); // should always be
+                    compile_comprehension(comp, pns_arg, SCOPE_GEN_EXPR);
+                    n_positional++;
+                }
+            } else {
+                goto normal_argument;
+            }
+        } else {
+            normal_argument:
+            if (n_keyword > 0) {
+                compile_syntax_error(comp, args[i], "non-keyword arg after keyword arg");
+                return;
+            }
+            compile_node(comp, args[i]);
+            n_positional++;
+        }
     }
-    if (comp->star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
-        n_positional -= 1;
-    }
 
+    // emit the function/method call
     if (is_method_call) {
-        EMIT_ARG(call_method, n_positional, comp->n_arg_keyword, comp->star_flags);
+        EMIT_ARG(call_method, n_positional, n_keyword, star_flags);
     } else {
-        EMIT_ARG(call_function, n_positional, comp->n_arg_keyword, comp->star_flags);
+        EMIT_ARG(call_function, n_positional, n_keyword, star_flags);
     }
-
-    comp->n_arg_keyword = old_n_arg_keyword;
-    comp->star_flags = old_star_flags;
 }
 
 void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2675,43 +2699,6 @@ void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     qstr cname = compile_classdef_helper(comp, pns, comp->scope_cur->emit_options);
     // store class object into class name
     EMIT_ARG(store_id, cname);
-}
-
-void compile_arglist_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, "can't have multiple *x");
-        return;
-    }
-    comp->star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
-    compile_node(comp, pns->nodes[0]);
-}
-
-void compile_arglist_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, "can't have multiple **x");
-        return;
-    }
-    comp->star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
-    compile_node(comp, pns->nodes[0]);
-}
-
-void compile_argument(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])); // should always be
-    mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[1];
-    if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_argument_3) {
-        if (!MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, "left-hand-side of keyword argument must be an id");
-            return;
-        }
-        EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
-        compile_node(comp, pns2->nodes[0]);
-        comp->n_arg_keyword += 1;
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for) {
-        compile_comprehension(comp, pns, SCOPE_GEN_EXPR);
-    } else {
-        // shouldn't happen
-        assert(0);
-    }
 }
 
 void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
