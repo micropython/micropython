@@ -8,7 +8,6 @@
 #define MP_BC_LOAD_CONST_SMALL_INT   (0x14) // 24-bit, in excess
 #define MP_BC_LOAD_CONST_INT     (0x15) // qstr
 #define MP_BC_LOAD_CONST_DEC     (0x16) // qstr
-#define MP_BC_LOAD_CONST_ID      (0x17) // qstr
 #define MP_BC_LOAD_CONST_BYTES   (0x18) // qstr
 #define MP_BC_LOAD_CONST_STRING  (0x19) // qstr
 #define MP_BC_LOAD_NULL          (0x1a)

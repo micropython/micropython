@@ -948,7 +948,7 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
                     EMIT_ARG(build_map, 0);
                 }
 #endif
-                EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pn_id));
+                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
                 compile_node(comp, pn_equal);
 #if !MICROPY_EMIT_CPYTHON
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
@@ -1033,7 +1033,7 @@ qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint
     close_over_variables_etc(comp, cscope, 0, 0);
 
     // get its name
-    EMIT_ARG(load_const_id, cscope->simple_name);
+    EMIT_ARG(load_const_str, cscope->simple_name, false);
 
     // nodes[1] has parent classes, if any
     // empty parenthesis (eg class C():) gets here as an empty PN_classdef_2 and needs special handling
@@ -2352,7 +2352,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                         compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "LHS of keyword arg must be an id");
                         return;
                     }
-                    EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
+                    EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]), false);
                     compile_node(comp, pns2->nodes[0]);
                     n_keyword += 1;
                 } else {
@@ -3087,7 +3087,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
         EMIT_ARG(load_id, MP_QSTR___name__);
         EMIT_ARG(store_id, MP_QSTR___module__);
-        EMIT_ARG(load_const_id, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
+        EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]), false); // 0 is class name
         EMIT_ARG(store_id, MP_QSTR___qualname__);
 
         check_for_doc_string(comp, pns->nodes[2]);

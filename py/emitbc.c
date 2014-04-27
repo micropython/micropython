@@ -409,11 +409,6 @@ STATIC void emit_bc_load_const_dec(emit_t *emit, qstr qstr) {
     emit_write_byte_code_byte_qstr(emit, MP_BC_LOAD_CONST_DEC, qstr);
 }
 
-STATIC void emit_bc_load_const_id(emit_t *emit, qstr qstr) {
-    emit_bc_pre(emit, 1);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_LOAD_CONST_ID, qstr);
-}
-
 STATIC void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_bc_pre(emit, 1);
     if (bytes) {
@@ -840,7 +835,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_small_int,
     emit_bc_load_const_int,
     emit_bc_load_const_dec,
-    emit_bc_load_const_id,
     emit_bc_load_const_str,
     emit_bc_load_null,
     emit_bc_load_fast,

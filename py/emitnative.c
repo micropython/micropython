@@ -672,16 +672,6 @@ STATIC void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_load_const_id(emit_t *emit, qstr qstr) {
-    emit_native_pre(emit);
-    if (emit->do_viper_types) {
-        assert(0);
-    } else {
-        emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_STR, mp_load_const_str, qstr, REG_ARG_1); // TODO
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-    }
-}
-
 STATIC void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
     emit_native_pre(emit);
     if (emit->do_viper_types) {
@@ -1322,7 +1312,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_small_int,
     emit_native_load_const_int,
     emit_native_load_const_dec,
-    emit_native_load_const_id,
     emit_native_load_const_str,
     emit_native_load_null,
     emit_native_load_fast,

@@ -39,7 +39,6 @@ typedef struct _emit_method_table_t {
     void (*load_const_small_int)(emit_t *emit, machine_int_t arg);
     void (*load_const_int)(emit_t *emit, qstr qstr);
     void (*load_const_dec)(emit_t *emit, qstr qstr);
-    void (*load_const_id)(emit_t *emit, qstr qstr);
     void (*load_const_str)(emit_t *emit, qstr qstr, bool bytes);
     void (*load_null)(emit_t *emit);
     void (*load_fast)(emit_t *emit, qstr qstr, uint id_flags, int local_num);

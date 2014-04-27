@@ -123,11 +123,6 @@ void mp_byte_code_print2(const byte *ip, int len) {
                 printf("LOAD_CONST_DEC %s", qstr_str(qstr));
                 break;
 
-            case MP_BC_LOAD_CONST_ID:
-                DECODE_QSTR;
-                printf("LOAD_CONST_ID '%s'", qstr_str(qstr));
-                break;
-
             case MP_BC_LOAD_CONST_BYTES:
                 DECODE_QSTR;
                 printf("LOAD_CONST_BYTES %s", qstr_str(qstr));
