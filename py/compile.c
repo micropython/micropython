@@ -703,7 +703,7 @@ void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, 
                 EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
                 have_star_index = num_head + i;
             } else {
-                compile_syntax_error(comp, nodes_tail[i], "two starred expressions in assignment");
+                compile_syntax_error(comp, nodes_tail[i], "multiple *x in assignment");
                 return;
             }
         }
@@ -769,8 +769,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 // lhs is something in parenthesis
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty tuple
-                    compile_syntax_error(comp, pn, "can't assign to ()");
-                    return;
+                    goto cannot_assign;
                 } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
@@ -799,8 +798,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 break;
 
             default:
-                compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
-                return;
+                goto cannot_assign;
         }
         return;
 
@@ -818,8 +816,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
                 c_assign_tuple(comp, pns->nodes[0], n, pns2->nodes);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
                 // TODO can we ever get here? can it be compiled?
-                compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
-                return;
+                goto cannot_assign;
             } else {
                 // sequence with 2 items
                 goto sequence_with_2_items;
@@ -831,6 +828,10 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
         }
         return;
     }
+    return;
+
+    cannot_assign:
+    compile_syntax_error(comp, pn, "can't assign to expression");
     return;
 
     bad_aug:
@@ -2202,7 +2203,7 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 void compile_star_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    compile_syntax_error(comp, (mp_parse_node_t)pns, "can use starred expression only as assignment target");
+    compile_syntax_error(comp, (mp_parse_node_t)pns, "*x must be assignment target");
 }
 
 void compile_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2860,7 +2861,7 @@ void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_ki
         bool added;
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, &added);
         if (!added) {
-            compile_syntax_error(comp, pn, "same name used for parameter");
+            compile_syntax_error(comp, pn, "name reused for argument");
             return;
         }
         id_info->kind = ID_INFO_KIND_LOCAL;
