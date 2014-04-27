@@ -196,7 +196,7 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     if (self->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
     }
-    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1], false);
+    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
