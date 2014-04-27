@@ -1416,7 +1416,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #if MICROPY_EMIT_CPYTHON
         EMIT_ARG(load_const_verbatim_str, "('*',)");
 #else
-        EMIT_ARG(load_const_str, QSTR_FROM_STR_STATIC("*"), false);
+        EMIT_ARG(load_const_str, MP_QSTR__star_, false);
         EMIT_ARG(build_tuple, 1);
 #endif
 
@@ -3040,7 +3040,15 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_comp_for));
         mp_parse_node_struct_t *pns_comp_for = (mp_parse_node_struct_t*)pns->nodes[1];
 
+        // We need a unique name for the comprehension argument (the iterator).
+        // CPython uses .0, but we should be able to use anything that won't
+        // clash with a user defined variable.  Best to use an existing qstr,
+        // so we use the blank qstr.
+#if MICROPY_EMIT_CPYTHON
         qstr qstr_arg = QSTR_FROM_STR_STATIC(".0");
+#else
+        qstr qstr_arg = MP_QSTR_;
+#endif
         if (comp->pass == PASS_1) {
             bool added;
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);

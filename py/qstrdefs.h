@@ -2,6 +2,9 @@
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
 
+// TODO probably should add Python keywords, eg if, def, etc
+
+Q(*)
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
