@@ -98,13 +98,33 @@ STATIC void mp_map_rehash(mp_map_t *map) {
 // MP_MAP_LOOKUP_REMOVE_IF_FOUND behaviour:
 //  - returns NULL if not found, else the slot if was found in with key null and value non-null
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
+
+    // Work out if we can compare just pointers
+    bool compare_only_ptrs = map->all_keys_are_qstrs;
+    if (compare_only_ptrs) {
+        if (MP_OBJ_IS_QSTR(index)) {
+            // Index is a qstr, so can just do ptr comparison.
+        } else if (MP_OBJ_IS_TYPE(index, &mp_type_str)) {
+            // Index is a non-interned string.
+            // We can either intern the string, or force a full equality comparison.
+            // We chose the latter, since interning costs time and potentially RAM,
+            // and it won't necessarily benefit subsequent calls because these calls
+            // most likely won't pass the newly-interned string.
+            compare_only_ptrs = false;
+        } else if (!(lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
+            // If we are not adding, then we can return straight away a failed
+            // lookup because we know that the index will never be found.
+            return NULL;
+        }
+    }
+
     // if the map is a fixed array then we must do a brute force linear search
     if (map->table_is_fixed_array) {
         if (lookup_kind != MP_MAP_LOOKUP) {
             return NULL;
         }
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
-            if (elem->key == index || (!map->all_keys_are_qstrs && mp_obj_equal(elem->key, index))) {
+            if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 return elem;
             }
         }
@@ -148,7 +168,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             if (avail_slot == NULL) {
                 avail_slot = slot;
             }
-        } else if (slot->key == index || (!map->all_keys_are_qstrs && mp_obj_equal(slot->key, index))) {
+        } else if (slot->key == index || (!compare_only_ptrs && mp_obj_equal(slot->key, index))) {
             // found index
             // Note: CPython does not replace the index; try x={True:'true'};x[1]='one';x
             if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
