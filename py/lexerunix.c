@@ -22,11 +22,12 @@ typedef struct _mp_lexer_file_buf_t {
 
 STATIC unichar file_buf_next_char(mp_lexer_file_buf_t *fb) {
     if (fb->pos >= fb->len) {
-        if (fb->len < sizeof(fb->buf)) {
+        if (fb->len == 0) {
             return MP_LEXER_CHAR_EOF;
         } else {
             int n = read(fb->fd, fb->buf, sizeof(fb->buf));
             if (n <= 0) {
+                fb->len = 0;
                 return MP_LEXER_CHAR_EOF;
             }
             fb->len = n;
