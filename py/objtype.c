@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 #include <assert.h>
 
@@ -9,6 +11,13 @@
 #include "runtime0.h"
 #include "runtime.h"
 
+#if 0 // print debugging info
+#define DEBUG_PRINT (1)
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 /******************************************************************************/
 // class object
 // creating an instance of a class makes one of these objects
@@ -16,19 +25,65 @@
 typedef struct _mp_obj_class_t {
     mp_obj_base_t base;
     mp_map_t members;
+    mp_obj_t subobj[];
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_class_t;
 
-STATIC mp_obj_t mp_obj_new_class(mp_obj_t class) {
-    mp_obj_class_t *o = m_new_obj(mp_obj_class_t);
+#define is_native_type(type) ((type)->make_new != class_make_new)
+STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+
+STATIC mp_obj_t mp_obj_new_class(mp_obj_t class, uint subobjs) {
+    mp_obj_class_t *o = m_new_obj_var(mp_obj_class_t, mp_obj_t, subobjs);
     o->base.type = class;
     mp_map_init(&o->members, 0);
+    mp_seq_clear(o->subobj, 0, subobjs, sizeof(*o->subobj));
     return o;
 }
 
+STATIC int class_count_native_bases(const mp_obj_type_t *type, const mp_obj_type_t **last_native_base) {
+    uint len;
+    mp_obj_t *items;
+    mp_obj_tuple_get(type->bases_tuple, &len, &items);
+
+    int count = 0;
+    for (uint i = 0; i < len; i++) {
+        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+        if (is_native_type((const mp_obj_type_t *)items[i])) {
+            *last_native_base = items[i];
+            count++;
+        } else {
+            count += class_count_native_bases(items[i], last_native_base);
+        }
+    }
+
+    return count;
+}
+
+// TODO
+// This implements depth-first left-to-right MRO, which is not compliant with Python3 MRO
+// http://python-history.blogspot.com/2010/06/method-resolution-order.html
+// https://www.python.org/download/releases/2.3/mro/
+//
 // will return MP_OBJ_NULL if not found
-STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
+// will return MP_OBJ_SENTINEL if special method was found in a native type base
+// via slot id (meth_offset). As there can be only one native base, it's known that it
+// applies to instance->subobj[0]. In most cases, we also don't need to know which type
+// it was - because instance->subobj[0] is of that type. The only exception is when
+// object is not yet constructed, then we need to know base native type to construct
+// instance->subobj[0]. This case is handled via class_count_native_bases() though.
+STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr, machine_uint_t meth_offset) {
     for (;;) {
+        // Optimize special method lookup for native types
+        // This avoids extra method_name => slot lookup. On the other hand,
+        // this should not be applied to class types, as will result in extra
+        // lookup either.
+        if (meth_offset != 0 && is_native_type(type)) {
+            if (*(void**)((char*)type + meth_offset) != NULL) {
+                DEBUG_printf("mp_obj_class_lookup: matched special meth slot for %s\n", qstr_str(attr));
+                return MP_OBJ_SENTINEL;
+            }
+        }
+
         if (type->locals_dict != NULL) {
             // search locals_dict (the set of methods/attributes)
             assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
@@ -54,7 +109,7 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-            mp_obj_t obj = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
+            mp_obj_t obj = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr, meth_offset);
             if (obj != MP_OBJ_NULL) {
                 return obj;
             }
@@ -69,10 +124,15 @@ STATIC mp_obj_t mp_obj_class_lookup(const mp_obj_type_t *type, qstr attr) {
 STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_class_t *self = self_in;
     qstr meth = (kind == PRINT_STR) ? MP_QSTR___str__ : MP_QSTR___repr__;
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, meth);
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, meth, offsetof(mp_obj_type_t, print));
     if (member == MP_OBJ_NULL && kind == PRINT_STR) {
         // If there's no __str__, fall back to __repr__
-        member = mp_obj_class_lookup(self->base.type, MP_QSTR___repr__);
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___repr__, 0);
+    }
+
+    if (member == MP_OBJ_SENTINEL) {
+        mp_obj_print_helper(print, env, self->subobj[0], kind);
+        return;
     }
 
     if (member != MP_OBJ_NULL) {
@@ -89,13 +149,25 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
-    mp_obj_t o = mp_obj_new_class(self_in);
+    const mp_obj_type_t *native_base;
+    uint num_native_bases = class_count_native_bases(self, &native_base);
+    assert(num_native_bases < 2);
+
+    mp_obj_class_t *o = mp_obj_new_class(self_in, num_native_bases);
 
     // look for __init__ function
-    mp_obj_t init_fn = mp_obj_class_lookup(self, MP_QSTR___init__);
+    mp_obj_t init_fn = mp_obj_class_lookup(self, MP_QSTR___init__, offsetof(mp_obj_type_t, make_new));
 
-    if (init_fn != MP_OBJ_NULL) {
-        // call __init__ function
+    if (init_fn == MP_OBJ_SENTINEL) {
+        // Native type's constructor is what wins - it gets all our arguments,
+        // and none Python classes are initialized at all.
+        o->subobj[0] = native_base->make_new((mp_obj_type_t*)native_base, n_args, n_kw, args);
+    } else if (init_fn != MP_OBJ_NULL) {
+        // We need to default-initialize any native subobjs first
+        if (num_native_bases > 0) {
+            o->subobj[0] = native_base->make_new((mp_obj_type_t*)native_base, 0, 0, NULL);
+        }
+        // now call Python class __init__ function with all args
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
             init_ret = mp_call_function_n_kw(init_fn, 1, 0, (mp_obj_t*)&o);
@@ -111,9 +183,8 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
         }
 
     } else {
-        // TODO
         if (n_args != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes 0 positional arguments but %d were given", n_args));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object() takes no parameters"));
         }
     }
 
@@ -132,11 +203,15 @@ STATIC const qstr unary_op_method_name[] = {
 STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
     mp_obj_class_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
+    /* Still try to lookup native slot
     if (op_name == 0) {
         return MP_OBJ_NOT_SUPPORTED;
     }
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, op_name);
-    if (member != MP_OBJ_NULL) {
+    */
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, op_name, offsetof(mp_obj_type_t, unary_op));
+    if (member == MP_OBJ_SENTINEL) {
+        return mp_unary_op(op, self->subobj[0]);
+    } else if (member != MP_OBJ_NULL) {
         return mp_call_function_1(member, self_in);
     } else {
         return MP_OBJ_NOT_SUPPORTED;
@@ -210,11 +285,15 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_class_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
+    /* Still try to lookup native slot
     if (op_name == 0) {
         return MP_OBJ_NOT_SUPPORTED;
     }
-    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name);
-    if (member != MP_OBJ_NULL) {
+    */
+    mp_obj_t member = mp_obj_class_lookup(lhs->base.type, op_name, offsetof(mp_obj_type_t, binary_op));
+    if (member == MP_OBJ_SENTINEL) {
+        return mp_binary_op(op, lhs->subobj[0], rhs_in);
+    } else if (member != MP_OBJ_NULL) {
         mp_obj_t dest[3];
         dest[1] = MP_OBJ_NULL;
         class_convert_return_attr(lhs_in, member, dest);
@@ -237,7 +316,7 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr, 0);
     if (member != MP_OBJ_NULL) {
         if (0) {
 #if MICROPY_ENABLE_PROPERTY
@@ -280,7 +359,7 @@ STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 #if MICROPY_ENABLE_PROPERTY
     // for property, we need to do a lookup first in the class dict
     // this makes all stores slow... how to fix?
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr);
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, attr, 0);
     if (member != MP_OBJ_NULL && MP_OBJ_IS_TYPE(member, &mp_type_property)) {
         // attribute already exists and is a property
         // delegate the store to the property
@@ -313,18 +392,20 @@ STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     uint meth_args;
     if (value == MP_OBJ_NULL) {
         // delete item
-        member = mp_obj_class_lookup(self->base.type, MP_QSTR___delitem__);
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___delitem__, offsetof(mp_obj_type_t, subscr));
         meth_args = 2;
     } else if (value == MP_OBJ_SENTINEL) {
         // load item
-        member = mp_obj_class_lookup(self->base.type, MP_QSTR___getitem__);
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___getitem__, offsetof(mp_obj_type_t, subscr));
         meth_args = 2;
     } else {
         // store item
-        member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__);
+        member = mp_obj_class_lookup(self->base.type, MP_QSTR___setitem__, offsetof(mp_obj_type_t, subscr));
         meth_args = 3;
     }
-    if (member != MP_OBJ_NULL) {
+    if (member == MP_OBJ_SENTINEL) {
+        return mp_obj_subscr(self->subobj[0], index, value);
+    } else if (member != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         // TODO probably need to call class_convert_return_attr, and use mp_call_method_n_kw
         mp_obj_t ret = mp_call_function_n_kw(member, meth_args, 0, args);
@@ -340,9 +421,12 @@ STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 STATIC mp_obj_t class_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_class_t *self = self_in;
-    mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___call__);
+    mp_obj_t member = mp_obj_class_lookup(self->base.type, MP_QSTR___call__, offsetof(mp_obj_type_t, call));
     if (member == MP_OBJ_NULL) {
         return member;
+    }
+    if (member == MP_OBJ_SENTINEL) {
+        return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);
     }
     mp_obj_t meth = mp_obj_new_bound_meth(member, self);
     return mp_call_function_n_kw(meth, n_args, n_kw, args);
@@ -403,7 +487,7 @@ STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 #endif
-    mp_obj_t member = mp_obj_class_lookup(self, attr);
+    mp_obj_t member = mp_obj_class_lookup(self, attr, 0);
     if (member != MP_OBJ_NULL) {
         // check if the methods are functions, static or class methods
         // see http://docs.python.org/3.3/howto/descriptor.html
@@ -474,6 +558,20 @@ const mp_obj_type_t mp_type_type = {
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // Micro Python restriction, for now
     assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // Micro Python restriction, for now
+
+    // Basic validation of base classes
+    uint len;
+    mp_obj_t *items;
+    mp_obj_tuple_get(bases_tuple, &len, &items);
+    for (uint i = 0; i < len; i++) {
+        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+        mp_obj_type_t *t = items[i];
+        // TODO: Verify with CPy, tested on function type
+        if (t->make_new == NULL) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "type '%s' is not an acceptable base type", qstr_str(t->name)));
+        }
+    }
+
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
     o->base.type = &mp_type_type;
     o->name = name;
@@ -487,6 +585,13 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->call = class_call;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
+
+    const mp_obj_type_t *native_base;
+    uint num_native_bases = class_count_native_bases(o, &native_base);
+    if (num_native_bases > 1) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "multiple bases have instance lay-out conflict"));
+    }
+
     return o;
 }
 
@@ -536,7 +641,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr);
+        mp_obj_t member = mp_obj_class_lookup((mp_obj_type_t*)items[i], attr, 0);
         if (member != MP_OBJ_NULL) {
             class_convert_return_attr(self->obj, member, dest);
             return;
