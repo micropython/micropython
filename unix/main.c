@@ -303,6 +303,9 @@ void pre_process_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+#ifdef MICROPY_INIT_FUNC
+    MICROPY_INIT_FUNC;
+#endif
     volatile int stack_dummy;
     stack_top = (void*)&stack_dummy;
 

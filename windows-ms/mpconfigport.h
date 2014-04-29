@@ -14,6 +14,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_INIT_FUNC           init()
 
 #define MICROPY_EXTRA_CONSTANTS { "dummy", 0 } //can't have 0 sized array
 
@@ -50,7 +51,6 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 
 #define inline __inline
 #define restrict
-#define snprintf _snprintf
 #define alloca _alloca
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
@@ -65,7 +65,10 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 
 // Functions implemented in platform code
 
+extern int snprintf(char *dest, size_t count, const char *format, ...);
+
 #include "realpath.h"
+
 
 #pragma warning ( disable : 4715 ) //not all control paths return a value, when using nlr_raise
 #pragma warning ( disable : 4716 ) //function must return a value, when using nlr_raise
