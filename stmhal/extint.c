@@ -204,7 +204,7 @@ STATIC mp_obj_t extint_obj_line(mp_obj_t self_in) {
     extint_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(self->line);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj,i extint_obj_line);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
 
 /// \method enable()
 /// Enable a disabled interrupt.
