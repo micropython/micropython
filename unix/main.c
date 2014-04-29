@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-#ifdef __MINGW32__
+#if defined( __MINGW32__ ) || defined( _MSC_VER )
             char *basedir = _fullpath(NULL, argv[a], _MAX_PATH);
 #else
             char *basedir = realpath(argv[a], NULL);

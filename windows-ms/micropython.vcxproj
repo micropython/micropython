@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{740F3C30-EB6C-4B59-9C50-AE4D5A4A9D12}</ProjectGuid>
+    <RootNamespace>micropython</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="common.props" />
+    <Import Project="debug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="common.props" />
+    <Import Project="release.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile />
+    <Link />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile />
+    <Link />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\py\argcheck.c" />
+    <ClCompile Include="..\py\asmthumb.c" />
+    <ClCompile Include="..\py\binary.c" />
+    <ClCompile Include="..\py\builtin.c" />
+    <ClCompile Include="..\py\builtinevex.c" />
+    <ClCompile Include="..\py\builtinimport.c" />
+    <ClCompile Include="..\py\builtintables.c" />
+    <ClCompile Include="..\py\compile.c" />
+    <ClCompile Include="..\py\emitbc.c" />
+    <ClCompile Include="..\py\emitcommon.c" />
+    <ClCompile Include="..\py\emitcpy.c" />
+    <ClCompile Include="..\py\emitglue.c" />
+    <ClCompile Include="..\py\emitinlinethumb.c" />
+    <ClCompile Include="..\py\emitnative.c" />
+    <ClCompile Include="..\py\emitpass1.c" />
+    <ClCompile Include="..\py\formatfloat.c" />
+    <ClCompile Include="..\py\gc.c" />
+    <ClCompile Include="..\py\lexer.c" />
+    <ClCompile Include="..\py\lexerstr.c" />
+    <ClCompile Include="..\py\lexerunix.c" />
+    <ClCompile Include="..\py\malloc.c" />
+    <ClCompile Include="..\py\map.c" />
+    <ClCompile Include="..\py\modarray.c" />
+    <ClCompile Include="..\py\modcmath.c" />
+    <ClCompile Include="..\py\modcollections.c" />
+    <ClCompile Include="..\py\modio.c" />
+    <ClCompile Include="..\py\modmath.c" />
+    <ClCompile Include="..\py\modmicropython.c" />
+    <ClCompile Include="..\py\modstruct.c" />
+    <ClCompile Include="..\py\modsys.c" />
+    <ClCompile Include="..\py\mpz.c" />
+    <ClCompile Include="..\py\nlrsetjmp.c" />
+    <ClCompile Include="..\py\obj.c" />
+    <ClCompile Include="..\py\objarray.c" />
+    <ClCompile Include="..\py\objbool.c" />
+    <ClCompile Include="..\py\objboundmeth.c" />
+    <ClCompile Include="..\py\objcell.c" />
+    <ClCompile Include="..\py\objclosure.c" />
+    <ClCompile Include="..\py\objcomplex.c" />
+    <ClCompile Include="..\py\objdict.c" />
+    <ClCompile Include="..\py\objenumerate.c" />
+    <ClCompile Include="..\py\objexcept.c" />
+    <ClCompile Include="..\py\objfilter.c" />
+    <ClCompile Include="..\py\objfloat.c" />
+    <ClCompile Include="..\py\objfun.c" />
+    <ClCompile Include="..\py\objgenerator.c" />
+    <ClCompile Include="..\py\objgetitemiter.c" />
+    <ClCompile Include="..\py\objint.c" />
+    <ClCompile Include="..\py\objint_longlong.c" />
+    <ClCompile Include="..\py\objint_mpz.c" />
+    <ClCompile Include="..\py\objlist.c" />
+    <ClCompile Include="..\py\objmap.c" />
+    <ClCompile Include="..\py\objmodule.c" />
+    <ClCompile Include="..\py\objnamedtuple.c" />
+    <ClCompile Include="..\py\objnone.c" />
+    <ClCompile Include="..\py\objobject.c" />
+    <ClCompile Include="..\py\objproperty.c" />
+    <ClCompile Include="..\py\objrange.c" />
+    <ClCompile Include="..\py\objset.c" />
+    <ClCompile Include="..\py\objslice.c" />
+    <ClCompile Include="..\py\objstr.c" />
+    <ClCompile Include="..\py\objstringio.c" />
+    <ClCompile Include="..\py\objtuple.c" />
+    <ClCompile Include="..\py\objtype.c" />
+    <ClCompile Include="..\py\objzip.c" />
+    <ClCompile Include="..\py\opmethods.c" />
+    <ClCompile Include="..\py\parse.c" />
+    <ClCompile Include="..\py\parsehelper.c" />
+    <ClCompile Include="..\py\parsenum.c" />
+    <ClCompile Include="..\py\parsenumbase.c" />
+    <ClCompile Include="..\py\pfenv.c" />
+    <ClCompile Include="..\py\qstr.c" />
+    <ClCompile Include="..\py\repl.c" />
+    <ClCompile Include="..\py\runtime.c" />
+    <ClCompile Include="..\py\scope.c" />
+    <ClCompile Include="..\py\sequence.c" />
+    <ClCompile Include="..\py\showbc.c" />
+    <ClCompile Include="..\py\smallint.c" />
+    <ClCompile Include="..\py\stream.c" />
+    <ClCompile Include="..\py\unicode.c" />
+    <ClCompile Include="..\py\vm.c" />
+    <ClCompile Include="..\py\vstr.c" />
+    <ClCompile Include="..\unix\file.c" />
+    <ClCompile Include="..\unix\gccollect.c" />
+    <ClCompile Include="..\unix\main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\py\asmthumb.h" />
+    <ClInclude Include="..\py\bc.h" />
+    <ClInclude Include="..\py\bc0.h" />
+    <ClInclude Include="..\py\binary.h" />
+    <ClInclude Include="..\py\builtin.h" />
+    <ClInclude Include="..\py\builtintables.h" />
+    <ClInclude Include="..\py\compile.h" />
+    <ClInclude Include="..\py\emit.h" />
+    <ClInclude Include="..\py\emitglue.h" />
+    <ClInclude Include="..\py\formatfloat.h" />
+    <ClInclude Include="..\py\gc.h" />
+    <ClInclude Include="..\py\grammar.h" />
+    <ClInclude Include="..\py\lexer.h" />
+    <ClInclude Include="..\py\lexerunix.h" />
+    <ClInclude Include="..\py\misc.h" />
+    <ClInclude Include="..\py\mpconfig.h" />
+    <ClInclude Include="..\py\mpz.h" />
+    <ClInclude Include="..\py\nlr.h" />
+    <ClInclude Include="..\py\obj.h" />
+    <ClInclude Include="..\py\objarray.h" />
+    <ClInclude Include="..\py\objfun.h" />
+    <ClInclude Include="..\py\objgenerator.h" />
+    <ClInclude Include="..\py\objint.h" />
+    <ClInclude Include="..\py\objlist.h" />
+    <ClInclude Include="..\py\objmodule.h" />
+    <ClInclude Include="..\py\objstr.h" />
+    <ClInclude Include="..\py\objtuple.h" />
+    <ClInclude Include="..\py\parse.h" />
+    <ClInclude Include="..\py\parsehelper.h" />
+    <ClInclude Include="..\py\parsenum.h" />
+    <ClInclude Include="..\py\parsenumbase.h" />
+    <ClInclude Include="..\py\pfenv.h" />
+    <ClInclude Include="..\py\qstr.h" />
+    <ClInclude Include="..\py\qstrdefs.h" />
+    <ClInclude Include="..\py\repl.h" />
+    <ClInclude Include="..\py\runtime.h" />
+    <ClInclude Include="..\py\runtime0.h" />
+    <ClInclude Include="..\py\scope.h" />
+    <ClInclude Include="..\py\smallint.h" />
+    <ClInclude Include="..\py\stream.h" />
+    <ClInclude Include="..\py\vmentrytable.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

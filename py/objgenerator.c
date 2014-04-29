@@ -62,9 +62,9 @@ typedef struct _mp_obj_gen_instance_t {
     mp_exc_stack_t *exc_sp;
     uint n_state;
     // Variable-length
-    mp_obj_t state[0];
+    mp_obj_t state[DYNAMIC_ARRAY_DEFAULT_SIZE];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
-    mp_exc_stack_t exc_state[0];
+    mp_exc_stack_t exc_state[DYNAMIC_ARRAY_DEFAULT_SIZE];
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
