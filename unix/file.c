@@ -18,6 +18,15 @@ typedef struct _mp_obj_fdfile_t {
     int fd;
 } mp_obj_fdfile_t;
 
+#ifdef MICROPY_CPYTHON_COMPAT
+void check_fd_is_open(const mp_obj_fdfile_t *o) {
+    if (o->fd < 0)
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+}
+#else
+#define check_fd_is_open(o)
+#endif
+
 STATIC const mp_obj_type_t rawfile_type;
 
 STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -27,6 +36,7 @@ STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *e
 
 STATIC machine_int_t fdfile_read(mp_obj_t o_in, void *buf, machine_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
+    check_fd_is_open(o);
     machine_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
@@ -36,6 +46,7 @@ STATIC machine_int_t fdfile_read(mp_obj_t o_in, void *buf, machine_uint_t size, 
 
 STATIC machine_int_t fdfile_write(mp_obj_t o_in, const void *buf, machine_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
+    check_fd_is_open(o);
     machine_int_t r = write(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
@@ -46,6 +57,9 @@ STATIC machine_int_t fdfile_write(mp_obj_t o_in, const void *buf, machine_uint_t
 STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     close(self->fd);
+#ifdef MICROPY_CPYTHON_COMPAT
+    self->fd = -1;
+#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
@@ -57,6 +71,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___e
 
 STATIC mp_obj_t fdfile_fileno(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
+    check_fd_is_open(self);
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
