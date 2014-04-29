@@ -14,17 +14,22 @@
 
 #if MICROPY_HW_HAS_SWITCH
 
-// Usage Model:
-//
-//      sw = pyb.Switch()       # create a switch object
-//      sw()                    # get state (True if pressed, False otherwise)
-//      sw.callback(f)          # register a callback to be called when the
-//                              #   switch is pressed down
-//      sw.callback(None)       # remove the callback
-//
-// Example:
-//
-// pyb.Switch().callback(lambda: pyb.LED(1).toggle())
+/// \moduleref pyb
+/// \class Switch - switch object
+///
+/// A Switch object is used to control a push-button switch.
+///
+/// Usage:
+///
+///      sw = pyb.Switch()       # create a switch object
+///      sw()                    # get state (True if pressed, False otherwise)
+///      sw.callback(f)          # register a callback to be called when the
+///                              #   switch is pressed down
+///      sw.callback(None)       # remove the callback
+///
+/// Example:
+///
+///      pyb.Switch().callback(lambda: pyb.LED(1).toggle())
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
@@ -55,6 +60,8 @@ void pyb_switch_print(void (*print)(void *env, const char *fmt, ...), void *env,
     print(env, "Switch()");
 }
 
+/// \classmethod \constructor()
+/// Create and return a switch object.
 STATIC mp_obj_t pyb_switch_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -70,6 +77,8 @@ STATIC mp_obj_t pyb_switch_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
     return (mp_obj_t)&pyb_switch_obj;
 }
 
+/// \method \call()
+/// Return the switch state: `True` if pressed down, `False` otherwise.
 mp_obj_t pyb_switch_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // get switch state
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -84,6 +93,9 @@ STATIC mp_obj_t switch_callback(mp_obj_t line) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 
+/// \method callback(fun)
+/// Register the given function to be called when the switch is pressed down.
+/// If `fun` is `None`, then it disables the callback.
 mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_switch_obj_t *self = self_in;
     self->callback = callback;

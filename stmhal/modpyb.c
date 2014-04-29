@@ -32,7 +32,12 @@
 #include "modpyb.h"
 #include "ff.h"
 
-// print lots of info about the board
+/// \module pyb - functions related to the pyboard
+///
+/// The `pyb` module contains specific functions related to the pyboard.
+
+/// \function info([dump_alloc_table])
+/// Print out lots of information about the board.
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
@@ -99,14 +104,16 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 
-// get unique MCU id; 96 bits = 12 bytes
+/// \function unique_id()
+/// Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
 STATIC mp_obj_t pyb_unique_id(void) {
     byte *id = (byte*)0x1fff7a10;
     return mp_obj_new_bytes(id, 12);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 
-// get clock frequencies
+/// \function freq()
+/// Return a tuple of clock frequencies: (SYSCLK, HCLK, PCLK1, PCLK2).
 // TODO should also be able to set frequency via this function
 STATIC mp_obj_t pyb_freq(void) {
     mp_obj_t tuple[4] = {
@@ -119,24 +126,31 @@ STATIC mp_obj_t pyb_freq(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
 
-// sync all file systems
+/// \function sync()
+/// Sync all file systems.
 STATIC mp_obj_t pyb_sync(void) {
     storage_flush();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 
+/// \function millis()
+/// Returns the number of milliseconds since the board was last reset.
 STATIC mp_obj_t pyb_millis(void) {
     return mp_obj_new_int(HAL_GetTick());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
+/// \function delay(ms)
+/// Delay for the given number of milliseconds.
 STATIC mp_obj_t pyb_delay(mp_obj_t count) {
     HAL_Delay(mp_obj_get_int(count));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 
+/// \function udelay(us)
+/// Delay for the given number of microseconds.
 STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
     uint32_t count = 0;
     const uint32_t utime = (168 * mp_obj_get_int(usec) / 5);
@@ -146,28 +160,32 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec) {
         }
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
+/// \function wfi()
+/// Wait for an interrupt.
+/// This executies a `wfi` instruction which reduces power consumption
+/// of the MCU until an interrupt occurs, at which point execution continues.
 STATIC mp_obj_t pyb_wfi(void) {
     __WFI();
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
 
+/// \function disable_irq()
+/// Disable interrupt requests.
 STATIC mp_obj_t pyb_disable_irq(void) {
     __disable_irq();
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
 
+/// \function enable_irq()
+/// Enable interrupt requests.
 STATIC mp_obj_t pyb_enable_irq(void) {
     __enable_irq();
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_irq_obj, pyb_enable_irq);
 
 #if 0
@@ -224,12 +242,16 @@ STATIC mp_obj_t pyb_standby(void) {
 
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
+/// \function have_cdc()
+/// Return True if USB is connected as a serial device, False otherwise.
 STATIC mp_obj_t pyb_have_cdc(void ) {
     return MP_BOOL(usb_vcp_is_connected());
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 
+/// \function hid((buttons, x, y, z))
+/// Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
+/// signal a HID mouse-motion event.
 STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(arg, 4, &items);
@@ -241,7 +263,6 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
     usb_hid_send_report(data);
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c

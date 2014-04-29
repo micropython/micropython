@@ -13,6 +13,10 @@
 #include "timer.h"
 #include "dac.h"
 
+/// \moduleref pyb
+/// \class DAC - digital to analog conversion
+///
+
 STATIC DAC_HandleTypeDef DAC_Handle;
 
 void dac_init(void) {

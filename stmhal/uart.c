@@ -12,20 +12,25 @@
 #include "bufhelper.h"
 #include "uart.h"
 
-// Usage model:
-//
-// See usage model of I2C in i2c.c.  UART is very similar.  Main difference is
-// parameters to init the UART bus:
-//
-//     from pyb import UART
-//     uart = UART(1, 9600)                         # init with given baudrate
-//     uart.init(9600, bits=8, stop=1, parity=None) # init with given parameters
-//
-// Bits can be 8 or 9, stop can be 1 or 2, parity can be None, 0 (even), 1 (odd).
-//
-// Extra method:
-//
-//     uart.any()               # returns True if any characters waiting
+/// \moduleref pyb
+/// \class UART - duplex serial communication bus
+///
+/// UART implements the standard UART/USART duplex serial communications protocol.  At
+/// the physical level it consists of 2 lines: RX and TX.
+///
+/// See usage model of I2C.  UART is very similar.  Main difference is
+/// parameters to init the UART bus:
+///
+///     from pyb import UART
+///
+///     uart = UART(1, 9600)                         # init with given baudrate
+///     uart.init(9600, bits=8, stop=1, parity=None) # init with given parameters
+///
+/// Bits can be 8 or 9, stop can be 1 or 2, parity can be None, 0 (even), 1 (odd).
+///
+/// Extra method:
+///
+///     uart.any()               # returns True if any characters waiting
 
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
@@ -225,6 +230,14 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
     }
 }
 
+/// \method init(baudrate, *, bits=8, stop=1, parity=None)
+///
+/// Initialise the SPI bus with the given parameters:
+///
+///   - `baudrate` is the clock rate.
+///   - `bits` is the number of bits per byte, 8 or 9.
+///   - `stop` is the number of stop bits, 1 or 2.
+///   - `parity` is the parity, `None`, 0 (even) or 1 (odd).
 STATIC const mp_arg_t pyb_uart_init_args[] = {
     { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
     { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
@@ -265,6 +278,13 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp
     return mp_const_none;
 }
 
+/// \classmethod \constructor(bus, ...)
+///
+/// Construct a UART object on the given bus.  `bus` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
+/// With no additional parameters, the UART object is created but not
+/// initialised (it has the settings from the last initialisation of
+/// the bus, if any).  If extra arguments are given, the bus is initialised.
+/// See `init` for parameters of initialisation.
 STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -310,6 +330,8 @@ STATIC mp_obj_t pyb_uart_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
+/// \method deinit()
+/// Turn off the UART bus.
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
     uart_deinit(self);
@@ -317,6 +339,8 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_deinit_obj, pyb_uart_deinit);
 
+/// \method any()
+/// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
     if (uart_rx_any(self)) {
@@ -327,6 +351,13 @@ STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
+/// \method send(send, *, timeout=5000)
+/// Send data on the bus:
+///
+///   - `send` is the data to send (an integer to send, or a buffer object).
+///   - `timeout` is the timeout in milliseconds to wait for the send.
+///
+/// Return value: `None`.
 STATIC const mp_arg_t pyb_uart_send_args[] = {
     { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
@@ -359,6 +390,16 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_obj, 1, pyb_uart_send);
 
+/// \method recv(recv, *, timeout=5000)
+///
+/// Receive data on the bus:
+///
+///   - `recv` can be an integer, which is the number of bytes to receive,
+///     or a mutable buffer, which will be filled with received bytes.
+///   - `timeout` is the timeout in milliseconds to wait for the receive.
+///
+/// Return value: if `recv` is an integer then a new buffer of the bytes received,
+/// otherwise the same buffer that was passed in to `recv`.
 STATIC const mp_arg_t pyb_uart_recv_args[] = {
     { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },

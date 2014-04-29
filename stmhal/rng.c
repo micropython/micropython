@@ -10,6 +10,8 @@
 
 #if MICROPY_HW_ENABLE_RNG
 
+/// \moduleref pyb
+
 STATIC RNG_HandleTypeDef RNGHandle = {.Instance = NULL};
 
 void rng_init0(void) {
@@ -30,6 +32,8 @@ uint32_t rng_get(void) {
     return HAL_RNG_GetRandomNumber(&RNGHandle);
 }
 
+/// \function rng()
+/// Return a 30-bit hardware generated random number.
 STATIC mp_obj_t pyb_rng_get(void) {
     if (RNGHandle.State == HAL_RNG_STATE_RESET) {
         rng_init();
