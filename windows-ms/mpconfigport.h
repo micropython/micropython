@@ -62,5 +62,10 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
 
+
+// Functions implemented in platform code
+
+#include "realpath.h"
+
 #pragma warning ( disable : 4715 ) //not all control paths return a value, when using nlr_raise
 #pragma warning ( disable : 4716 ) //function must return a value, when using nlr_raise

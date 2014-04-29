@@ -394,11 +394,7 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-#if defined( __MINGW32__ ) || defined( _MSC_VER )
-            char *basedir = _fullpath(NULL, argv[a], _MAX_PATH);
-#else
             char *basedir = realpath(argv[a], NULL);
-#endif
             if (basedir == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
                 perror("");

@@ -19,7 +19,7 @@
       <PreProc>$(DestDir)qstrdefs.preprocessed.h</PreProc>
       <QstrDefs>$(MsBuildThisFileDirectory)\..\unix\qstrdefsport.h</QstrDefs>
     </PropertyGroup>
-    <Exec Command="cl /I$(SrcDir) /I$(MsBuildThisFileDirectory) /Fi$(PreProc) /P $(SrcDir)qstrdefs.h"/>
+    <Exec Command="cl /I$(SrcDir) /I$(MsBuildThisFileDirectory) /I$(MsBuildThisFileDirectory)../windows /Fi$(PreProc) /P $(SrcDir)qstrdefs.h"/>
     <Exec Command="python $(SrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(DestDir)qstrdefs.generated.h"/>
   </Target>
 

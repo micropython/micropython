@@ -137,6 +137,9 @@
     <ClCompile Include="..\unix\file.c" />
     <ClCompile Include="..\unix\gccollect.c" />
     <ClCompile Include="..\unix\main.c" />
+    <ClCompile Include="..\windows\realpath.c" />
+    <ClCompile Include="init.c" />
+    <ClCompile Include="snprintf.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\py\asmthumb.h" />

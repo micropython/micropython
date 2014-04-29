@@ -41,7 +41,7 @@ def re_match_first(regexs, line):
 # use a list so that matching order is honoured
 cpp_regexs = [
     ('qstr', r'Q\((.+)\)$'),
-    ('cdecl', r'(typedef|extern) [A-Za-z0-9_* ]+;$')
+    ('cdecl', r'(typedef|extern) [A-Za-z0-9_*(,\.) ]+;$')
 ]
 
 def do_work(infiles):
