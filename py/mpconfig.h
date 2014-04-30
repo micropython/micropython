@@ -230,3 +230,6 @@ typedef double mp_float_t;
 #define INT_FMT "%d"
 #endif
 #endif //INT_FMT
+
+// Modifier for function which doesn't return
+#define NORETURN __attribute__((noreturn))

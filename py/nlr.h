@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <setjmp.h>
+#include "mpconfig.h"
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
@@ -33,7 +34,7 @@ struct _nlr_buf_t {
 
 #if MICROPY_NLR_SETJMP
 extern nlr_buf_t *nlr_setjmp_top;
-void nlr_setjmp_jump(void *val) __attribute__((noreturn));
+NORETURN void nlr_setjmp_jump(void *val);
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
 #define nlr_push(buf) ((buf)->prev = nlr_setjmp_top, nlr_setjmp_top = (buf), setjmp((buf)->jmpbuf))
@@ -42,7 +43,7 @@ void nlr_setjmp_jump(void *val) __attribute__((noreturn));
 #else
 unsigned int nlr_push(nlr_buf_t *);
 void nlr_pop(void);
-void nlr_jump(void *val) __attribute__((noreturn));
+NORETURN void nlr_jump(void *val);
 #endif
 
 // This must be implemented by a port.  It's called by nlr_jump
