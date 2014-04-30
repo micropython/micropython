@@ -1,4 +1,4 @@
-#ifdef __x86_64__
+#if defined(__x86_64__) && !MICROPY_NLR_SETJMP
 /* x64 callee save: bx, bp, sp, r12, r13, r14, r15 */
 
     .file   "nlr.s"

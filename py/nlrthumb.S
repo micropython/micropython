@@ -1,4 +1,4 @@
-#ifdef __thumb2__
+#if defined(__thumb2__) && !MICROPY_NLR_SETJMP
 /* thumb callee save: bx, bp, sp, r12, r14, r14, r15 */
 
     .syntax unified

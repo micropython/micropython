@@ -1,4 +1,4 @@
-#ifdef __i386__
+#if defined(__i386__) && !MICROPY_NLR_SETJMP
 /* x86 callee save: bx, di, si, bp, sp */
 
     .file   "nlr.s"
