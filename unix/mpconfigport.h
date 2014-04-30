@@ -16,6 +16,9 @@
 #define MICROPY_USE_COMPUTED_GOTO   (1)
 #define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_ENABLE_MOD_CMATH    (1)
+// Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
+// names in exception messages (may require more RAM).
+#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_socket;

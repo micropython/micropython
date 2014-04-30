@@ -126,6 +126,19 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 /******************************************************************************/
 /* byte code functions                                                        */
 
+const char *mp_obj_fun_get_name(mp_obj_fun_bc_t *o) {
+    const byte *code_info = o->bytecode;
+    qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
+    return qstr_str(block_name);
+}
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_obj_fun_bc_t *o = o_in;
+    print(env, "<function %s at 0x%x>", mp_obj_fun_get_name(o), o);
+}
+#endif
+
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, int sz) {
     DEBUG_printf("%p: ", a);
@@ -139,8 +152,18 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 #endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, uint given) {
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    // Generic message, to be reused for other argument issues
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+        "argument num/types mismatch"));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "function takes %d positional arguments but %d were given", expected, given));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        "%s() takes %d positional arguments but %d were given",
+        mp_obj_fun_get_name(f), expected, given));
+#endif
 }
 
 // If it's possible to call a function without allocating new argument array,
@@ -335,6 +358,9 @@ continue2:;
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
+#if MICROPY_CPYTHON_COMPAT
+    .print = fun_bc_print,
+#endif
     .call = fun_bc_call,
     .binary_op = fun_binary_op,
 };

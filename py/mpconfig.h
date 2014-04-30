@@ -94,6 +94,17 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_DOC_STRING (0)
 #endif
 
+// Exception messages are short static strings (TODO)
+#define MICROPY_ERROR_REPORTING_TERSE    (1)
+// Exception messages provide basic error details
+#define MICROPY_ERROR_REPORTING_NORMAL   (2)
+// Exception messages provide full info, e.g. object names
+#define MICROPY_ERROR_REPORTING_DETAILED (3)
+
+#ifndef MICROPY_ERROR_REPORTING
+#define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_NORMAL)
+#endif
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)
