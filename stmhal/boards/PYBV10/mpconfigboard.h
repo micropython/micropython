@@ -7,7 +7,7 @@
 #define MICROPY_HW_HAS_MMA7660      (1)
 #define MICROPY_HW_HAS_LIS3DSH      (0)
 #define MICROPY_HW_HAS_LCD          (1)
-#define MICROPY_HW_HAS_WLAN         (0)
+#define MICROPY_HW_HAS_WLAN         (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)

@@ -36,9 +36,7 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#if 0
 #include "pybwlan.h"
-#endif
 
 void SystemClock_Config(void);
 

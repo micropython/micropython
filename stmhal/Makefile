@@ -11,7 +11,7 @@ HAL_DIR=hal
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=fatfs
-#CC3K_DIR=cc3k
+CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 
 CROSS_COMPILE = arm-none-eabi-
@@ -25,7 +25,7 @@ INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc_hid/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(FATFS_DIR)/src
-#INC += -I$(CC3K_DIR)
+INC += -I$(CC3K_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
@@ -100,8 +100,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
-
-#	pybwlan.c \
+	pybwlan.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -185,7 +184,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/flash.dfu
