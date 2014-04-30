@@ -1,3 +1,13 @@
+# Select the board to build for: if not given on the command line,
+# then default to PYBV10.
+BOARD ?= PYBV10
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -11,8 +21,11 @@ HAL_DIR=hal
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=fatfs
-#CC3K_DIR=cc3k
+CC3K_DIR=cc3k
 DFU=../tools/dfu.py
+# may need to prefix dfu-util with sudo
+DFU_UTIL=dfu-util
+DEVICE=0483:df11
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -25,15 +38,11 @@ INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc_hid/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(FATFS_DIR)/src
-#INC += -I$(CC3K_DIR)
+INC += -I$(CC3K_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
 
-BOARD ?= PYBV10
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 CFLAGS += -Iboards/$(BOARD)
 
 #Debugging/Optimization
@@ -100,8 +109,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
-
-#	pybwlan.c \
+	pybwlan.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -185,22 +193,24 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
-#OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
-all: $(BUILD)/flash.dfu
+all: $(BUILD)/firmware.dfu
 
-$(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
+.PHONY: deploy
+
+deploy: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
+	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b 0x08020000:$(BUILD)/firmware1.bin $@
 
-$(BUILD)/flash0.bin: $(BUILD)/flash.elf
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $@
-
-$(BUILD)/flash1.bin: $(BUILD)/flash.elf
-	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $@
-
-$(BUILD)/flash.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@

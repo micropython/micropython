@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 // Essentially normal Python has 1 type: Python objects
 // Viper has more than 1 type, and is just a more complicated (a superset of) Python.
 // If you declare everything in Viper as a Python object (ie omit type decls) then
@@ -230,7 +256,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // initialise locals from parameters
 #if N_X64
-    for (int i = 0; i < scope->num_params; i++) {
+    for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
         } else if (i == 1) {
@@ -243,7 +269,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 #elif N_THUMB
-    for (int i = 0; i < scope->num_params; i++) {
+    for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
             asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
         } else if (i == 1) {
@@ -283,10 +309,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == PASS_3) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
 #endif
     }
 }
@@ -670,16 +696,6 @@ STATIC void emit_native_load_const_dec(emit_t *emit, qstr qstr) {
     emit_native_pre(emit);
     emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_DEC, mp_load_const_dec, qstr, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-}
-
-STATIC void emit_native_load_const_id(emit_t *emit, qstr qstr) {
-    emit_native_pre(emit);
-    if (emit->do_viper_types) {
-        assert(0);
-    } else {
-        emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_STR, mp_load_const_str, qstr, REG_ARG_1); // TODO
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-    }
 }
 
 STATIC void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
@@ -1322,7 +1338,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_small_int,
     emit_native_load_const_int,
     emit_native_load_const_dec,
-    emit_native_load_const_id,
     emit_native_load_const_str,
     emit_native_load_null,
     emit_native_load_fast,

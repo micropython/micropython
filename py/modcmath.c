@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <math.h>
 
 #include "misc.h"
@@ -65,7 +91,7 @@ mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
     mp_obj_get_complex(z_obj, &real, &imag);
     mp_float_t sqrt_abs = MICROPY_FLOAT_C_FUN(pow)(real*real + imag*imag, 0.25);
     mp_float_t theta = 0.5 * MICROPY_FLOAT_C_FUN(atan2)(imag, real);
-    return mp_obj_new_complex(sqrt_abs * cos(theta), sqrt_abs * sin(theta));
+    return mp_obj_new_complex(sqrt_abs * MICROPY_FLOAT_C_FUN(cos)(theta), sqrt_abs * MICROPY_FLOAT_C_FUN(sin)(theta));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
 
@@ -116,8 +142,8 @@ STATIC const mp_obj_dict_t mp_module_cmath_globals = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_module_cmath_globals_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_module_cmath_globals_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_module_cmath_globals_table),
+        .alloc = ARRAY_SIZE(mp_module_cmath_globals_table),
         .table = (mp_map_elem_t*)mp_module_cmath_globals_table,
     },
 };

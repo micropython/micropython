@@ -1,15 +1,37 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#ifdef __MINGW32__
-// For alloca()
-#include <malloc.h>
-#endif
+#include <alloca.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
@@ -126,6 +148,24 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 /******************************************************************************/
 /* byte code functions                                                        */
 
+const char *mp_obj_code_get_name(const byte *code_info) {
+    qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
+    return qstr_str(block_name);
+}
+
+const char *mp_obj_fun_get_name(mp_obj_t fun_in) {
+    mp_obj_fun_bc_t *fun = fun_in;
+    const byte *code_info = fun->bytecode;
+    return mp_obj_code_get_name(code_info);
+}
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_obj_fun_bc_t *o = o_in;
+    print(env, "<function %s at 0x%x>", mp_obj_fun_get_name(o), o);
+}
+#endif
+
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, int sz) {
     DEBUG_printf("%p: ", a);
@@ -137,6 +177,21 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 #else
 #define dump_args(...) (void)0
 #endif
+
+STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, uint given) {
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    // Generic message, to be reused for other argument issues
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+        "argument num/types mismatch"));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        "function takes %d positional arguments but %d were given", expected, given));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        "%s() takes %d positional arguments but %d were given",
+        mp_obj_fun_get_name(f), expected, given));
+#endif
+}
 
 // If it's possible to call a function without allocating new argument array,
 // this function returns true, together with pointers to 2 subarrays to be used
@@ -150,19 +205,26 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2) {
     mp_obj_fun_bc_t *self = self_in;
+    DEBUG_printf("mp_obj_fun_prepare_simple_args: given: %d pos, %d kw, expected: %d pos (%d default)\n",
+        n_args, n_kw, self->n_pos_args, self->n_def_args);
 
     assert(n_kw == 0);
+    assert(self->n_kwonly_args == 0);
     assert(self->takes_var_args == 0);
     assert(self->takes_kw_args == 0);
 
     mp_obj_t *extra_args = self->extra_args + self->n_def_args;
     uint n_extra_args = 0;
 
-    if (n_args > self->n_args) {
-            goto arg_error;
+    if (n_args > self->n_pos_args) {
+        goto arg_error;
     } else {
-        extra_args -= self->n_args - n_args;
-        n_extra_args += self->n_args - n_args;
+        if (n_args >= self->n_pos_args - self->n_def_args) {
+            extra_args -= self->n_pos_args - n_args;
+            n_extra_args += self->n_pos_args - n_args;
+        } else {
+            fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
+        }
     }
     *out_args1 = args;
     *out_args1_len = n_args;
@@ -171,10 +233,15 @@ bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, co
     return true;
 
 arg_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
+    fun_pos_args_mismatch(self, self->n_pos_args, n_args);
 }
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
+    // usage for the common case of positional only args.
+    //
+    // extra_args layout: def_args, var_arg tuple, kwonly args, var_kw dict
+
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
     dump_args(args, n_args);
@@ -187,19 +254,17 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     mp_obj_t *extra_args = self->extra_args + self->n_def_args;
     uint n_extra_args = 0;
 
-
     // check positional arguments
 
-    if (n_args > self->n_args) {
+    if (n_args > self->n_pos_args) {
         // given more than enough arguments
         if (!self->takes_var_args) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "function takes %d positional arguments but %d were given", self->n_args, n_args));
+            fun_pos_args_mismatch(self, self->n_pos_args, n_args);
         }
         // put extra arguments in varargs tuple
-        *extra_args = mp_obj_new_tuple(n_args - self->n_args, args + self->n_args);
+        *extra_args = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
         n_extra_args = 1;
-        n_args = self->n_args;
+        n_args = self->n_pos_args;
     } else {
         if (self->takes_var_args) {
             DEBUG_printf("passing empty tuple as *args\n");
@@ -209,14 +274,12 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
         // Apply processing and check below only if we don't have kwargs,
         // otherwise, kw handling code below has own extensive checks.
         if (n_kw == 0) {
-            if (n_args >= self->n_args - self->n_def_args) {
+            if (n_args >= self->n_pos_args - self->n_def_args) {
                 // given enough arguments, but may need to use some default arguments
-                extra_args -= self->n_args - n_args;
-                n_extra_args += self->n_args - n_args;
+                extra_args -= self->n_pos_args - n_args;
+                n_extra_args += self->n_pos_args - n_args;
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function takes at least %d positional arguments but %d were given",
-                    self->n_args - self->n_def_args, n_args));
+                fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
             }
         }
     }
@@ -229,13 +292,13 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
         // So, we have 2 choices: allocate it unconditionally at the top of function
         // (wastes stack), or use alloca which is guaranteed to dealloc on func exit.
         //mp_obj_t flat_args[self->n_args];
-        mp_obj_t *flat_args = alloca(self->n_args * sizeof(mp_obj_t));
-        for (int i = self->n_args - 1; i >= 0; i--) {
+        mp_obj_t *flat_args = alloca((self->n_pos_args + self->n_kwonly_args) * sizeof(mp_obj_t));
+        for (int i = self->n_pos_args + self->n_kwonly_args - 1; i >= 0; i--) {
             flat_args[i] = MP_OBJ_NULL;
         }
         memcpy(flat_args, args, sizeof(*args) * n_args);
         DEBUG_printf("Initial args: ");
-        dump_args(flat_args, self->n_args);
+        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
 
         mp_obj_t dict = MP_OBJ_NULL;
         if (self->takes_kw_args) {
@@ -243,7 +306,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
         }
         for (uint i = 0; i < n_kw; i++) {
             qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
-            for (uint j = 0; j < self->n_args; j++) {
+            for (uint j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
                 if (arg_name == self->args[j]) {
                     if (flat_args[j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -261,10 +324,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
 continue2:;
         }
         DEBUG_printf("Args with kws flattened: ");
-        dump_args(flat_args, self->n_args);
+        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
 
-        // Now fill in defaults
-        mp_obj_t *d = &flat_args[self->n_args - 1];
+        // Now fill in defaults for positional args
+        mp_obj_t *d = &flat_args[self->n_pos_args - 1];
         mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
         for (int i = self->n_def_args; i > 0; i--, d--, s--) {
             if (*d == MP_OBJ_NULL) {
@@ -272,9 +335,9 @@ continue2:;
             }
         }
         DEBUG_printf("Args after filling defaults: ");
-        dump_args(flat_args, self->n_args);
+        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
 
-        // Now check that all mandatory args specified
+        // Check that all mandatory positional args are specified
         while (d >= flat_args) {
             if (*d-- == MP_OBJ_NULL) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -282,8 +345,16 @@ continue2:;
             }
         }
 
+        // Check that all mandatory keyword args are specified
+        for (int i = 0; i < self->n_kwonly_args; i++) {
+            if (flat_args[self->n_pos_args + i] == MP_OBJ_NULL) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+            }
+        }
+
         args = flat_args;
-        n_args = self->n_args;
+        n_args = self->n_pos_args + self->n_kwonly_args;
 
         if (self->takes_kw_args) {
             extra_args[n_extra_args] = dict;
@@ -291,6 +362,10 @@ continue2:;
         }
     } else {
         // no keyword arguments given
+        if (self->n_kwonly_args != 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                "function missing keyword-only argument"));
+        }
         if (self->takes_kw_args) {
             extra_args[n_extra_args] = mp_obj_new_dict(0);
             n_extra_args += 1;
@@ -316,11 +391,14 @@ continue2:;
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
+#if MICROPY_CPYTHON_COMPAT
+    .print = fun_bc_print,
+#endif
     .call = fun_bc_call,
     .binary_op = fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args_in, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, const byte *code) {
     uint n_def_args = 0;
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -339,13 +417,21 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t d
     o->base.type = &mp_type_fun_bc;
     o->globals = mp_globals_get();
     o->args = args;
-    o->n_args = n_args;
+    o->n_pos_args = n_pos_args;
+    o->n_kwonly_args = n_kwonly_args;
     o->n_def_args = n_def_args;
     o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
     o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->bytecode = code;
+    memset(o->extra_args, 0, n_extra_args * sizeof(mp_obj_t));
     if (def_args != MP_OBJ_NULL) {
         memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
+    }
+    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
+        o->extra_args[n_def_args] = MP_OBJ_NULL;
+    }
+    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
+        o->extra_args[n_extra_args - 1] = MP_OBJ_NULL;
     }
     return o;
 }

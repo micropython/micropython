@@ -1,7 +1,34 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "mpconfig.h"
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
 
+Q(*)
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
@@ -31,6 +58,7 @@ Q(__repr__)
 Q(__str__)
 Q(__getattr__)
 Q(__del__)
+Q(__call__)
 
 Q(micropython)
 Q(byte_code)
@@ -118,7 +146,6 @@ Q(hash)
 Q(hex)
 Q(%#x)
 Q(id)
-Q(io)
 Q(int)
 Q(isinstance)
 Q(issubclass)
@@ -139,6 +166,7 @@ Q(path)
 Q(pow)
 Q(print)
 Q(range)
+Q(read)
 Q(repr)
 Q(set)
 Q(sorted)
@@ -151,6 +179,7 @@ Q(to_bytes)
 Q(tuple)
 Q(type)
 Q(value)
+Q(write)
 Q(zip)
 
 Q(sep)
@@ -180,6 +209,8 @@ Q(pop)
 Q(sort)
 Q(join)
 Q(strip)
+Q(lstrip)
+Q(rstrip)
 Q(format)
 Q(key)
 Q(reverse)
@@ -304,6 +335,21 @@ Q(version_info)
 Q(struct)
 Q(pack)
 Q(unpack)
+#endif
+
+#if MICROPY_ENABLE_MOD_IO
+Q(io)
+Q(readall)
+Q(readline)
+Q(readlines)
+Q(StringIO)
+Q(BytesIO)
+Q(getvalue)
+#endif
+
+#if MICROPY_ENABLE_MOD_GC
+Q(gc)
+Q(collect)
 #endif
 
 #if MICROPY_ENABLE_PROPERTY

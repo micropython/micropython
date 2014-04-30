@@ -11,7 +11,6 @@
 #define MICROPY_HW_HAS_MMA7660      (0)
 #define MICROPY_HW_HAS_LIS3DSH      (0)
 #define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_HAS_WLAN         (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (0)
 #define MICROPY_HW_ENABLE_TIMER     (1)
@@ -20,6 +19,7 @@
 #define MICROPY_HW_ENABLE_I2C1      (0)
 #define MICROPY_HW_ENABLE_SPI1      (0)
 #define MICROPY_HW_ENABLE_SPI3      (0)
+#define MICROPY_HW_ENABLE_CC3K      (0)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_B11)

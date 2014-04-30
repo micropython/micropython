@@ -1,15 +1,46 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 
 #include "stm32f4xx_hal.h"
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
 #include "timer.h"
 #include "servo.h"
+
+/// \moduleref pyb
+/// \class Servo - 3-wire hobby servo driver
+///
+/// Servo controls standard hobby servos with 3-wires (ground, power, signal).
 
 // this servo driver uses hardware PWM to drive servos on PA0, PA1, PA2, PA3 = X1, X2, X3, X4
 // TIM2 and TIM5 have CH1, CH2, CH3, CH4 on PA0-PA3 respectively
@@ -156,6 +187,8 @@ STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "<Servo %lu at %luus>", self->servo_id, 10 * self->pulse_cur);
 }
 
+/// \classmethod \constructor(id)
+/// Create a servo object.  `id` is 1-4.
 STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -177,6 +210,8 @@ STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     return s;
 }
 
+/// \method pulse_width([value])
+/// Get or set the pulse width in milliseconds.
 STATIC mp_obj_t pyb_servo_pulse_width(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
@@ -190,9 +225,11 @@ STATIC mp_obj_t pyb_servo_pulse_width(uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_servo_pulse_width);
 
+/// \method calibration([pulse_min, pulse_max, pulse_centre, [pulse_angle_90, pulse_speed_100]])
+/// Get or set the calibration of the servo timing.
+// TODO should accept 1 arg, a 5-tuple of values to set
 STATIC mp_obj_t pyb_servo_calibration(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
@@ -221,9 +258,13 @@ STATIC mp_obj_t pyb_servo_calibration(uint n_args, const mp_obj_t *args) {
     // bad number of arguments
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "calibration expecting 1, 4 or 6 arguments, got %d", n_args));
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
 
+/// \method angle([angle, time=0])
+/// Get or set the angle of the servo.
+///
+///   - `angle` is the angle to move to in degrees.
+///   - `time` is the number of milliseconds to take to get to the specified angle.
 STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
@@ -247,9 +288,13 @@ STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
+/// \method speed([speed, time=0])
+/// Get or set the speed of a continuous rotation servo.
+///
+///   - `speed` is the speed to move to change to, between -100 and 100.
+///   - `time` is the number of milliseconds to take to get to the specified speed.
 STATIC mp_obj_t pyb_servo_speed(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {

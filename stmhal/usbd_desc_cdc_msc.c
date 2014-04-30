@@ -1,3 +1,7 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ */
+
 /**
   ******************************************************************************
   * @file    USB_Device/CDC_Standalone/Src/usbd_desc.c

@@ -1,10 +1,35 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
@@ -163,8 +188,8 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_list_t *self = self_in;
     if (self->len >= self->alloc) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
-        assert(self->items);
         self->alloc *= 2;
+        mp_seq_clear(self->items, self->len + 1, self->alloc, sizeof(*self->items));
     }
     self->items[self->len++] = arg;
     return mp_const_none; // return None, as per CPython
@@ -180,6 +205,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
             // TODO: use alloc policy for "4"
             self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + arg->len + 4);
             self->alloc = self->len + arg->len + 4;
+            mp_seq_clear(self->items, self->len + arg->len, self->alloc, sizeof(*self->items));
         }
 
         memcpy(self->items + self->len, arg->items, sizeof(mp_obj_t) * arg->len);
@@ -197,10 +223,12 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     if (self->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty list"));
     }
-    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? mp_obj_new_int(-1) : args[1], false);
+    uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
+    // Clear stale pointer from slot which just got freed to prevent GC issues
+    self->items[self->len] = MP_OBJ_NULL;
     if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
         self->alloc /= 2;
@@ -435,6 +463,7 @@ STATIC mp_obj_t list_clear(mp_obj_t self_in) {
     self->len = 0;
     self->items = m_renew(mp_obj_t, self->items, self->alloc, LIST_MIN_ALLOC);
     self->alloc = LIST_MIN_ALLOC;
+    mp_seq_clear(self->items, 0, self->alloc, sizeof(*self->items));
     return mp_const_none;
 }
 
@@ -550,6 +579,7 @@ void mp_obj_list_init(mp_obj_list_t *o, uint n) {
     o->alloc = n < LIST_MIN_ALLOC ? LIST_MIN_ALLOC : n;
     o->len = n;
     o->items = m_new(mp_obj_t, o->alloc);
+    mp_seq_clear(o->items, n, o->alloc, sizeof(*o->items));
 }
 
 STATIC mp_obj_list_t *list_new(uint n) {

@@ -30,6 +30,8 @@ endif
 SRC_C = \
 	unix/main.c \
 	unix/file.c \
+	realpath.c \
+	init.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 

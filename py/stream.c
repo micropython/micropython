@@ -1,8 +1,34 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <string.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "stream.h"
@@ -42,10 +68,11 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
 
-    uint sz;
-    const char *buf = mp_obj_str_get_data(arg, &sz);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+
     int error;
-    machine_int_t out_sz = o->type->stream_p->write(self_in, buf, sz, &error);
+    machine_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
     if (out_sz == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
@@ -122,8 +149,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
     while (max_size == -1 || max_size-- != 0) {
         char *p = vstr_add_len(vstr, 1);
         if (p == NULL) {
-            // TODO
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
         }
 
         machine_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
@@ -142,16 +168,29 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             break;
         }
     }
-    // TODO don't intern this string
-    vstr_shrink(vstr);
-    return MP_OBJ_NEW_QSTR(qstr_from_strn_take(vstr_str(vstr), vstr->alloc, vstr_len(vstr)));
+    // TODO need a string creation API that doesn't copy the given data
+    mp_obj_t ret = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    vstr_free(vstr);
+    return ret;
 }
+
+// TODO take an optional extra argument (what does it do exactly?)
+STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
+    mp_obj_t lines = mp_obj_new_list(0, NULL);
+    for (;;) {
+        mp_obj_t line = stream_unbuffered_readline(1, &self);
+        if (mp_obj_str_get_len(line) == 0) {
+            break;
+        }
+        mp_obj_list_append(lines, line);
+    }
+    return lines;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj, stream_unbuffered_readlines);
 
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     mp_obj_t l_in = stream_unbuffered_readline(1, &self);
-    uint sz;
-    mp_obj_str_get_data(l_in, &sz);
-    if (sz != 0) {
+    if (mp_obj_str_get_len(l_in) != 0) {
         return l_in;
     }
     return MP_OBJ_STOP_ITERATION;

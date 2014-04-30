@@ -1,8 +1,34 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <assert.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "bc0.h"
 
@@ -63,7 +89,7 @@ void mp_byte_code_print(const byte *ip, int len) {
     {
         qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
         qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-        printf("File %s, block %s\n", qstr_str(source_file), qstr_str(block_name));
+        printf("File %s, block '%s'\n", qstr_str(source_file), qstr_str(block_name));
         machine_int_t bc = (code_info + code_info_size) - ip;
         machine_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
@@ -121,11 +147,6 @@ void mp_byte_code_print2(const byte *ip, int len) {
             case MP_BC_LOAD_CONST_DEC:
                 DECODE_QSTR;
                 printf("LOAD_CONST_DEC %s", qstr_str(qstr));
-                break;
-
-            case MP_BC_LOAD_CONST_ID:
-                DECODE_QSTR;
-                printf("LOAD_CONST_ID '%s'", qstr_str(qstr));
                 break;
 
             case MP_BC_LOAD_CONST_BYTES:

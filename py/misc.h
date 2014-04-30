@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 // a mini library of useful types and functions
 
 #ifndef _INCLUDED_MINILIB_H
@@ -51,6 +77,11 @@ void *m_malloc_fail(int num_bytes);
 int m_get_total_bytes_allocated(void);
 int m_get_current_bytes_allocated(void);
 int m_get_peak_bytes_allocated(void);
+
+/** array helpers ***********************************************/
+
+// get the number of elements in a fixed-size array
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 /** unichar / UTF-8 *********************************************/
 
@@ -124,5 +155,7 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 
 // Debugging helpers
 int DEBUG_printf(const char *fmt, ...);
+
+extern uint mp_verbose_flag;
 
 #endif // _INCLUDED_MINILIB_H

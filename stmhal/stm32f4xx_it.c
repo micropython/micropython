@@ -1,11 +1,39 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * Original template from ST Cube library.  See below for header.
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 /**
   ******************************************************************************
-  * @file    Templates/Src/stm32f4xx_it.c 
+  * @file    Templates/Src/stm32f4xx_it.c
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    26-February-2014
   * @brief   Main Interrupt Service Routines.
-  *          This file provides template for all exceptions handler and 
+  *          This file provides template for all exceptions handler and
   *          peripherals interrupt service routine.
   ******************************************************************************
   * @attention
@@ -37,7 +65,6 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
 
 #include "stm32f4xx_it.h"
@@ -51,24 +78,8 @@
 #include "timer.h"
 #include "storage.h"
 
-/** @addtogroup STM32F4xx_HAL_Examples
-  * @{
-  */
-
-/** @addtogroup Templates
-  * @{
-  */
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef hpcd;
-
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -79,8 +90,7 @@ extern PCD_HandleTypeDef hpcd;
   * @param  None
   * @retval None
   */
-void NMI_Handler(void)
-{
+void NMI_Handler(void) {
 }
 
 /**
@@ -89,10 +99,10 @@ void NMI_Handler(void)
   * @retval None
   */
 void HardFault_Handler(void) {
-  /* Go to infinite loop when Hard Fault exception occurs */
-  while (1) {
-    __fatal_error("HardFault");
-  }
+    /* Go to infinite loop when Hard Fault exception occurs */
+    while (1) {
+        __fatal_error("HardFault");
+    }
 }
 
 /**
@@ -101,10 +111,10 @@ void HardFault_Handler(void) {
   * @retval None
   */
 void MemManage_Handler(void) {
-  /* Go to infinite loop when Memory Manage exception occurs */
-  while (1) {
-    __fatal_error("MemManage");
-  }
+    /* Go to infinite loop when Memory Manage exception occurs */
+    while (1) {
+        __fatal_error("MemManage");
+    }
 }
 
 /**
@@ -113,10 +123,10 @@ void MemManage_Handler(void) {
   * @retval None
   */
 void BusFault_Handler(void) {
-  /* Go to infinite loop when Bus Fault exception occurs */
-  while (1) {
-    __fatal_error("BusFault");
-  }
+    /* Go to infinite loop when Bus Fault exception occurs */
+    while (1) {
+        __fatal_error("BusFault");
+    }
 }
 
 /**
@@ -125,10 +135,10 @@ void BusFault_Handler(void) {
   * @retval None
   */
 void UsageFault_Handler(void) {
-  /* Go to infinite loop when Usage Fault exception occurs */
-  while (1) {
-    __fatal_error("UsageFault");
-  }
+    /* Go to infinite loop when Usage Fault exception occurs */
+    while (1) {
+        __fatal_error("UsageFault");
+    }
 }
 
 /**
@@ -136,8 +146,7 @@ void UsageFault_Handler(void) {
   * @param  None
   * @retval None
   */
-void SVC_Handler(void)
-{
+void SVC_Handler(void) {
 }
 
 /**
@@ -145,8 +154,7 @@ void SVC_Handler(void)
   * @param  None
   * @retval None
   */
-void DebugMon_Handler(void)
-{
+void DebugMon_Handler(void) {
 }
 
 /**
@@ -154,8 +162,7 @@ void DebugMon_Handler(void)
   * @param  None
   * @retval None
   */
-void PendSV_Handler(void)
-{
+void PendSV_Handler(void) {
     extern void pendsv_isr_handler(void);
     pendsv_isr_handler();
 }
@@ -165,8 +172,7 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-void SysTick_Handler(void)
-{
+void SysTick_Handler(void) {
     HAL_IncTick();
 }
 
@@ -191,8 +197,7 @@ void SysTick_Handler(void)
 #endif
 
 #if defined(OTG_XX_IRQHandler)
-void OTG_XX_IRQHandler(void)
-{
+void OTG_XX_IRQHandler(void) {
     HAL_PCD_IRQHandler(&hpcd);
 }
 #endif
@@ -203,38 +208,36 @@ void OTG_XX_IRQHandler(void)
   * @retval None
   */
 #if defined(OTG_XX_WKUP_IRQHandler)
-void OTG_XX_WKUP_IRQHandler(void)
-{
- 
-  if((&hpcd)->Init.low_power_enable)
-  {
+void OTG_XX_WKUP_IRQHandler(void) {
+
+  if ((&hpcd)->Init.low_power_enable) {
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
-    SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));  
-    
-    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select 
+    SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+
+    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
     PLL as system clock source (HSE and PLL are disabled in STOP mode) */
-    
+
     __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
-    
-    /* Wait till HSE is ready */  
+
+    /* Wait till HSE is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
     {}
-    
+
     /* Enable the main PLL. */
     __HAL_RCC_PLL_ENABLE();
-    
-    /* Wait till PLL is ready */  
+
+    /* Wait till PLL is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
     {}
-    
+
     /* Select PLL as SYSCLK */
     MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
-    
+
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
     {}
-    
+
     /* ungate PHY clock */
-     __HAL_PCD_UNGATE_PHYCLOCK((&hpcd)); 
+     __HAL_PCD_UNGATE_PHYCLOCK((&hpcd));
   }
 #ifdef USE_USB_FS
   /* Clear EXTI pending Bit*/
@@ -243,7 +246,7 @@ void OTG_XX_WKUP_IRQHandler(void)
     /* Clear EXTI pending Bit*/
   __HAL_USB_HS_EXTI_CLEAR_FLAG();
 #endif
-  
+
 }
 #endif
 
@@ -309,27 +312,6 @@ void EXTI15_10_IRQHandler(void) {
     Handle_EXTI_Irq(13);
     Handle_EXTI_Irq(14);
     Handle_EXTI_Irq(15);
-
-#if 0
-    // for CC3000 support, needs to be re-written to use new EXTI code 
-    if (EXTI_GetITStatus(EXTI_Line14) != RESET) {
-        led_toggle(PYB_LED_G2);
-        /* these are needed for CC3000 support
-        extern void SpiIntGPIOHandler(void);
-        extern uint32_t exti14_enabled;
-        extern uint32_t exti14_missed;
-        //printf("-> EXTI14 en=%lu miss=%lu\n", exti14_enabled, exti14_missed);
-        if (exti14_enabled) {
-            exti14_missed = 0;
-            SpiIntGPIOHandler(); // CC3000 interrupt
-        } else {
-            exti14_missed = 1;
-        }
-        */
-        EXTI_ClearITPendingBit(EXTI_Line14);
-        //printf("<- EXTI14 done\n");
-    }
-#endif
 }
 
 void PVD_IRQHandler(void) {
@@ -339,7 +321,6 @@ void PVD_IRQHandler(void) {
 void RTC_Alarm_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_ALARM);
 }
-
 
 #if defined(ETH)    // The 407 has ETH, the 405 doesn't
 void ETH_WKUP_IRQHandler(void)  {
@@ -405,5 +386,3 @@ void TIM8_UP_TIM13_IRQHandler(void) {
 void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     timer_irq_handler(14);
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

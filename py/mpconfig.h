@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 // This file contains default configuration settings for MicroPython.
 // You can override any of these options using mpconfigport.h file located
 // in a directory of your port.
@@ -6,6 +32,39 @@
 
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
+
+/*****************************************************************************/
+/* Memory allocation policy                                                  */
+
+// Initial amount for parse rule stack
+#ifndef MP_ALLOC_PARSE_RULE_INIT
+#define MP_ALLOC_PARSE_RULE_INIT (64)
+#endif
+
+// Increment for parse rule stack
+#ifndef MP_ALLOC_PARSE_RULE_INC
+#define MP_ALLOC_PARSE_RULE_INC (16)
+#endif
+
+// Initial amount for parse result stack
+#ifndef MP_ALLOC_PARSE_RESULT_INIT
+#define MP_ALLOC_PARSE_RESULT_INIT (32)
+#endif
+
+// Increment for parse result stack
+#ifndef MP_ALLOC_PARSE_RESULT_INC
+#define MP_ALLOC_PARSE_RESULT_INC (16)
+#endif
+
+// Initial amount for ids in a scope
+#ifndef MP_ALLOC_SCOPE_ID_INIT
+#define MP_ALLOC_SCOPE_ID_INIT (4)
+#endif
+
+// Increment for ids in a scope
+#ifndef MP_ALLOC_SCOPE_ID_INC
+#define MP_ALLOC_SCOPE_ID_INC (6)
+#endif
 
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
@@ -94,6 +153,22 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_SOURCE_LINE (0)
 #endif
 
+// Whether to include doc strings (increases RAM usage)
+#ifndef MICROPY_ENABLE_DOC_STRING
+#define MICROPY_ENABLE_DOC_STRING (0)
+#endif
+
+// Exception messages are short static strings (TODO)
+#define MICROPY_ERROR_REPORTING_TERSE    (1)
+// Exception messages provide basic error details
+#define MICROPY_ERROR_REPORTING_NORMAL   (2)
+// Exception messages provide full info, e.g. object names
+#define MICROPY_ERROR_REPORTING_DETAILED (3)
+
+#ifndef MICROPY_ERROR_REPORTING
+#define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_NORMAL)
+#endif
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)
@@ -115,6 +190,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_FLOAT (0)
 #endif
 
+// Whether to provide "collections" module
+#ifndef MICROPY_ENABLE_MOD_COLLECTIONS
+#define MICROPY_ENABLE_MOD_COLLECTIONS (1)
+#endif
+
 // Whether to provide "math" module
 #ifndef MICROPY_ENABLE_MOD_MATH
 #define MICROPY_ENABLE_MOD_MATH (1)
@@ -123,6 +203,11 @@ typedef double mp_float_t;
 // Whether to provide "cmath" module
 #ifndef MICROPY_ENABLE_MOD_CMATH
 #define MICROPY_ENABLE_MOD_CMATH (0)
+#endif
+
+// Whether to provide "gc" module
+#ifndef MICROPY_ENABLE_MOD_GC
+#define MICROPY_ENABLE_MOD_GC (1)
 #endif
 
 // Whether to provide "io" module
@@ -225,3 +310,6 @@ typedef double mp_float_t;
 #define INT_FMT "%d"
 #endif
 #endif //INT_FMT
+
+// Modifier for function which doesn't return
+#define NORETURN __attribute__((noreturn))

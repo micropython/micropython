@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -73,7 +99,7 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
 
     if (emit->pass == PASS_3) {
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_params);
+        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
     }
 
     return emit->success;
@@ -141,7 +167,7 @@ STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
         const char *reg_str = qstr_str(reg_qstr);
-        for (uint i = 0; i < sizeof(reg_name_table) / sizeof(reg_name_table[0]); i++) {
+        for (uint i = 0; i < ARRAY_SIZE(reg_name_table); i++) {
             const reg_name_t *r = &reg_name_table[i];
             if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
                 if (r->reg > max_reg) {
@@ -260,7 +286,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             asm_thumb_b_n(emit->as, label_num);
         } else if (op_str[0] == 'b' && op_len == 3) {
             uint cc = -1;
-            for (uint i = 0; i < (sizeof cc_name_table) / (sizeof cc_name_table[0]); i++) {
+            for (uint i = 0; i < ARRAY_SIZE(cc_name_table); i++) {
                 if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
                     cc = cc_name_table[i].cc;
                 }

@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
 
@@ -8,7 +34,6 @@
 #define MP_BC_LOAD_CONST_SMALL_INT   (0x14) // 24-bit, in excess
 #define MP_BC_LOAD_CONST_INT     (0x15) // qstr
 #define MP_BC_LOAD_CONST_DEC     (0x16) // qstr
-#define MP_BC_LOAD_CONST_ID      (0x17) // qstr
 #define MP_BC_LOAD_CONST_BYTES   (0x18) // qstr
 #define MP_BC_LOAD_CONST_STRING  (0x19) // qstr
 #define MP_BC_LOAD_NULL          (0x1a)

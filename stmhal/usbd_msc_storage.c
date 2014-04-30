@@ -1,3 +1,7 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ */
+
 /**
   ******************************************************************************
   * @file    usbd_storage_msd.c

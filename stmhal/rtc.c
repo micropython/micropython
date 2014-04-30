@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 
 #include "stm32f4xx_hal.h"
@@ -8,6 +34,18 @@
 #include "obj.h"
 #include "runtime.h"
 #include "rtc.h"
+
+/// \moduleref pyb
+/// \class RTC - real time clock
+///
+/// The RTC is and independent clock that keeps track of the date
+/// and time.
+///
+/// Example usage:
+///
+///     rtc = pyb.RTC()
+///     rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
+///     print(rtc.datetime())
 
 RTC_HandleTypeDef RTCHandle;
 
@@ -159,13 +197,13 @@ void rtc_init(void) {
         // fresh reset; configure RTC Calendar
         RTC_CalendarConfig();
     } else {
-        // RTC was previously set, so leave it alon
+        // RTC was previously set, so leave it alone
         if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
-            // power on reset occured
+            // power on reset occurred
             rtc_info |= 0x10000;
         }
         if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
-            // external reset occured
+            // external reset occurred
             rtc_info |= 0x20000;
         }
         // Clear source Reset Flag
@@ -213,6 +251,8 @@ typedef struct _pyb_rtc_obj_t {
 
 STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
+/// \classmethod \constructor()
+/// Create an RTC object.
 STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -221,11 +261,32 @@ STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
+/// \method info()
+/// Get information about the startup time and reset source.
+///
+///  - The lower 0xffff are the number of milliseconds the RTC took to
+///    start up.
+///  - Bit 0x10000 is set if a power-on reset occurred.
+///  - Bit 0x20000 is set if an external reset occurred
 mp_obj_t pyb_rtc_info(mp_obj_t self_in) {
     return mp_obj_new_int(rtc_info);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 
+/// \method datetime([datetimetuple])
+/// Get or set the date and time of the RTC.
+///
+/// With no arguments, this method returns an 8-tuple with the current
+/// date and time.  With 1 argument (being an 8-tuple) it sets the date
+/// and time.
+///
+/// The 8-tuple has the following format:
+///
+///     (year, month, day, weekday, hours, minutes, seconds, subseconds)
+///
+/// `weekday` is 1-7 for Monday through Sunday.
+///
+/// `subseconds` counts down from 255 to 0
 mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // get date and time

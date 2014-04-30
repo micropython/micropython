@@ -1,11 +1,37 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <string.h>
 
 #include "stm32f4xx_hal.h"
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
@@ -13,6 +39,13 @@
 #include "accel.h"
 
 #if MICROPY_HW_HAS_MMA7660
+
+/// \moduleref pyb
+/// \class Accel - accelerometer control
+///
+/// Accel is an object that controls the accelerometer.
+///
+/// Raw values are between -30 and 30.
 
 #define MMA_ADDR (0x98)
 #define MMA_REG_X (0)
@@ -83,6 +116,8 @@ typedef struct _pyb_accel_obj_t {
 
 STATIC pyb_accel_obj_t pyb_accel_obj;
 
+/// \classmethod \constructor()
+/// Create and return an accelerometer object.
 STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -100,32 +135,38 @@ STATIC mp_obj_t read_axis(int axis) {
     return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
 }
 
+/// \method x()
+/// Get the x-axis value.
 STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
     return read_axis(MMA_REG_X);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
 
+/// \method y()
+/// Get the y-axis value.
 STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
     return read_axis(MMA_REG_Y);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
 
+/// \method z()
+/// Get the z-axis value.
 STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
     return read_axis(MMA_REG_Z);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
+/// \method tilt()
+/// Get the tilt register.
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     uint8_t data[1];
     HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 
+/// \method filtered_xyz()
+/// Get a 3-tuple of filtered x, y and z values.
 STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     pyb_accel_obj_t *self = self_in;
 
@@ -146,7 +187,6 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 
     return mp_obj_new_tuple(3, tuple);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
@@ -154,7 +194,6 @@ STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_obj_new_int(data[0]);
 }
-
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
@@ -163,7 +202,6 @@ STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
 STATIC const mp_map_elem_t pyb_accel_locals_dict_table[] = {

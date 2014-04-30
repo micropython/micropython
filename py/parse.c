@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -108,13 +134,13 @@ STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int ar
         return;
     }
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
-        rule_stack_t *rs = m_renew_maybe(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc * 2);
+        rule_stack_t *rs = m_renew_maybe(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MP_ALLOC_PARSE_RULE_INC);
         if (rs == NULL) {
             memory_error(parser);
             return;
         }
         parser->rule_stack = rs;
-        parser->rule_stack_alloc *= 2;
+        parser->rule_stack_alloc += MP_ALLOC_PARSE_RULE_INC;
     }
     rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
     rs->src_line = src_line;
@@ -237,13 +263,13 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
         return;
     }
     if (parser->result_stack_top >= parser->result_stack_alloc) {
-        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc * 2);
+        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc + MP_ALLOC_PARSE_RESULT_INC);
         if (pn == NULL) {
             memory_error(parser);
             return;
         }
         parser->result_stack = pn;
-        parser->result_stack_alloc *= 2;
+        parser->result_stack_alloc += MP_ALLOC_PARSE_RESULT_INC;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
 }
@@ -324,11 +350,11 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
     parser->had_memory_error = false;
 
-    parser->rule_stack_alloc = 64;
+    parser->rule_stack_alloc = MP_ALLOC_PARSE_RULE_INIT;
     parser->rule_stack_top = 0;
     parser->rule_stack = m_new(rule_stack_t, parser->rule_stack_alloc);
 
-    parser->result_stack_alloc = 64;
+    parser->result_stack_alloc = MP_ALLOC_PARSE_RESULT_INIT;
     parser->result_stack_top = 0;
     parser->result_stack = m_new(mp_parse_node_t, parser->result_stack_alloc);
 

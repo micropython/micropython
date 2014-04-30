@@ -1,6 +1,32 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
@@ -20,14 +46,13 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
     self->obj = obj;
 }
 
-#if 0
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_cell_t *o = o_in;
-    print(env, "<cell ");
+    print(env, "<cell %p ", o->obj);
     if (o->obj == MP_OBJ_NULL) {
         print(env, "(nil)");
     } else {
-        //print(env, "%p", o->obj);
         mp_obj_print_helper(print, env, o->obj, PRINT_REPR);
     }
     print(env, ">");
@@ -36,8 +61,10 @@ STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env
 
 const mp_obj_type_t cell_type = {
     { &mp_type_type },
-    .name = MP_QSTR_, // should never need to print cell type
-    //.print = cell_print,
+    .name = MP_QSTR_, // cell representation is just value in < >
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    .print = cell_print,
+#endif
 };
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {

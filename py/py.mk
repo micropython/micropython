@@ -74,6 +74,7 @@ PY_O_BASENAME = \
 	objset.o \
 	objslice.o \
 	objstr.o \
+	objstringio.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
@@ -87,6 +88,7 @@ PY_O_BASENAME = \
 	builtintables.o \
 	modarray.o \
 	modcollections.o \
+	modgc.o \
 	modio.o \
 	modmath.o \
 	modcmath.o \

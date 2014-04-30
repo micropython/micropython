@@ -1,17 +1,72 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdint.h>
 #include <string.h>
 
 #include "stm32f4xx_hal.h"
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "parse.h"
 #include "obj.h"
 #include "runtime.h"
 #include "timer.h"
 #include "dac.h"
+
+/// \moduleref pyb
+/// \class DAC - digital to analog conversion
+///
+/// The DAC is used to output analog values (a specific voltage) on pin X5 or pin X6.
+/// The voltage will be between 0 and 3.3V.
+///
+/// *This module will undergo changes to the API.*
+///
+/// Example usage:
+///
+///     from pyb import DAC
+///
+///     dac = DAC(1)            # create DAC 1 on pin X5
+///     dac.write(128)          # write a value to the DAC (makes X5 1.65V)
+///
+/// To output a continuous sine-wave:
+///
+///     import math
+///     from pyb import DAC
+///
+///     # create a buffer containing a sine-wave
+///     buf = bytearray(100)
+///     for i in range(len(buf)):
+///         buf[i] = 128 + 127 * math.sin(2 * math.pi * i / len(buf))
+///
+///     # output the sine-wave at 400Hz
+///     dac = DAC(1)
+///     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
 STATIC DAC_HandleTypeDef DAC_Handle;
 
@@ -48,6 +103,10 @@ typedef struct _pyb_dac_obj_t {
 // create the dac object
 // currently support either DAC1 on X5 (id = 1) or DAC2 on X6 (id = 2)
 
+/// \classmethod \constructor(id)
+/// Construct a new DAC object.
+///
+/// `id` can be 1 or 2: DAC 1 is on pin X5 and DAC 2 is on pin X6.
 STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -89,6 +148,9 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     return dac;
 }
 
+/// \method noise(freq)
+/// Generate a pseudo-random noise signal.  A new random sample is written
+/// to the DAC output at the given frequency.
 STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
     pyb_dac_obj_t *self = self_in;
 
@@ -113,6 +175,10 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 
+/// \method triangle(freq)
+/// Generate a triangle wave.  The value on the DAC output changes at
+/// the given frequency, and the frequence of the repeating triangle wave
+/// itself is 256 (or 1024, need to check) times smaller.
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     pyb_dac_obj_t *self = self_in;
 
@@ -137,7 +203,8 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 
-// direct access to DAC (8 bit only at the moment)
+/// \method write(value)
+/// Direct access to the DAC output (8 bit only at the moment).
 STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
     pyb_dac_obj_t *self = self_in;
 
@@ -156,25 +223,28 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 
-// initiates a burst of RAM->DAC using DMA
-// input data is treated as an array of bytes (8 bit data)
-// TIM6 is used to set the frequency of the transfer
+/// \method write_timed(data, freq, *, mode=DAC.NORMAL)
+/// Initiates a burst of RAM to DAC using a DMA transfer.
+/// The input data is treated as an array of bytes (8 bit data).
+///
+/// `mode` can be `DAC.NORMAL` or `DAC.CIRCULAR`.
+///
+/// TIM6 is used to control the frequency of the transfer.
 // TODO add callback argument, to call when transfer is finished
 // TODO add double buffer argument
-
-STATIC const mp_arg_parse_t pyb_dac_write_timed_accepted_args[] = {
-    { MP_QSTR_data, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_freq, MP_ARG_PARSE_REQUIRED | MP_ARG_PARSE_INT, {.u_int = 0} },
-    { MP_QSTR_mode, MP_ARG_PARSE_KW_ONLY | MP_ARG_PARSE_INT, {.u_int = DMA_NORMAL} },
+STATIC const mp_arg_t pyb_dac_write_timed_args[] = {
+    { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL} },
 };
-#define PYB_DAC_WRITE_TIMED_NUM_ARGS (sizeof(pyb_dac_write_timed_accepted_args) / sizeof(pyb_dac_write_timed_accepted_args[0]))
+#define PYB_DAC_WRITE_TIMED_NUM_ARGS ARRAY_SIZE(pyb_dac_write_timed_args)
 
 mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_dac_obj_t *self = args[0];
 
     // parse args
-    mp_arg_parse_val_t vals[PYB_DAC_WRITE_TIMED_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_DAC_WRITE_TIMED_NUM_ARGS, pyb_dac_write_timed_accepted_args, vals);
+    mp_arg_val_t vals[PYB_DAC_WRITE_TIMED_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_DAC_WRITE_TIMED_NUM_ARGS, pyb_dac_write_timed_args, vals);
 
     // get the data to write
     mp_buffer_info_t bufinfo;

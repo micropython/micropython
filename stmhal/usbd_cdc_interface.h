@@ -1,3 +1,7 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ */
+
 /**
   ******************************************************************************
   * @file    USB_Device/CDC_Standalone/Inc/usbd_cdc_interface.h
@@ -25,14 +29,6 @@
   ******************************************************************************
   */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CDC_IF_H
-#define __USBD_CDC_IF_H
-
-/* Includes ------------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-
 extern TIM_HandleTypeDef TIM3_Handle;
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
@@ -43,9 +39,3 @@ void USBD_CDC_SetInterrupt(int chr, void *data);
 void USBD_CDC_Tx(const char *str, uint32_t len);
 int USBD_CDC_RxNum(void);
 int USBD_CDC_RxGet(void);
-
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
-#endif /* __USBD_CDC_IF_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

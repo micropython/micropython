@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdlib.h>
 
 #include "misc.h"
@@ -118,8 +144,8 @@ const mp_obj_dict_t mp_builtin_object_dict_obj = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_builtin_object_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_builtin_object_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_builtin_object_table),
+        .alloc = ARRAY_SIZE(mp_builtin_object_table),
         .table = (mp_map_elem_t*)mp_builtin_object_table,
     },
 };
@@ -132,7 +158,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_ENABLE_MOD_IO
     { MP_OBJ_NEW_QSTR(MP_QSTR_io), (mp_obj_t)&mp_module_io },
 #endif
+#if MICROPY_ENABLE_MOD_COLLECTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR__collections), (mp_obj_t)&mp_module_collections },
+#endif
 #if MICROPY_ENABLE_MOD_STRUCT
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_struct },
 #endif
@@ -146,6 +174,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_ENABLE_MOD_SYS
     { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },
 #endif
+#if MICROPY_ENABLE_MOD_GC && MICROPY_ENABLE_GC
+    { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&mp_module_gc },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_EXTRA_BUILTIN_MODULES
@@ -156,8 +187,8 @@ const mp_obj_dict_t mp_builtin_module_dict_obj = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = sizeof(mp_builtin_module_table) / sizeof(mp_map_elem_t),
-        .alloc = sizeof(mp_builtin_module_table) / sizeof(mp_map_elem_t),
+        .used = ARRAY_SIZE(mp_builtin_module_table),
+        .alloc = ARRAY_SIZE(mp_builtin_module_table),
         .table = (mp_map_elem_t*)mp_builtin_module_table,
     },
 };

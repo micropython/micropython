@@ -1,10 +1,36 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <stm32f4xx_hal.h>
 #include <string.h>
 
+#include "mpconfig.h"
 #include "misc.h"
 #include "nlr.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
@@ -14,16 +40,19 @@
 #include "genhdr/pins.h"
 #include "timer.h"
 
-// Usage Model:
-//
-// adc = pyb.ADC(pin)
-// val = adc.read()
-//
-// adc = pyb.ADCAll(resolution)
-// val = adc.read_channel(channel)
-// val = adc.read_core_temp()
-// val = adc.read_core_vbat()
-// val = adc.read_core_vref()
+/// \moduleref pyb
+/// \class ADC - analog to digital conversion: read analog values on a pin
+///
+/// Usage:
+///
+///     adc = pyb.ADC(pin)              # create an analog object from a pin
+///     val = adc.read()                # read an analog value
+///
+///     adc = pyb.ADCAll(resolution)    # creale an ADCAll object
+///     val = adc.read_channel(channel) # read the given channel
+///     val = adc.read_core_temp()      # read MCU temperature
+///     val = adc.read_core_vbat()      # read MCU VBAT
+///     val = adc.read_core_vref()      # read MCU VREF
 
 /* ADC defintions */
 #define ADCx                    (ADC1)
@@ -118,6 +147,9 @@ STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env,
     print(env, " channel=%lu>", self->channel);
 }
 
+/// \classmethod \constructor(pin)
+/// Create an ADC object associated with the given pin.
+/// This allows you to then read analog values on that pin.
 STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -155,15 +187,30 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     return o;
 }
 
+/// \method read()
+/// Read the value on the analog pin and return it.  The returned value
+/// will be between 0 and 4095.
 STATIC mp_obj_t adc_read(mp_obj_t self_in) {
     pyb_obj_adc_t *self = self_in;
 
     uint32_t data = adc_read_channel(&self->handle);
     return mp_obj_new_int(data);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
+/// \method read_timed(buf, freq)
+/// Read analog values into the given buffer at the given frequency.
+///
+/// Example:
+///
+///     adc = pyb.ADC(pyb.Pin.board.X19)    # create an ADC on pin X19
+///     buf = bytearray(100)                # create a buffer of 100 bytes
+///     adc.read_timed(buf, 10)             # read analog values into buf at 10Hz
+///                                         #   this will take 10 seconds to finish
+///     for val in buf:                     # loop over all values
+///         print(val)                      # print the value out
+///
+/// This function does not allocate any memory.
 STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
     pyb_obj_adc_t *self = self_in;
 
@@ -196,7 +243,6 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
 
     return mp_obj_new_int(bufinfo.len);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
 
 STATIC const mp_map_elem_t adc_locals_dict_table[] = {

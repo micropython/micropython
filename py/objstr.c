@@ -1,10 +1,36 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
@@ -27,7 +53,7 @@ const mp_obj_t mp_const_empty_bytes;
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
-STATIC void bad_implicit_conversion(mp_obj_t self_in) __attribute__((noreturn));
+STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -493,7 +519,9 @@ STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
     return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
 }
 
-STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
+enum { LSTRIP, RSTRIP, STRIP };
+
+STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_STR(args[0]));
 
@@ -516,14 +544,29 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     machine_uint_t first_good_char_pos = 0;
     bool first_good_char_pos_set = false;
     machine_uint_t last_good_char_pos = 0;
-    for (machine_uint_t i = 0; i < orig_str_len; i++) {
+    machine_uint_t i = 0;
+    machine_int_t delta = 1;
+    if (type == RSTRIP) {
+        i = orig_str_len - 1;
+        delta = -1;
+    }
+    for (machine_uint_t len = orig_str_len; len > 0; len--) {
         if (find_subbytes(chars_to_del, chars_to_del_len, &orig_str[i], 1, 1) == NULL) {
-            last_good_char_pos = i;
             if (!first_good_char_pos_set) {
                 first_good_char_pos = i;
+                if (type == LSTRIP) {
+                    last_good_char_pos = orig_str_len - 1;
+                    break;
+                } else if (type == RSTRIP) {
+                    first_good_char_pos = 0;
+                    last_good_char_pos = i;
+                    break;
+                }
                 first_good_char_pos_set = true;
             }
+            last_good_char_pos = i;
         }
+        i += delta;
     }
 
     if (first_good_char_pos == 0 && last_good_char_pos == 0) {
@@ -535,6 +578,18 @@ STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
     //+1 to accomodate the last character
     machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
+}
+
+STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
+    return str_uni_strip(STRIP, n_args, args);
+}
+
+STATIC mp_obj_t str_lstrip(uint n_args, const mp_obj_t *args) {
+    return str_uni_strip(LSTRIP, n_args, args);
+}
+
+STATIC mp_obj_t str_rstrip(uint n_args, const mp_obj_t *args) {
+    return str_uni_strip(RSTRIP, n_args, args);
 }
 
 // Takes an int arg, but only parses unsigned numbers, and only changes
@@ -1354,6 +1409,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, mp_obj_str_format);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
@@ -1373,6 +1430,8 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lstrip), (mp_obj_t)&str_lstrip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rstrip), (mp_obj_t)&str_rstrip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_format), (mp_obj_t)&str_format_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_replace), (mp_obj_t)&str_replace_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&str_count_obj },

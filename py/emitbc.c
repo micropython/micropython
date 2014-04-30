@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -300,14 +326,14 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new0(byte, emit->code_info_size + emit->byte_code_size);
 
     } else if (emit->pass == PASS_3) {
-        qstr *arg_names = m_new(qstr, emit->scope->num_params);
-        for (int i = 0; i < emit->scope->num_params; i++) {
+        qstr *arg_names = m_new(qstr, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
         }
         mp_emit_glue_assign_byte_code(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->byte_code_size,
-            emit->scope->num_params, emit->scope->num_locals,
-            emit->scope->scope_flags, arg_names);
+            emit->scope->num_pos_args, emit->scope->num_kwonly_args, arg_names,
+            emit->scope->scope_flags);
     }
 }
 
@@ -407,11 +433,6 @@ STATIC void emit_bc_load_const_int(emit_t *emit, qstr qstr) {
 STATIC void emit_bc_load_const_dec(emit_t *emit, qstr qstr) {
     emit_bc_pre(emit, 1);
     emit_write_byte_code_byte_qstr(emit, MP_BC_LOAD_CONST_DEC, qstr);
-}
-
-STATIC void emit_bc_load_const_id(emit_t *emit, qstr qstr) {
-    emit_bc_pre(emit, 1);
-    emit_write_byte_code_byte_qstr(emit, MP_BC_LOAD_CONST_ID, qstr);
 }
 
 STATIC void emit_bc_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
@@ -840,7 +861,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_small_int,
     emit_bc_load_const_int,
     emit_bc_load_const_dec,
-    emit_bc_load_const_id,
     emit_bc_load_const_str,
     emit_bc_load_null,
     emit_bc_load_fast,

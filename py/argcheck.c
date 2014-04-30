@@ -1,9 +1,35 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdlib.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
@@ -34,12 +60,12 @@ void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, 
     }
 }
 
-void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_parse_t *allowed, mp_arg_parse_val_t *out_vals) {
+void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
     uint pos_found = 0, kws_found = 0;
     for (uint i = 0; i < n_allowed; i++) {
         mp_obj_t given_arg;
         if (i < n_pos) {
-            if (allowed[i].flags & MP_ARG_PARSE_KW_ONLY) {
+            if (allowed[i].flags & MP_ARG_KW_ONLY) {
                 goto extra_positional;
             }
             pos_found++;
@@ -47,7 +73,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
         } else {
             mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qstr), MP_MAP_LOOKUP);
             if (kw == NULL) {
-                if (allowed[i].flags & MP_ARG_PARSE_REQUIRED) {
+                if (allowed[i].flags & MP_ARG_REQUIRED) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' argument required", qstr_str(allowed[i].qstr)));
                 }
                 out_vals[i] = allowed[i].defval;
@@ -57,11 +83,11 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
                 given_arg = kw->value;
             }
         }
-        if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_BOOL) {
+        if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_BOOL) {
             out_vals[i].u_bool = mp_obj_is_true(given_arg);
-        } else if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_INT) {
+        } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_INT) {
             out_vals[i].u_int = mp_obj_get_int(given_arg);
-        } else if ((allowed[i].flags & MP_ARG_PARSE_KIND_MASK) == MP_ARG_PARSE_OBJ) {
+        } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_OBJ) {
             out_vals[i].u_obj = given_arg;
         } else {
             assert(0);

@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -45,7 +71,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
     }
     scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
-    scope->id_info_alloc = 8;
+    scope->id_info_alloc = MP_ALLOC_SCOPE_ID_INIT;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);
 
     return scope;
@@ -66,8 +92,8 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
 
     // make sure we have enough memory
     if (scope->id_info_len >= scope->id_info_alloc) {
-        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc * 2);
-        scope->id_info_alloc *= 2;
+        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc + MP_ALLOC_SCOPE_ID_INC);
+        scope->id_info_alloc += MP_ALLOC_SCOPE_ID_INC;
     }
 
     // add new id to end of array of all ids; this seems to match CPython
@@ -236,7 +262,7 @@ void scope_print_info(scope_t *s) {
     printf("\n");
     */
     printf("     flags %04x\n", s->scope_flags);
-    printf("     argcount %d\n", s->num_params);
+    printf("     argcount %d\n", s->num_pos_args);
     printf("     nlocals %d\n", s->num_locals);
     printf("     stacksize %d\n", s->stack_size);
 }

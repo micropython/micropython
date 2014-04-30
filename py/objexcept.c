@@ -1,13 +1,40 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "objtype.h"
 #include "runtime.h"
 #include "runtime0.h"
 
@@ -30,12 +57,17 @@ const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit},
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
-    if (kind == PRINT_REPR) {
+    mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
+    bool is_subclass = kind & PRINT_EXC_SUBCLASS;
+    if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
         print(env, "%s", qstr_str(o->base.type->name));
-    } else if (kind == PRINT_EXC) {
-        print(env, "%s: ", qstr_str(o->base.type->name));
     }
-    if (kind == PRINT_STR || kind == PRINT_EXC) {
+
+    if (k == PRINT_EXC) {
+        print(env, ": ");
+    }
+
+    if (k == PRINT_STR || k == PRINT_EXC) {
         if (o->args == NULL || o->args->len == 0) {
             print(env, "");
             return;
@@ -47,7 +79,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
     tuple_print(print, env, o->args, kind);
 }
 
-STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_type_t *type = type_in;
 
     if (n_kw != 0) {
@@ -266,38 +298,39 @@ bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type) {
     return mp_binary_op(MP_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
 }
 
-void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
-    // make sure self_in is an exception instance
-    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
-    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new) {
-        mp_obj_exception_t *self = self_in;
+// traceback handling functions
 
-        // just set the traceback to the null object
-        // we don't want to call any memory management functions here
-        self->traceback = MP_OBJ_NULL;
+#define GET_NATIVE_EXCEPTION(self, self_in) \
+    /* make sure self_in is an exception instance */ \
+    assert(mp_obj_is_exception_instance(self_in)); \
+    mp_obj_exception_t *self; \
+    if (mp_obj_is_native_exception_instance(self_in)) { \
+        self = self_in; \
+    } else { \
+        self = ((mp_obj_instance_t*)self_in)->subobj[0]; \
     }
+
+void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
+    GET_NATIVE_EXCEPTION(self, self_in);
+    // just set the traceback to the null object
+    // we don't want to call any memory management functions here
+    self->traceback = MP_OBJ_NULL;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
-    // make sure self_in is an exception instance
-    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
-    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new && self_in != &mp_emergency_exception_obj) {
-        mp_obj_exception_t *self = self_in;
+    GET_NATIVE_EXCEPTION(self, self_in);
 
-        // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
-        if (self->traceback == MP_OBJ_NULL) {
-            self->traceback = mp_obj_new_list(0, NULL);
-        }
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
+    // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
+    if (self->traceback == MP_OBJ_NULL) {
+        self->traceback = mp_obj_new_list(0, NULL);
     }
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values) {
-    // make sure self_in is an exception instance
-    assert(mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new);
-    mp_obj_exception_t *self = self_in;
+    GET_NATIVE_EXCEPTION(self, self_in);
 
     if (self->traceback == MP_OBJ_NULL) {
         *n = 0;

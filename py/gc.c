@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -366,6 +392,13 @@ found:
     // get pointer to first block
     void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 
+    // zero out the additional bytes of the newly allocated blocks
+    // This is needed because the blocks may have previously held pointers
+    // to the heap and will not be set to something else if the caller
+    // doesn't actually use the entire block.  As such they will continue
+    // to point to the heap and may prevent other blocks from being reclaimed.
+    memset(ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
         // clear type pointer in case it is never set
@@ -435,14 +468,17 @@ void *gc_realloc(void *ptr, machine_uint_t n_bytes) {
     if (n_bytes <= n_existing) {
         return ptr;
     } else {
-        // TODO false is incorrect! Should get value from current block!
-        void *ptr2 = gc_alloc(n_bytes,
+        bool has_finaliser;
+        if (ptr == NULL) {
+            has_finaliser = false;
+        } else {
 #if MICROPY_ENABLE_FINALISER
-                        FTB_GET(BLOCK_FROM_PTR((machine_uint_t)ptr))
+            has_finaliser = FTB_GET(BLOCK_FROM_PTR((machine_uint_t)ptr));
 #else
-                        false
+            has_finaliser = false;
 #endif
-        );
+        }
+        void *ptr2 = gc_alloc(n_bytes, has_finaliser);
         if (ptr2 == NULL) {
             return ptr2;
         }
@@ -523,6 +559,10 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
             assert(ATB_GET_KIND(bl) == AT_FREE);
             ATB_FREE_TO_TAIL(bl);
         }
+
+        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+        memset(ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
+
         return ptr_in;
     }
 
@@ -556,7 +596,7 @@ void gc_dump_info() {
 }
 
 void gc_dump_alloc_table(void) {
-    printf("GC memory layout:");
+    printf("GC memory layout; from %p:", gc_pool_start);
     for (machine_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
         if (bl % 64 == 0) {
             printf("\n%04x: ", (uint)bl);
@@ -565,6 +605,18 @@ void gc_dump_alloc_table(void) {
         switch (ATB_GET_KIND(bl)) {
             case AT_FREE: c = '.'; break;
             case AT_HEAD: c = 'h'; break;
+            /* this prints the uPy object type of the head block
+            case AT_HEAD: {
+                machine_uint_t *ptr = gc_pool_start + bl * WORDS_PER_BLOCK;
+                if (*ptr == (machine_uint_t)&mp_type_tuple) { c = 'T'; }
+                else if (*ptr == (machine_uint_t)&mp_type_list) { c = 'L'; }
+                else if (*ptr == (machine_uint_t)&mp_type_dict) { c = 'D'; }
+                else if (*ptr == (machine_uint_t)&mp_type_float) { c = 'F'; }
+                else if (*ptr == (machine_uint_t)&mp_type_fun_bc) { c = 'B'; }
+                else { c = 'h'; }
+                break;
+            }
+            */
             case AT_TAIL: c = 't'; break;
             case AT_MARK: c = 'm'; break;
         }

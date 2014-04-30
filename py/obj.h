@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 // A Micro Python object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
 //  - xxxx...xx10 : a qstr, bits 2 and above are the value
@@ -169,9 +195,10 @@ typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
-    PRINT_STR,
-    PRINT_REPR,
-    PRINT_EXC, // Special format for printing exception in unhandled exception message
+    PRINT_STR = 0,
+    PRINT_REPR = 1,
+    PRINT_EXC = 2, // Special format for printing exception in unhandled exception message
+    PRINT_EXC_SUBCLASS = 4, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
@@ -292,6 +319,7 @@ extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
 extern const mp_obj_type_t mp_type_property;
+extern const mp_obj_type_t mp_type_stringio;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -355,7 +383,7 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_args, mp_obj_t def_args, const byte *code);
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args, const byte *code);
 mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed, const mp_obj_t *closed);
@@ -423,6 +451,7 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 
 // exception
+#define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
 bool mp_obj_is_exception_type(mp_obj_t self_in);
 bool mp_obj_is_exception_instance(mp_obj_t self_in);
 bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type);
@@ -430,6 +459,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 // str
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);
@@ -507,6 +537,8 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
 
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2);
+const char *mp_obj_fun_get_name(mp_obj_t fun);
+const char *mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
@@ -538,3 +570,5 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
+// Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
+#define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))

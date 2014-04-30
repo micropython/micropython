@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -8,9 +34,9 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
@@ -32,6 +58,7 @@
 // Command line options, with their defaults
 bool compile_only = false;
 uint emit_opt = MP_EMIT_OPT_NONE;
+uint mp_verbose_flag;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
@@ -142,7 +169,7 @@ STATIC char *prompt(char *p) {
 }
 
 STATIC void do_repl(void) {
-    printf("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; UNIX version\n");
+    printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; UNIX version\n");
 
     for (;;) {
         char *line = prompt(">>> ");
@@ -177,54 +204,11 @@ STATIC void do_str(const char *str) {
     execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
 
-typedef struct _test_obj_t {
-    mp_obj_base_t base;
-    int value;
-} test_obj_t;
-
-STATIC void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    test_obj_t *self = self_in;
-    print(env, "<test %d>", self->value);
-}
-
-STATIC mp_obj_t test_get(mp_obj_t self_in) {
-    test_obj_t *self = self_in;
-    return mp_obj_new_int(self->value);
-}
-
-STATIC mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
-    test_obj_t *self = self_in;
-    self->value = mp_obj_get_int(arg);
-    return mp_const_none;
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
-
-STATIC const mp_map_elem_t test_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
-};
-
-STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
-
-STATIC const mp_obj_type_t test_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Test,
-    .print = test_print,
-    .locals_dict = (mp_obj_t)&test_locals_dict,
-};
-
-mp_obj_t test_obj_new(int value) {
-    test_obj_t *o = m_new_obj(test_obj_t);
-    o->base.type = &test_type;
-    o->value = value;
-    return o;
-}
-
 int usage(char **argv) {
     printf(
-"usage: %s [-X <opt>] [-c <command>] [<filename>]\n"
+"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+"Options:\n"
+"-v : verbose (trace various operations); can be multiple\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -262,15 +246,6 @@ mp_obj_t qstr_info(void) {
     printf("qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     return mp_const_none;
 }
-
-#if MICROPY_ENABLE_GC
-// TODO: this doesn't belong here
-STATIC mp_obj_t pyb_gc(void) {
-    gc_collect();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_gc_obj, pyb_gc);
-#endif
 
 // Process options which set interpreter init options
 void pre_process_options(int argc, char **argv) {
@@ -352,12 +327,8 @@ int main(int argc, char **argv) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    mp_store_name(qstr_from_str("test"), test_obj_new(42));
     mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
     mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
-#if MICROPY_ENABLE_GC
-    mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
-#endif
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
@@ -366,10 +337,11 @@ int main(int argc, char **argv) {
     //     pass
     // test_obj = TestClass()
     // test_obj.attr = 42
-    mp_obj_t test_class_type, test_class_instance;
-    test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    //
+    // mp_obj_t test_class_type, test_class_instance;
+    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
@@ -390,15 +362,13 @@ int main(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
+            } else if (strcmp(argv[a], "-v") == 0) {
+                mp_verbose_flag++;
             } else {
                 return usage(argv);
             }
         } else {
-#ifdef __MINGW32__
-            char *basedir = _fullpath(NULL, argv[a], _MAX_PATH);
-#else
             char *basedir = realpath(argv[a], NULL);
-#endif
             if (basedir == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
                 perror("");

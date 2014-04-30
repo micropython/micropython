@@ -1,9 +1,35 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "objstr.h"
@@ -128,7 +154,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
 STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
     mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
-    return mp_obj_str_format(sizeof(args) / sizeof(args[0]), args);
+    return mp_obj_str_format(ARRAY_SIZE(args), args);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);
@@ -245,7 +271,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         mp_obj_t max_obj = NULL;
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (max_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, max_obj, item)) {
+            if (max_obj == NULL || (mp_binary_op(MP_BINARY_OP_LESS, max_obj, item) == mp_const_true)) {
                 max_obj = item;
             }
         }
@@ -257,7 +283,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         // given many args
         mp_obj_t max_obj = args[0];
         for (int i = 1; i < n_args; i++) {
-            if (mp_binary_op(MP_BINARY_OP_LESS, max_obj, args[i])) {
+            if (mp_binary_op(MP_BINARY_OP_LESS, max_obj, args[i]) == mp_const_true) {
                 max_obj = args[i];
             }
         }
@@ -274,7 +300,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         mp_obj_t min_obj = NULL;
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (min_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, item, min_obj)) {
+            if (min_obj == NULL || (mp_binary_op(MP_BINARY_OP_LESS, item, min_obj) == mp_const_true)) {
                 min_obj = item;
             }
         }
@@ -286,7 +312,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         // given many args
         mp_obj_t min_obj = args[0];
         for (int i = 1; i < n_args; i++) {
-            if (mp_binary_op(MP_BINARY_OP_LESS, args[i], min_obj)) {
+            if (mp_binary_op(MP_BINARY_OP_LESS, args[i], min_obj) == mp_const_true) {
                 min_obj = args[i];
             }
         }

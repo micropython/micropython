@@ -1,10 +1,36 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "emitglue.h"
@@ -12,6 +38,12 @@
 #include "bc0.h"
 #include "bc.h"
 #include "objgenerator.h"
+
+// With these macros you can tune the maximum number of state slots
+// that will be allocated on the stack.  Any function that needs more
+// than this will use the heap.
+#define VM_MAX_STATE_ON_STACK (10)
+#define VM_MAX_EXC_STATE_ON_STACK (4)
 
 #define DETECT_VM_STACK_OVERFLOW (0)
 #if 0
@@ -62,7 +94,7 @@ typedef enum {
 #define PUSH_EXC_BLOCK() \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
-    exc_sp->opcode = op; \
+    exc_sp->opcode = *save_ip; \
     exc_sp->handler = ip + unum; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
     exc_sp->prev_exc = MP_OBJ_NULL; \
@@ -85,20 +117,20 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     ip += 4;
 
     // allocate state for locals and stack
-    mp_obj_t temp_state[10];
+    mp_obj_t temp_state[VM_MAX_STATE_ON_STACK];
     mp_obj_t *state = &temp_state[0];
 #if DETECT_VM_STACK_OVERFLOW
     n_state += 1;
 #endif
-    if (n_state > 10) {
+    if (n_state > VM_MAX_STATE_ON_STACK) {
         state = m_new(mp_obj_t, n_state);
     }
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
-    mp_exc_stack_t exc_state[4];
+    mp_exc_stack_t exc_state[VM_MAX_EXC_STATE_ON_STACK];
     mp_exc_stack_t *exc_stack = &exc_state[0];
-    if (n_exc_stack > 4) {
+    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
         exc_stack = m_new(mp_exc_stack_t, n_exc_stack);
     }
     mp_exc_stack_t *exc_sp = &exc_stack[0] - 1;
@@ -145,19 +177,38 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     }
 #endif
 
+    mp_vm_return_kind_t ret_kind;
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
+            // return value is in *sp
             *ret = *sp;
-            return MP_VM_RETURN_NORMAL;
+            ret_kind = MP_VM_RETURN_NORMAL;
+            break;
+
         case MP_VM_RETURN_EXCEPTION:
+            // return value is in state[n_state - 1]
             *ret = state[n_state - 1];
-            return MP_VM_RETURN_EXCEPTION;
+            ret_kind = MP_VM_RETURN_EXCEPTION;
+            break;
+
         case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
         default:
             assert(0);
             *ret = mp_const_none;
-            return MP_VM_RETURN_NORMAL;
+            ret_kind = MP_VM_RETURN_NORMAL;
     }
+
+    // free the state if it was allocated on the heap
+    if (n_state > VM_MAX_STATE_ON_STACK) {
+        m_free(state, n_state);
+    }
+
+    // free the exception state if it was allocated on the heap
+    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
+        m_free(exc_stack, n_exc_stack);
+    }
+
+    return ret_kind;
 }
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
@@ -175,8 +226,7 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
     #define DISPATCH() do { \
         TRACE(ip); \
         save_ip = ip; \
-        op = *ip++; \
-        goto *entry_table[op]; \
+        goto *entry_table[*ip++]; \
     } while(0)
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
@@ -204,7 +254,6 @@ mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **i
 outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
             // local variables that are not visible to the exception handler
-            byte op = 0;
             const byte *ip = *ip_in_out;
             mp_obj_t *sp = *sp_in_out;
             machine_uint_t unum;
@@ -231,11 +280,8 @@ dispatch_loop:
 #else
                 TRACE(ip);
                 save_ip = ip;
-                op = *ip++;
-
-                switch (op) {
+                switch (*ip++) {
 #endif
-                //printf("ip=%p sp=%p op=%u\n", save_ip, sp, op);
 
                 ENTRY(MP_BC_LOAD_CONST_FALSE):
                     PUSH(mp_const_false);
@@ -274,11 +320,6 @@ dispatch_loop:
                 ENTRY(MP_BC_LOAD_CONST_DEC):
                     DECODE_QSTR;
                     PUSH(mp_load_const_dec(qst));
-                    DISPATCH();
-
-                ENTRY(MP_BC_LOAD_CONST_ID):
-                    DECODE_QSTR;
-                    PUSH(mp_load_const_str(qst)); // TODO
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_BYTES):
