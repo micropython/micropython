@@ -152,8 +152,18 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 #endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, uint given) {
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    // Generic message, to be reused for other argument issues
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+        "argument num/types mismatch"));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "function takes %d positional arguments but %d were given", expected, given));
+#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        "%s() takes %d positional arguments but %d were given",
+        mp_obj_fun_get_name(f), expected, given));
+#endif
 }
 
 // If it's possible to call a function without allocating new argument array,
