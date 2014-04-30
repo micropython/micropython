@@ -138,6 +138,11 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 #define dump_args(...) (void)0
 #endif
 
+STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, uint given) {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        "function takes %d positional arguments but %d were given", expected, given));
+}
+
 // If it's possible to call a function without allocating new argument array,
 // this function returns true, together with pointers to 2 subarrays to be used
 // as arguments. Otherwise, it returns false. It is expected that this fucntion
@@ -172,7 +177,7 @@ bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, co
     return true;
 
 arg_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_pos_args, n_args));
+    fun_pos_args_mismatch(self, self->n_pos_args, n_args);
 }
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -198,8 +203,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     if (n_args > self->n_pos_args) {
         // given more than enough arguments
         if (!self->takes_var_args) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "function takes %d positional arguments but %d were given", self->n_pos_args, n_args));
+            fun_pos_args_mismatch(self, self->n_pos_args, n_args);
         }
         // put extra arguments in varargs tuple
         *extra_args = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
@@ -219,9 +223,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
                 extra_args -= self->n_pos_args - n_args;
                 n_extra_args += self->n_pos_args - n_args;
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function takes at least %d positional arguments but %d were given",
-                    self->n_pos_args - self->n_def_args, n_args));
+                fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
             }
         }
     }
