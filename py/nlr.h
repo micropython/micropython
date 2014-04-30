@@ -22,7 +22,7 @@ struct _nlr_buf_t {
     void *regs[10];
 #else
     #define MICROPY_NLR_SETJMP (1)
-    #warning "No native NLR support for this arch, using setjmp implementation"
+    //#warning "No native NLR support for this arch, using setjmp implementation"
 #endif
 #endif
 
