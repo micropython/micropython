@@ -230,7 +230,7 @@ class DocModule(DocItem):
         s.append('## Classes')
         for c in sorted(self.classes.values(), key=lambda x:x.name):
             s.append('')
-            s.append('[`{}.{}`]({}/index.html) - {}'.format(self.name, c.name, c.name, c.descr))
+            s.append('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
         return '\n'.join(s)
 
     def write(self, dir):
@@ -241,7 +241,7 @@ class DocModule(DocItem):
             class_dir = os.path.join(dir, c.name)
             makedirs(class_dir)
             class_dump = c.dump()
-            class_dump = 'part of the [{} module](../index.html)'.format(self.name) + '\n' + class_dump
+            class_dump = 'part of the [{} module](./)'.format(self.name) + '\n' + class_dump
             index = markdown.markdown(class_dump)
             with open(os.path.join(class_dir, 'index.html'), 'wt') as f:
                 f.write(index)
@@ -272,9 +272,7 @@ class Doc:
         if name not in self.modules:
             lex.error('module {} referenced before definition'.format(name))
         self.cur_module = self.modules[name]
-
-    #def process_classref(self, lex, d):
-    #    self.cur_module.process_classref(lex, d)
+        lex.opt_break()
 
     def process_class(self, lex, d):
         self.check_module(lex)
@@ -341,8 +339,11 @@ def process_file(file, doc):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Generate documentation for pyboard API from C files.')
     cmd_parser.add_argument('--outdir', metavar='<output dir>', default='gendoc-out', help='ouput directory')
-    cmd_parser.add_argument('files', nargs='+', help='input files')
+    cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
+
+    if len(args.files) == 0:
+        args.files = ['modpyb.c', 'accel.c', 'adc.c', 'dac.c', 'extint.c', 'i2c.c', 'led.c', 'pin.c', 'rng.c', 'servo.c', 'spi.c', 'uart.c', 'usrsw.c']
 
     doc = Doc()
     for file in args.files:
