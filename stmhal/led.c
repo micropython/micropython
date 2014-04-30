@@ -143,7 +143,7 @@ int led_get_intensity(pyb_led_t led) {
 
 #if defined(PYBV4) || defined(PYBV10)
     if (led == 4) {
-        machine_uint_t i = TIM3->CCR1 * 255 / ((USBD_CDC_POLLING_INTERVAL*1000) - 1);
+        machine_uint_t i = (TIM3->CCR1 * 255 + (USBD_CDC_POLLING_INTERVAL*1000) - 2) / ((USBD_CDC_POLLING_INTERVAL*1000) - 1);
         if (i > 255) {
             i = 255;
         }
@@ -209,15 +209,15 @@ STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // get led number
-    machine_int_t led_id = mp_obj_get_int(args[0]) - 1;
+    machine_int_t led_id = mp_obj_get_int(args[0]);
 
     // check led number
-    if (!(0 <= led_id && led_id < NUM_LEDS)) {
+    if (!(1 <= led_id && led_id <= NUM_LEDS)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED %d does not exist", led_id));
     }
 
     // return static led object
-    return (mp_obj_t)&pyb_led_obj[led_id];
+    return (mp_obj_t)&pyb_led_obj[led_id - 1];
 }
 
 /// \method on()
