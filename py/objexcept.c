@@ -8,6 +8,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "objtype.h"
 #include "runtime.h"
 #include "runtime0.h"
 
@@ -271,38 +272,39 @@ bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type) {
     return mp_binary_op(MP_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
 }
 
-void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
-    // make sure self_in is an exception instance
-    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
-    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new) {
-        mp_obj_exception_t *self = self_in;
+// traceback handling functions
 
-        // just set the traceback to the null object
-        // we don't want to call any memory management functions here
-        self->traceback = MP_OBJ_NULL;
+#define GET_NATIVE_EXCEPTION(self, self_in) \
+    /* make sure self_in is an exception instance */ \
+    assert(mp_obj_is_exception_instance(self_in)); \
+    mp_obj_exception_t *self; \
+    if (mp_obj_is_native_exception_instance(self_in)) { \
+        self = self_in; \
+    } else { \
+        self = ((mp_obj_instance_t*)self_in)->subobj[0]; \
     }
+
+void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
+    GET_NATIVE_EXCEPTION(self, self_in);
+    // just set the traceback to the null object
+    // we don't want to call any memory management functions here
+    self->traceback = MP_OBJ_NULL;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
-    // make sure self_in is an exception instance
-    // TODO add traceback information to user-defined exceptions (need proper builtin subclassing for that)
-    if (mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new && self_in != &mp_emergency_exception_obj) {
-        mp_obj_exception_t *self = self_in;
+    GET_NATIVE_EXCEPTION(self, self_in);
 
-        // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
-        if (self->traceback == MP_OBJ_NULL) {
-            self->traceback = mp_obj_new_list(0, NULL);
-        }
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
-        mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
+    // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
+    if (self->traceback == MP_OBJ_NULL) {
+        self->traceback = mp_obj_new_list(0, NULL);
     }
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values) {
-    // make sure self_in is an exception instance
-    assert(mp_obj_get_type(self_in)->make_new == mp_obj_exception_make_new);
-    mp_obj_exception_t *self = self_in;
+    GET_NATIVE_EXCEPTION(self, self_in);
 
     if (self->traceback == MP_OBJ_NULL) {
         *n = 0;
