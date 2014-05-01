@@ -245,7 +245,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         mp_obj_t max_obj = NULL;
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (max_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, max_obj, item)) {
+            if (max_obj == NULL || (mp_binary_op(MP_BINARY_OP_LESS, max_obj, item) == mp_const_true)) {
                 max_obj = item;
             }
         }
@@ -257,7 +257,7 @@ STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
         // given many args
         mp_obj_t max_obj = args[0];
         for (int i = 1; i < n_args; i++) {
-            if (mp_binary_op(MP_BINARY_OP_LESS, max_obj, args[i])) {
+            if (mp_binary_op(MP_BINARY_OP_LESS, max_obj, args[i]) == mp_const_true) {
                 max_obj = args[i];
             }
         }
@@ -274,7 +274,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         mp_obj_t min_obj = NULL;
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (min_obj == NULL || mp_binary_op(MP_BINARY_OP_LESS, item, min_obj)) {
+            if (min_obj == NULL || (mp_binary_op(MP_BINARY_OP_LESS, item, min_obj) == mp_const_true)) {
                 min_obj = item;
             }
         }
@@ -286,7 +286,7 @@ STATIC mp_obj_t mp_builtin_min(uint n_args, const mp_obj_t *args) {
         // given many args
         mp_obj_t min_obj = args[0];
         for (int i = 1; i < n_args; i++) {
-            if (mp_binary_op(MP_BINARY_OP_LESS, args[i], min_obj)) {
+            if (mp_binary_op(MP_BINARY_OP_LESS, args[i], min_obj) == mp_const_true) {
                 min_obj = args[i];
             }
         }
