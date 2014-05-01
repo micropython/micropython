@@ -50,6 +50,7 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self):
+        self.serial.write(b'\r\x03') # ctrl-C: interrupt any running program
         self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
         self.serial.write(b'\x04') # ctrl-D: soft reset
         data = self.read_until(1, b'to exit\r\n>')
