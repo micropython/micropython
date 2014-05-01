@@ -13,6 +13,8 @@ USBDEV_DIR=usbdev
 FATFS_DIR=fatfs
 CC3K_DIR=cc3k
 DFU=../tools/dfu.py
+# may need to prefix dfu-util with sudo
+DFU_UTIL=dfu-util
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -188,6 +190,12 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/flash.dfu
+
+.PHONY: flashboard
+
+flashboard: $(BUILD)/flash.dfu
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(DFU_UTIL) -a 0 -D $<
 
 $(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
 	$(ECHO) "Create $@"
