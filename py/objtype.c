@@ -148,7 +148,15 @@ STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *en
     }
 
     if (member[0] == MP_OBJ_SENTINEL) {
-        mp_obj_print_helper(print, env, self->subobj[0], kind);
+        // Handle Exception subclasses specially
+        if (mp_obj_is_native_exception_instance(self->subobj[0])) {
+            if (kind != PRINT_STR) {
+                print(env, "%s", qstr_str(self->base.type->name));
+            }
+            mp_obj_print_helper(print, env, self->subobj[0], kind | PRINT_EXC_SUBCLASS);
+        } else {
+            mp_obj_print_helper(print, env, self->subobj[0], kind);
+        }
         return;
     }
 

@@ -169,9 +169,10 @@ typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
-    PRINT_STR,
-    PRINT_REPR,
-    PRINT_EXC, // Special format for printing exception in unhandled exception message
+    PRINT_STR = 0,
+    PRINT_REPR = 1,
+    PRINT_EXC = 2, // Special format for printing exception in unhandled exception message
+    PRINT_EXC_SUBCLASS = 4, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
@@ -424,6 +425,7 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
 
 // exception
+#define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
 bool mp_obj_is_exception_type(mp_obj_t self_in);
 bool mp_obj_is_exception_instance(mp_obj_t self_in);
 bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type);
@@ -431,6 +433,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 // str
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);

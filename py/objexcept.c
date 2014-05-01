@@ -30,12 +30,17 @@ const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit},
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
-    if (kind == PRINT_REPR) {
+    mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
+    bool is_subclass = kind & PRINT_EXC_SUBCLASS;
+    if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
         print(env, "%s", qstr_str(o->base.type->name));
-    } else if (kind == PRINT_EXC) {
-        print(env, "%s: ", qstr_str(o->base.type->name));
     }
-    if (kind == PRINT_STR || kind == PRINT_EXC) {
+
+    if (k == PRINT_EXC) {
+        print(env, ": ");
+    }
+
+    if (k == PRINT_STR || k == PRINT_EXC) {
         if (o->args == NULL || o->args->len == 0) {
             print(env, "");
             return;
@@ -47,7 +52,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
     tuple_print(print, env, o->args, kind);
 }
 
-STATIC mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_type_t *type = type_in;
 
     if (n_kw != 0) {

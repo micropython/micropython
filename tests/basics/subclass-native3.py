@@ -3,6 +3,5 @@ class MyExc(Exception):
 
 e = MyExc(100, "Some error")
 print(e)
-# TODO: Prints native base class name
-#print(repr(e))
+print(repr(e))
 print(e.args)
