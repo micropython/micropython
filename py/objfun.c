@@ -194,8 +194,12 @@ bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, co
     if (n_args > self->n_pos_args) {
         goto arg_error;
     } else {
-        extra_args -= self->n_pos_args - n_args;
-        n_extra_args += self->n_pos_args - n_args;
+        if (n_args >= self->n_pos_args - self->n_def_args) {
+            extra_args -= self->n_pos_args - n_args;
+            n_extra_args += self->n_pos_args - n_args;
+        } else {
+            fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
+        }
     }
     *out_args1 = args;
     *out_args1_len = n_args;
