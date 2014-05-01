@@ -126,10 +126,14 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
 /******************************************************************************/
 /* byte code functions                                                        */
 
-const char *mp_obj_fun_get_name(mp_obj_fun_bc_t *o) {
-    const byte *code_info = o->bytecode;
+const char *mp_obj_code_get_name(const byte *code_info) {
     qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
     return qstr_str(block_name);
+}
+
+const char *mp_obj_fun_get_name(mp_obj_fun_bc_t *o) {
+    const byte *code_info = o->bytecode;
+    return mp_obj_code_get_name(code_info);
 }
 
 #if MICROPY_CPYTHON_COMPAT

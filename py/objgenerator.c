@@ -68,7 +68,8 @@ typedef struct _mp_obj_gen_instance_t {
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    print(env, "<generator object 'fun-name' at %p>", self_in);
+    mp_obj_gen_instance_t *self = self_in;
+    print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_info), self_in);
 }
 
 mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
