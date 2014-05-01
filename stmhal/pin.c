@@ -179,7 +179,7 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 
     if (n_args >= 2) {
         // pin mode given, so configure this GPIO
-        mp_obj_t args2[3] = {(mp_obj_t)pin, args2[1], MP_OBJ_NULL};
+        mp_obj_t args2[3] = {(mp_obj_t)pin, args[1], MP_OBJ_NULL};
         if (n_args == 3) {
             args2[2] = args[2];
         }
