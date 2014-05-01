@@ -182,6 +182,8 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2) {
     mp_obj_fun_bc_t *self = self_in;
+    DEBUG_printf("mp_obj_fun_prepare_simple_args: given: %d pos, %d kw, expected: %d pos (%d default)\n",
+        n_args, n_kw, self->n_pos_args, self->n_def_args);
 
     assert(n_kw == 0);
     assert(self->n_kwonly_args == 0);
