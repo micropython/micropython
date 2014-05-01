@@ -10,6 +10,7 @@
 #include "obj.h"
 #include "runtime0.h"
 #include "runtime.h"
+#include "objtype.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -19,21 +20,13 @@
 #endif
 
 /******************************************************************************/
-// class object
-// creating an instance of a class makes one of these objects
-
-typedef struct _mp_obj_class_t {
-    mp_obj_base_t base;
-    mp_map_t members;
-    mp_obj_t subobj[];
-    // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
-} mp_obj_class_t;
+// instance object
 
 #define is_native_type(type) ((type)->make_new != class_make_new)
 STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 STATIC mp_obj_t mp_obj_new_class(mp_obj_t class, uint subobjs) {
-    mp_obj_class_t *o = m_new_obj_var(mp_obj_class_t, mp_obj_t, subobjs);
+    mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
     o->base.type = class;
     mp_map_init(&o->members, 0);
     mp_seq_clear(o->subobj, 0, subobjs, sizeof(*o->subobj));
@@ -71,7 +64,7 @@ STATIC int class_count_native_bases(const mp_obj_type_t *type, const mp_obj_type
 // it was - because instance->subobj[0] is of that type. The only exception is when
 // object is not yet constructed, then we need to know base native type to construct
 // instance->subobj[0]. This case is handled via class_count_native_bases() though.
-STATIC void mp_obj_class_lookup(mp_obj_class_t *o, const mp_obj_type_t *type, qstr attr, machine_uint_t meth_offset, mp_obj_t *dest) {
+STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type, qstr attr, machine_uint_t meth_offset, mp_obj_t *dest) {
     assert(dest[0] == NULL);
     assert(dest[1] == NULL);
     for (;;) {
@@ -138,7 +131,7 @@ STATIC void mp_obj_class_lookup(mp_obj_class_t *o, const mp_obj_type_t *type, qs
 }
 
 STATIC void class_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
     qstr meth = (kind == PRINT_STR) ? MP_QSTR___str__ : MP_QSTR___repr__;
     mp_obj_t member[2] = {MP_OBJ_NULL};
     mp_obj_class_lookup(self, self->base.type, meth, offsetof(mp_obj_type_t, print), member);
@@ -178,7 +171,7 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
     uint num_native_bases = class_count_native_bases(self, &native_base);
     assert(num_native_bases < 2);
 
-    mp_obj_class_t *o = mp_obj_new_class(self_in, num_native_bases);
+    mp_obj_instance_t *o = mp_obj_new_class(self_in, num_native_bases);
 
     // look for __init__ function
     mp_obj_t init_fn[2] = {MP_OBJ_NULL};
@@ -227,7 +220,7 @@ STATIC const qstr unary_op_method_name[] = {
 };
 
 STATIC mp_obj_t class_unary_op(int op, mp_obj_t self_in) {
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -311,7 +304,7 @@ STATIC void class_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_t *
 STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
-    mp_obj_class_t *lhs = lhs_in;
+    mp_obj_instance_t *lhs = lhs_in;
     qstr op_name = binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -335,7 +328,7 @@ STATIC mp_obj_t class_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
 
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
@@ -388,7 +381,7 @@ STATIC void class_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
 
 #if MICROPY_ENABLE_PROPERTY
     // for property, we need to do a lookup first in the class dict
@@ -422,7 +415,7 @@ STATIC bool class_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
 }
 
 STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
     mp_obj_t member[2] = {MP_OBJ_NULL};
     uint meth_args;
     if (value == MP_OBJ_NULL) {
@@ -455,7 +448,7 @@ STATIC mp_obj_t class_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t class_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_obj_class_t *self = self_in;
+    mp_obj_instance_t *self = self_in;
     mp_obj_t member[2] = {MP_OBJ_NULL};
     mp_obj_class_lookup(self, self->base.type, MP_QSTR___call__, offsetof(mp_obj_type_t, call), member);
     if (member[0] == MP_OBJ_NULL) {
