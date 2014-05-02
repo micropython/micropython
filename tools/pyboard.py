@@ -110,18 +110,19 @@ def run_test():
 
     pyb.exec('def apply(l, f):\r\n for item in l:\r\n  f(item)\r\n')
 
-    pyb.exec('leds=[pyb.Led(l) for l in range(1, 5)]')
+    pyb.exec('leds=[pyb.LED(l) for l in range(1, 5)]')
     pyb.exec('apply(leds, lambda l:l.off())')
 
     ## USR switch test
 
-    if True:
-        for i in range(2):
-            print("press USR button")
-            pyb.exec('while pyb.switch(): pyb.delay(10)')
-            pyb.exec('while not pyb.switch(): pyb.delay(10)')
+    pyb.exec('switch = pyb.Switch()')
 
-        print('USR switch passed')
+    for i in range(2):
+        print("press USR button")
+        pyb.exec('while switch(): pyb.delay(10)')
+        pyb.exec('while not switch(): pyb.delay(10)')
+
+    print('USR switch passed')
 
     ## accel test
 
