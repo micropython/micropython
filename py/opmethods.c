@@ -1,6 +1,6 @@
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"

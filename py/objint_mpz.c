@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "parsenumbase.h"
 #include "obj.h"

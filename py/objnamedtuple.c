@@ -1,7 +1,7 @@
 #include <string.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "nlr.h"
 #include "qstr.h"
 #include "obj.h"

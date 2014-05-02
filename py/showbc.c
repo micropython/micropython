@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "bc0.h"
 

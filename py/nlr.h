@@ -3,7 +3,6 @@
 
 #include <limits.h>
 #include <setjmp.h>
-#include "mpconfig.h"
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {

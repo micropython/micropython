@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include <stdio.h>
+#include "mpconfig.h"
 #include "nlr.h"
 
 #if MICROPY_NLR_SETJMP
