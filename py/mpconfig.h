@@ -243,4 +243,11 @@ typedef double mp_float_t;
 #endif //INT_FMT
 
 // Modifier for function which doesn't return
+#ifndef NORETURN
 #define NORETURN __attribute__((noreturn))
+#endif
+
+// Array size for variable-length arrays at the end of a struct
+#ifndef DYNAMIC_ARRAY_DEFAULT_SIZE
+#define DYNAMIC_ARRAY_DEFAULT_SIZE (0)
+#endif

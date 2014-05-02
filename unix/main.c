@@ -303,6 +303,9 @@ void pre_process_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+#ifdef MICROPY_INIT_FUNC
+    MICROPY_INIT_FUNC;
+#endif
     volatile int stack_dummy;
     stack_top = (void*)&stack_dummy;
 
@@ -394,11 +397,7 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-#ifdef __MINGW32__
-            char *basedir = _fullpath(NULL, argv[a], _MAX_PATH);
-#else
             char *basedir = realpath(argv[a], NULL);
-#endif
             if (basedir == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
                 perror("");

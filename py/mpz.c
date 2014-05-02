@@ -1066,8 +1066,11 @@ mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2) {
 */
 mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2)
 {
-    if (z1->len == 0 || z2->len == 0)
+    // braces below are required for compilation to succeed with CL, see bug report
+    // https://connect.microsoft.com/VisualStudio/feedback/details/864169/compilation-error-when-braces-are-left-out-of-single-line-if-statement
+    if (z1->len == 0 || z2->len == 0) {
         return mpz_zero();
+    }
 
     mpz_t *gcd = mpz_gcd(z1, z2);
     mpz_t *quo = mpz_zero();
