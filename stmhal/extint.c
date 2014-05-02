@@ -4,9 +4,9 @@
 
 #include <stm32f4xx_hal.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "gc.h"
 #include "obj.h"

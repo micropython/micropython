@@ -8,9 +8,9 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "lexerunix.h"
