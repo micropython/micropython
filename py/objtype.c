@@ -189,7 +189,7 @@ STATIC mp_obj_t class_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const m
         // now call Python class __init__ function with all args
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
-            init_ret = mp_call_function_n_kw(init_fn[0], 1, 0, (mp_obj_t*)&o);
+            init_ret = mp_call_function_n_kw(init_fn[0], 1, 0, (mp_obj_t*)(void*)&o);
         } else {
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = o;
