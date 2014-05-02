@@ -16,6 +16,38 @@
 #include "timer.h"
 #include "servo.h"
 
+/// \moduleref pyb
+/// \class Timer - periodically call a function
+///
+/// Timers can be used for a great variety of tasks.  At the moment, only
+/// the simplest case is implemented: that of calling a function periodically.
+///
+/// Each timer consists of a counter that counts up at a certain rate.  The rate
+/// at which it counts is the peripheral clock frequency (in Hz) divided by the
+/// timer prescaler.  When the counter reaches the timer period it triggers an
+/// event, and the counter resets back to zero.  By using the callback method,
+/// the timer event can call a Python function.
+///
+/// Example usage to toggle an LED at a fixed frequency:
+///
+///     tim = pyb.Timer(4)              # create a timer object using timer 4
+///     tim.init(freq=2)                # trigger at 2Hz
+///     tim.callback(lambda t:pyb.LED(1).toggle())
+///
+/// Further examples:
+///
+///     tim = pyb.Timer(4, freq=100)    # freq in Hz
+///     tim = pyb.Timer(4, prescaler=1, period=100)
+///     tim.counter()                   # get counter (can also set)
+///     tim.prescaler(2)                # set prescaler (can also get)
+///     tim.period(200)                 # set period (can also get)
+///     tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
+///     tim.callback(None)              # clear callback
+///
+/// *Note:* Timer 3 is reserved for internal use.  Timer 5 controls
+/// the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
+/// It is recommended to use the other timers in your programs.
+
 // The timers can be used by multiple drivers, and need a common point for
 // the interrupts to be dispatched, so they are all collected here.
 //
@@ -29,16 +61,6 @@
 //
 // TIM6:
 //  - ADC, DAC for read_timed and write_timed
-//
-// Python usage model:
-//
-//      tim = pyb.Timer(4, freq=100)    # freq in Hz
-//      tim = pyb.Timer(4, prescaler=1, period=100)
-//      tim.counter()                   # get counter (can also set)
-//      tim.prescaler(2)                # set prescaler (can also get)
-//      tim.period(200)                 # set period (can also get)
-//      tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
-//      tim.callback(None)              # clear callback
 
 typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
@@ -173,6 +195,12 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
     }
 }
 
+/// \method init(*, freq, prescaler, period)
+/// Initialise the timer.  Initialisation must be either by frequency (in Hz)
+/// or by prescaler and period:
+///
+///     tim.init(freq=100)                  # set the timer to trigger at 100Hz
+///     tim.init(prescaler=100, period=300) # set the prescaler and period directly
 STATIC const mp_arg_t pyb_timer_init_args[] = {
     { MP_QSTR_freq,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
     { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -257,6 +285,10 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
     return mp_const_none;
 }
 
+/// \classmethod \constructor(id, ...)
+/// Construct a new timer object of the given id.  If additional
+/// arguments are given, then the timer is initialised by `init(...)`.
+/// `id` can be 1 to 14, excluding 3.
 STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -308,6 +340,10 @@ STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 
+/// \method deinit()
+/// Deinitialises the timer.
+///
+/// *This function is not yet implemented.*
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
     //pyb_timer_obj_t *self = self_in;
     // TODO implement me
@@ -315,6 +351,8 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
+/// \method counter([value])
+/// Get or set the timer counter.
 mp_obj_t pyb_timer_counter(uint n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
@@ -328,6 +366,8 @@ mp_obj_t pyb_timer_counter(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_timer_counter);
 
+/// \method prescaler([value])
+/// Get or set the prescaler for the timer.
 mp_obj_t pyb_timer_prescaler(uint n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
@@ -341,6 +381,8 @@ mp_obj_t pyb_timer_prescaler(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_timer_prescaler);
 
+/// \method period([value])
+/// Get or set the period of the timer.
 mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
@@ -354,6 +396,10 @@ mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer_period);
 
+/// \method callback(fun)
+/// Set the function to be called when the timer triggers.
+/// `fun` is passed 1 argument, the timer object.
+/// If `fun` is `None` then the callback will be disabled.
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_timer_obj_t *self = self_in;
     if (callback == mp_const_none) {
