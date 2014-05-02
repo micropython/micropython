@@ -8,6 +8,7 @@
 #   - run a terminal
 
 SERIAL=/dev/ttyACM0
+DEVICE=0483:df11
 
 while true; do
     echo "waiting for DFU device..."
@@ -19,7 +20,7 @@ while true; do
     done
 
     echo "found DFU device, flashing"
-    dfu-util -a 0 -D build/flash.dfu
+    dfu-util -a 0 -d $DEVICE -D build/flash.dfu
 
     echo "waiting for DFU to exit..."
     while true; do
