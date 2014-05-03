@@ -467,7 +467,7 @@ void timer_irq_handler(uint tim_id) {
                         // Uncaught exception; disable the callback so it doesn't run again.
                         tim->callback = mp_const_none;
                         __HAL_TIM_DISABLE_IT(&tim->tim, TIM_IT_UPDATE);
-                        printf("Uncaught exception in Timer(%lu) interrupt handler\n", tim->tim_id);
+                        printf("Uncaught exception in Timer(" UINT_FMT ") interrupt handler\n", tim->tim_id);
                         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                     }
                     gc_unlock();

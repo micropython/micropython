@@ -41,9 +41,9 @@ void gc_collect(void) {
         gc_info_t info;
         gc_info(&info);
         printf("GC@%lu %lums\n", start, ticks);
-        printf(" %lu total\n", info.total);
-        printf(" %lu : %lu\n", info.used, info.free);
-        printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+        printf(" " UINT_FMT " total\n", info.total);
+        printf(" " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
+        printf(" 1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
     }
 }
 

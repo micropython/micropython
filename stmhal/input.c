@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"

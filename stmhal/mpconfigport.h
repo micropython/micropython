@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 // options to control how Micro Python is built
 
 #define MICROPY_EMIT_THUMB          (1)
@@ -51,11 +49,11 @@ extern const struct _mp_obj_module_t time_module;
 
 #define BYTES_PER_WORD (4)
 
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
+#define UINT_FMT "%u"
+#define INT_FMT "%d"
 
-typedef int32_t machine_int_t; // must be pointer size
-typedef uint32_t machine_uint_t; // must be pointer size
+typedef int machine_int_t; // must be pointer size
+typedef unsigned int machine_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
