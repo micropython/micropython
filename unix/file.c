@@ -20,8 +20,9 @@ typedef struct _mp_obj_fdfile_t {
 
 #ifdef MICROPY_CPYTHON_COMPAT
 void check_fd_is_open(const mp_obj_fdfile_t *o) {
-    if (o->fd < 0)
+    if (o->fd < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+    }
 }
 #else
 #define check_fd_is_open(o)
