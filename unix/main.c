@@ -142,7 +142,7 @@ STATIC char *prompt(char *p) {
 }
 
 STATIC void do_repl(void) {
-    printf("Micro Python " MICROPY_GIT_TAG " (" MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "); UNIX version\n");
+    printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; UNIX version\n");
 
     for (;;) {
         char *line = prompt(">>> ");

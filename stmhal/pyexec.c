@@ -155,7 +155,7 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    stdout_tx_str("Micro Python " MICROPY_GIT_TAG " (" MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "); " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
+    stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with STM32F405RG\r\n");
     stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
