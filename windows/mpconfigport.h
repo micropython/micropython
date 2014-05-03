@@ -36,3 +36,5 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_EXTRA_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+
+#include "realpath.h"
