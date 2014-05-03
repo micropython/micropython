@@ -1,12 +1,8 @@
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#ifdef __MINGW32__
-// For alloca()
-#include <malloc.h>
-#endif
+#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
