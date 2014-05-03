@@ -343,7 +343,7 @@ def main():
     args = cmd_parser.parse_args()
 
     if len(args.files) == 0:
-        args.files = ['modpyb.c', 'accel.c', 'adc.c', 'dac.c', 'extint.c', 'i2c.c', 'led.c', 'pin.c', 'rng.c', 'servo.c', 'spi.c', 'uart.c', 'usrsw.c', 'timer.c']
+        args.files = ['modpyb.c', 'accel.c', 'adc.c', 'dac.c', 'extint.c', 'i2c.c', 'led.c', 'pin.c', 'rng.c', 'servo.c', 'spi.c', 'uart.c', 'usrsw.c', 'timer.c', 'rtc.c']
 
     doc = Doc()
     for file in args.files:

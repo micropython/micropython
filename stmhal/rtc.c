@@ -14,6 +14,12 @@
 ///
 /// The RTC is and independent clock that keeps track of the date
 /// and time.
+///
+/// Example usage:
+///
+///     rtc = pyb.RTC()
+///     rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
+///     print(rtc.datetime())
 
 RTC_HandleTypeDef RTCHandle;
 
