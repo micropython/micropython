@@ -1,3 +1,13 @@
+# Select the board to build for: if not given on the command line,
+# then default to PYBV10.
+BOARD ?= PYBV10
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -32,10 +42,6 @@ INC += -I$(CC3K_DIR)
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M4) $(COPT)
 
-BOARD ?= PYBV10
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 CFLAGS += -Iboards/$(BOARD)
 
 #Debugging/Optimization
