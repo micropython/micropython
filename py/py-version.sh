@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git_tag="$(git describe || echo unknown)"
+git_tag="$(git describe --dirty || echo unknown)"
 git_hash="$(git rev-parse --short HEAD 2> /dev/null || echo unknown)"
 git_files_are_clean=1
 # Check if there are any modified files.
