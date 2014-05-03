@@ -123,8 +123,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
     while (max_size == -1 || max_size-- != 0) {
         char *p = vstr_add_len(vstr, 1);
         if (p == NULL) {
-            // TODO
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
         }
 
         machine_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
@@ -143,16 +142,29 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             break;
         }
     }
-    // TODO don't intern this string
-    vstr_shrink(vstr);
-    return MP_OBJ_NEW_QSTR(qstr_from_strn_take(vstr_str(vstr), vstr->alloc, vstr_len(vstr)));
+    // TODO need a string creation API that doesn't copy the given data
+    mp_obj_t ret = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    vstr_free(vstr);
+    return ret;
 }
+
+// TODO take an optional extra argument (what does it do exactly?)
+STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
+    mp_obj_t lines = mp_obj_new_list(0, NULL);
+    for (;;) {
+        mp_obj_t line = stream_unbuffered_readline(1, &self);
+        if (mp_obj_str_get_len(line) == 0) {
+            break;
+        }
+        mp_obj_list_append(lines, line);
+    }
+    return lines;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj, stream_unbuffered_readlines);
 
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     mp_obj_t l_in = stream_unbuffered_readline(1, &self);
-    uint sz;
-    mp_obj_str_get_data(l_in, &sz);
-    if (sz != 0) {
+    if (mp_obj_str_get_len(l_in) != 0) {
         return l_in;
     }
     return MP_OBJ_STOP_ITERATION;
