@@ -260,7 +260,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 ///
 /// `weekday` is 1-7 for Monday through Sunday.
 ///
-/// `subseconds` is 0-59.
+/// `subseconds` is a free-running timer and counts down from 255 to 0, hundreds of times a second.
 mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // get date and time
