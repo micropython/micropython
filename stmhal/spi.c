@@ -198,7 +198,7 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
     }
 }
 
-/// \method init(mode, baudrate=328125, *, polarity=1, phase=1, bits=8, firstbit=SPI.MSB, ti=false, crc=None)
+/// \method init(mode, baudrate=328125, *, polarity=1, phase=1, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///

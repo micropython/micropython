@@ -367,7 +367,7 @@ STATIC mp_obj_t pyb_i2c_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_send_obj, 1, pyb_i2c_send);
 
-/// \method recv(send, addr=0x00, timeout=5000)
+/// \method recv(recv, addr=0x00, timeout=5000)
 ///
 /// Receive data on the bus:
 ///

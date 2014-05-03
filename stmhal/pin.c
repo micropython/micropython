@@ -241,6 +241,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_o
 ///     - `Pin.PULL_DOWN` - enable the pull-down resistor.
 ///
 /// Returns: `None`.
+// TODO allow keyword args
 STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args) {
     pin_obj_t *self = args[0];
 

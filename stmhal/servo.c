@@ -203,6 +203,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_
 
 /// \method calibration([pulse_min, pulse_max, pulse_centre, [pulse_angle_90, pulse_speed_100]])
 /// Get or set the calibration of the servo timing.
+// TODO should accept 1 arg, a 5-tuple of values to set
 STATIC mp_obj_t pyb_servo_calibration(uint n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
