@@ -9,13 +9,17 @@ Example usage:
     import pyboard
     pyb = pyboard.Pyboard('/dev/ttyACM0')
     pyb.enter_raw_repl()
-    pyb.exec('pyb.Led(1).on()')
+    pyb.exec('pyb.LED(1).on()')
     pyb.exit_raw_repl()
 
 To run a script from the local machine on the board and print out the results:
 
     import pyboard
     pyboard.execfile('test.py', device='/dev/ttyACM0')
+
+This script can also be run directly.  To execute a local script, use:
+
+    python pyboard.py test.py
 
 """
 
@@ -157,5 +161,19 @@ def run_test():
     pyb.exit_raw_repl()
     pyb.close()
 
+def main():
+    import argparse
+    cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
+    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
+    cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
+    cmd_parser.add_argument('files', nargs='*', help='input files')
+    args = cmd_parser.parse_args()
+
+    if args.test:
+        run_test()
+
+    for file in args.files:
+        execfile(file, device=args.device)
+
 if __name__ == "__main__":
-    run_test()
+    main()
