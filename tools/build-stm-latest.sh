@@ -24,8 +24,8 @@ git_hash="$(git rev-parse --short HEAD 2> /dev/null || echo unknown)"
 for board in PYBV3 PYBV10; do
     echo $board
     lower_board=$(echo $board | tr A-Z a-z)
-    build_dir=/tmp/stm-build-$lower_board
+    build_dir=/tmp/stm-build-$board
     make -B BOARD=$board BUILD=$build_dir || exit 1
-    mv $build_dir/flash.dfu $dest_dir/$lower_board-$date-$git_hash.dfu
+    mv $build_dir/firmware.dfu $dest_dir/$lower_board-$date-$git_hash.dfu
     rm -rf $build_dir
 done

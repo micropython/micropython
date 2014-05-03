@@ -195,25 +195,21 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
-all: $(BUILD)/flash.dfu
+all: $(BUILD)/firmware.dfu
 
-.PHONY: flashboard
+.PHONY: deploy
 
-flashboard: $(BUILD)/flash.dfu
+deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(DFU_UTIL) -a 0 -D $<
 
-$(BUILD)/flash.dfu: $(BUILD)/flash0.bin $(BUILD)/flash1.bin
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/flash0.bin -b 0x08020000:$(BUILD)/flash1.bin $@
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
+	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b 0x08020000:$(BUILD)/firmware1.bin $@
 
-$(BUILD)/flash0.bin: $(BUILD)/flash.elf
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $@
-
-$(BUILD)/flash1.bin: $(BUILD)/flash.elf
-	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $@
-
-$(BUILD)/flash.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
