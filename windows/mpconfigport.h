@@ -15,6 +15,7 @@
 #define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_PORT_INIT_FUNC      init()
 
 // type definitions for the specific machine
 
@@ -38,3 +39,4 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 #include "realpath.h"
+#include "init.h"
