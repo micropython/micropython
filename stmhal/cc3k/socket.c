@@ -50,6 +50,9 @@
 
 #include <stdint.h>
 #include <string.h> // for memcpy
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "hci.h"
 #include "socket.h"
@@ -1188,3 +1191,5 @@ mdnsAdvertiser(unsigned short mdnsEnabled, char * deviceServiceName, unsigned sh
 	return ret;
 	
 }
+
+#endif // MICROPY_HW_ENABLE_CC3K

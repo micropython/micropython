@@ -50,6 +50,9 @@
 
 #include <stdint.h>
 #include <string.h> // for memcpy
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "cc3000_common.h"
 #include "hci.h"
@@ -240,3 +243,5 @@ hci_patch_send(unsigned char ucOpcode, unsigned char *pucBuff, char *patch, unsi
 //
 //
 //*****************************************************************************
+
+#endif // MICROPY_HW_ENABLE_CC3K

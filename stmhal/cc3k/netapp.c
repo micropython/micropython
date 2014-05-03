@@ -41,6 +41,9 @@
 *
 *****************************************************************************/
 #include <stdint.h>
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "netapp.h"
 #include "hci.h"
@@ -475,3 +478,5 @@ long netapp_set_debug_level(unsigned long ulLevel)
 
 }
 #endif
+
+#endif // MICROPY_HW_ENABLE_CC3K

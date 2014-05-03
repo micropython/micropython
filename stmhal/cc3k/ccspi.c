@@ -42,6 +42,9 @@
 *****************************************************************************/
 #include <stdint.h>
 #include <string.h> // for memset
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "ccspi.h"
 #include "hci.h"
@@ -735,3 +738,5 @@ void cc3k_int_poll()
     SpiIntGPIOHandler();
   }
 }
+
+#endif // MICROPY_HW_ENABLE_CC3K

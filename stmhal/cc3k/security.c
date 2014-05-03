@@ -41,6 +41,9 @@
 //*****************************************************************************
 
 #include <stdint.h>
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "security.h"
 
@@ -533,3 +536,5 @@ signed long aes_write_key(unsigned char *key)
 //! @}
 //
 //*****************************************************************************
+
+#endif // MICROPY_HW_ENABLE_CC3K

@@ -12,6 +12,8 @@
 #include "obj.h"
 #include "runtime.h"
 
+#if MICROPY_HW_ENABLE_CC3K
+
 #include "cc3k/ccspi.h"
 #include "cc3k/hci.h"
 #include "cc3k/socket.h"
@@ -377,3 +379,5 @@ void pyb_wlan_start(void) {
     printf("nvmem_read_sp_version=%d; %02x %02x\n", ret, ver[0], ver[1]);
     */
 }
+
+#endif // MICROPY_HW_ENABLE_CC3K

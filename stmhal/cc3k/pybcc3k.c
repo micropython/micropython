@@ -17,6 +17,8 @@
 #include "ccdebug.h"
 #include "pybcc3k.h"
 
+#if MICROPY_HW_ENABLE_CC3K
+
 // IRQ on PA14, input, pulled up, active low
 // EN on PC7, output, active high
 // CS on PC6, output, active low
@@ -165,3 +167,5 @@ uint8_t pyb_cc3000_spi_send(uint8_t val) {
     HAL_SPI_TransmitReceive(&SPI_HANDLE, data, data, 1, 1000);
     return data[0];
 }
+
+#endif // MICROPY_HW_ENABLE_CC3K

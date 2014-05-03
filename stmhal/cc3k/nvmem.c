@@ -50,6 +50,9 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "mpconfigport.h"
+
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "nvmem.h"
 #include "hci.h"
@@ -364,3 +367,4 @@ nvmem_create_entry(unsigned long ulFileId, unsigned long ulNewLen)
 //
 //*****************************************************************************
 
+#endif // MICROPY_HW_ENABLE_CC3K

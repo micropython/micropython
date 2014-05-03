@@ -495,12 +495,10 @@ soft_reset:
         vstr_free(vstr);
     }
 
-#if 0
-#if MICROPY_HW_HAS_WLAN
-    // wifi
+#if MICROPY_HW_ENABLE_CC3K
+    // wifi using the CC3000 driver
     pyb_wlan_init();
     pyb_wlan_start();
-#endif
 #endif
 
     // enter REPL
