@@ -511,6 +511,7 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
 
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2);
+const char *mp_obj_fun_get_name(mp_obj_t fun);
 const char *mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);

@@ -20,14 +20,13 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
     self->obj = obj;
 }
 
-#if 0
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_cell_t *o = o_in;
-    print(env, "<cell ");
+    print(env, "<cell %p ", o->obj);
     if (o->obj == MP_OBJ_NULL) {
         print(env, "(nil)");
     } else {
-        //print(env, "%p", o->obj);
         mp_obj_print_helper(print, env, o->obj, PRINT_REPR);
     }
     print(env, ">");
@@ -36,8 +35,10 @@ STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env
 
 const mp_obj_type_t cell_type = {
     { &mp_type_type },
-    .name = MP_QSTR_, // should never need to print cell type
-    //.print = cell_print,
+    .name = MP_QSTR_, // cell representation is just value in < >
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    .print = cell_print,
+#endif
 };
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {

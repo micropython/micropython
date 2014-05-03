@@ -131,8 +131,9 @@ const char *mp_obj_code_get_name(const byte *code_info) {
     return qstr_str(block_name);
 }
 
-const char *mp_obj_fun_get_name(mp_obj_fun_bc_t *o) {
-    const byte *code_info = o->bytecode;
+const char *mp_obj_fun_get_name(mp_obj_t fun_in) {
+    mp_obj_fun_bc_t *fun = fun_in;
+    const byte *code_info = fun->bytecode;
     return mp_obj_code_get_name(code_info);
 }
 
