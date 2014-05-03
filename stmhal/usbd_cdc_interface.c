@@ -1,3 +1,10 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * Taken from ST Cube library and heavily modified.  See below for original
+ * copyright header.
+ */
+
 /**
   ******************************************************************************
   * @file    USB_Device/CDC_Standalone/Src/usbd_cdc_interface.c
