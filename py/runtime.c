@@ -42,6 +42,11 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
+    // call port specific initialization if any 
+#ifdef MICROPY_PORT_INIT_FUNC
+    MICROPY_PORT_INIT_FUNC;
+#endif
+
     mp_emit_glue_init();
 
     // init global module stuff
