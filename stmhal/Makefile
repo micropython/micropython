@@ -25,6 +25,7 @@ CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
 DFU_UTIL=dfu-util
+DEVICE=0483:df11
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -201,7 +202,7 @@ all: $(BUILD)/firmware.dfu
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
-	$(Q)$(DFU_UTIL) -a 0 -D $<
+	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
