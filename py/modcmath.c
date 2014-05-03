@@ -65,7 +65,7 @@ mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
     mp_obj_get_complex(z_obj, &real, &imag);
     mp_float_t sqrt_abs = MICROPY_FLOAT_C_FUN(pow)(real*real + imag*imag, 0.25);
     mp_float_t theta = 0.5 * MICROPY_FLOAT_C_FUN(atan2)(imag, real);
-    return mp_obj_new_complex(sqrt_abs * cos(theta), sqrt_abs * sin(theta));
+    return mp_obj_new_complex(sqrt_abs * MICROPY_FLOAT_C_FUN(cos)(theta), sqrt_abs * MICROPY_FLOAT_C_FUN(sin)(theta));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
 
