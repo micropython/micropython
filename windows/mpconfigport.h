@@ -12,6 +12,7 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
 #define MICROPY_ENABLE_LEXER_UNIX   (1)
+#define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 
@@ -33,3 +34,5 @@ typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+#define MICROPY_EXTRA_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
