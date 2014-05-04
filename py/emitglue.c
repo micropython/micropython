@@ -96,9 +96,11 @@ void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint
         DEBUG_printf(" %02x", code[i]);
     }
     DEBUG_printf("\n");
-#if MICROPY_DEBUG_PRINTERS
-    mp_byte_code_print(code, len);
 #endif
+#if MICROPY_DEBUG_PRINTERS
+    if (mp_verbose_flag > 0) {
+        mp_byte_code_print(code, len);
+    }
 #endif
 }
 

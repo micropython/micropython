@@ -156,4 +156,6 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 // Debugging helpers
 int DEBUG_printf(const char *fmt, ...);
 
+extern uint mp_verbose_flag;
+
 #endif // _INCLUDED_MINILIB_H

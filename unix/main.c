@@ -58,6 +58,7 @@
 // Command line options, with their defaults
 bool compile_only = false;
 uint emit_opt = MP_EMIT_OPT_NONE;
+uint mp_verbose_flag;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
@@ -205,7 +206,9 @@ STATIC void do_str(const char *str) {
 
 int usage(char **argv) {
     printf(
-"usage: %s [-X <opt>] [-c <command>] [<filename>]\n"
+"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+"Options:\n"
+"-v : verbose (trace various operations); can be multiple\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -371,6 +374,8 @@ int main(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
+            } else if (strcmp(argv[a], "-v") == 0) {
+                mp_verbose_flag++;
             } else {
                 return usage(argv);
             }
