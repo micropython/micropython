@@ -203,51 +203,6 @@ STATIC void do_str(const char *str) {
     execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
 
-typedef struct _test_obj_t {
-    mp_obj_base_t base;
-    int value;
-} test_obj_t;
-
-STATIC void test_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    test_obj_t *self = self_in;
-    print(env, "<test %d>", self->value);
-}
-
-STATIC mp_obj_t test_get(mp_obj_t self_in) {
-    test_obj_t *self = self_in;
-    return mp_obj_new_int(self->value);
-}
-
-STATIC mp_obj_t test_set(mp_obj_t self_in, mp_obj_t arg) {
-    test_obj_t *self = self_in;
-    self->value = mp_obj_get_int(arg);
-    return mp_const_none;
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(test_get_obj, test_get);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(test_set_obj, test_set);
-
-STATIC const mp_map_elem_t test_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&test_get_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&test_set_obj },
-};
-
-STATIC MP_DEFINE_CONST_DICT(test_locals_dict, test_locals_dict_table);
-
-STATIC const mp_obj_type_t test_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Test,
-    .print = test_print,
-    .locals_dict = (mp_obj_t)&test_locals_dict,
-};
-
-mp_obj_t test_obj_new(int value) {
-    test_obj_t *o = m_new_obj(test_obj_t);
-    o->base.type = &test_type;
-    o->value = value;
-    return o;
-}
-
 int usage(char **argv) {
     printf(
 "usage: %s [-X <opt>] [-c <command>] [<filename>]\n"
@@ -378,7 +333,6 @@ int main(int argc, char **argv) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    mp_store_name(qstr_from_str("test"), test_obj_new(42));
     mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
     mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
 #if MICROPY_ENABLE_GC
@@ -392,10 +346,11 @@ int main(int argc, char **argv) {
     //     pass
     // test_obj = TestClass()
     // test_obj.attr = 42
-    mp_obj_t test_class_type, test_class_instance;
-    test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    //
+    // mp_obj_t test_class_type, test_class_instance;
+    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
