@@ -17,8 +17,8 @@ fi
 # get the date
 date=$(date '+%Y-%m-%d')
 
-# get the git hash
-git_hash="$(git rev-parse --short HEAD 2> /dev/null || echo unknown)"
+# get the git tag
+git_tag="$(git describe --dirty || echo unknown)"
 
 # build the versions
 for board in PYBV3 PYBV10; do
@@ -26,6 +26,6 @@ for board in PYBV3 PYBV10; do
     lower_board=$(echo $board | tr A-Z a-z)
     build_dir=/tmp/stm-build-$board
     make -B BOARD=$board BUILD=$build_dir || exit 1
-    mv $build_dir/firmware.dfu $dest_dir/$lower_board-$date-$git_hash.dfu
+    mv $build_dir/firmware.dfu $dest_dir/$lower_board-$date-$git_tag.dfu
     rm -rf $build_dir
 done
