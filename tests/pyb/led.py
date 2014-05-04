@@ -1,3 +1,4 @@
+import pyb
 from pyb import LED
 
 for i in range(4):

@@ -1,3 +1,4 @@
+import pyb
 from pyb import Timer
 
 tim = Timer(4)

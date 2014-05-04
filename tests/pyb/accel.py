@@ -1,3 +1,5 @@
+import pyb
+
 accel = pyb.Accel()
 print(accel)
 accel.x()

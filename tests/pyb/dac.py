@@ -1,3 +1,5 @@
+import pyb
+
 dac = pyb.DAC(1)
 print(dac)
 dac.noise(100)
