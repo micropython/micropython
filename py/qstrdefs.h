@@ -346,6 +346,10 @@ Q(BytesIO)
 Q(getvalue)
 #endif
 
+#if MICROPY_ENABLE_GC
+Q(gc)
+#endif
+
 #if MICROPY_ENABLE_PROPERTY
 Q(property)
 Q(getter)
