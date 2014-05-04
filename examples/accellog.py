@@ -1,14 +1,17 @@
-# log the accelerometer values to a file, 1 per second
+# log the accelerometer values to a .csv-file on the SD-card
 
-f = open('motion.dat', 'w')                 # open the file for writing
+import pyb
 
-for i in range(60):                         # loop 60 times
-    time = pyb.time()                       # get the current time
-    accel = pyb.accel()                     # get the accelerometer data
+accel = pyb.Accel()                                 # create object of accelerometer
+blue = pyb.LED(4)                                   # create object of blue LED
 
-    # write time and x,y,z values to the file
-    f.write('{} {} {} {}\n'.format(time, accel[0], accel[1], accel[2]))
+log = open('1:/log.csv', 'w')                       # open file to write data - 1:/ ist the SD-card, 0:/ the internal memory
+blue.on()                                           # turn on blue LED
 
-    pyb.delay(1000)                         # wait 1000 ms = 1 second
+for i in range(100):                                # do 100 times (if the board is connected via USB, you can't write longer because the PC tries to open the filesystem which messes up your file.)
+        t = pyb.millis()                            # get time since reset
+        x, y, z = accel.filtered_xyz()              # get acceleration data
+        log.write('{},{},{},{}\n'.format(t,x,y,z))  # write data to file
 
-f.close()                                   # close the file
+log.close()                                         # close file
+blue.off()                                          # turn off LED
