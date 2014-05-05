@@ -312,4 +312,6 @@ typedef double mp_float_t;
 #endif //INT_FMT
 
 // Modifier for function which doesn't return
+#ifndef NORETURN
 #define NORETURN __attribute__((noreturn))
+#endif

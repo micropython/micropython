@@ -303,7 +303,7 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
 
     // convert the bytes to an integer
     machine_uint_t value = 0;
-    for (const byte* buf = bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+    for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
         value = (value << 8) | *buf;
     }
 
