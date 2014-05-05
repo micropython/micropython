@@ -11,6 +11,10 @@ switch = pyb.Switch()
 # loop
 while True:
 
+    # wait for interrupt
+    # this reduces power consumption while waiting for switch press
+    pyb.wfi()
+
     # start if switch is pressed
     if switch():
         pyb.delay(200)                      # delay avoids detection of multiple presses
