@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Note: git describe doesn't work if no tag is available
-git_tag="$(git describe --dirty 2> /dev/null || git rev-parse --short HEAD)"
+git_tag="$(git describe --dirty --always)"
 git_hash="$(git rev-parse --short HEAD 2> /dev/null || echo unknown)"
 git_files_are_clean=1
 # Check if there are any modified files.
