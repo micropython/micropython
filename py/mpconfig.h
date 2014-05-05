@@ -34,6 +34,39 @@
 // values below.
 
 /*****************************************************************************/
+/* Memory allocation policy                                                  */
+
+// Initial amount for parse rule stack
+#ifndef MP_ALLOC_PARSE_RULE_INIT
+#define MP_ALLOC_PARSE_RULE_INIT (64)
+#endif
+
+// Increment for parse rule stack
+#ifndef MP_ALLOC_PARSE_RULE_INC
+#define MP_ALLOC_PARSE_RULE_INC (16)
+#endif
+
+// Initial amount for parse result stack
+#ifndef MP_ALLOC_PARSE_RESULT_INIT
+#define MP_ALLOC_PARSE_RESULT_INIT (32)
+#endif
+
+// Increment for parse result stack
+#ifndef MP_ALLOC_PARSE_RESULT_INC
+#define MP_ALLOC_PARSE_RESULT_INC (16)
+#endif
+
+// Initial amount for ids in a scope
+#ifndef MP_ALLOC_SCOPE_ID_INIT
+#define MP_ALLOC_SCOPE_ID_INIT (4)
+#endif
+
+// Increment for ids in a scope
+#ifndef MP_ALLOC_SCOPE_ID_INC
+#define MP_ALLOC_SCOPE_ID_INC (6)
+#endif
+
+/*****************************************************************************/
 /* Micro Python emitters                                                     */
 
 // Whether to emit CPython byte codes (for debugging/testing)

@@ -71,7 +71,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint
     }
     scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
-    scope->id_info_alloc = 8;
+    scope->id_info_alloc = MP_ALLOC_SCOPE_ID_INIT;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);
 
     return scope;
@@ -92,8 +92,8 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
 
     // make sure we have enough memory
     if (scope->id_info_len >= scope->id_info_alloc) {
-        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc * 2);
-        scope->id_info_alloc *= 2;
+        scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc + MP_ALLOC_SCOPE_ID_INC);
+        scope->id_info_alloc += MP_ALLOC_SCOPE_ID_INC;
     }
 
     // add new id to end of array of all ids; this seems to match CPython
