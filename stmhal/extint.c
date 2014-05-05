@@ -56,7 +56,7 @@
 ///
 /// Note: ExtInt will automatically configure the gpio line as an input.
 ///
-///     extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.GPIO.PULL_UP, callback)
+///     extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
 ///
 /// Now every time a falling edge is seen on the X1 pin, the callback will be
 /// called. Caution: mechanical pushbuttons have "bounce" and pushing or
@@ -81,7 +81,7 @@
 /// Only the IRQ_xxx modes have been tested. The EVT_xxx modes have
 /// something to do with sleep mode and the WFE instruction.
 ///
-/// Valid pull values are pyb.GPIO.PULL_UP, pyb.GPIO.PULL_DOWN, pyb.GPIO.PULL_NONE.
+/// Valid pull values are pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN, pyb.Pin.PULL_NONE.
 ///
 /// There is also a C API, so that drivers which require EXTI interrupt lines
 /// can also use this code. See extint.h for the available functions and
