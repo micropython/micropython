@@ -88,6 +88,7 @@ PY_O_BASENAME = \
 	builtintables.o \
 	modarray.o \
 	modcollections.o \
+	modgc.o \
 	modio.o \
 	modmath.o \
 	modcmath.o \

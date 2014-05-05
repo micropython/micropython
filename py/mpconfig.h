@@ -200,6 +200,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_MOD_CMATH (0)
 #endif
 
+// Whether to provide "gc" module
+#ifndef MICROPY_ENABLE_MOD_GC
+#define MICROPY_ENABLE_MOD_GC (1)
+#endif
+
 // Whether to provide "io" module
 #ifndef MICROPY_ENABLE_MOD_IO
 #define MICROPY_ENABLE_MOD_IO (1)
