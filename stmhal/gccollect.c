@@ -72,10 +72,3 @@ void gc_collect(void) {
         printf(" 1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
     }
 }
-
-static mp_obj_t pyb_gc(void) {
-    gc_collect();
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_gc_obj, pyb_gc);

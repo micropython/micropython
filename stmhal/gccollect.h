@@ -40,4 +40,4 @@ extern uint32_t _ram_end;
 
 void gc_collect(void);
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_gc_obj);
+MP_DECLARE_CONST_FUN_OBJ(gc_collect_obj);
