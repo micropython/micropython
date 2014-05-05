@@ -249,11 +249,11 @@ mp_obj_t qstr_info(void) {
 
 #if MICROPY_ENABLE_GC
 // TODO: this doesn't belong here
-STATIC mp_obj_t pyb_gc(void) {
+STATIC mp_obj_t sys_gc(void) {
     gc_collect();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_gc_obj, pyb_gc);
+MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_gc_obj, sys_gc);
 #endif
 
 // Process options which set interpreter init options
@@ -338,9 +338,6 @@ int main(int argc, char **argv) {
 
     mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
     mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
-#if MICROPY_ENABLE_GC
-    mp_store_name(qstr_from_str("gc"), (mp_obj_t)&pyb_gc_obj);
-#endif
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
