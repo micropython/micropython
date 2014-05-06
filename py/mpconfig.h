@@ -249,6 +249,11 @@ typedef double mp_float_t;
 #define MICROPY_PATH_MAX (512)
 #endif
 
+// Whether POSIX-semantics non-blocking streams are supported
+#ifndef MICROPY_STREAMS_NON_BLOCK
+#define MICROPY_STREAMS_NON_BLOCK (0)
+#endif
+
 // Whether to use computed gotos in the VM, or a switch
 // Computed gotos are roughly 10% faster, and increase VM code size by a little
 #ifndef MICROPY_USE_COMPUTED_GOTO

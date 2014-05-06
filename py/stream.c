@@ -25,7 +25,6 @@
  */
 
 #include <string.h>
-#include <errno.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -33,6 +32,9 @@
 #include "qstr.h"
 #include "obj.h"
 #include "stream.h"
+#if MICROPY_STREAMS_NON_BLOCK
+#include <errno.h>
+#endif
 
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.
@@ -42,9 +44,13 @@
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
+#if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,
 // and anything else just emulates it, right?)
 #define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#else
+#define is_nonblocking_error(errno) (0)
+#endif
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
