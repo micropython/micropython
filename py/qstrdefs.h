@@ -238,6 +238,8 @@ Q(startswith)
 Q(replace)
 Q(partition)
 Q(rpartition)
+Q(iterable)
+Q(start)
 
 Q(bound_method)
 Q(closure)

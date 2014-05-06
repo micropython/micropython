@@ -302,10 +302,8 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     // type_in == extint_obj_type
 
     // parse args
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_arg_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, &kw_args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;
