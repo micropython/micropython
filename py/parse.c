@@ -511,6 +511,20 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     }
                 }
 
+#if 0 && !MICROPY_ENABLE_DOC_STRING
+                // this code discards lonely statement, such as doc strings
+                // problem is that doc strings have already been interned, so this doesn't really help reduce RAM usage
+                if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(parser, 0) == MP_PARSE_NODE_NULL) {
+                    mp_parse_node_t p = peek_result(parser, 1);
+                    if (MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) {
+                        pop_result(parser);
+                        pop_result(parser);
+                        push_result_rule(parser, rule_src_line, rules[RULE_pass_stmt], 0);
+                        break;
+                    }
+                }
+#endif
+
                 // always emit these rules, even if they have only 1 argument
                 if (rule->rule_id == RULE_expr_stmt || rule->rule_id == RULE_yield_stmt) {
                     emit_rule = true;
