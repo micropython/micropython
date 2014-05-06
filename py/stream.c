@@ -37,6 +37,9 @@
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.
 
+// TODO: should be in mpconfig.h
+#define DEFAULT_BUFFER_SIZE 256
+
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,
@@ -101,8 +104,6 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     }
 }
 
-// TODO: should be in mpconfig.h
-#define READ_SIZE 256
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
@@ -111,11 +112,11 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     int total_size = 0;
-    vstr_t *vstr = vstr_new_size(READ_SIZE);
+    vstr_t *vstr = vstr_new_size(DEFAULT_BUFFER_SIZE);
     char *buf = vstr_str(vstr);
     char *p = buf;
     int error;
-    int current_read = READ_SIZE;
+    int current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
         machine_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == -1) {
@@ -138,7 +139,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             current_read -= out_sz;
             p += out_sz;
         } else {
-            current_read = READ_SIZE;
+            current_read = DEFAULT_BUFFER_SIZE;
             p = vstr_extend(vstr, current_read);
             if (p == NULL) {
                 // TODO
