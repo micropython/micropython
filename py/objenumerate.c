@@ -41,9 +41,14 @@ typedef struct _mp_obj_enumerate_t {
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);
 
-/* TODO: enumerate is one of the ones that can take args or kwargs.
-   Sticking to args for now */
 STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    /* TODO: enumerate is one of the ones that can take args or kwargs.
+       Sticking to args for now */
+#if MICROPY_CPYTHON_COMPAT
+    if (n_kw != 0) {
+        mp_arg_error_unimpl_kw();
+    }
+#endif
     assert(n_args > 0);
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = &mp_type_enumerate;

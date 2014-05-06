@@ -103,3 +103,10 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "extra keyword arguments given"));
     }
 }
+
+#if MICROPY_CPYTHON_COMPAT
+void mp_arg_error_unimpl_kw() {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+        "keyword argument(s) not yet implemented - use normal args instead"));
+}
+#endif
