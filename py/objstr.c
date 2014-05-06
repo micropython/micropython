@@ -108,6 +108,12 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
 }
 
 STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+#if MICROPY_CPYTHON_COMPAT
+    if (n_kw != 0) {
+        mp_arg_error_unimpl_kw();
+    }
+#endif
+
     switch (n_args) {
         case 0:
             return MP_OBJ_NEW_QSTR(MP_QSTR_);
@@ -145,6 +151,12 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     if (n_args == 0) {
         return mp_const_empty_bytes;
     }
+
+#if MICROPY_CPYTHON_COMPAT
+    if (n_kw != 0) {
+        mp_arg_error_unimpl_kw();
+    }
+#endif
 
     if (MP_OBJ_IS_STR(args[0])) {
         if (n_args < 2 || n_args > 3) {

@@ -48,6 +48,7 @@ STATIC const mp_arg_t enumerate_make_new_args[] = {
 #define ENUMERATE_MAKE_NEW_NUM_ARGS ARRAY_SIZE(enumerate_make_new_args)
 
 STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+#if MICROPY_CPYTHON_COMPAT
     // parse args
     mp_arg_val_t vals[ENUMERATE_MAKE_NEW_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, ENUMERATE_MAKE_NEW_NUM_ARGS, enumerate_make_new_args, vals);
@@ -57,6 +58,12 @@ STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     o->base.type = &mp_type_enumerate;
     o->iter = mp_getiter(vals[0].u_obj);
     o->cur = vals[1].u_int;
+#else
+    mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
+    o->base.type = &mp_type_enumerate;
+    o->iter = mp_getiter(args[0]);
+    o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
+#endif
 
     return o;
 }

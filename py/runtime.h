@@ -57,6 +57,7 @@ void mp_deinit(void);
 void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, bool takes_kw);
 void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(uint n_pos, uint n_kw, const mp_obj_t *args, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+NORETURN void mp_arg_error_unimpl_kw(void);
 
 mp_obj_dict_t *mp_locals_get(void);
 void mp_locals_set(mp_obj_dict_t *d);
