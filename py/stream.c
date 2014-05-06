@@ -119,6 +119,15 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     while (true) {
         machine_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == -1) {
+            if (is_nonblocking_error(error)) {
+                // With non-blocking streams, we read as much as we can.
+                // If we read nothing, return None, just like read().
+                // Otherwise, return data read so far.
+                if (total_size == 0) {
+                    return mp_const_none;
+                }
+                break;
+            }
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }
         if (out_sz == 0) {
