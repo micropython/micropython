@@ -25,6 +25,7 @@
  */
 
 #include <string.h>
+#include <errno.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -37,6 +38,10 @@
 // dispatch to the underlying stream interface of an object.
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
+
+// TODO: This is POSIX-specific (but then POSIX is the only real thing,
+// and anything else just emulates it, right?)
+#define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
@@ -53,6 +58,14 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     int error;
     machine_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
     if (out_sz == -1) {
+        if (is_nonblocking_error(error)) {
+            // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
+            // "If the object is in non-blocking mode and no bytes are available,
+            // None is returned."
+            // This is actually very weird, as naive truth check will treat
+            // this as EOF.
+            return mp_const_none;
+        }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
         mp_obj_t s = mp_obj_new_str(buf, out_sz, false); // will reallocate to use exact size
@@ -74,11 +87,16 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     int error;
     machine_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
     if (out_sz == -1) {
+        if (is_nonblocking_error(error)) {
+            // http://docs.python.org/3/library/io.html#io.RawIOBase.write
+            // "None is returned if the raw stream is set not to block and
+            // no single byte could be readily written to it."
+            // This is for consistency with read() behavior, still weird,
+            // see abobe.
+            return mp_const_none;
+        }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
-        // http://docs.python.org/3/library/io.html#io.RawIOBase.write
-        // "None is returned if the raw stream is set not to block and no single byte could be readily written to it."
-        // Do they mean that instead of 0 they return None?
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
 }
