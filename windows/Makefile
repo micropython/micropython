@@ -30,6 +30,7 @@ endif
 SRC_C = \
 	unix/main.c \
 	unix/file.c \
+	unix/input.c \
 	realpath.c \
 	init.c \
 
