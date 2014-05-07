@@ -26,22 +26,22 @@ See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
 
 Major components in this repository:
-- py/ -- the core Python implementation, including compiler and runtime.
-- unix/ -- a version of Micro Python that runs on Unix.
-- stmhal/ -- a version of Micro Python that runs on the Micro Python board
+- `py/` — the core Python implementation, including compiler and runtime.
+- `unix/` — a version of Micro Python that runs on Unix.
+- `stmhal/` — a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG (using ST's Cube HAL drivers).
-- teensy/ -- a version of Micro Python that runs on the Teensy 3.1
+- `teensy/` — a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 
 Additional components:
-- bare-arm/ -- a bare minimum version of Micro Python for ARM MCUs.  Start
+- `bare-arm/` — a bare minimum version of Micro Python for ARM MCUs.  Start
   with this if you want to port Micro Python to another microcontroller.
-- unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
-- tests/ -- test framework and test scripts.
-- tools/ -- various tools, including the pyboard.py module.
-- examples/ -- a few example Python scripts.
+- `unix-cpy/` — a version of Micro Python that outputs bytecode (for testing).
+- `tests/` — test framework and test scripts.
+- `tools/` — various tools, including the pyboard.py module.
+- `examples/` — a few example Python scripts.
 
-"make" is used to build the components, or "gmake" on BSD-based systems.
+`make` is used to build the components, or `gmake` on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).
 
 The Unix version
@@ -70,9 +70,9 @@ dependencies, they can be disabled in unix/mpconfigport.mk .
 The STM version
 ---------------
 
-The "stmhal" port requires an ARM compiler, arm-none-eabi-gcc, and associated
-bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
-arm-none-eabi-gcc packages from the AUR.  Otherwise, try here:
+The `stmhal` port requires an ARM compiler, `arm-none-eabi-gcc`, and associated
+bin-utils.  For those using Arch Linux, you need `arm-none-eabi-binutils` and
+`arm-none-eabi-gcc` packages from the AUR.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
