@@ -2045,7 +2045,36 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 c_assign(comp, ((mp_parse_node_struct_t*)pns1->nodes[i])->nodes[0], ASSIGN_STORE); // middle store
             }
         } else if (kind == PN_expr_stmt_assign) {
-            if (MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
+            if (0) {
+                // dummy
+#if 0
+            // code to compile constants: id = const(...)
+            } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_power)
+                && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0])
+                && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0]) == MP_QSTR_const
+                && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1], PN_trailer_paren)
+                && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[2])
+                ) {
+                if (comp->pass == PASS_1) {
+                    qstr const_id = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0])) {
+                        compile_syntax_error(comp, (mp_parse_node_t)pns, "constant must be an integer");
+                    }
+                    machine_int_t value = MP_PARSE_NODE_LEAF_SMALL_INT(((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0]);
+
+                    printf("assign const: %s = %ld\n", qstr_str(const_id), value);
+                    mp_map_elem_t *elem = mp_map_lookup(&comp->module_consts, MP_OBJ_NEW_QSTR(const_id), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+                    if (elem->value != MP_OBJ_NULL) {
+                        compile_syntax_error(comp, (mp_parse_node_t)pns, "constant redefined");
+                    }
+                    elem->value = MP_OBJ_NEW_SMALL_INT(value);
+                }
+                goto no_optimisation;
+
+#endif
+            } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
