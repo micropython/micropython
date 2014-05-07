@@ -115,7 +115,7 @@ def main():
             test_dirs = ('basics', 'float', 'import', 'io', 'misc')
         else:
             # run pyboard tests
-            test_dirs = ('basics', 'float', 'pyb')
+            test_dirs = ('basics', 'float', 'pyb', 'inlineasm')
         tests = sorted(test_file for test_files in (glob('{}/*.py'.format(dir)) for dir in test_dirs) for test_file in test_files)
     else:
         # tests explicitly given
