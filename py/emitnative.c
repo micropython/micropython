@@ -561,6 +561,17 @@ STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, void *f
 #endif
 }
 
+// the first arg is stored in the code aligned on a machine_uint_t boundary
+STATIC void emit_call_with_imm_arg_aligned(emit_t *emit, mp_fun_kind_t fun_kind, void *fun, machine_int_t arg_val, int arg_reg) {
+    need_reg_all(emit);
+    ASM_MOV_ALIGNED_IMM_TO_REG(arg_val, arg_reg);
+#if N_X64
+    asm_x64_call_ind(emit->as, fun, REG_RAX);
+#elif N_THUMB
+    asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#endif
+}
+
 STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2) {
     need_reg_all(emit);
     ASM_MOV_IMM_TO_REG(arg_val1, arg_reg1);
@@ -688,7 +699,7 @@ STATIC void emit_native_load_const_int(emit_t *emit, qstr qst) {
     DEBUG_printf("load_const_int %s\n", qstr_str(st));
     // for viper: load integer, check fits in 32 bits
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, mp_obj_new_int_from_long_str, qst, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, mp_obj_new_int_from_qstr, qst, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -945,6 +956,8 @@ STATIC void emit_native_rot_three(emit_t *emit) {
 
 STATIC void emit_native_jump(emit_t *emit, uint label) {
     emit_native_pre(emit);
+    // need to commit stack because we are jumping elsewhere
+    need_stack_settled(emit);
 #if N_X64
     asm_x64_jmp_label(emit->as, label);
 #elif N_THUMB
@@ -953,33 +966,29 @@ STATIC void emit_native_jump(emit_t *emit, uint label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_pre_helper(emit_t *emit, uint label) {
+STATIC void emit_native_jump_helper(emit_t *emit, uint label, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit);
     if (vtype == VTYPE_BOOL) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
+        if (!pop) {
+            adjust_stack(emit, 1);
+        }
     } else if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
         emit_call(emit, MP_F_OBJ_IS_TRUE, mp_obj_is_true);
+        if (!pop) {
+            emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+        }
     } else {
         printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
         assert(0);
     }
-}
-
-STATIC void emit_native_pop_jump_if_false(emit_t *emit, uint label) {
-    emit_native_pop_jump_pre_helper(emit, label);
-#if N_X64
-    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
-    asm_x64_jcc_label(emit->as, JCC_JZ, label);
-#elif N_THUMB
-    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
-    asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
-#endif
-    emit_post(emit);
+    // need to commit stack because we may jump elsewhere
+    need_stack_settled(emit);
 }
 
 STATIC void emit_native_pop_jump_if_true(emit_t *emit, uint label) {
-    emit_native_pop_jump_pre_helper(emit, label);
+    emit_native_jump_helper(emit, label, true);
 #if N_X64
     asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
     asm_x64_jcc_label(emit->as, JCC_JNZ, label);
@@ -990,19 +999,52 @@ STATIC void emit_native_pop_jump_if_true(emit_t *emit, uint label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, uint label) {
-    assert(0);
+STATIC void emit_native_pop_jump_if_false(emit_t *emit, uint label) {
+    emit_native_jump_helper(emit, label, true);
+#if N_X64
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JZ, label);
+#elif N_THUMB
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
+#endif
+    emit_post(emit);
 }
+
+STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, uint label) {
+    emit_native_jump_helper(emit, label, false);
+#if N_X64
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JNZ, label);
+#elif N_THUMB
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#endif
+    adjust_stack(emit, -1);
+    emit_post(emit);
+}
+
 STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
-    assert(0);
+    emit_native_jump_helper(emit, label, false);
+#if N_X64
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JZ, label);
+#elif N_THUMB
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
+#endif
+    adjust_stack(emit, -1);
+    emit_post(emit);
 }
 
 STATIC void emit_native_break_loop(emit_t *emit, uint label, int except_depth) {
     emit_native_jump(emit, label); // TODO properly
 }
+
 STATIC void emit_native_continue_loop(emit_t *emit, uint label, int except_depth) {
-    assert(0);
+    emit_native_jump(emit, label); // TODO properly
 }
+
 STATIC void emit_native_setup_with(emit_t *emit, uint label) {
     // not supported, or could be with runtime call
     assert(0);
@@ -1037,7 +1079,7 @@ STATIC void emit_native_for_iter(emit_t *emit, uint label) {
     emit_access_stack(emit, 1, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
     emit_call(emit, MP_F_ITERNEXT, mp_iternext);
-    ASM_MOV_IMM_TO_REG((machine_uint_t)MP_OBJ_NULL, REG_TEMP1);
+    ASM_MOV_IMM_TO_REG((machine_uint_t)MP_OBJ_STOP_ITERATION, REG_TEMP1);
 #if N_X64
     asm_x64_cmp_r64_with_r64(emit->as, REG_RET, REG_TEMP1);
     asm_x64_jcc_label(emit->as, JCC_JE, label);
@@ -1203,14 +1245,27 @@ STATIC void emit_native_unpack_sequence(emit_t *emit, int n_args) {
 }
 
 STATIC void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
-    assert(0);
+    // TODO this is untested
+    DEBUG_printf("unpack_ex %d %d\n", n_left, n_right);
+    vtype_kind_t vtype_base;
+    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = seq
+    assert(vtype_base == VTYPE_PYOBJ);
+    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, n_left + n_right); // arg3 = dest ptr
+    emit_call_with_imm_arg(emit, MP_F_UNPACK_EX, mp_unpack_ex, n_left + n_right, REG_ARG_2); // arg2 = n_left + n_right
 }
 
 STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
-    assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
-    emit_call_with_3_imm_args_and_first_aligned(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
+        emit_call_with_3_imm_args_and_first_aligned(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
+    } else {
+        vtype_kind_t vtype_def_tuple, vtype_def_dict;
+        emit_pre_pop_reg_reg(emit, &vtype_def_dict, REG_ARG_3, &vtype_def_tuple, REG_ARG_2);
+        assert(vtype_def_tuple == VTYPE_PYOBJ);
+        assert(vtype_def_dict == VTYPE_PYOBJ);
+        emit_call_with_imm_arg_aligned(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1);
+    }
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 

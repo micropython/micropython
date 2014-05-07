@@ -228,7 +228,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
-mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
     return mp_const_none;
 }

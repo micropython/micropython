@@ -314,7 +314,7 @@ dispatch_loop:
 
                 ENTRY(MP_BC_LOAD_CONST_INT):
                     DECODE_QSTR;
-                    PUSH(mp_obj_new_int_from_long_str(qstr_str(qst)));
+                    PUSH(mp_obj_new_int_from_qstr(qst));
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_DEC):

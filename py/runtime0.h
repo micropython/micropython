@@ -121,6 +121,7 @@ typedef enum {
     MP_F_IMPORT_ALL,
     MP_F_NEW_SLICE,
     MP_F_UNPACK_SEQUENCE,
+    MP_F_UNPACK_EX,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 

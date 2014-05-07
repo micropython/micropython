@@ -1132,7 +1132,7 @@ void *m_malloc_fail(int num_bytes) {
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_const_dec,
-    mp_obj_new_int_from_long_str,
+    mp_obj_new_int_from_qstr,
     mp_load_const_str,
     mp_load_name,
     mp_load_global,
@@ -1162,6 +1162,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_import_all,
     mp_obj_new_slice,
     mp_unpack_sequence,
+    mp_unpack_ex,
 };
 
 /*

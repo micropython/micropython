@@ -260,9 +260,10 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     return mp_obj_new_int_from_ll(value);
 }
 
-mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    uint len = strlen(str);
+    uint len;
+    const char* str = (const char*)qstr_data(qst, &len);
     int base = 0;
     int skip = mp_parse_num_base(str, len, &base);
     str += skip;
