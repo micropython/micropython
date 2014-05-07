@@ -1,0 +1,2 @@
+char *prompt(char *p);
+

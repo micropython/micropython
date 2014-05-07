@@ -24,58 +24,61 @@
  * THE SOFTWARE.
  */
 
-// qstrs specific to this port
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-Q(Test)
+#include "mpconfig.h"
+#include "nlr.h"
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
+#include "input.h"
 
-Q(fileno)
-Q(makefile)
+#if MICROPY_USE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
 
-Q(FileIO)
+#define CTRL_D  '\x04'
 
-Q(ffi)
-Q(ffimod)
-Q(ffifunc)
-Q(fficallback)
-Q(ffivar)
-Q(as_bytearray)
-Q(callback)
-Q(func)
-Q(var)
+char *prompt(char *p) {
+#if MICROPY_USE_READLINE
+    char *line = readline(p);
+    if (line) {
+        add_history(line);
+    }
+#else
+    static char buf[256];
+    fputs(p, stdout);
+    char *s = fgets(buf, sizeof(buf), stdin);
+    if (!s) {
+        return NULL;
+    }
+    int l = strlen(buf);
+    if (buf[l - 1] == '\n') {
+        buf[l - 1] = 0;
+    } else {
+        l++;
+    }
+    char *line = malloc(l);
+    memcpy(line, buf, l);
+#endif
+    return line;
+}
 
-Q(input)
-Q(time)
-Q(clock)
-Q(sleep)
+STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        mp_obj_print(args[0], PRINT_STR);
+    }
 
-Q(socket)
-Q(sockaddr_in)
-Q(htons)
-Q(inet_aton)
-Q(gethostbyname)
-Q(getaddrinfo)
-Q(microsocket)
-Q(connect)
-Q(bind)
-Q(listen)
-Q(accept)
-Q(recv)
-Q(setsockopt)
-Q(setblocking)
+    char *line = prompt("");
+    if (line == NULL) {
+        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+    }
+    mp_obj_t o = mp_obj_new_str((const byte*)line, strlen(line), false);
+    free(line);
+    return o;
+}
 
-Q(AF_UNIX)
-Q(AF_INET)
-Q(AF_INET6)
-Q(SOCK_STREAM)
-Q(SOCK_DGRAM)
-Q(SOCK_RAW)
-
-Q(MSG_DONTROUTE)
-Q(MSG_DONTWAIT)
-
-Q(SOL_SOCKET)
-Q(SO_BROADCAST)
-Q(SO_ERROR)
-Q(SO_KEEPALIVE)
-Q(SO_LINGER)
-Q(SO_REUSEADDR)
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);
