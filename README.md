@@ -47,10 +47,10 @@ You will also need bash and Python (at least 2.7 or 3.3).
 The Unix version
 ----------------
 
-The "unix" port requires a standard Unix environment with gcc and GNU make.
-x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARMv7. Porting to other architectures require writing some assembly code
-for the exception handling.
+The `unix` port requires a standard Unix environment with gcc and GNU make.
+Both of Intel x86 architectures are supported, as well as ARMv7. It will
+probably work on other architectures if you set `MICROPY_NLR_SETJMP` in the
+`unix/mpconfigport.h` header, test results are wellcome.
 
 To build:
 
