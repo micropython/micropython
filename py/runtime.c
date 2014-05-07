@@ -1156,12 +1156,12 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_call_function_n_kw_for_native,
     mp_call_method_n_kw,
     mp_getiter,
+    mp_iternext,
     mp_import_name,
     mp_import_from,
     mp_import_all,
     mp_obj_new_slice,
     mp_unpack_sequence,
-    mp_iternext,
 };
 
 /*

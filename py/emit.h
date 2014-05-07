@@ -35,9 +35,10 @@
  */
 
 typedef enum {
-    PASS_1 = 1, // work out id's and their kind, and number of labels
-    PASS_2 = 2, // work out stack size and code size and label offsets
-    PASS_3 = 3, // emit code
+    MP_PASS_SCOPE = 1,      // work out id's and their kind, and number of labels
+    MP_PASS_STACK_SIZE = 2, // work out maximum stack size
+    MP_PASS_CODE_SIZE = 3,  // work out code size and label offsets
+    MP_PASS_EMIT = 4,       // emit code
 } pass_kind_t;
 
 #define MP_EMIT_STAR_FLAG_SINGLE (0x01)

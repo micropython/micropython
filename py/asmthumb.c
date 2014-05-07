@@ -42,7 +42,7 @@
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
 
 struct _asm_thumb_t {
-    int pass;
+    uint pass;
     uint code_offset;
     uint code_size;
     byte *code_base;
@@ -58,14 +58,9 @@ struct _asm_thumb_t {
 asm_thumb_t *asm_thumb_new(uint max_num_labels) {
     asm_thumb_t *as;
 
-    as = m_new(asm_thumb_t, 1);
-    as->pass = 0;
-    as->code_offset = 0;
-    as->code_size = 0;
-    as->code_base = NULL;
+    as = m_new0(asm_thumb_t, 1);
     as->max_num_labels = max_num_labels;
     as->label_offsets = m_new(int, max_num_labels);
-    as->num_locals = 0;
 
     return as;
 }
@@ -89,16 +84,16 @@ void asm_thumb_free(asm_thumb_t *as, bool free_code) {
     m_del_obj(asm_thumb_t, as);
 }
 
-void asm_thumb_start_pass(asm_thumb_t *as, int pass) {
+void asm_thumb_start_pass(asm_thumb_t *as, uint pass) {
     as->pass = pass;
     as->code_offset = 0;
-    if (pass == ASM_THUMB_PASS_2) {
+    if (pass == ASM_THUMB_PASS_COMPUTE) {
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
     }
 }
 
 void asm_thumb_end_pass(asm_thumb_t *as) {
-    if (as->pass == ASM_THUMB_PASS_2) {
+    if (as->pass == ASM_THUMB_PASS_COMPUTE) {
         // calculate size of code in bytes
         as->code_size = as->code_offset;
         as->code_base = m_new(byte, as->code_size);
@@ -120,7 +115,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
 // all functions must go through this one to emit bytes
 STATIC byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
-    if (as->pass < ASM_THUMB_PASS_3) {
+    if (as->pass < ASM_THUMB_PASS_EMIT) {
         as->code_offset += num_bytes_to_write;
         return as->dummy_data;
     } else {
@@ -224,12 +219,12 @@ void asm_thumb_exit(asm_thumb_t *as) {
 
 void asm_thumb_label_assign(asm_thumb_t *as, uint label) {
     assert(label < as->max_num_labels);
-    if (as->pass == ASM_THUMB_PASS_2) {
+    if (as->pass < ASM_THUMB_PASS_EMIT) {
         // assign label offset
         assert(as->label_offsets[label] == -1);
         as->label_offsets[label] = as->code_offset;
-    } else if (as->pass == ASM_THUMB_PASS_3) {
-        // ensure label offset has not changed from PASS_2 to PASS_3
+    } else {
+        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
         //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
         assert(as->label_offsets[label] == as->code_offset);
     }
@@ -383,20 +378,35 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
     }
 }
 
+// i32 is stored as a full word in the code, and aligned to machine-word boundary
+// TODO this is very inefficient, improve it!
+void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
+    // align on machine-word + 2
+    if ((as->code_offset & 3) == 0) {
+        asm_thumb_op16(as, ASM_THUMB_OP_NOP);
+    }
+    // jump over the i32 value (instruction prefect adds 4 to PC)
+    asm_thumb_op16(as, OP_B_N(0));
+    // store i32 on machine-word aligned boundary
+    asm_thumb_data(as, 4, i32);
+    // do the actual load of the i32 value
+    asm_thumb_mov_reg_i32_optimised(as, reg_dest, i32);
+}
+
 #define OP_STR_TO_SP_OFFSET(rlo_dest, word_offset) (0x9000 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 #define OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset) (0x9800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num, uint rlo_src) {
     assert(rlo_src < REG_R8);
     int word_offset = as->num_locals - local_num - 1;
-    assert(as->pass < ASM_THUMB_PASS_3 || word_offset >= 0);
+    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_STR_TO_SP_OFFSET(rlo_src, word_offset));
 }
 
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < REG_R8);
     int word_offset = as->num_locals - local_num - 1;
-    assert(as->pass < ASM_THUMB_PASS_3 || word_offset >= 0);
+    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
 }
 
@@ -405,7 +415,7 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < REG_R8);
     int word_offset = as->num_locals - local_num - 1;
-    assert(as->pass < ASM_THUMB_PASS_3 || word_offset >= 0);
+    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
 }
 

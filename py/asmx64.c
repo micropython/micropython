@@ -112,7 +112,7 @@
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
 struct _asm_x64_t {
-    int pass;
+    uint pass;
     uint code_offset;
     uint code_size;
     byte *code_base;
@@ -138,14 +138,9 @@ void *alloc_mem(uint req_size, uint *alloc_size, bool is_exec) {
 asm_x64_t *asm_x64_new(uint max_num_labels) {
     asm_x64_t *as;
 
-    as = m_new(asm_x64_t, 1);
-    as->pass = 0;
-    as->code_offset = 0;
-    as->code_size = 0;
-    as->code_base = NULL;
+    as = m_new0(asm_x64_t, 1);
     as->max_num_labels = max_num_labels;
     as->label_offsets = m_new(int, max_num_labels);
-    as->num_locals = 0;
 
     return as;
 }
@@ -170,17 +165,17 @@ void asm_x64_free(asm_x64_t *as, bool free_code) {
     m_del_obj(asm_x64_t, as);
 }
 
-void asm_x64_start_pass(asm_x64_t *as, int pass) {
+void asm_x64_start_pass(asm_x64_t *as, uint pass) {
     as->pass = pass;
     as->code_offset = 0;
-    if (pass == ASM_X64_PASS_2) {
+    if (pass == ASM_X64_PASS_COMPUTE) {
         // reset all labels
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
     }
 }
 
 void asm_x64_end_pass(asm_x64_t *as) {
-    if (as->pass == ASM_X64_PASS_2) {
+    if (as->pass == ASM_X64_PASS_COMPUTE) {
         // calculate size of code in bytes
         as->code_size = as->code_offset;
         //as->code_base = m_new(byte, as->code_size); need to allocale executable memory
@@ -204,7 +199,7 @@ void asm_x64_end_pass(asm_x64_t *as) {
 // all functions must go through this one to emit bytes
 STATIC byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
-    if (as->pass < ASM_X64_PASS_3) {
+    if (as->pass < ASM_X64_PASS_EMIT) {
         as->code_offset += num_bytes_to_write;
         return as->dummy_data;
     } else {
@@ -367,6 +362,15 @@ void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r
     }
 }
 
+// src_i64 is stored as a full word in the code, and aligned to machine-word boundary
+void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64) {
+    // mov instruction uses 2 bytes for the instruction, before the i64
+    while (((as->code_offset + 2) & (WORD_SIZE - 1)) != 0) {
+        asm_x64_nop(as);
+    }
+    asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
+}
+
 void asm_x64_mov_i32_to_disp(asm_x64_t *as, int src_i32, int dest_r32, int dest_disp)
 {
     assert(0);
@@ -487,12 +491,12 @@ void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {
 
 void asm_x64_label_assign(asm_x64_t *as, int label) {
     assert(label < as->max_num_labels);
-    if (as->pass == ASM_X64_PASS_2) {
+    if (as->pass < ASM_X64_PASS_EMIT) {
         // assign label offset
         assert(as->label_offsets[label] == -1);
         as->label_offsets[label] = as->code_offset;
-    } else if (as->pass == ASM_X64_PASS_3) {
-        // ensure label offset has not changed from PASS_2 to PASS_3
+    } else {
+        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
         //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
         assert(as->label_offsets[label] == as->code_offset);
     }

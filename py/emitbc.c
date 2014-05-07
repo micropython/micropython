@@ -83,7 +83,7 @@ void emit_bc_free(emit_t *emit) {
 // all functions must go through this one to emit code info
 STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
-    if (emit->pass < PASS_3) {
+    if (emit->pass < MP_PASS_EMIT) {
         emit->code_info_offset += num_bytes_to_write;
         return emit->dummy_data;
     } else {
@@ -123,7 +123,7 @@ STATIC void emit_write_code_info_bytes_lines(emit_t* emit, uint bytes_to_skip, u
 // all functions must go through this one to emit byte code
 STATIC byte* emit_get_cur_to_write_byte_code(emit_t* emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
-    if (emit->pass < PASS_3) {
+    if (emit->pass < MP_PASS_EMIT) {
         emit->byte_code_offset += num_bytes_to_write;
         return emit->dummy_data;
     } else {
@@ -221,7 +221,7 @@ STATIC void emit_write_byte_code_byte_qstr(emit_t* emit, byte b, qstr qstr) {
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
 STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, uint label) {
     uint byte_code_offset;
-    if (emit->pass < PASS_3) {
+    if (emit->pass < MP_PASS_EMIT) {
         byte_code_offset = 0;
     } else {
         byte_code_offset = emit->label_offsets[label] - emit->byte_code_offset - 3;
@@ -235,7 +235,7 @@ STATIC void emit_write_byte_code_byte_unsigned_label(emit_t* emit, byte b1, uint
 // signed labels are relative to ip following this instruction, stored as 16 bits, in excess
 STATIC void emit_write_byte_code_byte_signed_label(emit_t* emit, byte b1, uint label) {
     int byte_code_offset;
-    if (emit->pass < PASS_3) {
+    if (emit->pass < MP_PASS_EMIT) {
         byte_code_offset = 0;
     } else {
         byte_code_offset = emit->label_offsets[label] - emit->byte_code_offset - 3 + 0x8000;
@@ -256,13 +256,13 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->scope = scope;
     emit->last_source_line_offset = 0;
     emit->last_source_line = 1;
-    if (pass == PASS_2) {
+    if (pass < MP_PASS_EMIT) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(uint));
     }
     emit->byte_code_offset = 0;
     emit->code_info_offset = 0;
 
-    // write code info size (don't know size at this stage in PASS_2 so need to use maximum space (4 bytes) to write it)
+    // write code info size; use maximum space (4 bytes) to write it; TODO possible optimise this
     {
         byte* c = emit_get_cur_to_write_code_info(emit, 4);
         machine_uint_t s = emit->code_info_size;
@@ -319,13 +319,13 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
     *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
     emit_align_code_info_to_machine_word(emit); // align so that following byte_code is aligned
 
-    if (emit->pass == PASS_2) {
+    if (emit->pass == MP_PASS_CODE_SIZE) {
         // calculate size of code in bytes
         emit->code_info_size = emit->code_info_offset;
         emit->byte_code_size = emit->byte_code_offset;
         emit->code_base = m_new0(byte, emit->code_info_size + emit->byte_code_size);
 
-    } else if (emit->pass == PASS_3) {
+    } else if (emit->pass == MP_PASS_EMIT) {
         qstr *arg_names = m_new(qstr, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             arg_names[i] = emit->scope->id_info[i].qstr;
@@ -383,12 +383,12 @@ STATIC void emit_bc_pre(emit_t *emit, int stack_size_delta) {
 STATIC void emit_bc_label_assign(emit_t *emit, uint l) {
     emit_bc_pre(emit, 0);
     assert(l < emit->max_num_labels);
-    if (emit->pass == PASS_2) {
+    if (emit->pass < MP_PASS_EMIT) {
         // assign label offset
         assert(emit->label_offsets[l] == -1);
         emit->label_offsets[l] = emit->byte_code_offset;
-    } else if (emit->pass == PASS_3) {
-        // ensure label offset has not changed from PASS_2 to PASS_3
+    } else {
+        // ensure label offset has not changed from MP_PASS_CODE_SIZE to MP_PASS_EMIT
         //printf("l%d: (at %d vs %d)\n", l, emit->byte_code_offset, emit->label_offsets[l]);
         assert(emit->label_offsets[l] == emit->byte_code_offset);
     }
@@ -827,17 +827,13 @@ STATIC void emit_bc_raise_varargs(emit_t *emit, int n_args) {
 
 STATIC void emit_bc_yield_value(emit_t *emit) {
     emit_bc_pre(emit, 0);
-    if (emit->pass == PASS_2) {
-        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    }
+    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     emit_write_byte_code_byte(emit, MP_BC_YIELD_VALUE);
 }
 
 STATIC void emit_bc_yield_from(emit_t *emit) {
     emit_bc_pre(emit, -1);
-    if (emit->pass == PASS_2) {
-        emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    }
+    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     emit_write_byte_code_byte(emit, MP_BC_YIELD_FROM);
 }
 

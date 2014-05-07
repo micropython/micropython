@@ -86,6 +86,7 @@
 #define REG_TEMP2 (REG_RSI)
 #define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_x64_mov_r64_to_local(emit->as, (reg), (local_num))
 #define ASM_MOV_IMM_TO_REG(imm, reg) asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg))
+#define ASM_MOV_ALIGNED_IMM_TO_REG(imm, reg) asm_x64_mov_i64_to_r64_aligned(emit->as, (imm), (reg))
 #define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_x64_mov_i64_to_r64_optimised(emit->as, (imm), (reg_temp)); asm_x64_mov_r64_to_local(emit->as, (reg_temp), (local_num)); } while (false)
 #define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_x64_mov_local_to_r64(emit->as, (local_num), (reg))
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_x64_mov_r64_to_r64(emit->as, (reg_src), (reg_dest))
@@ -109,6 +110,7 @@
 #define REG_TEMP2 (REG_R2)
 #define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_thumb_mov_local_reg(emit->as, (local_num), (reg))
 #define ASM_MOV_IMM_TO_REG(imm, reg) asm_thumb_mov_reg_i32_optimised(emit->as, (reg), (imm))
+#define ASM_MOV_ALIGNED_IMM_TO_REG(imm, reg) asm_thumb_mov_reg_i32_aligned(emit->as, (reg), (imm))
 #define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_thumb_mov_reg_i32_optimised(emit->as, (reg_temp), (imm)); asm_thumb_mov_local_reg(emit->as, (local_num), (reg_temp)); } while (false)
 #define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_thumb_mov_reg_local(emit->as, (reg), (local_num))
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_thumb_mov_reg_reg(emit->as, (reg_dest), (reg_src))
@@ -146,10 +148,10 @@ struct _emit_t {
 
     bool do_viper_types;
 
-    int local_vtype_alloc;
+    uint local_vtype_alloc;
     vtype_kind_t *local_vtype;
 
-    int stack_info_alloc;
+    uint stack_info_alloc;
     stack_info_t *stack_info;
 
     int stack_start;
@@ -167,10 +169,7 @@ struct _emit_t {
 };
 
 emit_t *EXPORT_FUN(new)(uint max_num_labels) {
-    emit_t *emit = m_new(emit_t, 1);
-    emit->do_viper_types = false;
-    emit->local_vtype = NULL;
-    emit->stack_info = NULL;
+    emit_t *emit = m_new0(emit_t, 1);
 #if N_X64
     emit->as = asm_x64_new(max_num_labels);
 #elif N_THUMB
@@ -185,6 +184,8 @@ void EXPORT_FUN(free)(emit_t *emit) {
 #elif N_THUMB
     asm_thumb_free(emit->as, false);
 #endif
+    m_del(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc);
+    m_del(stack_info_t, emit->stack_info, emit->stack_info_alloc);
     m_del_obj(emit_t, emit);
 }
 
@@ -199,12 +200,16 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
 
-    if (emit->local_vtype == NULL) {
-        emit->local_vtype_alloc = scope->num_locals + 20; // XXX should be maximum over all scopes
-        emit->local_vtype = m_new(vtype_kind_t, emit->local_vtype_alloc);
+    // allocate memory for keeping track of the types of locals
+    if (emit->local_vtype_alloc < scope->num_locals) {
+        emit->local_vtype = m_renew(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc, scope->num_locals);
+        emit->local_vtype_alloc = scope->num_locals;
     }
+
+    // allocate memory for keeping track of the objects on the stack
+    // XXX don't know stack size on entry, and it should be maximum over all scopes
     if (emit->stack_info == NULL) {
-        emit->stack_info_alloc = scope->stack_size + 50; // XXX don't know stack size on entry, should be maximum over all scopes
+        emit->stack_info_alloc = scope->stack_size + 50;
         emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
@@ -228,25 +233,20 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     }
 
 #if N_X64
-    asm_x64_start_pass(emit->as, pass);
+    asm_x64_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_X64_PASS_EMIT : ASM_X64_PASS_COMPUTE);
 #elif N_THUMB
-    asm_thumb_start_pass(emit->as, pass);
+    asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
 #endif
 
     // entry to function
     int num_locals = 0;
-    if (pass > PASS_1) {
+    if (pass > MP_PASS_SCOPE) {
         num_locals = scope->num_locals - REG_LOCAL_NUM;
         if (num_locals < 0) {
             num_locals = 0;
         }
         emit->stack_start = num_locals;
         num_locals += scope->stack_size;
-    }
-    if (pass == PASS_2) {
-        // XXX big hack to make sure we have some locals in PASS_2
-        // this is so that on PASS_2 the code emitted in x64 has the right size
-        num_locals += 2;
     }
 #if N_X64
     asm_x64_entry(emit->as, num_locals);
@@ -306,7 +306,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    if (emit->pass == PASS_3) {
+    if (emit->pass == MP_PASS_EMIT) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
         mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
@@ -332,7 +332,7 @@ STATIC void adjust_stack(emit_t *emit, int stack_size_delta) {
     DEBUG_printf("adjust stack: stack:%d + delta:%d\n", emit->stack_size, stack_size_delta);
     assert((int)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
-    if (emit->pass > PASS_1 && emit->stack_size > emit->scope->stack_size) {
+    if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
 }
@@ -572,9 +572,10 @@ STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, void
 #endif
 }
 
-STATIC void emit_call_with_3_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2, machine_int_t arg_val3, int arg_reg3) {
+// the first arg is stored in the code aligned on a machine_uint_t boundary
+STATIC void emit_call_with_3_imm_args_and_first_aligned(emit_t *emit, mp_fun_kind_t fun_kind, void *fun, machine_int_t arg_val1, int arg_reg1, machine_int_t arg_val2, int arg_reg2, machine_int_t arg_val3, int arg_reg3) {
     need_reg_all(emit);
-    ASM_MOV_IMM_TO_REG(arg_val1, arg_reg1);
+    ASM_MOV_ALIGNED_IMM_TO_REG(arg_val1, arg_reg1);
     ASM_MOV_IMM_TO_REG(arg_val2, arg_reg2);
     ASM_MOV_IMM_TO_REG(arg_val3, arg_reg3);
 #if N_X64
@@ -1209,9 +1210,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_d
     // call runtime, with type info for args, or don't support dict/default params, or only support Python objects for them
     assert(n_pos_defaults == 0 && n_kw_defaults == 0);
     emit_native_pre(emit);
-    assert(0);
-    // TODO we need to store the raw_code ptr aligned within the code for the GC
-    emit_call_with_3_imm_args(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
+    emit_call_with_3_imm_args_and_first_aligned(emit, MP_F_MAKE_FUNCTION_FROM_RAW_CODE, mp_make_function_from_raw_code, (machine_uint_t)scope->raw_code, REG_ARG_1, (machine_uint_t)MP_OBJ_NULL, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
