@@ -49,11 +49,7 @@
 #include "repl.h"
 #include "gc.h"
 #include "genhdr/py-version.h"
-
-#if MICROPY_USE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
+#include "input.h"
 
 // Command line options, with their defaults
 bool compile_only = false;
@@ -141,31 +137,6 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     memcpy(s + l1, s2, l2);
     s[l1 + l2] = 0;
     return s;
-}
-
-STATIC char *prompt(char *p) {
-#if MICROPY_USE_READLINE
-    char *line = readline(p);
-    if (line) {
-        add_history(line);
-    }
-#else
-    static char buf[256];
-    fputs(p, stdout);
-    char *s = fgets(buf, sizeof(buf), stdin);
-    if (!s) {
-        return NULL;
-    }
-    int l = strlen(buf);
-    if (buf[l - 1] == '\n') {
-        buf[l - 1] = 0;
-    } else {
-        l++;
-    }
-    char *line = malloc(l);
-    memcpy(line, buf, l);
-#endif
-    return line;
 }
 
 STATIC void do_repl(void) {
