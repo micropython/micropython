@@ -36,6 +36,7 @@ Major components in this repository:
 Additional components:
 - `bare-arm/` — a bare minimum version of Micro Python for ARM MCUs.  Start
   with this if you want to port Micro Python to another microcontroller.
+- `qemu/` — a version of MicroPython that runs on Qemu emulating Cortex-M3.
 - `unix-cpy/` — a version of Micro Python that outputs bytecode (for testing).
 - `tests/` — test framework and test scripts.
 - `tools/` — various tools, including the pyboard.py module.
