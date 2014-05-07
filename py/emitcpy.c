@@ -127,7 +127,7 @@ static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
 STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
     emit_pre(emit, 0, 0);
     assert(l < emit->max_num_labels);
-    if (emit->pass < PASS_EMIT) {
+    if (emit->pass < MP_PASS_EMIT) {
         // assign label offset
         assert(emit->label_offsets[l] == -1);
         emit->label_offsets[l] = emit->byte_code_offset;
