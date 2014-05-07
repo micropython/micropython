@@ -260,9 +260,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
         } else if (i == 1) {
-            asm_x64_mov_r64_to_local(emit->as, REG_ARG_2, i - 1);
+            asm_x64_mov_r64_to_local(emit->as, REG_ARG_2, i - REG_LOCAL_NUM);
         } else if (i == 2) {
-            asm_x64_mov_r64_to_local(emit->as, REG_ARG_3, i - 1);
+            asm_x64_mov_r64_to_local(emit->as, REG_ARG_3, i - REG_LOCAL_NUM);
         } else {
             // TODO not implemented
             assert(0);
@@ -739,7 +739,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else {
         need_reg_single(emit, REG_RAX, 0);
-        asm_x64_mov_local_to_r64(emit->as, local_num - 1, REG_RAX);
+        asm_x64_mov_local_to_r64(emit->as, local_num - REG_LOCAL_NUM, REG_RAX);
         emit_post_push_reg(emit, vtype, REG_RAX);
     }
 #elif N_THUMB
@@ -751,7 +751,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
         need_reg_single(emit, REG_R0, 0);
-        asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - 1);
+        asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - REG_LOCAL_NUM);
         emit_post_push_reg(emit, vtype, REG_R0);
     }
 #endif
@@ -820,7 +820,7 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_RAX);
-        asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - 1);
+        asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - REG_LOCAL_NUM);
     }
 #elif N_THUMB
     if (local_num == 0) {
@@ -831,7 +831,7 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_R0);
-        asm_thumb_mov_local_reg(emit->as, local_num - 1, REG_R0);
+        asm_thumb_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_R0);
     }
 #endif
 

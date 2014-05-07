@@ -166,15 +166,29 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 #define OP_ADD_SP(num_words) (0xb000 | (num_words))
 #define OP_SUB_SP(num_words) (0xb080 | (num_words))
 
+// locals:
+//  - stored on the stack in ascending order
+//  - numbered 0 through as->num_locals-1
+//  - SP points to first local
+//
+//  | SP
+//  v
+//  l0  l1  l2  ...  l(n-1)
+//  ^                ^
+//  | low address    | high address in RAM
+
 void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
-    // work out what to push and how many extra space to reserve on stack
+    // work out what to push and how many extra spaces to reserve on stack
     // so that we have enough for all locals and it's aligned an 8-byte boundary
+    // we push extra regs (r1, r2, r3) to help do the stack adjustment
+    // we probably should just always subtract from sp, since this would be more efficient
+    // for push rlist, lowest numbered register at the lowest address
     uint reglist;
     uint stack_adjust;
     if (num_locals < 0) {
         num_locals = 0;
     }
-    // don't ppop r0 because it's used for return value
+    // don't pop r0 because it's used for return value
     switch (num_locals) {
         case 0:
             reglist = 0xf2;
@@ -398,14 +412,14 @@ void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
 
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num, uint rlo_src) {
     assert(rlo_src < REG_R8);
-    int word_offset = as->num_locals - local_num - 1;
+    int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_STR_TO_SP_OFFSET(rlo_src, word_offset));
 }
 
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < REG_R8);
-    int word_offset = as->num_locals - local_num - 1;
+    int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
 }
@@ -414,7 +428,7 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
 
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < REG_R8);
-    int word_offset = as->num_locals - local_num - 1;
+    int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
 }
