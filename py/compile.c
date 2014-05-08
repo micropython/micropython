@@ -115,17 +115,77 @@ STATIC const mp_map_t mp_constants_map = {
     .table = (mp_map_elem_t*)mp_constants_table,
 };
 
-STATIC mp_parse_node_t fold_constants(mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+// this function is essentially a simple preprocessor
+STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_map_t *consts) {
+    if (0) {
+        // dummy
+#if MICROPY_ENABLE_CONST
+    } else if (MP_PARSE_NODE_IS_ID(pn)) {
+        // lookup identifier in table of dynamic constants
+        qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
+        mp_map_elem_t *elem = mp_map_lookup(consts, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(elem->value));
+        }
+#endif
+    } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 
-        // fold arguments first
-        for (int i = 0; i < n; i++) {
-            pns->nodes[i] = fold_constants(pns->nodes[i]);
+        // fold some parse nodes before folding their arguments
+        switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
+#if MICROPY_ENABLE_CONST
+            case PN_expr_stmt:
+                if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+                    mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
+                    if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_expr_stmt_assign) {
+                        if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
+                            && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_power)
+                            && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0])
+                            && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0]) == MP_QSTR_const
+                            && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1], PN_trailer_paren)
+                            && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[2])
+                            ) {
+                            // code to assign dynamic constants: id = const(value)
+
+                            // get the id
+                            qstr id_qstr = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+
+                            // get the value
+                            mp_parse_node_t pn_value = ((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0];
+                            pn_value = fold_constants(comp, pn_value, consts);
+                            if (!MP_PARSE_NODE_IS_SMALL_INT(pn_value)) {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "constant must be an integer");
+                                break;
+                            }
+                            machine_int_t value = MP_PARSE_NODE_LEAF_SMALL_INT(pn_value);
+
+                            // store the value in the table of dynamic constants
+                            mp_map_elem_t *elem = mp_map_lookup(consts, MP_OBJ_NEW_QSTR(id_qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+                            if (elem->value != MP_OBJ_NULL) {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "constant redefined");
+                                break;
+                            }
+                            elem->value = MP_OBJ_NEW_SMALL_INT(value);
+
+                            // replace const(value) with value
+                            pns1->nodes[0] = pn_value;
+
+                            // finished folding this assignment
+                            return pn;
+                        }
+                    }
+                }
+                break;
+#endif
         }
 
-        // now try to fold this parse node
+        // fold arguments
+        int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        for (int i = 0; i < n; i++) {
+            pns->nodes[i] = fold_constants(comp, pns->nodes[i], consts);
+        }
+
+        // try to fold this parse node
         switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
             case PN_atom_paren:
                 if (n == 1 && MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0])) {
@@ -2045,36 +2105,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 c_assign(comp, ((mp_parse_node_struct_t*)pns1->nodes[i])->nodes[0], ASSIGN_STORE); // middle store
             }
         } else if (kind == PN_expr_stmt_assign) {
-            if (0) {
-                // dummy
-#if 0
-            // code to compile constants: id = const(...)
-            } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_power)
-                && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0])
-                && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0]) == MP_QSTR_const
-                && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1], PN_trailer_paren)
-                && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[2])
-                ) {
-                if (comp->pass == MP_PASS_SCOPE) {
-                    qstr const_id = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0])) {
-                        compile_syntax_error(comp, (mp_parse_node_t)pns, "constant must be an integer");
-                    }
-                    machine_int_t value = MP_PARSE_NODE_LEAF_SMALL_INT(((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0]);
-
-                    printf("assign const: %s = %ld\n", qstr_str(const_id), value);
-                    mp_map_elem_t *elem = mp_map_lookup(&comp->module_consts, MP_OBJ_NEW_QSTR(const_id), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-                    if (elem->value != MP_OBJ_NULL) {
-                        compile_syntax_error(comp, (mp_parse_node_t)pns, "constant redefined");
-                    }
-                    elem->value = MP_OBJ_NEW_SMALL_INT(value);
-                }
-                goto no_optimisation;
-
-#endif
-            } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
+            if (MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
@@ -3424,7 +3455,10 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->is_repl = is_repl;
 
     // optimise constants
-    pn = fold_constants(pn);
+    mp_map_t consts;
+    mp_map_init(&consts, 0);
+    pn = fold_constants(comp, pn, &consts);
+    mp_map_deinit(&consts);
 
     // set the outer scope
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);

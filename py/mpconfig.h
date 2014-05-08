@@ -109,6 +109,11 @@
 /*****************************************************************************/
 /* Fine control over Python features                                         */
 
+// Whether to enable constant optimisation; id = const(value)
+#ifndef MICROPY_ENABLE_CONST
+#define MICROPY_ENABLE_CONST (1)
+#endif
+
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)
