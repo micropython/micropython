@@ -90,7 +90,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
         case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
-        default: return NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
@@ -260,9 +260,10 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     return mp_obj_new_int_from_ll(value);
 }
 
-mp_obj_t mp_obj_new_int_from_long_str(const char *str) {
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    uint len = strlen(str);
+    uint len;
+    const char* str = (const char*)qstr_data(qst, &len);
     int base = 0;
     int skip = mp_parse_num_base(str, len, &base);
     str += skip;

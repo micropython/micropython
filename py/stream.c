@@ -32,11 +32,25 @@
 #include "qstr.h"
 #include "obj.h"
 #include "stream.h"
+#if MICROPY_STREAMS_NON_BLOCK
+#include <errno.h>
+#endif
 
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.
 
+// TODO: should be in mpconfig.h
+#define DEFAULT_BUFFER_SIZE 256
+
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
+
+#if MICROPY_STREAMS_NON_BLOCK
+// TODO: This is POSIX-specific (but then POSIX is the only real thing,
+// and anything else just emulates it, right?)
+#define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#else
+#define is_nonblocking_error(errno) (0)
+#endif
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
@@ -53,6 +67,14 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     int error;
     machine_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
     if (out_sz == -1) {
+        if (is_nonblocking_error(error)) {
+            // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
+            // "If the object is in non-blocking mode and no bytes are available,
+            // None is returned."
+            // This is actually very weird, as naive truth check will treat
+            // this as EOF.
+            return mp_const_none;
+        }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
         mp_obj_t s = mp_obj_new_str(buf, out_sz, false); // will reallocate to use exact size
@@ -74,17 +96,20 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     int error;
     machine_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
     if (out_sz == -1) {
+        if (is_nonblocking_error(error)) {
+            // http://docs.python.org/3/library/io.html#io.RawIOBase.write
+            // "None is returned if the raw stream is set not to block and
+            // no single byte could be readily written to it."
+            // This is for consistency with read() behavior, still weird,
+            // see abobe.
+            return mp_const_none;
+        }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
-        // http://docs.python.org/3/library/io.html#io.RawIOBase.write
-        // "None is returned if the raw stream is set not to block and no single byte could be readily written to it."
-        // Do they mean that instead of 0 they return None?
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
 }
 
-// TODO: should be in mpconfig.h
-#define READ_SIZE 256
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
@@ -93,14 +118,23 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     int total_size = 0;
-    vstr_t *vstr = vstr_new_size(READ_SIZE);
+    vstr_t *vstr = vstr_new_size(DEFAULT_BUFFER_SIZE);
     char *buf = vstr_str(vstr);
     char *p = buf;
     int error;
-    int current_read = READ_SIZE;
+    int current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
         machine_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == -1) {
+            if (is_nonblocking_error(error)) {
+                // With non-blocking streams, we read as much as we can.
+                // If we read nothing, return None, just like read().
+                // Otherwise, return data read so far.
+                if (total_size == 0) {
+                    return mp_const_none;
+                }
+                break;
+            }
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }
         if (out_sz == 0) {
@@ -111,7 +145,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             current_read -= out_sz;
             p += out_sz;
         } else {
-            current_read = READ_SIZE;
+            current_read = DEFAULT_BUFFER_SIZE;
             p = vstr_extend(vstr, current_read);
             if (p == NULL) {
                 // TODO

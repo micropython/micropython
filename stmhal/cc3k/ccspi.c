@@ -3,9 +3,9 @@
 *  spi.c - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
+* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
 * & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
+* This library works with the Adafruit CC3000 breakout
 *	----> https://www.adafruit.com/products/1469
 * Adafruit invests time and resources providing this open source code,
 * please support Adafruit and open-source hardware by purchasing
@@ -51,8 +51,13 @@
 #include "netapp.h"
 #include "evnt_handler.h"
 #include "cc3000_common.h"
-#include "ccdebug.h"
 #include "pybcc3k.h"
+
+#if 0 // print debugging info
+#define DEBUG_printf(args...) printf(args)
+#else // don't print debugging info
+#define DEBUG_printf(args...) (void)0
+#endif
 
 #define READ                            (3)
 #define WRITE                           (1)
@@ -140,8 +145,8 @@ void  SpiInit(void)
 /**************************************************************************/
 void SpiClose(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiClose");
-  
+  DEBUG_printf("\tCC3000: SpiClose");
+
   if (sSpiInformation.pRxPacket)
   {
     sSpiInformation.pRxPacket = 0;
@@ -158,8 +163,8 @@ void SpiClose(void)
 /**************************************************************************/
 void SpiOpen(gcSpiHandleRx pfRxHandler)
 {
-  DEBUGPRINT_F("\tCC3000: SpiOpen");
-  
+  DEBUG_printf("\tCC3000: SpiOpen");
+
   sSpiInformation.ulSpiState = eSPI_STATE_POWERUP;
 
   memset(spi_buffer, 0, sizeof(spi_buffer));
@@ -170,14 +175,14 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
   sSpiInformation.pTxPacket         = NULL;
   sSpiInformation.pRxPacket         = (unsigned char *)spi_buffer;
   sSpiInformation.usRxPacketLength  = 0;
-  
+
   spi_buffer[CC3000_RX_BUFFER_SIZE - 1]     = CC3000_BUFFER_MAGIC_NUMBER;
   wlan_tx_buffer[CC3000_TX_BUFFER_SIZE - 1] = CC3000_BUFFER_MAGIC_NUMBER;
 
   /* Enable interrupt on the GPIO pin of WLAN IRQ */
   tSLInformation.WlanInterruptEnable();
 
-  DEBUGPRINT_F("\tCC3000: Finished SpiOpen\n\r");
+  DEBUG_printf("\tCC3000: Finished SpiOpen\n\r");
 }
 
 /**************************************************************************/
@@ -191,8 +196,8 @@ extern uint8_t g_csPin, g_irqPin, g_vbatPin, g_IRQnum, g_SPIspeed;
 int init_spi(void)
 {
 
-  DEBUGPRINT_F("\tCC3000: init_spi\n\r");
-  
+  DEBUG_printf("\tCC3000: init_spi\n\r");
+
   /* Set POWER_EN pin to output and disable the CC3000 by default */
   pinMode(g_vbatPin, OUTPUT);
   digitalWrite(g_vbatPin, 0);
@@ -214,7 +219,7 @@ int init_spi(void)
   SPI.setDataMode(SPI_MODE1);
   SPI.setBitOrder(MSBFIRST);
   SPI.setClockDivider(g_SPIspeed);
-  
+
   // Newly-initialized SPI is in the same state that ASSERT_CS will set it
   // to.  Invoke DEASSERT (which also restores SPI registers) so the next
   // ASSERT call won't clobber the ccspi_old* values -- we need those!
@@ -222,8 +227,8 @@ int init_spi(void)
 
   /* ToDo: Configure IRQ interrupt! */
 
-  DEBUGPRINT_F("\tCC3000: Finished init_spi\n\r");
-  
+  DEBUG_printf("\tCC3000: Finished init_spi\n\r");
+
   return(ESUCCESS);
 }
 #endif
@@ -235,8 +240,8 @@ int init_spi(void)
 /**************************************************************************/
 long SpiFirstWrite(unsigned char *ucBuf, unsigned short usLength)
 {
-  DEBUGPRINT_F("\tCC3000: SpiWriteFirst\n\r");
-  
+  DEBUG_printf("\tCC3000: SpiWriteFirst\n\r");
+
   /* Workaround for the first transaction */
   CC3000_ASSERT_CS();
 
@@ -267,8 +272,8 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
 {
   unsigned char ucPad = 0;
 
-  DEBUGPRINT_F("\tCC3000: SpiWrite\n\r");
-  
+  DEBUG_printf("\tCC3000: SpiWrite\n\r");
+
   /* Figure out the total length of the packet in order to figure out if there is padding or not */
   if(!(usLength & 0x0001))
   {
@@ -288,7 +293,7 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
    * occurred - and we will be stuck here forever! */
   if (wlan_tx_buffer[CC3000_TX_BUFFER_SIZE - 1] != CC3000_BUFFER_MAGIC_NUMBER)
   {
-    DEBUGPRINT_F("\tCC3000: Error - No magic number found in SpiWrite\n\r");
+    DEBUG_printf("\tCC3000: Error - No magic number found in SpiWrite\n\r");
     while (1);
   }
 
@@ -383,7 +388,7 @@ void SpiReadDataSynchronous(unsigned char *data, unsigned short size)
 /**************************************************************************/
 void SpiReadHeader(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiReadHeader\n\r");
+  DEBUG_printf("\tCC3000: SpiReadHeader\n\r");
 
   SpiReadDataSynchronous(sSpiInformation.pRxPacket, HEADERS_SIZE_EVNT);
 }
@@ -398,7 +403,7 @@ long SpiReadDataCont(void)
   long data_to_recv;
   unsigned char *evnt_buff, type;
 
-  DEBUGPRINT_F("\tCC3000: SpiReadDataCont\n\r");
+  DEBUG_printf("\tCC3000: SpiReadDataCont\n\r");
 
   /* Determine what type of packet we have */
   evnt_buff =  sSpiInformation.pRxPacket;
@@ -454,7 +459,7 @@ long SpiReadDataCont(void)
 /**************************************************************************/
 void SpiPauseSpi(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiPauseSpi\n\r");
+  DEBUG_printf("\tCC3000: SpiPauseSpi\n\r");
 
   ccspi_int_enabled = 0;
     pyb_cc3000_pause_spi();
@@ -467,7 +472,7 @@ void SpiPauseSpi(void)
 /**************************************************************************/
 void SpiResumeSpi(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiResumeSpi\n\r");
+  DEBUG_printf("\tCC3000: SpiResumeSpi\n\r");
 
   ccspi_int_enabled = 1;
     pyb_cc3000_resume_spi();
@@ -480,24 +485,24 @@ void SpiResumeSpi(void)
 /**************************************************************************/
 void SpiTriggerRxProcessing(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiTriggerRxProcessing\n\r");
+  DEBUG_printf("\tCC3000: SpiTriggerRxProcessing\n\r");
 
   /* Trigger Rx processing */
   SpiPauseSpi();
   CC3000_DEASSERT_CS();
 
-  //DEBUGPRINT_F("Magic?\n\r");
+  //DEBUG_printf("Magic?\n\r");
   /* The magic number that resides at the end of the TX/RX buffer (1 byte after the allocated size)
    * for the purpose of detection of the overrun. If the magic number is overriten - buffer overrun
    * occurred - and we will stuck here forever! */
   if (sSpiInformation.pRxPacket[CC3000_RX_BUFFER_SIZE - 1] != CC3000_BUFFER_MAGIC_NUMBER)
   {
     /* You've got problems if you're here! */
-    DEBUGPRINT_F("\tCC3000: ERROR - magic number missing!\n\r");
+    DEBUG_printf("\tCC3000: ERROR - magic number missing!\n\r");
     while (1);
   }
 
-  //DEBUGPRINT_F("OK!\n\r");
+  //DEBUG_printf("OK!\n\r");
   sSpiInformation.ulSpiState = eSPI_STATE_IDLE;
   sSpiInformation.SPIRxHandler(sSpiInformation.pRxPacket + SPI_HEADER_SIZE);
 }
@@ -509,14 +514,14 @@ void SpiTriggerRxProcessing(void)
 /**************************************************************************/
 void SSIContReadOperation(void)
 {
-  DEBUGPRINT_F("\tCC3000: SpiContReadOperation\n\r");
-  
+  DEBUG_printf("\tCC3000: SpiContReadOperation\n\r");
+
   /* The header was read - continue with  the payload read */
   if (!SpiReadDataCont())
   {
     /* All the data was read - finalize handling by switching to teh task
      *  and calling from task Event Handler */
-    //DEBUGPRINT_F("SPItrig\n\r");
+    //DEBUG_printf("SPItrig\n\r");
     SpiTriggerRxProcessing();
   }
 }
@@ -527,24 +532,7 @@ void SSIContReadOperation(void)
  */
 /**************************************************************************/
 void WriteWlanPin( unsigned char val )
-{  
-#if 0
-  if (DEBUG_MODE)
-  {
-    DEBUGPRINT_F("\tCC3000: WriteWlanPin - ");
-    DEBUGPRINT_DEC(val);
-    DEBUGPRINT_F("\n\r");
-    delay(1);
-  }
-  if (val)
-  {
-    digitalWrite(g_vbatPin, HIGH);
-  }
-  else
-  {
-    digitalWrite(g_vbatPin, LOW);
-  }
-#endif
+{
     pyb_cc3000_set_en(val == WLAN_ENABLE);
 }
 
@@ -555,9 +543,7 @@ void WriteWlanPin( unsigned char val )
 /**************************************************************************/
 long ReadWlanInterruptPin(void)
 {
-  DEBUGPRINT_F("\tCC3000: ReadWlanInterruptPin - ");
-  DEBUGPRINT_DEC(digitalRead(g_irqPin));
-  DEBUGPRINT_F("\n\r");
+    DEBUG_printf("CC3000: ReadWlanInterruptPin\n");
 
     return pyb_cc3000_get_irq();
 }
@@ -569,9 +555,9 @@ long ReadWlanInterruptPin(void)
 /**************************************************************************/
 void WlanInterruptEnable()
 {
-  DEBUGPRINT_F("\tCC3000: WlanInterruptEnable.\n\r");
-  // delay(100);
-  ccspi_int_enabled = 1;
+    DEBUG_printf("\tCC3000: WlanInterruptEnable.\n\r");
+    // delay(100);
+    ccspi_int_enabled = 1;
     pyb_cc3000_enable_irq();
 }
 
@@ -582,7 +568,7 @@ void WlanInterruptEnable()
 /**************************************************************************/
 void WlanInterruptDisable()
 {
-  DEBUGPRINT_F("\tCC3000: WlanInterruptDisable\n\r");
+  DEBUG_printf("\tCC3000: WlanInterruptDisable\n\r");
   ccspi_int_enabled = 0;
     pyb_cc3000_disable_irq();
 }
@@ -687,8 +673,8 @@ void SPI_IRQ(void)
 {
   ccspi_is_in_irq = 1;
 
-  DEBUGPRINT_F("\tCC3000: Entering SPI_IRQ\n\r");
-    
+  DEBUG_printf("\tCC3000: Entering SPI_IRQ\n\r");
+
   if (sSpiInformation.ulSpiState == eSPI_STATE_POWERUP)
   {
     /* IRQ line was low ... perform a callback on the HCI Layer */
@@ -696,8 +682,8 @@ void SPI_IRQ(void)
   }
   else if (sSpiInformation.ulSpiState == eSPI_STATE_IDLE)
   {
-    //DEBUGPRINT_F("IDLE\n\r");
-    sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;    
+    //DEBUG_printf("IDLE\n\r");
+    sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;
     /* IRQ line goes down - start reception */
 
     CC3000_ASSERT_CS();
@@ -705,7 +691,7 @@ void SPI_IRQ(void)
     // Wait for TX/RX Compete which will come as DMA interrupt
     SpiReadHeader();
     sSpiInformation.ulSpiState = eSPI_STATE_READ_EOT;
-    //DEBUGPRINT_F("SSICont\n\r");
+    //DEBUG_printf("SSICont\n\r");
     SSIContReadOperation();
   }
   else if (sSpiInformation.ulSpiState == eSPI_STATE_WRITE_IRQ)
@@ -715,7 +701,7 @@ void SPI_IRQ(void)
     CC3000_DEASSERT_CS();
   }
 
-  DEBUGPRINT_F("\tCC3000: Leaving SPI_IRQ\n\r");
+  DEBUG_printf("\tCC3000: Leaving SPI_IRQ\n\r");
 
   ccspi_is_in_irq = 0;
   return;

@@ -56,7 +56,7 @@ STATIC void emit_pass1_dummy(emit_t *emit) {
 }
 
 STATIC void emit_pass1_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
-    assert(pass == PASS_1);
+    assert(pass == MP_PASS_SCOPE);
     emit->scope = scope;
 }
 

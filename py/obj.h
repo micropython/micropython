@@ -255,8 +255,8 @@ struct _mp_obj_type_t {
     mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_fun_t call;
-    mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
-    mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
+    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NOT_SUPPORTED if op not supported
+    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NOT_SUPPORTED if op not supported
 
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
@@ -266,7 +266,7 @@ struct _mp_obj_type_t {
                                     // can return MP_OBJ_NOT_SUPPORTED
 
     mp_fun_1_t getiter;
-    mp_fun_1_t iternext; // may return MP_OBJ_NULL as an optimisation instead of raising StopIteration() (with no args)
+    mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
 
     mp_buffer_p_t buffer_p;
     const mp_stream_p_t *stream_p;
@@ -308,6 +308,7 @@ extern const mp_obj_type_t mp_type_filter;
 extern const mp_obj_type_t mp_type_dict;
 extern const mp_obj_type_t mp_type_range;
 extern const mp_obj_type_t mp_type_set;
+extern const mp_obj_type_t mp_type_frozenset;
 extern const mp_obj_type_t mp_type_slice;
 extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
@@ -370,7 +371,7 @@ mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
-mp_obj_t mp_obj_new_int_from_long_str(const char *s);
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
@@ -397,9 +398,10 @@ mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args);
 mp_obj_t mp_obj_new_module(qstr module_name);
 
-mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in);
-const char *mp_obj_get_type_str(mp_obj_t o_in);
+mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
+const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
+mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type);
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
@@ -479,18 +481,17 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
-mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL
+mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NOT_SUPPORTED
 
 // complex
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
-mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL
+mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NOT_SUPPORTED
 #endif
 
 // tuple
 void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 machine_int_t mp_obj_tuple_hash(mp_obj_t self_in);
-mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
 
 // list
 struct _mp_obj_list_t;
@@ -563,12 +564,17 @@ const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // sequence helpers
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
-bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
-#define m_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
-#define m_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
+bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
+#define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
+#define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2);
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
 #define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
+#define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_t) \
+    /*printf("memcpy(%p, %p, %d)\n", dest + beg, slice, slice_len * sizeof(item_t));*/ \
+    memcpy(dest + beg, slice, slice_len * sizeof(item_t)); \
+    /*printf("memcpy(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));*/ \
+    memcpy(dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));

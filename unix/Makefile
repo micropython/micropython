@@ -65,6 +65,7 @@ endif
 SRC_C = \
 	main.c \
 	gccollect.c \
+	input.c \
 	file.c \
 	modsocket.c \
 	$(SRC_MOD)

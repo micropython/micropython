@@ -36,18 +36,18 @@
 #include "runtime0.h"
 #include "runtime.h"
 
-mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
+mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return (mp_obj_t)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
         return (mp_obj_t)&mp_type_str;
     } else {
-        mp_obj_base_t *o = o_in;
+        const mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;
     }
 }
 
-const char *mp_obj_get_type_str(mp_obj_t o_in) {
+const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type(o_in)->name);
 }
 
@@ -59,6 +59,12 @@ void printf_wrapper(void *env, const char *fmt, ...) {
 }
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+#if !NDEBUG
+    if (o_in == NULL) {
+        print(env, "(nil)");
+        return;
+    }
+#endif
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
         type->print(print, env, o_in, kind);
@@ -351,7 +357,12 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
-            return type->unary_op(MP_UNARY_OP_LEN, o_in);
+            mp_obj_t val = type->unary_op(MP_UNARY_OP_LEN, o_in);
+            // TODO: Here's the case of having MP_OBJ_NOT_SUPPORTED is confusing
+            if (val == MP_OBJ_NOT_SUPPORTED) {
+                return MP_OBJ_NULL;
+            }
+            return val;
         } else {
             return MP_OBJ_NULL;
         }

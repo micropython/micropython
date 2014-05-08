@@ -50,6 +50,7 @@ typedef unsigned int uint;
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
 #define m_new(type, num) ((type*)(m_malloc(sizeof(type) * (num))))
+#define m_new_maybe(type, num) ((type*)(m_malloc_maybe(sizeof(type) * (num))))
 #define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num))))
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
@@ -95,6 +96,8 @@ bool unichar_isalpha(unichar c);
 bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
+unichar unichar_tolower(unichar c);
+unichar unichar_toupper(unichar c);
 
 /** variable string *********************************************/
 

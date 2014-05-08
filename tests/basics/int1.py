@@ -37,6 +37,7 @@ print(int('0o123', 0))
 print(int('8388607'))
 print(int('0x123', 16))
 print(int('0X123', 16))
+print(int('0A', 16))
 print(int('0o123', 8))
 print(int('0O123', 8))
 print(int('0123', 8))
@@ -45,6 +46,7 @@ print(int('0B100', 2))
 print(int('0100', 2))
 print(int(' \t 0o12', 8))
 print(int('0o12  \t  ', 8))
+print(int(b"12", 10))
 
 
 def test(value, base):

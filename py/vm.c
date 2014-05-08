@@ -47,7 +47,7 @@
 
 #define DETECT_VM_STACK_OVERFLOW (0)
 #if 0
-#define TRACE(ip) mp_byte_code_print2(ip, 1);
+#define TRACE(ip) mp_bytecode_print2(ip, 1);
 #else
 #define TRACE(ip)
 #endif
@@ -104,7 +104,7 @@ typedef enum {
     currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
     exc_sp--; /* pop back to previous exception handler */
 
-mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
+mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
     const byte *ip = code;
 
     // get code info size, and skip line number table
@@ -155,7 +155,7 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
     }
 
     // execute the byte code
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code_2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
 
 #if DETECT_VM_STACK_OVERFLOW
     // We can't check the case when an exception is returned in state[n_state - 1]
@@ -217,10 +217,10 @@ mp_vm_return_kind_t mp_execute_byte_code(const byte *code, const mp_obj_t *args,
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_byte_code_2(const byte *code_info, const byte **ip_in_out,
-                                           mp_obj_t *fastn, mp_obj_t **sp_in_out,
-                                           mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
-                                           volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t mp_execute_bytecode2(const byte *code_info, const byte **ip_in_out,
+                                         mp_obj_t *fastn, mp_obj_t **sp_in_out,
+                                         mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
+                                         volatile mp_obj_t inject_exc) {
 #if MICROPY_USE_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
@@ -314,7 +314,7 @@ dispatch_loop:
 
                 ENTRY(MP_BC_LOAD_CONST_INT):
                     DECODE_QSTR;
-                    PUSH(mp_obj_new_int_from_long_str(qstr_str(qst)));
+                    PUSH(mp_obj_new_int_from_qstr(qst));
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_DEC):
@@ -663,6 +663,7 @@ unwind_jump:
                 ENTRY(MP_BC_FOR_ITER):
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     save_sp = sp;
+                    assert(TOP());
                     obj1 = mp_iternext_allow_raise(TOP());
                     if (obj1 == MP_OBJ_STOP_ITERATION) {
                         --sp; // pop the exhausted iterator

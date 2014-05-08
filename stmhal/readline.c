@@ -55,11 +55,13 @@ void readline_init(void) {
     memset(readline_hist, 0, READLINE_HIST_SIZE * sizeof(const char*));
 }
 
-STATIC char *str_dup(const char *str) {
+STATIC char *str_dup_maybe(const char *str) {
     uint32_t len = strlen(str);
-    char *s2 = m_new(char, len + 1);
-    memcpy(s2, str, len);
-    s2[len] = 0;
+    char *s2 = m_new_maybe(char, len + 1);
+    if (s2 == NULL) {
+        return NULL;
+    }
+    memcpy(s2, str, len + 1);
     return s2;
 }
 
@@ -92,10 +94,13 @@ int readline(vstr_t *line, const char *prompt) {
                 if (line->len > orig_line_len && (readline_hist[0] == NULL || strcmp(readline_hist[0], line->buf + orig_line_len) != 0)) {
                     // a line which is not empty and different from the last one
                     // so update the history
-                    for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
-                        readline_hist[i] = readline_hist[i - 1];
+                    char *most_recent_hist = str_dup_maybe(line->buf + orig_line_len);
+                    if (most_recent_hist != NULL) {
+                        for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
+                            readline_hist[i] = readline_hist[i - 1];
+                        }
+                        readline_hist[0] = most_recent_hist;
                     }
-                    readline_hist[0] = str_dup(line->buf + orig_line_len);
                 }
                 return 0;
             } else if (c == 27) {

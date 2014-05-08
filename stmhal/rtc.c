@@ -214,26 +214,26 @@ void rtc_init(void) {
 static void RTC_CalendarConfig(void) {
     // set the date to 1st Jan 2014
     RTC_DateTypeDef date;
-    date.Year = 0x14;
-    date.Month = RTC_MONTH_JANUARY;
-    date.Date = 0x01;
+    date.Year = 14;
+    date.Month = 1;
+    date.Date = 1;
     date.WeekDay = RTC_WEEKDAY_WEDNESDAY;
 
-    if(HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BCD) != HAL_OK) {
+    if(HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
 
     // set the time to 00:00:00
     RTC_TimeTypeDef time;
-    time.Hours = 0x00;
-    time.Minutes = 0x00;
-    time.Seconds = 0x00;
+    time.Hours = 0;
+    time.Minutes = 0;
+    time.Seconds = 0;
     time.TimeFormat = RTC_HOURFORMAT12_AM;
     time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     time.StoreOperation = RTC_STOREOPERATION_RESET;
 
-    if (HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BCD) != HAL_OK) {
+    if (HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -316,7 +316,7 @@ mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
         date.Month = mp_obj_get_int(items[1]);
         date.Date = mp_obj_get_int(items[2]);
         date.WeekDay = mp_obj_get_int(items[3]);
-        HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BCD);
+        HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN);
 
         RTC_TimeTypeDef time;
         time.Hours = mp_obj_get_int(items[4]);
@@ -326,7 +326,7 @@ mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;
-        HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BCD);
+        HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN);
 
         return mp_const_none;
     }

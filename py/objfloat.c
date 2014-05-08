@@ -37,6 +37,7 @@
 #include "obj.h"
 #include "parsenum.h"
 #include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_ENABLE_FLOAT
 
@@ -66,13 +67,14 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
 }
 
 STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
         case 0:
             return mp_obj_new_float(0);
 
         case 1:
+        default:
             if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
                 uint l;
@@ -85,9 +87,6 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
                 // something else, try to cast it to a float
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
             }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "float takes at most 1 argument, %d given", n_args));
     }
 }
 
@@ -97,7 +96,7 @@ STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-o->value);
-        default: return NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 

@@ -36,6 +36,16 @@
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
 
+// Initial amount for lexer indentation level
+#ifndef MP_ALLOC_LEXER_INDENT_INIT
+#define MP_ALLOC_LEXER_INDENT_INIT (10)
+#endif
+
+// Increment for lexer indentation level
+#ifndef MP_ALLOC_LEXEL_INDENT_INC
+#define MP_ALLOC_LEXEL_INDENT_INC (8)
+#endif
+
 // Initial amount for parse rule stack
 #ifndef MP_ALLOC_PARSE_RULE_INIT
 #define MP_ALLOC_PARSE_RULE_INIT (64)
@@ -100,7 +110,7 @@
 
 // Whether to build functions that print debugging info:
 //   mp_token_show
-//   mp_byte_code_print
+//   mp_bytecode_print
 //   mp_parse_node_print
 #ifndef MICROPY_DEBUG_PRINTERS
 #define MICROPY_DEBUG_PRINTERS (0)
@@ -113,6 +123,11 @@
 
 /*****************************************************************************/
 /* Fine control over Python features                                         */
+
+// Whether to enable constant optimisation; id = const(value)
+#ifndef MICROPY_ENABLE_CONST
+#define MICROPY_ENABLE_CONST (1)
+#endif
 
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
@@ -225,6 +240,12 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_MOD_SYS (1)
 #endif
 
+// sys.exit() availability
+#ifndef MICROPY_MOD_SYS_EXIT
+#define MICROPY_MOD_SYS_EXIT (0)
+#endif
+
+// sys.{stdin,stdout,stderr} availability
 #ifndef MICROPY_MOD_SYS_STDFILES
 #define MICROPY_MOD_SYS_STDFILES (0)
 #endif
@@ -233,6 +254,11 @@ typedef double mp_float_t;
 // slice subscript operators
 #ifndef MICROPY_ENABLE_SLICE
 #define MICROPY_ENABLE_SLICE (1)
+#endif
+
+// Whether to support frozenset object
+#ifndef MICROPY_ENABLE_FROZENSET
+#define MICROPY_ENABLE_FROZENSET (0)
 #endif
 
 // Whether to support the property object
@@ -252,6 +278,11 @@ typedef double mp_float_t;
 // So we can allocate a buffer on the stack for path manipulation in import
 #ifndef MICROPY_PATH_MAX
 #define MICROPY_PATH_MAX (512)
+#endif
+
+// Whether POSIX-semantics non-blocking streams are supported
+#ifndef MICROPY_STREAMS_NON_BLOCK
+#define MICROPY_STREAMS_NON_BLOCK (0)
 #endif
 
 // Whether to use computed gotos in the VM, or a switch
@@ -312,4 +343,6 @@ typedef double mp_float_t;
 #endif //INT_FMT
 
 // Modifier for function which doesn't return
+#ifndef NORETURN
 #define NORETURN __attribute__((noreturn))
+#endif

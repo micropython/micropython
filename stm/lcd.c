@@ -1,9 +1,9 @@
 #include <string.h>
 #include <stm32f4xx_gpio.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 
 #if MICROPY_HW_HAS_LCD
 

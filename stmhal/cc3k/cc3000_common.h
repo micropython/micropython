@@ -3,14 +3,6 @@
 *  cc3000_common.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -20,23 +12,23 @@
 *
 *    Redistributions in binary form must reproduce the above copyright
 *    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the   
+*    documentation and/or other materials provided with the
 *    distribution.
 *
 *    Neither the name of Texas Instruments Incorporated nor the names of
 *    its contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
 *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
@@ -46,9 +38,6 @@
 //******************************************************************************
 // Include files
 //******************************************************************************
-//#include <stdlib.h>
-//#include <errno.h>
-//#include <stdint.h>
 
 //*****************************************************************************
 //
@@ -70,9 +59,9 @@ extern "C" {
 //*****************************************************************************
 //                  COMMON DEFINES
 //*****************************************************************************
-#define ERROR_SOCKET_INACTIVE   -57 
+#define ERROR_SOCKET_INACTIVE   -57
 
-#define WLAN_ENABLE      (1)   
+#define WLAN_ENABLE      (1)
 #define WLAN_DISABLE     (0)
 
 #define	MAC_ADDR_LEN	(6)
@@ -80,8 +69,8 @@ extern "C" {
 #define	SP_PORTION_SIZE	(32)
 
 // #define CC3000_TINY_DRIVER
-  
-/*Defines for minimal and maximal RX buffer size. This size includes the spi 
+
+/*Defines for minimal and maximal RX buffer size. This size includes the spi
   header and hci header.
   The maximal buffer size derives from:
     MTU + HCI header + SPI header + sendto() agrs size
@@ -89,26 +78,26 @@ extern "C" {
     HCI header + SPI header + max args size
 
   This buffer is used for receiving events and data.
-  The packet can not be longer than MTU size and CC3000 does not support 
-  fragmentation. Note that the same buffer is used for reception of the data 
-  and events from CC3000. That is why the minimum is defined. 
+  The packet can not be longer than MTU size and CC3000 does not support
+  fragmentation. Note that the same buffer is used for reception of the data
+  and events from CC3000. That is why the minimum is defined.
   The calculation for the actual size of buffer for reception is:
   Given the maximal data size MAX_DATA that is expected to be received by
   application, the required buffer is:
   Using recv() or recvfrom():
- 
+
     max(CC3000_MINIMAL_RX_SIZE, MAX_DATA + HEADERS_SIZE_DATA + fromlen
     + ucArgsize + 1)
- 
+
   Using gethostbyname() with minimal buffer size will limit the host name
   returned to 99 bytes only.
-  The 1 is used for the overrun detection 
+  The 1 is used for the overrun detection
 
   Buffer size increased to 130 following the add_profile() with WEP security
-  which requires TX buffer size of 130 bytes: 
+  which requires TX buffer size of 130 bytes:
   HEADERS_SIZE_EVNT + WLAN_ADD_PROFILE_WEP_PARAM_LEN + MAX SSID LEN + 4 * MAX KEY LEN = 130
-  MAX SSID LEN = 32 
-  MAX SSID LEN = 13 (with add_profile only ascii key setting is supported, 
+  MAX SSID LEN = 32
+  MAX SSID LEN = 13 (with add_profile only ascii key setting is supported,
   therfore maximum key size is 13)
 */
 
@@ -117,24 +106,24 @@ extern "C" {
 
 /*Defines for minimal and maximal TX buffer size.
   This buffer is used for sending events and data.
-  The packet can not be longer than MTU size and CC3000 does not support 
+  The packet can not be longer than MTU size and CC3000 does not support
   fragmentation. Note that the same buffer is used for transmission of the data
   and commands. That is why the minimum is defined.
   The calculation for the actual size of buffer for transmission is:
   Given the maximal data size MAX_DATA, the required buffer is:
   Using Sendto():
- 
+
    max(CC3000_MINIMAL_TX_SIZE, MAX_DATA + SPI_HEADER_SIZE
    + SOCKET_SENDTO_PARAMS_LEN + SIMPLE_LINK_HCI_DATA_HEADER_SIZE + 1)
- 
+
   Using Send():
- 
+
    max(CC3000_MINIMAL_TX_SIZE, MAX_DATA + SPI_HEADER_SIZE
    + HCI_CMND_SEND_ARG_LENGTH + SIMPLE_LINK_HCI_DATA_HEADER_SIZE + 1)
- 
-  The 1 is used for the overrun detection */ 
 
-#define	CC3000_MINIMAL_TX_SIZE      (130 + 1)  
+  The 1 is used for the overrun detection */
+
+#define	CC3000_MINIMAL_TX_SIZE      (130 + 1)
 #define	CC3000_MAXIMAL_TX_SIZE      (1519 + 1)
 
 //TX and RX buffer sizes, allow to receive and transmit maximum data at length 8.
@@ -143,41 +132,37 @@ extern "C" {
 #define TINY_CC3000_MAXIMAL_TX_SIZE 59
 #endif
 
-/*In order to determine your preferred buffer size, 
+/*In order to determine your preferred buffer size,
   change CC3000_MAXIMAL_RX_SIZE and CC3000_MAXIMAL_TX_SIZE to a value between
-  the minimal and maximal specified above. 
+  the minimal and maximal specified above.
   Note that the buffers are allocated by SPI.
   In case you change the size of those buffers, you might need also to change
   the linker file, since for example on MSP430 FRAM devices the buffers are
   allocated in the FRAM section that is allocated manually and not by IDE.
 */
-  
+
 #ifndef CC3000_TINY_DRIVER
-  
+
 	#define CC3000_RX_BUFFER_SIZE   (CC3000_MINIMAL_RX_SIZE)
 	#define CC3000_TX_BUFFER_SIZE   (CC3000_MINIMAL_TX_SIZE)
-  
+
 //if defined TINY DRIVER we use smaller RX and TX buffer in order to minimize RAM consumption
 #else
 	#define CC3000_RX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_RX_SIZE)
 	#define CC3000_TX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_TX_SIZE)
 
-#endif  
+#endif
 
 //*****************************************************************************
 //                  Compound Types
 //*****************************************************************************
-#ifdef __AVR__
-typedef unsigned long time_t;  /* KTown: Updated to be compatible with Arduino Time.h */
-#else
 typedef long time_t;
-#endif
 typedef unsigned long clock_t;
 typedef long suseconds_t;
 
 typedef struct timeval timeval;
 
-struct timeval 
+struct timeval
 {
     time_t         tv_sec;                  /* seconds */
     suseconds_t    tv_usec;                 /* microseconds */
@@ -263,12 +248,12 @@ extern void SimpleLinkWaitEvent(unsigned short usOpcode, void *pRetParams);
 //!  @return               none
 //!
 //!  @brief                Wait for data, pass it to the hci_event_handler
-//! 					   and update in a global variable that there is 
+//! 					   and update in a global variable that there is
 //!						   data to read.
 //
 //*****************************************************************************
 
-extern void SimpleLinkWaitData(uint8_t *pBuf, uint8_t *from, uint8_t *fromlen);
+extern void SimpleLinkWaitData(unsigned char *pBuf, unsigned char *from, unsigned char *fromlen);
 
 //*****************************************************************************
 //
@@ -284,7 +269,7 @@ extern void SimpleLinkWaitData(uint8_t *pBuf, uint8_t *from, uint8_t *fromlen);
 //
 //*****************************************************************************
 
-extern uint8_t* UINT32_TO_STREAM_f (uint8_t *p, uint32_t u32);
+extern unsigned char* UINT32_TO_STREAM_f (unsigned char *p, unsigned long u32);
 
 //*****************************************************************************
 //
@@ -295,12 +280,12 @@ extern uint8_t* UINT32_TO_STREAM_f (uint8_t *p, uint32_t u32);
 //!
 //!  \return               pointer to the new stream
 //!
-//!  \brief               This function is used for copying 16 bit to stream 
+//!  \brief               This function is used for copying 16 bit to stream
 //!                       while converting to little endian format.
 //
 //*****************************************************************************
 
-extern uint8_t* UINT16_TO_STREAM_f (uint8_t *p, uint16_t u16);
+extern unsigned char* UINT16_TO_STREAM_f (unsigned char *p, unsigned short u16);
 
 //*****************************************************************************
 //
@@ -311,12 +296,12 @@ extern uint8_t* UINT16_TO_STREAM_f (uint8_t *p, uint16_t u16);
 //!
 //!  \return               pointer to the new 16 bit
 //!
-//!  \brief               This function is used for copying received stream to 
+//!  \brief               This function is used for copying received stream to
 //!                       16 bit in little endian format.
 //
 //*****************************************************************************
 
-extern uint16_t STREAM_TO_UINT16_f(char* p, uint16_t offset);
+extern unsigned short STREAM_TO_UINT16_f(char* p, unsigned short offset);
 
 //*****************************************************************************
 //
@@ -332,7 +317,7 @@ extern uint16_t STREAM_TO_UINT16_f(char* p, uint16_t offset);
 //
 //*****************************************************************************
 
-extern uint32_t STREAM_TO_UINT32_f(char* p, uint16_t offset);
+extern unsigned long STREAM_TO_UINT32_f(char* p, unsigned short offset);
 
 
 //*****************************************************************************
@@ -361,14 +346,14 @@ extern void cc3k_int_poll();
 //This macro is used for copying 32 bit to stream while converting to little endian format.
 #define UINT32_TO_STREAM(_p, _u32)	(UINT32_TO_STREAM_f(_p, _u32))
 //This macro is used for copying a specified value length bits (l) to stream while converting to little endian format.
-#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(p)++ = ((uint8_t *) a)[_i];}
+#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(p)++ = ((unsigned char *) a)[_i];}
 //This macro is used for copying received stream to 8 bit in little endian format.
-#define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (uint8_t)(*(_p + _offset));}
+#define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (unsigned char)(*(_p + _offset));}
 //This macro is used for copying received stream to 16 bit in little endian format.
 #define STREAM_TO_UINT16(_p, _offset, _u16)	{_u16 = STREAM_TO_UINT16_f(_p, _offset);}
 //This macro is used for copying received stream to 32 bit in little endian format.
 #define STREAM_TO_UINT32(_p, _offset, _u32)	{_u32 = STREAM_TO_UINT32_f(_p, _offset);}
-#define STREAM_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(a)++= ((uint8_t *) p)[_i];}
+#define STREAM_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(a)++= ((unsigned char *) p)[_i];}
 
 
 

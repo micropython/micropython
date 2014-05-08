@@ -1,10 +1,26 @@
 This is experimental, community-supported Windows port of MicroPython.
 It is based on Unix port, and expected to remain so.
+The port requires additional testing, debugging, and patches. Please
+consider to contribute.
+
 
 To cross-compile under Debian/Ubuntu Linux system:
 
 sudo apt-get install mingw32 mingw32-binutils mingw32-runtime
 make CROSS_COMPILE=i586-mingw32msvc-
 
-The port requires additional testing, debugging, and patches. Please
-consider to contribute.
+
+To compile under Cygwin:
+
+Install following packages using cygwin's setup.exe: mingw-gcc-g++ make
+make CROSS_COMPILE=i686-pc-mingw32-
+
+
+To compile using Visual Studio 2013:
+
+Open micropython.vcxproj and build
+
+
+To compile using Visual Studio 2013 commandline:
+
+msbuild micropython.vcxproj

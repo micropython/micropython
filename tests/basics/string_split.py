@@ -26,3 +26,5 @@ print("abcabc".split("bc"))
 print("abcabc".split("bc", 0))
 print("abcabc".split("bc", 1))
 print("abcabc".split("bc", 2))
+
+print(b"abcabc".split(b"bc", 2))

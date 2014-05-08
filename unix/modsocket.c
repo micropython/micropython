@@ -148,6 +148,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
+// Note: besides flag param, this differs from read() in that
+// this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
+// these would be thrown as exceptions.
 STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -166,6 +169,9 @@ STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
+// Note: besides flag param, this differs from write() in that
+// this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
+// these would be thrown as exceptions.
 STATIC mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     int flags = 0;

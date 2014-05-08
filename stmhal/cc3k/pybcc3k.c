@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 
 #include "stm32f4xx_hal.h"
@@ -14,10 +15,15 @@
 #include "extint.h"
 #include "spi.h"
 #include "ccspi.h"
-#include "ccdebug.h"
 #include "pybcc3k.h"
 
 #if MICROPY_HW_ENABLE_CC3K
+
+#if 1 // print debugging info
+#define DEBUG_printf(args...) printf(args)
+#else // don't print debugging info
+#define DEBUG_printf(args...) (void)0
+#endif
 
 // IRQ on PA14, input, pulled up, active low
 // EN on PC7, output, active high
@@ -73,12 +79,13 @@ uint32_t exti14_missed = 0; // TODO hack; do it properly!
 void pyb_cc3000_enable_irq(void) {
     DEBUG_printf("pyb_cc3000_enable_irq: en=%lu miss=%lu\n", exti14_enabled, exti14_missed);
     if (exti14_missed) {
-        /* doesn't look like this is needed
+        // doesn't look like this is needed
         DEBUG_printf("pyb_cc3000_enable_irq: handling missed IRQ\n");
+        /*
         // TODO hack if we have a pending IRQ
         extern void SpiIntGPIOHandler(void);
-        SpiIntGPIOHandler();
         */
+        SpiIntGPIOHandler();
         exti14_missed = 0;
     }
     exti14_enabled = 1;

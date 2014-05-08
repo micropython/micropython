@@ -136,33 +136,42 @@ mp_obj_t pyb_wlan_get_host(mp_obj_t host_name) {
 }
 
 mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
-    if (host_name == mp_const_none) {
-        last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (3);
+    int port;
+    if (mp_obj_is_integer(host_name)) {
+        last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (mp_obj_get_int(host_name));
+        port = 8080;
     } else {
         if (pyb_wlan_get_host(host_name) == mp_const_none) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "unknown host"));
         }
+        port = 80;
     }
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd < 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "socket failed: %d", sd));
     }
-    //printf("socket seemed to work\n");
-    //HAL_Delay(200);
+
+    printf("socket seemed to work\n");
+
     sockaddr_in remote;
     memset(&remote, 0, sizeof(sockaddr_in));
     remote.sin_family = AF_INET;
-    remote.sin_port = htons(80);
+    remote.sin_port = htons(port);
     remote.sin_addr.s_addr = htonl(last_ip);
     int ret = connect(sd, (sockaddr*)&remote, sizeof(sockaddr));
     if (ret != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "connect failed: %d", ret));
     }
-    //printf("connect seemed to work\n");
-    //HAL_Delay(200);
+
+    printf("connect seemed to work\n");
 
     vstr_t *vstr = vstr_new();
-    vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: PYBv2\r\n\r\n", mp_obj_str_get_str(host_path), mp_obj_str_get_qstr(host_name));
+    //vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: PYBv2\r\n\r\n", mp_obj_str_get_str(host_path), mp_obj_str_get_str(host_name));
+    if (mp_obj_is_integer(host_name)) {
+        vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: localhost\r\n\r\n", mp_obj_str_get_str(host_path));
+    } else {
+        vstr_printf(vstr, "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", mp_obj_str_get_str(host_path), mp_obj_str_get_str(host_name));
+    }
     const char *query = vstr_str(vstr);
 
     // send query
@@ -173,24 +182,49 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             extern void SpiIntGPIOHandler(void);
             SpiIntGPIOHandler();
             */
-            //printf("sending %d bytes\n", strlen(query + sent));
-            ret = send(sd, query + sent, strlen(query + sent), 0);
-            //printf("sent %d bytes\n", ret);
+
+            // do a select() call on this socket
+            timeval timeout;
+            fd_set fd_write;
+
+            FD_ZERO(&fd_write);
+            FD_SET(sd, &fd_write);
+
+            timeout.tv_sec = 1;
+            timeout.tv_usec = 0;
+
+            printf("send select\n");
+            int s = select(sd + 1, NULL, &fd_write, NULL, &timeout);
+            printf("send select returned %d\n", s);
+            if (s < 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "select failed %d", s));
+            } else if (s == 0) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "send not ready"));
+            }
+
+            printf("sending %d bytes\n", strlen(query + sent));
+            int ret = send(sd, query + sent, strlen(query + sent), 0);
+            printf("sent %d bytes\n", ret);
             if (ret < 0) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "send failed"));
             }
+
+            if (ret > strlen(query + sent)) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "send sent too much"));
+            }
             sent += ret;
+
             //HAL_Delay(200);
         }
     }
 
-    //printf("send seemed to work!\n");
+    printf("send seemed to work!\n");
     //HAL_Delay(5000);
 
     // receive reply
     mp_obj_t mp_ret = mp_const_none;
     {
-        //printf("doing receive\n");
+        printf("doing receive\n");
         char buf[64];
         vstr_reset(vstr);
 
@@ -202,20 +236,26 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             memset(&fd_read, 0, sizeof(fd_read));
             FD_SET(sd, &fd_read);
 
-            timeout.tv_sec = 0;
-            timeout.tv_usec = 500000; // 500 millisec
+            timeout.tv_sec = 1;
+            timeout.tv_usec = 0;
 
-            int s = select(sd+1, &fd_read, NULL, NULL, &timeout);
-            if (s == 0) {
+            printf("recv select\n");
+            int s = select(sd + 1, &fd_read, NULL, NULL, &timeout);
+            printf("recv select done %d\n", s);
+            if (s < 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "select failed %d", s));
+            } else if (s == 0) {
                 // no data available
+                printf("no data!\n");
                 break;
             }
 
             // read data
             ret = recv(sd, buf, 64, 0);
-            if (ret < 0) {
+            if (ret <= 0) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "recv failed %d", ret));
             }
+            printf("recv data: %.*s\n", ret, buf);
             vstr_add_strn(vstr, buf, ret);
         }
 

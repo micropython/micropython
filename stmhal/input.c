@@ -36,7 +36,7 @@
 
 STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
-        mp_obj_print(args[0], PRINT_REPR);
+        mp_obj_print(args[0], PRINT_STR);
     }
     vstr_t line;
     vstr_init(&line, 16);

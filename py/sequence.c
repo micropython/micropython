@@ -50,7 +50,7 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
     }
 }
 
-bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end) {
+bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end) {
     machine_int_t start, stop, step;
     mp_obj_slice_get(slice, &start, &stop, &step);
     if (step != 1) {
@@ -83,6 +83,10 @@ bool m_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_ui
 // Special-case comparison function for sequences of bytes
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2) {
+    if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
+        return false;
+    }
+
     // Let's deal only with > & >=
     if (op == MP_BINARY_OP_LESS || op == MP_BINARY_OP_LESS_EQUAL) {
         SWAP(const byte*, data1, data2);

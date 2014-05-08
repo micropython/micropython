@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#define ASM_X64_PASS_1 (1)
-#define ASM_X64_PASS_2 (2)
-#define ASM_X64_PASS_3 (3)
+#define ASM_X64_PASS_COMPUTE (1)
+#define ASM_X64_PASS_EMIT    (2)
 
 #define REG_RAX (0)
 #define REG_RCX (1)
@@ -54,7 +53,7 @@ typedef struct _asm_x64_t asm_x64_t;
 
 asm_x64_t* asm_x64_new(uint max_num_labels);
 void asm_x64_free(asm_x64_t* as, bool free_code);
-void asm_x64_start_pass(asm_x64_t *as, int pass);
+void asm_x64_start_pass(asm_x64_t *as, uint pass);
 void asm_x64_end_pass(asm_x64_t *as);
 uint asm_x64_get_code_size(asm_x64_t* as);
 void* asm_x64_get_code(asm_x64_t* as);
@@ -71,6 +70,7 @@ void asm_x64_mov_i32_to_r64(asm_x64_t* as, int src_i32, int dest_r64);
 void asm_x64_mov_i64_to_r64(asm_x64_t* as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i32_to_disp(asm_x64_t* as, int src_i32, int dest_r32, int dest_disp);
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64);
+void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_xor_r64_to_r64(asm_x64_t *as, int src_r64, int dest_r64);
 void asm_x64_add_r64_to_r64(asm_x64_t* as, int src_r64, int dest_r64);
 void asm_x64_add_i32_to_r32(asm_x64_t* as, int src_i32, int dest_r32);

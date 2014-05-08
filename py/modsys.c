@@ -39,6 +39,7 @@
 // These should be implemented by ports, specific types don't matter,
 // only addresses.
 struct _dummy_t;
+extern struct _dummy_t mp_sys_exit_obj;
 extern struct _dummy_t mp_sys_stdin_obj;
 extern struct _dummy_t mp_sys_stdout_obj;
 extern struct _dummy_t mp_sys_stderr_obj;
@@ -53,6 +54,7 @@ STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&mp_sys_path_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&mp_sys_argv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
@@ -61,6 +63,10 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_little) },
 #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_big) },
+#endif
+
+#if MICROPY_MOD_SYS_EXIT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
 #endif
 
 #if MICROPY_MOD_SYS_STDFILES

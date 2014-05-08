@@ -58,7 +58,7 @@ STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // we don't even need to check for 2nd arg type.
             return MP_BOOL(lhs_in == rhs_in);
     }
-    return NULL;
+    return MP_OBJ_NOT_SUPPORTED;
 }
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -378,7 +378,7 @@ continue2:;
     DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
     dump_args(args, n_args);
     dump_args(extra_args, n_extra_args);
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
     mp_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
@@ -506,12 +506,7 @@ STATIC mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
-    if (n_args != self->n_args) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
-    }
-    if (n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
-    }
+    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
     machine_uint_t ret;
     if (n_args == 0) {

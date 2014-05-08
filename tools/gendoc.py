@@ -67,6 +67,9 @@ class Lexer:
         print('({}:{}) {}'.format(self.filename, self.cur_line, msg))
         raise Lexer.LexerError
 
+class DocValidateError(Exception):
+    pass
+
 class DocItem:
     def __init__(self):
         self.doc = []
@@ -216,6 +219,10 @@ class DocModule(DocItem):
     def process_constant(self, lex, d):
         self.cur_class.process_constant(lex, d)
 
+    def validate(self):
+        if self.descr is None:
+            raise DocValidateError('module {} referenced but never defined'.format(self.name))
+
     def dump(self):
         s = []
         s.append('# module {}'.format(self.name))
@@ -262,15 +269,18 @@ class Doc:
 
     def process_module(self, lex, d):
         name = d['id']
-        if name in self.modules:
+        if name not in self.modules:
+            self.modules[name] = DocModule(name, None)
+        self.cur_module = self.modules[name]
+        if self.cur_module.descr is not None:
             lex.error("multiple definition of module '{}'".format(name))
-        self.cur_module = self.modules[name] = DocModule(name, d['descr'])
+        self.cur_module.descr = d['descr']
         self.cur_module.add_doc(lex)
 
     def process_moduleref(self, lex, d):
         name = d['id']
         if name not in self.modules:
-            lex.error('module {} referenced before definition'.format(name))
+            self.modules[name] = DocModule(name, None)
         self.cur_module = self.modules[name]
         lex.opt_break()
 
@@ -293,6 +303,10 @@ class Doc:
     def process_constant(self, lex, d):
         self.check_module(lex)
         self.cur_module.process_constant(lex, d)
+
+    def validate(self):
+        for m in self.modules.values():
+            m.validate()
 
     def write(self, dir):
         for m in self.modules.values():
@@ -339,17 +353,18 @@ def process_file(file, doc):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Generate documentation for pyboard API from C files.')
     cmd_parser.add_argument('--outdir', metavar='<output dir>', default='gendoc-out', help='ouput directory')
-    cmd_parser.add_argument('files', nargs='*', help='input files')
+    cmd_parser.add_argument('files', nargs='+', help='input files')
     args = cmd_parser.parse_args()
-
-    if len(args.files) == 0:
-        args.files = ['modpyb.c', 'accel.c', 'adc.c', 'dac.c', 'extint.c', 'i2c.c', 'led.c', 'pin.c', 'rng.c', 'servo.c', 'spi.c', 'uart.c', 'usrsw.c', 'timer.c', 'rtc.c']
 
     doc = Doc()
     for file in args.files:
         print('processing', file)
         if not process_file(file, doc):
             return
+    try:
+        doc.validate()
+    except DocValidateError as e:
+        print(e)
     doc.write(args.outdir)
     print('written to', args.outdir)
 

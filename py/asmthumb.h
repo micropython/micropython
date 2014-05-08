@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#define ASM_THUMB_PASS_1 (1)
-#define ASM_THUMB_PASS_2 (2)
-#define ASM_THUMB_PASS_3 (3)
+#define ASM_THUMB_PASS_COMPUTE (1)
+#define ASM_THUMB_PASS_EMIT    (2)
 
 #define REG_R0  (0)
 #define REG_R1  (1)
@@ -71,7 +70,7 @@ typedef struct _asm_thumb_t asm_thumb_t;
 
 asm_thumb_t *asm_thumb_new(uint max_num_labels);
 void asm_thumb_free(asm_thumb_t *as, bool free_code);
-void asm_thumb_start_pass(asm_thumb_t *as, int pass);
+void asm_thumb_start_pass(asm_thumb_t *as, uint pass);
 void asm_thumb_end_pass(asm_thumb_t *as);
 uint asm_thumb_get_code_size(asm_thumb_t *as);
 void *asm_thumb_get_code(asm_thumb_t *as);
@@ -188,6 +187,7 @@ void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
+void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32); // convenience
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src); // convenience
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience

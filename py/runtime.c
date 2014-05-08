@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -68,12 +69,13 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
-    // call port specific initialization if any 
+    // call port specific initialization if any
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_INIT_FUNC;
 #endif
 
-    mp_emit_glue_init();
+    // __debug__ enabled by default
+    mp_set_debug(true);
 
     // init global module stuff
     mp_module_init();
@@ -89,7 +91,11 @@ void mp_init(void) {
 void mp_deinit(void) {
     //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
-    mp_emit_glue_deinit();
+
+    // call port specific deinitialization if any 
+#ifdef MICROPY_PORT_INIT_FUNC
+    MICROPY_PORT_DEINIT_FUNC;
+#endif
 }
 
 mp_obj_t mp_load_const_dec(qstr qstr) {
@@ -572,7 +578,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed pos args
-        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
         args2_len += n_args;
 
     } else if (MP_OBJ_IS_TYPE(pos_seq, &mp_type_tuple) || MP_OBJ_IS_TYPE(pos_seq, &mp_type_list)) {
@@ -593,7 +599,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed and variable position args
-        m_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
+        mp_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
         args2_len += n_args + len;
 
     } else {
@@ -609,7 +615,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed position args
-        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
 
         // extract the variable position args from the iterator
         mp_obj_t iterable = mp_getiter(pos_seq);
@@ -627,7 +633,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
     uint pos_args_len = args2_len;
 
     // Copy the fixed kw args.
-    m_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
+    mp_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
     args2_len += 2 * n_kw;
 
     // Extract (key,value) pairs from kw_dict dictionary and append to args2.
@@ -834,6 +840,9 @@ void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
                 // return a bound method, with self being the type of this object
                 dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
                 dest[1] = mp_obj_get_type(base);
+            } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_type)) {
+                // Don't try to bind types
+                dest[0] = elem->value;
             } else if (mp_obj_is_callable(elem->value)) {
                 // return a bound method, with self being this object
                 dest[0] = elem->value;
@@ -875,9 +884,14 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 }
 
 mp_obj_t mp_getiter(mp_obj_t o_in) {
+    assert(o_in);
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
-        return type->getiter(o_in);
+        mp_obj_t iter = type->getiter(o_in);
+        if (iter == MP_OBJ_NULL) {
+            goto not_iterable;
+        }
+        return iter;
     } else {
         // check for __iter__ method
         mp_obj_t dest[2];
@@ -892,6 +906,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
                 return mp_obj_new_getitem_iter(dest);
             } else {
                 // object not iterable
+not_iterable:
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
             }
         }
@@ -1074,11 +1089,12 @@ import_error:
     uint pkg_name_len;
     const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
 
-    char dot_name[pkg_name_len + 1 + qstr_len(name)];
+    const uint dot_name_len = pkg_name_len + 1 + qstr_len(name);
+    char *dot_name = alloca(dot_name_len);
     memcpy(dot_name, pkg_name, pkg_name_len);
     dot_name[pkg_name_len] = '.';
     memcpy(dot_name + pkg_name_len + 1, qstr_str(name), qstr_len(name));
-    qstr dot_name_q = qstr_from_strn(dot_name, sizeof(dot_name));
+    qstr dot_name_q = qstr_from_strn(dot_name, dot_name_len);
 
     mp_obj_t args[5];
     args[0] = MP_OBJ_NEW_QSTR(dot_name_q);
@@ -1132,7 +1148,7 @@ void *m_malloc_fail(int num_bytes) {
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_const_dec,
-    mp_obj_new_int_from_long_str,
+    mp_obj_new_int_from_qstr,
     mp_load_const_str,
     mp_load_name,
     mp_load_global,
@@ -1156,12 +1172,13 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_call_function_n_kw_for_native,
     mp_call_method_n_kw,
     mp_getiter,
+    mp_iternext,
     mp_import_name,
     mp_import_from,
     mp_import_all,
     mp_obj_new_slice,
     mp_unpack_sequence,
-    mp_iternext,
+    mp_unpack_ex,
 };
 
 /*

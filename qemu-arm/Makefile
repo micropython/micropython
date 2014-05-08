@@ -33,8 +33,15 @@ endif
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
 LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
 
+ifeq ($(RUN_TESTS), 1)
+SRC_C = \
+	test_main.c \
+
+else
 SRC_C = \
 	main.c \
+
+endif
 
 SRC_S = \
 
@@ -43,11 +50,24 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
+ifeq ($(RUN_TESTS), 1)
+INC += -I../tools/tinytest/
+OBJ += $(BUILD)/tinytest.o
+endif
+
 all: run
 
 run: $(BUILD)/flash.elf
-
 	qemu-system-arm -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/flash.elf
+
+.PHONY: $(BUILD)/genhdr/tests.h
+
+$(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
+$(BUILD)/genhdr/tests.h:
+	$(Q)echo "Generating $@";(cd ../tests; ../tools/tinytest-codegen.py) > $@
+
+$(BUILD)/tinytest.o:
+	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c ../tools/tinytest/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/flash.elf: $(OBJ)

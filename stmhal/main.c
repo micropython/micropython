@@ -35,6 +35,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "misc.h"
+#include "nlr.h"
 #include "lexer.h"
 #include "parse.h"
 #include "obj.h"
@@ -549,3 +550,13 @@ soft_reset:
     first_soft_reset = false;
     goto soft_reset;
 }
+
+STATIC NORETURN mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
+    int rc = 0;
+    if (n_args > 0) {
+        rc = mp_obj_get_int(args[0]);
+    }
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
+        "sys.exit(%d) called, is not fully implemented", rc));
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);

@@ -54,9 +54,9 @@
     ip += sizeof(machine_uint_t); \
 } while (0)
 
-void mp_byte_code_print2(const byte *ip, int len);
+void mp_bytecode_print2(const byte *ip, int len);
 
-void mp_byte_code_print(const byte *ip, int len) {
+void mp_bytecode_print(const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
@@ -99,10 +99,10 @@ void mp_byte_code_print(const byte *ip, int len) {
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
-    mp_byte_code_print2(ip, len - 0);
+    mp_bytecode_print2(ip, len - 0);
 }
 
-void mp_byte_code_print2(const byte *ip, int len) {
+void mp_bytecode_print2(const byte *ip, int len) {
     const byte *ip_start = ip;
     machine_uint_t unum;
     qstr qstr;
@@ -404,14 +404,10 @@ void mp_byte_code_print2(const byte *ip, int len) {
                 printf("STORE_MAP");
                 break;
 
-                /*
             case MP_BC_MAP_ADD:
                 DECODE_UINT;
-                // I think it's guaranteed by the compiler that sp[unum + 1] is a map
-                rt_store_map(sp[unum + 1], sp[0], sp[1]);
-                sp += 2;
+                printf("MAP_ADD " UINT_FMT, unum);
                 break;
-                */
 
             case MP_BC_BUILD_SET:
                 DECODE_UINT;

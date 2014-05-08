@@ -2,9 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "misc.h"
 #include "lexer.h"

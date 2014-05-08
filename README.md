@@ -11,12 +11,19 @@ The Micro Python project
 This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.
 
-WARNING: this project is in its early stages and is subject to large
+WARNING: this project is in early beta stage and is subject to large
 changes of the code-base, including project-wide name changes and API
 changes.
 
+Micro Python implements the entire Python 3.4 syntax (including exceptions,
+"with", "yield from", etc.).  The following core datatypes are provided:
+str (no Unicode support yet), bytes, bytearray, tuple, list, dict, set,
+array.array, collections.namedtuple, classes and instances.  Builtin
+modules include sys, time, and struct.  Note that only subset of
+Python 3.4 functionality implemented for the data types and modules.
+
 See the repository www.github.com/micropython/pyboard for the Micro
-Python board.
+Python board, the officially supported reference electronic circuit board.
 
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
@@ -81,6 +88,10 @@ on the bottom left of the board, second row from the bottom).
 
 Then to flash the code via USB DFU to your device:
 
-    $ dfu-util -a 0 -D build/flash.dfu
+    $ make deploy
 
-You will need the dfu-util program, on Arch Linux it's dfu-util-git in the AUR.
+You will need the dfu-util program, on Arch Linux it's dfu-util-git in the
+AUR.  If the above does not work it may be because you don't have the
+correct permissions.  Try then:
+
+    $ sudo dfu-util -a 0 -D build-PYBV10/firmware.dfu

@@ -49,11 +49,7 @@
 #include "repl.h"
 #include "gc.h"
 #include "genhdr/py-version.h"
-
-#if MICROPY_USE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
+#include "input.h"
 
 // Command line options, with their defaults
 bool compile_only = false;
@@ -141,31 +137,6 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     memcpy(s + l1, s2, l2);
     s[l1 + l2] = 0;
     return s;
-}
-
-STATIC char *prompt(char *p) {
-#if MICROPY_USE_READLINE
-    char *line = readline(p);
-    if (line) {
-        add_history(line);
-    }
-#else
-    static char buf[256];
-    fputs(p, stdout);
-    char *s = fgets(buf, sizeof(buf), stdin);
-    if (!s) {
-        return NULL;
-    }
-    int l = strlen(buf);
-    if (buf[l - 1] == '\n') {
-        buf[l - 1] = 0;
-    } else {
-        l++;
-    }
-    char *line = malloc(l);
-    memcpy(line, buf, l);
-#endif
-    return line;
 }
 
 STATIC void do_repl(void) {
@@ -259,7 +230,7 @@ void pre_process_options(int argc, char **argv) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
-                    emit_opt = MP_EMIT_OPT_BYTE_CODE;
+                    emit_opt = MP_EMIT_OPT_BYTECODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
@@ -364,6 +335,9 @@ int main(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
+            } else if (strcmp(argv[a], "-O") == 0) {
+                // optimisation; sets __debug__ to False
+                mp_set_debug(false);
             } else {
                 return usage(argv);
             }
@@ -399,6 +373,15 @@ int main(int argc, char **argv) {
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return 0;
 }
+
+STATIC mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
+    int rc = 0;
+    if (n_args > 0) {
+        rc = mp_obj_get_int(args[0]);
+    }
+    exit(rc);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 uint mp_import_stat(const char *path) {
     struct stat st;

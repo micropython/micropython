@@ -29,9 +29,10 @@
 typedef enum {
     MP_CODE_UNUSED,
     MP_CODE_RESERVED,
-    MP_CODE_BYTE,
-    MP_CODE_NATIVE,
-    MP_CODE_INLINE_ASM,
+    MP_CODE_BYTECODE,
+    MP_CODE_NATIVE_PY,
+    MP_CODE_NATIVE_VIPER,
+    MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
 typedef struct _mp_code_t {
@@ -46,22 +47,15 @@ typedef struct _mp_code_t {
             uint len;
         } u_byte;
         struct {
-            mp_fun_t fun;
-        } u_native;
-        struct {
             void *fun;
-        } u_inline_asm;
+        } u_native;
     };
 } mp_raw_code_t;
 
-void mp_emit_glue_init(void);
-void mp_emit_glue_deinit(void);
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
-void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
-void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *f, uint len, int n_args);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args);

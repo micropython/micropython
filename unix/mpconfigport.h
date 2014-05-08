@@ -33,6 +33,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
+#define MICROPY_ENABLE_FROZENSET    (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_ENABLE_REPL_HELPERS (1)
@@ -41,7 +42,9 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PATH_MAX            (PATH_MAX)
+#define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_USE_COMPUTED_GOTO   (1)
+#define MICROPY_MOD_SYS_EXIT        (1)
 #define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_ENABLE_MOD_CMATH    (1)
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
@@ -50,10 +53,24 @@
 
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_socket;
-#define MICROPY_EXTRA_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
 
+#if MICROPY_MOD_FFI
+extern const struct _mp_obj_module_t mp_module_ffi;
+#define MICROPY_MOD_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
+#else
+#define MICROPY_MOD_FFI_DEF
+#endif
+#if MICROPY_MOD_TIME
+#define MICROPY_MOD_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time },
+#else
+#define MICROPY_MOD_TIME_DEF
+#endif
+
+#define MICROPY_EXTRA_BUILTIN_MODULES \
+    MICROPY_MOD_FFI_DEF \
+    MICROPY_MOD_TIME_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
+    
 // type definitions for the specific machine
 
 #ifdef __LP64__
@@ -71,6 +88,8 @@ typedef unsigned int machine_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
+extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_EXTRA_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },

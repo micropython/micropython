@@ -46,7 +46,7 @@
 
 // This dispatcher function is expected to be independent of the implementation of long int
 STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {
         case 0:
@@ -67,16 +67,13 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
             }
 
         case 2:
-        {
+        default: {
             // should be a string, parse it
             // TODO proper error checking of argument types
             uint l;
             const char *s = mp_obj_str_get_data(args[0], &l);
             return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]));
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "int takes at most 2 arguments, %d given", n_args));
     }
 }
 
@@ -228,7 +225,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
-mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
     return mp_const_none;
 }
@@ -303,7 +300,7 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
 
     // convert the bytes to an integer
     machine_uint_t value = 0;
-    for (const byte* buf = bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+    for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
         value = (value << 8) | *buf;
     }
 

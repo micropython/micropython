@@ -6,9 +6,9 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_tim.h"
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "parse.h"
 #include "obj.h"

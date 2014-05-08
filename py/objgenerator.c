@@ -118,7 +118,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     }
     mp_obj_dict_t *old_globals = mp_globals_get();
     mp_globals_set(self->globals);
-    mp_vm_return_kind_t ret_kind = mp_execute_byte_code_2(self->code_info, &self->ip,
+    mp_vm_return_kind_t ret_kind = mp_execute_bytecode2(self->code_info, &self->ip,
         &self->state[self->n_state - 1], &self->sp, (mp_exc_stack_t*)(self->state + self->n_state),
         &self->exc_sp, throw_value);
     mp_globals_set(old_globals);
@@ -276,7 +276,7 @@ mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode, u
     o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;
     o->n_state = n_state;
 
-    // copy args to end of state array, in reverse (that's how mp_execute_byte_code_2 needs it)
+    // copy args to end of state array, in reverse (that's how mp_execute_bytecode2 needs it)
     for (uint i = 0; i < n_args; i++) {
         o->state[n_state - 1 - i] = args[i];
     }

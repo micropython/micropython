@@ -89,7 +89,7 @@ STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pa
     emit->pass = pass;
     emit->success = true;
     emit->scope = scope;
-    asm_thumb_start_pass(emit->as, pass);
+    asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
     asm_thumb_entry(emit->as, 0);
 }
 
@@ -97,9 +97,9 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     asm_thumb_exit(emit->as);
     asm_thumb_end_pass(emit->as);
 
-    if (emit->pass == PASS_3) {
+    if (emit->pass == MP_PASS_EMIT) {
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_inline_asm_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
+        mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
     }
 
     return emit->success;
@@ -230,7 +230,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
         }
     }
     // only need to have the labels on the last pass
-    if (emit->pass == PASS_3) {
+    if (emit->pass == MP_PASS_EMIT) {
         emit_inline_thumb_error(emit, "label '%s' not defined\n", qstr_str(label_qstr));
     }
     return 0;

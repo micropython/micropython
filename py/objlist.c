@@ -69,7 +69,7 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
 }
 
 STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
         case 0:
@@ -77,17 +77,13 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
             return mp_obj_new_list(0, NULL);
 
         case 1:
-        {
+        default: {
             // make list from iterable
             // TODO: optimize list/tuple
             mp_obj_t list = mp_obj_new_list(0, NULL);
             return list_extend_from_iter(list, args[0]);
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
     }
-    return NULL;
 }
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
@@ -116,16 +112,16 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
-            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
+            mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
         case MP_BINARY_OP_INPLACE_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             list_extend(lhs, rhs);
             return o;
@@ -133,7 +129,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_MULTIPLY: {
             machine_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             mp_obj_list_t *s = list_new(o->len * n);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
@@ -154,6 +150,24 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            mp_obj_list_t *self = self_in;
+            machine_uint_t start, stop;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+
+            int len_adj = start - stop;
+            //printf("Len adj: %d\n", len_adj);
+            assert(len_adj <= 0);
+            mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, self->items/*NULL*/, 0, mp_obj_t);
+            // Clear "freed" elements at the end of list
+            mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
+            self->len += len_adj;
+            return mp_const_none;
+        }
+#endif
         mp_obj_t args[2] = {self_in, index};
         list_pop(2, args);
         return mp_const_none;
@@ -163,17 +177,37 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_ENABLE_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
-            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
                 assert(0);
             }
             mp_obj_list_t *res = list_new(stop - start);
-            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            mp_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
             return res;
         }
 #endif
         uint index_val = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_val];
     } else {
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            mp_obj_list_t *self = self_in;
+            assert(MP_OBJ_IS_TYPE(value, &mp_type_list));
+            mp_obj_list_t *slice = value;
+            machine_uint_t start, stop;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+            int len_adj = slice->len - (stop - start);
+            //printf("Len adj: %d\n", len_adj);
+            assert(len_adj <= 0);
+            mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, slice->items, slice->len, mp_obj_t);
+            // Clear "freed" elements at the end of list
+            mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
+            self->len += len_adj;
+            // TODO: apply allocation policy re: alloc_size
+            return mp_const_none;
+        }
+#endif
         mp_obj_list_store(self_in, index, value);
         return mp_const_none;
     }

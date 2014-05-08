@@ -61,9 +61,10 @@ Q(__del__)
 Q(__call__)
 
 Q(micropython)
-Q(byte_code)
+Q(bytecode)
 Q(native)
 Q(viper)
+Q(const)
 
 #if MICROPY_EMIT_INLINE_THUMB
 Q(asm_thumb)
@@ -142,6 +143,7 @@ Q(float)
 Q(from_bytes)
 Q(getattr)
 Q(globals)
+Q(hasattr)
 Q(hash)
 Q(hex)
 Q(%#x)
@@ -239,6 +241,10 @@ Q(startswith)
 Q(replace)
 Q(partition)
 Q(rpartition)
+Q(lower)
+Q(upper)
+Q(iterable)
+Q(start)
 
 Q(bound_method)
 Q(closure)
@@ -248,6 +254,10 @@ Q(generator)
 Q(iterator)
 Q(module)
 Q(slice)
+
+#if MICROPY_ENABLE_FROZENSET
+Q(frozenset)
+#endif
 
 #if MICROPY_ENABLE_MOD_MATH || MICROPY_ENABLE_MOD_CMATH
 Q(math)
@@ -323,6 +333,7 @@ Q(utf-8)
 Q(argv)
 Q(byteorder)
 Q(big)
+Q(exit)
 Q(little)
 Q(stdin)
 Q(stdout)
@@ -350,6 +361,8 @@ Q(getvalue)
 #if MICROPY_ENABLE_MOD_GC
 Q(gc)
 Q(collect)
+Q(disable)
+Q(enable)
 #endif
 
 #if MICROPY_ENABLE_PROPERTY

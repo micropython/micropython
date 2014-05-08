@@ -1,0 +1,9 @@
+*.user
+*.*sdf
+*.suo
+*.sln
+*.exe
+*.pdb
+*.ilk
+*.filters
+/build/*

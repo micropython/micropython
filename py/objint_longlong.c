@@ -161,7 +161,8 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
     return o;
 }
 
-mp_obj_t mp_obj_new_int_from_long_str(const char *s) {
+mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
+    const char *s = qstr_str(qst);
     long long v;
     char *end;
     // TODO: this doesn't handle Python hacked 0o octal syntax

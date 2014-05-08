@@ -39,6 +39,17 @@ typedef struct _mp_obj_bound_meth_t {
     mp_obj_t self;
 } mp_obj_bound_meth_t;
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+STATIC void bound_meth_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_obj_bound_meth_t *o = o_in;
+    print(env, "<bound_method %p ", o);
+    mp_obj_print_helper(print, env, o->self, PRINT_REPR);
+    print(env, ".");
+    mp_obj_print_helper(print, env, o->meth, PRINT_REPR);
+    print(env, ">");
+}
+#endif
+
 mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_bound_meth_t *self = self_in;
 
@@ -65,6 +76,9 @@ mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_
 const mp_obj_type_t bound_meth_type = {
     { &mp_type_type },
     .name = MP_QSTR_bound_method,
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    .print = bound_meth_print,
+#endif
     .call = bound_meth_call,
 };
 

@@ -43,9 +43,23 @@ STATIC mp_obj_t py_gc_collect(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_collect_obj, py_gc_collect);
 
+STATIC mp_obj_t gc_disable(void) {
+    gc_lock();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
+
+STATIC mp_obj_t gc_enable(void) {
+    gc_unlock();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
+
 STATIC const mp_map_elem_t mp_module_gc_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_gc) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_collect), (mp_obj_t)&gc_collect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&gc_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&gc_enable_obj },
 };
 
 STATIC const mp_obj_dict_t mp_module_gc_globals = {

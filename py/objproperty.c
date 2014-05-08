@@ -42,13 +42,10 @@ typedef struct _mp_obj_property_t {
 } mp_obj_property_t;
 
 STATIC mp_obj_t property_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
     o->base.type = &mp_type_property;
-    if (n_args >= 5) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "property takes at most 4 arguments"));
-    }
     if (n_args >= 4) {
         // doc ignored
     }

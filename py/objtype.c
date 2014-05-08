@@ -67,7 +67,12 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     int count = 0;
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        if (is_native_type((const mp_obj_type_t *)items[i])) {
+        const mp_obj_type_t *bt = (const mp_obj_type_t *)items[i];
+        if (bt == &mp_type_object) {
+            // Not a "real" type
+            continue;
+        }
+        if (is_native_type(bt)) {
             *last_native_base = items[i];
             count++;
         } else {
@@ -116,11 +121,13 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
                 if (o != MP_OBJ_NULL && is_native_type(type)) {
                     dest[1] = o->subobj[0];
                 }
+                // TODO: Sensibly, we should call instance_convert_return_attr() here,
+                // instead of multiple places later. Also, this code duplicates runtime.c much.
                 return;
             }
         }
 
-        // Try this for completeness, by all native methods should be statically defined
+        // Try this for completeness, but all native methods should be statically defined
         // in locals_dict, and would be handled by above.
         if (o != MP_OBJ_NULL && is_native_type(type)) {
             mp_load_method_maybe(o->subobj[0], attr, dest);
@@ -144,7 +151,12 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-            mp_obj_class_lookup(o, (mp_obj_type_t*)items[i], attr, meth_offset, dest);
+            mp_obj_type_t *bt = (mp_obj_type_t*)items[i];
+            if (bt == &mp_type_object) {
+                // Not a "real" type
+                continue;
+            }
+            mp_obj_class_lookup(o, bt, attr, meth_offset, dest);
             if (dest[0] != MP_OBJ_NULL) {
                 return;
             }
@@ -153,6 +165,10 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
         // search last base (simple tail recursion elimination)
         assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_type_type));
         type = (mp_obj_type_t*)items[len - 1];
+        if (type == &mp_type_object) {
+            // Not a "real" type
+            return;
+        }
     }
 }
 
@@ -317,6 +333,9 @@ STATIC void instance_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_
         // return a bound method, with self being the type of this object
         dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
         dest[1] = mp_obj_get_type(self);
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
+        // Don't try to bind types
+        dest[0] = member;
     } else if (mp_obj_is_callable(member)) {
         // return a bound method, with self being this object
         dest[0] = member;
@@ -487,6 +506,28 @@ STATIC mp_obj_t instance_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     return mp_call_function_n_kw(meth, n_args, n_kw, args);
 }
 
+STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
+    mp_obj_instance_t *self = self_in;
+    mp_obj_t member[2] = {MP_OBJ_NULL};
+    mp_obj_class_lookup(self, self->base.type, MP_QSTR___iter__, offsetof(mp_obj_type_t, getiter), member);
+    if (member[0] == MP_OBJ_NULL) {
+        // This kinda duplicates code in mp_getiter()
+        mp_obj_class_lookup(self, self->base.type, MP_QSTR___getitem__, 0, member);
+        if (member[0] != MP_OBJ_NULL) {
+            // __getitem__ exists, create an iterator
+            instance_convert_return_attr(self_in, member[0], member);
+            return mp_obj_new_getitem_iter(member);
+        }
+        return MP_OBJ_NULL;
+    }
+    if (member[0] == MP_OBJ_SENTINEL) {
+        mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        return type->getiter(self->subobj[0]);
+    }
+    mp_obj_t meth = mp_obj_new_bound_meth(member[0], self);
+    return mp_call_function_n_kw(meth, 0, 0, NULL);
+}
+
 /******************************************************************************/
 // type object
 //  - the struct is mp_obj_type_t and is defined in obj.h so const types can be made
@@ -499,7 +540,7 @@ STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     switch (n_args) {
         case 1:
@@ -596,8 +637,10 @@ STATIC mp_obj_t type_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // Types can be equal only if it's the same type structure,
             // we don't even need to check for 2nd arg type.
             return MP_BOOL(lhs_in == rhs_in);
+
+        default:
+            return MP_OBJ_NOT_SUPPORTED;
     }
-    return NULL;
 }
 
 const mp_obj_type_t mp_type_type = {
@@ -639,6 +682,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->store_attr = instance_store_attr;
     o->subscr = instance_subscr;
     o->call = instance_call;
+    o->getiter = instance_getiter;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
 
@@ -800,6 +844,15 @@ STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
+
+mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type) {
+    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    if (!mp_obj_is_subclass_fast(self_type, native_type)) {
+        return MP_OBJ_NULL;
+    }
+    mp_obj_instance_t *self = (mp_obj_instance_t*)self_in;
+    return self->subobj[0];
+}
 
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)

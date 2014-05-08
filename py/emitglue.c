@@ -49,32 +49,14 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
-#ifdef WRITE_CODE
-FILE *fp_write_code = NULL;
-#endif
-
-void mp_emit_glue_init(void) {
-#ifdef WRITE_CODE
-    fp_write_code = fopen("out-code", "wb");
-#endif
-}
-
-void mp_emit_glue_deinit(void) {
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fclose(fp_write_code);
-    }
-#endif
-}
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
     return rc;
 }
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags) {
-    rc->kind = MP_CODE_BYTE;
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags) {
+    rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
     rc->n_kwonly_args = n_kwonly_args;
@@ -99,19 +81,20 @@ void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        mp_byte_code_print(code, len);
+        mp_bytecode_print(code, len);
     }
 #endif
 }
 
-void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
-    rc->kind = MP_CODE_NATIVE;
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun, uint len, int n_args) {
+    assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
+    rc->kind = kind;
     rc->scope_flags = 0;
     rc->n_pos_args = n_args;
     rc->u_native.fun = fun;
 
 #ifdef DEBUG_PRINT
-    DEBUG_printf("assign native code: fun=%p len=%u n_args=%d\n", fun, len, n_args);
+    DEBUG_printf("assign native: kind=%d fun=%p len=%u n_args=%d\n", kind, fun, len, n_args);
     byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
@@ -122,36 +105,9 @@ void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *fun, uint len, int
     DEBUG_printf("\n");
 
 #ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(fun_data, len, 1, fp_write_code);
-        fflush(fp_write_code);
-    }
-#endif
-#endif
-}
-
-void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *fun, uint len, int n_args) {
-    rc->kind = MP_CODE_INLINE_ASM;
-    rc->scope_flags = 0;
-    rc->n_pos_args = n_args;
-    rc->u_inline_asm.fun = fun;
-
-#ifdef DEBUG_PRINT
-    DEBUG_printf("assign inline asm code: fun=%p len=%u n_args=%d\n", fun, len, n_args);
-    byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
-    for (int i = 0; i < 128 && i < len; i++) {
-        if (i > 0 && i % 16 == 0) {
-            DEBUG_printf("\n");
-        }
-        DEBUG_printf(" %02x", fun_data[i]);
-    }
-    DEBUG_printf("\n");
-
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(fun_data, len, 1, fp_write_code);
-        fflush(fp_write_code);
-    }
+    FILE *fp_write_code = fopen("out-code", "wb");
+    fwrite(fun_data, len, 1, fp_write_code);
+    fclose(fp_write_code);
 #endif
 #endif
 }
@@ -169,14 +125,15 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        case MP_CODE_BYTE:
+        case MP_CODE_BYTECODE:
             fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, rc->u_byte.code);
             break;
-        case MP_CODE_NATIVE:
+        case MP_CODE_NATIVE_PY:
             fun = mp_make_function_n(rc->n_pos_args, rc->u_native.fun);
             break;
-        case MP_CODE_INLINE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->u_inline_asm.fun);
+        case MP_CODE_NATIVE_VIPER:
+        case MP_CODE_NATIVE_ASM:
+            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->u_native.fun);
             break;
         default:
             // raw code was never set (this should not happen)

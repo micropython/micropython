@@ -3,14 +3,6 @@
 *  evnt_handler.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -64,7 +56,6 @@
 #include "socket.h"
 #include "netapp.h"
 #include "ccspi.h"
-#include "ccdebug.h"
 
 
 
@@ -251,22 +242,17 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 
 	while (1)
 	{
-		cc3k_int_poll();
-
 		if (tSLInformation.usEventOrDataReceived != 0)
 		{
-
 			pucReceivedData = (tSLInformation.pucReceivedData);
 
 			if (*pucReceivedData == HCI_TYPE_EVNT)
 			{
 				// Event Received
-				STREAM_TO_UINT16((char *)pucReceivedData,
-								HCI_EVENT_OPCODE_OFFSET,
-								usReceivedEventOpcode);
+				STREAM_TO_UINT16((char *)pucReceivedData, HCI_EVENT_OPCODE_OFFSET, usReceivedEventOpcode);
 				pucReceivedParams = pucReceivedData + HCI_EVENT_HEADER_SIZE;
 				RecvParams = pucReceivedParams;
-				RetParams = (unsigned char *)pRetParams;
+				RetParams = pRetParams;
 
 				// In case unsolicited event received - here the handling finished
 				if (hci_unsol_event_handler((char *)pucReceivedData) == 0)
@@ -277,10 +263,8 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 					{
 					case HCI_CMND_READ_BUFFER_SIZE:
 						{
-							STREAM_TO_UINT8((char *)pucReceivedParams, 0,
-											tSLInformation.usNumberOfFreeBuffers);
-							STREAM_TO_UINT16((char *)pucReceivedParams, 1,
-											tSLInformation.usSlBufferLength);
+							STREAM_TO_UINT8((char *)pucReceivedParams, 0, tSLInformation.usNumberOfFreeBuffers);
+							STREAM_TO_UINT16((char *)pucReceivedParams, 1, tSLInformation.usSlBufferLength);
 						}
 						break;
 
@@ -297,8 +281,7 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 					case HCI_NETAPP_PING_REPORT:
 					case HCI_EVNT_MDNS_ADVERTISE:
 
-						STREAM_TO_UINT8(pucReceivedData, HCI_EVENT_STATUS_OFFSET
-										,*(unsigned char *)pRetParams);
+						STREAM_TO_UINT8(pucReceivedData, HCI_EVENT_STATUS_OFFSET ,*(unsigned char *)pRetParams);
 						break;
 
 					case HCI_CMND_SETSOCKOPT:
@@ -320,14 +303,12 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 					case HCI_EVNT_CONNECT:
 					case HCI_EVNT_NVMEM_WRITE:
 
-						STREAM_TO_UINT32((char *)pucReceivedParams,0
-										,*(unsigned long *)pRetParams);
+						STREAM_TO_UINT32((char *)pucReceivedParams,0 ,*(unsigned long *)pRetParams);
 						break;
 
 					case HCI_EVNT_READ_SP_VERSION:
 
-						STREAM_TO_UINT8(pucReceivedData, HCI_EVENT_STATUS_OFFSET
-										,*(unsigned char *)pRetParams);
+						STREAM_TO_UINT8(pucReceivedData, HCI_EVENT_STATUS_OFFSET ,*(unsigned char *)pRetParams);
 						pRetParams = ((char *)pRetParams) + 1;
 						STREAM_TO_UINT32((char *)pucReceivedParams, 0, retValue32);
 						UINT32_TO_STREAM((unsigned char *)pRetParams, retValue32);
@@ -360,17 +341,17 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 					case HCI_EVNT_RECV:
 					case HCI_EVNT_RECVFROM:
 						{
-						  STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE_SD_OFFSET ,*(unsigned long *)pRetParams);
-						  pRetParams = ((char *)pRetParams) + 4;
-						  STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE_NUM_BYTES_OFFSET,*(unsigned long *)pRetParams);
-						  pRetParams = ((char *)pRetParams) + 4;
-						  STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE__FLAGS__OFFSET,*(unsigned long *)pRetParams);
-						  //tBsdReadReturnParams *tread = (tBsdReadReturnParams *)pRetParams; // unused
-						  if(((tBsdReadReturnParams *)pRetParams)->iNumberOfBytes == ERROR_SOCKET_INACTIVE)
-						    {
-						      set_socket_active_status(((tBsdReadReturnParams *)pRetParams)->iSocketDescriptor,SOCKET_STATUS_INACTIVE);
-						    }
-						  break;
+							STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE_SD_OFFSET ,*(unsigned long *)pRetParams);
+							pRetParams = ((char *)pRetParams) + 4;
+							STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE_NUM_BYTES_OFFSET,*(unsigned long *)pRetParams);
+							pRetParams = ((char *)pRetParams) + 4;
+							STREAM_TO_UINT32((char *)pucReceivedParams,SL_RECEIVE__FLAGS__OFFSET,*(unsigned long *)pRetParams);
+
+							if(((tBsdReadReturnParams *)pRetParams)->iNumberOfBytes == ERROR_SOCKET_INACTIVE)
+							{
+								set_socket_active_status(((tBsdReadReturnParams *)pRetParams)->iSocketDescriptor,SOCKET_STATUS_INACTIVE);
+							}
+							break;
 						}
 
                                         case HCI_EVNT_SEND:
@@ -447,7 +428,7 @@ hci_event_handler(void *pRetParams, unsigned char *from, unsigned char *fromlen)
 
 						//Read SSID
 						STREAM_TO_STREAM(RecvParams,RetParams,NETAPP_IPCONFIG_SSID_LENGTH);
-
+						break;
 					}
 				}
 
@@ -519,9 +500,6 @@ hci_unsol_event_handler(char *event_hdr)
 	unsigned long NumberOfSentPackets;
 
 	STREAM_TO_UINT16(event_hdr, HCI_EVENT_OPCODE_OFFSET,event_type);
-
-	DEBUGPRINT_F("\tHCI_UNSOL_EVT: ");
-	DEBUGPRINT_HEX16(event_type);
 
 	if (event_type & HCI_EVNT_UNSOL_BASE)
 	{
@@ -614,23 +592,14 @@ hci_unsol_event_handler(char *event_hdr)
 			break;
 		case HCI_EVNT_BSD_TCP_CLOSE_WAIT:
 			{
-			  DEBUGPRINT_F("\tTCP Close Wait\n\r");
-			  uint8_t socketnum;
-			  data = (char*)(event_hdr) + HCI_EVENT_HEADER_SIZE;
-			  /*
-			  printHex(data[0]); PRINT_F("\t");
-			  printHex(data[1]); PRINT_F("\t");
-			  printHex(data[2]); PRINT_F("\t");
-			  printHex(data[3]); PRINT_F("\t");
-			  printHex(data[4]); PRINT_F("\t");
-			  printHex(data[5]); PRINT_F("\t");
-			  */
-			  socketnum = data[0];
-			  //STREAM_TO_UINT16(data, 0, socketnum);
-			  if( tSLInformation.sWlanCB )
-			    {
-			      tSLInformation.sWlanCB(event_type, (char *)&socketnum, 1);
-			    }
+				data = (char *)(event_hdr) + HCI_EVENT_HEADER_SIZE;
+				if( tSLInformation.sWlanCB )
+				{
+					//data[0] represents the socket id, for which FIN was received by remote.
+					//Upon receiving this event, the user can close the socket, or else the
+					//socket will be closded after inacvitity timeout (by default 60 seconds)
+					tSLInformation.sWlanCB(event_type, data, 1);
+				}
 			}
 			break;
 
@@ -647,8 +616,6 @@ hci_unsol_event_handler(char *event_hdr)
                 char *pArg;
                 long status;
 
-		DEBUGPRINT_F("\tSEND event response\n\r");
-
                 pArg = M_BSD_RESP_PARAMS_OFFSET(event_hdr);
                 STREAM_TO_UINT32(pArg, BSD_RSP_PARAMS_STATUS_OFFSET,status);
 
@@ -664,6 +631,12 @@ hci_unsol_event_handler(char *event_hdr)
                 }
                 else
                     return (0);
+	}
+
+	//handle a case where unsolicited event arrived, but was not handled by any of the cases above
+	if ((event_type != tSLInformation.usRxEventOpcode) && (event_type != HCI_EVNT_PATCHES_REQ))
+	{
+		return(1);
 	}
 
 	return(0);

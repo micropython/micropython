@@ -43,6 +43,7 @@ Q(callback)
 Q(func)
 Q(var)
 
+Q(input)
 Q(time)
 Q(clock)
 Q(sleep)

@@ -313,7 +313,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
             // the host waits for all data to arrive (ie, waits for a packet < max packet size).
             // To flush a packet of exactly max packet size, we need to send a zero-size packet.
             // See eg http://www.cypress.com/?id=4&rID=92719
-            UserTxNeedEmptyPacket = (buffsize == CDC_DATA_FS_MAX_PACKET_SIZE && UserTxBufPtrOutShadow == UserTxBufPtrIn);
+            UserTxNeedEmptyPacket = (buffsize > 0 && buffsize % CDC_DATA_FS_MAX_PACKET_SIZE == 0 && UserTxBufPtrOutShadow == UserTxBufPtrIn);
         }
     }
 }

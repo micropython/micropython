@@ -1,0 +1,18 @@
+Tinytest is a tiny little test framework written in C by Nick Mathewson.
+
+It is distributed under the 3-clause BSD license.  You can use it in
+your own programs so long as you follow the license's conditions.
+
+It's been tested on Windows, Mac, and many of the free Unixes.
+
+It knows how to fork before running certain tests, and it makes
+text-mode output in a format I like.
+
+For info on how to use it, check out tinytest_demo.c.
+
+You can get the latest version using Git, by pulling from
+   git://github.com/nmathewson/tinytest.git
+
+Patches are welcome. Patches that turn this from tinytest to hugetest
+will not be applied.  If you want a huge test framework, use CUnit.
+

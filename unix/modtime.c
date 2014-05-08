@@ -36,6 +36,33 @@
 #include "obj.h"
 #include "runtime.h"
 
+#ifdef _WIN32
+void msec_sleep_tv(struct timeval *tv) {
+    msec_sleep(tv->tv_sec * 1000.0 + tv->tv_usec / 1000.0);
+}
+#define sleep_select(a,b,c,d,e) msec_sleep_tv((e))
+#else
+#define sleep_select select
+#endif
+
+// mingw32 defines CLOCKS_PER_SEC as ((clock_t)<somevalue>) but preprocessor does not handle casts
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#define MP_REMOVE_BRACKETSA(x)
+#define MP_REMOVE_BRACKETSB(x) MP_REMOVE_BRACKETSA x
+#define MP_REMOVE_BRACKETSC(x) MP_REMOVE_BRACKETSB x
+#define MP_CLOCKS_PER_SEC MP_REMOVE_BRACKETSC(CLOCKS_PER_SEC)
+#else
+#define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
+#endif
+
+#if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
+#define CLOCK_DIV 1000.0
+#elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32
+#define CLOCK_DIV 1.0
+#else
+#error Unsupported clock() implementation
+#endif
+
 STATIC mp_obj_t mod_time_time() {
 #if MICROPY_ENABLE_FLOAT
     struct timeval tv;
@@ -51,11 +78,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock() {
 #if MICROPY_ENABLE_FLOAT
-    // POSIX requires CLOCKS_PER_SEC equals 1000000, so that's what we assume.
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
     // to preserve integer part resolution.
-    return mp_obj_new_float((float)(clock() / 1000) / 1000.0);
+    return mp_obj_new_float((float)(clock() / 1000) / CLOCK_DIV);
 #else
     return mp_obj_new_int((machine_int_t)clock());
 #endif
@@ -69,7 +95,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     double ipart;
     tv.tv_usec = round(modf(val, &ipart) * 1000000);
     tv.tv_sec = ipart;
-    select(0, NULL, NULL, NULL, &tv);
+    sleep_select(0, NULL, NULL, NULL, &tv);
 #else
     sleep(mp_obj_get_int(arg));
 #endif
