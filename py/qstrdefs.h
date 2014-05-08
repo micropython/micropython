@@ -352,6 +352,8 @@ Q(getvalue)
 #if MICROPY_ENABLE_MOD_GC
 Q(gc)
 Q(collect)
+Q(disable)
+Q(enable)
 #endif
 
 #if MICROPY_ENABLE_PROPERTY
