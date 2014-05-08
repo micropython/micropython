@@ -80,6 +80,7 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((machine_int_t)(pn)) >> 1)
 #define MP_PARSE_NODE_STRUCT_KIND(pns) ((pns)->kind_num_nodes & 0xff)
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
+#define MP_PARSE_NODE_IS_STRING(pn) (MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn) == RULE_string)
 
 mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg);
 uint mp_parse_node_free(mp_parse_node_t pn);

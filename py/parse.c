@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+#include <memory.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -70,6 +71,7 @@ enum {
 #include "grammar.h"
 #undef DEF_RULE
     RULE_maximum_number_of,
+    RULE_string,
 };
 
 #define or(n)                   (RULE_ACT_OR | n)
@@ -218,6 +220,9 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
             case MP_PARSE_NODE_TOKEN: printf("tok(" INT_FMT ")\n", arg); break;
             default: assert(0);
         }
+    } else if (MP_PARSE_NODE_IS_STRING(pn)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
@@ -274,6 +279,8 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
+STATIC void push_string(parser_t *parser, int src_line, const char *str, uint len);
+
 STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     const mp_token_t *tok = mp_lexer_cur(lex);
     mp_parse_node_t pn;
@@ -319,13 +326,31 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
         }
     } else if (tok->kind == MP_TOKEN_STRING) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn(tok->str, tok->len));
+printf("Pushing string\n");
+        push_string(parser, mp_lexer_cur(lex)->src_line, tok->str, tok->len);
+        return;
+//        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn(tok->str, tok->len));
     } else if (tok->kind == MP_TOKEN_BYTES) {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(tok->str, tok->len));
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, tok->kind);
     }
     push_result_node(parser, pn);
+}
+
+STATIC void push_string(parser_t *parser, int src_line, const char *str, uint len) {
+    mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 2);
+    if (pn == NULL) {
+        memory_error(parser);
+        return;
+    }
+    pn->source_line = src_line;
+    pn->kind_num_nodes = RULE_string | (2 << 8);
+    char *p = m_new(char, len);
+    memcpy(p, str, len);
+    pn->nodes[0] = (machine_int_t)p;
+    pn->nodes[1] = len;
+    push_result_node(parser, (mp_parse_node_t)pn);
 }
 
 STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
@@ -408,6 +433,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
                         case RULE_ARG_TOK:
                             if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
+printf("here2\n");
                                 push_result_token(parser, lex);
                                 mp_lexer_to_next(lex);
                                 goto next_rule;
@@ -423,6 +449,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 }
                 if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                     if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
+printf("here1\n");
                         push_result_token(parser, lex);
                         mp_lexer_to_next(lex);
                     } else {
@@ -511,12 +538,16 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     }
                 }
 
-#if 0 && !MICROPY_ENABLE_DOC_STRING
+printf("About to test void expr\n");
+#if 1 && !MICROPY_ENABLE_DOC_STRING
                 // this code discards lonely statement, such as doc strings
                 // problem is that doc strings have already been interned, so this doesn't really help reduce RAM usage
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(parser, 0) == MP_PARSE_NODE_NULL) {
+printf("peek_result(0, 1):\n");
+mp_parse_node_print(peek_result(parser, 0), 0);
                     mp_parse_node_t p = peek_result(parser, 1);
-                    if (MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) {
+mp_parse_node_print(p, 0);
+                    if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) || MP_PARSE_NODE_IS_STRING(p)) {
                         pop_result(parser);
                         pop_result(parser);
                         push_result_rule(parser, rule_src_line, rules[RULE_pass_stmt], 0);
