@@ -24,5 +24,11 @@
  * THE SOFTWARE.
  */
 
-void init(void);
-void deinit(void);
+#include <Windows.h>
+
+extern HANDLE hSleepEvent;
+
+void msec_sleep(double msec) {
+    ResetEvent(hSleepEvent);
+    WaitForSingleObjectEx(hSleepEvent, msec, FALSE);
+}

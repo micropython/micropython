@@ -91,6 +91,11 @@ void mp_deinit(void) {
     //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
     mp_emit_glue_deinit();
+
+    // call port specific deinitialization if any 
+#ifdef MICROPY_PORT_INIT_FUNC
+    MICROPY_PORT_DEINIT_FUNC;
+#endif
 }
 
 mp_obj_t mp_load_const_dec(qstr qstr) {
