@@ -67,7 +67,12 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     int count = 0;
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        if (is_native_type((const mp_obj_type_t *)items[i])) {
+        const mp_obj_type_t *bt = (const mp_obj_type_t *)items[i];
+        if (bt == &mp_type_object) {
+            // Not a "real" type
+            continue;
+        }
+        if (is_native_type(bt)) {
             *last_native_base = items[i];
             count++;
         } else {
@@ -144,7 +149,12 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
         }
         for (uint i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-            mp_obj_class_lookup(o, (mp_obj_type_t*)items[i], attr, meth_offset, dest);
+            mp_obj_type_t *bt = (mp_obj_type_t*)items[i];
+            if (bt == &mp_type_object) {
+                // Not a "real" type
+                continue;
+            }
+            mp_obj_class_lookup(o, bt, attr, meth_offset, dest);
             if (dest[0] != MP_OBJ_NULL) {
                 return;
             }
@@ -153,6 +163,10 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
         // search last base (simple tail recursion elimination)
         assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_type_type));
         type = (mp_obj_type_t*)items[len - 1];
+        if (type == &mp_type_object) {
+            // Not a "real" type
+            return;
+        }
     }
 }
 
