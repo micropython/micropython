@@ -26,11 +26,21 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <Windows.h>
+
+HANDLE hSleepEvent = NULL;
 
 void init() {
+    hSleepEvent = CreateEvent(NULL, TRUE, FALSE, FALSE);
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
 #else
     _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
+}
+
+void deinit() {
+    if (hSleepEvent != NULL) {
+        CloseHandle(hSleepEvent);
+    }
 }

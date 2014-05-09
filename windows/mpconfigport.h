@@ -44,6 +44,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_PORT_INIT_FUNC      init()
+#define MICROPY_PORT_DEINIT_FUNC    deinit()
 
 // type definitions for the specific machine
 
@@ -69,9 +70,15 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_EXTRA_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
+extern const struct _mp_obj_module_t mp_module_time;
+#define MICROPY_EXTRA_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
+
 #include "realpath.h"
 #include "init.h"
 
+// sleep for given number of milliseconds
+void msec_sleep(double msec);
 
 // MSVC specifics
 #ifdef _MSC_VER

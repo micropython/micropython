@@ -31,8 +31,10 @@ SRC_C = \
 	unix/main.c \
 	unix/file.c \
 	unix/input.c \
+	unix/modtime.c \
 	realpath.c \
 	init.c \
+	sleep.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
