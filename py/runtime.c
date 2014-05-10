@@ -578,7 +578,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed pos args
-        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
         args2_len += n_args;
 
     } else if (MP_OBJ_IS_TYPE(pos_seq, &mp_type_tuple) || MP_OBJ_IS_TYPE(pos_seq, &mp_type_list)) {
@@ -599,7 +599,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed and variable position args
-        m_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
+        mp_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
         args2_len += n_args + len;
 
     } else {
@@ -615,7 +615,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         }
 
         // copy the fixed position args
-        m_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
 
         // extract the variable position args from the iterator
         mp_obj_t iterable = mp_getiter(pos_seq);
@@ -633,7 +633,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
     uint pos_args_len = args2_len;
 
     // Copy the fixed kw args.
-    m_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
+    mp_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
     args2_len += 2 * n_kw;
 
     // Extract (key,value) pairs from kw_dict dictionary and append to args2.

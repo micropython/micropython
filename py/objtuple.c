@@ -127,7 +127,7 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             mp_obj_tuple_t *p = rhs;
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len + p->len, NULL);
-            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
+            mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
         case MP_BINARY_OP_MULTIPLY: {
@@ -159,11 +159,11 @@ mp_obj_t tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_ENABLE_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
-            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
                 assert(0);
             }
             mp_obj_tuple_t *res = mp_obj_new_tuple(stop - start, NULL);
-            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            mp_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
             return res;
         }
 #endif

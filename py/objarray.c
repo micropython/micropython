@@ -176,7 +176,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 return MP_OBJ_NOT_SUPPORTED;
             }
             machine_uint_t start, stop;
-            if (!m_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
+            if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
                 assert(0);
             }
             mp_obj_array_t *res = array_new(o->typecode, stop - start);

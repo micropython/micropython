@@ -333,7 +333,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_ENABLE_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
-            if (!m_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
+            if (!mp_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
                 assert(0);
             }
             return mp_obj_new_str(self_data + start, stop - start, false);

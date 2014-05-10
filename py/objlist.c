@@ -119,7 +119,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
-            m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
+            mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
         case MP_BINARY_OP_INPLACE_ADD: {
@@ -162,11 +162,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_ENABLE_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
-            if (!m_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
                 assert(0);
             }
             mp_obj_list_t *res = list_new(stop - start);
-            m_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            mp_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
             return res;
         }
 #endif
