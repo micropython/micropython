@@ -42,7 +42,9 @@ int mp_parse_num_base(const char *str, uint len, int *base) {
         } else if (*base == 0 && (c | 32) == 'b') {
             *base = 2;
         } else {
-            *base = 10;
+            if (*base == 0) {
+                *base = 10;
+            }
             p -= 2;
         }
     } else if (*base == 8 && c == '0') {
