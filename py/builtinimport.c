@@ -313,6 +313,8 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 
                 if (stat == MP_IMPORT_STAT_DIR) {
                     DEBUG_printf("%s is dir\n", vstr_str(&path));
+                    // https://docs.python.org/3.3/reference/import.html
+                    // "Specifically, any module that contains a __path__ attribute is considered a package."
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str((byte*)vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
@@ -323,8 +325,6 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                         do_load(module_obj, &path);
                     }
                     vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
-                    // https://docs.python.org/3.3/reference/import.html
-                    // "Specifically, any module that contains a __path__ attribute is considered a package."
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute
