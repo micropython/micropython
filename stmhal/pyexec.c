@@ -163,7 +163,11 @@ raw_repl_reset:
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, 0);
-        parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+        if (lex == NULL) {
+            printf("MemoryError\n");
+        } else {
+            parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+        }
 
         // indicate end of output with EOF character
         stdout_tx_str("\004");
@@ -239,7 +243,11 @@ friendly_repl_reset:
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
-        parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
+        if (lex == NULL) {
+            printf("MemoryError\n");
+        } else {
+            parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
+        }
     }
 }
 
