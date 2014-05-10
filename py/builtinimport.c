@@ -287,6 +287,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
             DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
+            DEBUG_printf("Previous path: %s\n", vstr_str(&path));
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;
@@ -299,6 +300,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                 vstr_add_strn(&path, mod_str + last, i - last);
                 stat = stat_dir_or_file(&path);
             }
+            DEBUG_printf("Current path: %s\n", vstr_str(&path));
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
@@ -323,8 +325,8 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                         printf("Notice: %s is imported as namespace package\n", vstr_str(&path));
                     } else {
                         do_load(module_obj, &path);
+                        vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                     }
-                    vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute
