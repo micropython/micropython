@@ -229,6 +229,11 @@ typedef double mp_float_t;
 #define MICROPY_MOD_SYS_STDFILES (0)
 #endif
 
+// sys.exit() availability
+#ifndef MICROPY_SYS_EXIT
+#define MICROPY_SYS_EXIT (0)
+#endif
+
 // Whether to support slice object and correspondingly
 // slice subscript operators
 #ifndef MICROPY_ENABLE_SLICE
