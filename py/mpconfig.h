@@ -235,6 +235,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_SLICE (1)
 #endif
 
+// Whether to support frozenset object
+#ifndef MICROPY_ENABLE_FROZENSET
+#define MICROPY_ENABLE_FROZENSET (1)
+#endif
+
 // Whether to support the property object
 #ifndef MICROPY_ENABLE_PROPERTY
 #define MICROPY_ENABLE_PROPERTY (1)

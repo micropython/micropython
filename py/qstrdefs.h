@@ -251,6 +251,10 @@ Q(iterator)
 Q(module)
 Q(slice)
 
+#if MICROPY_ENABLE_FROZENSET
+Q(frozenset)
+#endif
+
 #if MICROPY_ENABLE_MOD_MATH || MICROPY_ENABLE_MOD_CMATH
 Q(math)
 Q(e)

@@ -53,6 +53,9 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_float), (mp_obj_t)&mp_type_float },
 #endif
+#if MICROPY_ENABLE_FROZENSET
+    { MP_OBJ_NEW_QSTR(MP_QSTR_frozenset), (mp_obj_t)&mp_type_frozenset },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_int), (mp_obj_t)&mp_type_int },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list), (mp_obj_t)&mp_type_list },
     { MP_OBJ_NEW_QSTR(MP_QSTR_map), (mp_obj_t)&mp_type_map },

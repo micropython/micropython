@@ -308,6 +308,7 @@ extern const mp_obj_type_t mp_type_filter;
 extern const mp_obj_type_t mp_type_dict;
 extern const mp_obj_type_t mp_type_range;
 extern const mp_obj_type_t mp_type_set;
+extern const mp_obj_type_t mp_type_frozenset;
 extern const mp_obj_type_t mp_type_slice;
 extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
