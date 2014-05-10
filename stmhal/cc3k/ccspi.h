@@ -3,9 +3,9 @@
 *  spi.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
+* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
 * & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
+* This library works with the Adafruit CC3000 breakout
 *	----> https://www.adafruit.com/products/1469
 * Adafruit invests time and resources providing this open source code,
 * please support Adafruit and open-source hardware by purchasing

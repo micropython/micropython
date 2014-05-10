@@ -3,9 +3,9 @@
 *  spi.c - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend) 
+* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
 * & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout 
+* This library works with the Adafruit CC3000 breakout
 *	----> https://www.adafruit.com/products/1469
 * Adafruit invests time and resources providing this open source code,
 * please support Adafruit and open-source hardware by purchasing
@@ -141,7 +141,7 @@ void  SpiInit(void)
 void SpiClose(void)
 {
   DEBUGPRINT_F("\tCC3000: SpiClose");
-  
+
   if (sSpiInformation.pRxPacket)
   {
     sSpiInformation.pRxPacket = 0;
@@ -159,7 +159,7 @@ void SpiClose(void)
 void SpiOpen(gcSpiHandleRx pfRxHandler)
 {
   DEBUGPRINT_F("\tCC3000: SpiOpen");
-  
+
   sSpiInformation.ulSpiState = eSPI_STATE_POWERUP;
 
   memset(spi_buffer, 0, sizeof(spi_buffer));
@@ -170,7 +170,7 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
   sSpiInformation.pTxPacket         = NULL;
   sSpiInformation.pRxPacket         = (unsigned char *)spi_buffer;
   sSpiInformation.usRxPacketLength  = 0;
-  
+
   spi_buffer[CC3000_RX_BUFFER_SIZE - 1]     = CC3000_BUFFER_MAGIC_NUMBER;
   wlan_tx_buffer[CC3000_TX_BUFFER_SIZE - 1] = CC3000_BUFFER_MAGIC_NUMBER;
 
@@ -192,7 +192,7 @@ int init_spi(void)
 {
 
   DEBUGPRINT_F("\tCC3000: init_spi\n\r");
-  
+
   /* Set POWER_EN pin to output and disable the CC3000 by default */
   pinMode(g_vbatPin, OUTPUT);
   digitalWrite(g_vbatPin, 0);
@@ -214,7 +214,7 @@ int init_spi(void)
   SPI.setDataMode(SPI_MODE1);
   SPI.setBitOrder(MSBFIRST);
   SPI.setClockDivider(g_SPIspeed);
-  
+
   // Newly-initialized SPI is in the same state that ASSERT_CS will set it
   // to.  Invoke DEASSERT (which also restores SPI registers) so the next
   // ASSERT call won't clobber the ccspi_old* values -- we need those!
@@ -223,7 +223,7 @@ int init_spi(void)
   /* ToDo: Configure IRQ interrupt! */
 
   DEBUGPRINT_F("\tCC3000: Finished init_spi\n\r");
-  
+
   return(ESUCCESS);
 }
 #endif
@@ -236,7 +236,7 @@ int init_spi(void)
 long SpiFirstWrite(unsigned char *ucBuf, unsigned short usLength)
 {
   DEBUGPRINT_F("\tCC3000: SpiWriteFirst\n\r");
-  
+
   /* Workaround for the first transaction */
   CC3000_ASSERT_CS();
 
@@ -268,7 +268,7 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
   unsigned char ucPad = 0;
 
   DEBUGPRINT_F("\tCC3000: SpiWrite\n\r");
-  
+
   /* Figure out the total length of the packet in order to figure out if there is padding or not */
   if(!(usLength & 0x0001))
   {
@@ -510,7 +510,7 @@ void SpiTriggerRxProcessing(void)
 void SSIContReadOperation(void)
 {
   DEBUGPRINT_F("\tCC3000: SpiContReadOperation\n\r");
-  
+
   /* The header was read - continue with  the payload read */
   if (!SpiReadDataCont())
   {
@@ -527,7 +527,7 @@ void SSIContReadOperation(void)
  */
 /**************************************************************************/
 void WriteWlanPin( unsigned char val )
-{  
+{
 #if 0
   if (DEBUG_MODE)
   {
@@ -688,7 +688,7 @@ void SPI_IRQ(void)
   ccspi_is_in_irq = 1;
 
   DEBUGPRINT_F("\tCC3000: Entering SPI_IRQ\n\r");
-    
+
   if (sSpiInformation.ulSpiState == eSPI_STATE_POWERUP)
   {
     /* IRQ line was low ... perform a callback on the HCI Layer */
@@ -697,7 +697,7 @@ void SPI_IRQ(void)
   else if (sSpiInformation.ulSpiState == eSPI_STATE_IDLE)
   {
     //DEBUGPRINT_F("IDLE\n\r");
-    sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;    
+    sSpiInformation.ulSpiState = eSPI_STATE_READ_IRQ;
     /* IRQ line goes down - start reception */
 
     CC3000_ASSERT_CS();
