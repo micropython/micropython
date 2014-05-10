@@ -121,11 +121,13 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
                 if (o != MP_OBJ_NULL && is_native_type(type)) {
                     dest[1] = o->subobj[0];
                 }
+                // TODO: Sensibly, we should call instance_convert_return_attr() here,
+                // instead of multiple places later. Also, this code duplicates runtime.c much.
                 return;
             }
         }
 
-        // Try this for completeness, by all native methods should be statically defined
+        // Try this for completeness, but all native methods should be statically defined
         // in locals_dict, and would be handled by above.
         if (o != MP_OBJ_NULL && is_native_type(type)) {
             mp_load_method_maybe(o->subobj[0], attr, dest);
