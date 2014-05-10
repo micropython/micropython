@@ -44,6 +44,9 @@
 
 #if !MICROPY_EMIT_CPYTHON
 
+#define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
+#define DUMMY_DATA_SIZE (BYTES_FOR_INT)
+
 struct _emit_t {
     pass_kind_t pass;
     int stack_size;
@@ -62,7 +65,7 @@ struct _emit_t {
     uint bytecode_offset;
     uint bytecode_size;
     byte *code_base; // stores both byte code and code info
-    byte dummy_data[8];
+    byte dummy_data[DUMMY_DATA_SIZE];
 };
 
 STATIC void emit_bc_rot_two(emit_t *emit);
@@ -152,7 +155,7 @@ STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, uint b2) {
 
 STATIC void emit_write_bytecode_uint(emit_t* emit, uint num) {
     // We store each 7 bits in a separate byte, and that's how many bytes needed
-    byte buf[(BYTES_PER_WORD * 8 + 6) / 7];
+    byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
     // We encode in little-ending order, but store in big-endian, to help decoding
     do {
@@ -171,7 +174,7 @@ STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, machine_int_t nu
     emit_write_bytecode_byte(emit, b1);
 
     // We store each 7 bits in a separate byte, and that's how many bytes needed
-    byte buf[(BYTES_PER_WORD * 8 + 6) / 7];
+    byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
     // We encode in little-ending order, but store in big-endian, to help decoding
     do {

@@ -46,7 +46,7 @@ struct _asm_thumb_t {
     uint code_offset;
     uint code_size;
     byte *code_base;
-    byte dummy_data[8];
+    byte dummy_data[4];
 
     uint max_num_labels;
     int *label_offsets;
@@ -113,6 +113,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
 }
 
 // all functions must go through this one to emit bytes
+// if as->pass < ASM_THUMB_PASS_EMIT, then this function only returns a buffer of 4 bytes length
 STATIC byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (as->pass < ASM_THUMB_PASS_EMIT) {
@@ -251,10 +252,13 @@ void asm_thumb_align(asm_thumb_t* as, uint align) {
 
 void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, bytesize);
-    // little endian
-    for (uint i = 0; i < bytesize; i++) {
-        *c++ = val;
-        val >>= 8;
+    // only write to the buffer in the emit pass (otherwise we overflow dummy_data)
+    if (as->pass == ASM_THUMB_PASS_EMIT) {
+        // little endian
+        for (uint i = 0; i < bytesize; i++) {
+            *c++ = val;
+            val >>= 8;
+        }
     }
 }
 
