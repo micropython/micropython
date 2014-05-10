@@ -54,6 +54,11 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
+STATIC NORETURN void arg_type_mixup();
+
+STATIC bool is_str_or_bytes(mp_obj_t o) {
+    return MP_OBJ_IS_STR(o) || MP_OBJ_IS_TYPE(o, &mp_type_bytes);
+}
 
 /******************************************************************************/
 /* str                                                                        */
@@ -1326,9 +1331,12 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, machine_int_t direction) {
-    assert(MP_OBJ_IS_STR(self_in));
-    if (!MP_OBJ_IS_STR(arg)) {
-        bad_implicit_conversion(arg);
+    if (!is_str_or_bytes(self_in)) {
+        assert(0);
+    }
+    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    if (self_type != mp_obj_get_type(arg)) {
+        arg_type_mixup();
     }
 
     GET_STR_DATA_LEN(self_in, str, str_len);
@@ -1349,9 +1357,9 @@ STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, machine_int_t di
     const byte *position_ptr = find_subbytes(str, str_len, sep, sep_len, direction);
     if (position_ptr != NULL) {
         machine_uint_t position = position_ptr - str;
-        result[0] = mp_obj_new_str(str, position, false);
+        result[0] = str_new(self_type, str, position);
         result[1] = arg;
-        result[2] = mp_obj_new_str(str + position + sep_len, str_len - position - sep_len, false);
+        result[2] = str_new(self_type, str + position + sep_len, str_len - position - sep_len);
     }
 
     return mp_obj_new_tuple(3, result);
@@ -1584,6 +1592,10 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
 
 STATIC void bad_implicit_conversion(mp_obj_t self_in) {
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(self_in)));
+}
+
+STATIC void arg_type_mixup() {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Can't mix str and bytes arguments"));
 }
 
 uint mp_obj_str_get_hash(mp_obj_t self_in) {
