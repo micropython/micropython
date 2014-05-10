@@ -237,7 +237,7 @@ typedef double mp_float_t;
 
 // Whether to support frozenset object
 #ifndef MICROPY_ENABLE_FROZENSET
-#define MICROPY_ENABLE_FROZENSET (1)
+#define MICROPY_ENABLE_FROZENSET (0)
 #endif
 
 // Whether to support the property object

@@ -51,40 +51,56 @@ typedef struct _mp_obj_set_it_t {
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
 
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
-    return MP_OBJ_IS_TYPE(o, &mp_type_set) || MP_OBJ_IS_TYPE(o, &mp_type_frozenset);
+    return MP_OBJ_IS_TYPE(o, &mp_type_set)
+#if MICROPY_ENABLE_FROZENSET
+        || MP_OBJ_IS_TYPE(o, &mp_type_frozenset)
+#endif
+    ;
 }
 
+#if MICROPY_ENABLE_FROZENSET
 STATIC void check_set_or_frozenset(mp_obj_t o) {
     if (!is_set_or_frozenset(o)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
     }
 }
+#else
+#define check_set_or_frozenset(o) check_set(o)
+#endif
 
 STATIC void check_set(mp_obj_t o) {
     if (!MP_OBJ_IS_TYPE(o, &mp_type_set)) {
         // Emulate CPython behavior
         // AttributeError: 'frozenset' object has no attribute 'add'
+        #if MICROPY_ENABLE_FROZENSET
         if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "'frozenset' has no such attribute"));
         }
+        #endif
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
     }
 }
 
 STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_set_t *self = self_in;
+    #if MICROPY_ENABLE_FROZENSET
     bool is_frozen = MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset);
+    #endif
     if (self->set.used == 0) {
+        #if MICROPY_ENABLE_FROZENSET
         if (is_frozen) {
             print(env, "frozen");
         }
+        #endif
         print(env, "set()");
         return;
     }
     bool first = true;
+    #if MICROPY_ENABLE_FROZENSET
     if (is_frozen) {
         print(env, "frozenset(");
     }
+    #endif
     print(env, "{");
     for (int i = 0; i < self->set.alloc; i++) {
         if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
@@ -96,9 +112,11 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
         }
     }
     print(env, "}");
+    #if MICROPY_ENABLE_FROZENSET
     if (is_frozen) {
         print(env, ")");
     }
+    #endif
 }
 
 
