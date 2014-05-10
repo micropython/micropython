@@ -59,7 +59,7 @@ void mp_emit_glue_deinit(void);
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
 void mp_emit_glue_assign_native_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
 void mp_emit_glue_assign_inline_asm_code(mp_raw_code_t *rc, void *f, uint len, int n_args);
 

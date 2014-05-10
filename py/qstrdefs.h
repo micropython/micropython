@@ -61,7 +61,7 @@ Q(__del__)
 Q(__call__)
 
 Q(micropython)
-Q(byte_code)
+Q(bytecode)
 Q(native)
 Q(viper)
 Q(const)

@@ -5,4 +5,4 @@
 def nodecor(x):
     return x
 
-byte_code = native = viper = nodecor
+bytecode = native = viper = nodecor

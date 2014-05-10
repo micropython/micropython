@@ -46,7 +46,7 @@
 
 struct _emit_t {
     int pass;
-    int byte_code_offset;
+    int bytecode_offset;
     int stack_size;
     bool last_emit_was_return_value;
 
@@ -68,7 +68,7 @@ STATIC void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
 
 STATIC void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
-    emit->byte_code_offset = 0;
+    emit->bytecode_offset = 0;
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
@@ -108,20 +108,20 @@ STATIC void emit_cpy_delete_id(emit_t *emit, qstr qstr) {
 }
 
 // TODO: module-polymorphic function (read: name clash if made global)
-static void emit_pre(emit_t *emit, int stack_size_delta, int byte_code_size) {
+static void emit_pre(emit_t *emit, int stack_size_delta, int bytecode_size) {
     emit->stack_size += stack_size_delta;
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
     emit->last_emit_was_return_value = false;
-    if (emit->pass == MP_PASS_EMIT && byte_code_size > 0) {
-        if (emit->byte_code_offset >= 1000) {
-            printf("%d ", emit->byte_code_offset);
+    if (emit->pass == MP_PASS_EMIT && bytecode_size > 0) {
+        if (emit->bytecode_offset >= 1000) {
+            printf("%d ", emit->bytecode_offset);
         } else {
-            printf("% 4d ", emit->byte_code_offset);
+            printf("% 4d ", emit->bytecode_offset);
         }
     }
-    emit->byte_code_offset += byte_code_size;
+    emit->bytecode_offset += bytecode_size;
 }
 
 STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
@@ -130,11 +130,11 @@ STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
     if (emit->pass < MP_PASS_EMIT) {
         // assign label offset
         assert(emit->label_offsets[l] == -1);
-        emit->label_offsets[l] = emit->byte_code_offset;
+        emit->label_offsets[l] = emit->bytecode_offset;
     } else {
         // ensure label offset has not changed from MP_PASS_CODE_SIZE to MP_PASS_EMIT
-        assert(emit->label_offsets[l] == emit->byte_code_offset);
-        //printf("l%d: (at %d)\n", l, emit->byte_code_offset);
+        assert(emit->label_offsets[l] == emit->bytecode_offset);
+        //printf("l%d: (at %d)\n", l, emit->bytecode_offset);
     }
 }
 
@@ -421,7 +421,7 @@ STATIC void emit_cpy_jump(emit_t *emit, uint label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
         int dest = emit->label_offsets[label];
-        if (dest < emit->byte_code_offset) {
+        if (dest < emit->bytecode_offset) {
             printf("JUMP_ABSOLUTE %d\n", emit->label_offsets[label]);
         } else {
             printf("JUMP_FORWARD %d\n", emit->label_offsets[label]);

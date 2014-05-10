@@ -378,7 +378,7 @@ continue2:;
     DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
     dump_args(args, n_args);
     dump_args(extra_args, n_extra_args);
-    mp_vm_return_kind_t vm_return_kind = mp_execute_byte_code(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
     mp_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {

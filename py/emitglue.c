@@ -73,7 +73,7 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     return rc;
 }
 
-void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags) {
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags) {
     rc->kind = MP_CODE_BYTE;
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
@@ -99,7 +99,7 @@ void mp_emit_glue_assign_byte_code(mp_raw_code_t *rc, byte *code, uint len, uint
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        mp_byte_code_print(code, len);
+        mp_bytecode_print(code, len);
     }
 #endif
 }
