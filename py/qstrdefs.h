@@ -239,6 +239,8 @@ Q(startswith)
 Q(replace)
 Q(partition)
 Q(rpartition)
+Q(lower)
+Q(upper)
 Q(iterable)
 Q(start)
 

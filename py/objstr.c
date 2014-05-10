@@ -1365,6 +1365,32 @@ STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, -1);
 }
 
+enum { CASE_UPPER, CASE_LOWER };
+
+// Supposedly not too critical operations, so optimize for code size
+STATIC mp_obj_t str_caseconv(int op, mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    byte *data;
+    mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(self_in), self_len, &data);
+    for (int i = 0; i < self_len; i++) {
+        if (op == CASE_UPPER) {
+            *data++ = unichar_toupper(*self_data++);
+        } else {
+            *data++ = unichar_tolower(*self_data++);
+        }
+    }
+    *data = 0;
+    return mp_obj_str_builder_end(s);
+}
+
+STATIC mp_obj_t str_lower(mp_obj_t self_in) {
+    return str_caseconv(CASE_LOWER, self_in);
+}
+
+STATIC mp_obj_t str_upper(mp_obj_t self_in) {
+    return str_caseconv(CASE_UPPER, self_in);
+}
+
 #if MICROPY_CPYTHON_COMPAT
 // These methods are superfluous in the presense of str() and bytes()
 // constructors.
@@ -1428,6 +1454,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
 
 STATIC const mp_map_elem_t str_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT
@@ -1449,6 +1477,8 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&str_count_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_partition), (mp_obj_t)&str_partition_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rpartition), (mp_obj_t)&str_rpartition_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lower), (mp_obj_t)&str_lower_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_upper), (mp_obj_t)&str_upper_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
