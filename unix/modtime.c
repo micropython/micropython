@@ -45,9 +45,19 @@ void msec_sleep_tv(struct timeval *tv) {
 #define sleep_select select
 #endif
 
-#if CLOCKS_PER_SEC == 1000000 // POSIX
+// mingw32 defines CLOCKS_PER_SEC as ((clock_t)<somevalue>) but preprocessor does not handle casts
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#define MP_REMOVE_BRACKETSA(x)
+#define MP_REMOVE_BRACKETSB(x) MP_REMOVE_BRACKETSA x
+#define MP_REMOVE_BRACKETSC(x) MP_REMOVE_BRACKETSB x
+#define MP_CLOCKS_PER_SEC MP_REMOVE_BRACKETSC(CLOCKS_PER_SEC)
+#else
+#define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
+#endif
+
+#if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
 #define CLOCK_DIV 1000.0
-#elif CLOCKS_PER_SEC == 1000 // WIN32
+#elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32
 #define CLOCK_DIV 1.0
 #else
 #error Unsupported clock() implementation
