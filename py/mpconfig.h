@@ -36,6 +36,16 @@
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
 
+// Initial amount for lexer indentation level
+#ifndef MP_ALLOC_LEXER_INDENT_INIT
+#define MP_ALLOC_LEXER_INDENT_INIT (10)
+#endif
+
+// Increment for lexer indentation level
+#ifndef MP_ALLOC_LEXEL_INDENT_INC
+#define MP_ALLOC_LEXEL_INDENT_INC (8)
+#endif
+
 // Initial amount for parse rule stack
 #ifndef MP_ALLOC_PARSE_RULE_INIT
 #define MP_ALLOC_PARSE_RULE_INIT (64)

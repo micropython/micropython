@@ -210,8 +210,9 @@ STATIC void next_char(mp_lexer_t *lex) {
 
 void indent_push(mp_lexer_t *lex, uint indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
-        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level * 2);
-        lex->alloc_indent_level *= 2;
+        // TODO use m_renew_maybe and somehow indicate an error if it fails... probably by using MP_TOKEN_MEMORY_ERROR
+        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level + MP_ALLOC_LEXEL_INDENT_INC);
+        lex->alloc_indent_level += MP_ALLOC_LEXEL_INDENT_INC;
     }
     lex->indent_level[lex->num_indent_level++] = indent;
 }
@@ -696,7 +697,15 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
 }
 
 mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close) {
-    mp_lexer_t *lex = m_new(mp_lexer_t, 1);
+    mp_lexer_t *lex = m_new_maybe(mp_lexer_t, 1);
+
+    // check for memory allocation error
+    if (lex == NULL) {
+        if (stream_close) {
+            stream_close(stream_data);
+        }
+        return NULL;
+    }
 
     lex->source_name = src_name;
     lex->stream_data = stream_data;
@@ -706,11 +715,19 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     lex->column = 1;
     lex->emit_dent = 0;
     lex->nested_bracket_level = 0;
-    lex->alloc_indent_level = 16;
+    lex->alloc_indent_level = MP_ALLOC_LEXER_INDENT_INIT;
     lex->num_indent_level = 1;
-    lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
-    lex->indent_level[0] = 0;
+    lex->indent_level = m_new_maybe(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
+
+    // check for memory allocation error
+    if (lex->indent_level == NULL || vstr_had_error(&lex->vstr)) {
+        mp_lexer_free(lex);
+        return NULL;
+    }
+
+    // store sentinel for first indentation level
+    lex->indent_level[0] = 0;
 
     // preload characters
     lex->chr0 = stream_next_char(stream_data);
