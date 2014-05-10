@@ -90,7 +90,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
         case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
-        default: return NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 

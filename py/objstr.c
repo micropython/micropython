@@ -287,10 +287,9 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             break;
 
-        case MP_BINARY_OP_MULTIPLY:
-        {
+        case MP_BINARY_OP_MULTIPLY: {
             if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
             byte *data;

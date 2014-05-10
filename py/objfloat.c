@@ -97,7 +97,7 @@ STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-o->value);
-        default: return NULL; // op not supported
+        default: return MP_OBJ_NOT_SUPPORTED;
     }
 }
 

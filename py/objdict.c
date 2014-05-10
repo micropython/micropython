@@ -465,11 +465,14 @@ STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
 STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     /* only supported for the 'keys' kind until sets and dicts are refactored */
     mp_obj_dict_view_t *o = lhs_in;
-    if (o->kind != MP_DICT_VIEW_KEYS) return NULL;
-    if (op != MP_BINARY_OP_IN) return NULL;
+    if (o->kind != MP_DICT_VIEW_KEYS) {
+        return MP_OBJ_NOT_SUPPORTED;
+    }
+    if (op != MP_BINARY_OP_IN) {
+        return MP_OBJ_NOT_SUPPORTED;
+    }
     return dict_binary_op(op, o->dict, rhs_in);
 }
-
 
 STATIC const mp_obj_type_t dict_view_type = {
     { &mp_type_type },

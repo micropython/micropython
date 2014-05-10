@@ -255,8 +255,8 @@ struct _mp_obj_type_t {
     mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_fun_t call;
-    mp_unary_op_fun_t unary_op;     // can return NULL if op not supported
-    mp_binary_op_fun_t binary_op;   // can return NULL if op not supported
+    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NOT_SUPPORTED if op not supported
+    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NOT_SUPPORTED if op not supported
 
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
@@ -266,7 +266,7 @@ struct _mp_obj_type_t {
                                     // can return MP_OBJ_NOT_SUPPORTED
 
     mp_fun_1_t getiter;
-    mp_fun_1_t iternext; // may return MP_OBJ_NULL as an optimisation instead of raising StopIteration() (with no args)
+    mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
 
     mp_buffer_p_t buffer_p;
     const mp_stream_p_t *stream_p;
@@ -479,11 +479,11 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
-mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL
+mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NOT_SUPPORTED
 
 // complex
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
-mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL
+mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NOT_SUPPORTED
 #endif
 
 // tuple

@@ -412,41 +412,39 @@ STATIC mp_obj_t set_unary_op(int op, mp_obj_t self_in) {
 STATIC mp_obj_t set_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
     switch (op) {
-    case MP_BINARY_OP_OR:
-        return set_union(lhs, rhs);
-    case MP_BINARY_OP_XOR:
-        return set_symmetric_difference(lhs, rhs);
-    case MP_BINARY_OP_AND:
-        return set_intersect(lhs, rhs);
-    case MP_BINARY_OP_SUBTRACT:
-        return set_diff(2, args);
-    case MP_BINARY_OP_INPLACE_OR:
-        return set_union(lhs, rhs);
-    case MP_BINARY_OP_INPLACE_XOR:
-        return set_symmetric_difference(lhs, rhs);
-    case MP_BINARY_OP_INPLACE_AND:
-        return set_intersect(lhs, rhs);
-    case MP_BINARY_OP_INPLACE_SUBTRACT:
-        return set_diff(2, args);
-    case MP_BINARY_OP_LESS:
-        return set_issubset_proper(lhs, rhs);
-    case MP_BINARY_OP_MORE:
-        return set_issuperset_proper(lhs, rhs);
-    case MP_BINARY_OP_EQUAL:
-        return set_equal(lhs, rhs);
-    case MP_BINARY_OP_LESS_EQUAL:
-        return set_issubset(lhs, rhs);
-    case MP_BINARY_OP_MORE_EQUAL:
-        return set_issuperset(lhs, rhs);
-    case MP_BINARY_OP_IN:
-    {
-        mp_obj_set_t *o = lhs;
-        mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
-        return MP_BOOL(elem != NULL);
-    }
-    default:
-        // op not supported
-        return NULL;
+        case MP_BINARY_OP_OR:
+            return set_union(lhs, rhs);
+        case MP_BINARY_OP_XOR:
+            return set_symmetric_difference(lhs, rhs);
+        case MP_BINARY_OP_AND:
+            return set_intersect(lhs, rhs);
+        case MP_BINARY_OP_SUBTRACT:
+            return set_diff(2, args);
+        case MP_BINARY_OP_INPLACE_OR:
+            return set_union(lhs, rhs);
+        case MP_BINARY_OP_INPLACE_XOR:
+            return set_symmetric_difference(lhs, rhs);
+        case MP_BINARY_OP_INPLACE_AND:
+            return set_intersect(lhs, rhs);
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
+            return set_diff(2, args);
+        case MP_BINARY_OP_LESS:
+            return set_issubset_proper(lhs, rhs);
+        case MP_BINARY_OP_MORE:
+            return set_issuperset_proper(lhs, rhs);
+        case MP_BINARY_OP_EQUAL:
+            return set_equal(lhs, rhs);
+        case MP_BINARY_OP_LESS_EQUAL:
+            return set_issubset(lhs, rhs);
+        case MP_BINARY_OP_MORE_EQUAL:
+            return set_issuperset(lhs, rhs);
+        case MP_BINARY_OP_IN: {
+            mp_obj_set_t *o = lhs;
+            mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
+            return MP_BOOL(elem != NULL);
+        }
+        default:
+            return MP_OBJ_NOT_SUPPORTED;
     }
 }
 

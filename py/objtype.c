@@ -596,8 +596,10 @@ STATIC mp_obj_t type_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // Types can be equal only if it's the same type structure,
             // we don't even need to check for 2nd arg type.
             return MP_BOOL(lhs_in == rhs_in);
+
+        default:
+            return MP_OBJ_NOT_SUPPORTED;
     }
-    return NULL;
 }
 
 const mp_obj_type_t mp_type_type = {

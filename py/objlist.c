@@ -87,7 +87,6 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "list takes at most 1 argument, %d given", n_args));
     }
-    return NULL;
 }
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
@@ -116,7 +115,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
@@ -125,7 +124,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         case MP_BINARY_OP_INPLACE_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             list_extend(lhs, rhs);
             return o;
@@ -133,7 +132,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_MULTIPLY: {
             machine_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             mp_obj_list_t *s = list_new(o->len * n);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);

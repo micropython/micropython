@@ -121,20 +121,18 @@ mp_obj_t tuple_unary_op(int op, mp_obj_t self_in) {
 mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
-        case MP_BINARY_OP_ADD:
-        {
+        case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&mp_type_tuple)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             mp_obj_tuple_t *p = rhs;
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len + p->len, NULL);
             m_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return s;
         }
-        case MP_BINARY_OP_MULTIPLY:
-        {
+        case MP_BINARY_OP_MULTIPLY: {
             if (!MP_OBJ_IS_SMALL_INT(rhs)) {
-                return NULL;
+                return MP_OBJ_NOT_SUPPORTED;
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs);
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len * n, NULL);
@@ -150,7 +148,7 @@ mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 
         default:
             // op not supported
-            return NULL;
+            return MP_OBJ_NOT_SUPPORTED;
     }
 }
 
