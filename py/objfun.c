@@ -506,12 +506,7 @@ STATIC mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
-    if (n_args != self->n_args) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "function takes %d positional arguments but %d were given", self->n_args, n_args));
-    }
-    if (n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
-    }
+    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
     machine_uint_t ret;
     if (n_args == 0) {

@@ -309,10 +309,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == MP_PASS_EMIT) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
+        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native_code(emit->scope->raw_code, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
+        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
 #endif
     }
 }
@@ -436,6 +436,11 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
             ASM_MOV_IMM_TO_REG(si->u_imm, reg_dest);
             break;
     }
+}
+
+STATIC void emit_pre_pop_discard(emit_t *emit, vtype_kind_t *vtype) {
+    emit->last_emit_was_return_value = false;
+    adjust_stack(emit, -1);
 }
 
 STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
@@ -938,7 +943,7 @@ STATIC void emit_native_dup_top_two(emit_t *emit) {
 
 STATIC void emit_native_pop_top(emit_t *emit) {
     vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+    emit_pre_pop_discard(emit, &vtype);
     emit_post(emit);
 }
 
