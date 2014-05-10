@@ -501,6 +501,28 @@ STATIC mp_obj_t instance_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     return mp_call_function_n_kw(meth, n_args, n_kw, args);
 }
 
+STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
+    mp_obj_instance_t *self = self_in;
+    mp_obj_t member[2] = {MP_OBJ_NULL};
+    mp_obj_class_lookup(self, self->base.type, MP_QSTR___iter__, offsetof(mp_obj_type_t, getiter), member);
+    if (member[0] == MP_OBJ_NULL) {
+        // This kinda duplicates code in mp_getiter()
+        mp_obj_class_lookup(self, self->base.type, MP_QSTR___getitem__, 0, member);
+        if (member[0] != MP_OBJ_NULL) {
+            // __getitem__ exists, create an iterator
+            instance_convert_return_attr(self_in, member[0], member);
+            return mp_obj_new_getitem_iter(member);
+        }
+        return MP_OBJ_NULL;
+    }
+    if (member[0] == MP_OBJ_SENTINEL) {
+        mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        return type->getiter(self->subobj[0]);
+    }
+    mp_obj_t meth = mp_obj_new_bound_meth(member[0], self);
+    return mp_call_function_n_kw(meth, 0, 0, NULL);
+}
+
 /******************************************************************************/
 // type object
 //  - the struct is mp_obj_type_t and is defined in obj.h so const types can be made
@@ -655,6 +677,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->store_attr = instance_store_attr;
     o->subscr = instance_subscr;
     o->call = instance_call;
+    o->getiter = instance_getiter;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
 
