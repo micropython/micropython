@@ -97,6 +97,7 @@ bool unichar_isxdigit(unichar c) {
 bool char_is_alpha_or_digit(unichar c) {
     return c < 128 && (attr[c] & (FL_ALPHA | FL_DIGIT)) != 0;
 }
+*/
 
 bool char_is_upper(unichar c) {
     return c < 128 && (attr[c] & FL_UPPER) != 0;
@@ -105,4 +106,17 @@ bool char_is_upper(unichar c) {
 bool char_is_lower(unichar c) {
     return c < 128 && (attr[c] & FL_LOWER) != 0;
 }
-*/
+
+unichar unichar_tolower(unichar c) {
+    if (char_is_upper(c)) {
+        return c + 0x20;
+    }
+    return c;
+}
+
+unichar unichar_toupper(unichar c) {
+    if (char_is_lower(c)) {
+        return c - 0x20;
+    }
+    return c;
+}
