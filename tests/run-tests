@@ -25,6 +25,7 @@ def run_tests(pyb, tests):
     testcase_count = 0
     passed_count = 0
     failed_tests = []
+    skipped_tests = []
 
     running_under_travis = os.getenv('TRAVIS') == 'true'
 
@@ -34,6 +35,7 @@ def run_tests(pyb, tests):
     for test_file in tests:
         if running_under_travis and test_file in skip_travis_tests:
             print("skip ", test_file)
+            skipped_tests.append(test_name)
             continue
 
         # get expected output
@@ -64,10 +66,16 @@ def run_tests(pyb, tests):
             except pyboard.PyboardError:
                 output_mupy = b'CRASH'
 
-        testcase_count += len(output_expected.splitlines())
-
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
+
+        if output_mupy == b'SKIP\n':
+            print("skip ", test_file)
+            skipped_tests.append(test_name)
+            continue
+
+        testcase_count += len(output_expected.splitlines())
+
         filename_expected = test_basename + ".exp"
         filename_mupy = test_basename + ".out"
 
@@ -89,6 +97,8 @@ def run_tests(pyb, tests):
     print("{} tests performed ({} individual testcases)".format(test_count, testcase_count))
     print("{} tests passed".format(passed_count))
 
+    if len(skipped_tests) > 0:
+        print("{} tests skipped: {}".format(len(skipped_tests), ' '.join(skipped_tests)))
     if len(failed_tests) > 0:
         print("{} tests failed: {}".format(len(failed_tests), ' '.join(failed_tests)))
         return False
