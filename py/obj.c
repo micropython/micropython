@@ -59,6 +59,12 @@ void printf_wrapper(void *env, const char *fmt, ...) {
 }
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+#if !NDEBUG
+    if (o_in == NULL) {
+        print(env, "(nil)");
+        return;
+    }
+#endif
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
         type->print(print, env, o_in, kind);
