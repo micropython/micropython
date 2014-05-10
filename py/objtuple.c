@@ -174,7 +174,7 @@ mp_obj_t tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC mp_obj_t tuple_getiter(mp_obj_t o_in) {
+mp_obj_t tuple_getiter(mp_obj_t o_in) {
     return mp_obj_new_tuple_iterator(o_in, 0);
 }
 

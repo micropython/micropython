@@ -16,6 +16,8 @@ print(bool(t))
 print(t + t)
 print(t * 3)
 
+print([f for f in t])
+
 print(isinstance(t, tuple))
 
 try:

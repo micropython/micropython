@@ -34,3 +34,4 @@ void tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_o
 mp_obj_t tuple_unary_op(int op, mp_obj_t self_in);
 mp_obj_t tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t tuple_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value);
+mp_obj_t tuple_getiter(mp_obj_t o_in);
