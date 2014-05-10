@@ -38,9 +38,9 @@ SRC_S = \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
-all: $(BUILD)/flash.elf
+all: $(BUILD)/firmware.elf
 
-$(BUILD)/flash.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
