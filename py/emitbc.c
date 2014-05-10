@@ -48,9 +48,11 @@
 #define DUMMY_DATA_SIZE (BYTES_FOR_INT)
 
 struct _emit_t {
-    pass_kind_t pass;
+    pass_kind_t pass : 8;
+    uint last_emit_was_return_value : 8;
+    byte dummy_data[DUMMY_DATA_SIZE];
+
     int stack_size;
-    bool last_emit_was_return_value;
 
     scope_t *scope;
 
@@ -65,7 +67,6 @@ struct _emit_t {
     uint bytecode_offset;
     uint bytecode_size;
     byte *code_base; // stores both byte code and code info
-    byte dummy_data[DUMMY_DATA_SIZE];
 };
 
 STATIC void emit_bc_rot_two(emit_t *emit);

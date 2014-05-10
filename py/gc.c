@@ -113,7 +113,7 @@ STATIC machine_uint_t gc_lock_depth;
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
-    DEBUG_printf("Initializing GC heap: %p..%p = %ld bytes\n", start, end, end - start);
+    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, end - start);
 
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
     // T = A + F + P
