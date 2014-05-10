@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stm32f4xx.h>
 
+#include "mpconfig.h"
 #include "misc.h"
 #include "nlr.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "adc.h"

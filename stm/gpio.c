@@ -16,9 +16,9 @@
 #include <usbd_storage_msd.h>
 #include <stm_misc.h>
 
+#include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "misc.h"
 #include "parse.h"
