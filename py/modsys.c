@@ -36,6 +36,8 @@
 
 #if MICROPY_ENABLE_MOD_SYS
 
+MP_DECLARE_CONST_FUN_OBJ(mp_sys_exit_obj);
+
 // These should be implemented by ports, specific types don't matter,
 // only addresses.
 struct _dummy_t;
@@ -53,6 +55,9 @@ STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
+    // Should be implemented by port
+    { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&mp_sys_path_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&mp_sys_argv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },

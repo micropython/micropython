@@ -371,6 +371,15 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+STATIC mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
+    int rc = 0;
+    if (n_args > 0) {
+        rc = mp_obj_get_int(args[0]);
+    }
+    exit(rc);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
+
 uint mp_import_stat(const char *path) {
     struct stat st;
     if (stat(path, &st) == 0) {
