@@ -573,3 +573,8 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
 #define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
+#define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_t) \
+    /*printf("memcpy(%p, %p, %d)\n", dest + beg, slice, slice_len * sizeof(item_t));*/ \
+    memcpy(dest + beg, slice, slice_len * sizeof(item_t)); \
+    /*printf("memcpy(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));*/ \
+    memcpy(dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));
