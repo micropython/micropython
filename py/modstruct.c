@@ -110,7 +110,7 @@ STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
     }
     return res;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, -1, struct_pack);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
 STATIC const mp_map_elem_t mp_module_struct_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_struct) },
