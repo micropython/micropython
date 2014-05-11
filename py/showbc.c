@@ -404,14 +404,10 @@ void mp_bytecode_print2(const byte *ip, int len) {
                 printf("STORE_MAP");
                 break;
 
-                /*
             case MP_BC_MAP_ADD:
                 DECODE_UINT;
-                // I think it's guaranteed by the compiler that sp[unum + 1] is a map
-                rt_store_map(sp[unum + 1], sp[0], sp[1]);
-                sp += 2;
+                printf("MAP_ADD " UINT_FMT, unum);
                 break;
-                */
 
             case MP_BC_BUILD_SET:
                 DECODE_UINT;
