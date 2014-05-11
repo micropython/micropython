@@ -357,7 +357,12 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
-            return type->unary_op(MP_UNARY_OP_LEN, o_in);
+            mp_obj_t val = type->unary_op(MP_UNARY_OP_LEN, o_in);
+            // TODO: Here's the case of having MP_OBJ_NOT_SUPPORTED is confusing
+            if (val == MP_OBJ_NOT_SUPPORTED) {
+                return MP_OBJ_NULL;
+            }
+            return val;
         } else {
             return MP_OBJ_NULL;
         }
