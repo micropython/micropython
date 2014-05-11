@@ -3,14 +3,6 @@
 *  wlan.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -39,14 +31,6 @@
 *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-
-Adapted for use with the Arduino/AVR by KTOWN for Adafruit Industries
-This library works with the Adafruit CC3000 breakout
-	----> https://www.adafruit.com/products/1469
-Adafruit invests time and resources providing this open source code,
-please support Adafruit and open-source hardware by purchasing
-products from Adafruit!
-
 *****************************************************************************/
 #ifndef __WLAN_H__
 #define	__WLAN_H__
@@ -185,7 +169,7 @@ extern void wlan_stop(void);
 //!  @param    ssid       up to 32 bytes and is ASCII SSID of the AP
 //!  @param    ssid_len   length of the SSID
 //!  @param    bssid      6 bytes specified the AP bssid
-//!  @param    key        up to 16 bytes specified the AP security key
+//!  @param    key        up to 32 bytes specified the AP security key
 //!  @param    key_len    key length
 //!
 //!  @return     On success, zero is returned. On error, negative is returned.

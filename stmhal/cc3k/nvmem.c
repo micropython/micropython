@@ -3,14 +3,6 @@
 *  nvmem.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -58,7 +50,6 @@
 #include "hci.h"
 #include "socket.h"
 #include "evnt_handler.h"
-#include "ccdebug.h"
 
 //*****************************************************************************
 //
@@ -167,15 +158,7 @@ nvmem_write(unsigned long ulFileId, unsigned long ulLength, unsigned long
 
 	memcpy((ptr + SPI_HEADER_SIZE + HCI_DATA_CMD_HEADER_SIZE +
 					NVMEM_WRITE_PARAMS_LEN),buff,ulLength);
-#if (DEBUG_MODE == 1)
-	PRINT_F("Writing:\t");
-	for (uint8_t i=0; i<ulLength; i++) {
-	    PRINT_F("0x");
-	    printHex(buff[i]);
-	    PRINT_F(", ");
-	}
-	PRINT_F("\n\r");
-#endif
+
 	// Initiate a HCI command but it will come on data channel
 	hci_data_command_send(HCI_CMND_NVMEM_WRITE, ptr, NVMEM_WRITE_PARAMS_LEN,
 												ulLength);
@@ -240,7 +223,7 @@ unsigned char nvmem_get_mac_address(unsigned char *mac)
 //!
 //*****************************************************************************
 
-unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, const uint8_t *spData)
+unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, const unsigned char *spData)
 {
 	unsigned char 	status = 0;
 	unsigned short	offset = 0;
@@ -248,19 +231,10 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 
 	while ((status == 0) && (spLength >= SP_PORTION_SIZE))
 	{
-#if (DEBUG_MODE == 1)
-	  PRINT_F("Writing: "); printDec16(offset); PRINT_F("\t");
-	  for (uint8_t i=0; i<SP_PORTION_SIZE; i++) {
-	    PRINT_F("0x");
-	    printHex(spDataPtr[i]);
-	    PRINT_F(", ");
-	  }
-	  PRINT_F("\n\r");
-#endif
-	  status = nvmem_write(ulFileId, SP_PORTION_SIZE, offset, spDataPtr);
-	  offset += SP_PORTION_SIZE;
-	  spLength -= SP_PORTION_SIZE;
-	  spDataPtr += SP_PORTION_SIZE;
+		status = nvmem_write(ulFileId, SP_PORTION_SIZE, offset, spDataPtr);
+		offset += SP_PORTION_SIZE;
+		spLength -= SP_PORTION_SIZE;
+		spDataPtr += SP_PORTION_SIZE;
 	}
 
 	if (status !=0)
@@ -271,8 +245,8 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 
 	if (spLength != 0)
 	{
-	  // if reached here, a reminder is left
-	  status = nvmem_write(ulFileId, spLength, offset, spDataPtr);
+		// if reached here, a reminder is left
+		status = nvmem_write(ulFileId, spLength, offset, spDataPtr);
 	}
 
 	return status;
@@ -293,11 +267,11 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 //*****************************************************************************
 
 #ifndef CC3000_TINY_DRIVER
-uint8_t nvmem_read_sp_version(uint8_t* patchVer)
+unsigned char nvmem_read_sp_version(unsigned char* patchVer)
 {
-	uint8_t *ptr;
+	unsigned char *ptr;
 	// 1st byte is the status and the rest is the SP version
-	uint8_t	retBuf[5];
+	unsigned char	retBuf[5];
 
 	ptr = tSLInformation.pucTxCommandBuffer;
 
@@ -337,12 +311,12 @@ uint8_t nvmem_read_sp_version(uint8_t* patchVer)
 //!
 //*****************************************************************************
 
-int8_t
+signed long
 nvmem_create_entry(unsigned long ulFileId, unsigned long ulNewLen)
 {
 	unsigned char *ptr;
 	unsigned char *args;
-	int8_t retval;
+	unsigned short retval;
 
 	ptr = tSLInformation.pucTxCommandBuffer;
 	args = (ptr + HEADERS_SIZE_CMD);
@@ -355,6 +329,7 @@ nvmem_create_entry(unsigned long ulFileId, unsigned long ulNewLen)
 	hci_command_send(HCI_CMND_NVMEM_CREATE_ENTRY,ptr, NVMEM_CREATE_PARAMS_LEN);
 
 	SimpleLinkWaitEvent(HCI_CMND_NVMEM_CREATE_ENTRY, &retval);
+
 	return(retval);
 }
 

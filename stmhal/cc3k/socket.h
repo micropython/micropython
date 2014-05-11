@@ -3,14 +3,6 @@
 *  socket.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -101,9 +93,6 @@ extern "C" {
 #define  SOCKOPT_ACCEPT_NONBLOCK		2	// accept non block mode, set SOCK_ON or SOCK_OFF (default block mode)
 #define  SOCK_ON                0			// socket non-blocking mode	is enabled
 #define  SOCK_OFF               1			// socket blocking mode is enabled
-
-#define  TCP_NODELAY            0x0001
-#define  TCP_BSDURGENT          0x7000
 
 #define  MAX_PACKET_SIZE        1500
 #define  MAX_LISTEN_QUEUE       4
@@ -373,7 +362,7 @@ extern long listen(long sd, long backlog);
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER
-extern int gethostbyname(const char * hostname, uint8_t usNameLen, uint32_t* out_ip_addr);
+extern int gethostbyname(const char* hostname, unsigned short usNameLen, unsigned long* out_ip_addr);
 #endif
 
 

@@ -3,14 +3,6 @@
 *  cc3000_common.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -46,9 +38,6 @@
 //******************************************************************************
 // Include files
 //******************************************************************************
-//#include <stdlib.h>
-//#include <errno.h>
-//#include <stdint.h>
 
 //*****************************************************************************
 //
@@ -167,11 +156,7 @@ extern "C" {
 //*****************************************************************************
 //                  Compound Types
 //*****************************************************************************
-#ifdef __AVR__
-typedef unsigned long time_t;  /* KTown: Updated to be compatible with Arduino Time.h */
-#else
 typedef long time_t;
-#endif
 typedef unsigned long clock_t;
 typedef long suseconds_t;
 
@@ -268,7 +253,7 @@ extern void SimpleLinkWaitEvent(unsigned short usOpcode, void *pRetParams);
 //
 //*****************************************************************************
 
-extern void SimpleLinkWaitData(uint8_t *pBuf, uint8_t *from, uint8_t *fromlen);
+extern void SimpleLinkWaitData(unsigned char *pBuf, unsigned char *from, unsigned char *fromlen);
 
 //*****************************************************************************
 //
@@ -284,7 +269,7 @@ extern void SimpleLinkWaitData(uint8_t *pBuf, uint8_t *from, uint8_t *fromlen);
 //
 //*****************************************************************************
 
-extern uint8_t* UINT32_TO_STREAM_f (uint8_t *p, uint32_t u32);
+extern unsigned char* UINT32_TO_STREAM_f (unsigned char *p, unsigned long u32);
 
 //*****************************************************************************
 //
@@ -300,7 +285,7 @@ extern uint8_t* UINT32_TO_STREAM_f (uint8_t *p, uint32_t u32);
 //
 //*****************************************************************************
 
-extern uint8_t* UINT16_TO_STREAM_f (uint8_t *p, uint16_t u16);
+extern unsigned char* UINT16_TO_STREAM_f (unsigned char *p, unsigned short u16);
 
 //*****************************************************************************
 //
@@ -316,7 +301,7 @@ extern uint8_t* UINT16_TO_STREAM_f (uint8_t *p, uint16_t u16);
 //
 //*****************************************************************************
 
-extern uint16_t STREAM_TO_UINT16_f(char* p, uint16_t offset);
+extern unsigned short STREAM_TO_UINT16_f(char* p, unsigned short offset);
 
 //*****************************************************************************
 //
@@ -332,7 +317,7 @@ extern uint16_t STREAM_TO_UINT16_f(char* p, uint16_t offset);
 //
 //*****************************************************************************
 
-extern uint32_t STREAM_TO_UINT32_f(char* p, uint16_t offset);
+extern unsigned long STREAM_TO_UINT32_f(char* p, unsigned short offset);
 
 
 //*****************************************************************************
@@ -361,14 +346,14 @@ extern void cc3k_int_poll();
 //This macro is used for copying 32 bit to stream while converting to little endian format.
 #define UINT32_TO_STREAM(_p, _u32)	(UINT32_TO_STREAM_f(_p, _u32))
 //This macro is used for copying a specified value length bits (l) to stream while converting to little endian format.
-#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(p)++ = ((uint8_t *) a)[_i];}
+#define ARRAY_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(p)++ = ((unsigned char *) a)[_i];}
 //This macro is used for copying received stream to 8 bit in little endian format.
-#define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (uint8_t)(*(_p + _offset));}
+#define STREAM_TO_UINT8(_p, _offset, _u8)	{_u8 = (unsigned char)(*(_p + _offset));}
 //This macro is used for copying received stream to 16 bit in little endian format.
 #define STREAM_TO_UINT16(_p, _offset, _u16)	{_u16 = STREAM_TO_UINT16_f(_p, _offset);}
 //This macro is used for copying received stream to 32 bit in little endian format.
 #define STREAM_TO_UINT32(_p, _offset, _u32)	{_u32 = STREAM_TO_UINT32_f(_p, _offset);}
-#define STREAM_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(a)++= ((uint8_t *) p)[_i];}
+#define STREAM_TO_STREAM(p, a, l) 	{register short _i; for (_i = 0; _i < l; _i++) *(a)++= ((unsigned char *) p)[_i];}
 
 
 

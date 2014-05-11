@@ -3,14 +3,6 @@
 *  nvmem.h  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -231,7 +223,7 @@ extern	unsigned char nvmem_read_sp_version(unsigned char* patchVer);
 //!              set ulNewLen=0.
 //!
 //*****************************************************************************
-extern int8_t nvmem_create_entry(unsigned long file_id, unsigned long newlen);
+extern signed long nvmem_create_entry(unsigned long file_id, unsigned long newlen);
 
 
 //*****************************************************************************

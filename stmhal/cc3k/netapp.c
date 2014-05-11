@@ -3,14 +3,6 @@
 *  netapp.c  - CC3000 Host Driver Implementation.
 *  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
 *
-* Adapted for use with the Arduino/AVR by KTOWN (Kevin Townsend)
-* & Limor Fried for Adafruit Industries
-* This library works with the Adafruit CC3000 breakout
-*	----> https://www.adafruit.com/products/1469
-* Adafruit invests time and resources providing this open source code,
-* please support Adafruit and open-source hardware by purchasing
-* products from Adafruit!
-*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
@@ -244,7 +236,7 @@ netapp_timeout_values(unsigned long *aucDHCP, unsigned long *aucARP,unsigned lon
 
 #ifndef CC3000_TINY_DRIVER
 long
-netapp_ping_send(uint32_t *ip, uint32_t ulPingAttempts, uint32_t ulPingSize, uint32_t ulPingTimeout)
+netapp_ping_send(unsigned long *ip, unsigned long ulPingAttempts, unsigned long ulPingSize, unsigned long ulPingTimeout)
 {
 	signed char scRet;
 	unsigned char *ptr, *args;
@@ -258,15 +250,6 @@ netapp_ping_send(uint32_t *ip, uint32_t ulPingAttempts, uint32_t ulPingSize, uin
 	args = UINT32_TO_STREAM(args, ulPingAttempts);
 	args = UINT32_TO_STREAM(args, ulPingSize);
 	args = UINT32_TO_STREAM(args, ulPingTimeout);
-
-	/*
-	if (CC3KPrinter != 0)
-		{
-		for(uint8_t i=0; i<4+4+4+4; i++) {
-		  CC3KPrinter->print(" 0x"); CC3KPrinter->( (ptr + HEADERS_SIZE_CMD)[i], HEX);
-		}
-	}
-	*/
 
 	// Initiate a HCI command
 	hci_command_send(HCI_NETAPP_PING_SEND, ptr, NETAPP_PING_SEND_PARAMS_LEN);
