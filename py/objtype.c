@@ -333,6 +333,9 @@ STATIC void instance_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_
         // return a bound method, with self being the type of this object
         dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
         dest[1] = mp_obj_get_type(self);
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
+        // Don't try to bind types
+        dest[0] = member;
     } else if (mp_obj_is_callable(member)) {
         // return a bound method, with self being this object
         dest[0] = member;
