@@ -540,7 +540,7 @@ STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     switch (n_args) {
         case 1:

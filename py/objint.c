@@ -46,7 +46,7 @@
 
 // This dispatcher function is expected to be independent of the implementation of long int
 STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {
         case 0:
@@ -67,16 +67,13 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
             }
 
         case 2:
-        {
+        default: {
             // should be a string, parse it
             // TODO proper error checking of argument types
             uint l;
             const char *s = mp_obj_str_get_data(args[0], &l);
             return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]));
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "int takes at most 2 arguments, %d given", n_args));
     }
 }
 

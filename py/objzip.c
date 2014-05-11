@@ -40,7 +40,7 @@ typedef struct _mp_obj_zip_t {
 } mp_obj_zip_t;
 
 STATIC mp_obj_t zip_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
 
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
     o->base.type = &mp_type_zip;

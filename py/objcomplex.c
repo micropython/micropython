@@ -34,6 +34,7 @@
 #include "obj.h"
 #include "parsenum.h"
 #include "runtime0.h"
+#include "runtime.h"
 
 #if MICROPY_ENABLE_FLOAT
 
@@ -74,7 +75,7 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
 }
 
 STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {
         case 0:
@@ -94,7 +95,8 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
                 return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
             }
 
-        case 2: {
+        case 2:
+        default: {
             mp_float_t real, imag;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
                 mp_obj_complex_get(args[0], &real, &imag);
@@ -112,9 +114,6 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
             }
             return mp_obj_new_complex(real, imag);
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "complex takes at most 2 arguments, %d given", n_args));
     }
 }
 

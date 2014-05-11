@@ -57,14 +57,15 @@ void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *en
 }
 
 STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
         case 0:
             // return a empty tuple
             return mp_const_empty_tuple;
 
-        case 1: {
+        case 1:
+        default: {
             // 1 argument, an iterable from which we make a new tuple
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_tuple)) {
                 return args[0];
@@ -91,9 +92,6 @@ STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, 
 
             return tuple;
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "tuple takes at most 1 argument, %d given", n_args));
     }
 }
 
