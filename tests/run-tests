@@ -44,8 +44,10 @@ def run_tests(pyb, tests):
             # expected output given by a file, so read that in
             with open(test_file_expected, 'rb') as f:
                 output_expected = f.read()
+                if os.name == 'nt':
+                    output_expected = output_expected.replace(b'\n', b'\r\n')
         else:
-            # run CPython to work out expeceted output
+            # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
             except subprocess.CalledProcessError:
