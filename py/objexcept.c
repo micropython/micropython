@@ -76,7 +76,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
             return;
         }
     }
-    tuple_print(print, env, o->args, kind);
+    mp_obj_tuple_print(print, env, o->args, kind);
 }
 
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
