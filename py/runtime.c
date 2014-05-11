@@ -884,9 +884,14 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 }
 
 mp_obj_t mp_getiter(mp_obj_t o_in) {
+    assert(o_in);
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
-        return type->getiter(o_in);
+        mp_obj_t iter = type->getiter(o_in);
+        if (iter == MP_OBJ_NULL) {
+            goto not_iterable;
+        }
+        return iter;
     } else {
         // check for __iter__ method
         mp_obj_t dest[2];
@@ -901,6 +906,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
                 return mp_obj_new_getitem_iter(dest);
             } else {
                 // object not iterable
+not_iterable:
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
             }
         }

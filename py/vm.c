@@ -663,6 +663,7 @@ unwind_jump:
                 ENTRY(MP_BC_FOR_ITER):
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     save_sp = sp;
+                    assert(TOP());
                     obj1 = mp_iternext_allow_raise(TOP());
                     if (obj1 == MP_OBJ_STOP_ITERATION) {
                         --sp; // pop the exhausted iterator
