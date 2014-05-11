@@ -291,6 +291,7 @@ STATIC const mp_obj_type_t microsocket_type = {
     .locals_dict = (mp_obj_t)&microsocket_locals_dict,
 };
 
+#if MICROPY_SOCKET_EXTRA
 STATIC mp_obj_t mod_socket_htons(mp_obj_t arg) {
     return MP_OBJ_NEW_SMALL_INT((machine_int_t)htons(MP_OBJ_SMALL_INT_VALUE(arg)));
 }
@@ -308,7 +309,6 @@ STATIC mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_inet_aton_obj, mod_socket_inet_aton);
 
-#if MICROPY_SOCKET_EXTRA
 STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(arg, &mp_type_str));
     const char *s = mp_obj_str_get_str(arg);
@@ -321,7 +321,7 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     return mp_obj_new_int(*(int*)*h->h_addr_list);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethostbyname);
-#endif
+#endif // MICROPY_SOCKET_EXTRA
 
 STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     // TODO: Implement all args

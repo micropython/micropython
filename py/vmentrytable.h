@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winitializer-overrides"
+#endif // __clang__
+ 
 static void* entry_table[256] = {
     [0 ... 255] = &&entry_default,
     [MP_BC_LOAD_CONST_FALSE] = &&entry_MP_BC_LOAD_CONST_FALSE,
@@ -110,3 +115,7 @@ static void* entry_table[256] = {
     [MP_BC_IMPORT_FROM] = &&entry_MP_BC_IMPORT_FROM,
     [MP_BC_IMPORT_STAR] = &&entry_MP_BC_IMPORT_STAR,
 };
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif // __clang__

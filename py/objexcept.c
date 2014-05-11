@@ -168,11 +168,13 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(KeyError, LookupError)
   MP_DEFINE_EXCEPTION(MemoryError, Exception)
   MP_DEFINE_EXCEPTION(NameError, Exception)
-    MP_DEFINE_EXCEPTION_BASE(NameError)
-    //MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
-  MP_DEFINE_EXCEPTION(OSError, Exception)
-    MP_DEFINE_EXCEPTION_BASE(OSError)
     /*
+    MP_DEFINE_EXCEPTION_BASE(NameError)
+    MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
+    */
+  MP_DEFINE_EXCEPTION(OSError, Exception)
+    /*
+    MP_DEFINE_EXCEPTION_BASE(OSError)
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(ConnectionError, OSError)
