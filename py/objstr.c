@@ -540,7 +540,8 @@ enum { LSTRIP, RSTRIP, STRIP };
 
 STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
-    assert(MP_OBJ_IS_STR(args[0]));
+    assert(is_str_or_bytes(args[0]));
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
     const byte *chars_to_del;
     uint chars_to_del_len;
@@ -550,7 +551,9 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
         chars_to_del = whitespace;
         chars_to_del_len = sizeof(whitespace);
     } else {
-        assert(MP_OBJ_IS_STR(args[1]));
+        if (mp_obj_get_type(args[1]) != self_type) {
+            arg_type_mixup();
+        }
         GET_STR_DATA_LEN(args[1], s, l);
         chars_to_del = s;
         chars_to_del_len = l;
@@ -594,7 +597,7 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(last_good_char_pos >= first_good_char_pos);
     //+1 to accomodate the last character
     machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
-    return mp_obj_new_str(orig_str + first_good_char_pos, stripped_len, false);
+    return str_new(self_type, orig_str + first_good_char_pos, stripped_len);
 }
 
 STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
