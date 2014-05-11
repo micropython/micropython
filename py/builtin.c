@@ -462,6 +462,21 @@ STATIC mp_obj_t mp_builtin_getattr(uint n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
 
+STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
+    assert(MP_OBJ_IS_QSTR(attr_in));
+
+    mp_obj_t dest[2];
+    // TODO: https://docs.python.org/3.3/library/functions.html?highlight=hasattr#hasattr
+    // explicitly says "This is implemented by calling getattr(object, name) and seeing
+    // whether it raises an AttributeError or not.", so we should explicitly wrap this
+    // in nlr_push and handle exception.
+    mp_load_method_maybe(object_in, MP_OBJ_QSTR_VALUE(attr_in), dest);
+
+    return MP_BOOL(dest[0] != MP_OBJ_NULL);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
+
 // These two are defined in terms of MicroPython API functions right away
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_globals_get);
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_locals_get);
