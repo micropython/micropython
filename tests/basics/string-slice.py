@@ -30,3 +30,6 @@ print("123"[-1000000:])
 # No IndexError!
 print(""[1:1])
 print(""[-1:-1])
+
+# bytes
+print(b"123"[0:2])

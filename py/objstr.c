@@ -332,6 +332,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
@@ -341,10 +342,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
                 assert(0);
             }
-            return mp_obj_new_str(self_data + start, stop - start, false);
+            return str_new(type, self_data + start, stop - start);
         }
 #endif
-        mp_obj_type_t *type = mp_obj_get_type(self_in);
         uint index_val = mp_get_index(type, self_len, index, false);
         if (type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
