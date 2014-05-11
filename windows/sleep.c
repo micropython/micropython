@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <Windows.h>
+#include <windows.h>
 
 extern HANDLE hSleepEvent;
 
