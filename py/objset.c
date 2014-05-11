@@ -121,15 +121,19 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
 
 
 STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // TODO check n_kw == 0
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
-        case 0:
-            // return a new, empty set
-            return mp_obj_new_set(0, NULL);
+        case 0: {
+            // create a new, empty set
+            mp_obj_set_t *set = mp_obj_new_set(0, NULL);
+            // set actual set/frozenset type
+            set->base.type = type_in;
+            return set;
+        }
 
         case 1:
-        {
+        default: { // can only be 0 or 1 arg
             // 1 argument, an iterable from which we make a new set
             mp_obj_set_t *set = mp_obj_new_set(0, NULL);
             mp_obj_t iterable = mp_getiter(args[0]);
@@ -141,9 +145,6 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             set->base.type = type_in;
             return set;
         }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "set takes at most 1 argument, %d given", n_args));
     }
 }
 

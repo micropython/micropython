@@ -7,6 +7,9 @@ except NameError:
     import sys
     sys.exit()
 
+s = frozenset()
+print(s)
+
 s = frozenset({1})
 print(s)
 
