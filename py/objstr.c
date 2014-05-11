@@ -411,6 +411,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
 
 STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     machine_int_t splits = -1;
     mp_obj_t sep = mp_const_none;
     if (n_args > 1) {
@@ -432,7 +433,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
         while (s < top && splits != 0) {
             const byte *start = s;
             while (s < top && !is_ws(*s)) s++;
-            mp_obj_list_append(res, mp_obj_new_str(start, s - start, false));
+            mp_obj_list_append(res, str_new(self_type, start, s - start));
             if (s >= top) {
                 break;
             }
@@ -443,7 +444,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
         }
 
         if (s < top) {
-            mp_obj_list_append(res, mp_obj_new_str(s, top - s, false));
+            mp_obj_list_append(res, str_new(self_type, s, top - s));
         }
 
     } else {
@@ -467,7 +468,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
                 }
                 s++;
             }
-            mp_obj_list_append(res, mp_obj_new_str(start, s - start, false));
+            mp_obj_list_append(res, str_new(self_type, start, s - start));
             if (s >= top) {
                 break;
             }
