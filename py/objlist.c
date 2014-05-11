@@ -153,6 +153,24 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
+#if MICROPY_ENABLE_SLICE
+        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+            mp_obj_list_t *self = self_in;
+            machine_uint_t start, stop;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+                assert(0);
+            }
+
+            int len_adj = start - stop;
+            //printf("Len adj: %d\n", len_adj);
+            assert(len_adj <= 0);
+            mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, self->items/*NULL*/, 0, mp_obj_t);
+            // Clear "freed" elements at the end of list
+            mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
+            self->len += len_adj;
+            return mp_const_none;
+        }
+#endif
         mp_obj_t args[2] = {self_in, index};
         list_pop(2, args);
         return mp_const_none;

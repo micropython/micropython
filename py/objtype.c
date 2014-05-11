@@ -333,6 +333,9 @@ STATIC void instance_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_
         // return a bound method, with self being the type of this object
         dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
         dest[1] = mp_obj_get_type(self);
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
+        // Don't try to bind types
+        dest[0] = member;
     } else if (mp_obj_is_callable(member)) {
         // return a bound method, with self being this object
         dest[0] = member;
@@ -841,6 +844,15 @@ STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
+
+mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type) {
+    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    if (!mp_obj_is_subclass_fast(self_type, native_type)) {
+        return MP_OBJ_NULL;
+    }
+    mp_obj_instance_t *self = (mp_obj_instance_t*)self_in;
+    return self->subobj[0];
+}
 
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)

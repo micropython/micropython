@@ -99,12 +99,20 @@ mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
-    if (!MP_OBJ_IS_TYPE(another_in, &mp_type_tuple)) {
-        return false;
+    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    if (self_type->getiter != tuple_getiter) {
+        assert(0);
     }
+    mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = self_in;
     mp_obj_tuple_t *another = another_in;
+    if (another_type->getiter != tuple_getiter) {
+        // Slow path for user subclasses
+        another = mp_instance_cast_to_native_base(another, &mp_type_tuple);
+        if (another == MP_OBJ_NULL) {
+            return false;
+        }
+    }
 
     return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }

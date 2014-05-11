@@ -36,18 +36,18 @@
 #include "runtime0.h"
 #include "runtime.h"
 
-mp_obj_type_t *mp_obj_get_type(mp_obj_t o_in) {
+mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return (mp_obj_t)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
         return (mp_obj_t)&mp_type_str;
     } else {
-        mp_obj_base_t *o = o_in;
+        const mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;
     }
 }
 
-const char *mp_obj_get_type_str(mp_obj_t o_in) {
+const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type(o_in)->name);
 }
 

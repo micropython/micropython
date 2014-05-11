@@ -27,3 +27,14 @@ except ValueError:
     print("Raised ValueError")
 else:
     print("Did not raise ValueError")
+
+# Bytes
+print(b"abba".partition(b'b'))
+try:
+    print(b"abba".partition('b'))
+except TypeError:
+    print("Raised TypeError")
+try:
+    print("abba".partition(b'b'))
+except TypeError:
+    print("Raised TypeError")
