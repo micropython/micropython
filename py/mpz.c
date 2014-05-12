@@ -213,8 +213,8 @@ STATIC uint mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
         *idig = *jdig & *kdig;
     }
 
-    for (; jlen > 0; --jlen, ++idig) {
-        *idig = 0;
+    // remove trailing zeros
+    for (; idig > oidig && *idig == 0; --idig) {
     }
 
     return idig - oidig;
