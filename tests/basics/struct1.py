@@ -16,3 +16,8 @@ print(struct.pack(">b", 1))
 
 print(struct.pack("<bI", -128, 256))
 print(struct.pack(">bI", -128, 256))
+
+print(struct.calcsize("100sI"))
+print(struct.calcsize("97sI"))
+print(struct.unpack("<6sH", b"foo\0\0\0\x12\x34"))
+print(struct.pack("<6sH", b"foo", 10000))
