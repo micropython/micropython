@@ -49,24 +49,6 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
-#ifdef WRITE_CODE
-FILE *fp_write_code = NULL;
-#endif
-
-void mp_emit_glue_init(void) {
-#ifdef WRITE_CODE
-    fp_write_code = fopen("out-code", "wb");
-#endif
-}
-
-void mp_emit_glue_deinit(void) {
-#ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fclose(fp_write_code);
-    }
-#endif
-}
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
@@ -123,10 +105,9 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     DEBUG_printf("\n");
 
 #ifdef WRITE_CODE
-    if (fp_write_code != NULL) {
-        fwrite(fun_data, len, 1, fp_write_code);
-        fflush(fp_write_code);
-    }
+    FILE *fp_write_code = fopen("out-code", "wb");
+    fwrite(fun_data, len, 1, fp_write_code);
+    fclose(fp_write_code);
 #endif
 #endif
 }

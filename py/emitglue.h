@@ -52,9 +52,6 @@ typedef struct _mp_code_t {
     };
 } mp_raw_code_t;
 
-void mp_emit_glue_init(void);
-void mp_emit_glue_deinit(void);
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);

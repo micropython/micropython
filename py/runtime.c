@@ -77,8 +77,6 @@ void mp_init(void) {
     // __debug__ enabled by default
     mp_set_debug(true);
 
-    mp_emit_glue_init();
-
     // init global module stuff
     mp_module_init();
 
@@ -93,7 +91,6 @@ void mp_init(void) {
 void mp_deinit(void) {
     //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
-    mp_emit_glue_deinit();
 
     // call port specific deinitialization if any 
 #ifdef MICROPY_PORT_INIT_FUNC
