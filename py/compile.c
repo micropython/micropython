@@ -1147,7 +1147,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
 
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == MP_QSTR_bytecode) {
-        *emit_options = MP_EMIT_OPT_BYTE_CODE;
+        *emit_options = MP_EMIT_OPT_BYTECODE;
 #if MICROPY_EMIT_NATIVE
     } else if (attr == MP_QSTR_native) {
         *emit_options = MP_EMIT_OPT_NATIVE_PYTHON;

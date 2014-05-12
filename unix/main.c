@@ -230,7 +230,7 @@ void pre_process_options(int argc, char **argv) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
-                    emit_opt = MP_EMIT_OPT_BYTE_CODE;
+                    emit_opt = MP_EMIT_OPT_BYTECODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
