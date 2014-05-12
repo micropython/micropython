@@ -52,9 +52,21 @@
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
+
+#if MICROPY_MOD_FFI == 1
+#define MICROPY_MOD_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
+#else
+#define MICROPY_MOD_FFI_DEF
+#endif
+#if MICROPY_MOD_TIME == 1
+#define MICROPY_MOD_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time },
+#else
+#define MICROPY_MOD_TIME_DEF
+#endif
+
 #define MICROPY_EXTRA_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
+    MICROPY_MOD_FFI_DEF \
+    MICROPY_MOD_TIME_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
 
 // type definitions for the specific machine
