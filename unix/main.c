@@ -335,6 +335,9 @@ int main(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
+            } else if (strcmp(argv[a], "-O") == 0) {
+                // optimisation; sets __debug__ to False
+                mp_set_debug(false);
             } else {
                 return usage(argv);
             }
