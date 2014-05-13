@@ -38,6 +38,7 @@
 #include "runtime.h"
 #include "pfenv.h"
 #include "objstr.h"
+#include "objlist.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args);
 const mp_obj_t mp_const_empty_bytes;
@@ -482,6 +483,69 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
 
     return res;
 }
+
+STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
+    if (n_args < 3) {
+        // If we don't have split limit, it doesn't matter from which side
+        // we split.
+        return str_split(n_args, args);
+    }
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
+    mp_obj_t sep = args[1];
+    GET_STR_DATA_LEN(args[0], s, len);
+
+    machine_int_t splits = mp_obj_get_int(args[2]);
+    machine_int_t org_splits = splits;
+    // Preallocate list to the max expected # of elements, as we
+    // will fill it from the end.
+    mp_obj_list_t *res = mp_obj_new_list(splits + 1, NULL);
+    int idx = splits;
+
+    if (sep == mp_const_none) {
+        // TODO
+        assert(0);
+    } else {
+        uint sep_len;
+        const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
+
+        if (sep_len == 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "empty separator"));
+        }
+
+        const byte *beg = s;
+        const byte *last = s + len;
+        for (;;) {
+            s = last - sep_len;
+            for (;;) {
+                if (splits == 0 || s < beg) {
+                    break;
+                } else if (memcmp(s, sep_str, sep_len) == 0) {
+                    break;
+                }
+                s--;
+            }
+            if (s < beg || splits == 0) {
+                res->items[idx] = str_new(self_type, beg, last - beg);
+                break;
+            }
+            res->items[idx--] = str_new(self_type, s + sep_len, last - s - sep_len);
+            last = s;
+            if (splits > 0) {
+                splits--;
+            }
+        }
+        if (idx != 0) {
+            // We split less parts than split limit, now go cleanup surplus
+            int used = org_splits + 1 - idx;
+            memcpy(res->items, &res->items[idx], used * sizeof(mp_obj_t));
+            mp_seq_clear(res->items, used, res->alloc, sizeof(*res->items));
+            res->len = used;
+        }
+    }
+
+    return res;
+}
+
 
 STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction, bool is_index) {
     assert(2 <= n_args && n_args <= 4);
@@ -1460,6 +1524,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
@@ -1483,6 +1548,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rindex), (mp_obj_t)&str_rindex_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rsplit), (mp_obj_t)&str_rsplit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_lstrip), (mp_obj_t)&str_lstrip_obj },
