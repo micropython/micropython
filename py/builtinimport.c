@@ -54,8 +54,16 @@
 
 #define PATH_SEP_CHAR '/'
 
-vstr_t current_path;
+
 char vstr_current_path_buf[MICROPY_PATH_MAX];
+
+vstr_t current_path = {
+  .alloc = MICROPY_PATH_MAX,
+  .len = 0,
+  .buf = vstr_current_path_buf,
+  .had_error = false,
+  .fixed_buf = true,
+};
 
 int find_last_pos(const char* str, char c) {
     int i = strlen(str) - 1;
@@ -68,9 +76,8 @@ int find_last_pos(const char* str, char c) {
 }
 
 void set_current_path(const char* path) {
-    if (current_path.alloc == 0 ) {
-        vstr_init_fixed_buf(&current_path, MICROPY_PATH_MAX, vstr_current_path_buf);
-    }
+    vstr_init_fixed_buf(&current_path, MICROPY_PATH_MAX, vstr_current_path_buf);
+
     vstr_reset(&current_path);
     
     int pos = find_last_pos(path, PATH_SEP_CHAR);
