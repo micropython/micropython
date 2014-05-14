@@ -49,6 +49,7 @@
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 
+extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
@@ -68,6 +69,7 @@ extern const struct _mp_obj_module_t mp_module_ffi;
     MICROPY_MOD_FFI_DEF \
     MICROPY_MOD_TIME_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
 
 // type definitions for the specific machine
 

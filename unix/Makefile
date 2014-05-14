@@ -68,6 +68,7 @@ SRC_C = \
 	input.c \
 	file.c \
 	modsocket.c \
+	modos.c \
 	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
