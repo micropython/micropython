@@ -49,3 +49,5 @@ print(b"1" <= b"10")
 print(b"1" <= b"1/")
 print(b"10" <= b"1")
 print(b"1/" <= b"1")
+
+print(b'o' == b'\n')
