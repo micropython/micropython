@@ -606,13 +606,17 @@ STATIC mp_obj_t str_rindex(uint n_args, const mp_obj_t *args) {
 }
 
 // TODO: (Much) more variety in args
-STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
-    GET_STR_DATA_LEN(self_in, str, str_len);
-    GET_STR_DATA_LEN(arg, prefix, prefix_len);
-    if (prefix_len > str_len) {
+STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], str, str_len);
+    GET_STR_DATA_LEN(args[1], prefix, prefix_len);
+    uint index_val = 0;
+    if (n_args > 2) {
+        index_val = mp_get_index(&mp_type_str, str_len, args[2], true);
+    }
+    if (prefix_len + index_val > str_len) {
         return mp_const_false;
     }
-    return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
+    return MP_BOOL(memcmp(str + index_val, prefix, prefix_len) == 0);
 }
 
 enum { LSTRIP, RSTRIP, STRIP };
@@ -1536,7 +1540,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
