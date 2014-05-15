@@ -54,7 +54,7 @@ const mp_obj_t mp_const_empty_bytes;
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
-STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
+mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 STATIC NORETURN void arg_type_mixup();
 
@@ -1612,7 +1612,7 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     return o;
 }
 
-STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
+mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;

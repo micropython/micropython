@@ -246,6 +246,7 @@ typedef struct _mp_stream_p_t {
     machine_int_t (*read)(mp_obj_t obj, void *buf, machine_uint_t size, int *errcode);
     machine_int_t (*write)(mp_obj_t obj, const void *buf, machine_uint_t size, int *errcode);
     // add seek() ?
+    int is_bytes : 1;
 } mp_stream_p_t;
 
 struct _mp_obj_type_t {
@@ -321,6 +322,7 @@ extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
+extern const mp_obj_type_t mp_type_bytesio;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;

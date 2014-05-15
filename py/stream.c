@@ -32,6 +32,7 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objstr.h"
 #include "stream.h"
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
@@ -52,6 +53,8 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 #else
 #define is_nonblocking_error(errno) (0)
 #endif
+
+#define STREAM_CONTENT_TYPE(stream) (((stream)->is_bytes) ? &mp_type_bytes : &mp_type_str)
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
@@ -78,7 +81,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
     } else {
-        mp_obj_t s = mp_obj_new_str(buf, out_sz, false); // will reallocate to use exact size
+        mp_obj_t s = str_new(STREAM_CONTENT_TYPE(o->type->stream_p), buf, out_sz); // will reallocate to use exact size
         m_free(buf, sz);
         return s;
     }
@@ -155,7 +158,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
         }
     }
 
-    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, total_size, false);
+    mp_obj_t s = str_new(STREAM_CONTENT_TYPE(o->type->stream_p), (byte*)vstr->buf, total_size);
     vstr_free(vstr);
     return s;
 }
@@ -204,7 +207,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
         }
     }
     // TODO need a string creation API that doesn't copy the given data
-    mp_obj_t ret = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    mp_obj_t ret = str_new(STREAM_CONTENT_TYPE(o->type->stream_p), (byte*)vstr->buf, vstr->len);
     vstr_free(vstr);
     return ret;
 }

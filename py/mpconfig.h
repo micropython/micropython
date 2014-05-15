@@ -225,6 +225,10 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_MOD_IO (1)
 #endif
 
+#ifndef MICROPY_IO_BYTESIO
+#define MICROPY_IO_BYTESIO (1)
+#endif
+
 // Whether to provide "struct" module
 #ifndef MICROPY_ENABLE_MOD_STRUCT
 #define MICROPY_ENABLE_MOD_STRUCT (1)
