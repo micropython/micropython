@@ -328,6 +328,17 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
                 return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
             }
+            if (lhs_type == &mp_type_bytes) {
+                mp_buffer_info_t bufinfo;
+                if (!mp_get_buffer(rhs_in, &bufinfo, MP_BUFFER_READ)) {
+                    goto uncomparable;
+                }
+                return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, bufinfo.buf, bufinfo.len));
+            }
+uncomparable:
+            if (op == MP_BINARY_OP_EQUAL) {
+                return mp_const_false;
+            }
     }
 
     return MP_OBJ_NOT_SUPPORTED;
