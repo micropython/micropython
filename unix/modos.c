@@ -50,12 +50,12 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     RAISE_ERRNO(res, errno);
 
     mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
+    t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)sb.st_mode);
     t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.st_ino);
     t->items[2] = MP_OBJ_NEW_SMALL_INT((machine_int_t)sb.st_dev);
     t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.st_nlink);
-    t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.st_uid);
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.st_gid);
+    t->items[4] = MP_OBJ_NEW_SMALL_INT((machine_int_t)sb.st_uid);
+    t->items[5] = MP_OBJ_NEW_SMALL_INT((machine_int_t)sb.st_gid);
     t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.st_size);
     t->items[7] = MP_OBJ_NEW_SMALL_INT(sb.st_atime);
     t->items[8] = MP_OBJ_NEW_SMALL_INT(sb.st_mtime);
