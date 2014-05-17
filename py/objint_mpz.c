@@ -58,10 +58,10 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // formatted size will be in *fmt_size.
 //
 // This particular routine should only be called for the mpz representation of the int.
-char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
-    mp_obj_int_t *self = self_in;
+    const mp_obj_int_t *self = self_in;
 
     uint needed_size = mpz_as_str_size_formatted(&self->mpz, base, prefix, comma);
     if (needed_size > *buf_size) {
@@ -284,11 +284,11 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     }
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = self_in;
         machine_int_t value;
         if (mpz_as_int_checked(&self->mpz, &value)) {
             return value;

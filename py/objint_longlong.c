@@ -186,7 +186,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     }
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     // TODO: Check overflow
     return mp_obj_int_get(self_in);
 }

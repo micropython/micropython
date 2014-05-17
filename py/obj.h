@@ -158,7 +158,7 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
 } mp_map_lookup_kind_t;
 
-static inline bool MP_MAP_SLOT_IS_FILLED(mp_map_t *map, machine_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
+static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, machine_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
 void mp_map_init(mp_map_t *map, int n);
 void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
@@ -177,7 +177,7 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
-static inline bool MP_SET_SLOT_IS_FILLED(mp_set_t *set, machine_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
+static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, machine_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
 
 void mp_set_init(mp_set_t *set, int n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -424,8 +424,8 @@ bool mp_obj_is_callable(mp_obj_t o_in);
 machine_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
-machine_int_t mp_obj_get_int(mp_obj_t arg);
-bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value);
+machine_int_t mp_obj_get_int(mp_const_obj_t arg);
+bool mp_obj_get_int_maybe(mp_const_obj_t arg, machine_int_t *value);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
@@ -452,7 +452,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in);
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 #endif
 // Will raise exception if value doesn't fit into machine_int_t
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in);
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in);
 
 // exception
 #define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
@@ -540,7 +540,7 @@ typedef struct _mp_obj_fun_native_t { // need this so we can define const object
 
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2);
-const char *mp_obj_fun_get_name(mp_obj_t fun);
+const char *mp_obj_fun_get_name(mp_const_obj_t fun);
 const char *mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);

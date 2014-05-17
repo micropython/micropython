@@ -222,7 +222,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     return false;
 }
 
-machine_int_t mp_obj_get_int(mp_obj_t arg) {
+machine_int_t mp_obj_get_int(mp_const_obj_t arg) {
     // This function essentially performs implicit type conversion to int
     // Note that Python does NOT provide implicit type conversion from
     // float to int in the core expression language, try some_list[1.0].
@@ -242,7 +242,7 @@ machine_int_t mp_obj_get_int(mp_obj_t arg) {
 // returns false if arg is not of integral type
 // returns true and sets *value if it is of integral type
 // can throw OverflowError if arg is of integral type, but doesn't fit in a machine_int_t
-bool mp_obj_get_int_maybe(mp_obj_t arg, machine_int_t *value) {
+bool mp_obj_get_int_maybe(mp_const_obj_t arg, machine_int_t *value) {
     if (arg == mp_const_false) {
         *value = 0;
     } else if (arg == mp_const_true) {
