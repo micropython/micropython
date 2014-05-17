@@ -258,7 +258,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
