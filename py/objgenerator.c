@@ -99,10 +99,6 @@ void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_info), self_in);
 }
 
-mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = self_in;
@@ -251,7 +247,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .getiter = gen_instance_getiter,
+    .getiter = mp_identity,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
