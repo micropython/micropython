@@ -49,8 +49,10 @@
 /******************************************************************************/
 // instance object
 
+#define is_instance_type(type) ((type)->make_new == instance_make_new)
 #define is_native_type(type) ((type)->make_new != instance_make_new)
 STATIC mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
 
 STATIC mp_obj_t mp_obj_new_instance(mp_obj_t class, uint subobjs) {
     mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
@@ -120,10 +122,10 @@ STATIC void mp_obj_class_lookup(mp_obj_instance_t *o, const mp_obj_type_t *type,
             if (elem != NULL) {
                 dest[0] = elem->value;
                 if (o != MP_OBJ_NULL && is_native_type(type)) {
-                    dest[1] = o->subobj[0];
+                    instance_convert_return_attr(o->subobj[0], type, elem->value, dest);
+                } else {
+                    instance_convert_return_attr(o, type, elem->value, dest);
                 }
-                // TODO: Sensibly, we should call instance_convert_return_attr() here,
-                // instead of multiple places later. Also, this code duplicates runtime.c much.
                 return;
             }
         }
@@ -216,38 +218,56 @@ STATIC mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, cons
 
     mp_obj_instance_t *o = mp_obj_new_instance(self_in, num_native_bases);
 
-    // look for __init__ function
+    // look for __new__ function
     mp_obj_t init_fn[2] = {MP_OBJ_NULL};
-    mp_obj_class_lookup(NULL, self, MP_QSTR___init__, offsetof(mp_obj_type_t, make_new), init_fn);
+    mp_obj_class_lookup(NULL, self, MP_QSTR___new__, offsetof(mp_obj_type_t, make_new), init_fn);
 
+    mp_obj_t new_ret = o;
     if (init_fn[0] == MP_OBJ_SENTINEL) {
         // Native type's constructor is what wins - it gets all our arguments,
         // and none Python classes are initialized at all.
         o->subobj[0] = native_base->make_new((mp_obj_type_t*)native_base, n_args, n_kw, args);
     } else if (init_fn[0] != MP_OBJ_NULL) {
-        // We need to default-initialize any native subobjs first
-        if (num_native_bases > 0) {
-            o->subobj[0] = native_base->make_new((mp_obj_type_t*)native_base, 0, 0, NULL);
-        }
-        // now call Python class __init__ function with all args
-        mp_obj_t init_ret;
+        // now call Python class __new__ function with all args
         if (n_args == 0 && n_kw == 0) {
-            init_ret = mp_call_function_n_kw(init_fn[0], 1, 0, (mp_obj_t*)(void*)&o);
+            new_ret = mp_call_function_n_kw(init_fn[0], 1, 0, (mp_obj_t*)(void*)&self_in);
         } else {
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
-            args2[0] = o;
+            args2[0] = self_in;
             memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
-            init_ret = mp_call_function_n_kw(init_fn[0], n_args + 1, n_kw, args2);
+            new_ret = mp_call_function_n_kw(init_fn[0], n_args + 1, n_kw, args2);
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
+        }
+
+    }
+
+    // https://docs.python.org/3.4/reference/datamodel.html#object.__new__
+    // "If __new__() does not return an instance of cls, then the new instance’s __init__() method will not be invoked."
+    if (mp_obj_get_type(new_ret) != self_in) {
+        return new_ret;
+    }
+
+    o = new_ret;
+
+    // now call Python class __init__ function with all args
+    init_fn[0] = init_fn[1] = NULL;
+    mp_obj_class_lookup(o, self, MP_QSTR___init__, 0, init_fn);
+    if (init_fn[0] != MP_OBJ_NULL) {
+        mp_obj_t init_ret;
+        if (n_args == 0 && n_kw == 0) {
+            init_ret = mp_call_method_n_kw(0, 0, init_fn);
+        } else {
+            mp_obj_t *args2 = m_new(mp_obj_t, 2 + n_args + 2 * n_kw);
+            args2[0] = init_fn[0];
+            args2[1] = init_fn[1];
+            memcpy(args2 + 2, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            init_ret = mp_call_method_n_kw(n_args, n_kw, args2);
+            m_del(mp_obj_t, args2, 2 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
         }
 
-    } else {
-        if (n_args != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object() takes no parameters"));
-        }
     }
 
     return o;
@@ -325,7 +345,7 @@ STATIC const qstr binary_op_method_name[] = {
 // and put the result in the dest[] array for a possible method call.
 // Conversion means dealing with static/class methods, callables, and values.
 // see http://docs.python.org/3.3/howto/descriptor.html
-STATIC void instance_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_t *dest) {
+STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
     assert(dest[1] == NULL);
     if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
         // return just the function
@@ -333,7 +353,7 @@ STATIC void instance_convert_return_attr(mp_obj_t self, mp_obj_t member, mp_obj_
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
         // return a bound method, with self being the type of this object
         dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-        dest[1] = mp_obj_get_type(self);
+        dest[1] = (mp_obj_t)type;
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
         // Don't try to bind types
         dest[0] = member;
@@ -357,14 +377,11 @@ STATIC mp_obj_t instance_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return MP_OBJ_NOT_SUPPORTED;
     }
     */
-    mp_obj_t member[2] = {MP_OBJ_NULL};
-    mp_obj_class_lookup(lhs, lhs->base.type, op_name, offsetof(mp_obj_type_t, binary_op), member);
-    if (member[0] == MP_OBJ_SENTINEL) {
+    mp_obj_t dest[3] = {MP_OBJ_NULL};
+    mp_obj_class_lookup(lhs, lhs->base.type, op_name, offsetof(mp_obj_type_t, binary_op), dest);
+    if (dest[0] == MP_OBJ_SENTINEL) {
         return mp_binary_op(op, lhs->subobj[0], rhs_in);
-    } else if (member[0] != MP_OBJ_NULL) {
-        mp_obj_t dest[3];
-        dest[1] = MP_OBJ_NULL;
-        instance_convert_return_attr(lhs_in, member[0], dest);
+    } else if (dest[0] != MP_OBJ_NULL) {
         dest[2] = rhs_in;
         return mp_call_method_n_kw(1, 0, dest);
     } else {
@@ -374,6 +391,7 @@ STATIC mp_obj_t instance_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
+    assert(is_instance_type(mp_obj_get_type(self_in)));
     mp_obj_instance_t *self = self_in;
 
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
@@ -387,9 +405,8 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_class_lookup(self, self->base.type, attr, 0, dest);
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
-        if (0) {
 #if MICROPY_ENABLE_PROPERTY
-        } else if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+        if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
             // object member is a property
             // delegate the store to the property
             // TODO should this be part of instance_convert_return_attr?
@@ -400,15 +417,8 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
                 // TODO should we convert the returned value using instance_convert_return_attr?
             }
-#endif
-        } else {
-            // not a property
-            // if we don't yet have bound method (supposedly from native base), go
-            // try to convert own attrs.
-            if (dest[1] == MP_OBJ_NULL) {
-                instance_convert_return_attr(self_in, member, dest);
-            }
         }
+#endif
         return;
     }
 
@@ -516,7 +526,6 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
         mp_obj_class_lookup(self, self->base.type, MP_QSTR___getitem__, 0, member);
         if (member[0] != MP_OBJ_NULL) {
             // __getitem__ exists, create an iterator
-            instance_convert_return_attr(self_in, member[0], member);
             return mp_obj_new_getitem_iter(member);
         }
         return MP_OBJ_NULL;
@@ -584,24 +593,7 @@ STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 #endif
-    mp_obj_t member[2] = {MP_OBJ_NULL};
-    mp_obj_class_lookup(NULL, self, attr, 0, member);
-    if (member[0] != MP_OBJ_NULL) {
-        // check if the methods are functions, static or class methods
-        // see http://docs.python.org/3.3/howto/descriptor.html
-        if (MP_OBJ_IS_TYPE(member[0], &mp_type_staticmethod)) {
-            // return just the function
-            dest[0] = ((mp_obj_static_class_method_t*)member[0])->fun;
-        } else if (MP_OBJ_IS_TYPE(member[0], &mp_type_classmethod)) {
-            // return a bound method, with self being this class
-            dest[0] = ((mp_obj_static_class_method_t*)member[0])->fun;
-            dest[1] = self_in;
-        } else {
-            // return just the function
-            // TODO need to wrap in a type check for the first argument; eg list.append(1,1) needs to throw an exception
-            dest[0] = member[0];
-        }
-    }
+    mp_obj_class_lookup(NULL, self, attr, 0, dest);
 }
 
 STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
@@ -742,12 +734,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        mp_obj_t member[2] = {MP_OBJ_NULL};
-        mp_obj_class_lookup(self->obj, (mp_obj_type_t*)items[i], attr, 0, member);
-        if (member[0] != MP_OBJ_NULL) {
-            instance_convert_return_attr(self->obj, member[0], dest);
-            return;
-        }
+        mp_obj_class_lookup(self->obj, (mp_obj_type_t*)items[i], attr, 0, dest);
     }
 }
 
