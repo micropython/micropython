@@ -70,8 +70,9 @@ STATIC NORETURN mp_obj_t pyb_bootloader(uint n_args, const mp_obj_t *args) {
     HAL_RCC_DeInit();
     HAL_DeInit();
 
-    __set_MSP(*((uint32_t*) 0x1fff0000));
-    ((void (*)(void)) *((uint32_t*) 0x1fff0004))();
+    __HAL_REMAPMEMORY_SYSTEMFLASH();
+    __set_MSP(*((uint32_t*) 0x00000000));
+    ((void (*)(void)) *((uint32_t*) 0x00000004))();
 
     while (1);
 }
