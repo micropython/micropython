@@ -295,7 +295,11 @@ mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
     DMA_Handle.Init.PeriphBurst = DMA_PBURST_SINGLE;
     HAL_DMA_Init(&DMA_Handle);
 
-    __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+    if (self->dac_channel == DAC_CHANNEL_1) {
+        __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+    } else {
+        __HAL_LINKDMA(&DAC_Handle, DMA_Handle2, DMA_Handle);
+    }
 
     DAC_Handle.Instance = DAC;
     DAC_Handle.State = HAL_DAC_STATE_RESET;
