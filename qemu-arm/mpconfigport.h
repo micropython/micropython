@@ -14,6 +14,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_PATH_MAX            (512)
+#define MICROPY_ENABLE_MOD_IO       (0)
 
 // type definitions for the specific machine
 
