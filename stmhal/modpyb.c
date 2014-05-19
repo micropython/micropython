@@ -64,7 +64,7 @@
 
 /// \function bootloader()
 /// Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t pyb_bootloader(uint n_args, const mp_obj_t *args) {
+STATIC NORETURN mp_obj_t pyb_bootloader(void) {
     storage_flush();
 
     HAL_RCC_DeInit();
@@ -76,7 +76,7 @@ STATIC NORETURN mp_obj_t pyb_bootloader(uint n_args, const mp_obj_t *args) {
 
     while (1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_bootloader_obj, 0, 1, pyb_bootloader);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
 
 /// \function info([dump_alloc_table])
 /// Print out lots of information about the board.
