@@ -45,6 +45,7 @@
 #define MICROPY_MOD_SYS_EXIT        (1)
 #define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_ENABLE_MOD_CMATH    (1)
+#define MICROPY_MOD_IO_FILEIO       (1)
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
