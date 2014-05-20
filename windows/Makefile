@@ -17,6 +17,9 @@ INC += -I$(BUILD)
 # compiler settings
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 LDFLAGS = $(LDFLAGS_MOD) -lm
+ifeq ($(CROSS_COMPILE),i686-w64-mingw32-)
+CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+endif
 
 # Debugging/Optimization
 ifdef DEBUG
