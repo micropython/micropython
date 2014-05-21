@@ -735,7 +735,11 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_class_lookup(self->obj, (mp_obj_type_t*)items[i], attr, 0, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            return;
+        }
     }
+    mp_obj_class_lookup(self->obj, &mp_type_object, attr, 0, dest);
 }
 
 const mp_obj_type_t mp_type_super = {
