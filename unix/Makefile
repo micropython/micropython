@@ -19,8 +19,8 @@ CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
-    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map
-else
+    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map,-order_file,order.def
+ else
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
  endif
 
@@ -71,6 +71,11 @@ SRC_C = \
 	modos.c \
 	$(SRC_MOD)
 
+# Must be the last file
+ifeq ($(UNAME_S),Darwin)
+SRC_C += seg_helpers.c
+endif
+	
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk

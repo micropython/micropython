@@ -43,11 +43,17 @@ typedef machine_uint_t regs_t[6];
 
 void gc_helper_get_regs(regs_t arr) {
     register long rbx asm ("rbx");
+    asm("" : "=r"(rbx));
     register long rbp asm ("rbp");
+    asm("" : "=r"(rbp));
     register long r12 asm ("r12");
+    asm("" : "=r"(r12));
     register long r13 asm ("r13");
+    asm("" : "=r"(r13));
     register long r14 asm ("r14");
+    asm("" : "=r"(r14));
     register long r15 asm ("r15");
+    asm("" : "=r"(r15));
     arr[0] = rbx;
     arr[1] = rbp;
     arr[2] = r12;

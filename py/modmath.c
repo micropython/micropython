@@ -151,6 +151,7 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_copysign), (mp_obj_t)&mp_math_copysign_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fabs), (mp_obj_t)&mp_math_fabs_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_floor), (mp_obj_t)&mp_math_floor_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fmod), (mp_obj_t)&mp_math_fmod_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_frexp), (mp_obj_t)&mp_math_frexp_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ldexp), (mp_obj_t)&mp_math_ldexp_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_modf), (mp_obj_t)&mp_math_modf_obj },

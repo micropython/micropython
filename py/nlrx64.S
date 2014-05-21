@@ -32,6 +32,10 @@
 
 #if !defined(__CYGWIN__)
 
+#if (defined(__APPLE__) && defined(__MACH__))
+#define nlr_jump_fail _nlr_jump_fail
+#endif // (defined(__APPLE__) && defined(__MACH__))
+
 /* uint nlr_push(rdi=nlr_buf_t *nlr) */
 #if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_push
