@@ -59,7 +59,7 @@ STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             // we don't even need to check for 2nd arg type.
             return MP_BOOL(lhs_in == rhs_in);
     }
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {

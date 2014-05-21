@@ -287,7 +287,7 @@ STATIC mp_obj_t instance_unary_op(int op, mp_obj_t self_in) {
     qstr op_name = unary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL;
     }
     */
     mp_obj_t member[2] = {MP_OBJ_NULL};
@@ -297,7 +297,7 @@ STATIC mp_obj_t instance_unary_op(int op, mp_obj_t self_in) {
     } else if (member[0] != MP_OBJ_NULL) {
         return mp_call_function_1(member[0], self_in);
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -374,7 +374,7 @@ STATIC mp_obj_t instance_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     qstr op_name = binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL;
     }
     */
     mp_obj_t dest[3] = {MP_OBJ_NULL};
@@ -385,7 +385,7 @@ STATIC mp_obj_t instance_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         dest[2] = rhs_in;
         return mp_call_method_n_kw(1, 0, dest);
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -499,7 +499,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
             return mp_const_none;
         }
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -632,7 +632,7 @@ STATIC mp_obj_t type_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return MP_BOOL(lhs_in == rhs_in);
 
         default:
-            return MP_OBJ_NOT_SUPPORTED;
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

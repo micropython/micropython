@@ -90,7 +90,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
         case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -108,7 +108,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
     } else {
         // unsupported type
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL;
     }
 
     // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
@@ -213,7 +213,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
 
             default:
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
         }
 
         return res;
@@ -233,7 +233,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_BOOL(cmp == 0);
 
             default:
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
         }
     }
 }

@@ -52,8 +52,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // These fake objects are used to indicate certain things in arguments or return
 // values, and should only be used when explicitly allowed.
 //
-//  - MP_OBJ_NULL : used to indicate the absence of an object.
-//  - MP_OBJ_NOT_SUPPORTED : a return value that indicates an unsupported operation.
+//  - MP_OBJ_NULL : used to indicate the absence of an object, or unsupported operation.
 //  - MP_OBJ_STOP_ITERATION : used instead of throwing a StopIteration, for efficiency.
 //  - MP_OBJ_SENTINEL : used for various internal purposes where one needs
 //    an object which is unique from all other objects, including MP_OBJ_NULL.
@@ -63,14 +62,12 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #if NDEBUG
 #define MP_OBJ_NULL             ((mp_obj_t)0)
-#define MP_OBJ_NOT_SUPPORTED    ((mp_obj_t)0)
 #define MP_OBJ_STOP_ITERATION   ((mp_obj_t)0)
 #define MP_OBJ_SENTINEL         ((mp_obj_t)4)
 #else
 #define MP_OBJ_NULL             ((mp_obj_t)0)
-#define MP_OBJ_NOT_SUPPORTED    ((mp_obj_t)4)
-#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)8)
-#define MP_OBJ_SENTINEL         ((mp_obj_t)12)
+#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)4)
+#define MP_OBJ_SENTINEL         ((mp_obj_t)8)
 #endif
 
 // These macros check for small int, qstr or object, and access small int and qstr values
@@ -256,15 +253,15 @@ struct _mp_obj_type_t {
     mp_make_new_fun_t make_new;     // to make an instance of the type
 
     mp_call_fun_t call;
-    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NOT_SUPPORTED if op not supported
-    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NOT_SUPPORTED if op not supported
+    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NULL if op not supported
+    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NULL if op not supported
 
     mp_load_attr_fun_t load_attr;
     mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
 
     mp_subscr_fun_t subscr;         // implements load, store, delete subscripting
                                     // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store
-                                    // can return MP_OBJ_NOT_SUPPORTED
+                                    // can return MP_OBJ_NULL if op not supported
 
     mp_fun_1_t getiter;
     mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
@@ -483,11 +480,11 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
-mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NOT_SUPPORTED
+mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
-mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NOT_SUPPORTED
+mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL if op not supported
 #endif
 
 // tuple

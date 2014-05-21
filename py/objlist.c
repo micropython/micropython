@@ -103,7 +103,7 @@ STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -112,7 +112,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             mp_obj_list_t *p = rhs;
             mp_obj_list_t *s = list_new(o->len + p->len);
@@ -121,7 +121,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         case MP_BINARY_OP_INPLACE_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             list_extend(lhs, rhs);
             return o;
@@ -129,7 +129,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_MULTIPLY: {
             machine_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             mp_obj_list_t *s = list_new(o->len * n);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
@@ -143,7 +143,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return MP_BOOL(list_cmp_helper(op, lhs, rhs));
 
         default:
-            return MP_OBJ_NOT_SUPPORTED;
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

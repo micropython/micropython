@@ -216,7 +216,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_binary_op
@@ -285,7 +285,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
             return mp_binary_op(op, rhs_in, lhs_in);
         }
     }
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 // this is a classmethod

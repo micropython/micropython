@@ -140,7 +140,7 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -166,7 +166,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         // TODO implement
         // TODO: confirmed that both bytearray and array.array support
         // slice deletion
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     } else {
         mp_obj_array_t *o = self_in;
         if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
@@ -174,7 +174,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 // Only getting a slice is suported so far, not assignment
                 // TODO: confirmed that both bytearray and array.array support
                 // slice assignment (incl. of different size)
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             machine_uint_t start, stop;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {

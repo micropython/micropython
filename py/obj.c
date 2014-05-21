@@ -122,7 +122,7 @@ int mp_obj_is_true(mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
-            if (result != MP_OBJ_NOT_SUPPORTED) {
+            if (result != MP_OBJ_NULL) {
                 return result == mp_const_true;
             }
         }
@@ -212,7 +212,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     mp_obj_type_t *type = mp_obj_get_type(o1);
     if (type->binary_op != NULL) {
         mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
-        if (r != MP_OBJ_NOT_SUPPORTED) {
+        if (r != MP_OBJ_NULL) {
             return r == mp_const_true ? true : false;
         }
     }
@@ -357,12 +357,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
-            mp_obj_t val = type->unary_op(MP_UNARY_OP_LEN, o_in);
-            // TODO: Here's the case of having MP_OBJ_NOT_SUPPORTED is confusing
-            if (val == MP_OBJ_NOT_SUPPORTED) {
-                return MP_OBJ_NULL;
-            }
-            return val;
+            return type->unary_op(MP_UNARY_OP_LEN, o_in);
         } else {
             return MP_OBJ_NULL;
         }
@@ -373,7 +368,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(base);
     if (type->subscr != NULL) {
         mp_obj_t ret = type->subscr(base, index, value);
-        if (ret != MP_OBJ_NOT_SUPPORTED) {
+        if (ret != MP_OBJ_NULL) {
             return ret;
         }
         // TODO: call base classes here?

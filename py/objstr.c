@@ -296,7 +296,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
         case MP_BINARY_OP_MULTIPLY: {
             if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
             byte *data;
@@ -341,7 +341,7 @@ uncomparable:
             }
     }
 
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
@@ -365,7 +365,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str(self_data + index_val, 1, true);
         }
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 

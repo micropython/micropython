@@ -200,7 +200,7 @@ mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
         mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(op, arg);
-            if (result != MP_OBJ_NOT_SUPPORTED) {
+            if (result != MP_OBJ_NULL) {
                 return result;
             }
         }
@@ -439,7 +439,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         mp_obj_type_t *type = mp_obj_get_type(rhs);
         if (type->binary_op != NULL) {
             mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != MP_OBJ_NOT_SUPPORTED) {
+            if (res != MP_OBJ_NULL) {
                 return res;
             }
         }
@@ -467,7 +467,7 @@ generic_binary_op:
     type = mp_obj_get_type(lhs);
     if (type->binary_op != NULL) {
         mp_obj_t result = type->binary_op(op, lhs, rhs);
-        if (result != MP_OBJ_NOT_SUPPORTED) {
+        if (result != MP_OBJ_NULL) {
             return result;
         }
     }
