@@ -739,6 +739,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             return;
         }
     }
+    mp_obj_class_lookup(self->obj, &mp_type_object, attr, 0, dest);
 }
 
 const mp_obj_type_t mp_type_super = {

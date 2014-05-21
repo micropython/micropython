@@ -47,8 +47,24 @@ STATIC mp_obj_t object_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return o;
 }
 
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t object___init__(uint n_args, const mp_obj_t *args) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
+#endif
+
+STATIC const mp_map_elem_t object_locals_dict_table[] = {
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&object___init___obj },
+    #endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
+
 const mp_obj_type_t mp_type_object = {
     { &mp_type_type },
     .name = MP_QSTR_object,
     .make_new = object_make_new,
+    .locals_dict = (mp_obj_t)&object_locals_dict,
 };
