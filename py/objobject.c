@@ -48,7 +48,7 @@ STATIC mp_obj_t object_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 }
 
 #if MICROPY_CPYTHON_COMPAT
-STATIC mp_obj_t object___init__(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t object___init__(mp_obj_t self) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
