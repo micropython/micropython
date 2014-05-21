@@ -75,6 +75,13 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
 #endif
 }
 
+void pyb_usb_dev_stop(void) {
+    if (dev_is_enabled) {
+        USBD_Stop(&hUSBDDevice);
+        dev_is_enabled = 0;
+    }
+}
+
 bool usb_vcp_is_enabled(void) {
     return dev_is_enabled;
 }

@@ -65,6 +65,7 @@
 /// \function bootloader()
 /// Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t pyb_bootloader(void) {
+    pyb_usb_dev_stop();
     storage_flush();
 
     HAL_RCC_DeInit();
