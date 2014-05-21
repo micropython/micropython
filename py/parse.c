@@ -134,13 +134,13 @@ STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int ar
         return;
     }
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
-        rule_stack_t *rs = m_renew_maybe(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MP_ALLOC_PARSE_RULE_INC);
+        rule_stack_t *rs = m_renew_maybe(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MICROPY_ALLOC_PARSE_RULE_INC);
         if (rs == NULL) {
             memory_error(parser);
             return;
         }
         parser->rule_stack = rs;
-        parser->rule_stack_alloc += MP_ALLOC_PARSE_RULE_INC;
+        parser->rule_stack_alloc += MICROPY_ALLOC_PARSE_RULE_INC;
     }
     rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
     rs->src_line = src_line;
@@ -263,13 +263,13 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
         return;
     }
     if (parser->result_stack_top >= parser->result_stack_alloc) {
-        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc + MP_ALLOC_PARSE_RESULT_INC);
+        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc + MICROPY_ALLOC_PARSE_RESULT_INC);
         if (pn == NULL) {
             memory_error(parser);
             return;
         }
         parser->result_stack = pn;
-        parser->result_stack_alloc += MP_ALLOC_PARSE_RESULT_INC;
+        parser->result_stack_alloc += MICROPY_ALLOC_PARSE_RESULT_INC;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
 }
@@ -350,11 +350,11 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
     parser.had_memory_error = false;
 
-    parser.rule_stack_alloc = MP_ALLOC_PARSE_RULE_INIT;
+    parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
     parser.rule_stack = m_new_maybe(rule_stack_t, parser.rule_stack_alloc);
 
-    parser.result_stack_alloc = MP_ALLOC_PARSE_RESULT_INIT;
+    parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
     parser.result_stack = m_new_maybe(mp_parse_node_t, parser.result_stack_alloc);
 

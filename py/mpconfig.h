@@ -37,43 +37,49 @@
 /* Memory allocation policy                                                  */
 
 // Initial amount for lexer indentation level
-#ifndef MP_ALLOC_LEXER_INDENT_INIT
-#define MP_ALLOC_LEXER_INDENT_INIT (10)
+#ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
+#define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
 #endif
 
 // Increment for lexer indentation level
-#ifndef MP_ALLOC_LEXEL_INDENT_INC
-#define MP_ALLOC_LEXEL_INDENT_INC (8)
+#ifndef MICROPY_ALLOC_LEXEL_INDENT_INC
+#define MICROPY_ALLOC_LEXEL_INDENT_INC (8)
 #endif
 
 // Initial amount for parse rule stack
-#ifndef MP_ALLOC_PARSE_RULE_INIT
-#define MP_ALLOC_PARSE_RULE_INIT (64)
+#ifndef MICROPY_ALLOC_PARSE_RULE_INIT
+#define MICROPY_ALLOC_PARSE_RULE_INIT (64)
 #endif
 
 // Increment for parse rule stack
-#ifndef MP_ALLOC_PARSE_RULE_INC
-#define MP_ALLOC_PARSE_RULE_INC (16)
+#ifndef MICROPY_ALLOC_PARSE_RULE_INC
+#define MICROPY_ALLOC_PARSE_RULE_INC (16)
 #endif
 
 // Initial amount for parse result stack
-#ifndef MP_ALLOC_PARSE_RESULT_INIT
-#define MP_ALLOC_PARSE_RESULT_INIT (32)
+#ifndef MICROPY_ALLOC_PARSE_RESULT_INIT
+#define MICROPY_ALLOC_PARSE_RESULT_INIT (32)
 #endif
 
 // Increment for parse result stack
-#ifndef MP_ALLOC_PARSE_RESULT_INC
-#define MP_ALLOC_PARSE_RESULT_INC (16)
+#ifndef MICROPY_ALLOC_PARSE_RESULT_INC
+#define MICROPY_ALLOC_PARSE_RESULT_INC (16)
 #endif
 
 // Initial amount for ids in a scope
-#ifndef MP_ALLOC_SCOPE_ID_INIT
-#define MP_ALLOC_SCOPE_ID_INIT (4)
+#ifndef MICROPY_ALLOC_SCOPE_ID_INIT
+#define MICROPY_ALLOC_SCOPE_ID_INIT (4)
 #endif
 
 // Increment for ids in a scope
-#ifndef MP_ALLOC_SCOPE_ID_INC
-#define MP_ALLOC_SCOPE_ID_INC (6)
+#ifndef MICROPY_ALLOC_SCOPE_ID_INC
+#define MICROPY_ALLOC_SCOPE_ID_INC (6)
+#endif
+
+// Maximum length of a path in the filesystem
+// So we can allocate a buffer on the stack for path manipulation in import
+#ifndef MICROPY_ALLOC_PATH_MAX
+#define MICROPY_ALLOC_PATH_MAX (512)
 #endif
 
 /*****************************************************************************/
@@ -101,6 +107,14 @@
 #endif
 
 /*****************************************************************************/
+/* Compiler configuration                                                    */
+
+// Whether to enable constant optimisation; id = const(value)
+#ifndef MICROPY_COMP_CONST
+#define MICROPY_COMP_CONST (1)
+#endif
+
+/*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
 // Whether to collect memory allocation stats
@@ -119,11 +133,6 @@
 /*****************************************************************************/
 /* Fine control over Python features                                         */
 
-// Whether to enable constant optimisation; id = const(value)
-#ifndef MICROPY_ENABLE_CONST
-#define MICROPY_ENABLE_CONST (1)
-#endif
-
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)
@@ -135,13 +144,13 @@
 #endif
 
 // Whether to include REPL helper function
-#ifndef MICROPY_ENABLE_REPL_HELPERS
-#define MICROPY_ENABLE_REPL_HELPERS (0)
+#ifndef MICROPY_HELPER_REPL
+#define MICROPY_HELPER_REPL (0)
 #endif
 
 // Whether to include lexer helper function for unix
-#ifndef MICROPY_ENABLE_LEXER_UNIX
-#define MICROPY_ENABLE_LEXER_UNIX (0)
+#ifndef MICROPY_HELPER_LEXER_UNIX
+#define MICROPY_HELPER_LEXER_UNIX (0)
 #endif
 
 // Long int implementation
@@ -277,12 +286,6 @@ typedef double mp_float_t;
 #define MICROPY_CPYTHON_COMPAT (1)
 #endif
 
-// Maximum length of a path in the filesystem
-// So we can allocate a buffer on the stack for path manipulation in import
-#ifndef MICROPY_PATH_MAX
-#define MICROPY_PATH_MAX (512)
-#endif
-
 // Whether POSIX-semantics non-blocking streams are supported
 #ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK (0)
@@ -290,23 +293,26 @@ typedef double mp_float_t;
 
 // Whether to use computed gotos in the VM, or a switch
 // Computed gotos are roughly 10% faster, and increase VM code size by a little
-#ifndef MICROPY_USE_COMPUTED_GOTO
-#define MICROPY_USE_COMPUTED_GOTO (0)
+#ifndef MICROPY_OPT_COMPUTED_GOTO
+#define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+/*****************************************************************************/
+/* Hooks for a port to add builtins                                          */
+
 // Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
-#ifndef MICROPY_EXTRA_BUILTINS
-#define MICROPY_EXTRA_BUILTINS
+#ifndef MICROPY_PORT_BUILTINS
+#define MICROPY_PORT_BUILTINS
 #endif
 
 // Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
-#ifndef MICROPY_EXTRA_BUILTIN_MODULES
-#define MICROPY_EXTRA_BUILTIN_MODULES
+#ifndef MICROPY_PORT_BUILTIN_MODULES
+#define MICROPY_PORT_BUILTIN_MODULES
 #endif
 
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.
-#ifndef MICROPY_EXTRA_CONSTANTS
-#define MICROPY_EXTRA_CONSTANTS
+#ifndef MICROPY_PORT_CONSTANTS
+#define MICROPY_PORT_CONSTANTS
 #endif
 
 /*****************************************************************************/

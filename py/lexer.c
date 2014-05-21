@@ -218,8 +218,8 @@ STATIC void next_char(mp_lexer_t *lex) {
 void indent_push(mp_lexer_t *lex, uint indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
         // TODO use m_renew_maybe and somehow indicate an error if it fails... probably by using MP_TOKEN_MEMORY_ERROR
-        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level + MP_ALLOC_LEXEL_INDENT_INC);
-        lex->alloc_indent_level += MP_ALLOC_LEXEL_INDENT_INC;
+        lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level + MICROPY_ALLOC_LEXEL_INDENT_INC);
+        lex->alloc_indent_level += MICROPY_ALLOC_LEXEL_INDENT_INC;
     }
     lex->indent_level[lex->num_indent_level++] = indent;
 }
@@ -731,7 +731,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     lex->column = 1;
     lex->emit_dent = 0;
     lex->nested_bracket_level = 0;
-    lex->alloc_indent_level = MP_ALLOC_LEXER_INDENT_INIT;
+    lex->alloc_indent_level = MICROPY_ALLOC_LEXER_INDENT_INIT;
     lex->num_indent_level = 1;
     lex->indent_level = m_new_maybe(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);

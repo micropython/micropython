@@ -278,7 +278,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     DEBUG_printf("Module not yet loaded\n");
 
     uint last = 0;
-    VSTR_FIXED(path, MICROPY_PATH_MAX)
+    VSTR_FIXED(path, MICROPY_ALLOC_PATH_MAX)
     module_obj = MP_OBJ_NULL;
     mp_obj_t top_module_obj = MP_OBJ_NULL;
     mp_obj_t outer_module_obj = MP_OBJ_NULL;

@@ -24,6 +24,6 @@
  * THE SOFTWARE.
  */
 
-#if MICROPY_ENABLE_REPL_HELPERS
+#if MICROPY_HELPER_REPL
 bool mp_repl_continue_with_input(const char *input);
 #endif

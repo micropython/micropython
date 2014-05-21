@@ -26,6 +26,7 @@
 
 // options to control how Micro Python is built
 
+#define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -34,14 +35,13 @@
 #define MICROPY_ENABLE_FROZENSET    (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_ENABLE_REPL_HELPERS (1)
-#define MICROPY_ENABLE_LEXER_UNIX   (1)
+#define MICROPY_HELPER_REPL         (1)
+#define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_PATH_MAX            (PATH_MAX)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
-#define MICROPY_USE_COMPUTED_GOTO   (1)
+#define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_MOD_SYS_EXIT        (1)
 #define MICROPY_MOD_SYS_STDFILES    (1)
 #define MICROPY_ENABLE_MOD_CMATH    (1)
@@ -66,7 +66,7 @@ extern const struct _mp_obj_module_t mp_module_ffi;
 #define MICROPY_MOD_TIME_DEF
 #endif
 
-#define MICROPY_EXTRA_BUILTIN_MODULES \
+#define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_MOD_FFI_DEF \
     MICROPY_MOD_TIME_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
@@ -91,6 +91,6 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 
 extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
-#define MICROPY_EXTRA_BUILTINS \
+#define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
