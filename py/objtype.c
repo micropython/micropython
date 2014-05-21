@@ -51,7 +51,7 @@
 
 #define is_instance_type(type) ((type)->make_new == instance_make_new)
 #define is_native_type(type) ((type)->make_new != instance_make_new)
-STATIC mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
 STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
 
 STATIC mp_obj_t mp_obj_new_instance(mp_obj_t class, uint subobjs) {
@@ -208,7 +208,7 @@ STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void 
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-STATIC mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
@@ -217,6 +217,14 @@ STATIC mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, cons
     assert(num_native_bases < 2);
 
     mp_obj_instance_t *o = mp_obj_new_instance(self_in, num_native_bases);
+
+    // This executes only "__new__" part of obejection creation.
+    // TODO: This won't work will for classes with native bases.
+    // TODO: This is hack, should be resolved along the lines of
+    // https://github.com/micropython/micropython/issues/606#issuecomment-43685883
+    if (n_args == 1 && *args == MP_OBJ_SENTINEL) {
+        return o;
+    }
 
     // look for __new__ function
     mp_obj_t init_fn[2] = {MP_OBJ_NULL};
