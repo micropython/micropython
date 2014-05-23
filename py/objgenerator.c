@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,10 +97,6 @@ typedef struct _mp_obj_gen_instance_t {
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_gen_instance_t *self = self_in;
     print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_info), self_in);
-}
-
-mp_obj_t gen_instance_getiter(mp_obj_t self_in) {
-    return self_in;
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
@@ -250,7 +247,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .getiter = gen_instance_getiter,
+    .getiter = mp_identity,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };

@@ -140,7 +140,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
 
     // Extra builtins as defined by a port
-    MICROPY_EXTRA_BUILTINS
+    MICROPY_PORT_BUILTINS
 };
 
 const mp_obj_dict_t mp_builtin_object_dict_obj = {
@@ -183,7 +183,7 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #endif
 
     // extra builtin modules as defined by a port
-    MICROPY_EXTRA_BUILTIN_MODULES
+    MICROPY_PORT_BUILTIN_MODULES
 };
 
 const mp_obj_dict_t mp_builtin_module_dict_obj = {

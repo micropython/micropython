@@ -32,13 +32,24 @@
 
 #if MICROPY_ENABLE_MOD_IO
 
+extern const mp_obj_type_t mp_type_fileio;
+extern const mp_obj_type_t mp_type_textio;
+
 STATIC const mp_map_elem_t mp_module_io_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_io) },
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BytesIO), (mp_obj_t)&mp_type_stringio },
+    #if MICROPY_MOD_IO_FILEIO
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FileIO), (mp_obj_t)&mp_type_fileio },
+    #endif
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TextIOWrapper), (mp_obj_t)&mp_type_textio },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_StringIO), (mp_obj_t)&mp_type_stringio },
+    #if MICROPY_IO_BYTESIO
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BytesIO), (mp_obj_t)&mp_type_bytesio },
+    #endif
 };
 
 STATIC const mp_obj_dict_t mp_module_io_globals = {

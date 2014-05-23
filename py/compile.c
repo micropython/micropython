@@ -104,7 +104,7 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
 
 STATIC const mp_map_elem_t mp_constants_table[] = {
     // Extra constants as defined by a port
-    MICROPY_EXTRA_CONSTANTS
+    MICROPY_PORT_CONSTANTS
 };
 
 STATIC const mp_map_t mp_constants_map = {
@@ -119,7 +119,7 @@ STATIC const mp_map_t mp_constants_map = {
 STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_map_t *consts) {
     if (0) {
         // dummy
-#if MICROPY_ENABLE_CONST
+#if MICROPY_COMP_CONST
     } else if (MP_PARSE_NODE_IS_ID(pn)) {
         // lookup identifier in table of dynamic constants
         qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
@@ -133,7 +133,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 
         // fold some parse nodes before folding their arguments
         switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
-#if MICROPY_ENABLE_CONST
+#if MICROPY_COMP_CONST
             case PN_expr_stmt:
                 if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
                     mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];

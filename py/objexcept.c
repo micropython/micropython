@@ -120,12 +120,27 @@ STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
+STATIC mp_obj_t exc___init__(uint n_args, const mp_obj_t *args) {
+    mp_obj_exception_t *self = args[0];
+    mp_obj_t argst = mp_obj_new_tuple(n_args - 1, args + 1);
+    self->args = argst;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(exc___init___obj, 1, MP_OBJ_FUN_ARGS_MAX, exc___init__);
+
+STATIC const mp_map_elem_t exc_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&exc___init___obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(exc_locals_dict, exc_locals_dict_table);
+
 const mp_obj_type_t mp_type_BaseException = {
     { &mp_type_type },
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
     .load_attr = exception_load_attr,
+    .locals_dict = (mp_obj_t)&exc_locals_dict,
 };
 
 #define MP_DEFINE_EXCEPTION_BASE(base_name) \
@@ -168,11 +183,13 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(KeyError, LookupError)
   MP_DEFINE_EXCEPTION(MemoryError, Exception)
   MP_DEFINE_EXCEPTION(NameError, Exception)
-    MP_DEFINE_EXCEPTION_BASE(NameError)
-    //MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
-  MP_DEFINE_EXCEPTION(OSError, Exception)
-    MP_DEFINE_EXCEPTION_BASE(OSError)
     /*
+    MP_DEFINE_EXCEPTION_BASE(NameError)
+    MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
+    */
+  MP_DEFINE_EXCEPTION(OSError, Exception)
+    /*
+    MP_DEFINE_EXCEPTION_BASE(OSError)
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(ConnectionError, OSError)

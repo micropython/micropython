@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,6 +100,10 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
     }
     uint min_len = len1 < len2 ? len1 : len2;
     int res = memcmp(data1, data2, min_len);
+    if (op == MP_BINARY_OP_EQUAL) {
+        // If we are checking for equality, here're the answer
+        return res == 0;
+    }
     if (res < 0) {
         return false;
     }

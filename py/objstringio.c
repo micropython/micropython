@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +35,7 @@
 #include "obj.h"
 #include "runtime.h"
 #include "stream.h"
+#include "objstr.h"
 
 #if MICROPY_ENABLE_MOD_IO
 
@@ -46,7 +48,7 @@ typedef struct _mp_obj_stringio_t {
 
 STATIC void stringio_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_stringio_t *self = self_in;
-    print(env, "<io.StringIO 0x%x>", self->vstr);
+    print(env, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self->vstr);
 }
 
 STATIC machine_int_t stringio_read(mp_obj_t o_in, void *buf, machine_uint_t size, int *errcode) {
@@ -77,9 +79,11 @@ STATIC machine_int_t stringio_write(mp_obj_t o_in, const void *buf, machine_uint
     return size;
 }
 
+#define STREAM_TO_CONTENT_TYPE(o) (((o)->base.type == &mp_type_stringio) ? &mp_type_str : &mp_type_bytes)
+
 STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
     mp_obj_stringio_t *self = self_in;
-    return mp_obj_new_str((byte*)self->vstr->buf, self->vstr->len, false);
+    return str_new(STREAM_TO_CONTENT_TYPE(self), (byte*)self->vstr->buf, self->vstr->len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
@@ -96,16 +100,16 @@ mp_obj_t stringio___exit__(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
 
-STATIC mp_obj_stringio_t *stringio_new() {
+STATIC mp_obj_stringio_t *stringio_new(mp_obj_t type_in) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
-    o->base.type = &mp_type_stringio;
+    o->base.type = type_in;
     o->vstr = vstr_new();
     o->pos = 0;
     return o;
 }
 
 STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    mp_obj_stringio_t *o = stringio_new();
+    mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {
         mp_buffer_info_t bufinfo;
@@ -135,6 +139,12 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .write = stringio_write,
 };
 
+STATIC const mp_stream_p_t bytesio_stream_p = {
+    .read = stringio_read,
+    .write = stringio_write,
+    .is_bytes = true,
+};
+
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
     .name = MP_QSTR_StringIO,
@@ -145,5 +155,18 @@ const mp_obj_type_t mp_type_stringio = {
     .stream_p = &stringio_stream_p,
     .locals_dict = (mp_obj_t)&stringio_locals_dict,
 };
+
+#if MICROPY_IO_BYTESIO
+const mp_obj_type_t mp_type_bytesio = {
+    { &mp_type_type },
+    .name = MP_QSTR_BytesIO,
+    .print = stringio_print,
+    .make_new = stringio_make_new,
+    .getiter = mp_identity,
+    .iternext = mp_stream_unbuffered_iter,
+    .stream_p = &bytesio_stream_p,
+    .locals_dict = (mp_obj_t)&stringio_locals_dict,
+};
+#endif
 
 #endif

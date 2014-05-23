@@ -5,7 +5,7 @@
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_REPL_HELPERS (1)
+#define MICROPY_HELPER_REPL         (1)
 #define MICROPY_ENABLE_FLOAT        (1)
 
 // type definitions for the specific machine

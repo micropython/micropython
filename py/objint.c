@@ -129,7 +129,7 @@ STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma)
 //
 // The resulting formatted string will be returned from this function and the
 // formatted size will be in *fmt_size.
-char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
     fmt_int_t num;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
@@ -216,7 +216,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_binary_op
@@ -258,7 +258,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
@@ -285,7 +285,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
             return mp_binary_op(op, rhs_in, lhs_in);
         }
     }
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 // this is a classmethod

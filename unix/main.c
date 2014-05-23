@@ -69,9 +69,10 @@ void microsocket_init();
 void time_init();
 void ffi_init();
 
-STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+// returns standard error codes: 0 for success, 1 for all other errors
+STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
-        return;
+        return 1;
     }
 
     if (0) {
@@ -81,7 +82,7 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
             mp_lexer_to_next(lex);
         }
         mp_lexer_free(lex);
-        return;
+        return 0;
     }
 
     mp_parse_error_kind_t parse_error_kind;
@@ -91,7 +92,7 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
         // parse error
         mp_parse_show_exception(lex, parse_error_kind);
         mp_lexer_free(lex);
-        return;
+        return 1;
     }
 
     qstr source_name = mp_lexer_source_name(lex);
@@ -107,11 +108,11 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
 
     if (module_fun == mp_const_none) {
         // compile error
-        return;
+        return 1;
     }
 
     if (compile_only) {
-        return;
+        return 0;
     }
 
     // execute it
@@ -119,9 +120,11 @@ STATIC void execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind
     if (nlr_push(&nlr) == 0) {
         mp_call_function_0(module_fun);
         nlr_pop();
+        return 0;
     } else {
         // uncaught exception
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+        return 1;
     }
 }
 
@@ -165,14 +168,14 @@ STATIC void do_repl(void) {
     }
 }
 
-STATIC void do_file(const char *file) {
+STATIC int do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC void do_str(const char *str) {
+STATIC int do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
-    execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
+    return execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
 }
 
 int usage(char **argv) {
@@ -321,15 +324,15 @@ int main(int argc, char **argv) {
     printf("    peak  %d\n", m_get_peak_bytes_allocated());
     */
 
-    bool executed = false;
+    const int NOTHING_EXECUTED = -2;
+    int ret = NOTHING_EXECUTED;
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
                     return usage(argv);
                 }
-                do_str(argv[a + 1]);
-                executed = true;
+                ret = do_str(argv[a + 1]);
                 a += 1;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
@@ -347,7 +350,8 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
                 perror("");
                 // CPython exits with 2 in such case
-                exit(2);
+                ret = 2;
+                break;
             }
 
             // Set base dir of the script as first entry in sys.path
@@ -358,20 +362,20 @@ int main(int argc, char **argv) {
             for (int i = a; i < argc; i++) {
                 mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
-            do_file(argv[a]);
-            executed = true;
+            ret = do_file(argv[a]);
             break;
         }
     }
 
-    if (!executed) {
+    if (ret == NOTHING_EXECUTED) {
         do_repl();
+        ret = 0;
     }
 
     mp_deinit();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
-    return 0;
+    return ret;
 }
 
 STATIC mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,7 @@
 #include "runtime.h"
 #include "pfenv.h"
 #include "objstr.h"
+#include "objlist.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args);
 const mp_obj_t mp_const_empty_bytes;
@@ -52,7 +54,7 @@ const mp_obj_t mp_const_empty_bytes;
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
-STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
+mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 STATIC NORETURN void arg_type_mixup();
 
@@ -294,7 +296,7 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
         case MP_BINARY_OP_MULTIPLY: {
             if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
             byte *data;
@@ -326,9 +328,20 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
                 return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
             }
+            if (lhs_type == &mp_type_bytes) {
+                mp_buffer_info_t bufinfo;
+                if (!mp_get_buffer(rhs_in, &bufinfo, MP_BUFFER_READ)) {
+                    goto uncomparable;
+                }
+                return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, bufinfo.buf, bufinfo.len));
+            }
+uncomparable:
+            if (op == MP_BINARY_OP_EQUAL) {
+                return mp_const_false;
+            }
     }
 
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
@@ -352,7 +365,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str(self_data + index_val, 1, true);
         }
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -482,6 +495,69 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     return res;
 }
 
+STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
+    if (n_args < 3) {
+        // If we don't have split limit, it doesn't matter from which side
+        // we split.
+        return str_split(n_args, args);
+    }
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
+    mp_obj_t sep = args[1];
+    GET_STR_DATA_LEN(args[0], s, len);
+
+    machine_int_t splits = mp_obj_get_int(args[2]);
+    machine_int_t org_splits = splits;
+    // Preallocate list to the max expected # of elements, as we
+    // will fill it from the end.
+    mp_obj_list_t *res = mp_obj_new_list(splits + 1, NULL);
+    int idx = splits;
+
+    if (sep == mp_const_none) {
+        // TODO
+        assert(0);
+    } else {
+        uint sep_len;
+        const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
+
+        if (sep_len == 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "empty separator"));
+        }
+
+        const byte *beg = s;
+        const byte *last = s + len;
+        for (;;) {
+            s = last - sep_len;
+            for (;;) {
+                if (splits == 0 || s < beg) {
+                    break;
+                } else if (memcmp(s, sep_str, sep_len) == 0) {
+                    break;
+                }
+                s--;
+            }
+            if (s < beg || splits == 0) {
+                res->items[idx] = str_new(self_type, beg, last - beg);
+                break;
+            }
+            res->items[idx--] = str_new(self_type, s + sep_len, last - s - sep_len);
+            last = s;
+            if (splits > 0) {
+                splits--;
+            }
+        }
+        if (idx != 0) {
+            // We split less parts than split limit, now go cleanup surplus
+            int used = org_splits + 1 - idx;
+            memcpy(res->items, &res->items[idx], used * sizeof(mp_obj_t));
+            mp_seq_clear(res->items, used, res->alloc, sizeof(*res->items));
+            res->len = used;
+        }
+    }
+
+    return res;
+}
+
+
 STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction, bool is_index) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
@@ -530,13 +606,17 @@ STATIC mp_obj_t str_rindex(uint n_args, const mp_obj_t *args) {
 }
 
 // TODO: (Much) more variety in args
-STATIC mp_obj_t str_startswith(mp_obj_t self_in, mp_obj_t arg) {
-    GET_STR_DATA_LEN(self_in, str, str_len);
-    GET_STR_DATA_LEN(arg, prefix, prefix_len);
-    if (prefix_len > str_len) {
+STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], str, str_len);
+    GET_STR_DATA_LEN(args[1], prefix, prefix_len);
+    uint index_val = 0;
+    if (n_args > 2) {
+        index_val = mp_get_index(&mp_type_str, str_len, args[2], true);
+    }
+    if (prefix_len + index_val > str_len) {
         return mp_const_false;
     }
-    return MP_BOOL(memcmp(str, prefix, prefix_len) == 0);
+    return MP_BOOL(memcmp(str + index_val, prefix, prefix_len) == 0);
 }
 
 enum { LSTRIP, RSTRIP, STRIP };
@@ -1459,7 +1539,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_startswith_obj, str_startswith);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
@@ -1482,6 +1563,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rindex), (mp_obj_t)&str_rindex_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rsplit), (mp_obj_t)&str_rsplit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_lstrip), (mp_obj_t)&str_lstrip_obj },
@@ -1545,7 +1627,7 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     return o;
 }
 
-STATIC mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
+mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;

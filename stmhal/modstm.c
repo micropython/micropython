@@ -81,7 +81,7 @@ STATIC mp_obj_t stm_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     stm_mem_obj_t *self = self_in;
     if (value == MP_OBJ_NULL) {
         // delete
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         uint32_t addr = get_read_addr(index, self->elem_size);

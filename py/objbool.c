@@ -76,7 +76,7 @@ STATIC mp_obj_t bool_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (MP_BINARY_OP_OR <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
         return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT((machine_int_t)mp_obj_is_true(lhs_in)), rhs_in);
     }
-    return MP_OBJ_NOT_SUPPORTED;
+    return MP_OBJ_NULL; // op not supported
 }
 
 const mp_obj_type_t mp_type_bool = {

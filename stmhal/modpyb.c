@@ -62,6 +62,23 @@
 ///
 /// The `pyb` module contains specific functions related to the pyboard.
 
+/// \function bootloader()
+/// Activate the bootloader without BOOT* pins.
+STATIC NORETURN mp_obj_t pyb_bootloader(void) {
+    pyb_usb_dev_stop();
+    storage_flush();
+
+    HAL_RCC_DeInit();
+    HAL_DeInit();
+
+    __HAL_REMAPMEMORY_SYSTEMFLASH();
+    __set_MSP(*((uint32_t*) 0x00000000));
+    ((void (*)(void)) *((uint32_t*) 0x00000004))();
+
+    while (1);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
+
 /// \function info([dump_alloc_table])
 /// Print out lots of information about the board.
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
@@ -302,6 +319,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader), (mp_obj_t)&pyb_bootloader_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_freq_obj },

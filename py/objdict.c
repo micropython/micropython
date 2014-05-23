@@ -103,7 +103,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -140,7 +140,7 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         }
         default:
             // op not supported
-            return MP_OBJ_NOT_SUPPORTED;
+            return MP_OBJ_NULL;
     }
 }
 
@@ -463,13 +463,13 @@ STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
 }
 
 STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    /* only supported for the 'keys' kind until sets and dicts are refactored */
+    // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = lhs_in;
     if (o->kind != MP_DICT_VIEW_KEYS) {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
     if (op != MP_BINARY_OP_IN) {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
     return dict_binary_op(op, o->dict, rhs_in);
 }

@@ -28,7 +28,7 @@
 #include "mpconfig.h"
 #include "repl.h"
 
-#if MICROPY_ENABLE_REPL_HELPERS
+#if MICROPY_HELPER_REPL
 
 bool str_startswith_word(const char *str, const char *head) {
     int i;
@@ -107,4 +107,4 @@ bool mp_repl_continue_with_input(const char *input) {
     return false;
 }
 
-#endif // MICROPY_ENABLE_REPL_HELPERS
+#endif // MICROPY_HELPER_REPL

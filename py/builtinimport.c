@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,10 +56,10 @@
 #define PATH_SEP_CHAR '/'
 
 
-char vstr_current_path_buf[MICROPY_PATH_MAX];
+char vstr_current_path_buf[MICROPY_ALLOC_PATH_MAX];
 
 vstr_t current_path = {
-  .alloc = MICROPY_PATH_MAX,
+  .alloc = MICROPY_ALLOC_PATH_MAX,
   .len = 0,
   .buf = vstr_current_path_buf,
   .had_error = false,
@@ -76,7 +77,7 @@ int find_last_pos(const char* str, char c) {
 }
 
 void set_current_path(const char* path) {
-    vstr_init_fixed_buf(&current_path, MICROPY_PATH_MAX, vstr_current_path_buf);
+    vstr_init_fixed_buf(&current_path, MICROPY_ALLOC_PATH_MAX, vstr_current_path_buf);
 
     vstr_reset(&current_path);
     
@@ -342,7 +343,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     DEBUG_printf("Module not yet loaded\n");
 
     uint last = 0;
-    VSTR_FIXED(path, MICROPY_PATH_MAX)
+    VSTR_FIXED(path, MICROPY_ALLOC_PATH_MAX)
     module_obj = MP_OBJ_NULL;
     mp_obj_t top_module_obj = MP_OBJ_NULL;
     mp_obj_t outer_module_obj = MP_OBJ_NULL;

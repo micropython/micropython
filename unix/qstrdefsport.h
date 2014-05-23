@@ -33,6 +33,9 @@ Q(makefile)
 
 Q(FileIO)
 
+Q(_os)
+Q(stat)
+
 Q(ffi)
 Q(ffimod)
 Q(ffifunc)

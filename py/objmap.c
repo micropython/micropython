@@ -56,10 +56,6 @@ STATIC mp_obj_t map_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     return o;
 }
 
-STATIC mp_obj_t map_getiter(mp_obj_t self_in) {
-    return self_in;
-}
-
 STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
     mp_obj_map_t *self = self_in;
@@ -80,6 +76,6 @@ const mp_obj_type_t mp_type_map = {
     { &mp_type_type },
     .name = MP_QSTR_map,
     .make_new = map_make_new,
-    .getiter = map_getiter,
+    .getiter = mp_identity,
     .iternext = map_iternext,
 };

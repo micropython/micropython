@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +85,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     char fmt_type = get_fmt_type(&fmt);
     machine_uint_t size;
     for (size = 0; *fmt; fmt++) {
-        uint align;
+        uint align = 1;
         machine_uint_t cnt = 1;
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);

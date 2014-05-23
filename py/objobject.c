@@ -33,6 +33,8 @@
 #include "obj.h"
 #include "runtime0.h"
 
+mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+
 typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
 } mp_obj_object_t;
@@ -47,8 +49,35 @@ STATIC mp_obj_t object_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     return o;
 }
 
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t object___init__(mp_obj_t self) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
+
+STATIC mp_obj_t object___new__(mp_obj_t cls) {
+    mp_obj_t o = MP_OBJ_SENTINEL;
+    mp_obj_t res = instance_make_new(cls, 1, 0, &o);
+    return res;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___new___fun_obj, object___new__);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, (const mp_obj_t)&object___new___fun_obj);
+#endif
+
+STATIC const mp_map_elem_t object_locals_dict_table[] = {
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&object___init___obj },
+    #endif
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_OBJ_NEW_QSTR(MP_QSTR___new__), (mp_obj_t)&object___new___obj },
+    #endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
+
 const mp_obj_type_t mp_type_object = {
     { &mp_type_type },
     .name = MP_QSTR_object,
     .make_new = object_make_new,
+    .locals_dict = (mp_obj_t)&object_locals_dict,
 };

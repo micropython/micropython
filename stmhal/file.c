@@ -41,7 +41,7 @@ typedef struct _pyb_file_obj_t {
 } pyb_file_obj_t;
 
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    printf("<io.FileIO %p>", self_in);
+    printf("<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
 STATIC machine_int_t file_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {
@@ -94,7 +94,7 @@ STATIC const mp_stream_p_t file_obj_stream_p = {
     .write = file_write,
 };
 
-STATIC const mp_obj_type_t file_obj_type = {
+const mp_obj_type_t mp_type_textio = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
     .make_new = file_obj_make_new,
@@ -113,7 +113,7 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, cons
         mode = mp_obj_str_get_str(args[1]);
     }
     pyb_file_obj_t *self = m_new_obj_with_finaliser(pyb_file_obj_t);
-    self->base.type = &file_obj_type;
+    self->base.type = &mp_type_textio;
     if (mode[0] == 'r') {
         // open for reading
         FRESULT res = f_open(&self->fp, filename, FA_READ);
@@ -138,7 +138,7 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, cons
 // Factory function for I/O stream classes
 STATIC mp_obj_t pyb_io_open(uint n_args, const mp_obj_t *args) {
     // TODO: analyze mode and buffering args and instantiate appropriate type
-    return file_obj_make_new((mp_obj_t)&file_obj_type, n_args, 0, args);
+    return file_obj_make_new((mp_obj_t)&mp_type_textio, n_args, 0, args);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, pyb_io_open);

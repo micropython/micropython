@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +64,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
         case MP_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -76,7 +77,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
         lhs_val = ((mp_obj_int_t*)lhs_in)->val;
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
@@ -134,7 +135,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             return MP_BOOL(lhs_val == rhs_val);
 
         default:
-            return MP_OBJ_NOT_SUPPORTED;
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -185,7 +186,7 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     }
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     // TODO: Check overflow
     return mp_obj_int_get(self_in);
 }

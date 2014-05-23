@@ -29,15 +29,13 @@ Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
 - unix/ -- a version of Micro Python that runs on Unix.
 - stmhal/ -- a version of Micro Python that runs on the Micro Python board
-  with an STM32F405RG (using ST's new Cube HAL drivers).
+  with an STM32F405RG (using ST's Cube HAL drivers).
 - teensy/ -- a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 
 Additional components:
 - bare-arm/ -- a bare minimum version of Micro Python for ARM MCUs.  Start
   with this if you want to port Micro Python to another microcontroller.
-- stm/ -- obsolete version of Micro Python for the Micro Python board
-  that uses ST's old peripheral drivers.
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.

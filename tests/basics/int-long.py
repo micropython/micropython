@@ -11,7 +11,7 @@ print(b - a)
 #print(a * b)
 print(a // b)
 print(a % b)
-print(a & b)
+print("&", a & b)
 print(a | b)
 print(a ^ b)
 print(a << 3)
@@ -32,7 +32,7 @@ print(a)
 a |= b
 print(a)
 a &= b
-print(a)
+print("&=", a)
 a <<= 5
 print(a)
 a >>= 1
@@ -44,3 +44,11 @@ b = a
 a += 1
 print(a)
 print(b)
+
+# Bitwise ops on 64-bit
+
+a = 0x1ffffffffffffffff
+b = 0x10000000000000000
+print("&", a & b)
+print(a | b)
+print(a ^ b)

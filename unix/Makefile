@@ -19,8 +19,8 @@ CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
-    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map
-else
+    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map,-order_file,$(BUILD)/order.def
+ else
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
  endif
 
@@ -68,8 +68,21 @@ SRC_C = \
 	input.c \
 	file.c \
 	modsocket.c \
+	modos.c \
 	$(SRC_MOD)
 
+ifeq ($(UNAME_S),Darwin)
+# Must be the last file in list of sources
+SRC_C += seg_helpers.c
+
+# making seg_helpers.c rely on order.def will force order.def to be created
+seg_helpers.c: $(BUILD)/order.def
+
+# create order.def in build directory
+$(BUILD)/order.def:
+	$(Q)echo "seg_helpers.o: ___bss_start" > $@
+endif
+	
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk

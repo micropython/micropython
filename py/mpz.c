@@ -207,17 +207,15 @@ STATIC uint mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
 STATIC uint mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
     mpz_dig_t *oidig = idig;
 
-    jlen -= klen;
-
     for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
         *idig = *jdig & *kdig;
     }
 
     // remove trailing zeros
-    for (; idig > oidig && *idig == 0; --idig) {
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
     }
 
-    return idig - oidig;
+    return idig + 1 - oidig;
 }
 
 /* computes i = j | k
@@ -898,14 +896,15 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
    can have dest, lhs, rhs the same
 */
 void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
-    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+    // make sure lhs has the most digits
+    if (lhs->len < rhs->len) {
         const mpz_t *temp = lhs;
         lhs = rhs;
         rhs = temp;
     }
 
     if (lhs->neg == rhs->neg) {
-        mpz_need_dig(dest, lhs->len);
+        mpz_need_dig(dest, rhs->len);
         dest->len = mpn_and(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     } else {
         mpz_need_dig(dest, lhs->len);

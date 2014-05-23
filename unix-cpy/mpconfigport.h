@@ -27,7 +27,7 @@
 // options to control how Micro Python is built
 
 #define MICROPY_EMIT_CPYTHON        (1)
-#define MICROPY_ENABLE_LEXER_UNIX   (1)
+#define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_ENABLE_MOD_IO       (0)
 

@@ -58,10 +58,10 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // formatted size will be in *fmt_size.
 //
 // This particular routine should only be called for the mpz representation of the int.
-char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_obj_t self_in,
+char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
-    mp_obj_int_t *self = self_in;
+    const mp_obj_int_t *self = self_in;
 
     uint needed_size = mpz_as_str_size_formatted(&self->mpz, base, prefix, comma);
     if (needed_size > *buf_size) {
@@ -90,7 +90,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
         case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -108,7 +108,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
     } else {
         // unsupported type
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL;
     }
 
     // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
@@ -213,7 +213,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
 
             default:
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
         }
 
         return res;
@@ -233,7 +233,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_BOOL(cmp == 0);
 
             default:
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
         }
     }
 }
@@ -284,11 +284,11 @@ machine_int_t mp_obj_int_get(mp_obj_t self_in) {
     }
 }
 
-machine_int_t mp_obj_int_get_checked(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = self_in;
         machine_int_t value;
         if (mpz_as_int_checked(&self->mpz, &value)) {
             return value;

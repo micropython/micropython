@@ -120,7 +120,7 @@ mp_obj_t mp_obj_tuple_unary_op(int op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NOT_SUPPORTED;
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -129,7 +129,7 @@ mp_obj_t mp_obj_tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_subclass_fast(mp_obj_get_type(rhs), (mp_obj_t)&mp_type_tuple)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             mp_obj_tuple_t *p = rhs;
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len + p->len, NULL);
@@ -138,7 +138,7 @@ mp_obj_t mp_obj_tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         case MP_BINARY_OP_MULTIPLY: {
             if (!MP_OBJ_IS_SMALL_INT(rhs)) {
-                return MP_OBJ_NOT_SUPPORTED;
+                return MP_OBJ_NULL; // op not supported
             }
             int n = MP_OBJ_SMALL_INT_VALUE(rhs);
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len * n, NULL);
@@ -153,8 +153,7 @@ mp_obj_t mp_obj_tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
 
         default:
-            // op not supported
-            return MP_OBJ_NOT_SUPPORTED;
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -176,7 +175,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         uint index_value = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_value];
     } else {
-        return MP_OBJ_NOT_SUPPORTED;
+        return MP_OBJ_NULL; // op not supported
     }
 }
 

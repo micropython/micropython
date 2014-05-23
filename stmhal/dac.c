@@ -62,7 +62,7 @@
 ///     # create a buffer containing a sine-wave
 ///     buf = bytearray(100)
 ///     for i in range(len(buf)):
-///         buf[i] = 128 + 127 * math.sin(2 * math.pi * i / len(buf))
+///         buf[i] = 128 + int(127 * math.sin(2 * math.pi * i / len(buf)))
 ///
 ///     # output the sine-wave at 400Hz
 ///     dac = DAC(1)
@@ -295,7 +295,11 @@ mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
     DMA_Handle.Init.PeriphBurst = DMA_PBURST_SINGLE;
     HAL_DMA_Init(&DMA_Handle);
 
-    __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+    if (self->dac_channel == DAC_CHANNEL_1) {
+        __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+    } else {
+        __HAL_LINKDMA(&DAC_Handle, DMA_Handle2, DMA_Handle);
+    }
 
     DAC_Handle.Instance = DAC;
     DAC_Handle.State = HAL_DAC_STATE_RESET;

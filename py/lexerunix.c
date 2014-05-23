@@ -27,7 +27,7 @@
 #include "misc.h"
 #include "mpconfig.h"
 
-#if MICROPY_ENABLE_LEXER_UNIX
+#if MICROPY_HELPER_LEXER_UNIX
 
 #include <stdio.h>
 #include <unistd.h>
@@ -81,4 +81,4 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
 }
 
-#endif // MICROPY_ENABLE_LEXER_UNIX
+#endif // MICROPY_HELPER_LEXER_UNIX
