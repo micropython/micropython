@@ -619,6 +619,17 @@ STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
     return MP_BOOL(memcmp(str + index_val, prefix, prefix_len) == 0);
 }
 
+STATIC mp_obj_t str_endswith(uint n_args, const mp_obj_t *args) {
+    GET_STR_DATA_LEN(args[0], str, str_len);
+    GET_STR_DATA_LEN(args[1], suffix, suffix_len);
+    assert(n_args == 2);
+
+    if (suffix_len > str_len) {
+        return mp_const_false;
+    }
+    return MP_BOOL(memcmp(str + (str_len - suffix_len), suffix, suffix_len) == 0);
+}
+
 enum { LSTRIP, RSTRIP, STRIP };
 
 STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
@@ -1541,6 +1552,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
@@ -1565,6 +1577,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rsplit), (mp_obj_t)&str_rsplit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_endswith), (mp_obj_t)&str_endswith_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_strip), (mp_obj_t)&str_strip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_lstrip), (mp_obj_t)&str_lstrip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rstrip), (mp_obj_t)&str_rstrip_obj },
