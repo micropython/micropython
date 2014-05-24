@@ -199,12 +199,21 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             int len_adj = slice->len - (stop - start);
             //printf("Len adj: %d\n", len_adj);
-            assert(len_adj <= 0);
-            mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, slice->items, slice->len, mp_obj_t);
-            // Clear "freed" elements at the end of list
-            mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
+            if (len_adj > 0) {
+                if (self->len + len_adj > self->alloc) {
+                    // TODO: Might optimize memory copies here by checking if block can
+                    // be grown inplace or not
+                    self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + len_adj);
+                    self->alloc = self->len + len_adj;
+                }
+                mp_seq_replace_slice_grow_inplace(self->items, self->len, start, stop, slice->items, slice->len, len_adj, mp_obj_t);
+            } else {
+                mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, slice->items, slice->len, mp_obj_t);
+                // Clear "freed" elements at the end of list
+                mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
+                // TODO: apply allocation policy re: alloc_size
+            }
             self->len += len_adj;
-            // TODO: apply allocation policy re: alloc_size
             return mp_const_none;
         }
 #endif

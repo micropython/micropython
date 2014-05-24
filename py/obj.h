@@ -578,3 +578,8 @@ mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
     memcpy(dest + beg, slice, slice_len * sizeof(item_t)); \
     /*printf("memcpy(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));*/ \
     memcpy(dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));
+
+#define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_t) \
+    /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t));*/ \
+    memmove(dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t)); \
+    memcpy(dest + beg, slice, slice_len * sizeof(item_t));
