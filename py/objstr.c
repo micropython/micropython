@@ -349,7 +349,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {

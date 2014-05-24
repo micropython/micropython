@@ -34,7 +34,7 @@
 #include "objtuple.h"
 #include "objstr.h"
 
-#if MICROPY_ENABLE_MOD_SYS
+#if MICROPY_PY_SYS
 
 // These should be implemented by ports, specific types don't matter,
 // only addresses.
@@ -65,11 +65,11 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_big) },
 #endif
 
-#if MICROPY_MOD_SYS_EXIT
+#if MICROPY_PY_SYS_EXIT
     { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
 #endif
 
-#if MICROPY_MOD_SYS_STDFILES
+#if MICROPY_PY_SYS_STDFILES
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdin), (mp_obj_t)&mp_sys_stdin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },

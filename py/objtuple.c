@@ -161,7 +161,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_tuple_t *self = self_in;
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {

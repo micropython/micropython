@@ -34,7 +34,7 @@
 #include "obj.h"
 #include "objtuple.h"
 
-#if MICROPY_ENABLE_MOD_COLLECTIONS
+#if MICROPY_PY_COLLECTIONS
 
 typedef struct _mp_obj_namedtuple_type_t {
     mp_obj_type_t base;
@@ -174,4 +174,4 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_namedtuple_obj, new_namedtuple_type);
 
-#endif // MICROPY_ENABLE_MOD_COLLECTIONS
+#endif // MICROPY_PY_COLLECTIONS

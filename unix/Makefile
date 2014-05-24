@@ -27,7 +27,7 @@ UNAME_S := $(shell uname -s)
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
 LDFLAGS += -m32
-ifeq ($(MICROPY_MOD_FFI),1)
+ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
 CFLAGS_MOD += -I/usr/include/i686-linux-gnu
 endif
@@ -40,14 +40,14 @@ LDFLAGS_MOD += -lreadline
 # the following is needed for BSD
 #LDFLAGS_MOD += -ltermcap
 endif
-ifeq ($(MICROPY_MOD_TIME),1)
-CFLAGS_MOD += -DMICROPY_MOD_TIME=1
+ifeq ($(MICROPY_PY_TIME),1)
+CFLAGS_MOD += -DMICROPY_PY_TIME=1
 SRC_MOD += modtime.c
 endif
-ifeq ($(MICROPY_MOD_FFI),1)
+ifeq ($(MICROPY_PY_FFI),1)
 LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
-CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_MOD_FFI=1
+CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_PY_FFI=1
 LDFLAGS_MOD += -ldl $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif

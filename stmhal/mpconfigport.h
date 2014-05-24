@@ -33,7 +33,6 @@
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
-#define MICROPY_ENABLE_FROZENSET    (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
@@ -45,9 +44,10 @@
 */
 #define MICROPY_ENABLE_LFN          (1)
 #define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_MOD_SYS_EXIT        (1)
-#define MICROPY_MOD_SYS_STDFILES    (1)
-#define MICROPY_ENABLE_MOD_CMATH    (1)
+#define MICROPY_PY_FROZENSET        (1)
+#define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_STDFILES     (1)
+#define MICROPY_PY_CMATH            (1)
 
 // extra built in names to add to the global namespace
 extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;

@@ -29,7 +29,7 @@
 #define MICROPY_EMIT_CPYTHON        (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
-#define MICROPY_ENABLE_MOD_IO       (0)
+#define MICROPY_PY_IO               (0)
 
 // type definitions for the specific machine
 

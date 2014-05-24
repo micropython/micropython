@@ -32,7 +32,6 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_ENABLE_FROZENSET    (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -42,10 +41,11 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
-#define MICROPY_MOD_SYS_EXIT        (1)
-#define MICROPY_MOD_SYS_STDFILES    (1)
-#define MICROPY_ENABLE_MOD_CMATH    (1)
-#define MICROPY_MOD_IO_FILEIO       (1)
+#define MICROPY_PY_FROZENSET        (1)
+#define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_STDFILES     (1)
+#define MICROPY_PY_CMATH            (1)
+#define MICROPY_PY_IO_FILEIO        (1)
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
@@ -55,20 +55,20 @@ extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 
-#if MICROPY_MOD_FFI
-#define MICROPY_MOD_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
+#if MICROPY_PY_FFI
+#define MICROPY_PY_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
 #else
-#define MICROPY_MOD_FFI_DEF
+#define MICROPY_PY_FFI_DEF
 #endif
-#if MICROPY_MOD_TIME
-#define MICROPY_MOD_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time },
+#if MICROPY_PY_TIME
+#define MICROPY_PY_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time },
 #else
-#define MICROPY_MOD_TIME_DEF
+#define MICROPY_PY_TIME_DEF
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    MICROPY_MOD_FFI_DEF \
-    MICROPY_MOD_TIME_DEF \
+    MICROPY_PY_FFI_DEF \
+    MICROPY_PY_TIME_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
 

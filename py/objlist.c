@@ -150,7 +150,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_obj_list_t *self = self_in;
             machine_uint_t start, stop;
@@ -174,7 +174,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_list_t *self = self_in;
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             machine_uint_t start, stop;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
@@ -188,7 +188,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         uint index_val = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_val];
     } else {
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_obj_list_t *self = self_in;
             assert(MP_OBJ_IS_TYPE(value, &mp_type_list));

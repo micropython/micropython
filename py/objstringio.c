@@ -37,7 +37,7 @@
 #include "stream.h"
 #include "objstr.h"
 
-#if MICROPY_ENABLE_MOD_IO
+#if MICROPY_PY_IO
 
 typedef struct _mp_obj_stringio_t {
     mp_obj_base_t base;
@@ -156,7 +156,7 @@ const mp_obj_type_t mp_type_stringio = {
     .locals_dict = (mp_obj_t)&stringio_locals_dict,
 };
 
-#if MICROPY_IO_BYTESIO
+#if MICROPY_PY_IO_BYTESIO
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
     .name = MP_QSTR_BytesIO,

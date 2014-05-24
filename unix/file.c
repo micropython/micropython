@@ -131,7 +131,7 @@ STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
             case '+':
                 mode |= O_RDWR;
                 break;
-            #if MICROPY_MOD_IO_FILEIO
+            #if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_fileio;
@@ -173,7 +173,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
-#if MICROPY_MOD_IO_FILEIO
+#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
