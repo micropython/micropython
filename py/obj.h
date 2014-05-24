@@ -517,7 +517,7 @@ mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice
-void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
+void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
 
 // array
 uint mp_obj_array_len(mp_obj_t self_in);

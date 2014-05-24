@@ -52,10 +52,22 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
 }
 
 bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end) {
-    machine_int_t start, stop, step;
-    mp_obj_slice_get(slice, &start, &stop, &step);
-    if (step != 1) {
+    mp_obj_t ostart, ostop, ostep;
+    machine_int_t start, stop;
+    mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
+    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
         return false;
+    }
+
+    if (ostart == mp_const_none) {
+        start = 0;
+    } else {
+        start = MP_OBJ_SMALL_INT_VALUE(ostart);
+    }
+    if (ostop == mp_const_none) {
+        stop = len;
+    } else {
+        stop = MP_OBJ_SMALL_INT_VALUE(ostop);
     }
 
     // Unlike subscription, out-of-bounds slice indexes are never error
@@ -67,7 +79,7 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_u
     } else if (start > len) {
         start = len;
     }
-    if (stop <= 0) {
+    if (stop < 0) {
         stop = len + stop;
         // CPython returns empty sequence in such case
         if (stop < 0) {

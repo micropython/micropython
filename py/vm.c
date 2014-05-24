@@ -768,12 +768,12 @@ unwind_jump:
                     if (unum == 2) {
                         obj2 = POP();
                         obj1 = TOP();
-                        SET_TOP(mp_obj_new_slice(obj1, obj2, NULL));
+                        SET_TOP(mp_obj_new_slice(obj1, obj2, mp_const_none));
                     } else {
-                        obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "3-argument slice is not supported");
-                        nlr_pop();
-                        fastn[0] = obj1;
-                        return MP_VM_RETURN_EXCEPTION;
+                        mp_obj_t obj3 = POP();
+                        obj2 = POP();
+                        obj1 = TOP();
+                        SET_TOP(mp_obj_new_slice(obj1, obj2, obj3));
                     }
                     DISPATCH();
 #endif
