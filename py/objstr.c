@@ -355,9 +355,6 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
                 assert(0);
             }
-            if (start >= stop) {
-                return MP_OBJ_NEW_QSTR(MP_QSTR_);
-            }
             return str_new(type, self_data + start, stop - start);
         }
 #endif

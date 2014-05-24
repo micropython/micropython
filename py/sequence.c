@@ -88,6 +88,12 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_u
     } else if (stop > len) {
         stop = len;
     }
+
+    // CPython returns empty sequence in such case, or point for assignment is at start
+    if (start > stop) {
+        stop = start;
+    }
+
     *begin = start;
     *end = stop;
     return true;
