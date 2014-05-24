@@ -238,7 +238,7 @@ STATIC mp_obj_t socket_makefile(uint n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
-    new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
+    new_args[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
     return mp_builtin_open(n_args, new_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
