@@ -129,7 +129,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
         {
             vstr_t *vstr = vstr_new();
             mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[0], PRINT_STR);
-            mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+            mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
             vstr_free(vstr);
             return s;
         }
@@ -363,7 +363,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
         } else {
-            return mp_obj_new_str(self_data + index_val, 1, true);
+            return mp_obj_new_str((char*)self_data + index_val, 1, true);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -873,7 +873,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
             }
             vstr_t *arg_vstr = vstr_new();
             mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, arg_vstr, arg, print_kind);
-            arg = mp_obj_new_str((const byte *)vstr_str(arg_vstr), vstr_len(arg_vstr), false);
+            arg = mp_obj_new_str(vstr_str(arg_vstr), vstr_len(arg_vstr), false);
             vstr_free(arg_vstr);
         }
 
@@ -1116,7 +1116,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
     vstr_free(vstr);
     return s;
 }
@@ -1287,7 +1287,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not all arguments converted during string formatting"));
     }
 
-    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
     vstr_free(vstr);
     return s;
 }
@@ -1655,17 +1655,17 @@ mp_obj_t str_new(const mp_obj_type_t *type, const byte* data, uint len) {
     return o;
 }
 
-mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already) {
+mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already) {
     qstr q = qstr_find_strn(data, len);
     if (q != MP_QSTR_NULL) {
         // qstr with this data already exists
         return MP_OBJ_NEW_QSTR(q);
     } else if (make_qstr_if_not_already) {
         // no existing qstr, make a new one
-        return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
+        return MP_OBJ_NEW_QSTR(qstr_from_strn(data, len));
     } else {
         // no existing qstr, don't make one
-        return str_new(&mp_type_str, data, len);
+        return str_new(&mp_type_str, (const byte*)data, len);
     }
 }
 
@@ -1768,7 +1768,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
-        mp_obj_t o_out = mp_obj_new_str(str + self->cur, 1, true);
+        mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
         self->cur += 1;
         return o_out;
     } else {

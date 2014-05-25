@@ -172,7 +172,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     int ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
-        byte str[1] = {ord};
+        char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
@@ -391,7 +391,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
     mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
-    mp_obj_t s = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+    mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
     vstr_free(vstr);
     return s;
 }

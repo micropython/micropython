@@ -318,7 +318,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
                     DEBUG_printf("%s is dir\n", vstr_str(&path));
                     // https://docs.python.org/3.3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
-                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str((byte*)vstr_str(&path), vstr_len(&path), false));
+                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {

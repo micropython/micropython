@@ -373,7 +373,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
 mp_obj_t mp_obj_new_int_from_qstr(qstr qst);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);

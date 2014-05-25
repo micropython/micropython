@@ -77,7 +77,7 @@ STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (line == NULL) {
         nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
     }
-    mp_obj_t o = mp_obj_new_str((const byte*)line, strlen(line), false);
+    mp_obj_t o = mp_obj_new_str(line, strlen(line), false);
     free(line);
     return o;
 }

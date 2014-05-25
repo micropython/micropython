@@ -283,7 +283,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             va_start(ap, fmt);
             vstr_vprintf(vstr, fmt, ap);
             va_end(ap);
-            o->args->items[0] = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+            o->args->items[0] = mp_obj_new_str(vstr->buf, vstr->len, false);
             vstr_free(vstr);
         }
     }

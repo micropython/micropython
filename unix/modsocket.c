@@ -167,8 +167,9 @@ STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
     int out_sz = recv(self->fd, buf, sz, flags);
     RAISE_ERRNO(out_sz, errno);
 
-    buf = m_realloc(buf, sz, out_sz);
-    return MP_OBJ_NEW_QSTR(qstr_from_strn_take(buf, out_sz, out_sz));
+    mp_obj_t ret = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, out_sz));
+    m_del(char, buf, sz);
+    return ret;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 

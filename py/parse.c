@@ -349,7 +349,7 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             qst = qstr_from_strn(tok->str, tok->len);
         } else {
             // check if this string is already interned
-            qst = qstr_find_strn((const byte*)tok->str, tok->len);
+            qst = qstr_find_strn(tok->str, tok->len);
         }
         if (qst != MP_QSTR_NULL) {
             // qstr exists, make a leaf node
