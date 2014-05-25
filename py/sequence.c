@@ -95,13 +95,32 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_
     indexes->stop = stop;
 
     if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-            "Only slices with step=1 (aka None) are supported"));
         indexes->step = MP_OBJ_SMALL_INT_VALUE(ostep);
         return false;
     }
     indexes->step = 1;
     return true;
+}
+
+mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
+    machine_int_t start = indexes->start, stop = indexes->stop;
+    machine_int_t step = indexes->step;
+
+    mp_obj_t res = mp_obj_new_list(0, NULL);
+
+    if (step < 0) {
+        stop--;
+        while (start <= stop) {
+            mp_obj_list_append(res, seq[stop]);
+            stop += step;
+        }
+    } else {
+        while (start < stop) {
+            mp_obj_list_append(res, seq[start]);
+            start += step;
+        }
+    }
+    return res;
 }
 
 // Special-case comparison function for sequences of bytes

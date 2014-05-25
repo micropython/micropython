@@ -178,7 +178,8 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             }
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                assert(0);
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+                    "Only slices with step=1 (aka None) are supported"));
             }
             mp_obj_array_t *res = array_new(o->typecode, slice.stop - slice.start);
             int sz = mp_binary_get_size('@', o->typecode, NULL);
