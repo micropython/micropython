@@ -351,11 +351,11 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
 #if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            machine_uint_t start, stop;
-            if (!mp_seq_get_fast_slice_indexes(self_len, index, &start, &stop)) {
+            mp_bound_slice_t slice;
+            if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
                 assert(0);
             }
-            return str_new(type, self_data + start, stop - start);
+            return str_new(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
         uint index_val = mp_get_index(type, self_len, index, false);

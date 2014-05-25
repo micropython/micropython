@@ -51,15 +51,10 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
     }
 }
 
-bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end) {
+bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
     mp_obj_t ostart, ostop, ostep;
     machine_int_t start, stop;
     mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
-    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-            "Only slices with step=1 (aka None) are supported"));
-        return false;
-    }
 
     if (ostart == mp_const_none) {
         start = 0;
@@ -96,8 +91,16 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_u
         stop = start;
     }
 
-    *begin = start;
-    *end = stop;
+    indexes->start = start;
+    indexes->stop = stop;
+
+    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+            "Only slices with step=1 (aka None) are supported"));
+        indexes->step = MP_OBJ_SMALL_INT_VALUE(ostep);
+        return false;
+    }
+    indexes->step = 1;
     return true;
 }
 

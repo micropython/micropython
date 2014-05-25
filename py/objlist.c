@@ -153,15 +153,15 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_obj_list_t *self = self_in;
-            machine_uint_t start, stop;
-            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            mp_bound_slice_t slice;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
                 assert(0);
             }
 
-            int len_adj = start - stop;
+            int len_adj = slice.start - slice.stop;
             //printf("Len adj: %d\n", len_adj);
             assert(len_adj <= 0);
-            mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, self->items/*NULL*/, 0, mp_obj_t);
+            mp_seq_replace_slice_no_grow(self->items, self->len, slice.start, slice.stop, self->items/*NULL*/, 0, mp_obj_t);
             // Clear "freed" elements at the end of list
             mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
             self->len += len_adj;
@@ -176,12 +176,12 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_list_t *self = self_in;
 #if MICROPY_PY_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            machine_uint_t start, stop;
-            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            mp_bound_slice_t slice;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
                 assert(0);
             }
-            mp_obj_list_t *res = list_new(stop - start);
-            mp_seq_copy(res->items, self->items + start, res->len, mp_obj_t);
+            mp_obj_list_t *res = list_new(slice.stop - slice.start);
+            mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
             return res;
         }
 #endif
@@ -193,11 +193,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_list_t *self = self_in;
             assert(MP_OBJ_IS_TYPE(value, &mp_type_list));
             mp_obj_list_t *slice = value;
-            machine_uint_t start, stop;
-            if (!mp_seq_get_fast_slice_indexes(self->len, index, &start, &stop)) {
+            mp_bound_slice_t slice_out;
+            if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice_out)) {
                 assert(0);
             }
-            int len_adj = slice->len - (stop - start);
+            int len_adj = slice->len - (slice_out.stop - slice_out.start);
             //printf("Len adj: %d\n", len_adj);
             if (len_adj > 0) {
                 if (self->len + len_adj > self->alloc) {
@@ -206,9 +206,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                     self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + len_adj);
                     self->alloc = self->len + len_adj;
                 }
-                mp_seq_replace_slice_grow_inplace(self->items, self->len, start, stop, slice->items, slice->len, len_adj, mp_obj_t);
+                mp_seq_replace_slice_grow_inplace(self->items, self->len,
+                    slice_out.start, slice_out.stop, slice->items, slice->len, len_adj, mp_obj_t);
             } else {
-                mp_seq_replace_slice_no_grow(self->items, self->len, start, stop, slice->items, slice->len, mp_obj_t);
+                mp_seq_replace_slice_no_grow(self->items, self->len,
+                    slice_out.start, slice_out.stop, slice->items, slice->len, mp_obj_t);
                 // Clear "freed" elements at the end of list
                 mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
                 // TODO: apply allocation policy re: alloc_size

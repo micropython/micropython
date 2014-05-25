@@ -176,15 +176,15 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 // slice assignment (incl. of different size)
                 return MP_OBJ_NULL; // op not supported
             }
-            machine_uint_t start, stop;
-            if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &start, &stop)) {
+            mp_bound_slice_t slice;
+            if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
                 assert(0);
             }
-            mp_obj_array_t *res = array_new(o->typecode, stop - start);
+            mp_obj_array_t *res = array_new(o->typecode, slice.stop - slice.start);
             int sz = mp_binary_get_size('@', o->typecode, NULL);
             assert(sz > 0);
             byte *p = o->items;
-            memcpy(res->items, p + start * sz, (stop - start) * sz);
+            memcpy(res->items, p + slice.start * sz, (slice.stop - slice.start) * sz);
             return res;
         } else {
             uint index = mp_get_index(o->base.type, o->len, index_in, false);
