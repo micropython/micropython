@@ -56,6 +56,8 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_u
     machine_int_t start, stop;
     mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
     if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+            "Only slices with step=1 (aka None) are supported"));
         return false;
     }
 
