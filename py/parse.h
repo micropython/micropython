@@ -82,7 +82,7 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
 
 mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg);
-uint mp_parse_node_free(mp_parse_node_t pn);
+void mp_parse_node_free(mp_parse_node_t pn);
 
 void mp_parse_node_print(mp_parse_node_t pn, int indent);
 
