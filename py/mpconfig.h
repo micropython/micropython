@@ -66,6 +66,11 @@
 #define MICROPY_ALLOC_PARSE_RESULT_INC (16)
 #endif
 
+// Strings this length or less will be interned by the parser
+#ifndef MICROPY_ALLOC_PARSE_INTERN_STRING_LEN
+#define MICROPY_ALLOC_PARSE_INTERN_STRING_LEN (10)
+#endif
+
 // Initial amount for ids in a scope
 #ifndef MICROPY_ALLOC_SCOPE_ID_INIT
 #define MICROPY_ALLOC_SCOPE_ID_INIT (4)
