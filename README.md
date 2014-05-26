@@ -94,3 +94,8 @@ AUR.  If the above does not work it may be because you don't have the
 correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -D build-PYBV10/firmware.dfu
+
+Qemu version
+------------
+
+This port will only work with with [GCC ARM Embedded](launchpad.net/gcc-arm-embedded) toolchain and not with CodeSourcery toolchain. You will need to modify `LDFLAGS` if you want to use CodeSourcery's version of `arm-none-eabi`. The difference is that CodeSourcery needs `-T generic-m-hosted.ld` while ARM's version  requires `--specs=nano.specs --specs=rdimon.specs` to be passed to the linker.
