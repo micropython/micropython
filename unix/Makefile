@@ -71,6 +71,10 @@ SRC_C = \
 	modos.c \
 	$(SRC_MOD)
 
+# Without -fomit-frame-pointer, DEBUG builds fail since the code tries
+# to manipulate the frame pointer register
+$(BUILD)/gccollect.o: CFLAGS += -fomit-frame-pointer
+
 ifeq ($(UNAME_S),Darwin)
 # Must be the last file in list of sources
 SRC_C += seg_helpers.c
