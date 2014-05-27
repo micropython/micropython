@@ -66,6 +66,11 @@
 #define MICROPY_ALLOC_PARSE_RESULT_INC (16)
 #endif
 
+// Strings this length or less will be interned by the parser
+#ifndef MICROPY_ALLOC_PARSE_INTERN_STRING_LEN
+#define MICROPY_ALLOC_PARSE_INTERN_STRING_LEN (10)
+#endif
+
 // Initial amount for ids in a scope
 #ifndef MICROPY_ALLOC_SCOPE_ID_INIT
 #define MICROPY_ALLOC_SCOPE_ID_INIT (4)
@@ -130,13 +135,17 @@
 #define MICROPY_DEBUG_PRINTERS (0)
 #endif
 
-// Whether to enable runtime debug message
-#ifndef MICROPY_RUNTIME_DEBUG
-#define MICROPY_RUNTIME_DEBUG (0)
+/*****************************************************************************/
+/* Optimisations                                                             */
+
+// Whether to use computed gotos in the VM, or a switch
+// Computed gotos are roughly 10% faster, and increase VM code size by a little
+#ifndef MICROPY_OPT_COMPUTED_GOTO
+#define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
 /*****************************************************************************/
-/* Fine control over Python features                                         */
+/* Python internal features                                                  */
 
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
@@ -214,75 +223,6 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_FLOAT (0)
 #endif
 
-// Whether to provide "collections" module
-#ifndef MICROPY_ENABLE_MOD_COLLECTIONS
-#define MICROPY_ENABLE_MOD_COLLECTIONS (1)
-#endif
-
-// Whether to provide "math" module
-#ifndef MICROPY_ENABLE_MOD_MATH
-#define MICROPY_ENABLE_MOD_MATH (1)
-#endif
-
-// Whether to provide "cmath" module
-#ifndef MICROPY_ENABLE_MOD_CMATH
-#define MICROPY_ENABLE_MOD_CMATH (0)
-#endif
-
-// Whether to provide "gc" module
-#ifndef MICROPY_ENABLE_MOD_GC
-#define MICROPY_ENABLE_MOD_GC (1)
-#endif
-
-// Whether to provide "io" module
-#ifndef MICROPY_ENABLE_MOD_IO
-#define MICROPY_ENABLE_MOD_IO (1)
-#endif
-
-#ifndef MICROPY_MOD_IO_FILEIO
-#define MICROPY_MOD_IO_FILEIO (0)
-#endif
-
-#ifndef MICROPY_IO_BYTESIO
-#define MICROPY_IO_BYTESIO (1)
-#endif
-
-// Whether to provide "struct" module
-#ifndef MICROPY_ENABLE_MOD_STRUCT
-#define MICROPY_ENABLE_MOD_STRUCT (1)
-#endif
-
-// Whether to provide "sys" module
-#ifndef MICROPY_ENABLE_MOD_SYS
-#define MICROPY_ENABLE_MOD_SYS (1)
-#endif
-
-// sys.exit() availability
-#ifndef MICROPY_MOD_SYS_EXIT
-#define MICROPY_MOD_SYS_EXIT (0)
-#endif
-
-// sys.{stdin,stdout,stderr} availability
-#ifndef MICROPY_MOD_SYS_STDFILES
-#define MICROPY_MOD_SYS_STDFILES (0)
-#endif
-
-// Whether to support slice object and correspondingly
-// slice subscript operators
-#ifndef MICROPY_ENABLE_SLICE
-#define MICROPY_ENABLE_SLICE (1)
-#endif
-
-// Whether to support frozenset object
-#ifndef MICROPY_ENABLE_FROZENSET
-#define MICROPY_ENABLE_FROZENSET (0)
-#endif
-
-// Whether to support the property object
-#ifndef MICROPY_ENABLE_PROPERTY
-#define MICROPY_ENABLE_PROPERTY (1)
-#endif
-
 // Enable features which improve CPython compatibility
 // but may lead to more code size/memory usage.
 // TODO: Originally intended as generic category to not
@@ -296,10 +236,78 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_NON_BLOCK (0)
 #endif
 
-// Whether to use computed gotos in the VM, or a switch
-// Computed gotos are roughly 10% faster, and increase VM code size by a little
-#ifndef MICROPY_OPT_COMPUTED_GOTO
-#define MICROPY_OPT_COMPUTED_GOTO (0)
+/*****************************************************************************/
+/* Fine control over Python builtins, classes, modules, etc                  */
+
+// Whether to support slice object and correspondingly
+// slice subscript operators
+#ifndef MICROPY_PY_SLICE
+#define MICROPY_PY_SLICE (1)
+#endif
+
+// Whether to support frozenset object
+#ifndef MICROPY_PY_FROZENSET
+#define MICROPY_PY_FROZENSET (0)
+#endif
+
+// Whether to support the property object
+#ifndef MICROPY_PY_PROPERTY
+#define MICROPY_PY_PROPERTY (1)
+#endif
+
+// Whether to provide "collections" module
+#ifndef MICROPY_PY_COLLECTIONS
+#define MICROPY_PY_COLLECTIONS (1)
+#endif
+
+// Whether to provide "math" module
+#ifndef MICROPY_PY_MATH
+#define MICROPY_PY_MATH (1)
+#endif
+
+// Whether to provide "cmath" module
+#ifndef MICROPY_PY_CMATH
+#define MICROPY_PY_CMATH (0)
+#endif
+
+// Whether to provide "gc" module
+#ifndef MICROPY_PY_GC
+#define MICROPY_PY_GC (1)
+#endif
+
+// Whether to provide "io" module
+#ifndef MICROPY_PY_IO
+#define MICROPY_PY_IO (1)
+#endif
+
+// Whether to provide "io.FileIO" class
+#ifndef MICROPY_PY_IO_FILEIO
+#define MICROPY_PY_IO_FILEIO (0)
+#endif
+
+// Whether to provide "io.BytesIO" class
+#ifndef MICROPY_PY_IO_BYTESIO
+#define MICROPY_PY_IO_BYTESIO (1)
+#endif
+
+// Whether to provide "struct" module
+#ifndef MICROPY_PY_STRUCT
+#define MICROPY_PY_STRUCT (1)
+#endif
+
+// Whether to provide "sys" module
+#ifndef MICROPY_PY_SYS
+#define MICROPY_PY_SYS (1)
+#endif
+
+// Whether to provide "sys.exit" function
+#ifndef MICROPY_PY_SYS_EXIT
+#define MICROPY_PY_SYS_EXIT (0)
+#endif
+
+// Whether to provide sys.{stdin,stdout,stderr} objects
+#ifndef MICROPY_PY_SYS_STDFILES
+#define MICROPY_PY_SYS_STDFILES (0)
 #endif
 
 /*****************************************************************************/

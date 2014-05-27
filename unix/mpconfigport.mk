@@ -7,7 +7,7 @@ MICROPY_FORCE_32BIT = 0
 MICROPY_USE_READLINE = 1
 
 # Subset of CPython time module
-MICROPY_MOD_TIME = 1
+MICROPY_PY_TIME = 1
 
 # ffi module requires libffi (libffi-dev Debian package)
 MICROPY_MOD_FFI = 0

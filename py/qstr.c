@@ -130,7 +130,7 @@ STATIC qstr qstr_add(const byte *q_ptr) {
     return last_pool->total_prev_len + last_pool->len - 1;
 }
 
-qstr qstr_find_strn(const byte *str, uint str_len) {
+qstr qstr_find_strn(const char *str, uint str_len) {
     // work out hash of str
     machine_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
@@ -152,7 +152,7 @@ qstr qstr_from_str(const char *str) {
 }
 
 qstr qstr_from_strn(const char *str, uint len) {
-    qstr q = qstr_find_strn((const byte*)str, len);
+    qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         machine_uint_t hash = qstr_compute_hash((const byte*)str, len);
         byte *q_ptr = m_new(byte, 4 + len + 1);
@@ -167,12 +167,6 @@ qstr qstr_from_strn(const char *str, uint len) {
     return q;
 }
 
-qstr qstr_from_strn_take(char *str, uint alloc_len, uint len) {
-    qstr q = qstr_from_strn(str, len);
-    m_del(char, str, alloc_len);
-    return q;
-}
-
 byte *qstr_build_start(uint len, byte **q_ptr) {
     assert(len <= 65535);
     *q_ptr = m_new(byte, 4 + len + 1);
@@ -182,7 +176,7 @@ byte *qstr_build_start(uint len, byte **q_ptr) {
 }
 
 qstr qstr_build_end(byte *q_ptr) {
-    qstr q = qstr_find_strn(Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
+    qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
         machine_uint_t len = Q_GET_LENGTH(q_ptr);
         machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);

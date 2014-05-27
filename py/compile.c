@@ -56,6 +56,7 @@ typedef enum {
 #include "grammar.h"
 #undef DEF_RULE
     PN_maximum_number_of,
+    PN_string, // special node for non-interned string
 } pn_kind_t;
 
 #define EMIT(fun) (comp->emit_method_table->fun(comp->emit))
@@ -177,6 +178,8 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                 }
                 break;
 #endif
+            case PN_string:
+                return pn;
         }
 
         // fold arguments
@@ -426,6 +429,9 @@ void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 #if MICROPY_EMIT_CPYTHON
 STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string)) {
+        return true;
+    }
     if (!MP_PARSE_NODE_IS_LEAF(pn)) {
         return false;
     }
@@ -435,9 +441,7 @@ STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
     return true;
 }
 
-STATIC void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
-    uint len;
-    const byte *str = qstr_data(qstr, &len);
+STATIC void cpython_c_print_quoted_str(vstr_t *vstr, const char *str, uint len, bool bytes) {
     bool has_single_quote = false;
     bool has_double_quote = false;
     for (int i = 0; i < len; i++) {
@@ -476,6 +480,12 @@ STATIC void cpython_c_print_quoted_str(vstr_t *vstr, qstr qstr, bool bytes) {
 }
 
 STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        cpython_c_print_quoted_str(vstr, (const char*)pns->nodes[0], (machine_uint_t)pns->nodes[1], false);
+        return;
+    }
+
     assert(MP_PARSE_NODE_IS_LEAF(pn));
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         vstr_printf(vstr, INT_FMT, MP_PARSE_NODE_LEAF_SMALL_INT(pn));
@@ -487,8 +497,13 @@ STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
         case MP_PARSE_NODE_ID: assert(0);
         case MP_PARSE_NODE_INTEGER: vstr_printf(vstr, "%s", qstr_str(arg)); break;
         case MP_PARSE_NODE_DECIMAL: vstr_printf(vstr, "%s", qstr_str(arg)); break;
-        case MP_PARSE_NODE_STRING: cpython_c_print_quoted_str(vstr, arg, false); break;
-        case MP_PARSE_NODE_BYTES: cpython_c_print_quoted_str(vstr, arg, true); break;
+        case MP_PARSE_NODE_STRING:
+        case MP_PARSE_NODE_BYTES: {
+            uint len;
+            const byte *str = qstr_data(arg, &len);
+            cpython_c_print_quoted_str(vstr, (const char*)str, len, MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_BYTES);
+            break;
+        }
         case MP_PARSE_NODE_TOKEN:
             switch (arg) {
                 case MP_TOKEN_KW_FALSE: vstr_printf(vstr, "False"); break;
@@ -2058,7 +2073,8 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
         } else {
             // for non-REPL, evaluate then discard the expression
-            if (MP_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
+            if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !MP_PARSE_NODE_IS_ID(pns->nodes[0]))
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)) {
                 // do nothing with a lonely constant
             } else {
                 compile_node(comp, pns->nodes[0]); // just an expression
@@ -2498,26 +2514,40 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int n_bytes = 0;
     int string_kind = MP_PARSE_NODE_NULL;
     for (int i = 0; i < n; i++) {
-        assert(MP_PARSE_NODE_IS_LEAF(pns->nodes[i]));
-        int pn_kind = MP_PARSE_NODE_LEAF_KIND(pns->nodes[i]);
-        assert(pn_kind == MP_PARSE_NODE_STRING || pn_kind == MP_PARSE_NODE_BYTES);
+        int pn_kind;
+        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
+            pn_kind = MP_PARSE_NODE_LEAF_KIND(pns->nodes[i]);
+            assert(pn_kind == MP_PARSE_NODE_STRING || pn_kind == MP_PARSE_NODE_BYTES);
+            n_bytes += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+        } else {
+            assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[i]));
+            mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
+            assert(MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_string);
+            pn_kind = MP_PARSE_NODE_STRING;
+            n_bytes += (machine_uint_t)pns_string->nodes[1];
+        }
         if (i == 0) {
             string_kind = pn_kind;
         } else if (pn_kind != string_kind) {
             compile_syntax_error(comp, (mp_parse_node_t)pns, "cannot mix bytes and nonbytes literals");
             return;
         }
-        n_bytes += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
     }
 
     // concatenate string/bytes
     byte *q_ptr;
     byte *s_dest = qstr_build_start(n_bytes, &q_ptr);
     for (int i = 0; i < n; i++) {
-        uint s_len;
-        const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
-        memcpy(s_dest, s, s_len);
-        s_dest += s_len;
+        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
+            uint s_len;
+            const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
+            memcpy(s_dest, s, s_len);
+            s_dest += s_len;
+        } else {
+            mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
+            memcpy(s_dest, (const char*)pns_string->nodes[0], (machine_uint_t)pns_string->nodes[1]);
+            s_dest += (machine_uint_t)pns_string->nodes[1];
+        }
     }
     qstr q = qstr_build_end(q_ptr);
 
@@ -2848,15 +2878,19 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         EMIT_ARG(set_line_number, pns->source_line);
-        compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
-        if (f == NULL) {
-            printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
-#if MICROPY_DEBUG_PRINTERS
-            mp_parse_node_print(pn, 0);
-#endif
-            compile_syntax_error(comp, pn, "internal compiler error");
+        if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_string) {
+            EMIT_ARG(load_const_str, qstr_from_strn((const char*)pns->nodes[0], (machine_uint_t)pns->nodes[1]), false);
         } else {
-            f(comp, pns);
+            compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
+            if (f == NULL) {
+                printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
+#if MICROPY_DEBUG_PRINTERS
+                mp_parse_node_print(pn, 0);
+#endif
+                compile_syntax_error(comp, pn, "internal compiler error");
+            } else {
+                f(comp, pns);
+            }
         }
     }
 }
@@ -3033,13 +3067,13 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
     // check the first statement for a doc string
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_expr_stmt)) {
         mp_parse_node_struct_t* pns = (mp_parse_node_struct_t*)pn;
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[0])) {
-            int kind = MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]);
-            if (kind == MP_PARSE_NODE_STRING) {
-                compile_node(comp, pns->nodes[0]); // a doc string
-                // store doc string
+        if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0])
+                && MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]) == MP_PARSE_NODE_STRING)
+            || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)) {
+                // compile the doc string
+                compile_node(comp, pns->nodes[0]);
+                // store the doc string
                 EMIT_ARG(store_id, MP_QSTR___doc__);
-            }
         }
     }
 #endif

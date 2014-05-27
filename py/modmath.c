@@ -32,7 +32,7 @@
 #include "obj.h"
 #include "builtin.h"
 
-#if MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_MATH
+#if MICROPY_ENABLE_FLOAT && MICROPY_PY_MATH
 
 //TODO: Change macros to check for overflow and raise OverflowError or RangeError
 #define MATH_FUN_1(py_name, c_name) \
@@ -184,4 +184,4 @@ const mp_obj_module_t mp_module_math = {
     .globals = (mp_obj_dict_t*)&mp_module_math_globals,
 };
 
-#endif // MICROPY_ENABLE_FLOAT && MICROPY_ENABLE_MOD_MATH
+#endif // MICROPY_ENABLE_FLOAT && MICROPY_PY_MATH

@@ -76,12 +76,10 @@ typedef enum {
 } while (0)
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
-#define DECODE_QSTR do { \
-    qst = 0; \
+#define DECODE_QSTR qstr qst = 0; \
     do { \
         qst = (qst << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-} while (0)
+    } while ((*ip++ & 0x80) != 0)
 #define DECODE_PTR do { \
     ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
     unum = *(machine_uint_t*)ip; \
@@ -258,8 +256,7 @@ outer_dispatch_loop:
             const byte *ip = *ip_in_out;
             mp_obj_t *sp = *sp_in_out;
             machine_uint_t unum;
-            qstr qst;
-            mp_obj_t obj1, obj2;
+            mp_obj_t obj_shared;
 
             // If we have exception to inject, now that we finish setting up
             // execution context, raise it. This works as if RAISE_VARARGS
@@ -267,10 +264,10 @@ outer_dispatch_loop:
             // Injecting exc into yield from generator is a special case,
             // handled by MP_BC_YIELD_FROM itself
             if (inject_exc != MP_OBJ_NULL && *ip != MP_BC_YIELD_FROM) {
-                obj1 = inject_exc;
+                mp_obj_t exc = inject_exc;
                 inject_exc = MP_OBJ_NULL;
-                obj1 = mp_make_raise_obj(obj1);
-                RAISE(obj1);
+                exc = mp_make_raise_obj(exc);
+                RAISE(exc);
             }
 
             // loop to execute byte code
@@ -313,88 +310,98 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_LOAD_CONST_INT):
+                ENTRY(MP_BC_LOAD_CONST_INT): {
                     DECODE_QSTR;
                     PUSH(mp_obj_new_int_from_qstr(qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_CONST_DEC):
+                ENTRY(MP_BC_LOAD_CONST_DEC): {
                     DECODE_QSTR;
                     PUSH(mp_load_const_dec(qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_CONST_BYTES):
+                ENTRY(MP_BC_LOAD_CONST_BYTES): {
                     DECODE_QSTR;
                     PUSH(mp_load_const_bytes(qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_CONST_STRING):
+                ENTRY(MP_BC_LOAD_CONST_STRING): {
                     DECODE_QSTR;
                     PUSH(mp_load_const_str(qst));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_LOAD_NULL):
                     PUSH(MP_OBJ_NULL);
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_FAST_0):
-                    obj1 = fastn[0];
+                    obj_shared = fastn[0];
                     goto load_check;
 
                 ENTRY(MP_BC_LOAD_FAST_1):
-                    obj1 = fastn[-1];
+                    obj_shared = fastn[-1];
                     goto load_check;
 
                 ENTRY(MP_BC_LOAD_FAST_2):
-                    obj1 = fastn[-2];
+                    obj_shared = fastn[-2];
                     goto load_check;
 
                 ENTRY(MP_BC_LOAD_FAST_N):
                     DECODE_UINT;
-                    obj1 = fastn[-unum];
+                    obj_shared = fastn[-unum];
                     load_check:
-                    if (obj1 == MP_OBJ_NULL) {
-                        local_name_error:
-                        obj1 = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
-                        RAISE(obj1);
+                    if (obj_shared == MP_OBJ_NULL) {
+                        local_name_error: {
+                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                            RAISE(obj);
+                        }
                     }
-                    PUSH(obj1);
+                    PUSH(obj_shared);
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_DEREF):
                     DECODE_UINT;
-                    obj1 = mp_obj_cell_get(fastn[-unum]);
+                    obj_shared = mp_obj_cell_get(fastn[-unum]);
                     goto load_check;
 
-                ENTRY(MP_BC_LOAD_NAME):
+                ENTRY(MP_BC_LOAD_NAME): {
                     DECODE_QSTR;
                     PUSH(mp_load_name(qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_GLOBAL):
+                ENTRY(MP_BC_LOAD_GLOBAL): {
                     DECODE_QSTR;
                     PUSH(mp_load_global(qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_ATTR):
+                ENTRY(MP_BC_LOAD_ATTR): {
                     DECODE_QSTR;
                     SET_TOP(mp_load_attr(TOP(), qst));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_METHOD):
+                ENTRY(MP_BC_LOAD_METHOD): {
                     DECODE_QSTR;
                     mp_load_method(*sp, qst, sp);
                     sp += 1;
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_LOAD_BUILD_CLASS):
                     PUSH(mp_load_build_class());
                     DISPATCH();
 
-                ENTRY(MP_BC_LOAD_SUBSCR):
-                    obj1 = POP();
-                    SET_TOP(mp_obj_subscr(TOP(), obj1, MP_OBJ_SENTINEL));
+                ENTRY(MP_BC_LOAD_SUBSCR): {
+                    mp_obj_t index = POP();
+                    SET_TOP(mp_obj_subscr(TOP(), index, MP_OBJ_SENTINEL));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_STORE_FAST_0):
                     fastn[0] = POP();
@@ -418,21 +425,24 @@ dispatch_loop:
                     mp_obj_cell_set(fastn[-unum], POP());
                     DISPATCH();
 
-                ENTRY(MP_BC_STORE_NAME):
+                ENTRY(MP_BC_STORE_NAME): {
                     DECODE_QSTR;
                     mp_store_name(qst, POP());
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_STORE_GLOBAL):
+                ENTRY(MP_BC_STORE_GLOBAL): {
                     DECODE_QSTR;
                     mp_store_global(qst, POP());
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_STORE_ATTR):
+                ENTRY(MP_BC_STORE_ATTR): {
                     DECODE_QSTR;
                     mp_store_attr(sp[0], qst, sp[-1]);
                     sp -= 2;
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_STORE_SUBSCR):
                     mp_obj_subscr(sp[-1], sp[0], sp[-2]);
@@ -455,20 +465,23 @@ dispatch_loop:
                     mp_obj_cell_set(fastn[-unum], MP_OBJ_NULL);
                     DISPATCH();
 
-                ENTRY(MP_BC_DELETE_NAME):
+                ENTRY(MP_BC_DELETE_NAME): {
                     DECODE_QSTR;
                     mp_delete_name(qst);
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_DELETE_GLOBAL):
+                ENTRY(MP_BC_DELETE_GLOBAL): {
                     DECODE_QSTR;
                     mp_delete_global(qst);
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_DUP_TOP):
-                    obj1 = TOP();
-                    PUSH(obj1);
+                ENTRY(MP_BC_DUP_TOP): {
+                    mp_obj_t top = TOP();
+                    PUSH(top);
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_DUP_TOP_TWO):
                     sp += 2;
@@ -480,18 +493,20 @@ dispatch_loop:
                     sp -= 1;
                     DISPATCH();
 
-                ENTRY(MP_BC_ROT_TWO):
-                    obj1 = sp[0];
+                ENTRY(MP_BC_ROT_TWO): {
+                    mp_obj_t top = sp[0];
                     sp[0] = sp[-1];
-                    sp[-1] = obj1;
+                    sp[-1] = top;
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_ROT_THREE):
-                    obj1 = sp[0];
+                ENTRY(MP_BC_ROT_THREE): {
+                    mp_obj_t top = sp[0];
                     sp[0] = sp[-1];
                     sp[-1] = sp[-2];
-                    sp[-2] = obj1;
+                    sp[-2] = top;
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_JUMP):
                     DECODE_SLABEL;
@@ -530,14 +545,15 @@ dispatch_loop:
                     }
                     DISPATCH();
 
-                ENTRY(MP_BC_SETUP_WITH):
-                    obj1 = TOP();
-                    SET_TOP(mp_load_attr(obj1, MP_QSTR___exit__));
-                    mp_load_method(obj1, MP_QSTR___enter__, sp + 1);
-                    obj2 = mp_call_method_n_kw(0, 0, sp + 1);
+                ENTRY(MP_BC_SETUP_WITH): {
+                    mp_obj_t obj = TOP();
+                    SET_TOP(mp_load_attr(obj, MP_QSTR___exit__));
+                    mp_load_method(obj, MP_QSTR___enter__, sp + 1);
+                    mp_obj_t ret = mp_call_method_n_kw(0, 0, sp + 1);
                     PUSH_EXC_BLOCK();
-                    PUSH(obj2);
+                    PUSH(ret);
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_WITH_CLEANUP): {
                     // Arriving here, there's "exception control block" on top of stack,
@@ -547,21 +563,21 @@ dispatch_loop:
                     static const mp_obj_t no_exc[] = {mp_const_none, mp_const_none, mp_const_none};
                     if (TOP() == mp_const_none) {
                         sp--;
-                        obj1 = TOP();
+                        mp_obj_t obj = TOP();
                         SET_TOP(mp_const_none);
-                        obj2 = mp_call_function_n_kw(obj1, 3, 0, no_exc);
+                        mp_call_function_n_kw(obj, 3, 0, no_exc);
                     } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
                         mp_obj_t cause = POP();
                         switch (MP_OBJ_SMALL_INT_VALUE(cause)) {
                             case UNWIND_RETURN: {
                                 mp_obj_t retval = POP();
-                                obj2 = mp_call_function_n_kw(TOP(), 3, 0, no_exc);
+                                mp_call_function_n_kw(TOP(), 3, 0, no_exc);
                                 SET_TOP(retval);
                                 PUSH(cause);
                                 break;
                             }
                             case UNWIND_JUMP: {
-                                obj2 = mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
+                                mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
                                 // Pop __exit__ boundmethod at sp[-2]
                                 sp[-2] = sp[-1];
                                 sp[-1] = sp[0];
@@ -573,14 +589,14 @@ dispatch_loop:
                         }
                     } else if (mp_obj_is_exception_type(TOP())) {
                         mp_obj_t args[3] = {sp[0], sp[-1], sp[-2]};
-                        obj2 = mp_call_function_n_kw(sp[-3], 3, 0, args);
+                        mp_obj_t ret_value = mp_call_function_n_kw(sp[-3], 3, 0, args);
                         // Pop __exit__ boundmethod at sp[-3]
-                        // TODO: Once semantics is proven, optimize for case when obj2 == True
+                        // TODO: Once semantics is proven, optimize for case when ret_value == True
                         sp[-3] = sp[-2];
                         sp[-2] = sp[-1];
                         sp[-1] = sp[0];
                         sp--;
-                        if (mp_obj_is_true(obj2)) {
+                        if (mp_obj_is_true(ret_value)) {
                             // This is what CPython does
                             //PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_SILENCED));
                             // But what we need to do is - pop exception from value stack...
@@ -661,18 +677,19 @@ unwind_jump:
                     SET_TOP(mp_getiter(TOP()));
                     DISPATCH();
 
-                ENTRY(MP_BC_FOR_ITER):
+                ENTRY(MP_BC_FOR_ITER): {
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     save_sp = sp;
                     assert(TOP());
-                    obj1 = mp_iternext_allow_raise(TOP());
-                    if (obj1 == MP_OBJ_STOP_ITERATION) {
+                    mp_obj_t value = mp_iternext_allow_raise(TOP());
+                    if (value == MP_OBJ_STOP_ITERATION) {
                         --sp; // pop the exhausted iterator
                         ip += unum; // jump to after for-block
                     } else {
-                        PUSH(obj1); // push the next iteration value
+                        PUSH(value); // push the next iteration value
                     }
                     DISPATCH();
+                }
 
                 // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
                 ENTRY(MP_BC_POP_BLOCK):
@@ -706,12 +723,13 @@ unwind_jump:
                     SET_TOP(mp_unary_op(unum, TOP()));
                     DISPATCH();
 
-                ENTRY(MP_BC_BINARY_OP):
+                ENTRY(MP_BC_BINARY_OP): {
                     unum = *ip++;
-                    obj2 = POP();
-                    obj1 = TOP();
-                    SET_TOP(mp_binary_op(unum, obj1, obj2));
+                    mp_obj_t rhs = POP();
+                    mp_obj_t lhs = TOP();
+                    SET_TOP(mp_binary_op(unum, lhs, rhs));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_BUILD_TUPLE):
                     DECODE_UINT;
@@ -762,18 +780,18 @@ unwind_jump:
                     sp--;
                     DISPATCH();
 
-#if MICROPY_ENABLE_SLICE
+#if MICROPY_PY_SLICE
                 ENTRY(MP_BC_BUILD_SLICE):
                     DECODE_UINT;
                     if (unum == 2) {
-                        obj2 = POP();
-                        obj1 = TOP();
-                        SET_TOP(mp_obj_new_slice(obj1, obj2, NULL));
+                        mp_obj_t stop = POP();
+                        mp_obj_t start = TOP();
+                        SET_TOP(mp_obj_new_slice(start, stop, mp_const_none));
                     } else {
-                        obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "3-argument slice is not supported");
-                        nlr_pop();
-                        fastn[0] = obj1;
-                        return MP_VM_RETURN_EXCEPTION;
+                        mp_obj_t step = POP();
+                        mp_obj_t stop = POP();
+                        mp_obj_t start = TOP();
+                        SET_TOP(mp_obj_new_slice(start, stop, step));
                     }
                     DISPATCH();
 #endif
@@ -795,12 +813,13 @@ unwind_jump:
                     PUSH(mp_make_function_from_raw_code((mp_raw_code_t*)unum, MP_OBJ_NULL, MP_OBJ_NULL));
                     DISPATCH();
 
-                ENTRY(MP_BC_MAKE_FUNCTION_DEFARGS):
+                ENTRY(MP_BC_MAKE_FUNCTION_DEFARGS): {
                     DECODE_PTR;
                     // Stack layout: def_tuple def_dict <- TOS
-                    obj1 = POP();
-                    SET_TOP(mp_make_function_from_raw_code((mp_raw_code_t*)unum, TOP(), obj1));
+                    mp_obj_t def_dict = POP();
+                    SET_TOP(mp_make_function_from_raw_code((mp_raw_code_t*)unum, TOP(), def_dict));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_MAKE_CLOSURE): {
                     DECODE_PTR;
@@ -879,27 +898,29 @@ unwind_return:
                     assert(exc_sp == exc_stack - 1);
                     return MP_VM_RETURN_NORMAL;
 
-                ENTRY(MP_BC_RAISE_VARARGS):
+                ENTRY(MP_BC_RAISE_VARARGS): {
                     unum = *ip++;
+                    mp_obj_t obj;
                     assert(unum <= 1);
                     if (unum == 0) {
                         // search for the inner-most previous exception, to reraise it
-                        obj1 = MP_OBJ_NULL;
+                        obj = MP_OBJ_NULL;
                         for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; e--) {
                             if (e->prev_exc != MP_OBJ_NULL) {
-                                obj1 = e->prev_exc;
+                                obj = e->prev_exc;
                                 break;
                             }
                         }
-                        if (obj1 == MP_OBJ_NULL) {
-                            obj1 = mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise");
-                            RAISE(obj1);
+                        if (obj == MP_OBJ_NULL) {
+                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise");
+                            RAISE(obj);
                         }
                     } else {
-                        obj1 = POP();
+                        obj = POP();
                     }
-                    obj1 = mp_make_raise_obj(obj1);
-                    RAISE(obj1);
+                    obj = mp_make_raise_obj(obj);
+                    RAISE(obj);
+                }
 
                 ENTRY(MP_BC_YIELD_VALUE):
 yield:
@@ -914,30 +935,31 @@ yield:
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
 #define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { RAISE(t); }
                     mp_vm_return_kind_t ret_kind;
-                    obj1 = POP();
+                    mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
+                    mp_obj_t ret_value;
                     if (inject_exc != MP_OBJ_NULL) {
                         t_exc = inject_exc;
                         inject_exc = MP_OBJ_NULL;
-                        ret_kind = mp_resume(TOP(), MP_OBJ_NULL, t_exc, &obj2);
+                        ret_kind = mp_resume(TOP(), MP_OBJ_NULL, t_exc, &ret_value);
                     } else {
-                        ret_kind = mp_resume(TOP(), obj1, MP_OBJ_NULL, &obj2);
+                        ret_kind = mp_resume(TOP(), send_value, MP_OBJ_NULL, &ret_value);
                     }
 
                     if (ret_kind == MP_VM_RETURN_YIELD) {
                         ip--;
-                        PUSH(obj2);
+                        PUSH(ret_value);
                         goto yield;
                     }
                     if (ret_kind == MP_VM_RETURN_NORMAL) {
                         // Pop exhausted gen
                         sp--;
-                        if (obj2 == MP_OBJ_NULL) {
+                        if (ret_value == MP_OBJ_NULL) {
                             // Optimize StopIteration
                             // TODO: get StopIteration's value
                             PUSH(mp_const_none);
                         } else {
-                            PUSH(obj2);
+                            PUSH(ret_value);
                         }
 
                         // If we injected GeneratorExit downstream, then even
@@ -948,39 +970,42 @@ yield:
                     if (ret_kind == MP_VM_RETURN_EXCEPTION) {
                         // Pop exhausted gen
                         sp--;
-                        if (EXC_MATCH(obj2, &mp_type_StopIteration)) {
-                            PUSH(mp_obj_exception_get_value(obj2));
+                        if (EXC_MATCH(ret_value, &mp_type_StopIteration)) {
+                            PUSH(mp_obj_exception_get_value(ret_value));
                             // If we injected GeneratorExit downstream, then even
                             // if it was swallowed, we re-raise GeneratorExit
                             GENERATOR_EXIT_IF_NEEDED(t_exc);
                             DISPATCH();
                         } else {
-                            RAISE(obj2);
+                            RAISE(ret_value);
                         }
                     }
                 }
 
-                ENTRY(MP_BC_IMPORT_NAME):
+                ENTRY(MP_BC_IMPORT_NAME): {
                     DECODE_QSTR;
-                    obj1 = POP();
-                    SET_TOP(mp_import_name(qst, obj1, TOP()));
+                    mp_obj_t obj = POP();
+                    SET_TOP(mp_import_name(qst, obj, TOP()));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_IMPORT_FROM):
+                ENTRY(MP_BC_IMPORT_FROM): {
                     DECODE_QSTR;
-                    obj1 = mp_import_from(TOP(), qst);
-                    PUSH(obj1);
+                    mp_obj_t obj = mp_import_from(TOP(), qst);
+                    PUSH(obj);
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_IMPORT_STAR):
                     mp_import_all(POP());
                     DISPATCH();
 
-                ENTRY_DEFAULT:
-                    obj1 = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
+                ENTRY_DEFAULT: {
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                     nlr_pop();
-                    fastn[0] = obj1;
+                    fastn[0] = obj;
                     return MP_VM_RETURN_EXCEPTION;
+                }
 
 #if !MICROPY_OPT_COMPUTED_GOTO
                 } // switch

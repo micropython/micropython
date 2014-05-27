@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -70,6 +71,7 @@ enum {
 #include "grammar.h"
 #undef DEF_RULE
     RULE_maximum_number_of,
+    RULE_string, // special node for non-interned string
 };
 
 #define or(n)                   (RULE_ACT_OR | n)
@@ -170,26 +172,26 @@ mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
     return (mp_parse_node_t)(kind | (arg << 5));
 }
 
-uint mp_parse_node_free(mp_parse_node_t pn) {
-    uint cnt = 0;
+void mp_parse_node_free(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         uint rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
+        if (rule_id == RULE_string) {
+            return;
+        }
         bool adjust = ADD_BLANK_NODE(rule_id);
         if (adjust) {
             n--;
         }
         for (uint i = 0; i < n; i++) {
-            cnt += mp_parse_node_free(pns->nodes[i]);
+            mp_parse_node_free(pns->nodes[i]);
         }
         if (adjust) {
             n++;
         }
         m_del_var(mp_parse_node_struct_t, mp_parse_node_t, n, pns);
-        cnt++;
     }
-    return cnt;
 }
 
 #if MICROPY_DEBUG_PRINTERS
@@ -219,15 +221,20 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
             default: assert(0);
         }
     } else {
+        // node must be a mp_parse_node_struct_t
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_string) {
+            printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
+        } else {
+            uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
-        printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #else
-        printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #endif
-        for (uint i = 0; i < n; i++) {
-            mp_parse_node_print(pns->nodes[i], indent + 2);
+            for (uint i = 0; i < n; i++) {
+                mp_parse_node_print(pns->nodes[i], indent + 2);
+            }
         }
     }
 }
@@ -272,6 +279,21 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
         parser->result_stack_alloc += MICROPY_ALLOC_PARSE_RESULT_INC;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
+}
+
+STATIC void push_result_string(parser_t *parser, int src_line, const char *str, uint len) {
+    mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 2);
+    if (pn == NULL) {
+        memory_error(parser);
+        return;
+    }
+    pn->source_line = src_line;
+    pn->kind_num_nodes = RULE_string | (2 << 8);
+    char *p = m_new(char, len);
+    memcpy(p, str, len);
+    pn->nodes[0] = (machine_int_t)p;
+    pn->nodes[1] = len;
+    push_result_node(parser, (mp_parse_node_t)pn);
 }
 
 STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
@@ -319,7 +341,24 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
         }
     } else if (tok->kind == MP_TOKEN_STRING) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qstr_from_strn(tok->str, tok->len));
+        // Don't automatically intern all strings.  doc strings (which are usually large)
+        // will be discarded by the compiler, and so we shouldn't intern them.
+        qstr qst = MP_QSTR_NULL;
+        if (tok->len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
+            // intern short strings
+            qst = qstr_from_strn(tok->str, tok->len);
+        } else {
+            // check if this string is already interned
+            qst = qstr_find_strn(tok->str, tok->len);
+        }
+        if (qst != MP_QSTR_NULL) {
+            // qstr exists, make a leaf node
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qst);
+        } else {
+            // not interned, make a node holding a pointer to the string data
+            push_result_string(parser, mp_lexer_cur(lex)->src_line, tok->str, tok->len);
+            return;
+        }
     } else if (tok->kind == MP_TOKEN_BYTES) {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(tok->str, tok->len));
     } else {
@@ -516,14 +555,13 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     }
                 }
 
-#if 0 && !MICROPY_ENABLE_DOC_STRING
-                // this code discards lonely statement, such as doc strings
-                // problem is that doc strings have already been interned, so this doesn't really help reduce RAM usage
+#if !MICROPY_EMIT_CPYTHON && !MICROPY_ENABLE_DOC_STRING
+                // this code discards lonely statements, such as doc strings
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
                     mp_parse_node_t p = peek_result(&parser, 1);
-                    if (MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) {
-                        pop_result(parser);
-                        pop_result(parser);
+                    if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_string)) {
+                        pop_result(&parser);
+                        pop_result(&parser);
                         push_result_rule(&parser, rule_src_line, rules[RULE_pass_stmt], 0);
                         break;
                     }

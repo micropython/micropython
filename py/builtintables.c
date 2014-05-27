@@ -53,14 +53,14 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_float), (mp_obj_t)&mp_type_float },
 #endif
-#if MICROPY_ENABLE_FROZENSET
+#if MICROPY_PY_FROZENSET
     { MP_OBJ_NEW_QSTR(MP_QSTR_frozenset), (mp_obj_t)&mp_type_frozenset },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_int), (mp_obj_t)&mp_type_int },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list), (mp_obj_t)&mp_type_list },
     { MP_OBJ_NEW_QSTR(MP_QSTR_map), (mp_obj_t)&mp_type_map },
     { MP_OBJ_NEW_QSTR(MP_QSTR_object), (mp_obj_t)&mp_type_object },
-#if MICROPY_ENABLE_PROPERTY
+#if MICROPY_PY_PROPERTY
     { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_range), (mp_obj_t)&mp_type_range },
@@ -159,26 +159,26 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_micropython), (mp_obj_t)&mp_module_micropython },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mp_module_array },
-#if MICROPY_ENABLE_MOD_IO
+#if MICROPY_PY_IO
     { MP_OBJ_NEW_QSTR(MP_QSTR_io), (mp_obj_t)&mp_module_io },
 #endif
-#if MICROPY_ENABLE_MOD_COLLECTIONS
+#if MICROPY_PY_COLLECTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR__collections), (mp_obj_t)&mp_module_collections },
 #endif
-#if MICROPY_ENABLE_MOD_STRUCT
+#if MICROPY_PY_STRUCT
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_struct },
 #endif
 
 #if MICROPY_ENABLE_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math },
-#if MICROPY_ENABLE_MOD_CMATH
+#if MICROPY_PY_CMATH
     { MP_OBJ_NEW_QSTR(MP_QSTR_cmath), (mp_obj_t)&mp_module_cmath },
 #endif
 #endif
-#if MICROPY_ENABLE_MOD_SYS
+#if MICROPY_PY_SYS
     { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },
 #endif
-#if MICROPY_ENABLE_MOD_GC && MICROPY_ENABLE_GC
+#if MICROPY_PY_GC && MICROPY_ENABLE_GC
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&mp_module_gc },
 #endif
 

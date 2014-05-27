@@ -344,6 +344,7 @@ extern const mp_obj_type_t mp_type_RuntimeError;
 extern const mp_obj_type_t mp_type_StopIteration;
 extern const mp_obj_type_t mp_type_SyntaxError;
 extern const mp_obj_type_t mp_type_SystemError;
+extern const mp_obj_type_t mp_type_SystemExit;
 extern const mp_obj_type_t mp_type_TypeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
@@ -372,7 +373,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
 mp_obj_t mp_obj_new_int_from_qstr(qstr qst);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const byte* data, uint len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
 #if MICROPY_ENABLE_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
@@ -516,7 +517,7 @@ mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice
-void mp_obj_slice_get(mp_obj_t self_in, machine_int_t *start, machine_int_t *stop, machine_int_t *step);
+void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
 
 // array
 uint mp_obj_array_len(mp_obj_t self_in);
@@ -562,14 +563,23 @@ typedef struct _mp_obj_static_class_method_t {
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // sequence helpers
+
+// slice indexes resolved to particular sequence
+typedef struct {
+    machine_uint_t start;
+    machine_uint_t stop;
+    machine_int_t step;
+} mp_bound_slice_t;
+
 void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest);
-bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, machine_uint_t *begin, machine_uint_t *end);
+bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
 #define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
 #define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2);
 bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
+mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *indexes);
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
 #define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
 #define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_t) \
@@ -577,3 +587,8 @@ mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value);
     memcpy(dest + beg, slice, slice_len * sizeof(item_t)); \
     /*printf("memcpy(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));*/ \
     memcpy(dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));
+
+#define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_t) \
+    /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t));*/ \
+    memmove(dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t)); \
+    memcpy(dest + beg, slice, slice_len * sizeof(item_t));

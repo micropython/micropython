@@ -37,6 +37,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -47,6 +48,7 @@
 #include "objarray.h"
 #include "runtime.h"
 #include "stream.h"
+#include "builtin.h"
 
 #define MICROPY_SOCKET_EXTRA (0)
 
@@ -165,8 +167,9 @@ STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
     int out_sz = recv(self->fd, buf, sz, flags);
     RAISE_ERRNO(out_sz, errno);
 
-    buf = m_realloc(buf, sz, out_sz);
-    return MP_OBJ_NEW_QSTR(qstr_from_strn_take(buf, out_sz, out_sz));
+    mp_obj_t ret = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, out_sz));
+    m_del(char, buf, sz);
+    return ret;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
@@ -229,6 +232,18 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+STATIC mp_obj_t socket_makefile(uint n_args, const mp_obj_t *args) {
+    // TODO: CPython explicitly says that closing returned object doesn't close
+    // the original socket (Python2 at all says that fd is dup()ed). But we
+    // save on the bloat.
+    mp_obj_socket_t *self = args[0];
+    mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
+    memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
+    new_args[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)self->fd);
+    return mp_builtin_open(n_args, new_args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
+
 STATIC mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -254,7 +269,7 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
 
 STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&socket_fileno_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&socket_makefile_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},

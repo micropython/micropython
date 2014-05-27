@@ -35,7 +35,7 @@
 #include "objstr.h"
 #include "gc.h"
 
-#if MICROPY_ENABLE_MOD_GC && MICROPY_ENABLE_GC
+#if MICROPY_PY_GC && MICROPY_ENABLE_GC
 
 STATIC mp_obj_t py_gc_collect(void) {
     gc_collect();

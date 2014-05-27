@@ -37,7 +37,7 @@
 #include "binary.h"
 #include "parsenum.h"
 
-#if MICROPY_ENABLE_MOD_STRUCT
+#if MICROPY_PY_STRUCT
 
 STATIC char get_fmt_type(const char **fmt) {
     char t = **fmt;

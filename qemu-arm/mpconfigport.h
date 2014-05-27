@@ -14,7 +14,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
-#define MICROPY_ENABLE_MOD_IO       (0)
+#define MICROPY_PY_IO               (0)
 
 // type definitions for the specific machine
 

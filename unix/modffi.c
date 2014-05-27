@@ -134,7 +134,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
     switch (type) {
         case 's': {
             const char *s = (const char *)val;
-            return mp_obj_new_str((const byte *)s, strlen(s), false);
+            return mp_obj_new_str(s, strlen(s), false);
         }
         case 'v':
             return mp_const_none;

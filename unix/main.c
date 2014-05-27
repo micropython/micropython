@@ -123,6 +123,11 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 0;
     } else {
         // uncaught exception
+        // check for SystemExit
+        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+        if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
+            exit(mp_obj_get_int(mp_obj_exception_get_value(exc)));
+        }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return 1;
     }
@@ -383,7 +388,7 @@ STATIC mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
     if (n_args > 0) {
         rc = mp_obj_get_int(args[0]);
     }
-    exit(rc);
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_SystemExit, mp_obj_new_int(rc)));
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 

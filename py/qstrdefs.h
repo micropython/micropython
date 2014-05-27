@@ -103,6 +103,7 @@ Q(OverflowError)
 Q(RuntimeError)
 Q(SyntaxError)
 Q(SystemError)
+Q(SystemExit)
 Q(TypeError)
 Q(UnboundLocalError)
 Q(ValueError)
@@ -126,7 +127,7 @@ Q(bool)
 Q(bytearray)
 Q(bytes)
 Q(callable)
-#if MICROPY_ENABLE_MOD_STRUCT
+#if MICROPY_PY_STRUCT
 Q(calcsize)
 #endif
 Q(chr)
@@ -240,6 +241,7 @@ Q(rindex)
 Q(split)
 Q(rsplit)
 Q(startswith)
+Q(endswith)
 Q(replace)
 Q(partition)
 Q(rpartition)
@@ -257,11 +259,11 @@ Q(iterator)
 Q(module)
 Q(slice)
 
-#if MICROPY_ENABLE_FROZENSET
+#if MICROPY_PY_FROZENSET
 Q(frozenset)
 #endif
 
-#if MICROPY_ENABLE_MOD_MATH || MICROPY_ENABLE_MOD_CMATH
+#if MICROPY_PY_MATH || MICROPY_PY_CMATH
 Q(math)
 Q(e)
 Q(pi)
@@ -305,7 +307,7 @@ Q(gamma)
 Q(lgamma)
 #endif
 
-#if MICROPY_ENABLE_MOD_CMATH
+#if MICROPY_PY_CMATH
 Q(cmath)
 Q(phase)
 Q(polar)
@@ -331,7 +333,7 @@ Q(decode)
 Q(utf-8)
 #endif
 
-#if MICROPY_ENABLE_MOD_SYS
+#if MICROPY_PY_SYS
 Q(argv)
 Q(byteorder)
 Q(big)
@@ -344,13 +346,13 @@ Q(version)
 Q(version_info)
 #endif
 
-#if MICROPY_ENABLE_MOD_STRUCT
+#if MICROPY_PY_STRUCT
 Q(struct)
 Q(pack)
 Q(unpack)
 #endif
 
-#if MICROPY_ENABLE_MOD_IO
+#if MICROPY_PY_IO
 Q(io)
 Q(readall)
 Q(readline)
@@ -362,14 +364,14 @@ Q(BytesIO)
 Q(getvalue)
 #endif
 
-#if MICROPY_ENABLE_MOD_GC
+#if MICROPY_PY_GC
 Q(gc)
 Q(collect)
 Q(disable)
 Q(enable)
 #endif
 
-#if MICROPY_ENABLE_PROPERTY
+#if MICROPY_PY_PROPERTY
 Q(property)
 Q(getter)
 Q(setter)
