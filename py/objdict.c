@@ -352,24 +352,31 @@ STATIC mp_obj_t dict_update(mp_obj_t self_in, mp_obj_t iterable) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_dict));
     mp_obj_dict_t *self = self_in;
     /* TODO: check for the "keys" method */
-    mp_obj_t iter = mp_getiter(iterable);
-    mp_obj_t next = NULL;
-    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-        mp_obj_t inneriter = mp_getiter(next);
-        mp_obj_t key = mp_iternext(inneriter);
-        mp_obj_t value = mp_iternext(inneriter);
-        mp_obj_t stop = mp_iternext(inneriter);
-        if (key == MP_OBJ_STOP_ITERATION
-            || value == MP_OBJ_STOP_ITERATION
-            || stop != MP_OBJ_STOP_ITERATION) {
-            nlr_raise(mp_obj_new_exception_msg(
-                         &mp_type_ValueError,
-                         "dictionary update sequence has the wrong length"));
-        } else {
-            mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-        }
+    if (MP_OBJ_IS_TYPE(iterable, &mp_type_dict)) {
+        mp_obj_t *dict_iter = mp_obj_new_dict_iterator((mp_obj_dict_t *)iterable, 0);
+        mp_map_elem_t *next = NULL;
+        while ((next = dict_it_iternext_elem(dict_iter)) != MP_OBJ_STOP_ITERATION) {
+            mp_map_lookup(&self->map, next->key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = next->value;
+        }       
+    } else {
+	    mp_obj_t iter = mp_getiter(iterable);
+	    mp_obj_t next = NULL;
+	    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+	        mp_obj_t inneriter = mp_getiter(next);
+	        mp_obj_t key = mp_iternext(inneriter);
+	        mp_obj_t value = mp_iternext(inneriter);
+	        mp_obj_t stop = mp_iternext(inneriter);
+	        if (key == MP_OBJ_STOP_ITERATION
+	            || value == MP_OBJ_STOP_ITERATION
+	            || stop != MP_OBJ_STOP_ITERATION) {
+	            nlr_raise(mp_obj_new_exception_msg(
+	                         &mp_type_ValueError,
+	                         "dictionary update sequence has the wrong length"));
+	        } else {
+	            mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+	        }
+	    }
     }
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(dict_update_obj, dict_update);
