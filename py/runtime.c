@@ -413,7 +413,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     goto unsupported_op;
             }
             // TODO: We just should make mp_obj_new_int() inline and use that
-            if (MP_OBJ_FITS_SMALL_INT(lhs_val)) {
+            if (MP_SMALL_INT_FITS(lhs_val)) {
                 return MP_OBJ_NEW_SMALL_INT(lhs_val);
             } else {
                 return mp_obj_new_int(lhs_val);

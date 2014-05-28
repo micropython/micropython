@@ -37,13 +37,6 @@ struct _mp_lexer_t;
 //  - xx...x10010: a string of bytes; bits 5 and above are the qstr holding the value
 //  - xx...x10110: a token; bits 5 and above are mp_token_kind_t
 
-// TODO: these can now be unified with MP_OBJ_FITS_SMALL_INT(x)
-// makes sure the top 2 bits of x are all cleared (positive number) or all set (negavite number)
-// these macros can probably go somewhere else because they are used more than just in the parser
-#define MP_UINT_HIGH_2_BITS (~((~((machine_uint_t)0)) >> 2))
-// parser's small ints are different from VM small int
-#define MP_PARSE_FITS_SMALL_INT(x) (((((machine_uint_t)(x)) & MP_UINT_HIGH_2_BITS) == 0) || ((((machine_uint_t)(x)) & MP_UINT_HIGH_2_BITS) == MP_UINT_HIGH_2_BITS))
-
 #define MP_PARSE_NODE_NULL      (0)
 #define MP_PARSE_NODE_SMALL_INT (0x1)
 #define MP_PARSE_NODE_ID        (0x02)

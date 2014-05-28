@@ -35,6 +35,7 @@
 #include "qstr.h"
 #include "parsenumbase.h"
 #include "obj.h"
+#include "smallint.h"
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
@@ -239,7 +240,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 mp_obj_t mp_obj_new_int(machine_int_t value) {
-    if (MP_OBJ_FITS_SMALL_INT(value)) {
+    if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
     return mp_obj_new_int_from_ll(value);

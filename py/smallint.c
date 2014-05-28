@@ -28,6 +28,7 @@
 #include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
+#include "smallint.h"
 
 bool mp_small_int_mul_overflow(machine_int_t x, machine_int_t y) {
     // Check for multiply overflow; see CERT INT32-C

@@ -36,6 +36,7 @@
 #include "lexer.h"
 #include "parsenumbase.h"
 #include "parse.h"
+#include "smallint.h"
 
 #define RULE_ACT_KIND_MASK      (0xf0)
 #define RULE_ACT_ARG_MASK       (0x0f)
@@ -311,13 +312,13 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
         int i = mp_parse_num_base(str, len, &base);
         bool overflow = false;
         for (; i < len; i++) {
-            machine_int_t old_val = int_val;
+            int dig;
             if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
-                int_val = base * int_val + str[i] - '0';
+                dig = str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
-                int_val = base * int_val + str[i] - 'a' + 10;
+                dig = str[i] - 'a' + 10;
             } else if (base == 16 && 'A' <= str[i] && str[i] <= 'F') {
-                int_val = base * int_val + str[i] - 'A' + 10;
+                dig = str[i] - 'A' + 10;
             } else if (str[i] == '.' || str[i] == 'e' || str[i] == 'E' || str[i] == 'j' || str[i] == 'J') {
                 dec = true;
                 break;
@@ -325,17 +326,18 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
                 small_int = false;
                 break;
             }
-            if (int_val < old_val) {
-                // If new value became less than previous, it's overflow
+            // add next digi and check for overflow
+            if (mp_small_int_mul_overflow(int_val, base)) {
                 overflow = true;
-            } else if ((old_val ^ int_val) & WORD_MSBIT_HIGH) {
-                // If signed number changed sign - it's overflow
+            }
+            int_val = int_val * base + dig;
+            if (!MP_SMALL_INT_FITS(int_val)) {
                 overflow = true;
             }
         }
         if (dec) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn(str, len));
-        } else if (small_int && !overflow && MP_PARSE_FITS_SMALL_INT(int_val)) {
+        } else if (small_int && !overflow && MP_SMALL_INT_FITS(int_val)) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));

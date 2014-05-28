@@ -72,10 +72,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // These macros check for small int, qstr or object, and access small int and qstr values
 
-// In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
-#define MP_SMALL_INT_MIN ((mp_small_int_t)(((machine_int_t)WORD_MSBIT_HIGH) >> 1))
-#define MP_SMALL_INT_MAX ((mp_small_int_t)(~(MP_SMALL_INT_MIN)))
-#define MP_OBJ_FITS_SMALL_INT(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
 // these macros have now become inline functions; see below
 //#define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 //#define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)

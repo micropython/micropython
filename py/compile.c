@@ -249,7 +249,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         // shouldn't happen
                         assert(0);
                     }
-                    if (MP_PARSE_FITS_SMALL_INT(arg0)) {
+                    if (MP_SMALL_INT_FITS(arg0)) {
                         //printf("%ld + %ld\n", arg0, arg1);
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
                     }
@@ -264,7 +264,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         // int * int
                         if (!mp_small_int_mul_overflow(arg0, arg1)) {
                             arg0 *= arg1;
-                            if (MP_PARSE_FITS_SMALL_INT(arg0)) {
+                            if (MP_SMALL_INT_FITS(arg0)) {
                                 pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
                             }
                         }
@@ -337,7 +337,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         mp_load_method_maybe(elem->value, q_attr, dest);
                         if (MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == NULL) {
                             machine_int_t val = MP_OBJ_SMALL_INT_VALUE(dest[0]);
-                            if (MP_PARSE_FITS_SMALL_INT(val)) {
+                            if (MP_SMALL_INT_FITS(val)) {
                                 pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, val);
                             }
                         }

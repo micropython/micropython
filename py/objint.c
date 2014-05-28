@@ -35,6 +35,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "parsenum.h"
+#include "smallint.h"
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
@@ -251,7 +252,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
 }
 
 mp_obj_t mp_obj_new_int(machine_int_t value) {
-    if (MP_OBJ_FITS_SMALL_INT(value)) {
+    if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));

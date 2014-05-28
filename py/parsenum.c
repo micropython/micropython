@@ -34,6 +34,7 @@
 #include "obj.h"
 #include "parsenumbase.h"
 #include "parsenum.h"
+#include "smallint.h"
 
 #if MICROPY_ENABLE_FLOAT
 #include <math.h>
@@ -70,16 +71,16 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     machine_int_t int_val = 0;
     const char *restrict str_val_start = str;
     for (; str < top; str++) {
-        machine_int_t old_val = int_val;
+        // get next digit as a value
         int dig = *str;
         if (unichar_isdigit(dig) && dig - '0' < base) {
             // 0-9 digit
-            int_val = base * int_val + dig - '0';
+            dig = dig - '0';
         } else if (base == 16) {
             dig |= 0x20;
             if ('a' <= dig && dig <= 'f') {
                 // a-f hex digit
-                int_val = base * int_val + dig - 'a' + 10;
+                dig = dig - 'a' + 10;
             } else {
                 // unknown character
                 break;
@@ -88,11 +89,13 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
             // unknown character
             break;
         }
-        if (int_val < old_val) {
-            // If new value became less than previous, it's overflow
+
+        // add next digi and check for overflow
+        if (mp_small_int_mul_overflow(int_val, base)) {
             goto overflow;
-        } else if ((old_val ^ int_val) & WORD_MSBIT_HIGH) {
-            // If signed number changed sign - it's overflow
+        }
+        int_val = int_val * base + dig;
+        if (!MP_SMALL_INT_FITS(int_val)) {
             goto overflow;
         }
     }
