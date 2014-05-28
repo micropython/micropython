@@ -42,6 +42,7 @@
 mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     const char *restrict top = str + len;
     bool neg = false;
+    mp_obj_t ret_val;
 
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
@@ -96,14 +97,18 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
         }
     }
 
-    // check we parsed something
-    if (str == str_val_start) {
-        goto value_error;
-    }
-
     // negate value if needed
     if (neg) {
         int_val = -int_val;
+    }
+
+    // create the small int
+    ret_val = MP_OBJ_NEW_SMALL_INT(int_val);
+
+have_ret_val:
+    // check we parsed something
+    if (str == str_val_start) {
+        goto value_error;
     }
 
     // skip trailing space
@@ -116,14 +121,19 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     }
 
     // return the object
-    return MP_OBJ_NEW_SMALL_INT(int_val);
-
-value_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid literal for int() with base %d: '%s'", base, str));
+    return ret_val;
 
 overflow:
-    // TODO reparse using bignum
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "overflow parsing integer"));
+    // reparse using long int
+    {
+        const char *s2 = str_val_start;
+        ret_val = mp_obj_new_int_from_str_len(&s2, top - str_val_start, neg, base);
+        str = s2;
+        goto have_ret_val;
+    }
+
+value_error:
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid syntax for integer with base %d: '%s'", base, str));
 }
 
 #define PARSE_DEC_IN_INTG (1)

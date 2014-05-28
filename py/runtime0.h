@@ -96,8 +96,8 @@ typedef enum {
 } mp_binary_op_t;
 
 typedef enum {
-    MP_F_LOAD_CONST_DEC = 0,
-    MP_F_LOAD_CONST_INT,
+    MP_F_LOAD_CONST_INT = 0,
+    MP_F_LOAD_CONST_DEC,
     MP_F_LOAD_CONST_STR,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,

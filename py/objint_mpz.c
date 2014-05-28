@@ -260,26 +260,18 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     return mp_obj_new_int_from_ll(value);
 }
 
-mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    uint len;
-    const char* str = (const char*)qstr_data(qst, &len);
-    int base = 0;
-    int skip = mp_parse_num_base(str, len, &base);
-    str += skip;
-    len -= skip;
-    uint n = mpz_set_from_str(&o->mpz, str, len, false, base);
-    if (n != len) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
-    }
+    uint n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
+    *str += n;
     return o;
 }
 
-machine_int_t mp_obj_int_get(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = self_in;
         return mpz_as_int(&self->mpz);
     }
 }

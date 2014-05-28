@@ -98,6 +98,13 @@ void mp_deinit(void) {
 #endif
 }
 
+mp_obj_t mp_load_const_int(qstr qstr) {
+    DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
+    uint len;
+    const byte* data = qstr_data(qstr, &len);
+    return mp_parse_num_integer((const char*)data, len, 0);
+}
+
 mp_obj_t mp_load_const_dec(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
     uint len;
@@ -1147,8 +1154,8 @@ void *m_malloc_fail(int num_bytes) {
 
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
+    mp_load_const_int,
     mp_load_const_dec,
-    mp_obj_new_int_from_qstr,
     mp_load_const_str,
     mp_load_name,
     mp_load_global,

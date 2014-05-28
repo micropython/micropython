@@ -139,7 +139,7 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
     } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
         // Not a small int.
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-        mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = self_in;
         // Get the value to format; mp_obj_get_int truncates to machine_int_t.
         num = self->val;
 #else
@@ -225,7 +225,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 }
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
-mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
     return mp_const_none;
 }
@@ -254,7 +254,7 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     return mp_const_none;
 }
 
-machine_int_t mp_obj_int_get(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 

@@ -371,7 +371,7 @@ mp_obj_t mp_obj_new_bool(bool value);
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(machine_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value);
-mp_obj_t mp_obj_new_int_from_qstr(qstr qst);
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
@@ -445,7 +445,7 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 
 // int
 // For long int, returns value truncated to machine_int_t
-machine_int_t mp_obj_int_get(mp_obj_t self_in);
+machine_int_t mp_obj_int_get(mp_const_obj_t self_in);
 #if MICROPY_ENABLE_FLOAT
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 #endif

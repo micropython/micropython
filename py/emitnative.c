@@ -704,7 +704,7 @@ STATIC void emit_native_load_const_int(emit_t *emit, qstr qst) {
     DEBUG_printf("load_const_int %s\n", qstr_str(st));
     // for viper: load integer, check fits in 32 bits
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, mp_obj_new_int_from_qstr, qst, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, mp_load_const_int, qst, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 

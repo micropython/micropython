@@ -162,26 +162,22 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
     return o;
 }
 
-mp_obj_t mp_obj_new_int_from_qstr(qstr qst) {
-    const char *s = qstr_str(qst);
-    long long v;
-    char *end;
-    // TODO: this doesn't handle Python hacked 0o octal syntax
-    v = strtoll(s, &end, 0);
-    if (*end != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "invalid syntax for number"));
-    }
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base) {
+    // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
+    // TODO check overflow
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
-    o->val = v;
+    char *endptr;
+    o->val = strtoll(*str, &endptr, base);
+    *str = endptr;
     return o;
 }
 
-machine_int_t mp_obj_int_get(mp_obj_t self_in) {
+machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = self_in;
         return self->val;
     }
 }
