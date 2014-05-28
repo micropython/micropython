@@ -13,21 +13,6 @@
     <MakeDir Directories="$(DestDir)"/>
   </Target>
 
-  <!--don't let regenerating these files trigger builds-->
-  <UsingTask TaskName="MakeSameWriteTime" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
-    <ParameterGroup>
-      <SourceFile Required="true" ParameterType="System.String"/>
-      <DestFile Required="true" ParameterType="System.String"/>
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-        System.IO.File.SetLastWriteTime( DestFile, System.IO.File.GetLastWriteTime( SourceFile ) );
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
   <!--see py/py.mk under #qstr data-->
   <Target Name="MakeQstrData" DependsOnTargets="MakeDestDir">
     <PropertyGroup>
@@ -35,9 +20,12 @@
       <QstrDefs>$(MsBuildThisFileDirectory)..\..\unix\qstrdefsport.h</QstrDefs>
       <DestFile>$(DestDir)qstrdefs.generated.h</DestFile>
     </PropertyGroup>
-    <Exec Command="cl /I$(SrcDir) /I$(MsBuildThisFileDirectory).. /Fi$(PreProc) /P $(SrcDir)qstrdefs.h"/>
-    <Exec Command="python $(SrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(DestFile)"/>
-    <MakeSameWriteTime SourceFile="$(MsBuildThisFile)" DestFile="$(DestFile)"/>
+    <Exec Command="cl /nologo /I$(SrcDir) /I$(MsBuildThisFileDirectory).. /Fi$(PreProc) /P $(SrcDir)qstrdefs.h"/>
+    <Exec Command="python $(SrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(DestFile).tmp"/>
+    <Exec Command="fc /B $(DestFile).tmp $(DestFile) > NUL 2>&amp;1" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="FilesDiffer" />
+    </Exec>
+    <Copy SourceFiles="$(DestFile).tmp" DestinationFiles="$(DestFile)" Condition="'$(FilesDiffer)'!='0'"/>
   </Target>
 
   <!--see py/py-version.sh-->
@@ -69,8 +57,11 @@
       <Lines Include="#define MICROPY_GIT_HASH &quot;$(GitHash)&quot;"/>
       <Lines Include="#define MICROPY_BUILD_DATE &quot;$([System.DateTime]::Now.ToString(`yyyy-MM-dd`))&quot;"/>
     </ItemGroup>
-    <WriteLinesToFile Lines="@(Lines)" File="$(DestFile)" Overwrite="true"/>
-    <MakeSameWriteTime SourceFile="$(MsBuildThisFile)" DestFile="$(DestFile)"/>
+    <WriteLinesToFile Lines="@(Lines)" File="$(DestFile).tmp" Overwrite="true"/>
+    <Exec Command="fc /B $(DestFile).tmp $(DestFile) > NUL 2>&amp;1" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="FilesDiffer" />
+    </Exec>
+    <Copy SourceFiles="$(DestFile).tmp" DestinationFiles="$(DestFile)" Condition="'$(FilesDiffer)'!='0'"/>
   </Target>
 
 </Project>
