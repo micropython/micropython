@@ -53,7 +53,10 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
             return MP_OBJ_NEW_SMALL_INT(0);
 
         case 1:
-            if (MP_OBJ_IS_STR(args[0])) {
+            if (MP_OBJ_IS_INT(args[0])) {
+                // already an int (small or long), just return it
+                return args[0];
+            } else if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
@@ -63,6 +66,7 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
                 return MP_OBJ_NEW_SMALL_INT((machine_int_t)(MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
 #endif
             } else {
+                // try to convert to small int (eg from bool)
                 return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
             }
 
