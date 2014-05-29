@@ -26,31 +26,32 @@ See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
 
 Major components in this repository:
-- py/ -- the core Python implementation, including compiler and runtime.
-- unix/ -- a version of Micro Python that runs on Unix.
-- stmhal/ -- a version of Micro Python that runs on the Micro Python board
+- `py/` - the core Python implementation, including compiler and runtime.
+- `unix/` - a version of Micro Python that runs on Unix.
+- `stmhal/` - a version of Micro Python that runs on the Micro Python board
   with an STM32F405RG (using ST's Cube HAL drivers).
-- teensy/ -- a version of Micro Python that runs on the Teensy 3.1
+- `teensy/` - a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 
 Additional components:
-- bare-arm/ -- a bare minimum version of Micro Python for ARM MCUs.  Start
+- `bare-arm/` - a bare minimum version of Micro Python for ARM MCUs.  Start
   with this if you want to port Micro Python to another microcontroller.
-- unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
-- tests/ -- test framework and test scripts.
-- tools/ -- various tools, including the pyboard.py module.
-- examples/ -- a few example Python scripts.
+- `qemu/` - a version of MicroPython that runs on Qemu emulating Cortex-M3.
+- `unix-cpy/` - a version of Micro Python that outputs bytecode (for testing).
+- `tests/` - test framework and test scripts.
+- `tools/` - various tools, including the pyboard.py module.
+- `examples/` - a few example Python scripts.
 
-"make" is used to build the components, or "gmake" on BSD-based systems.
+`make` is used to build the components, or `gmake` on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).
 
 The Unix version
 ----------------
 
-The "unix" port requires a standard Unix environment with gcc and GNU make.
-x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARMv7. Porting to other architectures require writing some assembly code
-for the exception handling.
+The `unix` port requires a standard Unix environment with gcc and GNU make.
+Both of Intel x86 architectures are supported, as well as ARMv7. It will
+probably work on other architectures if you set `MICROPY_NLR_SETJMP` in the
+`unix/mpconfigport.h` header, test results are wellcome.
 
 To build:
 
@@ -70,9 +71,9 @@ dependencies, they can be disabled in unix/mpconfigport.mk .
 The STM version
 ---------------
 
-The "stmhal" port requires an ARM compiler, arm-none-eabi-gcc, and associated
-bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
-arm-none-eabi-gcc packages from the AUR.  Otherwise, try here:
+The `stmhal` port requires an ARM compiler, `arm-none-eabi-gcc`, and associated
+bin-utils.  For those using Arch Linux, you need `arm-none-eabi-binutils` and
+`arm-none-eabi-gcc` packages from the AUR.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
@@ -93,3 +94,4 @@ AUR.  If the above does not work it may be because you don't have the
 correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -D build-PYBV10/firmware.dfu
+
