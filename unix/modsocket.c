@@ -283,10 +283,6 @@ STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
-#if MICROPY_SOCKET_EXTRA
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&mp_stream_write_obj },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(microsocket_locals_dict, microsocket_locals_dict_table);
