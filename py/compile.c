@@ -73,8 +73,8 @@ typedef struct _compiler_t {
 
     uint next_label;
 
-    uint break_label;
-    uint continue_label;
+    uint16_t break_label; // highest bit set indicates we are breaking out of a for loop
+    uint16_t continue_label;
     int break_continue_except_level;
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
 
@@ -1745,6 +1745,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 // And, if the loop never runs, the loop variable should never be assigned
 void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
+    comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
 
     uint top_label = comp_next_label(comp);
     uint entry_label = comp_next_label(comp);
@@ -1843,6 +1844,7 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #endif
 
     START_BREAK_CONTINUE_BLOCK
+    comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
 
     uint pop_label = comp_next_label(comp);
     uint end_label = comp_next_label(comp);

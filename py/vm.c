@@ -618,10 +618,10 @@ dispatch_loop:
                 ENTRY(MP_BC_UNWIND_JUMP):
                     DECODE_SLABEL;
                     PUSH((void*)(ip + unum)); // push destination ip for jump
-                    PUSH((void*)(machine_uint_t)(*ip)); // push number of exception handlers to unwind
+                    PUSH((void*)(machine_uint_t)(*ip)); // push number of exception handlers to unwind (0x80 bit set if we also need to pop stack)
 unwind_jump:
                     unum = (machine_uint_t)POP(); // get number of exception handlers to unwind
-                    while (unum > 0) {
+                    while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
                         if (exc_sp->opcode == MP_BC_SETUP_FINALLY || exc_sp->opcode == MP_BC_SETUP_WITH) {
@@ -638,6 +638,9 @@ unwind_jump:
                         exc_sp--;
                     }
                     ip = (const byte*)POP(); // pop destination ip for jump
+                    if (unum != 0) {
+                        sp--;
+                    }
                     DISPATCH();
 
                 // matched against: POP_BLOCK or POP_EXCEPT (anything else?)

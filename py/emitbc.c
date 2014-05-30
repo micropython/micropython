@@ -617,11 +617,15 @@ STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, uint label) {
 
 STATIC void emit_bc_unwind_jump(emit_t *emit, uint label, int except_depth) {
     if (except_depth == 0) {
-        emit_bc_jump(emit, label);
-    } else {
         emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte_signed_label(emit, MP_BC_UNWIND_JUMP, label);
-        emit_write_bytecode_byte(emit, except_depth);
+        if (label & MP_EMIT_BREAK_FROM_FOR) {
+            // need to pop the iterator if we are breaking out of a for loop
+            emit_write_bytecode_byte(emit, MP_BC_POP_TOP);
+        }
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP, label & ~MP_EMIT_BREAK_FROM_FOR);
+    } else {
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_UNWIND_JUMP, label & ~MP_EMIT_BREAK_FROM_FOR);
+        emit_write_bytecode_byte(emit, ((label & MP_EMIT_BREAK_FROM_FOR) ? 0x80 : 0) | except_depth);
     }
 }
 

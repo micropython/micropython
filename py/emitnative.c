@@ -1043,7 +1043,7 @@ STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
 }
 
 STATIC void emit_native_break_loop(emit_t *emit, uint label, int except_depth) {
-    emit_native_jump(emit, label); // TODO properly
+    emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR); // TODO properly
 }
 
 STATIC void emit_native_continue_loop(emit_t *emit, uint label, int except_depth) {

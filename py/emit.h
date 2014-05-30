@@ -44,6 +44,8 @@ typedef enum {
 #define MP_EMIT_STAR_FLAG_SINGLE (0x01)
 #define MP_EMIT_STAR_FLAG_DOUBLE (0x02)
 
+#define MP_EMIT_BREAK_FROM_FOR (0x8000)
+
 typedef struct _emit_t emit_t;
 
 typedef struct _emit_method_table_t {
