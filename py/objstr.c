@@ -1517,6 +1517,8 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
             case IS_SPACE: f = &unichar_isspace; break;
             case IS_ALPHA: f = &unichar_isalpha; break;
             case IS_DIGIT: f = &unichar_isdigit; break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
         }
     
         for (int i = 0; i < self_len; i++) {
@@ -1526,11 +1528,20 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
         switch (type) {
             case IS_UPPER: f = &unichar_isupper; break;
             case IS_LOWER: f = &unichar_islower; break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
         }
-    
+        
+        bool contains_alpha = false;
+        
         for (int i = 0; i < self_len; i++) { // only check alphanumeric characters
-            if (unichar_isalpha(*self_data) && !f(*self_data++)) return mp_const_false;
+            if (unichar_isalpha(*self_data++)) {
+                contains_alpha = true;
+                if (!f(*(self_data-1))) return mp_const_false; // we already incremented
+            }
         }
+        
+        if (!(contains_alpha)) return mp_const_false;
     }
 
     return mp_const_true;
