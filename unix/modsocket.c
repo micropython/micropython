@@ -50,6 +50,21 @@
 #include "stream.h"
 #include "builtin.h"
 
+/*
+  The idea of this module is to implement reasonable minimum of
+  socket-related functions to write typical clients and servers.
+  The module named "microsocket" on purpose, to allow to make
+  Python-level module more (or fully) compatible with CPython
+  "socket", e.g.:
+  ---- socket.py ----
+  from microsocket import *
+  from socket_more_funcs import *
+  from socket_more_funcs2 import *
+  -------------------
+  I.e. this module should stay lean, and more functions (if needed)
+  should be add to seperate modules (C or Python level).
+ */
+
 #define MICROPY_SOCKET_EXTRA (0)
 
 typedef struct _mp_obj_socket_t {
