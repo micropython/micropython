@@ -196,13 +196,13 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 
 // If it's possible to call a function without allocating new argument array,
 // this function returns true, together with pointers to 2 subarrays to be used
-// as arguments. Otherwise, it returns false. It is expected that this fucntion
+// as arguments. Otherwise, it returns false. It is expected that this function
 // will be accompanied by another, mp_obj_fun_prepare_full_args(), which will
 // instead take pointer to full-length out-array, and will fill it in. Rationale
 // being that a caller can try this function and if it succeeds, the function call
 // can be made without allocating extra memory. Otherwise, caller can allocate memory
 // and try "full" function. These functions are expected to be refactoring of
-// code in fun_bc_call() and evenrually replace it.
+// code in fun_bc_call() and eventually replace it.
 bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
                             uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2) {
     mp_obj_fun_bc_t *self = self_in;
