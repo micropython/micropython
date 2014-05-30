@@ -31,3 +31,7 @@ print(" a".rstrip())
 print("a ".strip())
 print("a ".lstrip())
 print("a ".rstrip())
+
+# Test that stripping unstrippable string returns original object
+s = "abc"
+print(id(s.strip()) == id(s))

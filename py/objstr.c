@@ -691,6 +691,12 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(last_good_char_pos >= first_good_char_pos);
     //+1 to accomodate the last character
     machine_uint_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
+    if (stripped_len == orig_str_len) {
+        // If nothing was stripped, don't bother to dup original string
+        // TODO: watch out for this case when we'll get to bytearray.strip()
+        assert(first_good_char_pos == 0);
+        return args[0];
+    }
     return mp_obj_new_str_of_type(self_type, orig_str + first_good_char_pos, stripped_len);
 }
 
