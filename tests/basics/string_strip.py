@@ -20,3 +20,14 @@ try:
     print('mississippi'.rstrip(b'ipz'))
 except TypeError:
     print("TypeError")
+
+# single-char subj string used to give a problem
+print("a".strip())
+print("a".lstrip())
+print("a".rstrip())
+print(" a".strip())
+print(" a".lstrip())
+print(" a".rstrip())
+print("a ".strip())
+print("a ".lstrip())
+print("a ".rstrip())
