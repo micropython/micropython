@@ -1506,14 +1506,14 @@ enum { IS_SPACE, IS_ALPHA, IS_DIGIT, IS_UPPER, IS_LOWER };
 
 STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
-    
+
     if (self_len == 0) {
         return mp_const_false; // default to False for empty str
     }
-        
+
     typedef bool (*check_function)(unichar);
     check_function f;
-    
+
     if (type != IS_UPPER && type != IS_LOWER) {
         switch (type) {
             case IS_SPACE: f = &unichar_isspace; break;
@@ -1522,7 +1522,7 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
             default:
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
         }
-    
+
         for (int i = 0; i < self_len; i++) {
             if (!f(*self_data++)) {
                 return mp_const_false;
@@ -1535,9 +1535,9 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
             default:
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
         }
-        
+
         bool contains_alpha = false;
-        
+
         for (int i = 0; i < self_len; i++) { // only check alphanumeric characters
             if (unichar_isalpha(*self_data++)) {
                 contains_alpha = true;
@@ -1546,7 +1546,7 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
                 }
             }
         }
-        
+
         if (!contains_alpha) {
             return mp_const_false;
         }
