@@ -158,6 +158,13 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
 
 #if DETECT_VM_STACK_OVERFLOW
+    if (vm_return_kind == MP_VM_RETURN_NORMAL) {
+        if (sp != state) {
+            printf("Stack misalign: %d\n", sp - state);
+            assert(0);
+        }
+    }
+
     // We can't check the case when an exception is returned in state[n_state - 1]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
