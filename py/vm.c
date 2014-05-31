@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -117,21 +118,23 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
     ip += 4;
 
     // allocate state for locals and stack
-    mp_obj_t temp_state[VM_MAX_STATE_ON_STACK];
-    mp_obj_t *state = &temp_state[0];
 #if DETECT_VM_STACK_OVERFLOW
     n_state += 1;
 #endif
+    mp_obj_t *state;
     if (n_state > VM_MAX_STATE_ON_STACK) {
         state = m_new(mp_obj_t, n_state);
+    } else {
+        state = alloca(sizeof(mp_obj_t) * n_state);
     }
     mp_obj_t *sp = &state[0] - 1;
 
     // allocate state for exceptions
-    mp_exc_stack_t exc_state[VM_MAX_EXC_STATE_ON_STACK];
-    mp_exc_stack_t *exc_stack = &exc_state[0];
+    mp_exc_stack_t *exc_stack;
     if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
         exc_stack = m_new(mp_exc_stack_t, n_exc_stack);
+    } else {
+        exc_stack = alloca(sizeof(mp_exc_stack_t) * n_exc_stack);
     }
     mp_exc_stack_t *exc_sp = &exc_stack[0] - 1;
 
