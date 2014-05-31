@@ -215,7 +215,7 @@ mp_obj_t mem_info(void) {
     volatile int stack_dummy;
     printf("mem: total=%d, current=%d, peak=%d\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
-    printf("stack: %d\n", stack_top - (char*)&stack_dummy);
+    printf("stack: " INT_FMT "\n", stack_top - (char*)&stack_dummy);
 #if MICROPY_ENABLE_GC
     gc_dump_info();
 #endif
