@@ -111,6 +111,7 @@ def run_tests(pyb, tests):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
     cmd_parser.add_argument('--pyboard', action='store_true', help='run the tests on the pyboard')
+    cmd_parser.add_argument('-d', '--test_dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
@@ -122,12 +123,16 @@ def main():
         pyb = None
 
     if len(args.files) == 0:
-        if pyb is None:
-            # run PC tests
-            test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc')
+        if args.test_dirs is None:
+            if pyb is None:
+                # run PC tests
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc')
+            else:
+                # run pyboard tests
+                test_dirs = ('basics', 'float', 'pyb', 'pybnative', 'inlineasm')
         else:
-            # run pyboard tests
-            test_dirs = ('basics', 'float', 'pyb', 'pybnative', 'inlineasm')
+            # run tests from these directories
+            test_dirs = args.test_dirs
         tests = sorted(test_file for test_files in (glob('{}/*.py'.format(dir)) for dir in test_dirs) for test_file in test_files)
     else:
         # tests explicitly given
