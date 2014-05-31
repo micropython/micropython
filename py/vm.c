@@ -159,8 +159,8 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
 
 #if DETECT_VM_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
-        if (sp != state) {
-            printf("Stack misalign: %d\n", sp - state);
+        if (sp < state) {
+            printf("VM stack underflow: " INT_FMT "\n", sp - state);
             assert(0);
         }
     }
@@ -178,7 +178,7 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
             }
         }
         if (overflow) {
-            printf("VM stack overflow state=%p n_state+1=%u\n", state, n_state);
+            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", state, n_state);
             assert(0);
         }
     }

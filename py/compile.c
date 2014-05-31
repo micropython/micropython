@@ -1745,7 +1745,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 // And, if the loop never runs, the loop variable should never be assigned
 void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
-    comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
+    // note that we don't need to pop anything when breaking from an optimise for loop
 
     uint top_label = comp_next_label(comp);
     uint entry_label = comp_next_label(comp);
