@@ -252,7 +252,8 @@ const mp_obj_type_t mp_type_gen_instance = {
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
-mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode, uint n_args, const mp_obj_t *args,
+mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode,
+                                 uint n_args, const mp_obj_t *args,
                                  uint n_args2, const mp_obj_t *args2) {
     const byte *code_info = bytecode;
     // get code info size, and skip the line number table

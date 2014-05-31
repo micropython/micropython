@@ -103,7 +103,8 @@ typedef enum {
     currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
     exc_sp--; /* pop back to previous exception handler */
 
-mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
+mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args,
+                                                          const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
     const byte *ip = code;
 
     // get code info size, and skip line number table
