@@ -13,3 +13,15 @@ def foo():
         i -= 1
 
 foo()
+
+# break from within nested for loop
+def bar():
+    l = [1, 2, 3]
+    for e1 in l:
+        print(e1)
+        for e2 in l:
+            print(e1, e2)
+            if e2 == 2:
+                break
+
+bar()
