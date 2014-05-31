@@ -36,8 +36,21 @@ typedef struct _mp_exc_stack {
     byte opcode;
 } mp_exc_stack_t;
 
+typedef struct _mp_code_state {
+    const byte *code_info;
+    const byte *ip;
+    mp_obj_t *sp;
+    // bit 0 is saved currently_in_except_block value
+    mp_exc_stack_t *exc_sp;
+    uint n_state;
+    // Variable-length
+    mp_obj_t state[0];
+    // Variable-length, never accessed by name, only as (void*)(state + n_state)
+    //mp_exc_stack_t exc_state[0];
+} mp_code_state;
+
 mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret);
-mp_vm_return_kind_t mp_execute_bytecode2(const byte *code_info, const byte **ip_in_out, mp_obj_t *fastn, mp_obj_t **sp_in_out, mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out, volatile mp_obj_t inject_exc);
+mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_obj_t inject_exc);
 void mp_bytecode_print(const byte *code, int len);
 void mp_bytecode_print2(const byte *code, int len);
 
