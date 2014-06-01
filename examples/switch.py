@@ -1,8 +1,18 @@
-"""
+__doc__ = """
 switch.py
 =========
 
-Light up all the leds when the USR switch on the pyboard is pressed.
+Light up some leds when the USR switch on the pyboard is pressed.
+
+Example Usage::
+
+    Micro Python v1.0.1 on 2014-05-12; PYBv1.0 with STM32F405RG
+    Type "help()" for more information.
+    >>> import switch
+    >>> switch.run_loop([2, 3])
+    Loop started.
+    Press Ctrl+C to break out of the loop.
+
 """
 
 import pyb
@@ -12,18 +22,25 @@ red_led = pyb.LED(1)
 green_led = pyb.LED(2)
 orange_led = pyb.LED(3)
 blue_led = pyb.LED(4)
-leds = [red_led, green_led, orange_led, blue_led]
+all_leds = [red_led, green_led, orange_led, blue_led]
 
-while 1:
-    if switch():
-        ## red_led.on()
-        ## green_led.on()
-        ## orange_led.on()
-        ## blue_led.on()
-        [led.on() for led in leds]
-    else:
-        ## red_led.off()
-        ## green_led.off()
-        ## orange_led.off()
-        ## blue_led.off()
-        [led.off() for led in leds]
+def run_loop(use_leds=[]):
+    """
+    Start the loop.
+
+    :param `use_leds`: Which leds to light up upon switch press.
+    :type `use_leds`: list of integers [1-4]
+    """
+    print('Loop started.\nPress Ctrl+C to break out of the loop.')
+    leds = [all_leds[i - 1] for i in use_leds]
+    while 1:
+        try:
+            if switch():
+                [led.on() for led in leds]
+            else:
+                [led.off() for led in leds]
+        except OSError: # VCPInterrupt # Ctrl+C in interpreter mode.
+            break
+
+if __name__ == '__main__':
+    run_loop()
