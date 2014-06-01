@@ -82,42 +82,31 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
-    const byte *code_info;
-    const byte *ip;
-    mp_obj_t *sp;
-    // bit 0 is saved currently_in_except_block value
-    mp_exc_stack_t *exc_sp;
-    uint n_state;
-    // Variable-length
-    mp_obj_t state[0];
-    // Variable-length, never accessed by name, only as (void*)(state + n_state)
-    //mp_exc_stack_t exc_state[0];
+    mp_code_state code_state;
 } mp_obj_gen_instance_t;
 
 void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_gen_instance_t *self = self_in;
-    print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_info), self_in);
+    print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = self_in;
-    if (self->ip == 0) {
+    if (self->code_state.ip == 0) {
         *ret_val = MP_OBJ_STOP_ITERATION;
         return MP_VM_RETURN_NORMAL;
     }
-    if (self->sp == self->state - 1) {
+    if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator"));
         }
     } else {
-        *self->sp = send_value;
+        *self->code_state.sp = send_value;
     }
     mp_obj_dict_t *old_globals = mp_globals_get();
     mp_globals_set(self->globals);
-    mp_vm_return_kind_t ret_kind = mp_execute_bytecode2(self->code_info, &self->ip,
-        &self->state[self->n_state - 1], &self->sp, (mp_exc_stack_t*)(self->state + self->n_state),
-        &self->exc_sp, throw_value);
+    mp_vm_return_kind_t ret_kind = mp_execute_bytecode2(&self->code_state, throw_value);
     mp_globals_set(old_globals);
 
     switch (ret_kind) {
@@ -127,17 +116,17 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             // again and again, leading to side effects.
             // TODO: check how return with value behaves under such conditions
             // in CPython.
-            self->ip = 0;
-            *ret_val = *self->sp;
+            self->code_state.ip = 0;
+            *ret_val = *self->code_state.sp;
             break;
 
         case MP_VM_RETURN_YIELD:
-            *ret_val = *self->sp;
+            *ret_val = *self->code_state.sp;
             break;
 
         case MP_VM_RETURN_EXCEPTION:
-            self->ip = 0;
-            *ret_val = self->state[self->n_state - 1];
+            self->code_state.ip = 0;
+            *ret_val = self->code_state.state[self->code_state.n_state - 1];
             break;
 
         default:
@@ -269,32 +258,32 @@ mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode,
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
     o->globals = globals;
-    o->code_info = code_info;
-    o->sp = &o->state[0] - 1; // sp points to top of stack, which starts off 1 below the state
-    o->exc_sp = (mp_exc_stack_t*)(o->state + n_state) - 1;
-    o->n_state = n_state;
+    o->code_state.code_info = code_info;
+    o->code_state.sp = &o->code_state.state[0] - 1; // sp points to top of stack, which starts off 1 below the state
+    o->code_state.exc_sp = (mp_exc_stack_t*)(o->code_state.state + n_state) - 1;
+    o->code_state.n_state = n_state;
 
     // copy args to end of state array, in reverse (that's how mp_execute_bytecode2 needs it)
     for (uint i = 0; i < n_args; i++) {
-        o->state[n_state - 1 - i] = args[i];
+        o->code_state.state[n_state - 1 - i] = args[i];
     }
     for (uint i = 0; i < n_args2; i++) {
-        o->state[n_state - 1 - n_args - i] = args2[i];
+        o->code_state.state[n_state - 1 - n_args - i] = args2[i];
     }
 
     // set rest of state to MP_OBJ_NULL
     for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-        o->state[i] = MP_OBJ_NULL;
+        o->code_state.state[i] = MP_OBJ_NULL;
     }
 
     // bytecode prelude: initialise closed over variables
     for (uint n_local = *bytecode++; n_local > 0; n_local--) {
         uint local_num = *bytecode++;
-        o->state[n_state - 1 - local_num] = mp_obj_new_cell(o->state[n_state - 1 - local_num]);
+        o->code_state.state[n_state - 1 - local_num] = mp_obj_new_cell(o->code_state.state[n_state - 1 - local_num]);
     }
 
     // set ip to start of actual byte code
-    o->ip = bytecode;
+    o->code_state.ip = bytecode;
 
     return o;
 }

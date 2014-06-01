@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -40,11 +41,10 @@
 #include "bc.h"
 #include "objgenerator.h"
 
-// With these macros you can tune the maximum number of state slots
+// With these macros you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will use the heap.
-#define VM_MAX_STATE_ON_STACK (10)
-#define VM_MAX_EXC_STATE_ON_STACK (4)
+#define VM_MAX_STATE_ON_STACK (10 * sizeof(machine_uint_t))
 
 #define DETECT_VM_STACK_OVERFLOW (0)
 #if 0
@@ -117,54 +117,54 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
     ip += 4;
 
     // allocate state for locals and stack
-    mp_obj_t temp_state[VM_MAX_STATE_ON_STACK];
-    mp_obj_t *state = &temp_state[0];
 #if DETECT_VM_STACK_OVERFLOW
     n_state += 1;
 #endif
-    if (n_state > VM_MAX_STATE_ON_STACK) {
-        state = m_new(mp_obj_t, n_state);
-    }
-    mp_obj_t *sp = &state[0] - 1;
 
-    // allocate state for exceptions
-    mp_exc_stack_t exc_state[VM_MAX_EXC_STATE_ON_STACK];
-    mp_exc_stack_t *exc_stack = &exc_state[0];
-    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
-        exc_stack = m_new(mp_exc_stack_t, n_exc_stack);
+    int state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    mp_code_state *code_state;
+    if (state_size > VM_MAX_STATE_ON_STACK) {
+        code_state = m_new_obj_var(mp_code_state, byte, state_size);
+    } else {
+        code_state = alloca(sizeof(mp_code_state) + state_size);
     }
-    mp_exc_stack_t *exc_sp = &exc_stack[0] - 1;
+
+    code_state->code_info = code;
+    code_state->sp = &code_state->state[0] - 1;
+    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->n_state = n_state;
 
     // init args
     for (uint i = 0; i < n_args; i++) {
-        state[n_state - 1 - i] = args[i];
+        code_state->state[n_state - 1 - i] = args[i];
     }
     for (uint i = 0; i < n_args2; i++) {
-        state[n_state - 1 - n_args - i] = args2[i];
+        code_state->state[n_state - 1 - n_args - i] = args2[i];
     }
 
     // set rest of state to MP_OBJ_NULL
     for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-        state[i] = MP_OBJ_NULL;
+        code_state->state[i] = MP_OBJ_NULL;
     }
 
     // bytecode prelude: initialise closed over variables
     for (uint n_local = *ip++; n_local > 0; n_local--) {
         uint local_num = *ip++;
-        state[n_state - 1 - local_num] = mp_obj_new_cell(state[n_state - 1 - local_num]);
+        code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
+    code_state->ip = ip;
+
     // execute the byte code
-    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode2(code, &ip, &state[n_state - 1], &sp, exc_stack, &exc_sp, MP_OBJ_NULL);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode2(code_state, MP_OBJ_NULL);
 
 #if DETECT_VM_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
-        if (sp < state) {
-            printf("VM stack underflow: " INT_FMT "\n", sp - state);
+        if (code_state->sp < code_state->state) {
+            printf("VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
             assert(0);
         }
     }
-
     // We can't check the case when an exception is returned in state[n_state - 1]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
@@ -172,13 +172,13 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
         // Just check to see that we have at least 1 null object left in the state.
         bool overflow = true;
         for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-            if (state[i] == MP_OBJ_NULL) {
+            if (code_state->state[i] == MP_OBJ_NULL) {
                 overflow = false;
                 break;
             }
         }
         if (overflow) {
-            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", state, n_state);
+            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", code_state->state, n_state);
             assert(0);
         }
     }
@@ -188,13 +188,13 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
             // return value is in *sp
-            *ret = *sp;
+            *ret = *code_state->sp;
             ret_kind = MP_VM_RETURN_NORMAL;
             break;
 
         case MP_VM_RETURN_EXCEPTION:
             // return value is in state[n_state - 1]
-            *ret = state[n_state - 1];
+            *ret = code_state->state[n_state - 1];
             ret_kind = MP_VM_RETURN_EXCEPTION;
             break;
 
@@ -203,18 +203,13 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
             assert(0);
             *ret = mp_const_none;
             ret_kind = MP_VM_RETURN_NORMAL;
+            break;
     }
 
     // free the state if it was allocated on the heap
-    if (n_state > VM_MAX_STATE_ON_STACK) {
-        m_free(state, n_state);
+    if (state_size > VM_MAX_STATE_ON_STACK) {
+        m_del_var(mp_code_state, byte, state_size, code_state);
     }
-
-    // free the exception state if it was allocated on the heap
-    if (n_exc_stack > VM_MAX_EXC_STATE_ON_STACK) {
-        m_free(exc_stack, n_exc_stack);
-    }
-
     return ret_kind;
 }
 
@@ -224,10 +219,7 @@ mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, 
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_bytecode2(const byte *code_info, const byte **ip_in_out,
-                                         mp_obj_t *fastn, mp_obj_t **sp_in_out,
-                                         mp_exc_stack_t *exc_stack, mp_exc_stack_t **exc_sp_in_out,
-                                         volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
@@ -249,11 +241,15 @@ mp_vm_return_kind_t mp_execute_bytecode2(const byte *code_info, const byte **ip_
     // loop and the exception handler, leading to very obscure bugs.
     #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while(0)
 
+    // Pointers which are constant for particular invocation of mp_execute_bytecode2()
+    mp_obj_t *const fastn = &code_state->state[code_state->n_state - 1];
+    mp_exc_stack_t *const exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
+
     // variables that are visible to the exception handler (declared volatile)
-    volatile bool currently_in_except_block = MP_TAGPTR_TAG(*exc_sp_in_out); // 0 or 1, to detect nested exceptions
-    mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(*exc_sp_in_out); // stack grows up, exc_sp points to top of stack
-    const byte *volatile save_ip = *ip_in_out; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
-    mp_obj_t *volatile save_sp = *sp_in_out; // this is so we can access sp in the exception handler when needed
+    volatile bool currently_in_except_block = MP_TAGPTR_TAG(code_state->exc_sp); // 0 or 1, to detect nested exceptions
+    mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
+    const byte *volatile save_ip = code_state->ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
+    mp_obj_t *volatile save_sp = code_state->sp; // this is so we can access sp in the exception handler when needed
 
     // outer exception handling loop
     for (;;) {
@@ -261,8 +257,8 @@ mp_vm_return_kind_t mp_execute_bytecode2(const byte *code_info, const byte **ip_
 outer_dispatch_loop:
         if (nlr_push(&nlr) == 0) {
             // local variables that are not visible to the exception handler
-            const byte *ip = *ip_in_out;
-            mp_obj_t *sp = *sp_in_out;
+            const byte *ip = code_state->ip;
+            mp_obj_t *sp = code_state->sp;
             machine_uint_t unum;
             mp_obj_t obj_shared;
 
@@ -905,7 +901,7 @@ unwind_return:
                         exc_sp--;
                     }
                     nlr_pop();
-                    *sp_in_out = sp;
+                    code_state->sp = sp;
                     assert(exc_sp == exc_stack - 1);
                     return MP_VM_RETURN_NORMAL;
 
@@ -936,9 +932,9 @@ unwind_return:
                 ENTRY(MP_BC_YIELD_VALUE):
 yield:
                     nlr_pop();
-                    *ip_in_out = ip;
-                    *sp_in_out = sp;
-                    *exc_sp_in_out = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                    code_state->ip = ip;
+                    code_state->sp = sp;
+                    code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
                     return MP_VM_RETURN_YIELD;
 
                 ENTRY(MP_BC_YIELD_FROM): {
@@ -1032,8 +1028,8 @@ exception_handler:
                 const byte *ip = save_ip + 1;
                 machine_uint_t unum;
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                *ip_in_out = ip + unum; // jump to after for-block
-                *sp_in_out = save_sp - 1; // pop the exhausted iterator
+                code_state->ip = ip + unum; // jump to after for-block
+                code_state->sp = save_sp - 1; // pop the exhausted iterator
                 goto outer_dispatch_loop; // continue with dispatch loop
             }
 
@@ -1042,6 +1038,7 @@ exception_handler:
             // But consider how to handle nested exceptions.
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (mp_obj_is_exception_instance(nlr.ret_val) && nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
+                const byte *code_info = code_state->code_info;
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
@@ -1072,7 +1069,7 @@ exception_handler:
                 currently_in_except_block = 1;
 
                 // catch exception and pass to byte code
-                *ip_in_out = exc_sp->handler;
+                code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
                 // save this exception in the stack so it can be used in a reraise, if needed
                 exc_sp->prev_exc = nlr.ret_val;
@@ -1080,7 +1077,7 @@ exception_handler:
                 PUSH(mp_const_none);
                 PUSH(nlr.ret_val);
                 PUSH(mp_obj_get_type(nlr.ret_val));
-                *sp_in_out = sp;
+                code_state->sp = sp;
 
             } else {
                 // propagate exception to higher level
