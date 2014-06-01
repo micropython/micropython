@@ -22,17 +22,16 @@ red_led = pyb.LED(1)
 green_led = pyb.LED(2)
 orange_led = pyb.LED(3)
 blue_led = pyb.LED(4)
-all_leds = [red_led, green_led, orange_led, blue_led]
+all_leds = (red_led, green_led, orange_led, blue_led)
 
-def run_loop(use_leds=[]):
+def run_loop(leds=all_leds):
     """
     Start the loop.
 
-    :param `use_leds`: Which leds to light up upon switch press.
-    :type `use_leds`: list of integers [1-4]
+    :param `use_leds`: Which LEDs to light up upon switch press.
+    :type `use_leds`: sequence of LED objects
     """
     print('Loop started.\nPress Ctrl+C to break out of the loop.')
-    leds = [all_leds[i - 1] for i in use_leds]
     while 1:
         try:
             if switch():
