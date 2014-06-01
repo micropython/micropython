@@ -93,7 +93,7 @@ typedef enum {
 #define PUSH_EXC_BLOCK() \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
-    exc_sp->opcode = *save_ip; \
+    exc_sp->opcode = *code_state->ip; \
     exc_sp->handler = ip + unum; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
     exc_sp->prev_exc = MP_OBJ_NULL; \
@@ -224,7 +224,7 @@ mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_
     #include "vmentrytable.h"
     #define DISPATCH() do { \
         TRACE(ip); \
-        save_ip = ip; \
+        code_state->ip = ip; \
         goto *entry_table[*ip++]; \
     } while(0)
     #define ENTRY(op) entry_##op
@@ -248,8 +248,6 @@ mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_
     // variables that are visible to the exception handler (declared volatile)
     volatile bool currently_in_except_block = MP_TAGPTR_TAG(code_state->exc_sp); // 0 or 1, to detect nested exceptions
     mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
-    const byte *volatile save_ip = code_state->ip; // this is so we can access ip in the exception handler without making ip volatile (which means the compiler can't keep it in a register in the main loop)
-    mp_obj_t *volatile save_sp = code_state->sp; // this is so we can access sp in the exception handler when needed
 
     // outer exception handling loop
     for (;;) {
@@ -281,7 +279,7 @@ dispatch_loop:
                 DISPATCH();
 #else
                 TRACE(ip);
-                save_ip = ip;
+                code_state->ip = ip;
                 switch (*ip++) {
 #endif
 
@@ -686,7 +684,7 @@ unwind_jump:
 
                 ENTRY(MP_BC_FOR_ITER): {
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                    save_sp = sp;
+                    code_state->sp = sp;
                     assert(TOP());
                     mp_obj_t value = mp_iternext_allow_raise(TOP());
                     if (value == MP_OBJ_STOP_ITERATION) {
@@ -1024,12 +1022,12 @@ exception_handler:
             // exception occurred
 
             // check if it's a StopIteration within a for block
-            if (*save_ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
-                const byte *ip = save_ip + 1;
+            if (*code_state->ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
+                const byte *ip = code_state->ip + 1;
                 machine_uint_t unum;
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                 code_state->ip = ip + unum; // jump to after for-block
-                code_state->sp = save_sp - 1; // pop the exhausted iterator
+                code_state->sp -= 1; // pop the exhausted iterator
                 goto outer_dispatch_loop; // continue with dispatch loop
             }
 
@@ -1043,7 +1041,7 @@ exception_handler:
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
                 machine_uint_t source_line = 1;
-                machine_uint_t bc = save_ip - code_info - code_info_size;
+                machine_uint_t bc = code_state->ip - code_info - code_info_size;
                 //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
                 for (const byte* ci = code_info + 12; *ci && bc >= ((*ci) & 31); ci++) {
                     bc -= *ci & 31;
