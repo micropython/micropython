@@ -1476,73 +1476,47 @@ STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, -1);
 }
 
-enum { CASE_UPPER, CASE_LOWER };
-
 // Supposedly not too critical operations, so optimize for code size
-STATIC mp_obj_t str_caseconv(int op, mp_obj_t self_in) {
+STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     byte *data;
     mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(self_in), self_len, &data);
     for (int i = 0; i < self_len; i++) {
-        if (op == CASE_UPPER) {
-            *data++ = unichar_toupper(*self_data++);
-        } else {
-            *data++ = unichar_tolower(*self_data++);
-        }
+        *data++ = op(*self_data++);
     }
     *data = 0;
     return mp_obj_str_builder_end(s);
 }
 
 STATIC mp_obj_t str_lower(mp_obj_t self_in) {
-    return str_caseconv(CASE_LOWER, self_in);
+    return str_caseconv(unichar_tolower, self_in);
 }
 
 STATIC mp_obj_t str_upper(mp_obj_t self_in) {
-    return str_caseconv(CASE_UPPER, self_in);
+    return str_caseconv(unichar_toupper, self_in);
 }
 
-enum { IS_SPACE, IS_ALPHA, IS_DIGIT, IS_UPPER, IS_LOWER };
-
-STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
+STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
 
     if (self_len == 0) {
         return mp_const_false; // default to False for empty str
     }
 
-    typedef bool (*check_function)(unichar);
-    check_function f;
-
-    if (type != IS_UPPER && type != IS_LOWER) {
-        switch (type) {
-            case IS_SPACE: f = &unichar_isspace; break;
-            case IS_ALPHA: f = &unichar_isalpha; break;
-            case IS_DIGIT: f = &unichar_isdigit; break;
-            default:
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
-        }
-
+    if (f != unichar_isupper && f != unichar_islower) {
         for (int i = 0; i < self_len; i++) {
             if (!f(*self_data++)) {
                 return mp_const_false;
             }
         }
     } else {
-        switch (type) {
-            case IS_UPPER: f = &unichar_isupper; break;
-            case IS_LOWER: f = &unichar_islower; break;
-            default:
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unknown type provided for str_uni_istype"));
-        }
-
         bool contains_alpha = false;
 
         for (int i = 0; i < self_len; i++) { // only check alphanumeric characters
             if (unichar_isalpha(*self_data++)) {
                 contains_alpha = true;
-                if (!f(*(self_data-1))) {
-                    return mp_const_false; // we already incremented
+                if (!f(*(self_data - 1))) { // -1 because we already incremented above
+                    return mp_const_false;
                 }
             }
         }
@@ -1556,23 +1530,23 @@ STATIC mp_obj_t str_uni_istype(int type, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t str_isspace(mp_obj_t self_in) {
-    return str_uni_istype(IS_SPACE, self_in);
+    return str_uni_istype(unichar_isspace, self_in);
 }
 
 STATIC mp_obj_t str_isalpha(mp_obj_t self_in) {
-    return str_uni_istype(IS_ALPHA, self_in);
+    return str_uni_istype(unichar_isalpha, self_in);
 }
 
 STATIC mp_obj_t str_isdigit(mp_obj_t self_in) {
-    return str_uni_istype(IS_DIGIT, self_in);
+    return str_uni_istype(unichar_isdigit, self_in);
 }
 
 STATIC mp_obj_t str_isupper(mp_obj_t self_in) {
-    return str_uni_istype(IS_UPPER, self_in);
+    return str_uni_istype(unichar_isupper, self_in);
 }
 
 STATIC mp_obj_t str_islower(mp_obj_t self_in) {
-    return str_uni_istype(IS_LOWER, self_in);
+    return str_uni_istype(unichar_islower, self_in);
 }
 
 #if MICROPY_CPYTHON_COMPAT
