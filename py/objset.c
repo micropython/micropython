@@ -37,6 +37,8 @@
 #include "runtime0.h"
 #include "builtin.h"
 
+#if MICROPY_PY_BUILTINS_SET
+
 typedef struct _mp_obj_set_t {
     mp_obj_base_t base;
     mp_set_t set;
@@ -584,3 +586,5 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
     mp_obj_set_t *self = self_in;
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }
+
+#endif // MICROPY_PY_BUILTINS_SET

@@ -772,6 +772,7 @@ unwind_jump:
                     sp -= 2;
                     DISPATCH();
 
+#if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET):
                     DECODE_UINT;
                     sp -= unum - 1;
@@ -784,6 +785,7 @@ unwind_jump:
                     mp_obj_set_store(sp[-unum], sp[0]);
                     sp--;
                     DISPATCH();
+#endif
 
 #if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE):
