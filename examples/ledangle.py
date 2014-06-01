@@ -2,9 +2,9 @@ import pyb
 
 def led_angle(seconds_to_run_for):
     # make LED objects
-    l1 = pyb.Led(1)
-    l2 = pyb.Led(2)
-    accel = pyb.Accel() 
+    l1 = pyb.LED(1)
+    l2 = pyb.LED(2)
+    accel = pyb.Accel()
 
     for i in range(20 * seconds_to_run_for):
         # get x-axis
