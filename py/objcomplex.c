@@ -36,7 +36,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 
 #include <math.h>
 

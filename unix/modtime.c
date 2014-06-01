@@ -64,7 +64,7 @@ void msec_sleep_tv(struct timeval *tv) {
 #endif
 
 STATIC mp_obj_t mod_time_time() {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     gettimeofday(&tv, NULL);
     mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
@@ -77,7 +77,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock() {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
     // to preserve integer part resolution.
@@ -89,7 +89,7 @@ STATIC mp_obj_t mod_time_clock() {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
     double ipart;

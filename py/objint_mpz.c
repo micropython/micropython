@@ -118,7 +118,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         zrhs = &z_int;
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_float)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
@@ -130,7 +130,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 
     if (0) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
         mp_float_t flhs = mpz_as_float(zlhs);
         mp_float_t frhs = mpz_as_float(zrhs);
@@ -292,7 +292,7 @@ machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     }
 }
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);

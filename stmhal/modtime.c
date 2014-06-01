@@ -74,11 +74,11 @@ STATIC mp_obj_t time_localtime(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(time_localtime_obj, time_localtime);
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     if (MP_OBJ_IS_INT(seconds_o)) {
 #endif
         HAL_Delay(1000 * mp_obj_get_int(seconds_o));
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else {
         HAL_Delay((uint32_t)(1000 * mp_obj_get_float(seconds_o)));
     }

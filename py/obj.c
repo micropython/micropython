@@ -257,7 +257,7 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, machine_int_t *value) {
     return true;
 }
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;

@@ -39,7 +39,7 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_PY_FROZENSET        (1)
+#define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXIT         (1)

@@ -56,7 +56,7 @@ const mp_obj_ellipsis_t mp_const_ellipsis_obj = {{&mp_type_ellipsis}};
 /******************************************************************************/
 /* slice object                                                               */
 
-#if MICROPY_PY_SLICE
+#if MICROPY_PY_BUILTINS_SLICE
 
 // TODO: This implements only variant of slice with 2 integer args only.
 // CPython supports 3rd arg (step), plus args can be arbitrary Python objects.

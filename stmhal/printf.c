@@ -41,7 +41,7 @@
 #include "uart.h"
 #include "usb.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 #include "formatfloat.h"
 #endif
 
@@ -162,7 +162,7 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
             case 'P': // ?
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, fill, width);
                 break;
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
             case 'E':
             case 'f':

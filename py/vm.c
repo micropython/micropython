@@ -785,7 +785,7 @@ unwind_jump:
                     sp--;
                     DISPATCH();
 
-#if MICROPY_PY_SLICE
+#if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE):
                     DECODE_UINT;
                     if (unum == 2) {

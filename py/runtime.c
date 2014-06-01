@@ -353,7 +353,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                     lhs_val = mp_small_int_floor_divide(lhs_val, rhs_val);
                     break;
 
-                #if MICROPY_ENABLE_FLOAT
+                #if MICROPY_PY_BUILTINS_FLOAT
                 case MP_BINARY_OP_TRUE_DIVIDE:
                 case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
                     if (rhs_val == 0) {
@@ -371,7 +371,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_POWER:
                 case MP_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {
-                        #if MICROPY_ENABLE_FLOAT
+                        #if MICROPY_PY_BUILTINS_FLOAT
                         lhs = mp_obj_new_float(lhs_val);
                         goto generic_binary_op;
                         #else
@@ -418,7 +418,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return mp_obj_new_int(lhs_val);
             }
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
             mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
             if (res == MP_OBJ_NULL) {

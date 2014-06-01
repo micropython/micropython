@@ -371,7 +371,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint 
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len);
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
@@ -420,7 +420,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
 machine_int_t mp_obj_get_int(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, machine_int_t *value);
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
@@ -442,7 +442,7 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 // int
 // For long int, returns value truncated to machine_int_t
 machine_int_t mp_obj_int_get(mp_const_obj_t self_in);
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in);
 #endif
 // Will raise exception if value doesn't fit into machine_int_t
@@ -470,7 +470,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need t
 const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len);
 void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len);
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 // float
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;

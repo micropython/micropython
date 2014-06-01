@@ -36,7 +36,7 @@
 #include "parsenum.h"
 #include "smallint.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
 
@@ -144,7 +144,7 @@ value_error:
 #define PARSE_DEC_IN_EXP  (3)
 
 mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool force_complex) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     const char *top = str + len;
     mp_float_t dec_val = 0;
     bool dec_neg = false;

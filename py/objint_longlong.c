@@ -188,7 +188,7 @@ machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return mp_obj_int_get(self_in);
 }
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);

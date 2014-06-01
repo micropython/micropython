@@ -212,15 +212,15 @@ typedef long long mp_longint_impl_t;
 #endif
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define MICROPY_ENABLE_FLOAT (1)
+#define MICROPY_PY_BUILTINS_FLOAT (1)
 #define MICROPY_FLOAT_C_FUN(fun) fun##f
 typedef float mp_float_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define MICROPY_ENABLE_FLOAT (1)
+#define MICROPY_PY_BUILTINS_FLOAT (1)
 #define MICROPY_FLOAT_C_FUN(fun) fun
 typedef double mp_float_t;
 #else
-#define MICROPY_ENABLE_FLOAT (0)
+#define MICROPY_PY_BUILTINS_FLOAT (0)
 #endif
 
 // Enable features which improve CPython compatibility
@@ -239,20 +239,19 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
-// Whether to support slice object and correspondingly
-// slice subscript operators
-#ifndef MICROPY_PY_SLICE
-#define MICROPY_PY_SLICE (1)
+// Whether to support slice subscript operators and slice object
+#ifndef MICROPY_PY_BUILTINS_SLICE
+#define MICROPY_PY_BUILTINS_SLICE (1)
 #endif
 
 // Whether to support frozenset object
-#ifndef MICROPY_PY_FROZENSET
-#define MICROPY_PY_FROZENSET (0)
+#ifndef MICROPY_PY_BUILTINS_FROZENSET
+#define MICROPY_PY_BUILTINS_FROZENSET (0)
 #endif
 
-// Whether to support the property object
-#ifndef MICROPY_PY_PROPERTY
-#define MICROPY_PY_PROPERTY (1)
+// Whether to support property object
+#ifndef MICROPY_PY_BUILTINS_PROPERTY
+#define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
 // Whether to provide "collections" module

@@ -413,7 +413,7 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_class_lookup(self, self->base.type, attr, 0, dest);
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
-#if MICROPY_PY_PROPERTY
+#if MICROPY_PY_BUILTINS_PROPERTY
         if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
             // object member is a property
             // delegate the store to the property
@@ -447,7 +447,7 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 STATIC bool instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = self_in;
 
-#if MICROPY_PY_PROPERTY
+#if MICROPY_PY_BUILTINS_PROPERTY
     // for property, we need to do a lookup first in the class dict
     // this makes all stores slow... how to fix?
     mp_obj_t member[2] = {MP_OBJ_NULL};

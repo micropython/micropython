@@ -1262,7 +1262,7 @@ bool mpz_as_int_checked(const mpz_t *i, machine_int_t *value) {
     return true;
 }
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *i) {
     mp_float_t val = 0;
     mpz_dig_t *d = i->dig + i->len;

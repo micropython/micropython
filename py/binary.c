@@ -114,7 +114,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
             // TODO: Explode API more to cover signedness
             return mp_obj_new_int_from_ll(((long long*)p)[index]);
 #endif
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
             return mp_obj_new_float(((float*)p)[index]);
         case 'd':
@@ -217,7 +217,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 
 void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
     switch (typecode) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
             ((float*)p)[index] = mp_obj_float_get(val_in);
             break;
@@ -260,7 +260,7 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, int index, machine
             ((long long*)p)[index] = val;
             break;
 #endif
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
             ((float*)p)[index] = val;
             break;

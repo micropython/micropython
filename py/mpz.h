@@ -98,7 +98,7 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs);
 
 machine_int_t mpz_as_int(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, machine_int_t *value);
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 uint mpz_as_str_size(const mpz_t *z, uint base);

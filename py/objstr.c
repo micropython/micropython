@@ -348,7 +348,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
-#if MICROPY_PY_SLICE
+#if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
@@ -741,14 +741,14 @@ static bool arg_looks_integer(mp_obj_t arg) {
 
 static bool arg_looks_numeric(mp_obj_t arg) {
     return arg_looks_integer(arg)
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         || MP_OBJ_IS_TYPE(arg, &mp_type_float)
 #endif
     ;
 }
 
 static mp_obj_t arg_as_int(mp_obj_t arg) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
 
         // TODO: Needs a way to construct an mpz integer from a float
@@ -1066,7 +1066,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
 
             flags |= PF_FLAG_PAD_NAN_INF; // '{:06e}'.format(float('-inf')) should give '-00inf'
             switch (type) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
                 case 'e':
                 case 'E':
                 case 'f':
@@ -1214,7 +1214,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                     pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, ' ', width);
                     break;
                 }
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
                 // This is what CPython reports, so we report the same.
                 if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "integer argument expected, got float")); 
@@ -1230,7 +1230,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                 pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 10, 'a', flags, fill, width);
                 break;
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
             case 'E':
             case 'f':

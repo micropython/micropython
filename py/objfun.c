@@ -469,7 +469,7 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
         if (0) {
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         } else if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (machine_int_t)mp_obj_float_get(obj);

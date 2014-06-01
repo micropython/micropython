@@ -419,7 +419,7 @@ void mp_bytecode_print2(const byte *ip, int len) {
                 printf("SET_ADD " UINT_FMT, unum);
                 break;
 
-#if MICROPY_PY_SLICE
+#if MICROPY_PY_BUILTINS_SLICE
             case MP_BC_BUILD_SLICE:
                 DECODE_UINT;
                 printf("BUILD_SLICE " UINT_FMT, unum);

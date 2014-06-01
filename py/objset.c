@@ -52,13 +52,13 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
 
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
     return MP_OBJ_IS_TYPE(o, &mp_type_set)
-#if MICROPY_PY_FROZENSET
+#if MICROPY_PY_BUILTINS_FROZENSET
         || MP_OBJ_IS_TYPE(o, &mp_type_frozenset)
 #endif
     ;
 }
 
-#if MICROPY_PY_FROZENSET
+#if MICROPY_PY_BUILTINS_FROZENSET
 STATIC void check_set_or_frozenset(mp_obj_t o) {
     if (!is_set_or_frozenset(o)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
@@ -72,7 +72,7 @@ STATIC void check_set(mp_obj_t o) {
     if (!MP_OBJ_IS_TYPE(o, &mp_type_set)) {
         // Emulate CPython behavior
         // AttributeError: 'frozenset' object has no attribute 'add'
-        #if MICROPY_PY_FROZENSET
+        #if MICROPY_PY_BUILTINS_FROZENSET
         if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "'frozenset' has no such attribute"));
         }
@@ -83,11 +83,11 @@ STATIC void check_set(mp_obj_t o) {
 
 STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_set_t *self = self_in;
-    #if MICROPY_PY_FROZENSET
+    #if MICROPY_PY_BUILTINS_FROZENSET
     bool is_frozen = MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset);
     #endif
     if (self->set.used == 0) {
-        #if MICROPY_PY_FROZENSET
+        #if MICROPY_PY_BUILTINS_FROZENSET
         if (is_frozen) {
             print(env, "frozen");
         }
@@ -96,7 +96,7 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
         return;
     }
     bool first = true;
-    #if MICROPY_PY_FROZENSET
+    #if MICROPY_PY_BUILTINS_FROZENSET
     if (is_frozen) {
         print(env, "frozenset(");
     }
@@ -112,7 +112,7 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
         }
     }
     print(env, "}");
-    #if MICROPY_PY_FROZENSET
+    #if MICROPY_PY_BUILTINS_FROZENSET
     if (is_frozen) {
         print(env, ")");
     }
@@ -556,7 +556,7 @@ const mp_obj_type_t mp_type_set = {
     .locals_dict = (mp_obj_t)&set_locals_dict,
 };
 
-#if MICROPY_PY_FROZENSET
+#if MICROPY_PY_BUILTINS_FROZENSET
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
     .name = MP_QSTR_frozenset,

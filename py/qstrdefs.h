@@ -263,7 +263,7 @@ Q(iterator)
 Q(module)
 Q(slice)
 
-#if MICROPY_PY_FROZENSET
+#if MICROPY_PY_BUILTINS_FROZENSET
 Q(frozenset)
 #endif
 
@@ -375,7 +375,7 @@ Q(disable)
 Q(enable)
 #endif
 
-#if MICROPY_PY_PROPERTY
+#if MICROPY_PY_BUILTINS_PROPERTY
 Q(property)
 Q(getter)
 Q(setter)

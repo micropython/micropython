@@ -32,7 +32,7 @@
 #include "obj.h"
 #include "builtin.h"
 
-#if MICROPY_ENABLE_FLOAT && MICROPY_PY_CMATH
+#if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_CMATH
 
 // These are defined in modmath.c
 extern const mp_obj_float_t mp_math_e_obj;
@@ -154,4 +154,4 @@ const mp_obj_module_t mp_module_cmath = {
     .globals = (mp_obj_dict_t*)&mp_module_cmath_globals,
 };
 
-#endif // MICROPY_ENABLE_FLOAT && MICROPY_PY_CMATH
+#endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_CMATH

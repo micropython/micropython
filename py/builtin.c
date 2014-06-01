@@ -37,7 +37,7 @@
 #include "runtime.h"
 #include "builtin.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
 
@@ -104,7 +104,7 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
             val = -val;
         }
         return MP_OBJ_NEW_SMALL_INT(val);
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_float)) {
         mp_float_t value = mp_obj_float_get(o_in);
         // TODO check for NaN etc

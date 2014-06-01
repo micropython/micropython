@@ -39,7 +39,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 
-#if MICROPY_ENABLE_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #include "formatfloat.h"
@@ -170,4 +170,4 @@ mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
     return mp_obj_new_float(lhs_val);
 }
 
-#endif // MICROPY_ENABLE_FLOAT
+#endif // MICROPY_PY_BUILTINS_FLOAT

@@ -34,7 +34,7 @@
 #include "obj.h"
 #include "runtime.h"
 
-#if MICROPY_PY_PROPERTY
+#if MICROPY_PY_BUILTINS_PROPERTY
 
 typedef struct _mp_obj_property_t {
     mp_obj_base_t base;
@@ -115,4 +115,4 @@ const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {
     return self->proxy;
 }
 
-#endif // MICROPY_PY_PROPERTY
+#endif // MICROPY_PY_BUILTINS_PROPERTY
