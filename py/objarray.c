@@ -169,7 +169,9 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         return MP_OBJ_NULL; // op not supported
     } else {
         mp_obj_array_t *o = self_in;
-        if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+        if (0) {
+#if MICROPY_PY_BUILTINS_SLICE
+        } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             if (value != MP_OBJ_SENTINEL) {
                 // Only getting a slice is suported so far, not assignment
                 // TODO: confirmed that both bytearray and array.array support
@@ -187,6 +189,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             byte *p = o->items;
             memcpy(res->items, p + slice.start * sz, (slice.stop - slice.start) * sz);
             return res;
+#endif
         } else {
             uint index = mp_get_index(o->base.type, o->len, index_in, false);
             if (value == MP_OBJ_SENTINEL) {

@@ -1185,7 +1185,9 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_import_name,
     mp_import_from,
     mp_import_all,
+#if MICROPY_PY_BUILTINS_SLICE
     mp_obj_new_slice,
+#endif
     mp_unpack_sequence,
     mp_unpack_ex,
 };

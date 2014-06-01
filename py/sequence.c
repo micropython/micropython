@@ -51,6 +51,8 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
     }
 }
 
+#if MICROPY_PY_BUILTINS_SLICE
+
 bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
     mp_obj_t ostart, ostop, ostep;
     machine_int_t start, stop;
@@ -101,6 +103,8 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_
     indexes->step = 1;
     return true;
 }
+
+#endif
 
 mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
     machine_int_t start = indexes->start, stop = indexes->stop;
