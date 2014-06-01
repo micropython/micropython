@@ -43,9 +43,13 @@
 /// \moduleref pyb
 /// \class Accel - accelerometer control
 ///
-/// Accel is an object that controls the accelerometer.
+/// Accel is an object that controls the accelerometer.  Example usage:
 ///
-/// Raw values are between -30 and 30.
+///     accel = pyb.Accel()
+///     for i in range(10):
+///         print(accel.x(), accel.y(), accel.z())
+///
+/// Raw values are between -32 and 31.
 
 #define MMA_ADDR (0x98)
 #define MMA_REG_X (0)
@@ -118,6 +122,15 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 
 /// \classmethod \constructor()
 /// Create and return an accelerometer object.
+///
+/// Note: if you read accelerometer values immediately after creating this object
+/// you will get 0.  It takes around 20ms for the first sample to be ready, so,
+/// unless you have some other code between creating this object and reading its
+/// values, you should put a `pyb.delay(20)` after creating it.  For example:
+///
+///     accel = pyb.Accel()
+///     pyb.delay(20)
+///     print(accel.x())
 STATIC mp_obj_t pyb_accel_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
