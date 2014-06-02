@@ -24,6 +24,7 @@ Python 3.4 functionality implemented for the data types and modules.
 
 See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
+For HydraBus version see HydraBus website: http://hydrabus.com
 
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
