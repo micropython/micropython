@@ -82,7 +82,7 @@ To build:
     $ make
 
 You then need to get your board into DFU mode.  On the HydraBus, connect the
-3V3 pin to the BOOT1 pin with a wire.
+3V3 pin to the BOOT0 pin with a wire.
 
 Then to flash the code via USB DFU to your device:
 
