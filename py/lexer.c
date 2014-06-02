@@ -702,6 +702,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
         for (int i = 0; i < ARRAY_SIZE(tok_kw); i++) {
             if (str_strn_equal(tok_kw[i], tok->str, tok->len)) {
                 if (i == ARRAY_SIZE(tok_kw) - 1) {
+                    // tok_kw[ARRAY_SIZE(tok_kw) - 1] == "__debug__"
                     tok->kind = mp_debug_value;
                 } else {
                     tok->kind = MP_TOKEN_KW_FALSE + i;
