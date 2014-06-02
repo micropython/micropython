@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
         } else {
             char *basedir = realpath(argv[a], NULL);
             if (basedir == NULL) {
-                fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[1], errno);
+                fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
                 // CPython exits with 2 in such case
                 ret = 2;
