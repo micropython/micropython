@@ -71,16 +71,16 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint 
         DEBUG_printf(" %s", qstr_str(arg_names[i]));
     }
     DEBUG_printf("\n");
-    for (int i = 0; i < 128 && i < len; i++) {
-        if (i > 0 && i % 16 == 0) {
-            DEBUG_printf("\n");
-        }
-        DEBUG_printf(" %02x", code[i]);
-    }
-    DEBUG_printf("\n");
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
+        for (int i = 0; i < 128 && i < len; i++) {
+            if (i > 0 && i % 16 == 0) {
+                printf("\n");
+            }
+            printf(" %02x", code[i]);
+        }
+        printf("\n");
         mp_bytecode_print(rc, code, len);
     }
 #endif
