@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -188,6 +189,7 @@ int usage(char **argv) {
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
 "Options:\n"
 "-v : verbose (trace various operations); can be multiple\n"
+"-O[N] : apply bytecode optimizations of level N\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -346,9 +348,13 @@ int main(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
-            } else if (strcmp(argv[a], "-O") == 0) {
-                // optimisation; sets __debug__ to False
-                mp_set_debug(false);
+            } else if (strncmp(argv[a], "-O", 2) == 0) {
+                if (isdigit(argv[a][2])) {
+                    mp_optimise_value = argv[a][2] & 0xf;
+                } else {
+                    mp_optimise_value = 0;
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, mp_optimise_value++);
+                }
             } else {
                 return usage(argv);
             }
