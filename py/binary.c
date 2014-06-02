@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "misc.h"
@@ -75,7 +76,7 @@ int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
                 case 'q': case 'Q':
                     // TODO: This is for x86
                     align = sizeof(int); size = sizeof(long long); break;
-                case 'P': case 'O':
+                case 'P': case 'O': case 'S':
                     align = size = sizeof(void*); break;
             }
         }
@@ -161,6 +162,8 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     *ptr += size;
     if (val_type == 'O') {
         return (mp_obj_t)val;
+    } else if (val_type == 'S') {
+        return mp_obj_new_str((char*)val, strlen((char*)val), false);
     } else if (is_signed(val_type)) {
         return mp_obj_new_int(val);
     } else {

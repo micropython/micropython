@@ -39,6 +39,22 @@
 
 #if MICROPY_PY_STRUCT
 
+/*
+    This module implements most of character typecodes from CPython, with
+    some extensions:
+
+    O - (Pointer to) an arbitrary Python object. This is useful for callback
+        data, etc. Note that you must keep reference to passed object in
+        your Python application, otherwise it may be garbage-collected,
+        and then when you get back this value from callback it may be
+        invalid (and lead to crash).
+    S - Pointer to a string (returned as a Python string). Note the
+        difference from "Ns", - the latter says "in this place of structure
+        is character data of up to N bytes length", while "S" means
+        "in this place of a structure is a pointer to zero-terminated
+        character data".
+ */
+
 STATIC char get_fmt_type(const char **fmt) {
     char t = **fmt;
     switch (t) {
