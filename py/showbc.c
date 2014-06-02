@@ -64,6 +64,10 @@ void mp_bytecode_print(const byte *ip, int len) {
     const byte *code_info = ip;
     ip += code_info_size;
 
+    qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
+    qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
+    printf("File %s, code block '%s' (%d bytes)\n", qstr_str(source_file), qstr_str(block_name), len);
+
     // bytecode prelude: state size and exception stack size; 16 bit uints
     {
         uint n_state = ip[0] | (ip[1] << 8);
@@ -87,9 +91,6 @@ void mp_bytecode_print(const byte *ip, int len) {
 
     // print out line number info
     {
-        qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
-        qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-        printf("File %s, block '%s'\n", qstr_str(source_file), qstr_str(block_name));
         machine_int_t bc = (code_info + code_info_size) - ip;
         machine_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
