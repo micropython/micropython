@@ -81,7 +81,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint 
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        mp_bytecode_print(code, len);
+        mp_bytecode_print(rc, code, len);
     }
 #endif
 }
