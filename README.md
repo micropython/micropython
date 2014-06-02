@@ -1,8 +1,6 @@
 The Micro Python project (HydraBus port Beta)
 ==============================================
-<p align="center">
- <img src="https://github.com/bvernoux/hydrabus/blob/master/HydraBus_board.jpg alt="HydraBus board"/>
-</p>
+![HydraBus board](https://github.com/bvernoux/hydrabus/blob/master/HydraBus_board.jpg)
 
 This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.
