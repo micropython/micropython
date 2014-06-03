@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-// See qstrraw.h for a list of qstr's that are available as constants.
+// See qstrdefs.h for a list of qstr's that are available as constants.
 // Reference them as MP_QSTR_xxxx.
 //
 // Note: it would be possible to define MP_QSTR_xxx as qstr_from_str_static("xxx")
