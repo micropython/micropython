@@ -30,10 +30,11 @@ typedef struct _mp_obj_str_t {
     machine_uint_t hash : 16;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     machine_uint_t len : 16;
-    const byte *data;
+    char flags; //PEP 393-style flags
+    const void *data; //Character data may be 1-byte, 2-bytes, or 4-bytes per character depending on flags
 } mp_obj_str_t;
 
-#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str};
+#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, 1, (const byte*)str};
 
 mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len);

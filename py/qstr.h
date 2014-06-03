@@ -59,6 +59,6 @@ qstr qstr_build_end(byte *q_ptr);
 machine_uint_t qstr_hash(qstr q);
 const char* qstr_str(qstr q);
 uint qstr_len(qstr q);
-const byte* qstr_data(qstr q, uint *len);
+const byte* qstr_data(qstr q, uint *len, char *flags);
 
 void qstr_pool_info(uint *n_pool, uint *n_qstr, uint *n_str_data_bytes, uint *n_total_bytes);
