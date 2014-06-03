@@ -171,11 +171,13 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_struct },
 #endif
 
+#if MICROPY_PY_BUILTINS_FLOAT
 #if MICROPY_PY_MATH
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math },
 #endif
 #if MICROPY_PY_CMATH
     { MP_OBJ_NEW_QSTR(MP_QSTR_cmath), (mp_obj_t)&mp_module_cmath },
+#endif
 #endif
 #if MICROPY_PY_SYS
     { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },
