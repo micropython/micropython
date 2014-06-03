@@ -56,7 +56,7 @@
 
 void mp_bytecode_print2(const byte *ip, int len);
 
-void mp_bytecode_print(const byte *ip, int len) {
+void mp_bytecode_print(const void *descr, const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
@@ -66,7 +66,8 @@ void mp_bytecode_print(const byte *ip, int len) {
 
     qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
     qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-    printf("File %s, code block '%s' (%d bytes)\n", qstr_str(source_file), qstr_str(block_name), len);
+    printf("File %s, code block '%s' (descriptor: %p, bytecode @%p %d bytes)\n",
+        qstr_str(source_file), qstr_str(block_name), descr, code_info, len);
 
     // bytecode prelude: state size and exception stack size; 16 bit uints
     {
@@ -434,25 +435,25 @@ void mp_bytecode_print2(const byte *ip, int len) {
 
             case MP_BC_MAKE_FUNCTION:
                 DECODE_PTR;
-                printf("MAKE_FUNCTION " UINT_FMT, unum);
+                printf("MAKE_FUNCTION %p", (void*)unum);
                 break;
 
             case MP_BC_MAKE_FUNCTION_DEFARGS:
                 DECODE_PTR;
-                printf("MAKE_FUNCTION_DEFARGS " UINT_FMT, unum);
+                printf("MAKE_FUNCTION_DEFARGS %p", (void*)unum);
                 break;
 
             case MP_BC_MAKE_CLOSURE: {
                 DECODE_PTR;
                 machine_uint_t n_closed_over = *ip++;
-                printf("MAKE_CLOSURE " UINT_FMT " " UINT_FMT, unum, n_closed_over);
+                printf("MAKE_CLOSURE %p " UINT_FMT, (void*)unum, n_closed_over);
                 break;
             }
 
             case MP_BC_MAKE_CLOSURE_DEFARGS: {
                 DECODE_PTR;
                 machine_uint_t n_closed_over = *ip++;
-                printf("MAKE_CLOSURE_DEFARGS " UINT_FMT " " UINT_FMT, unum, n_closed_over);
+                printf("MAKE_CLOSURE_DEFARGS %p " UINT_FMT, (void*)unum, n_closed_over);
                 break;
             }
 

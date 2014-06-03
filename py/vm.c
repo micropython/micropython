@@ -1042,12 +1042,16 @@ exception_handler:
                 machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-                machine_uint_t source_line = 1;
+                machine_uint_t source_line = 0;
                 machine_uint_t bc = code_state->ip - code_info - code_info_size;
                 //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
-                for (const byte* ci = code_info + 12; *ci && bc >= ((*ci) & 31); ci++) {
-                    bc -= *ci & 31;
-                    source_line += *ci >> 5;
+                const byte* ci = code_info + 12;
+                if (*ci) {
+                    source_line = 1;
+                    for (; *ci && bc >= ((*ci) & 31); ci++) {
+                        bc -= *ci & 31;
+                        source_line += *ci >> 5;
+                    }
                 }
                 mp_obj_exception_add_traceback(nlr.ret_val, source_file, source_line, block_name);
             }
