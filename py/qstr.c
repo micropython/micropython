@@ -46,13 +46,15 @@
 // For now we use very simple encoding, just to get the framework correct:
 //  - hash is 2 bytes (see function below)
 //  - length is 2 bytes
+//  - flags byte
 //  - data follows
 //  - \0 terminated (for now, so they can be printed using printf)
 
 #define Q_GET_HASH(q)   ((q)[0] | ((q)[1] << 8))
 #define Q_GET_ALLOC(q)  (4 + Q_GET_LENGTH(q) + 1)
 #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
-#define Q_GET_DATA(q)   ((q) + 4)
+#define Q_GET_FLAGS(q)  ((q)[4])
+#define Q_GET_DATA(q)   ((q) + 5)
 
 // this must match the equivalent function in makeqstrdata.py
 machine_uint_t qstr_compute_hash(const byte *data, uint len) {
@@ -83,8 +85,8 @@ const static qstr_pool_t const_pool = {
     10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
     MP_QSTR_number_of,  // corresponds to number of strings in array just below
     {
-        (const byte*) "\0\0\0\0", // invalid/no qstr has empty data
-        (const byte*) "\0\0\0\0", // empty qstr
+        (const byte*) "\0\0\0\0\0", // invalid/no qstr has empty data
+        (const byte*) "\0\0\0\0\1", // empty qstr
 #define Q(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
 #undef Q
@@ -110,7 +112,7 @@ STATIC const byte *find_qstr(qstr q) {
 }
 
 STATIC qstr qstr_add(const byte *q_ptr) {
-    DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", Q_GET_HASH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_DATA(q_ptr));
+    DEBUG_printf("QSTR: add hash=%d len=%d flags=%d data=%.*s\n", Q_GET_HASH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_FLAGS(q_ptr), Q_GET_DATA(q_ptr));
 
     // make sure we have room in the pool for a new qstr
     if (last_pool->len >= last_pool->alloc) {
@@ -160,8 +162,9 @@ qstr qstr_from_strn(const char *str, uint len) {
         q_ptr[1] = hash >> 8;
         q_ptr[2] = len;
         q_ptr[3] = len >> 8;
-        memcpy(q_ptr + 4, str, len);
-        q_ptr[4 + len] = '\0';
+        q_ptr[4] = 1;
+        memcpy(q_ptr + 5, str, len);
+        q_ptr[5 + len] = '\0';
         q = qstr_add(q_ptr);
     }
     return q;
@@ -182,7 +185,8 @@ qstr qstr_build_end(byte *q_ptr) {
         machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
-        q_ptr[4 + len] = '\0';
+        q_ptr[4] = 1;
+        q_ptr[5 + len] = '\0';
         q = qstr_add(q_ptr);
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));
@@ -205,9 +209,10 @@ const char *qstr_str(qstr q) {
     return (const char*)Q_GET_DATA(qd);
 }
 
-const byte *qstr_data(qstr q, uint *len) {
+const byte *qstr_data(qstr q, uint *len, char *flags) {
     const byte *qd = find_qstr(q);
     *len = Q_GET_LENGTH(qd);
+    *flags = Q_GET_FLAGS(qd);
     return Q_GET_DATA(qd);
 }
 
