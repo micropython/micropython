@@ -513,8 +513,7 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
     int idx = splits;
 
     if (sep == mp_const_none) {
-        // TODO
-        assert(0);
+        assert(!"TODO: rsplit(None,n) not implemented");
     } else {
         uint sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
