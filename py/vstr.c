@@ -199,12 +199,40 @@ void vstr_add_byte(vstr_t *vstr, byte b) {
 }
 
 void vstr_add_char(vstr_t *vstr, unichar c) {
-    // TODO UNICODE
-    byte *buf = (byte*)vstr_add_len(vstr, 1);
-    if (buf == NULL) {
-        return;
+    // TODO: Can this be simplified and deduplicated?
+    // Is it worth just calling vstr_add_len(vstr, 4)?
+    if (c < 0x80) {
+        byte *buf = (byte*)vstr_add_len(vstr, 1);
+        if (buf == NULL) {
+            return;
+        }
+        *buf = (byte)c;
+    } else if (c < 0x800) {
+        byte *buf = (byte*)vstr_add_len(vstr, 2);
+        if (buf == NULL) {
+            return;
+        }
+        buf[0] = (c >> 6) | 0xC0;
+        buf[1] = (c & 0x3F) | 0x80;
+    } else if (c < 0x10000) {
+        byte *buf = (byte*)vstr_add_len(vstr, 3);
+        if (buf == NULL) {
+            return;
+        }
+        buf[0] = (c >> 12) | 0xE0;
+        buf[1] = ((c >> 6) & 0x3F) | 0x80;
+        buf[2] = (c & 0x3F) | 0x80;
+    } else {
+        assert(c < 0x110000);
+        byte *buf = (byte*)vstr_add_len(vstr, 4);
+        if (buf == NULL) {
+            return;
+        }
+        buf[0] = (c >> 18) | 0xF0;
+        buf[1] = ((c >> 12) & 0x3F) | 0x80;
+        buf[2] = ((c >> 6) & 0x3F) | 0x80;
+        buf[3] = (c & 0x3F) | 0x80;
     }
-    buf[0] = c;
 }
 
 void vstr_add_str(vstr_t *vstr, const char *str) {
