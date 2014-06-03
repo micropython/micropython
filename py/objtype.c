@@ -516,7 +516,7 @@ STATIC mp_obj_t instance_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
     mp_obj_t member[2] = {MP_OBJ_NULL};
     mp_obj_class_lookup(self, self->base.type, MP_QSTR___call__, offsetof(mp_obj_type_t, call), member);
     if (member[0] == MP_OBJ_NULL) {
-        return MP_OBJ_NULL;
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(self_in)));
     }
     if (member[0] == MP_OBJ_SENTINEL) {
         return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);

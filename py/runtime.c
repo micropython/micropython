@@ -526,10 +526,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp
 
     // do the call
     if (type->call != NULL) {
-        mp_obj_t res = type->call(fun_in, n_args, n_kw, args);
-        if (res != NULL) {
-            return res;
-        }
+        return type->call(fun_in, n_args, n_kw, args);
     }
 
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
