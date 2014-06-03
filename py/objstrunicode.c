@@ -64,7 +64,7 @@ STATIC bool is_str_or_bytes(mp_obj_t o) {
 /******************************************************************************/
 /* str                                                                        */
 
-void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
+void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len, bool is_bytes) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -80,21 +80,33 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
         quote_char = '"';
     }
     print(env, "%c", quote_char);
-    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
-        if (*s == quote_char) {
-            print(env, "\\%c", quote_char);
-        } else if (*s == '\\') {
-            print(env, "\\\\");
-        } else if (32 <= *s && *s <= 126) {
-            print(env, "%c", *s);
-        } else if (*s == '\n') {
-            print(env, "\\n");
-        } else if (*s == '\r') {
-            print(env, "\\r");
-        } else if (*s == '\t') {
-            print(env, "\\t");
+    const char *s = (const char *)str_data, *top = (const char *)str_data + str_len;
+    while (s < top) {
+        unichar ch;
+        if (is_bytes) {
+            ch = *(unsigned char *)s++; // Don't sign-extend bytes
         } else {
-            print(env, "\\x%02x", *s);
+            ch = utf8_get_char(s);
+            s = utf8_next_char(s);
+        }
+        if (ch == quote_char) {
+            print(env, "\\%c", quote_char);
+        } else if (ch == '\\') {
+            print(env, "\\\\");
+        } else if (32 <= ch && ch <= 126) {
+            print(env, "%c", ch);
+        } else if (ch == '\n') {
+            print(env, "\\n");
+        } else if (ch == '\r') {
+            print(env, "\\r");
+        } else if (ch == '\t') {
+            print(env, "\\t");
+        } else if (ch < 0x100) {
+            print(env, "\\x%02x", ch);
+        } else if (ch < 0x10000) {
+            print(env, "\\u%04x", ch);
+        } else {
+            print(env, "\\U%08x", ch);
         }
     }
     print(env, "%c", quote_char);
@@ -109,7 +121,7 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
         if (is_bytes) {
             print(env, "b");
         }
-        mp_str_print_quoted(print, env, str_data, str_len);
+        mp_str_print_quoted(print, env, str_data, str_len, is_bytes);
     }
 }
 
@@ -348,6 +360,59 @@ uncomparable:
     return MP_OBJ_NULL; // op not supported
 }
 
+// Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
+// be capped to the first/last character of the string, depending on is_slice.
+STATIC const char *str_index_to_ptr(const char *self_data, uint self_len, mp_obj_t index, bool is_slice) {
+    machine_int_t i;
+    // Copied from mp_get_index; I don't want bounds checking, just give me
+    // the integer as-is. (I can't bounds-check without scanning the whole
+    // string; an out-of-bounds index will be caught in the loops below.)
+    if (MP_OBJ_IS_SMALL_INT(index)) {
+        i = MP_OBJ_SMALL_INT_VALUE(index);
+    } else if (!mp_obj_get_int_maybe(index, &i)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+    }
+    const char *s, *top = self_data + self_len;
+    if (i < 0)
+    {
+        // Negative indexing is performed by counting from the end of the string.
+        for (s = top - 1; i; --s) {
+            if (s < self_data) {
+                if (is_slice) {
+                    return self_data;
+                }
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+            }
+            if (!UTF8_IS_CONT(*s)) {
+                ++i;
+            }
+        }
+        ++s;
+    } else if (!i) {
+        return self_data; // Shortcut - str[0] is its base pointer
+    } else {
+        // Positive indexing, correspondingly, counts from the start of the string.
+        // It's assumed that negative indexing will generally be used with small
+        // absolute values (eg str[-1], not str[-1000000]), which means it'll be
+        // more efficient this way.
+        for (s = self_data; true; ++s) {
+            if (s >= top) {
+                if (is_slice) {
+                    return top;
+                }
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+            }
+            while (UTF8_IS_CONT(*s)) {
+                ++s;
+            }
+            if (!i--) {
+                return s;
+            }
+        }
+    }
+    return s;
+}
+
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
@@ -355,20 +420,61 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            mp_bound_slice_t slice;
-            if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
+            mp_obj_t ostart, ostop, ostep;
+            mp_obj_slice_get(index, &ostart, &ostop, &ostep);
+            if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
                     "only slices with step=1 (aka None) are supported"));
             }
-            return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
+
+            if (type == &mp_type_bytes) {
+                machine_int_t start = 0, stop = self_len;
+                if (ostart != mp_const_none) {
+                    start = MP_OBJ_SMALL_INT_VALUE(ostart);
+                    if (start < 0) {
+                        start = self_len + start;
+                    }
+                }
+                if (ostop != mp_const_none) {
+                    stop = MP_OBJ_SMALL_INT_VALUE(ostop);
+                    if (stop < 0) {
+                        stop = self_len + stop;
+                    }
+                }
+                return mp_obj_new_str_of_type(type, self_data + start, stop - start);
+            }
+            const char *pstart, *pstop;
+            if (ostart != mp_const_none) {
+                pstart = str_index_to_ptr((const char *)self_data, self_len, ostart, true);
+            } else {
+                pstart = (const char *)self_data;
+            }
+            if (ostop != mp_const_none) {
+                // pstop will point just after the stop character. This depends on
+                // the \0 at the end of the string.
+                pstop = str_index_to_ptr((const char *)self_data, self_len, ostop, true);
+            } else {
+                pstop = (const char *)self_data + self_len;
+            }
+            if (pstop < pstart) {
+                return MP_OBJ_NEW_QSTR(MP_QSTR_);
+            }
+            return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
 #endif
-        uint index_val = mp_get_index(type, self_len, index, false);
         if (type == &mp_type_bytes) {
+            uint index_val = mp_get_index(type, self_len, index, false);
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
-        } else {
-            return mp_obj_new_str((char*)self_data + index_val, 1, true);
         }
+        const char *s = str_index_to_ptr((const char *)self_data, self_len, index, false);
+        int len = 1;
+        if (UTF8_IS_NONASCII(*s)) {
+            // Count the number of 1 bits (after the first)
+            for (char mask = 0x40; *s & mask; mask >>= 1) {
+                ++len;
+            }
+        }
+        return mp_obj_new_str(s, len, true); // This will create a one-character string
     } else {
         return MP_OBJ_NULL; // op not supported
     }
@@ -1800,8 +1906,8 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
 uint mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
-        GET_STR_LEN(self_in, l);
-        return l;
+        GET_STR_DATA_LEN(self_in, self_data, self_len);
+        return unichar_charlen((const char *)self_data, self_len);
     } else {
         bad_implicit_conversion(self_in);
     }
