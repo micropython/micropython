@@ -1,6 +1,12 @@
-The Micro Python project (HydraBus port Beta)
-==============================================
-![HydraBus board](https://github.com/bvernoux/hydrabus/blob/master/HydraBus_board.jpg)
+[![Build Status][travis-img]][travis-repo]
+[travis-img]:  https://travis-ci.org/micropython/micropython.png?branch=master
+[travis-repo]: https://travis-ci.org/micropython/micropython
+
+The Micro Python project
+========================
+<p align="center">
+  <img src="https://raw2.github.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
+</p>
 
 This is the Micro Python project, which aims to put an implementation
 of Python 3.x on a microcontroller.
@@ -18,8 +24,6 @@ Python 3.4 functionality implemented for the data types and modules.
 
 See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
-
-For HydraBus version see HydraBus website: http://hydrabus.com
 
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler and runtime.
@@ -76,19 +80,16 @@ To build:
     $ cd stmhal
     $ make
 
-You then need to get your board into DFU mode.  On the HydraBus, connect the
-3V3 pin to the BOOT0 pin with a wire.
+You then need to get your board into DFU mode.  On the pyboard, connect the
+3V3 pin to the P1/DFU pin with a wire (on PYBv1.0 they are next to each other
+on the bottom left of the board, second row from the bottom).
 
 Then to flash the code via USB DFU to your device:
 
     $ make deploy
 
-or for windows:
-
-    by double clicking on update_fw_usb_dfu_hydrabus.bat
-
 You will need the dfu-util program, on Arch Linux it's dfu-util-git in the
 AUR.  If the above does not work it may be because you don't have the
 correct permissions.  Try then:
 
-    $ sudo dfu-util -a 0 -D build-HYDRABUS/firmware.dfu
+    $ sudo dfu-util -a 0 -D build-PYBV10/firmware.dfu

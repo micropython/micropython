@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
-# then default to HYDRABUS.
-BOARD ?= HYDRABUS
+# then default to PYBV10.
+BOARD ?= PYBV10
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
