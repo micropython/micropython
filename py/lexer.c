@@ -64,12 +64,7 @@ struct _mp_lexer_t {
     mp_token_t tok_cur;
 };
 
-// debug flag for __debug__ constant
-STATIC mp_token_kind_t mp_debug_value;
-
-void mp_set_debug(bool value) {
-    mp_debug_value = value ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE;
-}
+uint mp_optimise_value;
 
 // TODO replace with a call to a standard function
 bool str_strn_equal(const char *str, const char *strn, int len) {
@@ -703,7 +698,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
             if (str_strn_equal(tok_kw[i], tok->str, tok->len)) {
                 if (i == ARRAY_SIZE(tok_kw) - 1) {
                     // tok_kw[ARRAY_SIZE(tok_kw) - 1] == "__debug__"
-                    tok->kind = mp_debug_value;
+                    tok->kind = (mp_optimise_value == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
                 } else {
                     tok->kind = MP_TOKEN_KW_FALSE + i;
                 }

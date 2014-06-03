@@ -45,6 +45,7 @@
 #include "bc.h"
 #include "smallint.h"
 #include "objgenerator.h"
+#include "lexer.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -74,8 +75,8 @@ void mp_init(void) {
     MICROPY_PORT_INIT_FUNC;
 #endif
 
-    // __debug__ enabled by default
-    mp_set_debug(true);
+    // optimization disabled by default
+    mp_optimise_value = 0;
 
     // init global module stuff
     mp_module_init();
