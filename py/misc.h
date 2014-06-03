@@ -100,7 +100,9 @@ bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
 unichar unichar_toupper(unichar c);
-#define unichar_charlen(s, bytelen) (bytelen)
+uint unichar_charlen(const char *str, uint len);
+#define UTF8_IS_NONASCII(ch) ((ch) & 0x80)
+#define UTF8_IS_CONT(ch) (((ch) & 0xC0) == 0x80)
 
 /** variable string *********************************************/
 
