@@ -68,7 +68,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
-    for (const byte *s = str_data, *top = str_data + str_len; (!has_single_quote || !has_double_quote) && s < top; s++) {
+    for (const byte *s = str_data, *top = str_data + str_len; !has_double_quote && s < top; s++) {
         if (*s == '\'') {
             has_single_quote = true;
         } else if (*s == '"') {
