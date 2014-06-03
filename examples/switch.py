@@ -1,4 +1,4 @@
-__doc__ = """
+"""
 switch.py
 =========
 
@@ -9,7 +9,7 @@ Example Usage::
     Micro Python v1.0.1 on 2014-05-12; PYBv1.0 with STM32F405RG
     Type "help()" for more information.
     >>> import switch
-    >>> switch.run_loop([2, 3])
+    >>> switch.run_loop()
     Loop started.
     Press Ctrl+C to break out of the loop.
 
@@ -28,8 +28,8 @@ def run_loop(leds=all_leds):
     """
     Start the loop.
 
-    :param `use_leds`: Which LEDs to light up upon switch press.
-    :type `use_leds`: sequence of LED objects
+    :param `leds`: Which LEDs to light up upon switch press.
+    :type `leds`: sequence of LED objects
     """
     print('Loop started.\nPress Ctrl+C to break out of the loop.')
     while 1:
