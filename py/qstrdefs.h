@@ -42,6 +42,7 @@ Q(__name__)
 Q(__next__)
 Q(__qualname__)
 Q(__path__)
+Q(__const__)
 Q(__repl_print__)
 
 Q(__bool__)
