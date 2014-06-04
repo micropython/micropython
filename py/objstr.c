@@ -50,7 +50,10 @@ const mp_obj_t mp_const_empty_bytes;
 #define GET_STR_LEN(str_obj_in, str_len) uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
 
 // use this macro to extract the string data and length
-#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
+#define GET_STR_DATA_LEN_FLAGS(str_obj_in, str_data, str_len, str_flags) const byte *str_data; uint str_len; char str_flags; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len, &str_flags); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; str_flags = ((mp_obj_str_t*)str_obj_in)->flags; }
+
+// don't use this macro, it's only for conversions
+#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) GET_STR_DATA_LEN_FLAGS(str_obj_in, str_data, str_len, str_data ## _flags); assert(str_data ## _flags == 1);
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
@@ -101,7 +104,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
 }
 
 STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    GET_STR_DATA_LEN(self_in, str_data, str_len);
+    GET_STR_DATA_LEN_FLAGS(self_in, str_data, str_len, str_flags);
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
@@ -145,6 +148,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_str, NULL, str_len);
             o->data = str_data;
             o->hash = str_hash;
+            o->flags = 1;
             return o;
         }
 
@@ -173,6 +177,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len);
         o->data = str_data;
         o->hash = str_hash;
+        o->flags = 1;
         return o;
     }
 
@@ -513,8 +518,7 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
     int idx = splits;
 
     if (sep == mp_const_none) {
-        // TODO
-        assert(0);
+        assert(!"TODO: rsplit(None,n) not implemented");
     } else {
         uint sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
@@ -1681,7 +1685,7 @@ const mp_obj_type_t mp_type_bytes = {
 };
 
 // the zero-length bytes
-STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
+STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, 1, NULL};
 const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
@@ -1700,6 +1704,7 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     o->hash = qstr_compute_hash(o->data, o->len);
     byte *p = (byte*)o->data;
     p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    o->flags = 1;
     return o;
 }
 
@@ -1707,6 +1712,7 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
+    o->flags = 1;
     if (data) {
         o->hash = qstr_compute_hash(data, len);
         byte *p = m_new(byte, len + 1);
