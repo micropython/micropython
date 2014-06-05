@@ -30,8 +30,8 @@ typedef struct _mp_obj_str_t {
     machine_uint_t hash : 16;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     machine_uint_t len : 16;
-    char flags; //PEP 393-style flags
-    const void *data; //Character data may be 1-byte, 2-bytes, or 4-bytes per character depending on flags
+    char flags; //Currently unused, always 1. Will later get markers eg ASCII-only.
+    const void *data; //Character data is encoded UTF-8 and should not be blindly indexed.
 } mp_obj_str_t;
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, 1, (const byte*)str};
