@@ -1273,7 +1273,7 @@ not_enough_args:
                 if (alt) {
                     flags |= (PF_FLAG_SHOW_PREFIX | PF_FLAG_SHOW_OCTAL_LETTER);
                 }
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 8, 'a', flags, fill, width);
+                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width);
                 break;
 
             case 'r':
@@ -1296,7 +1296,7 @@ not_enough_args:
 
             case 'X':
             case 'x':
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 16, *str - ('X' - 'A'), flags | alt, fill, width);
+                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, *str - ('X' - 'A'), flags | alt, fill, width);
                 break;
 
             default:
