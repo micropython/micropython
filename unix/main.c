@@ -261,6 +261,12 @@ void pre_process_options(int argc, char **argv) {
     }
 }
 
+#ifdef _WIN32
+#define PATHLIST_SEP_CHAR ';'
+#else
+#define PATHLIST_SEP_CHAR ':'
+#endif
+
 int main(int argc, char **argv) {
     volatile int stack_dummy;
     stack_top = (char*)&stack_dummy;
@@ -281,7 +287,7 @@ int main(int argc, char **argv) {
         path = "~/.micropython/lib:/usr/lib/micropython";
     }
     uint path_num = 1; // [0] is for current dir (or base dir of the script)
-    for (char *p = path; p != NULL; p = strchr(p, ':')) {
+    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {
             p++;
@@ -293,7 +299,7 @@ int main(int argc, char **argv) {
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     char *p = path;
     for (int i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, ':');
+        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
         if (p1 == NULL) {
             p1 = p + strlen(p);
         }
