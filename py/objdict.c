@@ -117,6 +117,17 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
+// TODO: Make sure this is inlined in dict_subscr() below.
+mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
+    mp_obj_dict_t *self = self_in;
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+    } else {
+        return elem->value;
+    }
+}
+
 STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete

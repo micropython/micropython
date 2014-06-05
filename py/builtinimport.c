@@ -163,16 +163,6 @@ void do_load(mp_obj_t module_obj, vstr_t *file) {
     mp_globals_set(old_globals);
 }
 
-// TODO: Move to objdict?
-STATIC inline mp_obj_t mp_obj_dict_get(mp_obj_t dict_in, mp_obj_t key) {
-    mp_obj_dict_t *dict = dict_in;
-    mp_map_elem_t *elem = mp_map_lookup(&dict->map, key, MP_MAP_LOOKUP);
-    if (elem == NULL) {
-        return elem;
-    }
-    return elem->value;
-}
-
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 #if DEBUG_PRINT
     printf("__import__:\n");

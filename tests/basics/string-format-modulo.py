@@ -48,3 +48,29 @@ print("%#X" % 18)
 print("%#6o" % 18)
 print("%#6x" % 18)
 print("%#06x" % 18)
+
+print("%*d" % (5, 10))
+print("%*.*d" % (2, 2, 20))
+# TODO: Formatted incorrectly
+#print("%*.*d" % (5, 8, 20))
+
+# Cases when "*" used and there's not enough values total
+try:
+    print("%*s" % 5)
+except TypeError:
+    print("TypeError")
+try:
+    print("%*.*s" % (1, 15))
+except TypeError:
+    print("TypeError")
+
+print("%(foo)s" % {"foo": "bar", "baz": False})
+try:
+    print("%(foo)s" % {})
+except KeyError:
+    print("KeyError")
+# Using in "*" with dict got to fail
+try:
+    print("%(foo)*s" % {"foo": "bar"})
+except TypeError:
+    print("TypeError")

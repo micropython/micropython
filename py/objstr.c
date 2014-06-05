@@ -40,7 +40,7 @@
 #include "objstr.h"
 #include "objlist.h"
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args);
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict);
 const mp_obj_t mp_const_empty_bytes;
 
 // use this macro to extract the string hash
@@ -307,14 +307,19 @@ STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_MODULO: {
             mp_obj_t *args;
             uint n_args;
+            mp_obj_t dict = MP_OBJ_NULL;
             if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple)) {
                 // TODO: Support tuple subclasses?
                 mp_obj_tuple_get(rhs_in, &n_args, &args);
+            } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
+                args = NULL;
+                n_args = 0;
+                dict = rhs_in;
             } else {
                 args = &rhs_in;
                 n_args = 1;
             }
-            return str_modulo_format(lhs_in, n_args, args);
+            return str_modulo_format(lhs_in, n_args, args, dict);
         }
 
         //case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
@@ -1125,7 +1130,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
     return s;
 }
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict) {
     assert(MP_OBJ_IS_STR(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
@@ -1137,6 +1142,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
     pfenv_vstr.print_strn = pfenv_vstr_add_strn;
 
     for (const byte *top = str + len; str < top; str++) {
+        mp_obj_t arg = MP_OBJ_NULL;
         if (*str != '%') {
             vstr_add_char(vstr, *str);
             continue;
@@ -1148,9 +1154,21 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
             vstr_add_char(vstr, '%');
             continue;
         }
-        if (arg_i >= n_args) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
+
+        // Dictionary value lookup
+        if (*str == '(') {
+            const byte *key = ++str;
+            while (*str != ')') {
+                if (str >= top) {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incomplete format key"));
+                }
+                ++str;
+            }
+            mp_obj_t k_obj = mp_obj_new_str((const char*)key, str - key, true);
+            arg = mp_obj_dict_get(dict, k_obj);
+            str++;
         }
+
         int flags = 0;
         char fill = ' ';
         bool alt = false;
@@ -1169,6 +1187,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
         int width = 0; 
         if (str < top) {
             if (*str == '*') {
+                if (arg_i >= n_args) {
+                    goto not_enough_args;
+                }
                 width = mp_obj_get_int(args[arg_i++]);
                 str++;
             } else {
@@ -1181,6 +1202,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
         if (str < top && *str == '.') {
             if (++str < top) {
                 if (*str == '*') {
+                    if (arg_i >= n_args) {
+                        goto not_enough_args;
+                    }
                     prec = mp_obj_get_int(args[arg_i++]);
                     str++;
                 } else {
@@ -1195,7 +1219,15 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
         if (str >= top) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incomplete format"));
         }
-        mp_obj_t arg = args[arg_i];
+
+        // Tuple value lookup
+        if (arg == MP_OBJ_NULL) {
+            if (arg_i >= n_args) {
+not_enough_args:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
+            }
+            arg = args[arg_i++];
+        }
         switch (*str) {
             case 'c':
                 if (MP_OBJ_IS_STR(arg)) {
@@ -1284,7 +1316,6 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
                     "unsupported format character '%c' (0x%x) at index %d",
                     *str, *str, str - start_str));
         }
-        arg_i++;
     }
 
     if (arg_i != n_args) {
