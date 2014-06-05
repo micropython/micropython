@@ -466,7 +466,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     assert(MP_OBJ_IS_QSTR(attr_in));
 
     mp_obj_t dest[2];
-    // TODO: https://docs.python.org/3.3/library/functions.html?highlight=hasattr#hasattr
+    // TODO: https://docs.python.org/3/library/functions.html?highlight=hasattr#hasattr
     // explicitly says "This is implemented by calling getattr(object, name) and seeing
     // whether it raises an AttributeError or not.", so we should explicitly wrap this
     // in nlr_push and handle exception.

@@ -157,7 +157,7 @@ const mp_obj_type_t mp_type_ ## exc_name = { \
 };
 
 // List of all exceptions, arranged as in the table at:
-// http://docs.python.org/3.3/library/exceptions.html
+// http://docs.python.org/3/library/exceptions.html
 MP_DEFINE_EXCEPTION_BASE(BaseException)
 MP_DEFINE_EXCEPTION(SystemExit, BaseException)
 //MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)

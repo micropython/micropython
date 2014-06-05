@@ -352,7 +352,7 @@ STATIC const qstr binary_op_method_name[] = {
 // Given a member that was extracted from an instance, convert it correctly
 // and put the result in the dest[] array for a possible method call.
 // Conversion means dealing with static/class methods, callables, and values.
-// see http://docs.python.org/3.3/howto/descriptor.html
+// see http://docs.python.org/3/howto/descriptor.html
 STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
     assert(dest[1] == NULL);
     if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
