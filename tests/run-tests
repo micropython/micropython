@@ -27,16 +27,17 @@ def run_tests(pyb, tests):
     failed_tests = []
     skipped_tests = []
 
-    running_under_travis = os.getenv('TRAVIS') == 'true'
+    skip_tests = set()
 
-    # Set of tests that we shouldn't run under Travis CI
-    skip_travis_tests = set(['basics/memoryerror.py'])
+    # Some tests shouldn't be run under Travis CI
+    if os.getenv('TRAVIS') == 'true':
+        skip_tests.add('basics/memoryerror.py')
 
     for test_file in tests:
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
 
-        if running_under_travis and test_file in skip_travis_tests:
+        if test_file in skip_tests:
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
