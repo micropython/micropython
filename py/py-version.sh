@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Note: git describe doesn't work if no tag is available
 git_tag="$(git describe --dirty --always)"
