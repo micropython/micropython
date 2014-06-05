@@ -372,7 +372,13 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
         } else {
-            return mp_obj_new_str((char*)self_data + index_val, 1, true);
+            // Count non-continuation bytes to count characters.
+            // Assumes that the string is correctly formed - will run past the
+            // end of the buffer if there aren't that many characters in it
+            const char *s;
+            for (s=(const char *)self_data; index_val; ++s)
+                if ((*s&0xC0) != 0x80) --index_val;
+            return mp_obj_new_str(s, 1, true);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -1733,6 +1739,12 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     o->len = len;
     o->flags = 1;
     if (data) {
+        // Calculate the byte length used by 'len' characters (by counting non-continuation bytes)
+        const byte *endptr, *top = data + len;
+        uint lenleft = len;
+        for (endptr = data; endptr < top && lenleft; ++endptr)
+            if ((*endptr & 0xC0) != 0x80) --lenleft;
+        len = endptr - data; // Work with the byte length now (the object's length is stored above)
         o->hash = qstr_compute_hash(data, len);
         byte *p = m_new(byte, len + 1);
         o->data = p;
