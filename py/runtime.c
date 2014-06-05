@@ -837,7 +837,7 @@ void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             // check if the methods are functions, static or class methods
-            // see http://docs.python.org/3.3/howto/descriptor.html
+            // see http://docs.python.org/3/howto/descriptor.html
             if (MP_OBJ_IS_TYPE(elem->value, &mp_type_staticmethod)) {
                 // return just the function
                 dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
