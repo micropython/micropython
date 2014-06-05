@@ -33,6 +33,9 @@ def run_tests(pyb, tests):
     skip_travis_tests = set(['basics/memoryerror.py'])
 
     for test_file in tests:
+        test_basename = os.path.basename(test_file)
+        test_name = os.path.splitext(test_basename)[0]
+
         if running_under_travis and test_file in skip_travis_tests:
             print("skip ", test_file)
             skipped_tests.append(test_name)
@@ -67,9 +70,6 @@ def run_tests(pyb, tests):
                 output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
             except pyboard.PyboardError:
                 output_mupy = b'CRASH'
-
-        test_basename = os.path.basename(test_file)
-        test_name = os.path.splitext(test_basename)[0]
 
         if output_mupy == b'SKIP\n':
             print("skip ", test_file)
