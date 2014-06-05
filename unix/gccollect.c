@@ -34,6 +34,17 @@
 
 extern void *stack_top;
 
+#if MICROPY_GCREGS_SETJMP
+#include <setjmp.h>
+
+typedef jmp_buf regs_t;
+
+void gc_helper_get_regs(regs_t arr) {
+    setjmp(arr);
+}
+
+#else // !MICROPY_GCREGS_SETJMP
+
 // We capture here callee-save registers, i.e. ones which may contain
 // interesting values held there by our callers. It doesn't make sense
 // to capture caller-saved registers, because they, well, put on the
@@ -112,6 +123,7 @@ void gc_helper_get_regs(regs_t arr) {
     arr[9] = r13;
 }
 #endif
+#endif // !MICROPY_GCREGS_SETJMP
 
 void gc_collect(void) {
     //gc_dump_info();
