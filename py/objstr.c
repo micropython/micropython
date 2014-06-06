@@ -1833,8 +1833,19 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
 uint mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
-        GET_STR_LEN(self_in, l);
-        return l;
+        GET_STR_INFO(self_in, self_data, self_len, self_charlen, self_flags);
+        if (self_charlen == (uint)-1)
+        {
+            // HACK: Since qstr doesn't yet retain character length, count it up now.
+            // This allows tests to pass, but it's stupidly inefficient.
+            // (It's also safe. If charlen just happens to be (uint)-1, it won't
+            // break anything, it'll just recalculate it here.)
+            const byte *endptr, *top = self_data + self_len;
+            self_charlen = 0;
+            for (endptr = self_data; endptr < top; ++endptr)
+                if ((*endptr & 0xC0) != 0x80) ++self_charlen;
+        }
+        return self_charlen;
     } else {
         bad_implicit_conversion(self_in);
     }
