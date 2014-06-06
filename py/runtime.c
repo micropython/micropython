@@ -27,7 +27,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#ifndef __FreeBSD__
 #include <alloca.h>
+#else
+#include <stdlib.h> /* alloca() */
+#endif
 
 #include "mpconfig.h"
 #include "nlr.h"

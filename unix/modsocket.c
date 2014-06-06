@@ -37,7 +37,11 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#ifndef __FreeBSD__
 #include <alloca.h>
+#else
+#include <stdlib.h>
+#endif
 
 #include "mpconfig.h"
 #include "nlr.h"

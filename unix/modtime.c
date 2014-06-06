@@ -57,6 +57,8 @@ void msec_sleep_tv(struct timeval *tv) {
 
 #if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
 #define CLOCK_DIV 1000.0
+#elif defined(__FreeBSD__) && (MP_CLOCKS_PER_SEC == 128)
+#define CLOCK_DIV 0.128
 #elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32
 #define CLOCK_DIV 1.0
 #else
