@@ -372,6 +372,17 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
+        if (self_charlen == (uint)-1)
+        {
+            // HACK: Since qstr doesn't yet retain character length, count it up now.
+            // This allows tests to pass, but it's stupidly inefficient.
+            // (It's also safe. If charlen just happens to be (uint)-1, it won't
+            // break anything, it'll just recalculate it here.)
+            const byte *endptr, *top = self_data + self_len;
+            self_charlen = 0;
+            for (endptr = self_data; endptr < top; ++endptr)
+                if ((*endptr & 0xC0) != 0x80) ++self_charlen;
+        }
         uint index_val = mp_get_index(type, self_charlen, index, false);
         if (type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
@@ -382,8 +393,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             const char *s;
             for (s=(const char *)self_data; index_val; ++s)
                 if ((*s & 0xC0) != 0x80) --index_val;
+            while ((*s & 0xC0) == 0x80) ++s; // Skip continuation bytes after the last lead byte
             int len = 1;
-            if (*s > 0x7f)
+            if (*s & 0x80)
                 for (char mask = 0x40; *s & mask; mask >>= 1) ++len; // Count the number of 1 bits (after the first)
             return mp_obj_new_str(s, len, true); // This will create a one-character string
         }
