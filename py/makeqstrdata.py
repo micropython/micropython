@@ -27,7 +27,8 @@ def compute_hash(qstr):
     hash = 5381
     for char in qstr:
         hash = (hash * 33) ^ ord(char)
-    return hash & 0xffff
+    # Make sure that valid hash is never zero, zero means "hash not computed"
+    return (hash & 0xffff) or 1
 
 def do_work(infiles):
     # read the qstrs in from the input files
