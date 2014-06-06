@@ -279,6 +279,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_GC (1)
 #endif
 
+// Whether to return number of collected objects from gc.collect()
+#ifndef MICROPY_PY_GC_COLLECT_RETVAL
+#define MICROPY_PY_GC_COLLECT_RETVAL (0)
+#endif
+
 // Whether to provide "io" module
 #ifndef MICROPY_PY_IO
 #define MICROPY_PY_IO (1)

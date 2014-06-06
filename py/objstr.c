@@ -358,7 +358,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    "Only slices with step=1 (aka None) are supported"));
+                    "only slices with step=1 (aka None) are supported"));
             }
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
@@ -781,7 +781,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
                 vstr_add_char(vstr, '}');
                 continue;
             }
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Single '}' encountered in format string"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "single '}' encountered in format string"));
         }
         if (*str != '{') {
             vstr_add_char(vstr, *str);
@@ -827,7 +827,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
             // '{:d}'.format(True) returns '1'
             // So we treat {:} as {} and this later gets treated to be {!s}
             if (*str != '}') {
-                format_spec = vstr_new(); 
+                format_spec = vstr_new();
                 while (str < top && *str != '}') {
                     vstr_add_char(format_spec, *str++);
                 }
@@ -845,7 +845,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
 
         if (field_name) {
             if (arg_i > 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "cannot switch from automatic field numbering to manual field specification"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't switch from automatic field numbering to manual field specification"));
             }
             int index = 0;
             if (str_to_int(vstr_str(field_name), &index) != vstr_len(field_name) - 1) {
@@ -860,7 +860,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
             field_name = NULL;
         } else {
             if (arg_i < 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "cannot switch from manual field specification to automatic field numbering"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't switch from manual field specification to automatic field numbering"));
             }
             if (arg_i >= n_args - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
@@ -878,7 +878,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
             } else if (conversion == 'r') {
                 print_kind = PRINT_REPR;
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Unknown conversion specifier %c", conversion));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "unknown conversion specifier %c", conversion));
             }
             vstr_t *arg_vstr = vstr_new();
             mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, arg_vstr, arg, print_kind);
@@ -1005,12 +1005,9 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
                     pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width);
                     continue;
 
-                case 'x':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, 'a', flags, fill, width);
-                    continue;
-
                 case 'X':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, 'A', flags, fill, width);
+                case 'x':
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, type - ('X' - 'A'), flags, fill, width);
                     continue;
 
                 case 'e':
@@ -1026,7 +1023,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
 
                 default:
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "Unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
+                        "unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
             }
         }
 
@@ -1038,7 +1035,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
                 // Even though the docs say that an unspecified type is the same
                 // as 'g', there is one subtle difference, when the exponent
                 // is one less than the precision.
-                //  
+                //
                 // '{:10.1}'.format(0.0) ==> '0e+00'
                 // '{:10.1g}'.format(0.0) ==> '0'
                 //
@@ -1077,7 +1074,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
                 case 'F':
                 case 'g':
                 case 'G':
-                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), type, flags, fill, width, precision); 
+                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), type, flags, fill, width, precision);
                     break;
 
                 case '%':
@@ -1088,7 +1085,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
 
                 default:
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "Unknown format code '%c' for object of type 'float'",
+                        "unknown format code '%c' for object of type 'float'",
                         type, mp_obj_get_type_str(arg)));
             }
         } else {
@@ -1119,7 +1116,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
 
                 default:
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "Unknown format code '%c' for object of type 'str'",
+                        "unknown format code '%c' for object of type 'str'",
                         type, mp_obj_get_type_str(arg)));
             }
         }
@@ -1171,12 +1168,12 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
 
         int flags = 0;
         char fill = ' ';
-        bool alt = false;
+        int alt = 0;
         while (str < top) {
             if (*str == '-')      flags |= PF_FLAG_LEFT_ADJUST;
             else if (*str == '+') flags |= PF_FLAG_SHOW_SIGN;
             else if (*str == ' ') flags |= PF_FLAG_SPACE_SIGN;
-            else if (*str == '#') alt = true;
+            else if (*str == '#') alt = PF_FLAG_SHOW_PREFIX;
             else if (*str == '0') {
                 flags |= PF_FLAG_PAD_AFTER_SIGN;
                 fill = '0';
@@ -1184,7 +1181,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t 
             str++;
         }
         // parse width, if it exists
-        int width = 0; 
+        int width = 0;
         if (str < top) {
             if (*str == '*') {
                 if (arg_i >= n_args) {
@@ -1234,7 +1231,7 @@ not_enough_args:
                     uint len;
                     const char *s = mp_obj_str_get_data(arg, &len);
                     if (len != 1) {
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "%c requires int or char")); 
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "%%c requires int or char"));
                         break;
                     }
                     pfenv_print_strn(&pfenv_vstr, s, 1, flags, ' ', width);
@@ -1248,12 +1245,12 @@ not_enough_args:
 #if MICROPY_PY_BUILTINS_FLOAT
                 // This is what CPython reports, so we report the same.
                 if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "integer argument expected, got float")); 
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "integer argument expected, got float"));
 
                 }
 #endif
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "an integer is required")); 
-                break; 
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "an integer is required"));
+                break;
 
             case 'd':
             case 'i':
@@ -1276,7 +1273,7 @@ not_enough_args:
                 if (alt) {
                     flags |= (PF_FLAG_SHOW_PREFIX | PF_FLAG_SHOW_OCTAL_LETTER);
                 }
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 8, 'a', flags, fill, width); 
+                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width);
                 break;
 
             case 'r':
@@ -1297,18 +1294,9 @@ not_enough_args:
                 break;
             }
 
-            case 'x':
-                if (alt) {
-                    flags |= PF_FLAG_SHOW_PREFIX;
-                }
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'a', flags, fill, width);
-                break;
-
             case 'X':
-                if (alt) {
-                    flags |= PF_FLAG_SHOW_PREFIX;
-                }
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 16, 'A', flags, fill, width);
+            case 'x':
+                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, *str - ('X' - 'A'), flags | alt, fill, width);
                 break;
 
             default:
