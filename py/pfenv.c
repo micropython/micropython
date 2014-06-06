@@ -91,8 +91,10 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
             left_pad -= p;
         }
     }
-    pfenv->print_strn(pfenv->data, str, len);
-    total_chars_printed += len;
+    if (len) {
+        pfenv->print_strn(pfenv->data, str, len);
+        total_chars_printed += len;
+    }
     if (right_pad > 0) {
         total_chars_printed += right_pad;
         while (right_pad > 0) {
@@ -181,13 +183,19 @@ int pfenv_print_int(const pfenv_t *pfenv, machine_uint_t x, int sgn, int base, i
     return len;
 }
 
-int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width, int prec) {
     if (!MP_OBJ_IS_INT(x)) {
         // This will convert booleans to int, or raise an error for
         // non-integer types.
         x = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(x));
     }
 
+    if ((flags & (PF_FLAG_LEFT_ADJUST | PF_FLAG_CENTER_ADJUST)) == 0 && fill == '0') {
+        if (prec > width) {
+            width = prec;
+        }
+        prec = 0;
+    }
     char prefix_buf[4];
     char *prefix = prefix_buf;
 
@@ -230,6 +238,9 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
     int fmt_size = 0;
     char *str;
 
+    if (prec > 1) {
+        flags |= PF_FLAG_PAD_AFTER_SIGN;
+    }
     char sign = '\0';
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
         // We add the pad in this function, so since the pad goes after
@@ -245,7 +256,39 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
                                    x, base, prefix, base_char, comma);
     }
 
+    int spaces_before = 0;
+    int spaces_after = 0;
+
+    if (prec > 1) {
+        // If prec was specified, then prec specifies the width to zero-pad the
+        // the number to. This zero-padded number then gets left or right
+        // aligned in width characters.
+
+        int prec_width = fmt_size;  // The digits
+        if (prec_width < prec) {
+            prec_width = prec;
+        }
+        if (flags & PF_FLAG_PAD_AFTER_SIGN) {
+            if (sign) {
+                prec_width++;
+            }
+            prec_width += prefix_len;
+        }
+        if (prec_width < width) {
+            if (flags & PF_FLAG_LEFT_ADJUST) {
+                spaces_after = width - prec_width;
+            } else {
+                spaces_before = width - prec_width;
+            }
+        }
+        fill = '0';
+        flags &= ~PF_FLAG_LEFT_ADJUST;
+    }
+
     int len = 0;
+    if (spaces_before) {
+        len += pfenv_print_strn(pfenv, "", 0, 0, ' ', spaces_before);
+    }
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
         // pad after sign implies pad after prefix as well.
         if (sign) {
@@ -257,8 +300,15 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
             width -= prefix_len;
         }
     }
+    if (prec > 1) {
+        width = prec;
+    }
 
     len += pfenv_print_strn(pfenv, str, fmt_size, flags, fill, width);
+
+    if (spaces_after) {
+        len += pfenv_print_strn(pfenv, "", 0, 0, ' ', spaces_after);
+    }
 
     if (buf != stack_buf) {
         m_free(buf, buf_size);
