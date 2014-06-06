@@ -154,7 +154,7 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
 #endif
     } else {
         // Not an int.
-        buf[0] = '\0';
+        buf[0] = "\0";
         *fmt_size = 0;
         return *buf;
     }
