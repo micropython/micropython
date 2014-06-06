@@ -51,8 +51,18 @@ print("%#06x" % 18)
 
 print("%*d" % (5, 10))
 print("%*.*d" % (2, 2, 20))
-# TODO: Formatted incorrectly
-#print("%*.*d" % (5, 8, 20))
+print("%*.*d" % (5, 8, 20))
+
+print(">%8.4d<" % -12)
+print(">% 8.4d<" % -12)
+print(">%+8.4d<" %  12)
+print(">%+8.4d<" % -12)
+print(">%08.4d<" % -12)
+print(">%08.4d<" % 12)
+print(">%-8.4d<" % -12)
+print(">%-08.4d<" % -12)
+print(">%-+08.4d<" % -12)
+print(">%-+08.4d<" %  12)
 
 # Cases when "*" used and there's not enough values total
 try:
