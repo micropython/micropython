@@ -127,7 +127,7 @@ STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma)
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
 }
 
-// This routine expects you to pass in a buffer and size (in *buf and buf_size).
+// This routine expects you to pass in a buffer and size (in *buf and *buf_size).
 // If, for some reason, this buffer is too small, then it will allocate a
 // buffer and return the allocated buffer and size in *buf and *buf_size. It
 // is the callers responsibility to free this allocated buffer.
@@ -154,7 +154,7 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
 #endif
     } else {
         // Not an int.
-        buf[0] = '\0';
+        **buf = '\0';
         *fmt_size = 0;
         return *buf;
     }
