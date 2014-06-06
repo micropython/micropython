@@ -23,6 +23,7 @@ codepoint2name[ord('}')] = 'brace_close'
 codepoint2name[ord('*')] = 'star'
 
 # this must match the equivalent function in qstr.c
+# Note that this hashes the UTF-8 encoded data bytes.
 def compute_hash(qstr):
     hash = 5381
     for char in qstr:
@@ -58,7 +59,8 @@ def do_work(infiles):
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qhash = compute_hash(qstr)
         qlen = len(qstr)
-        print('Q({}, (const byte*)"\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\1" "{}")'.format(ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qstr))
+        qchlen = len(qstr.decode("utf-8"))
+        print('Q({}, (const byte*)"\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\1" "{}")'.format(ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qchlen & 0xff, (qchlen >> 8) & 0xff, qstr))
 
     return True
 

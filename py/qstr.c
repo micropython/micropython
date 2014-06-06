@@ -46,17 +46,20 @@
 // For now we use very simple encoding, just to get the framework correct:
 //  - hash is 2 bytes (see function below)
 //  - length is 2 bytes
+//  - character length is 2 bytes
 //  - flags byte
 //  - data follows
 //  - \0 terminated (for now, so they can be printed using printf)
 
 #define Q_GET_HASH(q)   ((q)[0] | ((q)[1] << 8))
-#define Q_GET_ALLOC(q)  (4 + Q_GET_LENGTH(q) + 1)
+#define Q_GET_ALLOC(q)  (7 + Q_GET_LENGTH(q) + 1)
 #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
-#define Q_GET_FLAGS(q)  ((q)[4])
-#define Q_GET_DATA(q)   ((q) + 5)
+#define Q_GET_CHARLEN(q) ((q)[4] | ((q)[5] << 8))
+#define Q_GET_FLAGS(q)  ((q)[6])
+#define Q_GET_DATA(q)   ((q) + 7)
 
 // this must match the equivalent function in makeqstrdata.py
+// Note that this hashes the UTF-8 encoded data bytes.
 machine_uint_t qstr_compute_hash(const byte *data, uint len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
     machine_uint_t hash = 5381;
@@ -85,8 +88,8 @@ const static qstr_pool_t const_pool = {
     10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
     MP_QSTR_number_of,  // corresponds to number of strings in array just below
     {
-        (const byte*) "\0\0\0\0\0", // invalid/no qstr has empty data
-        (const byte*) "\0\0\0\0\1", // empty qstr
+        (const byte*) "\0\0\0\0\0\0\0", // invalid/no qstr has empty data
+        (const byte*) "\0\0\0\0\0\0\1", // empty qstr
 #define Q(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
 #undef Q
@@ -157,14 +160,19 @@ qstr qstr_from_strn(const char *str, uint len) {
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         machine_uint_t hash = qstr_compute_hash((const byte*)str, len);
-        byte *q_ptr = m_new(byte, 4 + len + 1);
+        byte *q_ptr = m_new(byte, 7 + len + 1);
+        uint charlen = 0;
+        for (const char *s = str; s < str + len; ++s)
+            if ((*s & 0xC0) != 0x80) ++charlen;
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         q_ptr[2] = len;
         q_ptr[3] = len >> 8;
-        q_ptr[4] = 1;
-        memcpy(q_ptr + 5, str, len);
-        q_ptr[5 + len] = '\0';
+        q_ptr[4] = charlen;
+        q_ptr[5] = charlen >> 8;
+        q_ptr[6] = 1;
+        memcpy(q_ptr + 7, str, len);
+        q_ptr[7 + len] = '\0';
         q = qstr_add(q_ptr);
     }
     return q;
@@ -172,7 +180,7 @@ qstr qstr_from_strn(const char *str, uint len) {
 
 byte *qstr_build_start(uint len, byte **q_ptr) {
     assert(len <= 65535);
-    *q_ptr = m_new(byte, 4 + len + 1);
+    *q_ptr = m_new(byte, 7 + len + 1);
     (*q_ptr)[2] = len;
     (*q_ptr)[3] = len >> 8;
     return Q_GET_DATA(*q_ptr);
@@ -182,11 +190,17 @@ qstr qstr_build_end(byte *q_ptr) {
     qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
         machine_uint_t len = Q_GET_LENGTH(q_ptr);
-        machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
+        const byte *str = Q_GET_DATA(q_ptr);
+        machine_uint_t hash = qstr_compute_hash(str, len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
-        q_ptr[4] = 1;
-        q_ptr[5 + len] = '\0';
+        uint charlen = 0;
+        for (const byte *s = str; s < str + len; ++s)
+            if ((*s & 0xC0) != 0x80) ++charlen;
+        q_ptr[4] = charlen;
+        q_ptr[5] = charlen >> 8;
+        q_ptr[6] = 1;
+        q_ptr[7 + len] = '\0';
         q = qstr_add(q_ptr);
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));
@@ -201,6 +215,11 @@ machine_uint_t qstr_hash(qstr q) {
 uint qstr_len(qstr q) {
     const byte *qd = find_qstr(q);
     return Q_GET_LENGTH(qd);
+}
+
+uint qstr_charlen(qstr q) {
+    const byte *qd = find_qstr(q);
+    return Q_GET_CHARLEN(qd);
 }
 
 // XXX to remove!
