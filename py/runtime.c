@@ -1150,6 +1150,10 @@ void *m_malloc_fail(int num_bytes) {
     nlr_raise((mp_obj_t)&mp_const_MemoryError_obj);
 }
 
+NORETURN void mp_not_implemented(const char *msg) {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, msg));
+}
+
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_const_int,

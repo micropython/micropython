@@ -60,6 +60,7 @@ Q(__str__)
 Q(__getattr__)
 Q(__del__)
 Q(__call__)
+Q(__lt__)
 
 Q(micropython)
 Q(bytecode)
@@ -343,6 +344,9 @@ Q(byteorder)
 Q(big)
 Q(exit)
 Q(little)
+#ifdef MICROPY_PY_SYS_PLATFORM
+Q(platform)
+#endif
 Q(stdin)
 Q(stdout)
 Q(stderr)
