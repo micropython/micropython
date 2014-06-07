@@ -49,8 +49,7 @@ typedef struct _mp_code_state {
     //mp_exc_stack_t exc_state[0];
 } mp_code_state;
 
-mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args, const mp_obj_t *args2, uint n_args2, mp_obj_t *ret);
-mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_obj_t inject_exc);
+mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc);
 void mp_bytecode_print(const void *descr, const byte *code, int len);
 void mp_bytecode_print2(const byte *code, int len);
 
