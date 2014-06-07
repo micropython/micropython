@@ -70,7 +70,7 @@ STATIC bool is_str_or_bytes(mp_obj_t o) {
 /******************************************************************************/
 /* str                                                                        */
 
-void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
+void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len, bool is_bytes) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -99,8 +99,27 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
             print(env, "\\r");
         } else if (*s == '\t') {
             print(env, "\\t");
-        } else {
+        } else if (*s == '\x7f') {
+            print(env, "\\x7f");
+	} else if (is_bytes) {
             print(env, "\\x%02x", *s);
+        } else {
+            // Non-ASCII character. Decode UTF-8.
+	    machine_int_t ord = *s++ & 0x7F;
+            for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
+		ord &= ~mask;
+	    }
+	    while ((*s & 0xC0) == 0x80) {
+		ord = (ord << 6) | (*s++ & 0x3F);
+	    }
+	    --s; // s will be incremented by the main loop
+	    if (ord < 0x100) {
+                print(env, "\\x%02x", ord);
+	    } else if (ord < 0x10000) {
+                print(env, "\\u%04x", ord);
+	    } else {
+                print(env, "\\U%08x", ord);
+	    }
         }
     }
     print(env, "%c", quote_char);
@@ -115,7 +134,7 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
         if (is_bytes) {
             print(env, "b");
         }
-        mp_str_print_quoted(print, env, str_data, str_len);
+        mp_str_print_quoted(print, env, str_data, str_len, is_bytes);
     }
 }
 
