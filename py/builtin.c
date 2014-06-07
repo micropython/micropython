@@ -360,12 +360,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len, charlen;
     const char *str = mp_obj_str_get_data_len(o_in, &len, &charlen);
     if (charlen == 1) {
-        if (MP_OBJ_IS_STR(o_in) && (*str & 0x80)) {
+        if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
 	    machine_int_t ord = *str++ & 0x7F;
             for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
 		ord &= ~mask;
 	    }
-	    while ((*str & 0xC0) == 0x80) {
+	    while (UTF8_IS_CONT(*str)) {
 		ord = (ord << 6) | (*str++ & 0x3F);
 	    }
 	    return mp_obj_new_int(ord);

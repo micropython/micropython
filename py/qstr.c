@@ -162,8 +162,11 @@ qstr qstr_from_strn(const char *str, uint len) {
         machine_uint_t hash = qstr_compute_hash((const byte*)str, len);
         byte *q_ptr = m_new(byte, 7 + len + 1);
         uint charlen = 0;
-        for (const char *s = str; s < str + len; ++s)
-            if ((*s & 0xC0) != 0x80) ++charlen;
+        for (const char *s = str; s < str + len; ++s) {
+            if (!UTF8_IS_CONT(*s)) {
+		++charlen;
+	    }
+	}
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         q_ptr[2] = len;
@@ -195,8 +198,11 @@ qstr qstr_build_end(byte *q_ptr) {
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         uint charlen = 0;
-        for (const byte *s = str; s < str + len; ++s)
-            if ((*s & 0xC0) != 0x80) ++charlen;
+        for (const byte *s = str; s < str + len; ++s) {
+            if (!UTF8_IS_CONT(*s)) {
+		++charlen;
+	    }
+	}
         q_ptr[4] = charlen;
         q_ptr[5] = charlen >> 8;
         q_ptr[6] = 1;

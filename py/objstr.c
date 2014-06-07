@@ -109,7 +109,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
             for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
 		ord &= ~mask;
 	    }
-	    while ((*s & 0xC0) == 0x80) {
+	    while (UTF8_IS_CONT(*s)) {
 		ord = (ord << 6) | (*s++ & 0x3F);
 	    }
 	    --s; // s will be incremented by the main loop
@@ -398,12 +398,22 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             // Assumes that the string is correctly formed - will run past the
             // end of the buffer if there aren't that many characters in it
             const char *s;
-            for (s=(const char *)self_data; index_val; ++s)
-                if ((*s & 0xC0) != 0x80) --index_val;
-            while ((*s & 0xC0) == 0x80) ++s; // Skip continuation bytes after the last lead byte
+            for (s=(const char *)self_data; index_val; ++s) {
+                if (!UTF8_IS_CONT(*s)) {
+		    --index_val;
+		}
+	    }
+	    // Skip continuation bytes after the last lead byte
+            while (UTF8_IS_CONT(*s)) {
+		++s;
+	    }
             int len = 1;
-            if (*s & 0x80)
-                for (char mask = 0x40; *s & mask; mask >>= 1) ++len; // Count the number of 1 bits (after the first)
+            if (UTF8_IS_NONASCII(*s)) {
+		// Count the number of 1 bits (after the first)
+                for (char mask = 0x40; *s & mask; mask >>= 1) {
+		    ++len;
+		}
+	    }
             return mp_obj_new_str(s, len, true); // This will create a one-character string
         }
     } else {
@@ -1769,8 +1779,11 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
             // Count non-continuation bytes so we know how long the string is in characters.
             const byte *endptr, *top = data + len;
             uint charlen = 0;
-            for (endptr = data; endptr < top; ++endptr)
-                if ((*endptr & 0xC0) != 0x80) ++charlen;
+            for (endptr = data; endptr < top; ++endptr) {
+                if (!UTF8_IS_CONT(*endptr)) {
+		    ++charlen;
+		}
+	    }
             o->charlen = charlen;
 	} else {
             // For byte strings, the 'character' length (really the "exposed length" or "Python length") equals the byte length.
