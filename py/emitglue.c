@@ -120,7 +120,9 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
 
     // TODO implement default kw args
-    assert(def_kw_args == MP_OBJ_NULL);
+    if (def_kw_args != MP_OBJ_NULL) {
+        mp_not_implemented("Default values for kw-only args");
+    }
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;
