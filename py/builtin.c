@@ -340,14 +340,23 @@ STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
-    uint len;
-    const char *str = mp_obj_str_get_data(o_in, &len);
-    if (len == 1) {
-        // don't sign extend when converting to ord
-        // TODO unicode
-        return mp_obj_new_int(((const byte*)str)[0]);
+    uint len, charlen;
+    const char *str = mp_obj_str_get_data_len(o_in, &len, &charlen);
+    if (charlen == 1) {
+        if (MP_OBJ_IS_STR(o_in) && (*str & 0x80)) {
+	    machine_int_t ord = *str++ & 0x7F;
+            for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
+		ord &= ~mask;
+	    }
+	    while ((*str & 0xC0) == 0x80) {
+		ord = (ord << 6) | (*str++ & 0x3F);
+	    }
+	    return mp_obj_new_int(ord);
+        } else {
+            return mp_obj_new_int(((const byte*)str)[0]);
+	}
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", charlen));
     }
 }
 

@@ -53,7 +53,6 @@ const mp_obj_t mp_const_empty_bytes;
 #define GET_STR_DATA_LEN_FLAGS(str_obj_in, str_data, str_len, str_flags) const byte *str_data; uint str_len; char str_flags; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len, &str_flags); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; str_flags = ((mp_obj_str_t*)str_obj_in)->flags; }
 
 // use this macro to extract the string data, lengths, and flags
-// NOTE: Currently buggy as regards qstr, which doesn't record a charlen
 #define GET_STR_INFO(str_obj_in, str_data, str_len, str_charlen, str_flags) const byte *str_data; uint str_len, str_charlen; char str_flags; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len, &str_flags); str_charlen = qstr_charlen(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_charlen = ((mp_obj_str_t*)str_obj_in)->charlen; str_data = ((mp_obj_str_t*)str_obj_in)->data; str_flags = ((mp_obj_str_t*)str_obj_in)->flags; }
 
 // don't use this macro, it's only for conversions
@@ -1858,6 +1857,16 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
     if (is_str_or_bytes(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;
+        return (const char*)s;
+    } else {
+        bad_implicit_conversion(self_in);
+    }
+}
+
+const char *mp_obj_str_get_data_len(mp_obj_t self_in, uint *len, uint *charlen) {
+    if (is_str_or_bytes(self_in)) {
+        GET_STR_INFO(self_in, s, l, cl, f);
+        *len = l; *charlen = cl;
         return (const char*)s;
     } else {
         bad_implicit_conversion(self_in);
