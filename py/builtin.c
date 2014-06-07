@@ -357,8 +357,9 @@ STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
-    uint len, charlen;
-    const char *str = mp_obj_str_get_data_len(o_in, &len, &charlen);
+    uint len;
+    const char *str = mp_obj_str_get_data(o_in, &len);
+    uint charlen = unichar_charlen(str, len);
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
             machine_int_t ord = *str++ & 0x7F;

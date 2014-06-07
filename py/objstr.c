@@ -1886,16 +1886,6 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
     }
 }
 
-const char *mp_obj_str_get_data_len(mp_obj_t self_in, uint *len, uint *charlen) {
-    if (is_str_or_bytes(self_in)) {
-        GET_STR_INFO(self_in, s, l, cl);
-        *len = l; *charlen = cl;
-        return (const char*)s;
-    } else {
-        bad_implicit_conversion(self_in);
-    }
-}
-
 /******************************************************************************/
 /* str iterator                                                               */
 
