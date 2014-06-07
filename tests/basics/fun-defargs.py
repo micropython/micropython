@@ -1,5 +1,5 @@
 def fun1(val=5):
-    print(5)
+    print(val)
 
 fun1()
 fun1(10)
