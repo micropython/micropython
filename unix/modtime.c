@@ -55,10 +55,8 @@ void msec_sleep_tv(struct timeval *tv) {
 #define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
 #endif
 
-#if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
-#define CLOCK_DIV 1000.0
-#elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32
-#define CLOCK_DIV 1.0
+#if defined(MP_CLOCKS_PER_SEC)
+#define CLOCK_DIV (MP_CLOCKS_PER_SEC / 1000.0)
 #else
 #error Unsupported clock() implementation
 #endif
