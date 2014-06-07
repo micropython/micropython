@@ -119,14 +119,14 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     // def_args must be MP_OBJ_NULL or a tuple
     assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
 
-    // TODO implement default kw args
-    assert(def_kw_args == MP_OBJ_NULL);
+    // def_kw_args must be MP_OBJ_NULL or a dict
+    assert(def_kw_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_kw_args, &mp_type_dict));
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
-            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, rc->u_byte.code);
+            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
             break;
         case MP_CODE_NATIVE_PY:
             fun = mp_make_function_n(rc->n_pos_args, rc->u_native.fun);

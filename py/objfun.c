@@ -249,6 +249,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
     //
+    // TODO Now that we allocate the state for the bytecode execution, we probably don't
+    // need extra_args anymore, and definitely don't need flat_args.
+    //
+    // TODO The following comment is obsolete and probably wrong:
     // extra_args layout: def_args, var_arg tuple, kwonly args, var_kw dict
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
@@ -260,7 +264,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
     const mp_obj_t *kwargs = args + n_args;
-    mp_obj_t *extra_args = self->extra_args + self->n_def_args;
+    mp_obj_t *extra_args = self->extra_args + self->n_def_args + self->has_def_kw_args;
     uint n_extra_args = 0;
 
     // check positional arguments
@@ -295,7 +299,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
 
     // check keyword arguments
 
-    if (n_kw != 0) {
+    if (n_kw != 0 || self->has_def_kw_args) {
         // We cannot use dynamically-sized array here, because GCC indeed
         // deallocates it on leaving defining scope (unlike most static stack allocs).
         // So, we have 2 choices: allocate it unconditionally at the top of function
@@ -355,10 +359,19 @@ continue2:;
         }
 
         // Check that all mandatory keyword args are specified
+        // Fill in default kw args if we have them
         for (int i = 0; i < self->n_kwonly_args; i++) {
             if (flat_args[self->n_pos_args + i] == MP_OBJ_NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+                mp_map_elem_t *elem = NULL;
+                if (self->has_def_kw_args) {
+                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[self->n_def_args])->map, MP_OBJ_NEW_QSTR(self->args[self->n_pos_args + i]), MP_MAP_LOOKUP);
+                }
+                if (elem != NULL) {
+                    flat_args[self->n_pos_args + i] = elem->value;
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+                }
             }
         }
 
@@ -513,7 +526,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     .binary_op = fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
     uint n_def_args = 0;
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -521,6 +534,9 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
         assert(MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
         n_def_args = def_args->len;
         n_extra_args = def_args->len;
+    }
+    if (def_kw_args != MP_OBJ_NULL) {
+        n_extra_args += 1;
     }
     if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
         n_extra_args += 1;
@@ -535,18 +551,24 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
     o->n_pos_args = n_pos_args;
     o->n_kwonly_args = n_kwonly_args;
     o->n_def_args = n_def_args;
+    o->has_def_kw_args = def_kw_args != MP_OBJ_NULL;
     o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
     o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->bytecode = code;
-    memset(o->extra_args, 0, n_extra_args * sizeof(mp_obj_t));
+    mp_obj_t *extra_args = o->extra_args;
+    memset(extra_args, 0, n_extra_args * sizeof(mp_obj_t));
     if (def_args != MP_OBJ_NULL) {
-        memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
+        memcpy(extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
+        extra_args += n_def_args;
+    }
+    if (def_kw_args != MP_OBJ_NULL) {
+        *extra_args++ = def_kw_args;
     }
     if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        o->extra_args[n_def_args] = MP_OBJ_NULL;
+        *extra_args++ = MP_OBJ_NULL;
     }
     if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        o->extra_args[n_extra_args - 1] = MP_OBJ_NULL;
+        *extra_args = MP_OBJ_NULL;
     }
     return o;
 }
