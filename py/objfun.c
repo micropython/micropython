@@ -248,12 +248,6 @@ arg_error:
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    //
-    // TODO Now that we allocate the state for the bytecode execution, we probably don't
-    // need extra_args anymore, and definitely don't need flat_args.
-    //
-    // TODO The following comment is obsolete and probably wrong:
-    // extra_args layout: def_args, var_arg tuple, kwonly args, var_kw dict
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
@@ -262,147 +256,6 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     dump_args(args + n_args, n_kw * 2);
     mp_obj_fun_bc_t *self = self_in;
     DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
-
-    const mp_obj_t *kwargs = args + n_args;
-    mp_obj_t *extra_args = self->extra_args + self->n_def_args + self->has_def_kw_args;
-    uint n_extra_args = 0;
-
-    // check positional arguments
-
-    if (n_args > self->n_pos_args) {
-        // given more than enough arguments
-        if (!self->takes_var_args) {
-            fun_pos_args_mismatch(self, self->n_pos_args, n_args);
-        }
-        // put extra arguments in varargs tuple
-        *extra_args = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
-        n_extra_args = 1;
-        n_args = self->n_pos_args;
-    } else {
-        if (self->takes_var_args) {
-            DEBUG_printf("passing empty tuple as *args\n");
-            *extra_args = mp_const_empty_tuple;
-            n_extra_args = 1;
-        }
-        // Apply processing and check below only if we don't have kwargs,
-        // otherwise, kw handling code below has own extensive checks.
-        if (n_kw == 0) {
-            if (n_args >= self->n_pos_args - self->n_def_args) {
-                // given enough arguments, but may need to use some default arguments
-                extra_args -= self->n_pos_args - n_args;
-                n_extra_args += self->n_pos_args - n_args;
-            } else {
-                fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
-            }
-        }
-    }
-
-    // check keyword arguments
-
-    if (n_kw != 0 || self->has_def_kw_args) {
-        // We cannot use dynamically-sized array here, because GCC indeed
-        // deallocates it on leaving defining scope (unlike most static stack allocs).
-        // So, we have 2 choices: allocate it unconditionally at the top of function
-        // (wastes stack), or use alloca which is guaranteed to dealloc on func exit.
-        //mp_obj_t flat_args[self->n_args];
-        mp_obj_t *flat_args = alloca((self->n_pos_args + self->n_kwonly_args) * sizeof(mp_obj_t));
-        for (int i = self->n_pos_args + self->n_kwonly_args - 1; i >= 0; i--) {
-            flat_args[i] = MP_OBJ_NULL;
-        }
-        memcpy(flat_args, args, sizeof(*args) * n_args);
-        DEBUG_printf("Initial args: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
-
-        mp_obj_t dict = MP_OBJ_NULL;
-        if (self->takes_kw_args) {
-            dict = mp_obj_new_dict(n_kw); // TODO: better go conservative with 0?
-        }
-        for (uint i = 0; i < n_kw; i++) {
-            qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
-            for (uint j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
-                if (arg_name == self->args[j]) {
-                    if (flat_args[j] != MP_OBJ_NULL) {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "function got multiple values for argument '%s'", qstr_str(arg_name)));
-                    }
-                    flat_args[j] = kwargs[2 * i + 1];
-                    goto continue2;
-                }
-            }
-            // Didn't find name match with positional args
-            if (!self->takes_kw_args) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
-            }
-            mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
-continue2:;
-        }
-        DEBUG_printf("Args with kws flattened: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
-
-        // Now fill in defaults for positional args
-        mp_obj_t *d = &flat_args[self->n_pos_args - 1];
-        mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
-        for (int i = self->n_def_args; i > 0; i--, d--, s--) {
-            if (*d == MP_OBJ_NULL) {
-                *d = *s;
-            }
-        }
-        DEBUG_printf("Args after filling defaults: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
-
-        // Check that all mandatory positional args are specified
-        while (d >= flat_args) {
-            if (*d-- == MP_OBJ_NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function missing required positional argument #%d", d - flat_args));
-            }
-        }
-
-        // Check that all mandatory keyword args are specified
-        // Fill in default kw args if we have them
-        for (int i = 0; i < self->n_kwonly_args; i++) {
-            if (flat_args[self->n_pos_args + i] == MP_OBJ_NULL) {
-                mp_map_elem_t *elem = NULL;
-                if (self->has_def_kw_args) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[self->n_def_args])->map, MP_OBJ_NEW_QSTR(self->args[self->n_pos_args + i]), MP_MAP_LOOKUP);
-                }
-                if (elem != NULL) {
-                    flat_args[self->n_pos_args + i] = elem->value;
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
-                }
-            }
-        }
-
-        args = flat_args;
-        n_args = self->n_pos_args + self->n_kwonly_args;
-
-        if (self->takes_kw_args) {
-            extra_args[n_extra_args] = dict;
-            n_extra_args += 1;
-        }
-    } else {
-        // no keyword arguments given
-        if (self->n_kwonly_args != 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "function missing keyword-only argument"));
-        }
-        if (self->takes_kw_args) {
-            extra_args[n_extra_args] = mp_obj_new_dict(0);
-            n_extra_args += 1;
-        }
-    }
-
-    mp_obj_dict_t *old_globals = mp_globals_get();
-    mp_globals_set(self->globals);
-    mp_obj_t result;
-    DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
-    dump_args(args, n_args);
-    dump_args(extra_args, n_extra_args);
-
-    // At this point the args have all been processed and we are ready to
-    // execute the bytecode.  But we must first build the execution context.
 
     const byte *ip = self->bytecode;
 
@@ -415,12 +268,12 @@ continue2:;
     machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
     ip += 4;
 
-    // allocate state for locals and stack
 #if VM_DETECT_STACK_OVERFLOW
     n_state += 1;
 #endif
 
-    int state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    // allocate state for locals and stack
+    uint state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state *code_state;
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var(mp_code_state, byte, state_size);
@@ -433,17 +286,129 @@ continue2:;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
     code_state->n_state = n_state;
 
-    // init args
+    // zero out the local stack to begin with
+    memset(code_state->state, 0, n_state * sizeof(*code_state->state));
+
+    const mp_obj_t *kwargs = args + n_args;
+
+    // var_pos_kw_args points to the stack where the var-args tuple, and var-kw dict, should go (if they are needed)
+    mp_obj_t *var_pos_kw_args = &code_state->state[n_state - 1 - self->n_pos_args - self->n_kwonly_args];
+
+    // check positional arguments
+
+    if (n_args > self->n_pos_args) {
+        // given more than enough arguments
+        if (!self->takes_var_args) {
+            fun_pos_args_mismatch(self, self->n_pos_args, n_args);
+        }
+        // put extra arguments in varargs tuple
+        *var_pos_kw_args-- = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
+        n_args = self->n_pos_args;
+    } else {
+        if (self->takes_var_args) {
+            DEBUG_printf("passing empty tuple as *args\n");
+            *var_pos_kw_args-- = mp_const_empty_tuple;
+        }
+        // Apply processing and check below only if we don't have kwargs,
+        // otherwise, kw handling code below has own extensive checks.
+        if (n_kw == 0 && !self->has_def_kw_args) {
+            if (n_args >= self->n_pos_args - self->n_def_args) {
+                // given enough arguments, but may need to use some default arguments
+                for (uint i = n_args; i < self->n_pos_args; i++) {
+                    code_state->state[n_state - 1 - i] = self->extra_args[i - (self->n_pos_args - self->n_def_args)];
+                }
+            } else {
+                fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
+            }
+        }
+    }
+
+    // copy positional args into state
     for (uint i = 0; i < n_args; i++) {
         code_state->state[n_state - 1 - i] = args[i];
     }
-    for (uint i = 0; i < n_extra_args; i++) {
-        code_state->state[n_state - 1 - n_args - i] = extra_args[i];
-    }
 
-    // set rest of state to MP_OBJ_NULL
-    for (uint i = 0; i < n_state - n_args - n_extra_args; i++) {
-        code_state->state[i] = MP_OBJ_NULL;
+    // check keyword arguments
+
+    if (n_kw != 0 || self->has_def_kw_args) {
+        DEBUG_printf("Initial args: ");
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+
+        mp_obj_t dict = MP_OBJ_NULL;
+        if (self->takes_kw_args) {
+            dict = mp_obj_new_dict(n_kw); // TODO: better go conservative with 0?
+            *var_pos_kw_args = dict;
+        }
+
+        for (uint i = 0; i < n_kw; i++) {
+            qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
+            for (uint j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
+                if (arg_name == self->args[j]) {
+                    if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                            "function got multiple values for argument '%s'", qstr_str(arg_name)));
+                    }
+                    code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
+                    goto continue2;
+                }
+            }
+            // Didn't find name match with positional args
+            if (!self->takes_kw_args) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
+            }
+            mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
+continue2:;
+        }
+
+        DEBUG_printf("Args with kws flattened: ");
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+
+        // fill in defaults for positional args
+        mp_obj_t *d = &code_state->state[n_state - self->n_pos_args];
+        mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
+        for (int i = self->n_def_args; i > 0; i--, d++, s--) {
+            if (*d == MP_OBJ_NULL) {
+                *d = *s;
+            }
+        }
+
+        DEBUG_printf("Args after filling default positional: ");
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+
+        // Check that all mandatory positional args are specified
+        while (d < &code_state->state[n_state]) {
+            if (*d++ == MP_OBJ_NULL) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "function missing required positional argument #%d", &code_state->state[n_state] - d));
+            }
+        }
+
+        // Check that all mandatory keyword args are specified
+        // Fill in default kw args if we have them
+        for (uint i = 0; i < self->n_kwonly_args; i++) {
+            if (code_state->state[n_state - 1 - self->n_pos_args - i] == MP_OBJ_NULL) {
+                mp_map_elem_t *elem = NULL;
+                if (self->has_def_kw_args) {
+                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[self->n_def_args])->map, MP_OBJ_NEW_QSTR(self->args[self->n_pos_args + i]), MP_MAP_LOOKUP);
+                }
+                if (elem != NULL) {
+                    code_state->state[n_state - 1 - self->n_pos_args - i] = elem->value;
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+                }
+            }
+        }
+
+    } else {
+        // no keyword arguments given
+        if (self->n_kwonly_args != 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                "function missing keyword-only argument"));
+        }
+        if (self->takes_kw_args) {
+            *var_pos_kw_args = mp_obj_new_dict(0);
+        }
     }
 
     // bytecode prelude: initialise closed over variables
@@ -452,10 +417,18 @@ continue2:;
         code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
+    // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;
 
-    // execute the byte code
+    DEBUG_printf("Calling: n_pos_args=%d, n_kwonly_args=%d\n", self->n_pos_args, self->n_kwonly_args);
+    dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+    dump_args(code_state->state, n_state);
+
+    // execute the byte code with the correct globals context
+    mp_obj_dict_t *old_globals = mp_globals_get();
+    mp_globals_set(self->globals);
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
+    mp_globals_set(old_globals);
 
 #if VM_DETECT_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
@@ -467,10 +440,10 @@ continue2:;
     // We can't check the case when an exception is returned in state[n_state - 1]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
-    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && n_args == 0 && n_extra_args == 0)) {
+    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && self->n_pos_args + self->n_kwonly_args == 0)) {
         // Just check to see that we have at least 1 null object left in the state.
         bool overflow = true;
-        for (uint i = 0; i < n_state - n_args - n_extra_args; i++) {
+        for (uint i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
             if (code_state->state[i] == MP_OBJ_NULL) {
                 overflow = false;
                 break;
@@ -483,6 +456,7 @@ continue2:;
     }
 #endif
 
+    mp_obj_t result;
     switch (vm_return_kind) {
         case MP_VM_RETURN_NORMAL:
             // return value is in *sp
@@ -506,8 +480,6 @@ continue2:;
     if (state_size > VM_MAX_STATE_ON_STACK) {
         m_del_var(mp_code_state, byte, state_size, code_state);
     }
-
-    mp_globals_set(old_globals);
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
@@ -538,12 +510,6 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
     if (def_kw_args != MP_OBJ_NULL) {
         n_extra_args += 1;
     }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        n_extra_args += 1;
-    }
-    if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
-        n_extra_args += 1;
-    }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
     o->base.type = &mp_type_fun_bc;
     o->globals = mp_globals_get();
@@ -555,20 +521,11 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
     o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
     o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->bytecode = code;
-    mp_obj_t *extra_args = o->extra_args;
-    memset(extra_args, 0, n_extra_args * sizeof(mp_obj_t));
     if (def_args != MP_OBJ_NULL) {
-        memcpy(extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
-        extra_args += n_def_args;
+        memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
     }
     if (def_kw_args != MP_OBJ_NULL) {
-        *extra_args++ = def_kw_args;
-    }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        *extra_args++ = MP_OBJ_NULL;
-    }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        *extra_args = MP_OBJ_NULL;
+        o->extra_args[n_def_args] = def_kw_args;
     }
     return o;
 }
