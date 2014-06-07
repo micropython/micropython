@@ -546,7 +546,13 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         }
                     }
                     if (c != MP_LEXER_CHAR_EOF) {
-                        vstr_add_char(&lex->vstr, c);
+			if (c < 0x110000 && !is_bytes) {
+			    vstr_add_char(&lex->vstr, c);
+			} else if (c < 0x100 && is_bytes) {
+			    vstr_add_byte(&lex->vstr, c);
+			} else {
+			    assert(!"TODO: Throw an error, invalid escape code probably");
+			}
                     }
                 } else {
                     vstr_add_char(&lex->vstr, CUR_CHAR(lex));
