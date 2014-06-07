@@ -83,40 +83,33 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
         quote_char = '"';
     }
     print(env, "%c", quote_char);
-    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
-        if (*s == quote_char) {
-            print(env, "\\%c", quote_char);
-        } else if (*s == '\\') {
-            print(env, "\\\\");
-        } else if (32 <= *s && *s <= 126) {
-            print(env, "%c", *s);
-        } else if (*s == '\n') {
-            print(env, "\\n");
-        } else if (*s == '\r') {
-            print(env, "\\r");
-        } else if (*s == '\t') {
-            print(env, "\\t");
-        } else if (*s == '\x7f') {
-            print(env, "\\x7f");
-        } else if (is_bytes) {
-            print(env, "\\x%02x", *s);
+    const char *s = (const char *)str_data, *top = (const char *)str_data + str_len;
+    while (s < top) {
+        unichar ch;
+        if (is_bytes) {
+            ch = *(unsigned char *)s++; // Don't sign-extend bytes
         } else {
-            // Non-ASCII character. Decode UTF-8.
-            machine_int_t ord = *s++ & 0x7F;
-            for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
-                ord &= ~mask;
-            }
-            while (UTF8_IS_CONT(*s)) {
-                ord = (ord << 6) | (*s++ & 0x3F);
-            }
-            --s; // s will be incremented by the main loop
-            if (ord < 0x100) {
-                print(env, "\\x%02x", ord);
-            } else if (ord < 0x10000) {
-                print(env, "\\u%04x", ord);
-            } else {
-                print(env, "\\U%08x", ord);
-            }
+            ch = utf8_get_char(s);
+            s = utf8_next_char(s);
+        }
+        if (ch == quote_char) {
+            print(env, "\\%c", quote_char);
+        } else if (ch == '\\') {
+            print(env, "\\\\");
+        } else if (32 <= ch && ch <= 126) {
+            print(env, "%c", ch);
+        } else if (ch == '\n') {
+            print(env, "\\n");
+        } else if (ch == '\r') {
+            print(env, "\\r");
+        } else if (ch == '\t') {
+            print(env, "\\t");
+        } else if (ch < 0x100) {
+            print(env, "\\x%02x", ch);
+        } else if (ch < 0x10000) {
+            print(env, "\\u%04x", ch);
+        } else {
+            print(env, "\\U%08x", ch);
         }
     }
     print(env, "%c", quote_char);
