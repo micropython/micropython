@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"

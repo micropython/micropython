@@ -114,7 +114,7 @@ void msec_sleep(double msec);
 
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
-
+#include <alloca.h> //for alloca()
 
 // Functions implemented in platform code
 
