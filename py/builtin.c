@@ -178,18 +178,18 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     } else if (c < 0x800) {
         str[0] = (c >> 6) | 0xC0;
         str[1] = (c & 0x3F) | 0x80;
-	len = 2;
+        len = 2;
     } else if (c < 0x10000) {
         str[0] = (c >> 12) | 0xE0;
         str[1] = ((c >> 6) & 0x3F) | 0x80;
         str[2] = (c & 0x3F) | 0x80;
-	len = 3;
+        len = 3;
     } else if (c < 0x110000) {
         str[0] = (c >> 18) | 0xF0;
         str[1] = ((c >> 12) & 0x3F) | 0x80;
         str[2] = ((c >> 6) & 0x3F) | 0x80;
         str[3] = (c & 0x3F) | 0x80;
-	len = 4;
+        len = 4;
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
     }
@@ -361,17 +361,17 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     const char *str = mp_obj_str_get_data_len(o_in, &len, &charlen);
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
-	    machine_int_t ord = *str++ & 0x7F;
+            machine_int_t ord = *str++ & 0x7F;
             for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
-		ord &= ~mask;
-	    }
-	    while (UTF8_IS_CONT(*str)) {
-		ord = (ord << 6) | (*str++ & 0x3F);
-	    }
-	    return mp_obj_new_int(ord);
+                ord &= ~mask;
+            }
+            while (UTF8_IS_CONT(*str)) {
+                ord = (ord << 6) | (*str++ & 0x3F);
+            }
+            return mp_obj_new_int(ord);
         } else {
             return mp_obj_new_int(((const byte*)str)[0]);
-	}
+        }
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", charlen));
     }
