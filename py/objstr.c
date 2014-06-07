@@ -1746,12 +1746,17 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     o->len = len;
     o->flags = 1;
     if (data) {
-        // Count non-continuation bytes so we know how long the string is in characters.
-        const byte *endptr, *top = data + len;
-        uint charlen = 0;
-        for (endptr = data; endptr < top; ++endptr)
-            if ((*endptr & 0xC0) != 0x80) ++charlen;
-        o->charlen = charlen;
+        if (MP_OBJ_IS_STR(o)) {
+            // Count non-continuation bytes so we know how long the string is in characters.
+            const byte *endptr, *top = data + len;
+            uint charlen = 0;
+            for (endptr = data; endptr < top; ++endptr)
+                if ((*endptr & 0xC0) != 0x80) ++charlen;
+            o->charlen = charlen;
+	} else {
+            // For byte strings, the 'character' length (really the "exposed length" or "Python length") equals the byte length.
+            o->charlen = len;
+	}
         o->hash = qstr_compute_hash(data, len);
         byte *p = m_new(byte, len + 1);
         o->data = p;
