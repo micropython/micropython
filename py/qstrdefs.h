@@ -343,6 +343,9 @@ Q(byteorder)
 Q(big)
 Q(exit)
 Q(little)
+#ifdef MICROPY_PY_SYS_PLATFORM
+Q(platform)
+#endif
 Q(stdin)
 Q(stdout)
 Q(stderr)

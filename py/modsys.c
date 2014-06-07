@@ -51,6 +51,9 @@ mp_obj_list_t mp_sys_argv_obj;
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
 #undef I
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
+#ifdef MICROPY_PY_SYS_PLATFORM
+STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
+#endif
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
@@ -59,6 +62,9 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&mp_sys_argv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
+#ifdef MICROPY_PY_SYS_PLATFORM
+    { MP_OBJ_NEW_QSTR(MP_QSTR_platform), (mp_obj_t)&platform_obj },
+#endif
 #if MP_ENDIANNESS_LITTLE
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_little) },
 #else
