@@ -30,13 +30,10 @@ typedef struct _mp_obj_str_t {
     machine_uint_t hash : 16;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     machine_uint_t len : 16;
-    // charlen == number of characters in the string - charlen <= len - 1, and is the value returned by len() in Python
-    machine_uint_t charlen : 16;
     const void *data; //Character data is encoded UTF-8 and should not be blindly indexed.
 } mp_obj_str_t;
 
-// This is valid ONLY for pure-ASCII strings!
-#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, sizeof(str) - 1, (const byte*)str};
+#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str};
 
 mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len);

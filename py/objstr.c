@@ -52,9 +52,6 @@ const mp_obj_t mp_const_empty_bytes;
 // use this macro to extract the string data and length
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
-// use this macro to extract the string data and both lengths
-#define GET_STR_INFO(str_obj_in, str_data, str_len, str_charlen) const byte *str_data; uint str_len, str_charlen; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); str_charlen = qstr_charlen(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_charlen = ((mp_obj_str_t*)str_obj_in)->charlen; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
-
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
@@ -365,7 +362,7 @@ uncomparable:
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
-    GET_STR_INFO(self_in, self_data, self_len, self_charlen);
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
@@ -378,7 +375,8 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
-        uint index_val = mp_get_index(type, self_charlen, index, false);
+        // TODO: Don't use mp_get_index() here
+        uint index_val = mp_get_index(type, unichar_charlen((const char *)self_data, self_len), index, false);
         if (type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
         } else {
@@ -1734,7 +1732,7 @@ const mp_obj_type_t mp_type_bytes = {
 };
 
 // the zero-length bytes
-STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, 0, NULL};
+STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
@@ -1761,20 +1759,6 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     o->base.type = type;
     o->len = len;
     if (data) {
-        if (MP_OBJ_IS_STR(o)) {
-            // Count non-continuation bytes so we know how long the string is in characters.
-            const byte *endptr, *top = data + len;
-            uint charlen = 0;
-            for (endptr = data; endptr < top; ++endptr) {
-                if (!UTF8_IS_CONT(*endptr)) {
-                    ++charlen;
-                }
-            }
-            o->charlen = charlen;
-        } else {
-            // For byte strings, the 'character' length (really the "exposed length" or "Python length") equals the byte length.
-            o->charlen = len;
-        }
         o->hash = qstr_compute_hash(data, len);
         byte *p = m_new(byte, len + 1);
         o->data = p;
@@ -1844,8 +1828,8 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
 uint mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
-        GET_STR_INFO(self_in, self_data, self_len, self_charlen); (void)self_data;
-        return self_charlen;
+        GET_STR_DATA_LEN(self_in, self_data, self_len);
+        return unichar_charlen((const char *)self_data, self_len);
     } else {
         bad_implicit_conversion(self_in);
     }
