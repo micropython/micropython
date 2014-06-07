@@ -170,13 +170,30 @@ STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
-    int ord = mp_obj_get_int(o_in);
-    if (0 <= ord && ord <= 0x10ffff) {
-        char str[1] = {ord};
-        return mp_obj_new_str(str, 1, true);
+    int c = mp_obj_get_int(o_in);
+    char str[4];
+    int len = 0;
+    if (c < 0x80) {
+        *str = c; len = 1;
+    } else if (c < 0x800) {
+        str[0] = (c >> 6) | 0xC0;
+        str[1] = (c & 0x3F) | 0x80;
+	len = 2;
+    } else if (c < 0x10000) {
+        str[0] = (c >> 12) | 0xE0;
+        str[1] = ((c >> 6) & 0x3F) | 0x80;
+        str[2] = (c & 0x3F) | 0x80;
+	len = 3;
+    } else if (c < 0x110000) {
+        str[0] = (c >> 18) | 0xF0;
+        str[1] = ((c >> 12) & 0x3F) | 0x80;
+        str[2] = ((c >> 6) & 0x3F) | 0x80;
+        str[3] = (c & 0x3F) | 0x80;
+	len = 4;
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
     }
+    return mp_obj_new_str(str, len, true);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
