@@ -50,13 +50,10 @@ const mp_obj_t mp_const_empty_bytes;
 #define GET_STR_LEN(str_obj_in, str_len) uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
 
 // use this macro to extract the string data and length
-#define GET_STR_DATA_LEN_FLAGS(str_obj_in, str_data, str_len, str_flags) const byte *str_data; uint str_len; char str_flags; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len, &str_flags); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; str_flags = ((mp_obj_str_t*)str_obj_in)->flags; }
+#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
-// use this macro to extract the string data, lengths, and flags
-#define GET_STR_INFO(str_obj_in, str_data, str_len, str_charlen, str_flags) const byte *str_data; uint str_len, str_charlen; char str_flags; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len, &str_flags); str_charlen = qstr_charlen(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_charlen = ((mp_obj_str_t*)str_obj_in)->charlen; str_data = ((mp_obj_str_t*)str_obj_in)->data; str_flags = ((mp_obj_str_t*)str_obj_in)->flags; }
-
-// don't use this macro, it's only for conversions
-#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) GET_STR_DATA_LEN_FLAGS(str_obj_in, str_data, str_len, str_data ## _flags); assert(str_data ## _flags == 1);
+// use this macro to extract the string data and both lengths
+#define GET_STR_INFO(str_obj_in, str_data, str_len, str_charlen) const byte *str_data; uint str_len, str_charlen; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); str_charlen = qstr_charlen(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_charlen = ((mp_obj_str_t*)str_obj_in)->charlen; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
@@ -101,32 +98,32 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
             print(env, "\\t");
         } else if (*s == '\x7f') {
             print(env, "\\x7f");
-	} else if (is_bytes) {
+        } else if (is_bytes) {
             print(env, "\\x%02x", *s);
         } else {
             // Non-ASCII character. Decode UTF-8.
-	    machine_int_t ord = *s++ & 0x7F;
+            machine_int_t ord = *s++ & 0x7F;
             for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
-		ord &= ~mask;
-	    }
-	    while (UTF8_IS_CONT(*s)) {
-		ord = (ord << 6) | (*s++ & 0x3F);
-	    }
-	    --s; // s will be incremented by the main loop
-	    if (ord < 0x100) {
+                ord &= ~mask;
+            }
+            while (UTF8_IS_CONT(*s)) {
+                ord = (ord << 6) | (*s++ & 0x3F);
+            }
+            --s; // s will be incremented by the main loop
+            if (ord < 0x100) {
                 print(env, "\\x%02x", ord);
-	    } else if (ord < 0x10000) {
+            } else if (ord < 0x10000) {
                 print(env, "\\u%04x", ord);
-	    } else {
+            } else {
                 print(env, "\\U%08x", ord);
-	    }
+            }
         }
     }
     print(env, "%c", quote_char);
 }
 
 STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    GET_STR_DATA_LEN_FLAGS(self_in, str_data, str_len, str_flags);
+    GET_STR_DATA_LEN(self_in, str_data, str_len);
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
@@ -170,7 +167,6 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
             mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_str, NULL, str_len);
             o->data = str_data;
             o->hash = str_hash;
-            o->flags = 1;
             return o;
         }
 
@@ -199,7 +195,6 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
         mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len);
         o->data = str_data;
         o->hash = str_hash;
-        o->flags = 1;
         return o;
     }
 
@@ -377,7 +372,7 @@ uncomparable:
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
-    GET_STR_INFO(self_in, self_data, self_len, self_charlen, self_flags);
+    GET_STR_INFO(self_in, self_data, self_len, self_charlen);
     if (value == MP_OBJ_SENTINEL) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
@@ -400,20 +395,20 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             const char *s;
             for (s=(const char *)self_data; index_val; ++s) {
                 if (!UTF8_IS_CONT(*s)) {
-		    --index_val;
-		}
-	    }
-	    // Skip continuation bytes after the last lead byte
+                    --index_val;
+                }
+            }
+            // Skip continuation bytes after the last lead byte
             while (UTF8_IS_CONT(*s)) {
-		++s;
-	    }
+                ++s;
+            }
             int len = 1;
             if (UTF8_IS_NONASCII(*s)) {
-		// Count the number of 1 bits (after the first)
+                // Count the number of 1 bits (after the first)
                 for (char mask = 0x40; *s & mask; mask >>= 1) {
-		    ++len;
-		}
-	    }
+                    ++len;
+                }
+            }
             return mp_obj_new_str(s, len, true); // This will create a one-character string
         }
     } else {
@@ -1746,7 +1741,7 @@ const mp_obj_type_t mp_type_bytes = {
 };
 
 // the zero-length bytes
-STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, 0, 1, NULL};
+STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, 0, NULL};
 const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
@@ -1765,7 +1760,6 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     o->hash = qstr_compute_hash(o->data, o->len);
     byte *p = (byte*)o->data;
     p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
-    o->flags = 1;
     return o;
 }
 
@@ -1773,7 +1767,6 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
-    o->flags = 1;
     if (data) {
         if (MP_OBJ_IS_STR(o)) {
             // Count non-continuation bytes so we know how long the string is in characters.
@@ -1781,14 +1774,14 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
             uint charlen = 0;
             for (endptr = data; endptr < top; ++endptr) {
                 if (!UTF8_IS_CONT(*endptr)) {
-		    ++charlen;
-		}
-	    }
+                    ++charlen;
+                }
+            }
             o->charlen = charlen;
-	} else {
+        } else {
             // For byte strings, the 'character' length (really the "exposed length" or "Python length") equals the byte length.
             o->charlen = len;
-	}
+        }
         o->hash = qstr_compute_hash(data, len);
         byte *p = m_new(byte, len + 1);
         o->data = p;
@@ -1858,7 +1851,7 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
 uint mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
-        GET_STR_INFO(self_in, self_data, self_len, self_charlen, self_flags); (void)self_data;
+        GET_STR_INFO(self_in, self_data, self_len, self_charlen); (void)self_data;
         return self_charlen;
     } else {
         bad_implicit_conversion(self_in);
@@ -1902,7 +1895,7 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
 
 const char *mp_obj_str_get_data_len(mp_obj_t self_in, uint *len, uint *charlen) {
     if (is_str_or_bytes(self_in)) {
-        GET_STR_INFO(self_in, s, l, cl, f);
+        GET_STR_INFO(self_in, s, l, cl);
         *len = l; *charlen = cl;
         return (const char*)s;
     } else {

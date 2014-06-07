@@ -60,7 +60,7 @@ def do_work(infiles):
         qhash = compute_hash(qstr)
         qlen = len(qstr)
         qchlen = len(qstr.decode("utf-8"))
-        print('Q({}, (const byte*)"\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\1" "{}")'.format(ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qchlen & 0xff, (qchlen >> 8) & 0xff, qstr))
+        print('Q({}, (const byte*)"\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}" "{}")'.format(ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qchlen & 0xff, (qchlen >> 8) & 0xff, qstr))
 
     return True
 

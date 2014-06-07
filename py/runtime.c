@@ -101,17 +101,15 @@ void mp_deinit(void) {
 
 mp_obj_t mp_load_const_int(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
-    uint len; char flags;
-    const byte* data = qstr_data(qstr, &len, &flags);
-    assert(flags == 1); //TODO: Support multibyte strings
+    uint len;
+    const byte* data = qstr_data(qstr, &len);
     return mp_parse_num_integer((const char*)data, len, 0);
 }
 
 mp_obj_t mp_load_const_dec(qstr qstr) {
     DEBUG_OP_printf("load '%s'\n", qstr_str(qstr));
-    uint len; char flags;
-    const byte* data = qstr_data(qstr, &len, &flags);
-    assert(flags == 1); //TODO: Support multibyte strings
+    uint len;
+    const byte* data = qstr_data(qstr, &len);
     return mp_parse_num_decimal((const char*)data, len, true, false);
 }
 
@@ -122,9 +120,8 @@ mp_obj_t mp_load_const_str(qstr qstr) {
 
 mp_obj_t mp_load_const_bytes(qstr qstr) {
     DEBUG_OP_printf("load b'%s'\n", qstr_str(qstr));
-    uint len; char flags;
-    const byte* data = qstr_data(qstr, &len, &flags);
-    assert(flags == 1); //TODO: Support multibyte strings
+    uint len;
+    const byte *data = qstr_data(qstr, &len);
     return mp_obj_new_bytes(data, len);
 }
 
