@@ -37,7 +37,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
