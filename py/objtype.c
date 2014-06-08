@@ -103,6 +103,7 @@ struct class_lookup_data {
     qstr attr;
     machine_uint_t meth_offset;
     mp_obj_t *dest;
+    bool is_type;
 };
 
 STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_type_t *type) {
@@ -128,18 +129,28 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(lookup->attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 lookup->dest[0] = elem->value;
-                if (lookup->obj != MP_OBJ_NULL && is_native_type(type)) {
+                if (lookup->is_type) {
+                    // If we look up class method, we need to pass original type there,
+                    // not type where we found a class method.
+                    const mp_obj_type_t *org_type = (const mp_obj_type_t*)lookup->obj;
+                    instance_convert_return_attr(NULL, org_type, elem->value, lookup->dest);
+                } else if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type)) {
                     instance_convert_return_attr(lookup->obj->subobj[0], type, elem->value, lookup->dest);
                 } else {
                     instance_convert_return_attr(lookup->obj, type, elem->value, lookup->dest);
                 }
+#if DEBUG_PRINT
+                printf("mp_obj_class_lookup: Returning: ");
+                mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
+                mp_obj_print(lookup->dest[1], PRINT_REPR); printf("\n");
+#endif
                 return;
             }
         }
 
         // Try this for completeness, but all native methods should be statically defined
         // in locals_dict, and would be handled by above.
-        if (lookup->obj != MP_OBJ_NULL && is_native_type(type)) {
+        if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type)) {
             mp_load_method_maybe(lookup->obj->subobj[0], lookup->attr, lookup->dest);
             if (lookup->dest[0] != MP_OBJ_NULL) {
                 return;
@@ -672,10 +683,11 @@ STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 #endif
     struct class_lookup_data lookup = {
-        .obj = NULL,
+        .obj = self_in,
         .attr = attr,
         .meth_offset = 0,
         .dest = dest,
+        .is_type = true,
     };
     mp_obj_class_lookup(&lookup, self);
 }
