@@ -130,7 +130,7 @@ def main():
                 test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc')
             else:
                 # run pyboard tests
-                test_dirs = ('basics', 'float', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs = ('basics', 'micropython', 'float', 'pyb', 'pybnative', 'inlineasm')
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
