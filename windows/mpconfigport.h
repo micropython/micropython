@@ -92,7 +92,7 @@ void msec_sleep(double msec);
 #endif
 
 
-//  CL specific overrides from mpconfig
+// CL specific overrides from mpconfig
 
 #define NORETURN                   __declspec(noreturn)
 #define MICROPY_PORT_CONSTANTS     { "dummy", 0 } //can't have zero-sized array
@@ -114,7 +114,7 @@ void msec_sleep(double msec);
 
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
-#include <alloca.h> //for alloca()
+#include <malloc.h> //for alloca()
 
 // Functions implemented in platform code
 
