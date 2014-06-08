@@ -99,3 +99,11 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+
+
+/* We need the correct header for alloca() */
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#else
+#include <alloca.h>
+#endif
