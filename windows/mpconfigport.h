@@ -76,6 +76,9 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
 
+// We need to provide a declaration/definition of alloca()
+#include <malloc.h>
+
 #include "realpath.h"
 #include "init.h"
 
@@ -114,7 +117,6 @@ void msec_sleep(double msec);
 
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
-#include <malloc.h> //for alloca()
 
 // Functions implemented in platform code
 
