@@ -43,6 +43,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_PLATFORM     "linux"
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
@@ -98,3 +99,10 @@ extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+
+// We need to provide a declaration/definition of alloca()
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#else
+#include <alloca.h>
+#endif

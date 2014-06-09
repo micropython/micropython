@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -1148,6 +1147,10 @@ void mp_globals_set(mp_obj_dict_t *d) {
 void *m_malloc_fail(int num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %d bytes\n", num_bytes);
     nlr_raise((mp_obj_t)&mp_const_MemoryError_obj);
+}
+
+NORETURN void mp_not_implemented(const char *msg) {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, msg));
 }
 
 // these must correspond to the respective enum

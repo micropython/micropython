@@ -28,7 +28,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
-#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -237,11 +236,17 @@ arg_error:
     fun_pos_args_mismatch(self, self->n_pos_args, n_args);
 }
 
+// With this macro you can tune the maximum number of function state bytes
+// that will be allocated on the stack.  Any function that needs more
+// than this will use the heap.
+#define VM_MAX_STATE_ON_STACK (10 * sizeof(machine_uint_t))
+
+// Set this to enable a simple stack overflow check.
+#define VM_DETECT_STACK_OVERFLOW (0)
+
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    //
-    // extra_args layout: def_args, var_arg tuple, kwonly args, var_kw dict
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
@@ -251,9 +256,42 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     mp_obj_fun_bc_t *self = self_in;
     DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
+    const byte *ip = self->bytecode;
+
+    // get code info size, and skip line number table
+    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    ip += code_info_size;
+
+    // bytecode prelude: state size and exception stack size; 16 bit uints
+    machine_uint_t n_state = ip[0] | (ip[1] << 8);
+    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
+    ip += 4;
+
+#if VM_DETECT_STACK_OVERFLOW
+    n_state += 1;
+#endif
+
+    // allocate state for locals and stack
+    uint state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    mp_code_state *code_state;
+    if (state_size > VM_MAX_STATE_ON_STACK) {
+        code_state = m_new_obj_var(mp_code_state, byte, state_size);
+    } else {
+        code_state = alloca(sizeof(mp_code_state) + state_size);
+    }
+
+    code_state->code_info = self->bytecode;
+    code_state->sp = &code_state->state[0] - 1;
+    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->n_state = n_state;
+
+    // zero out the local stack to begin with
+    memset(code_state->state, 0, n_state * sizeof(*code_state->state));
+
     const mp_obj_t *kwargs = args + n_args;
-    mp_obj_t *extra_args = self->extra_args + self->n_def_args;
-    uint n_extra_args = 0;
+
+    // var_pos_kw_args points to the stack where the var-args tuple, and var-kw dict, should go (if they are needed)
+    mp_obj_t *var_pos_kw_args = &code_state->state[n_state - 1 - self->n_pos_args - self->n_kwonly_args];
 
     // check positional arguments
 
@@ -263,57 +301,53 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
             fun_pos_args_mismatch(self, self->n_pos_args, n_args);
         }
         // put extra arguments in varargs tuple
-        *extra_args = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
-        n_extra_args = 1;
+        *var_pos_kw_args-- = mp_obj_new_tuple(n_args - self->n_pos_args, args + self->n_pos_args);
         n_args = self->n_pos_args;
     } else {
         if (self->takes_var_args) {
             DEBUG_printf("passing empty tuple as *args\n");
-            *extra_args = mp_const_empty_tuple;
-            n_extra_args = 1;
+            *var_pos_kw_args-- = mp_const_empty_tuple;
         }
         // Apply processing and check below only if we don't have kwargs,
         // otherwise, kw handling code below has own extensive checks.
-        if (n_kw == 0) {
+        if (n_kw == 0 && !self->has_def_kw_args) {
             if (n_args >= self->n_pos_args - self->n_def_args) {
                 // given enough arguments, but may need to use some default arguments
-                extra_args -= self->n_pos_args - n_args;
-                n_extra_args += self->n_pos_args - n_args;
+                for (uint i = n_args; i < self->n_pos_args; i++) {
+                    code_state->state[n_state - 1 - i] = self->extra_args[i - (self->n_pos_args - self->n_def_args)];
+                }
             } else {
                 fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
             }
         }
     }
 
+    // copy positional args into state
+    for (uint i = 0; i < n_args; i++) {
+        code_state->state[n_state - 1 - i] = args[i];
+    }
+
     // check keyword arguments
 
-    if (n_kw != 0) {
-        // We cannot use dynamically-sized array here, because GCC indeed
-        // deallocates it on leaving defining scope (unlike most static stack allocs).
-        // So, we have 2 choices: allocate it unconditionally at the top of function
-        // (wastes stack), or use alloca which is guaranteed to dealloc on func exit.
-        //mp_obj_t flat_args[self->n_args];
-        mp_obj_t *flat_args = alloca((self->n_pos_args + self->n_kwonly_args) * sizeof(mp_obj_t));
-        for (int i = self->n_pos_args + self->n_kwonly_args - 1; i >= 0; i--) {
-            flat_args[i] = MP_OBJ_NULL;
-        }
-        memcpy(flat_args, args, sizeof(*args) * n_args);
+    if (n_kw != 0 || self->has_def_kw_args) {
         DEBUG_printf("Initial args: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
 
         mp_obj_t dict = MP_OBJ_NULL;
         if (self->takes_kw_args) {
             dict = mp_obj_new_dict(n_kw); // TODO: better go conservative with 0?
+            *var_pos_kw_args = dict;
         }
+
         for (uint i = 0; i < n_kw; i++) {
             qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
             for (uint j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
                 if (arg_name == self->args[j]) {
-                    if (flat_args[j] != MP_OBJ_NULL) {
+                    if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                             "function got multiple values for argument '%s'", qstr_str(arg_name)));
                     }
-                    flat_args[j] = kwargs[2 * i + 1];
+                    code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
                     goto continue2;
                 }
             }
@@ -324,43 +358,47 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
 continue2:;
         }
-        DEBUG_printf("Args with kws flattened: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
 
-        // Now fill in defaults for positional args
-        mp_obj_t *d = &flat_args[self->n_pos_args - 1];
+        DEBUG_printf("Args with kws flattened: ");
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+
+        // fill in defaults for positional args
+        mp_obj_t *d = &code_state->state[n_state - self->n_pos_args];
         mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
-        for (int i = self->n_def_args; i > 0; i--, d--, s--) {
+        for (int i = self->n_def_args; i > 0; i--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
                 *d = *s;
             }
         }
-        DEBUG_printf("Args after filling defaults: ");
-        dump_args(flat_args, self->n_pos_args + self->n_kwonly_args);
+
+        DEBUG_printf("Args after filling default positional: ");
+        dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
 
         // Check that all mandatory positional args are specified
-        while (d >= flat_args) {
-            if (*d-- == MP_OBJ_NULL) {
+        while (d < &code_state->state[n_state]) {
+            if (*d++ == MP_OBJ_NULL) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function missing required positional argument #%d", d - flat_args));
+                    "function missing required positional argument #%d", &code_state->state[n_state] - d));
             }
         }
 
         // Check that all mandatory keyword args are specified
-        for (int i = 0; i < self->n_kwonly_args; i++) {
-            if (flat_args[self->n_pos_args + i] == MP_OBJ_NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+        // Fill in default kw args if we have them
+        for (uint i = 0; i < self->n_kwonly_args; i++) {
+            if (code_state->state[n_state - 1 - self->n_pos_args - i] == MP_OBJ_NULL) {
+                mp_map_elem_t *elem = NULL;
+                if (self->has_def_kw_args) {
+                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[self->n_def_args])->map, MP_OBJ_NEW_QSTR(self->args[self->n_pos_args + i]), MP_MAP_LOOKUP);
+                }
+                if (elem != NULL) {
+                    code_state->state[n_state - 1 - self->n_pos_args - i] = elem->value;
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+                }
             }
         }
 
-        args = flat_args;
-        n_args = self->n_pos_args + self->n_kwonly_args;
-
-        if (self->takes_kw_args) {
-            extra_args[n_extra_args] = dict;
-            n_extra_args += 1;
-        }
     } else {
         // no keyword arguments given
         if (self->n_kwonly_args != 0) {
@@ -368,19 +406,79 @@ continue2:;
                 "function missing keyword-only argument"));
         }
         if (self->takes_kw_args) {
-            extra_args[n_extra_args] = mp_obj_new_dict(0);
-            n_extra_args += 1;
+            *var_pos_kw_args = mp_obj_new_dict(0);
         }
     }
 
+    // bytecode prelude: initialise closed over variables
+    for (uint n_local = *ip++; n_local > 0; n_local--) {
+        uint local_num = *ip++;
+        code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
+    }
+
+    // now that we skipped over the prelude, set the ip for the VM
+    code_state->ip = ip;
+
+    DEBUG_printf("Calling: n_pos_args=%d, n_kwonly_args=%d\n", self->n_pos_args, self->n_kwonly_args);
+    dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
+    dump_args(code_state->state, n_state);
+
+    // execute the byte code with the correct globals context
     mp_obj_dict_t *old_globals = mp_globals_get();
     mp_globals_set(self->globals);
-    mp_obj_t result;
-    DEBUG_printf("Calling: args=%p, n_args=%d, extra_args=%p, n_extra_args=%d\n", args, n_args, extra_args, n_extra_args);
-    dump_args(args, n_args);
-    dump_args(extra_args, n_extra_args);
-    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(self->bytecode, args, n_args, extra_args, n_extra_args, &result);
+    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(old_globals);
+
+#if VM_DETECT_STACK_OVERFLOW
+    if (vm_return_kind == MP_VM_RETURN_NORMAL) {
+        if (code_state->sp < code_state->state) {
+            printf("VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
+            assert(0);
+        }
+    }
+    // We can't check the case when an exception is returned in state[n_state - 1]
+    // and there are no arguments, because in this case our detection slot may have
+    // been overwritten by the returned exception (which is allowed).
+    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && self->n_pos_args + self->n_kwonly_args == 0)) {
+        // Just check to see that we have at least 1 null object left in the state.
+        bool overflow = true;
+        for (uint i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
+            if (code_state->state[i] == MP_OBJ_NULL) {
+                overflow = false;
+                break;
+            }
+        }
+        if (overflow) {
+            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", code_state->state, n_state);
+            assert(0);
+        }
+    }
+#endif
+
+    mp_obj_t result;
+    switch (vm_return_kind) {
+        case MP_VM_RETURN_NORMAL:
+            // return value is in *sp
+            result = *code_state->sp;
+            break;
+
+        case MP_VM_RETURN_EXCEPTION:
+            // return value is in state[n_state - 1]
+            result = code_state->state[n_state - 1];
+            break;
+
+        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
+        default:
+            assert(0);
+            result = mp_const_none;
+            vm_return_kind = MP_VM_RETURN_NORMAL;
+            break;
+    }
+
+    // free the state if it was allocated on the heap
+    if (state_size > VM_MAX_STATE_ON_STACK) {
+        m_del_var(mp_code_state, byte, state_size, code_state);
+    }
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
@@ -399,7 +497,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     .binary_op = fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
     uint n_def_args = 0;
     uint n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -408,10 +506,7 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
         n_def_args = def_args->len;
         n_extra_args = def_args->len;
     }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        n_extra_args += 1;
-    }
-    if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
+    if (def_kw_args != MP_OBJ_NULL) {
         n_extra_args += 1;
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
@@ -421,18 +516,15 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
     o->n_pos_args = n_pos_args;
     o->n_kwonly_args = n_kwonly_args;
     o->n_def_args = n_def_args;
+    o->has_def_kw_args = def_kw_args != MP_OBJ_NULL;
     o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
     o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->bytecode = code;
-    memset(o->extra_args, 0, n_extra_args * sizeof(mp_obj_t));
     if (def_args != MP_OBJ_NULL) {
         memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
     }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        o->extra_args[n_def_args] = MP_OBJ_NULL;
-    }
-    if ((scope_flags & MP_SCOPE_FLAG_VARARGS) != 0) {
-        o->extra_args[n_extra_args - 1] = MP_OBJ_NULL;
+    if (def_kw_args != MP_OBJ_NULL) {
+        o->extra_args[n_def_args] = def_kw_args;
     }
     return o;
 }

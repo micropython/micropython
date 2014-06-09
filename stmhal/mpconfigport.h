@@ -99,3 +99,6 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 
 // board specific definitions
 #include "mpconfigboard.h"
+
+// We need to provide a declaration/definition of alloca()
+#include <alloca.h>

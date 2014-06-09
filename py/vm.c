@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <alloca.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -41,12 +40,6 @@
 #include "bc.h"
 #include "objgenerator.h"
 
-// With these macros you can tune the maximum number of function state bytes
-// that will be allocated on the stack.  Any function that needs more
-// than this will use the heap.
-#define VM_MAX_STATE_ON_STACK (10 * sizeof(machine_uint_t))
-
-#define DETECT_VM_STACK_OVERFLOW (0)
 #if 0
 #define TRACE(ip) mp_bytecode_print2(ip, 1);
 #else
@@ -103,123 +96,13 @@ typedef enum {
     currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
     exc_sp--; /* pop back to previous exception handler */
 
-mp_vm_return_kind_t mp_execute_bytecode(const byte *code, const mp_obj_t *args, uint n_args,
-                                                          const mp_obj_t *args2, uint n_args2, mp_obj_t *ret) {
-    const byte *ip = code;
-
-    // get code info size, and skip line number table
-    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
-    ip += code_info_size;
-
-    // bytecode prelude: state size and exception stack size; 16 bit uints
-    machine_uint_t n_state = ip[0] | (ip[1] << 8);
-    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
-    ip += 4;
-
-    // allocate state for locals and stack
-#if DETECT_VM_STACK_OVERFLOW
-    n_state += 1;
-#endif
-
-    int state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
-    mp_code_state *code_state;
-    if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var(mp_code_state, byte, state_size);
-    } else {
-        code_state = alloca(sizeof(mp_code_state) + state_size);
-    }
-
-    code_state->code_info = code;
-    code_state->sp = &code_state->state[0] - 1;
-    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
-    code_state->n_state = n_state;
-
-    // init args
-    for (uint i = 0; i < n_args; i++) {
-        code_state->state[n_state - 1 - i] = args[i];
-    }
-    for (uint i = 0; i < n_args2; i++) {
-        code_state->state[n_state - 1 - n_args - i] = args2[i];
-    }
-
-    // set rest of state to MP_OBJ_NULL
-    for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-        code_state->state[i] = MP_OBJ_NULL;
-    }
-
-    // bytecode prelude: initialise closed over variables
-    for (uint n_local = *ip++; n_local > 0; n_local--) {
-        uint local_num = *ip++;
-        code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
-    }
-
-    code_state->ip = ip;
-
-    // execute the byte code
-    mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode2(code_state, MP_OBJ_NULL);
-
-#if DETECT_VM_STACK_OVERFLOW
-    if (vm_return_kind == MP_VM_RETURN_NORMAL) {
-        if (code_state->sp < code_state->state) {
-            printf("VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
-            assert(0);
-        }
-    }
-    // We can't check the case when an exception is returned in state[n_state - 1]
-    // and there are no arguments, because in this case our detection slot may have
-    // been overwritten by the returned exception (which is allowed).
-    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && n_args == 0 && n_args2 == 0)) {
-        // Just check to see that we have at least 1 null object left in the state.
-        bool overflow = true;
-        for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-            if (code_state->state[i] == MP_OBJ_NULL) {
-                overflow = false;
-                break;
-            }
-        }
-        if (overflow) {
-            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", code_state->state, n_state);
-            assert(0);
-        }
-    }
-#endif
-
-    mp_vm_return_kind_t ret_kind;
-    switch (vm_return_kind) {
-        case MP_VM_RETURN_NORMAL:
-            // return value is in *sp
-            *ret = *code_state->sp;
-            ret_kind = MP_VM_RETURN_NORMAL;
-            break;
-
-        case MP_VM_RETURN_EXCEPTION:
-            // return value is in state[n_state - 1]
-            *ret = code_state->state[n_state - 1];
-            ret_kind = MP_VM_RETURN_EXCEPTION;
-            break;
-
-        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
-        default:
-            assert(0);
-            *ret = mp_const_none;
-            ret_kind = MP_VM_RETURN_NORMAL;
-            break;
-    }
-
-    // free the state if it was allocated on the heap
-    if (state_size > VM_MAX_STATE_ON_STACK) {
-        m_del_var(mp_code_state, byte, state_size, code_state);
-    }
-    return ret_kind;
-}
-
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
@@ -241,7 +124,7 @@ mp_vm_return_kind_t mp_execute_bytecode2(mp_code_state *code_state, volatile mp_
     // loop and the exception handler, leading to very obscure bugs.
     #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while(0)
 
-    // Pointers which are constant for particular invocation of mp_execute_bytecode2()
+    // Pointers which are constant for particular invocation of mp_execute_bytecode()
     mp_obj_t *const fastn = &code_state->state[code_state->n_state - 1];
     mp_exc_stack_t *const exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
 

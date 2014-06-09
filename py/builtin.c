@@ -479,12 +479,17 @@ STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t d
 }
 
 STATIC mp_obj_t mp_builtin_getattr(uint n_args, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_QSTR(args[1]));
+    mp_obj_t attr = args[1];
+    if (MP_OBJ_IS_TYPE(attr, &mp_type_str)) {
+        attr = mp_obj_str_intern(attr);
+    } else if (!MP_OBJ_IS_QSTR(attr)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "string required"));
+    }
     mp_obj_t defval = MP_OBJ_NULL;
     if (n_args > 2) {
         defval = args[2];
     }
-    return mp_load_attr_default(args[0], MP_OBJ_QSTR_VALUE(args[1]), defval);
+    return mp_load_attr_default(args[0], MP_OBJ_QSTR_VALUE(attr), defval);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);

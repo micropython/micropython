@@ -112,6 +112,9 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+// Raise NotImplementedError with given message
+NORETURN void mp_not_implemented(const char *msg);
+
 extern struct _mp_obj_list_t mp_sys_path_obj;
 extern struct _mp_obj_list_t mp_sys_argv_obj;
 #define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)

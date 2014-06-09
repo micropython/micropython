@@ -1858,6 +1858,11 @@ mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_alread
     }
 }
 
+mp_obj_t mp_obj_str_intern(mp_obj_t str) {
+    GET_STR_DATA_LEN(str, data, len);
+    return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
+}
+
 mp_obj_t mp_obj_new_bytes(const byte* data, uint len) {
     return mp_obj_new_str_of_type(&mp_type_bytes, data, len);
 }

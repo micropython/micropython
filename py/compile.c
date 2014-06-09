@@ -1035,7 +1035,10 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
 
             if (comp->have_star) {
                 comp->num_dict_params += 1;
-#if !MICROPY_EMIT_CPYTHON
+#if MICROPY_EMIT_CPYTHON
+                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
+                compile_node(comp, pn_equal);
+#else
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
                 if (comp->num_dict_params == 1) {
                     // in Micro Python we put the default positional parameters into a tuple using the bytecode
@@ -1048,11 +1051,10 @@ void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
                     // first default dict param, so make the map
                     EMIT_ARG(build_map, 0);
                 }
-#endif
-                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
+
+                // compile value then key, then store it to the dict
                 compile_node(comp, pn_equal);
-#if !MICROPY_EMIT_CPYTHON
-                // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
                 EMIT(store_map);
 #endif
             } else {

@@ -43,15 +43,6 @@ def f(a, *, b, **kw):
 f(1, b=2)
 f(1, b=2, c=3)
 
-## with a default value; not currently working
-#def g(a, *, b=2, c):
-#    print(a, b, c)
-#
-#g(1, c=3)
-#g(1, b=3, c=4)
-#g(1, **{'c':3})
-#g(1, **{'b':'3', 'c':4})
-
 # with named star
 def f(*a, b, c):
     print(a, b, c)

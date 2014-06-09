@@ -72,7 +72,12 @@ STATIC NORETURN mp_obj_t pyb_bootloader(void) {
     HAL_DeInit();
 
     __HAL_REMAPMEMORY_SYSTEMFLASH();
-    __set_MSP(*((uint32_t*) 0x00000000));
+
+    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
+    // MSP function, so we write it out explicitly here.
+    //__set_MSP(*((uint32_t*) 0x00000000));
+    __ASM volatile ("movs r3, #0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
+
     ((void (*)(void)) *((uint32_t*) 0x00000004))();
 
     while (1);
