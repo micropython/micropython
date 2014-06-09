@@ -80,10 +80,6 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_
     }
     if (stop < 0) {
         stop = len + stop;
-        // CPython returns empty sequence in such case
-        if (stop < 0) {
-            stop = start;
-        }
     } else if (stop > len) {
         stop = len;
     }
