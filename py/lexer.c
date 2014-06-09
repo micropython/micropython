@@ -504,12 +504,12 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                             case 'r': c = 0x0d; break;
                             case 'u':
                             case 'U':
-				if (is_bytes) {
-				    // b'\u1234' == b'\\u1234'
-				    vstr_add_char(&lex->vstr, '\\');
-				    break;
-				}
-				// Otherwise fall through.
+                                if (is_bytes) {
+                                    // b'\u1234' == b'\\u1234'
+                                    vstr_add_char(&lex->vstr, '\\');
+                                    break;
+                                }
+                                // Otherwise fall through.
                             case 'x':
                             {
                                 uint num = 0;
@@ -527,7 +527,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                                 // roughly half a meg of storage. This form of Unicode escape may be added
                                 // later on, but it's definitely not a priority right now. -- CJA 20140607
                                 assert(!"Unicode name escapes not supported");
-			        break;
+                                break;
                             default:
                                 if (c >= '0' && c <= '7') {
                                     // Octal sequence, 1-3 chars
@@ -546,13 +546,13 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         }
                     }
                     if (c != MP_LEXER_CHAR_EOF) {
-			if (c < 0x110000 && !is_bytes) {
-			    vstr_add_char(&lex->vstr, c);
-			} else if (c < 0x100 && is_bytes) {
-			    vstr_add_byte(&lex->vstr, c);
-			} else {
-			    assert(!"TODO: Throw an error, invalid escape code probably");
-			}
+                        if (c < 0x110000 && !is_bytes) {
+                            vstr_add_char(&lex->vstr, c);
+                        } else if (c < 0x100 && is_bytes) {
+                            vstr_add_byte(&lex->vstr, c);
+                        } else {
+                            assert(!"TODO: Throw an error, invalid escape code probably");
+                        }
                     }
                 } else {
                     vstr_add_char(&lex->vstr, CUR_CHAR(lex));
