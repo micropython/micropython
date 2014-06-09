@@ -398,8 +398,7 @@ STATIC const char *str_index_to_ptr(const char *self_data, uint self_len, mp_obj
         for (s = self_data; true; ++s) {
             if (s >= top) {
                 if (is_slice) {
-                    while (UTF8_IS_CONT(*--s));
-                    return s;
+                    return top;
                 }
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
             }
@@ -421,12 +420,47 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            mp_bound_slice_t slice;
-            if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
+            mp_obj_t ostart, ostop, ostep;
+            mp_obj_slice_get(index, &ostart, &ostop, &ostep);
+            if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
                     "only slices with step=1 (aka None) are supported"));
             }
-            return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
+
+            if (type == &mp_type_bytes) {
+                machine_int_t start = 0, stop = self_len;
+                if (ostart != mp_const_none) {
+                    start = MP_OBJ_SMALL_INT_VALUE(ostart);
+                    if (start < 0) {
+                        start = self_len + start;
+                    }
+                }
+                if (ostop != mp_const_none) {
+                    stop = MP_OBJ_SMALL_INT_VALUE(ostop);
+                    if (stop < 0) {
+                        stop = self_len + stop;
+                    }
+                }
+                return mp_obj_new_str_of_type(type, self_data + start, stop - start);
+            }
+            const char *pstart, *pstop;
+            if (ostart != mp_const_none) {
+                pstart = str_index_to_ptr((const char *)self_data, self_len, ostart, true);
+            } else {
+                pstart = (const char *)self_data;
+            }
+            if (ostop != mp_const_none) {
+                // pstop will point just after the stop character. This depends on
+                // the \0 at the end of the string.
+                pstop = str_index_to_ptr((const char *)self_data, self_len, ostop, true);
+            } else {
+                pstop = (const char *)self_data + self_len;
+            }
+            if (pstop < pstart) {
+                // TODO (optimization): Return a hard-coded "" for this.
+                pstop = pstart;
+            }
+            return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
 #endif
         if (type == &mp_type_bytes) {
