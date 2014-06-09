@@ -360,6 +360,51 @@ uncomparable:
     return MP_OBJ_NULL; // op not supported
 }
 
+// Convert an index into a pointer to its lead byte, or raise IndexError if out of bounds
+STATIC const char *str_index_to_ptr(const char *self_data, uint self_len, mp_obj_t index) {
+    machine_int_t i;
+    // Copied from mp_get_index; I don't want bounds checking, just give me
+    // the integer as-is. (I can't bounds-check without scanning the whole
+    // string; an out-of-bounds index will be caught in the loops below.)
+    if (MP_OBJ_IS_SMALL_INT(index)) {
+        i = MP_OBJ_SMALL_INT_VALUE(index);
+    } else if (!mp_obj_get_int_maybe(index, &i)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+    }
+    const char *s, *top = self_data + self_len;
+    if (i < 0)
+    {
+        // Negative indexing is performed by counting from the end of the string.
+        for (s = top - 1; i; --s) {
+            if (s < self_data) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+            }	
+            if (!UTF8_IS_CONT(*s)) {
+                ++i;
+            }
+        }
+        ++s;
+    } else {
+        // Positive indexing, correspondingly, counts from the start of the string.
+        // It's assumed that negative indexing will generally be used with small
+        // absolute values (eg str[-1], not str[-1000000]), which means it'll be
+        // more efficient this way.
+        for (s = self_data; i; ++s) {
+            if (s >= top) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+            }
+            if (!UTF8_IS_CONT(*s)) {
+                --i;
+            }
+        }
+        // Skip continuation bytes after the last lead byte
+        while (UTF8_IS_CONT(*s)) {
+            ++s;
+        }
+    }
+    return s;
+}
+
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
@@ -379,46 +424,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             uint index_val = mp_get_index(type, self_len, index, false);
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
         }
-        const char *s, *top = (const char *)self_data + self_len;
-        machine_int_t i;
-        // Copied from mp_get_index; I don't want bounds checking, just give me
-        // the integer as-is. (I can't bounds-check without scanning the whole
-        // string; an out-of-bounds index will be caught in the loops below.)
-        if (MP_OBJ_IS_SMALL_INT(index)) {
-            i = MP_OBJ_SMALL_INT_VALUE(index);
-        } else if (!mp_obj_get_int_maybe(index, &i)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
-        }
-        if (i < 0)
-        {
-            // Negative indexing is performed by counting from the end of the string.
-            for (s = top - 1; i; --s) {
-                if (s < (const char *)self_data) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
-                }
-                if (!UTF8_IS_CONT(*s)) {
-                    ++i;
-                }
-            }
-            ++s;
-        } else {
-            // Positive indexing, correspondingly, counts from the start of the string.
-            // It's assumed that negative indexing will generally be used with small
-            // absolute values (eg str[-1], not str[-1000000]), which means it'll be
-            // more efficient this way.
-            for (s = (const char *)self_data; i; ++s) {
-                if (s >= top) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
-                }
-                if (!UTF8_IS_CONT(*s)) {
-                    --i;
-                }
-            }
-            // Skip continuation bytes after the last lead byte
-            while (UTF8_IS_CONT(*s)) {
-                ++s;
-            }
-        }
+        const char *s = str_index_to_ptr((const char *)self_data, self_len, index);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
             // Count the number of 1 bits (after the first)
