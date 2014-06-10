@@ -384,7 +384,9 @@ STATIC const qstr binary_op_method_name[] = {
     MP_BINARY_OP_LESS_EQUAL,
     MP_BINARY_OP_MORE_EQUAL,
     MP_BINARY_OP_NOT_EQUAL,
-    MP_BINARY_OP_IN,
+    */
+    [MP_BINARY_OP_IN] = MP_QSTR___contains__,
+    /*
     MP_BINARY_OP_IS,
     */
     [MP_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
