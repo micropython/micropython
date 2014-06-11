@@ -244,46 +244,16 @@ arg_error:
 // Set this to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
 
-STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
-    // usage for the common case of positional only args.
-
-    DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
-    DEBUG_printf("Input pos args: ");
-    dump_args(args, n_args);
-    DEBUG_printf("Input kw args: ");
-    dump_args(args + n_args, n_kw * 2);
+// code_state should have ->ip filled in (pointing past code info block),
+// as well as ->n_state.
+void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_bc_t *self = self_in;
-    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
-
-    const byte *ip = self->bytecode;
-
-    // get code info size, and skip line number table
-    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
-    ip += code_info_size;
-
-    // bytecode prelude: state size and exception stack size; 16 bit uints
-    machine_uint_t n_state = ip[0] | (ip[1] << 8);
-    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
-    ip += 4;
-
-#if VM_DETECT_STACK_OVERFLOW
-    n_state += 1;
-#endif
-
-    // allocate state for locals and stack
-    uint state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
-    mp_code_state *code_state;
-    if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var(mp_code_state, byte, state_size);
-    } else {
-        code_state = alloca(sizeof(mp_code_state) + state_size);
-    }
+    machine_uint_t n_state = code_state->n_state;
+    const byte *ip = code_state->ip;
 
     code_state->code_info = self->bytecode;
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
-    code_state->n_state = n_state;
 
     // zero out the local stack to begin with
     memset(code_state->state, 0, n_state * sizeof(*code_state->state));
@@ -422,6 +392,48 @@ continue2:;
     DEBUG_printf("Calling: n_pos_args=%d, n_kwonly_args=%d\n", self->n_pos_args, self->n_kwonly_args);
     dump_args(code_state->state + n_state - self->n_pos_args - self->n_kwonly_args, self->n_pos_args + self->n_kwonly_args);
     dump_args(code_state->state, n_state);
+}
+
+
+STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
+    // usage for the common case of positional only args.
+
+    DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
+    DEBUG_printf("Input pos args: ");
+    dump_args(args, n_args);
+    DEBUG_printf("Input kw args: ");
+    dump_args(args + n_args, n_kw * 2);
+    mp_obj_fun_bc_t *self = self_in;
+    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
+
+    const byte *ip = self->bytecode;
+
+    // get code info size, and skip line number table
+    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    ip += code_info_size;
+
+    // bytecode prelude: state size and exception stack size; 16 bit uints
+    machine_uint_t n_state = ip[0] | (ip[1] << 8);
+    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
+    ip += 4;
+
+#if VM_DETECT_STACK_OVERFLOW
+    n_state += 1;
+#endif
+
+    // allocate state for locals and stack
+    uint state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    mp_code_state *code_state;
+    if (state_size > VM_MAX_STATE_ON_STACK) {
+        code_state = m_new_obj_var(mp_code_state, byte, state_size);
+    } else {
+        code_state = alloca(sizeof(mp_code_state) + state_size);
+    }
+
+    code_state->n_state = n_state;
+    code_state->ip = ip;
+    mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     mp_obj_dict_t *old_globals = mp_globals_get();
