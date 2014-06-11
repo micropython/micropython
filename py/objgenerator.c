@@ -46,21 +46,14 @@ typedef struct _mp_obj_gen_wrap_t {
     mp_obj_t *fun;
 } mp_obj_gen_wrap_t;
 
-mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode, uint n_args, const mp_obj_t *args,
-    uint n_args2, const mp_obj_t *args2);
+mp_obj_t mp_obj_new_gen_instance(mp_obj_fun_bc_t *self_fun, uint n_args, uint n_kw, const mp_obj_t *args);
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
 
-    const mp_obj_t *args1, *args2;
-    uint len1, len2;
-    if (!mp_obj_fun_prepare_simple_args(self_fun, n_args, n_kw, args, &len1, &args1, &len2, &args2)) {
-        assert(0);
-    }
-
-    return mp_obj_new_gen_instance(self_fun->globals, self_fun->bytecode, len1, args1, len2, args2);
+    return mp_obj_new_gen_instance(self_fun, n_args, n_kw, args);
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
@@ -241,10 +234,8 @@ const mp_obj_type_t mp_type_gen_instance = {
     .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
 };
 
-mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode,
-                                 uint n_args, const mp_obj_t *args,
-                                 uint n_args2, const mp_obj_t *args2) {
-    const byte *code_info = bytecode;
+mp_obj_t mp_obj_new_gen_instance(mp_obj_fun_bc_t *self_fun, uint n_args, uint n_kw, const mp_obj_t *args) {
+    const byte *bytecode = self_fun->bytecode;
     // get code info size, and skip the line number table
     machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
     bytecode += code_info_size;
@@ -257,33 +248,11 @@ mp_obj_t mp_obj_new_gen_instance(mp_obj_dict_t *globals, const byte *bytecode,
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
-    o->globals = globals;
-    o->code_state.code_info = code_info;
-    o->code_state.sp = &o->code_state.state[0] - 1; // sp points to top of stack, which starts off 1 below the state
-    o->code_state.exc_sp = (mp_exc_stack_t*)(o->code_state.state + n_state) - 1;
+    o->globals = self_fun->globals;
+
     o->code_state.n_state = n_state;
-
-    // copy args to end of state array, in reverse (that's how mp_execute_bytecode needs it)
-    for (uint i = 0; i < n_args; i++) {
-        o->code_state.state[n_state - 1 - i] = args[i];
-    }
-    for (uint i = 0; i < n_args2; i++) {
-        o->code_state.state[n_state - 1 - n_args - i] = args2[i];
-    }
-
-    // set rest of state to MP_OBJ_NULL
-    for (uint i = 0; i < n_state - n_args - n_args2; i++) {
-        o->code_state.state[i] = MP_OBJ_NULL;
-    }
-
-    // bytecode prelude: initialise closed over variables
-    for (uint n_local = *bytecode++; n_local > 0; n_local--) {
-        uint local_num = *bytecode++;
-        o->code_state.state[n_state - 1 - local_num] = mp_obj_new_cell(o->code_state.state[n_state - 1 - local_num]);
-    }
-
-    // set ip to start of actual byte code
     o->code_state.ip = bytecode;
+    mp_setup_code_state(&o->code_state, self_fun, n_args, n_kw, args);
 
     return o;
 }
