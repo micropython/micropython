@@ -170,13 +170,30 @@ STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
-    int ord = mp_obj_get_int(o_in);
-    if (0 <= ord && ord <= 0x10ffff) {
-        char str[1] = {ord};
-        return mp_obj_new_str(str, 1, true);
+    int c = mp_obj_get_int(o_in);
+    char str[4];
+    int len = 0;
+    if (c < 0x80) {
+        *str = c; len = 1;
+    } else if (c < 0x800) {
+        str[0] = (c >> 6) | 0xC0;
+        str[1] = (c & 0x3F) | 0x80;
+        len = 2;
+    } else if (c < 0x10000) {
+        str[0] = (c >> 12) | 0xE0;
+        str[1] = ((c >> 6) & 0x3F) | 0x80;
+        str[2] = (c & 0x3F) | 0x80;
+        len = 3;
+    } else if (c < 0x110000) {
+        str[0] = (c >> 18) | 0xF0;
+        str[1] = ((c >> 12) & 0x3F) | 0x80;
+        str[2] = ((c >> 6) & 0x3F) | 0x80;
+        str[3] = (c & 0x3F) | 0x80;
+        len = 4;
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
     }
+    return mp_obj_new_str(str, len, true);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
@@ -342,12 +359,22 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
     const char *str = mp_obj_str_get_data(o_in, &len);
-    if (len == 1) {
-        // don't sign extend when converting to ord
-        // TODO unicode
-        return mp_obj_new_int(((const byte*)str)[0]);
+    uint charlen = unichar_charlen(str, len);
+    if (charlen == 1) {
+        if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
+            machine_int_t ord = *str++ & 0x7F;
+            for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
+                ord &= ~mask;
+            }
+            while (UTF8_IS_CONT(*str)) {
+                ord = (ord << 6) | (*str++ & 0x3F);
+            }
+            return mp_obj_new_int(ord);
+        } else {
+            return mp_obj_new_int(((const byte*)str)[0]);
+        }
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", charlen));
     }
 }
 

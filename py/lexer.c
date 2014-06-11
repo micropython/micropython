@@ -502,19 +502,32 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                             case 'v': c = 0x0b; break;
                             case 'f': c = 0x0c; break;
                             case 'r': c = 0x0d; break;
+                            case 'u':
+                            case 'U':
+                                if (is_bytes) {
+                                    // b'\u1234' == b'\\u1234'
+                                    vstr_add_char(&lex->vstr, '\\');
+                                    break;
+                                }
+                                // Otherwise fall through.
                             case 'x':
                             {
                                 uint num = 0;
-                                if (!get_hex(lex, 2, &num)) {
+                                if (!get_hex(lex, (c == 'x' ? 2 : c == 'u' ? 4 : 8), &num)) {
                                     // TODO error message
                                     assert(0);
                                 }
                                 c = num;
                                 break;
                             }
-                            case 'N': break; // TODO \N{name} only in strings
-                            case 'u': break; // TODO \uxxxx only in strings
-                            case 'U': break; // TODO \Uxxxxxxxx only in strings
+                            case 'N':
+                                // Supporting '\N{LATIN SMALL LETTER A}' == 'a' would require keeping the
+                                // entire Unicode name table in the core. As of Unicode 6.3.0, that's nearly
+                                // 3MB of text; even gzip-compressed and with minimal structure, it'll take
+                                // roughly half a meg of storage. This form of Unicode escape may be added
+                                // later on, but it's definitely not a priority right now. -- CJA 20140607
+                                assert(!"Unicode name escapes not supported");
+                                break;
                             default:
                                 if (c >= '0' && c <= '7') {
                                     // Octal sequence, 1-3 chars
@@ -533,7 +546,13 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         }
                     }
                     if (c != MP_LEXER_CHAR_EOF) {
-                        vstr_add_char(&lex->vstr, c);
+                        if (c < 0x110000 && !is_bytes) {
+                            vstr_add_char(&lex->vstr, c);
+                        } else if (c < 0x100 && is_bytes) {
+                            vstr_add_byte(&lex->vstr, c);
+                        } else {
+                            assert(!"TODO: Throw an error, invalid escape code probably");
+                        }
                     }
                 } else {
                     vstr_add_char(&lex->vstr, CUR_CHAR(lex));

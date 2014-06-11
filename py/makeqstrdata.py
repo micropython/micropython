@@ -23,6 +23,7 @@ codepoint2name[ord('}')] = 'brace_close'
 codepoint2name[ord('*')] = 'star'
 
 # this must match the equivalent function in qstr.c
+# Note that this hashes the UTF-8 encoded data bytes.
 def compute_hash(qstr):
     hash = 5381
     for char in qstr:

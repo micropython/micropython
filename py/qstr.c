@@ -55,6 +55,7 @@
 #define Q_GET_DATA(q)   ((q) + 4)
 
 // this must match the equivalent function in makeqstrdata.py
+// Note that this hashes the UTF-8 encoded data bytes.
 machine_uint_t qstr_compute_hash(const byte *data, uint len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
     machine_uint_t hash = 5381;
@@ -179,7 +180,8 @@ qstr qstr_build_end(byte *q_ptr) {
     qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
         machine_uint_t len = Q_GET_LENGTH(q_ptr);
-        machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
+        const byte *str = Q_GET_DATA(q_ptr);
+        machine_uint_t hash = qstr_compute_hash(str, len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         q_ptr[4 + len] = '\0';

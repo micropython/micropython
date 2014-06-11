@@ -66,13 +66,38 @@ STATIC const uint8_t attr[] = {
 };
 
 unichar utf8_get_char(const char *s) {
-    return *s;
+    unichar ord = *s++;
+    if (!UTF8_IS_NONASCII(ord)) return ord;
+    ord &= 0x7F;
+    for (unichar mask = 0x40; ord & mask; mask >>= 1) {
+        ord &= ~mask;
+    }
+    while (UTF8_IS_CONT(*s)) {
+        ord = (ord << 6) | (*s++ & 0x3F);
+    }
+    return ord;
 }
 
 char *utf8_next_char(const char *s) {
-    return (char*)(s + 1);
+    ++s;
+    while (UTF8_IS_CONT(*s)) {
+        ++s;
+    }
+    return (char *)s;
 }
 
+uint unichar_charlen(const char *str, uint len)
+{
+    uint charlen = 0;
+    for (const char *top = str + len; str < top; ++str) {
+        if (!UTF8_IS_CONT(*str)) {
+            ++charlen;
+        }
+    }
+    return charlen;
+}
+
+// Be aware: These unichar_is* functions are actually ASCII-only!
 bool unichar_isspace(unichar c) {
     return c < 128 && (attr[c] & FL_SPACE) != 0;
 }
