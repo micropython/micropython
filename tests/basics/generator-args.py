@@ -5,5 +5,13 @@ def gen(v=5):
         yield i
 
 print(list(gen()))
-# Still not supported, ditto for *args and **kwargs
-#print(list(gen(v=10)))
+print(list(gen(v=10)))
+
+
+def g(*args, **kwargs):
+    for i in args:
+        yield i
+    for k, v in kwargs.items():
+        yield (k, v)
+
+print(list(g(1, 2, 3, foo="bar")))
