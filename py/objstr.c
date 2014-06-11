@@ -457,8 +457,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 pstop = (const char *)self_data + self_len;
             }
             if (pstop < pstart) {
-                // TODO (optimization): Return a hard-coded "" for this.
-                pstop = pstart;
+                return MP_OBJ_NEW_QSTR(MP_QSTR_);
             }
             return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
