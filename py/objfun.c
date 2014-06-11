@@ -193,49 +193,6 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 #endif
 }
 
-// If it's possible to call a function without allocating new argument array,
-// this function returns true, together with pointers to 2 subarrays to be used
-// as arguments. Otherwise, it returns false. It is expected that this function
-// will be accompanied by another, mp_obj_fun_prepare_full_args(), which will
-// instead take pointer to full-length out-array, and will fill it in. Rationale
-// being that a caller can try this function and if it succeeds, the function call
-// can be made without allocating extra memory. Otherwise, caller can allocate memory
-// and try "full" function. These functions are expected to be refactoring of
-// code in fun_bc_call() and eventually replace it.
-bool mp_obj_fun_prepare_simple_args(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args,
-                            uint *out_args1_len, const mp_obj_t **out_args1, uint *out_args2_len, const mp_obj_t **out_args2) {
-    mp_obj_fun_bc_t *self = self_in;
-    DEBUG_printf("mp_obj_fun_prepare_simple_args: given: %d pos, %d kw, expected: %d pos (%d default)\n",
-        n_args, n_kw, self->n_pos_args, self->n_def_args);
-
-    assert(n_kw == 0);
-    assert(self->n_kwonly_args == 0);
-    assert(self->takes_var_args == 0);
-    assert(self->takes_kw_args == 0);
-
-    mp_obj_t *extra_args = self->extra_args + self->n_def_args;
-    uint n_extra_args = 0;
-
-    if (n_args > self->n_pos_args) {
-        goto arg_error;
-    } else {
-        if (n_args >= self->n_pos_args - self->n_def_args) {
-            extra_args -= self->n_pos_args - n_args;
-            n_extra_args += self->n_pos_args - n_args;
-        } else {
-            fun_pos_args_mismatch(self, self->n_pos_args - self->n_def_args, n_args);
-        }
-    }
-    *out_args1 = args;
-    *out_args1_len = n_args;
-    *out_args2 = extra_args;
-    *out_args2_len = n_extra_args;
-    return true;
-
-arg_error:
-    fun_pos_args_mismatch(self, self->n_pos_args, n_args);
-}
-
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will use the heap.
