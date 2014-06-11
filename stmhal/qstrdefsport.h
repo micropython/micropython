@@ -66,6 +66,10 @@ Q(0:/)
 Q(0:/lib)
 Q(millis)
 
+// for file class
+Q(seek)
+Q(tell)
+
 // for RTC class
 Q(RTC)
 Q(info)

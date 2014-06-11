@@ -48,6 +48,8 @@
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_CMATH            (1)
+#define MICROPY_PY_IO               (1)
+#define MICROPY_PY_IO_FILEIO        (1)
 
 // extra built in names to add to the global namespace
 extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;
