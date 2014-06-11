@@ -162,7 +162,7 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mp_module_array },
 #if MICROPY_PY_IO
-    { MP_OBJ_NEW_QSTR(MP_QSTR_io), (mp_obj_t)&mp_module_io },
+    { MP_OBJ_NEW_QSTR(MP_QSTR__io), (mp_obj_t)&mp_module_io },
 #endif
 #if MICROPY_PY_COLLECTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR__collections), (mp_obj_t)&mp_module_collections },

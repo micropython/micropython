@@ -1,4 +1,4 @@
-import io
+import _io as io
 
 a = io.StringIO()
 print(a.getvalue())

@@ -361,7 +361,7 @@ Q(unpack)
 #endif
 
 #if MICROPY_PY_IO
-Q(io)
+Q(_io)
 Q(readall)
 Q(readline)
 Q(readlines)
