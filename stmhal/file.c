@@ -202,6 +202,11 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type, uint n_args, uint n_kw, const m
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)fresult_to_errno_table[res])));
     }
 
+    // for 'a' mode, we must begin at the end of the file
+    if ((mode & FA_OPEN_ALWAYS) != 0) {
+        f_lseek(&o->fp, f_size(&o->fp));
+    }
+
     return o;
 }
 
