@@ -54,7 +54,7 @@
 
 #define PATH_SEP_CHAR '/'
 
-mp_import_stat_t stat_dir_or_file(vstr_t *path) {
+STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_str(path));
     if (stat == MP_IMPORT_STAT_DIR) {
@@ -68,7 +68,7 @@ mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
+STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     uint path_num = 0;
     mp_obj_t *path_items;
@@ -102,7 +102,7 @@ mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     }
 }
 
-void do_load(mp_obj_t module_obj, vstr_t *file) {
+STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // create the lexer
     mp_lexer_t *lex = mp_lexer_new_from_file(vstr_str(file));
 
