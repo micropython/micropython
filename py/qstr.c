@@ -77,7 +77,7 @@ typedef struct _qstr_pool_t {
     const byte *qstrs[];
 } qstr_pool_t;
 
-const static qstr_pool_t const_pool = {
+STATIC const qstr_pool_t const_pool = {
     NULL,               // no previous pool
     0,                  // no previous pool
     10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
