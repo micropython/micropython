@@ -249,6 +249,11 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
+// Whether str object is proper unicode
+#ifndef MICROPY_PY_BUILTINS_STR_UNICODE
+#define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+#endif
+
 // Whether to support set object
 #ifndef MICROPY_PY_BUILTINS_SET
 #define MICROPY_PY_BUILTINS_SET (1)
