@@ -172,6 +172,7 @@ STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
     int c = mp_obj_get_int(o_in);
     char str[4];
     int len = 0;
@@ -196,6 +197,15 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
     }
     return mp_obj_new_str(str, len, true);
+    #else
+    int ord = mp_obj_get_int(o_in);
+    if (0 <= ord && ord <= 0x10ffff) {
+        char str[1] = {ord};
+        return mp_obj_new_str(str, 1, true);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
+    }
+    #endif
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
@@ -361,6 +371,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
     const char *str = mp_obj_str_get_data(o_in, &len);
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
     uint charlen = unichar_charlen(str, len);
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
@@ -378,6 +389,14 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", charlen));
     }
+    #else
+    if (len == 1) {
+        // don't sign extend when converting to ord
+        return mp_obj_new_int(((const byte*)str)[0]);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
+    }
+    #endif
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
