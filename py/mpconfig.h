@@ -28,7 +28,7 @@
 // You can override any of these options using mpconfigport.h file located
 // in a directory of your port.
 
-#include "mpconfigport.h"
+#include <mpconfigport.h>
 
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
