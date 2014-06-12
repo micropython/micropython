@@ -130,8 +130,11 @@ void gc_collect(void) {
 
     gc_collect_start();
     // this traces the .bss section
-#ifdef __CYGWIN__
+#if defined( __CYGWIN__ )
 #define BSS_START __bss_start__
+#elif defined( _MSC_VER ) || defined( __MINGW32__ )
+#define BSS_START *bss_start
+#define _end *bss_end
 #else
 #define BSS_START __bss_start
 #endif
@@ -141,7 +144,16 @@ void gc_collect(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
-    gc_collect_root((void**)&regs, ((machine_uint_t)stack_top - (machine_uint_t)&regs) / sizeof(machine_uint_t));
+#ifdef __MINGW32__
+    // The Mingw cross-compiler on Travis complains
+    // 'warning: dereferencing type-punned pointer will break strict-aliasing rules'
+    // when casting &regs to void** directly so use a union.
+    union { regs_t *r; void **ptr; } cast_regs = { &regs };
+    void **regs_ptr = cast_regs.ptr;
+#else
+    void **regs_ptr = (void**)&regs;
+#endif
+    gc_collect_root(regs_ptr, ((machine_uint_t)stack_top - (machine_uint_t)&regs) / sizeof(machine_uint_t));
     gc_collect_end();
 
     //printf("-----\n");

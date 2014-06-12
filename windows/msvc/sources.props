@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="$(PyBaseDir)py\*.c" />
-    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c" />
+    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\seg_helpers.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
   </ItemGroup>
