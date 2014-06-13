@@ -120,7 +120,7 @@ void gc_init(void *start, void *end) {
     //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
-    machine_uint_t total_byte_len = end - start;
+    machine_uint_t total_byte_len = (byte*)end - (byte*)start;
 #if MICROPY_ENABLE_FINALISER
     gc_alloc_table_byte_len = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
 #else
@@ -136,8 +136,8 @@ void gc_init(void *start, void *end) {
 #endif
 
     machine_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
-    gc_pool_start = end - gc_pool_block_len * BYTES_PER_BLOCK;
-    gc_pool_end = end;
+    gc_pool_start = (machine_uint_t*)((byte*)end - gc_pool_block_len * BYTES_PER_BLOCK);
+    gc_pool_end = (machine_uint_t*)end;
 
     // clear ATBs
     memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
@@ -407,7 +407,7 @@ found:
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset(ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+    memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
 
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
@@ -571,7 +571,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         }
 
         // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
-        memset(ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
+        memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
 
         return ptr_in;
     }
