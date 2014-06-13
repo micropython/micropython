@@ -100,6 +100,18 @@ STATIC void uni_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
 }
 
+STATIC mp_obj_t uni_unary_op(int op, mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, str_data, str_len);
+    switch (op) {
+        case MP_UNARY_OP_BOOL:
+            return MP_BOOL(str_len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char *)str_data, str_len));
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
@@ -297,6 +309,7 @@ const mp_obj_type_t mp_type_str = {
     .name = MP_QSTR_str,
     .print = uni_print,
     .make_new = str_make_new,
+    .unary_op = uni_unary_op,
     .binary_op = str_binary_op,
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,

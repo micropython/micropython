@@ -354,7 +354,12 @@ uint mp_get_index(const mp_obj_type_t *type, machine_uint_t len, mp_obj_t index,
 
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
-    if (MP_OBJ_IS_STR(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
+    if (
+#if !MICROPY_PY_BUILTINS_STR_UNICODE
+        // It's simple - unicode is slow, non-unicode is fast
+        MP_OBJ_IS_STR(o_in) ||
+#endif
+        MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         return MP_OBJ_NEW_SMALL_INT((machine_int_t)mp_obj_str_get_len(o_in));
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
