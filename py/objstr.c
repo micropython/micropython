@@ -43,7 +43,7 @@
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict);
 const mp_obj_t mp_const_empty_bytes;
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 STATIC NORETURN void arg_type_mixup();
@@ -1649,7 +1649,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 STATIC const mp_map_elem_t str_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_decode), (mp_obj_t)&bytes_decode_obj },
+    #if !MICROPY_PY_BUILTINS_STR_UNICODE
+    // If we have separate unicode type, then here we have methods only
+    // for bytes type, and it should not have encode() methods. Otherwise,
+    // we have non-compliant-but-practical bytestring type, which shares
+    // method table with bytes, so they both have encode() and decode()
+    // methods (which should do type checking at runtime).
     { MP_OBJ_NEW_QSTR(MP_QSTR_encode), (mp_obj_t)&str_encode_obj },
+    #endif
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_find), (mp_obj_t)&str_find_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rfind), (mp_obj_t)&str_rfind_obj },
@@ -1679,6 +1686,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
 
+#if !MICROPY_PY_BUILTINS_STR_UNICODE
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
@@ -1690,6 +1698,7 @@ const mp_obj_type_t mp_type_str = {
     .buffer_p = { .get_buffer = str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
 };
+#endif
 
 // Reuses most of methods from str
 const mp_obj_type_t mp_type_bytes = {
@@ -1857,6 +1866,7 @@ typedef struct _mp_obj_str_it_t {
     machine_uint_t cur;
 } mp_obj_str_it_t;
 
+#if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
@@ -1876,6 +1886,15 @@ STATIC const mp_obj_type_t mp_type_str_it = {
     .iternext = str_it_iternext,
 };
 
+mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
+    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+    o->base.type = &mp_type_str_it;
+    o->str = str;
+    o->cur = 0;
+    return o;
+}
+#endif
+
 STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
@@ -1894,14 +1913,6 @@ STATIC const mp_obj_type_t mp_type_bytes_it = {
     .getiter = mp_identity,
     .iternext = bytes_it_iternext,
 };
-
-mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
-    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
-    o->base.type = &mp_type_str_it;
-    o->str = str;
-    o->cur = 0;
-    return o;
-}
 
 mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
