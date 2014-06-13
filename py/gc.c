@@ -400,14 +400,14 @@ found:
     }
 
     // get pointer to first block
-    byte *ret_ptr = (byte*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
+    void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
 
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset(ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+    memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
 
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
