@@ -55,6 +55,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len);
 
 mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+machine_int_t str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, int flags);
 
 MP_DECLARE_CONST_FUN_OBJ(str_encode_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_find_obj);
