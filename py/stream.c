@@ -217,7 +217,7 @@ STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
     mp_obj_t lines = mp_obj_new_list(0, NULL);
     for (;;) {
         mp_obj_t line = stream_unbuffered_readline(1, &self);
-        if (mp_obj_str_get_len(line) == 0) {
+        if (!mp_obj_is_true(line)) {
             break;
         }
         mp_obj_list_append(lines, line);
@@ -228,7 +228,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj, stream_unbuffered_
 
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     mp_obj_t l_in = stream_unbuffered_readline(1, &self);
-    if (mp_obj_str_get_len(l_in) != 0) {
+    if (mp_obj_is_true(l_in)) {
         return l_in;
     }
     return MP_OBJ_STOP_ITERATION;
