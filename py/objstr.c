@@ -43,15 +43,6 @@
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict);
 const mp_obj_t mp_const_empty_bytes;
 
-// use this macro to extract the string hash
-#define GET_STR_HASH(str_obj_in, str_hash) uint str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)str_obj_in)->hash; }
-
-// use this macro to extract the string length
-#define GET_STR_LEN(str_obj_in, str_len) uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
-
-// use this macro to extract the string data and length
-#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
-
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
@@ -259,7 +250,7 @@ STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, cons
     return NULL;
 }
 
-STATIC mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
     mp_obj_type_t *rhs_type = mp_obj_get_type(rhs_in);
@@ -1627,33 +1618,33 @@ STATIC machine_int_t str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
 }
 
 #if MICROPY_CPYTHON_COMPAT
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, mp_obj_str_format);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_isspace_obj, str_isspace);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_isalpha_obj, str_isalpha);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_isdigit_obj, str_isdigit);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_isupper_obj, str_isupper);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
+MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, str_split);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
+MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, mp_obj_str_format);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
+MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
+MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
+MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
+MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
+MP_DEFINE_CONST_FUN_OBJ_1(str_isspace_obj, str_isspace);
+MP_DEFINE_CONST_FUN_OBJ_1(str_isalpha_obj, str_isalpha);
+MP_DEFINE_CONST_FUN_OBJ_1(str_isdigit_obj, str_isdigit);
+MP_DEFINE_CONST_FUN_OBJ_1(str_isupper_obj, str_isupper);
+MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 
 STATIC const mp_map_elem_t str_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT

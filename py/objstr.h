@@ -35,5 +35,49 @@ typedef struct _mp_obj_str_t {
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str};
 
+// use this macro to extract the string hash
+#define GET_STR_HASH(str_obj_in, str_hash) \
+    uint str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)str_obj_in)->hash; }
+
+// use this macro to extract the string length
+#define GET_STR_LEN(str_obj_in, str_len) \
+    uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
+
+// use this macro to extract the string data and length
+#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
+    const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } \
+    else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
+
 mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len);
+
+mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+
+MP_DECLARE_CONST_FUN_OBJ(str_encode_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_find_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_rfind_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_index_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_rindex_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_join_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_split_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_rsplit_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_startswith_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_endswith_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_strip_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_lstrip_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_rstrip_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_format_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_replace_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_count_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_partition_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_rpartition_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_lower_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_upper_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_isspace_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_isalpha_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_isdigit_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_isupper_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_islower_obj);
