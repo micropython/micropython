@@ -64,7 +64,8 @@ STATIC bool is_str_or_bytes(mp_obj_t o) {
 /******************************************************************************/
 /* str                                                                        */
 
-void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
+void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env,
+                         const byte *str_data, uint str_len, bool is_bytes) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -85,7 +86,10 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
             print(env, "\\%c", quote_char);
         } else if (*s == '\\') {
             print(env, "\\\\");
-        } else if (32 <= *s && *s <= 126) {
+        } else if (*s >= 0x20 && *s != 0x7f && (!is_bytes || *s < 0x80)) {
+            // In strings, anything which is not ascii control character
+            // is printed as is, this includes characters in range 0x80-0xff
+            // (which can be non-Latin letters, etc.)
             print(env, "%c", *s);
         } else if (*s == '\n') {
             print(env, "\\n");
@@ -109,7 +113,7 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
         if (is_bytes) {
             print(env, "b");
         }
-        mp_str_print_quoted(print, env, str_data, str_len);
+        mp_str_print_quoted(print, env, str_data, str_len, is_bytes);
     }
 }
 
