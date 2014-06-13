@@ -58,7 +58,7 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
         print(env, "bytearray(b", o->typecode);
-        mp_str_print_quoted(print, env, o->items, o->len);
+        mp_str_print_quoted(print, env, o->items, o->len, true);
     } else {
         print(env, "array('%c'", o->typecode);
         if (o->len > 0) {
