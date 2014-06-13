@@ -330,8 +330,10 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
-        mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
-        self->cur += 1;
+        const byte *cur = str + self->cur;
+        const byte *end = utf8_next_char(str + self->cur);
+        mp_obj_t o_out = mp_obj_new_str((const char*)cur, end - cur, true);
+        self->cur += end - cur;
         return o_out;
     } else {
         return MP_OBJ_STOP_ITERATION;
