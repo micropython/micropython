@@ -47,7 +47,7 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 /******************************************************************************/
 /* str                                                                        */
 
-STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len, bool is_bytes) {
+STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -66,12 +66,8 @@ STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), voi
     const char *s = (const char *)str_data, *top = (const char *)str_data + str_len;
     while (s < top) {
         unichar ch;
-        if (is_bytes) {
-            ch = *(unsigned char *)s++; // Don't sign-extend bytes
-        } else {
-            ch = utf8_get_char(s);
-            s = utf8_next_char(s);
-        }
+        ch = utf8_get_char(s);
+        s = utf8_next_char(s);
         if (ch == quote_char) {
             print(env, "\\%c", quote_char);
         } else if (ch == '\\') {
@@ -95,16 +91,12 @@ STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), voi
     print(env, "%c", quote_char);
 }
 
-STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void uni_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
-    if (kind == PRINT_STR && !is_bytes) {
+    if (kind == PRINT_STR) {
         print(env, "%.*s", str_len, str_data);
     } else {
-        if (is_bytes) {
-            print(env, "b");
-        }
-        uni_print_quoted(print, env, str_data, str_len, is_bytes);
+        uni_print_quoted(print, env, str_data, str_len);
     }
 }
 
@@ -303,7 +295,7 @@ STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
-    .print = str_print,
+    .print = uni_print,
     .make_new = str_make_new,
     .binary_op = str_binary_op,
     .subscr = str_subscr,
