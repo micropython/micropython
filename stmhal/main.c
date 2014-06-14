@@ -115,6 +115,15 @@ void nlr_jump_fail(void *val) {
     __fatal_error("");
 }
 
+#ifndef NDEBUG
+void __attribute__((weak))
+    __assert_func(const char *file, int line, const char *func, const char *expr) {
+    (void)func;
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    __fatal_error("");
+}
+#endif
+
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
