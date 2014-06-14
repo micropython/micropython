@@ -32,6 +32,7 @@
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
+#include "unicode.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"
@@ -591,6 +592,11 @@ STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t dire
         }
     } else {
         // found
+        #if MICROPY_PY_BUILTINS_STR_UNICODE
+        if (self_type == &mp_type_str) {
+            return MP_OBJ_NEW_SMALL_INT(utf8_ptr_to_index(haystack, p));
+        }
+        #endif
         return MP_OBJ_NEW_SMALL_INT(p - haystack);
     }
 }
