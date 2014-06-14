@@ -88,8 +88,8 @@ int m_get_peak_bytes_allocated(void);
 
 typedef int unichar; // TODO
 
-unichar utf8_get_char(const char *s);
-char *utf8_next_char(const char *s);
+unichar utf8_get_char(const byte *s);
+const byte *utf8_next_char(const byte *s);
 
 bool unichar_isspace(unichar c);
 bool unichar_isalpha(unichar c);

@@ -83,8 +83,8 @@ bool str_strn_equal(const char *str, const char *strn, int len) {
 void mp_token_show(const mp_token_t *tok) {
     printf("(%d:%d) kind:%d str:%p len:%d", tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
     if (tok->str != NULL && tok->len > 0) {
-        const char *i = tok->str;
-        const char *j = i + tok->len;
+        const byte *i = (const byte *)tok->str;
+        const byte *j = (const byte *)i + tok->len;
         printf(" ");
         while (i < j) {
             unichar c = utf8_get_char(i);

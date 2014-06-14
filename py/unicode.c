@@ -65,12 +65,12 @@ STATIC const uint8_t attr[] = {
     AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
 };
 
-unichar utf8_get_char(const char *s) {
+unichar utf8_get_char(const byte *s) {
     return *s;
 }
 
-char *utf8_next_char(const char *s) {
-    return (char*)(s + 1);
+const byte *utf8_next_char(const byte *s) {
+    return s + 1;
 }
 
 bool unichar_isspace(unichar c) {
