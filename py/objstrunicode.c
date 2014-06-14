@@ -63,7 +63,7 @@ STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), voi
         quote_char = '"';
     }
     print(env, "%c", quote_char);
-    const char *s = (const char *)str_data, *top = (const char *)str_data + str_len;
+    const byte *s = str_data, *top = str_data + str_len;
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
