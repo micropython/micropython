@@ -65,7 +65,9 @@ STATIC const uint8_t attr[] = {
     AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
 };
 
-unichar utf8_get_char(const char *s) {
+// TODO: Rename to str_get_char
+unichar utf8_get_char(const byte *s) {
+#if MICROPY_PY_BUILTINS_STR_UNICODE
     unichar ord = *s++;
     if (!UTF8_IS_NONASCII(ord)) return ord;
     ord &= 0x7F;
@@ -76,14 +78,22 @@ unichar utf8_get_char(const char *s) {
         ord = (ord << 6) | (*s++ & 0x3F);
     }
     return ord;
+#else
+    return *s;
+#endif
 }
 
-char *utf8_next_char(const char *s) {
+// TODO: Rename to str_next_char
+const byte *utf8_next_char(const byte *s) {
+#if MICROPY_PY_BUILTINS_STR_UNICODE
     ++s;
     while (UTF8_IS_CONT(*s)) {
         ++s;
     }
-    return (char *)s;
+    return s;
+#else
+    return s + 1;
+#endif
 }
 
 machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
@@ -99,6 +109,7 @@ machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
 
 uint unichar_charlen(const char *str, uint len)
 {
+#if MICROPY_PY_BUILTINS_STR_UNICODE
     uint charlen = 0;
     for (const char *top = str + len; str < top; ++str) {
         if (!UTF8_IS_CONT(*str)) {
@@ -106,6 +117,9 @@ uint unichar_charlen(const char *str, uint len)
         }
     }
     return charlen;
+#else
+    return len;
+#endif
 }
 
 // Be aware: These unichar_is* functions are actually ASCII-only!
