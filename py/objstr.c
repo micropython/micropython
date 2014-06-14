@@ -344,11 +344,14 @@ uncomparable:
     return MP_OBJ_NULL; // op not supported
 }
 
+#if !MICROPY_PY_BUILTINS_STR_UNICODE
+// objstrunicode defines own version
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
                              mp_obj_t index, bool is_slice) {
     machine_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
     return self_data + index_val;
 }
+#endif
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);

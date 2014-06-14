@@ -154,7 +154,8 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
 
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
-STATIC const char *str_index_to_ptr(const char *self_data, uint self_len, mp_obj_t index, bool is_slice) {
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
+                             mp_obj_t index, bool is_slice) {
     machine_int_t i;
     // Copied from mp_get_index; I don't want bounds checking, just give me
     // the integer as-is. (I can't bounds-check without scanning the whole
@@ -164,7 +165,7 @@ STATIC const char *str_index_to_ptr(const char *self_data, uint self_len, mp_obj
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
     }
-    const char *s, *top = self_data + self_len;
+    const byte *s, *top = self_data + self_len;
     if (i < 0)
     {
         // Negative indexing is performed by counting from the end of the string.
@@ -235,18 +236,18 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 }
                 return mp_obj_new_str_of_type(type, self_data + start, stop - start);
             }
-            const char *pstart, *pstop;
+            const byte *pstart, *pstop;
             if (ostart != mp_const_none) {
-                pstart = str_index_to_ptr((const char *)self_data, self_len, ostart, true);
+                pstart = str_index_to_ptr(type, self_data, self_len, ostart, true);
             } else {
-                pstart = (const char *)self_data;
+                pstart = self_data;
             }
             if (ostop != mp_const_none) {
                 // pstop will point just after the stop character. This depends on
                 // the \0 at the end of the string.
-                pstop = str_index_to_ptr((const char *)self_data, self_len, ostop, true);
+                pstop = str_index_to_ptr(type, self_data, self_len, ostop, true);
             } else {
-                pstop = (const char *)self_data + self_len;
+                pstop = self_data + self_len;
             }
             if (pstop < pstart) {
                 return MP_OBJ_NEW_QSTR(MP_QSTR_);
@@ -258,7 +259,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             uint index_val = mp_get_index(type, self_len, index, false);
             return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
         }
-        const char *s = str_index_to_ptr((const char *)self_data, self_len, index, false);
+        const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
             // Count the number of 1 bits (after the first)
@@ -266,7 +267,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 ++len;
             }
         }
-        return mp_obj_new_str(s, len, true); // This will create a one-character string
+        return mp_obj_new_str((const char*)s, len, true); // This will create a one-character string
     } else {
         return MP_OBJ_NULL; // op not supported
     }
