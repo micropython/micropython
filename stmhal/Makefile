@@ -53,7 +53,7 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-LDFLAGS = --nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # uncomment this if you want libgcc
