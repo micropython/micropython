@@ -86,6 +86,17 @@ char *utf8_next_char(const char *s) {
     return (char *)s;
 }
 
+machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
+    machine_uint_t i = 0;
+    while (ptr > s) {
+        if (!UTF8_IS_CONT(*--ptr)) {
+            i++;
+        }
+    }
+
+    return i;
+}
+
 uint unichar_charlen(const char *str, uint len)
 {
     uint charlen = 0;
