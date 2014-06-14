@@ -40,8 +40,9 @@
 #include <math.h>
 #endif
 
-mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
-    const char *restrict top = str + len;
+mp_obj_t mp_parse_num_integer(const char *restrict str_, uint len, int base) {
+    const byte *restrict str = (const byte *)str_;
+    const byte *restrict top = str + len;
     bool neg = false;
     mp_obj_t ret_val;
 
@@ -65,11 +66,11 @@ mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base) {
     }
 
     // parse optional base prefix
-    str += mp_parse_num_base(str, top - str, &base);
+    str += mp_parse_num_base((const char*)str, top - str, &base);
 
     // string should be an integer number
     machine_int_t int_val = 0;
-    const char *restrict str_val_start = str;
+    const byte *restrict str_val_start = str;
     for (; str < top; str++) {
         // get next digit as a value
         int dig = *str;
@@ -129,9 +130,9 @@ have_ret_val:
 overflow:
     // reparse using long int
     {
-        const char *s2 = str_val_start;
+        const char *s2 = (const char*)str_val_start;
         ret_val = mp_obj_new_int_from_str_len(&s2, top - str_val_start, neg, base);
-        str = s2;
+        str = (const byte*)s2;
         goto have_ret_val;
     }
 

@@ -31,7 +31,7 @@
 // find real radix base, and strip preceding '0x', '0o' and '0b'
 // puts base in *base, and returns number of bytes to skip the prefix
 int mp_parse_num_base(const char *str, uint len, int *base) {
-    const char *p = str;
+    const byte *p = (const byte*)str;
     int c = *(p++);
     if ((*base == 0 || *base == 16) && c == '0') {
         c = *(p++);
@@ -63,6 +63,6 @@ int mp_parse_num_base(const char *str, uint len, int *base) {
         }
         p--;
     }
-    return p - str;
+    return p - (const byte*)str;
 }
 
