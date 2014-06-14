@@ -352,6 +352,12 @@ uncomparable:
     return MP_OBJ_NULL; // op not supported
 }
 
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
+                             mp_obj_t index, bool is_slice) {
+    machine_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
+    return self_data + index_val;
+}
+
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
@@ -367,11 +373,11 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
-        uint index_val = mp_get_index(type, self_len, index, false);
+        const byte *p = str_index_to_ptr(type, self_data, self_len, index, false);
         if (type == &mp_type_bytes) {
-            return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
+            return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)*p);
         } else {
-            return mp_obj_new_str((char*)self_data + index_val, 1, true);
+            return mp_obj_new_str((char*)p, 1, true);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -567,6 +573,7 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
 
 
 STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction, bool is_index) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
@@ -574,16 +581,16 @@ STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t dire
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
 
-    machine_uint_t start = 0;
-    machine_uint_t end = haystack_len;
+    const byte *start = haystack;
+    const byte *end = haystack + haystack_len;
     if (n_args >= 3 && args[2] != mp_const_none) {
-        start = mp_get_index(&mp_type_str, haystack_len, args[2], true);
+        start = str_index_to_ptr(self_type, haystack, haystack_len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = mp_get_index(&mp_type_str, haystack_len, args[3], true);
+        end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
     }
 
-    const byte *p = find_subbytes(haystack + start, end - start, needle, needle_len, direction);
+    const byte *p = find_subbytes(start, end - start, needle, needle_len, direction);
     if (p == NULL) {
         // not found
         if (is_index) {
@@ -615,16 +622,17 @@ STATIC mp_obj_t str_rindex(uint n_args, const mp_obj_t *args) {
 
 // TODO: (Much) more variety in args
 STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], prefix, prefix_len);
-    uint index_val = 0;
+    const byte *start = str;
     if (n_args > 2) {
-        index_val = mp_get_index(&mp_type_str, str_len, args[2], true);
+        start = str_index_to_ptr(self_type, str, str_len, args[2], true);
     }
-    if (prefix_len + index_val > str_len) {
+    if (prefix_len + (start - str) > str_len) {
         return mp_const_false;
     }
-    return MP_BOOL(memcmp(str + index_val, prefix, prefix_len) == 0);
+    return MP_BOOL(memcmp(start, prefix, prefix_len) == 0);
 }
 
 STATIC mp_obj_t str_endswith(uint n_args, const mp_obj_t *args) {
@@ -1422,6 +1430,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
     assert(MP_OBJ_IS_STR(args[1]));
@@ -1429,26 +1438,28 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
 
-    machine_uint_t start = 0;
-    machine_uint_t end = haystack_len;
+    const byte *start = haystack;
+    const byte *end = haystack + haystack_len;
     if (n_args >= 3 && args[2] != mp_const_none) {
-        start = mp_get_index(&mp_type_str, haystack_len, args[2], true);
+        start = str_index_to_ptr(self_type, haystack, haystack_len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = mp_get_index(&mp_type_str, haystack_len, args[3], true);
+        end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
     }
 
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
-        return MP_OBJ_NEW_SMALL_INT(end - start + 1);
+        return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char*)start, end - start) + 1);
     }
 
     // count the occurrences
     machine_int_t num_occurrences = 0;
-    for (machine_uint_t haystack_index = start; haystack_index + needle_len <= end; haystack_index++) {
-        if (memcmp(&haystack[haystack_index], needle, needle_len) == 0) {
+    for (const byte *haystack_ptr = start; haystack_ptr + needle_len <= end;) {
+        if (memcmp(haystack_ptr, needle, needle_len) == 0) {
             num_occurrences++;
-            haystack_index += needle_len - 1;
+            haystack_ptr += needle_len;
+        } else {
+            haystack_ptr = utf8_next_char(haystack_ptr);
         }
     }
 
