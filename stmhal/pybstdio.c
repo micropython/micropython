@@ -38,11 +38,14 @@
 #include "usb.h"
 #include "uart.h"
 
+// TODO make stdin, stdout and stderr writable objects so they can
+// be changed by Python code.
+
 void stdout_tx_str(const char *str) {
     if (pyb_uart_global_debug != PYB_UART_NONE) {
         uart_tx_str(pyb_uart_global_debug, str);
     }
-#if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_str(str);
 #endif
     usb_vcp_send_str(str);
@@ -52,7 +55,7 @@ void stdout_tx_strn(const char *str, uint len) {
     if (pyb_uart_global_debug != PYB_UART_NONE) {
         uart_tx_strn(pyb_uart_global_debug, str, len);
     }
-#if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
 #endif
     usb_vcp_send_strn(str, len);

@@ -54,6 +54,7 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
+#include "lcd.h"
 #include "usb.h"
 #include "ff.h"
 #include "portmodules.h"
@@ -389,6 +390,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
 #if MICROPY_HW_HAS_MMA7660
     { MP_OBJ_NEW_QSTR(MP_QSTR_Accel), (mp_obj_t)&pyb_accel_type },
+#endif
+
+#if MICROPY_HW_HAS_LCD
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LCD), (mp_obj_t)&pyb_lcd_type },
 #endif
 };
 

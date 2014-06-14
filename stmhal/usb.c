@@ -199,7 +199,6 @@ void USR_KEYBRD_ProcessData(uint8_t pbuf) {
     led_state(4, 1);
     USB_OTG_BSP_mDelay(50);
     led_state(4, 0);
-    //lcd_print_strn((char*)&pbuf, 1);
     usb_keyboard_key = pbuf;
 }
 

@@ -39,376 +39,430 @@
 #include "obj.h"
 #include "runtime.h"
 
-#include "systick.h"
+#include "pin.h"
+#include "genhdr/pins.h"
+#include "bufhelper.h"
+#include "spi.h"
 #include "font_petme128_8x8.h"
 #include "lcd.h"
-
-#if defined(PYBV3)
-#define PYB_LCD_PORT        (GPIOA)
-#define PYB_LCD_CS1_PIN     (GPIO_PIN_0)
-#define PYB_LCD_RST_PIN     (GPIO_PIN_1)
-#define PYB_LCD_A0_PIN      (GPIO_PIN_2)
-#define PYB_LCD_SCL_PIN     (GPIO_PIN_3)
-#define PYB_LCD_SI_PIN      (GPIO_PIN_4)
-#elif defined(PYBV4) || defined(PYBV10)
-// X position
-#define PYB_LCD_PORT       (GPIOA)
-#define PYB_LCD_CS1_PIN    (GPIO_PIN_2) // X3
-#define PYB_LCD_RST_PIN    (GPIO_PIN_3) // X4
-#define PYB_LCD_A0_PIN     (GPIO_PIN_4) // X5
-#define PYB_LCD_SCL_PIN    (GPIO_PIN_5) // X6
-#define PYB_LCD_SI_PIN     (GPIO_PIN_7) // X8
-#define PYB_LCD_BL_PORT    (GPIOC)
-#define PYB_LCD_BL_PIN     (GPIO_PIN_5) // X12
-/*
-// Y position
-#define PYB_LCD_PORT       (GPIOB)
-#define PYB_LCD_CS1_PIN    (GPIO_PIN_8) // Y3 = PB8
-#define PYB_LCD_RST_PIN    (GPIO_PIN_9) // Y4 = PB9
-#define PYB_LCD_A0_PIN     (GPIO_PIN_12) // Y5 = PB12
-#define PYB_LCD_SCL_PIN    (GPIO_PIN_13) // Y6 = PB13
-#define PYB_LCD_SI_PIN     (GPIO_PIN_15) // Y8 = PB15
-#define PYB_LCD_BL_PORT    (GPIOB)
-#define PYB_LCD_BL_PIN     (GPIO_PIN_1) // Y12 = PB1
-*/
-#elif defined(STM32F4DISC)
-/* Configure if needed */
-#define PYB_LCD_PORT       (GPIOA)
-#define PYB_LCD_CS1_PIN    (GPIO_PIN_2) // X3
-#define PYB_LCD_RST_PIN    (GPIO_PIN_3) // X4
-#define PYB_LCD_A0_PIN     (GPIO_PIN_4) // X5
-#define PYB_LCD_SCL_PIN    (GPIO_PIN_5) // X6
-#define PYB_LCD_SI_PIN     (GPIO_PIN_7) // X8
-#define PYB_LCD_BL_PORT    (GPIOC)
-#define PYB_LCD_BL_PIN     (GPIO_PIN_5) // X12
-#endif
 
 #define LCD_INSTR (0)
 #define LCD_DATA (1)
 
-static void lcd_delay(void) {
+#define LCD_CHAR_BUF_W (16)
+#define LCD_CHAR_BUF_H (4)
+
+#define LCD_PIX_BUF_W (128)
+#define LCD_PIX_BUF_H (32)
+#define LCD_PIX_BUF_BYTE_SIZE (LCD_PIX_BUF_W * LCD_PIX_BUF_H / 8)
+
+typedef struct _pyb_lcd_obj_t {
+    mp_obj_base_t base;
+
+    // hardware control for the LCD
+    SPI_HandleTypeDef *spi;
+    const pin_obj_t *pin_cs1;
+    const pin_obj_t *pin_rst;
+    const pin_obj_t *pin_a0;
+    const pin_obj_t *pin_bl;
+
+    // character buffer for stdout-like output
+    char char_buffer[LCD_CHAR_BUF_W * LCD_CHAR_BUF_H];
+    int line;
+    int column;
+    int next_line;
+
+    // double buffering for pixel buffer
+    byte pix_buf[LCD_PIX_BUF_BYTE_SIZE];
+    byte pix_buf2[LCD_PIX_BUF_BYTE_SIZE];
+} pyb_lcd_obj_t;
+
+STATIC void lcd_delay(void) {
     __asm volatile ("nop\nnop");
 }
 
-static void lcd_out(int instr_data, uint8_t i) {
+STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
     lcd_delay();
-    PYB_LCD_PORT->BSRRH = PYB_LCD_CS1_PIN; // CS=0; enable
+    lcd->pin_cs1->gpio->BSRRH = lcd->pin_cs1->pin_mask; // CS=0; enable
     if (instr_data == LCD_INSTR) {
-        PYB_LCD_PORT->BSRRH = PYB_LCD_A0_PIN; // A0=0; select instr reg
+        lcd->pin_a0->gpio->BSRRH = lcd->pin_a0->pin_mask; // A0=0; select instr reg
     } else {
-        PYB_LCD_PORT->BSRRL = PYB_LCD_A0_PIN; // A0=1; select data reg
+        lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask; // A0=1; select data reg
     }
-    // send byte bigendian, latches on rising clock
-    for (uint32_t n = 0; n < 8; n++) {
-        lcd_delay();
-        PYB_LCD_PORT->BSRRH = PYB_LCD_SCL_PIN; // SCL=0
-        if ((i & 0x80) == 0) {
-            PYB_LCD_PORT->BSRRH = PYB_LCD_SI_PIN; // SI=0
-        } else {
-            PYB_LCD_PORT->BSRRL = PYB_LCD_SI_PIN; // SI=1
-        }
-        i <<= 1;
-        lcd_delay();
-        PYB_LCD_PORT->BSRRL = PYB_LCD_SCL_PIN; // SCL=1
-    }
-    PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN; // CS=1; disable
-
-    /*
-    in Python, native types:
-    CS1_PIN(const) = 0
-    n = int(0)
-    delay_ms(0)
-    PORT[word:BSRRH] = 1 << CS1_PIN
-    for n in range(0, 8):
-        delay_ms(0)
-        PORT[word:BSRRH] = 1 << SCL_PIN
-        if i & 0x80 == 0:
-            PORT[word:BSRRH] = 1 << SI_PIN
-        else:
-            PORT[word:BSRRL] = 1 << SI_PIN
-        i <<= 1
-        delay_ms(0)
-        PORT[word:BSRRL] = 1 << SCL_PIN
-    */
+    lcd_delay();
+    HAL_SPI_Transmit(lcd->spi, &i, 1, 1000);
 }
 
-/*
-static void lcd_data_out(uint8_t i) {
-    delay_ms(0);
-    PYB_LCD_PORT->BSRRH = PYB_LCD_CS1_PIN; // CS=0; enable
-    PYB_LCD_PORT->BSRRL = PYB_LCD_A0_PIN; // A0=1; select data reg
-    // send byte bigendian, latches on rising clock
-    for (uint32_t n = 0; n < 8; n++) {
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRH = PYB_LCD_SCL_PIN; // SCL=0
-        if ((i & 0x80) == 0) {
-            PYB_LCD_PORT->BSRRH = PYB_LCD_SI_PIN; // SI=0
-        } else {
-            PYB_LCD_PORT->BSRRL = PYB_LCD_SI_PIN; // SI=1
-        }
-        i <<= 1;
-        delay_ms(0);
-        PYB_LCD_PORT->BSRRL = PYB_LCD_SCL_PIN; // SCL=1
-    }
-    PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN; // CS=1; disable
-}
-*/
-
-// writes 8 vertical pixels
-// pos 0 is upper left, pos 1 is 8 pixels to right of that, pos 128 is 8 pixels below that
-mp_obj_t lcd_draw_pixel_8(mp_obj_t mp_pos, mp_obj_t mp_val) {
-    int pos = mp_obj_get_int(mp_pos);
-    int val = mp_obj_get_int(mp_val);
-    int page = pos / 128;
-    int offset = pos - (page * 128);
-    lcd_out(LCD_INSTR, 0xb0 | page); // page address set
-    lcd_out(LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
-    lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
-    lcd_out(LCD_DATA, val); // write data
-    return mp_const_none;
-}
-
-#define LCD_BUF_W (16)
-#define LCD_BUF_H (4)
-
-char lcd_char_buffer[LCD_BUF_W * LCD_BUF_H];
-int lcd_line;
-int lcd_column;
-int lcd_next_line;
-
-#define LCD_PIX_BUF_SIZE (128 * 32 / 8)
-byte lcd_pix_buf[LCD_PIX_BUF_SIZE];
-byte lcd_pix_buf2[LCD_PIX_BUF_SIZE];
-
-mp_obj_t lcd_pix_clear(void) {
-    memset(lcd_pix_buf, 0, LCD_PIX_BUF_SIZE);
-    memset(lcd_pix_buf2, 0, LCD_PIX_BUF_SIZE);
-    return mp_const_none;
-}
-
-mp_obj_t lcd_pix_get(mp_obj_t mp_x, mp_obj_t mp_y) {
-    int x = mp_obj_get_int(mp_x);
-    int y = mp_obj_get_int(mp_y);
-    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
-        uint byte_pos = x + 128 * ((uint)y >> 3);
-        if (lcd_pix_buf[byte_pos] & (1 << (y & 7))) {
-            return mp_obj_new_int(1);
-        }
-    }
-    return mp_obj_new_int(0);
-}
-
-mp_obj_t lcd_pix_set(mp_obj_t mp_x, mp_obj_t mp_y) {
-    int x = mp_obj_get_int(mp_x);
-    int y = mp_obj_get_int(mp_y);
-    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
-        uint byte_pos = x + 128 * ((uint)y >> 3);
-        lcd_pix_buf2[byte_pos] |= 1 << (y & 7);
-    }
-    return mp_const_none;
-}
-
-mp_obj_t lcd_pix_reset(mp_obj_t mp_x, mp_obj_t mp_y) {
-    int x = mp_obj_get_int(mp_x);
-    int y = mp_obj_get_int(mp_y);
-    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
-        uint byte_pos = x + 128 * ((uint)y >> 3);
-        lcd_pix_buf2[byte_pos] &= ~(1 << (y & 7));
-    }
-    return mp_const_none;
-}
-
-mp_obj_t lcd_pix_show(void) {
-    memcpy(lcd_pix_buf, lcd_pix_buf2, LCD_PIX_BUF_SIZE);
-    for (uint page = 0; page < 4; page++) {
-        lcd_out(LCD_INSTR, 0xb0 | page); // page address set
-        lcd_out(LCD_INSTR, 0x10); // column address set upper; 0
-        lcd_out(LCD_INSTR, 0x00); // column address set lower; 0
-        for (uint i = 0; i < 128; i++) {
-            lcd_out(LCD_DATA, lcd_pix_buf[i + 128 * page]);
-        }
-    }
-    return mp_const_none;
-}
-
-mp_obj_t lcd_print(mp_obj_t text) {
-    uint len;
-    const char *data = mp_obj_str_get_data(text, &len);
-    lcd_print_strn(data, len);
-    return mp_const_none;
-}
-
-mp_obj_t lcd_light(mp_obj_t value) {
-#if defined(PYB_LCD_BL_PORT)
-    if (mp_obj_is_true(value)) {
-        PYB_LCD_BL_PORT->BSRRL = PYB_LCD_BL_PIN; // set pin high to turn backlight on
-    } else {
-        PYB_LCD_BL_PORT->BSRRH = PYB_LCD_BL_PIN; // set pin low to turn backlight off
-    }
-#endif
-    return mp_const_none;
-}
-
-static mp_obj_t mp_lcd = MP_OBJ_NULL;
-
-static mp_obj_t pyb_lcd_init(void) {
-    if (mp_lcd != MP_OBJ_NULL) {
-        // already init'd
-        return mp_lcd;
-    }
-
-    // set the outputs high
-    PYB_LCD_PORT->BSRRL = PYB_LCD_CS1_PIN;
-    PYB_LCD_PORT->BSRRL = PYB_LCD_RST_PIN;
-    PYB_LCD_PORT->BSRRL = PYB_LCD_A0_PIN;
-    PYB_LCD_PORT->BSRRL = PYB_LCD_SCL_PIN;
-    PYB_LCD_PORT->BSRRL = PYB_LCD_SI_PIN;
-
-    // make them push/pull outputs
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Pin = PYB_LCD_CS1_PIN | PYB_LCD_RST_PIN | PYB_LCD_A0_PIN | PYB_LCD_SCL_PIN | PYB_LCD_SI_PIN;
-    HAL_GPIO_Init(PYB_LCD_PORT, &GPIO_InitStructure);
-
-#if defined(PYB_LCD_BL_PORT)
-    // backlight drive pin, starts low (off)
-    PYB_LCD_BL_PORT->BSRRH = PYB_LCD_BL_PIN;
-    GPIO_InitStructure.Pin = PYB_LCD_BL_PIN;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(PYB_LCD_BL_PORT, &GPIO_InitStructure);
-#endif
-
-    // init the LCD
-    HAL_Delay(1); // wait a bit
-    PYB_LCD_PORT->BSRRH = PYB_LCD_RST_PIN; // RST=0; reset
-    HAL_Delay(1); // wait for reset; 2us min
-    PYB_LCD_PORT->BSRRL = PYB_LCD_RST_PIN; // RST=1; enable
-    HAL_Delay(1); // wait for reset; 2us min
-    lcd_out(LCD_INSTR, 0xa0); // ADC select, normal
-    lcd_out(LCD_INSTR, 0xc8); // common output mode select, reverse
-    lcd_out(LCD_INSTR, 0xa2); // LCD bias set, 1/9 bias
-    lcd_out(LCD_INSTR, 0x2f); // power control set, 0b111=(booster on, vreg on, vfollow on)
-    lcd_out(LCD_INSTR, 0x21); // v0 voltage regulator internal resistor ratio set, 0b001=small
-    lcd_out(LCD_INSTR, 0x81); // electronic volume mode set
-    lcd_out(LCD_INSTR, 0x34); // electronic volume register set, 0b110100
-    lcd_out(LCD_INSTR, 0x40); // display start line set, 0
-    lcd_out(LCD_INSTR, 0xaf); // LCD display, on
-
-    // clear display
-    for (int page = 0; page < 4; page++) {
-        lcd_out(LCD_INSTR, 0xb0 | page); // page address set
-        lcd_out(LCD_INSTR, 0x10); // column address set upper
-        lcd_out(LCD_INSTR, 0x00); // column address set lower
-        for (int i = 0; i < 128; i++) {
-            lcd_out(LCD_DATA, 0x00);
-        }
-    }
-
-    for (int i = 0; i < LCD_BUF_H * LCD_BUF_W; i++) {
-        lcd_char_buffer[i] = ' ';
-    }
-    lcd_line = 0;
-    lcd_column = 0;
-    lcd_next_line = 0;
-
-    // Micro Python interface
-    mp_obj_t o = mp_obj_new_type(MP_QSTR_LCD, mp_const_empty_tuple, mp_obj_new_dict(0));
-    mp_store_attr(o, qstr_from_str("lcd8"), mp_make_function_n(2, lcd_draw_pixel_8));
-    mp_store_attr(o, qstr_from_str("clear"), mp_make_function_n(0, lcd_pix_clear));
-    mp_store_attr(o, qstr_from_str("get"), mp_make_function_n(2, lcd_pix_get));
-    mp_store_attr(o, qstr_from_str("set"), mp_make_function_n(2, lcd_pix_set));
-    mp_store_attr(o, qstr_from_str("reset"), mp_make_function_n(2, lcd_pix_reset));
-    mp_store_attr(o, qstr_from_str("show"), mp_make_function_n(0, lcd_pix_show));
-    mp_store_attr(o, qstr_from_str("text"), mp_make_function_n(1, lcd_print));
-    mp_store_attr(o, qstr_from_str("light"), mp_make_function_n(1, lcd_light));
-    mp_lcd = o;
-    return o;
-}
-
-static MP_DEFINE_CONST_FUN_OBJ_0(pyb_lcd_init_obj, pyb_lcd_init);
-
-void lcd_init(void) {
-    mp_lcd = MP_OBJ_NULL;
-    mp_store_name(qstr_from_str("LCD"), (mp_obj_t)&pyb_lcd_init_obj);
-}
-
-void lcd_print_str(const char *str) {
-    lcd_print_strn(str, strlen(str));
-}
-
-void lcd_print_strn(const char *str, unsigned int len) {
-    int redraw_min = lcd_line * LCD_BUF_W + lcd_column;
+// write a string to the LCD at the current cursor location
+// output it straight away (doesn't use the pixel buffer)
+STATIC void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len) {
+    int redraw_min = lcd->line * LCD_CHAR_BUF_W + lcd->column;
     int redraw_max = redraw_min;
-    int did_new_line = 0;
     for (; len > 0; len--, str++) {
         // move to next line if needed
-        if (lcd_next_line) {
-            if (lcd_line + 1 < LCD_BUF_H) {
-                lcd_line += 1;
+        if (lcd->next_line) {
+            if (lcd->line + 1 < LCD_CHAR_BUF_H) {
+                lcd->line += 1;
             } else {
-                lcd_line = LCD_BUF_H - 1;
-                for (int i = 0; i < LCD_BUF_W * (LCD_BUF_H - 1); i++) {
-                    lcd_char_buffer[i] = lcd_char_buffer[i + LCD_BUF_W];
+                lcd->line = LCD_CHAR_BUF_H - 1;
+                for (int i = 0; i < LCD_CHAR_BUF_W * (LCD_CHAR_BUF_H - 1); i++) {
+                    lcd->char_buffer[i] = lcd->char_buffer[i + LCD_CHAR_BUF_W];
                 }
-                for (int i = 0; i < LCD_BUF_W; i++) {
-                    lcd_char_buffer[LCD_BUF_W * (LCD_BUF_H - 1) + i] = ' ';
+                for (int i = 0; i < LCD_CHAR_BUF_W; i++) {
+                    lcd->char_buffer[LCD_CHAR_BUF_W * (LCD_CHAR_BUF_H - 1) + i] = ' ';
                 }
                 redraw_min = 0;
-                redraw_max = LCD_BUF_W * LCD_BUF_H;
+                redraw_max = LCD_CHAR_BUF_W * LCD_CHAR_BUF_H;
             }
-            lcd_next_line = 0;
-            lcd_column = 0;
-            did_new_line = 1;
+            lcd->next_line = 0;
+            lcd->column = 0;
         }
         if (*str == '\n') {
-            lcd_next_line = 1;
+            lcd->next_line = 1;
         } else if (*str == '\r') {
-            lcd_column = 0;
+            lcd->column = 0;
         } else if (*str == '\b') {
-            if (lcd_column > 0) {
-                lcd_column--;
+            if (lcd->column > 0) {
+                lcd->column--;
+                redraw_min = 0; // could optimise this to not redraw everything
             }
-        } else if (lcd_column >= LCD_BUF_W) {
-            lcd_next_line = 1;
+        } else if (lcd->column >= LCD_CHAR_BUF_W) {
+            lcd->next_line = 1;
             str -= 1;
             len += 1;
         } else {
-            lcd_char_buffer[lcd_line * LCD_BUF_W + lcd_column] = *str;
-            lcd_column += 1;
-            int max = lcd_line * LCD_BUF_W + lcd_column;
+            lcd->char_buffer[lcd->line * LCD_CHAR_BUF_W + lcd->column] = *str;
+            lcd->column += 1;
+            int max = lcd->line * LCD_CHAR_BUF_W + lcd->column;
             if (max > redraw_max) {
                 redraw_max = max;
             }
         }
     }
 
-    int last_page = -1;
+    // we must draw upside down, because the LCD is upside down
     for (int i = redraw_min; i < redraw_max; i++) {
-        int page = i / LCD_BUF_W;
-        if (page != last_page) {
-            int offset = 8 * (i - (page * LCD_BUF_W));
-            lcd_out(LCD_INSTR, 0xb0 | page); // page address set
-            lcd_out(LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
-            lcd_out(LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
-            last_page = page;
-        }
-        int chr = lcd_char_buffer[i];
+        uint page = i / LCD_CHAR_BUF_W;
+        uint offset = 8 * (LCD_CHAR_BUF_W - 1 - (i - (page * LCD_CHAR_BUF_W)));
+        lcd_out(lcd, LCD_INSTR, 0xb0 | page); // page address set
+        lcd_out(lcd, LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
+        lcd_out(lcd, LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
+        int chr = lcd->char_buffer[i];
         if (chr < 32 || chr > 126) {
             chr = 127;
         }
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
-        for (int j = 0; j < 8; j++) {
-            lcd_out(LCD_DATA, chr_data[j]);
+        for (int j = 7; j >= 0; j--) {
+            lcd_out(lcd, LCD_DATA, chr_data[j]);
+        }
+    }
+}
+
+STATIC mp_obj_t pyb_lcd_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+
+    // get LCD position
+    const char *lcd_id = mp_obj_str_get_str(args[0]);
+
+    // create lcd object
+    pyb_lcd_obj_t *lcd = m_new_obj(pyb_lcd_obj_t);
+    lcd->base.type = &pyb_lcd_type;
+
+    // configure pins
+    // TODO accept an SPI object and pin objects for full customisation
+    if ((lcd_id[0] | 0x20) == 'x' && lcd_id[1] == '\0') {
+        lcd->spi = &SPIHandle1;
+        lcd->pin_cs1 = &pin_A2; // X3
+        lcd->pin_rst = &pin_A3; // X4
+        lcd->pin_a0 = &pin_A4; // X5
+        lcd->pin_bl = &pin_C5; // X12
+    } else if ((lcd_id[0] | 0x20) == 'y' && lcd_id[1] == '\0') {
+        lcd->spi = &SPIHandle2;
+        lcd->pin_cs1 = &pin_B8; // Y3
+        lcd->pin_rst = &pin_B9; // Y4
+        lcd->pin_a0 = &pin_B12; // Y5
+        lcd->pin_bl = &pin_B1; // Y12
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LCD bus '%s' does not exist", lcd_id));
+    }
+
+    // init the SPI bus
+    SPI_InitTypeDef *init = &lcd->spi->Init;
+    init->Mode = SPI_MODE_MASTER;
+
+    // compute the baudrate prescaler from the desired baudrate
+    // select a prescaler that yields at most the desired baudrate
+    uint spi_clock;
+    if (lcd->spi->Instance == SPI1) {
+        // SPI1 is on APB2
+        spi_clock = HAL_RCC_GetPCLK2Freq();
+    } else {
+        // SPI2 and SPI3 are on APB1
+        spi_clock = HAL_RCC_GetPCLK1Freq();
+    }
+    uint br_prescale = spi_clock / 16000000; // datasheet says LCD can run at 20MHz, but we go for 16MHz
+    if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
+    else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
+    else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
+    else if (br_prescale <= 16) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; }
+    else if (br_prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
+    else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
+    else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
+    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
+
+    // data is sent bigendian, latches on rising clock
+    init->CLKPolarity = SPI_POLARITY_HIGH;
+    init->CLKPhase = SPI_PHASE_2EDGE;
+    init->Direction = SPI_DIRECTION_2LINES;
+    init->DataSize = SPI_DATASIZE_8BIT;
+    init->NSS = SPI_NSS_SOFT;
+    init->FirstBit = SPI_FIRSTBIT_MSB;
+    init->TIMode = SPI_TIMODE_DISABLED;
+    init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+    init->CRCPolynomial = 0;
+
+    // init the SPI bus
+    spi_init(lcd->spi);
+
+    // set the pins to default values
+    lcd->pin_cs1->gpio->BSRRL = lcd->pin_cs1->pin_mask;
+    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask;
+    lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask;
+    lcd->pin_bl->gpio->BSRRH = lcd->pin_bl->pin_mask;
+
+    // init the pins to be push/pull outputs
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+
+    GPIO_InitStructure.Pin = lcd->pin_cs1->pin_mask;
+    HAL_GPIO_Init(lcd->pin_cs1->gpio, &GPIO_InitStructure);
+
+    GPIO_InitStructure.Pin = lcd->pin_rst->pin_mask;
+    HAL_GPIO_Init(lcd->pin_rst->gpio, &GPIO_InitStructure);
+
+    GPIO_InitStructure.Pin = lcd->pin_a0->pin_mask;
+    HAL_GPIO_Init(lcd->pin_a0->gpio, &GPIO_InitStructure);
+
+    GPIO_InitStructure.Pin = lcd->pin_bl->pin_mask;
+    HAL_GPIO_Init(lcd->pin_bl->gpio, &GPIO_InitStructure);
+
+    // init the LCD
+    HAL_Delay(1); // wait a bit
+    lcd->pin_rst->gpio->BSRRH = lcd->pin_rst->pin_mask; // RST=0; reset
+    HAL_Delay(1); // wait for reset; 2us min
+    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask; // RST=1; enable
+    HAL_Delay(1); // wait for reset; 2us min
+    lcd_out(lcd, LCD_INSTR, 0xa0); // ADC select, normal
+    lcd_out(lcd, LCD_INSTR, 0xc0); // common output mode select, normal (this flips the display)
+    lcd_out(lcd, LCD_INSTR, 0xa2); // LCD bias set, 1/9 bias
+    lcd_out(lcd, LCD_INSTR, 0x2f); // power control set, 0b111=(booster on, vreg on, vfollow on)
+    lcd_out(lcd, LCD_INSTR, 0x21); // v0 voltage regulator internal resistor ratio set, 0b001=small
+    lcd_out(lcd, LCD_INSTR, 0x81); // electronic volume mode set
+    lcd_out(lcd, LCD_INSTR, 0x28); // electronic volume register set
+    lcd_out(lcd, LCD_INSTR, 0x40); // display start line set, 0
+    lcd_out(lcd, LCD_INSTR, 0xaf); // LCD display, on
+
+    // clear LCD RAM
+    for (int page = 0; page < 4; page++) {
+        lcd_out(lcd, LCD_INSTR, 0xb0 | page); // page address set
+        lcd_out(lcd, LCD_INSTR, 0x10); // column address set upper
+        lcd_out(lcd, LCD_INSTR, 0x00); // column address set lower
+        for (int i = 0; i < 128; i++) {
+            lcd_out(lcd, LCD_DATA, 0x00);
         }
     }
 
-    if (did_new_line) {
-        HAL_Delay(50);
-    }
+    // clear local char buffer
+    memset(lcd->char_buffer, ' ', LCD_CHAR_BUF_H * LCD_CHAR_BUF_W);
+    lcd->line = 0;
+    lcd->column = 0;
+    lcd->next_line = 0;
+
+    // clear local pixel buffer
+    memset(lcd->pix_buf, 0, LCD_PIX_BUF_BYTE_SIZE);
+    memset(lcd->pix_buf2, 0, LCD_PIX_BUF_BYTE_SIZE);
+
+    return lcd;
 }
+
+STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj_t val) {
+    pyb_lcd_obj_t *self = self_in;
+
+    // get whether instr or data
+    int instr_data = mp_obj_get_int(instr_data_in);
+
+    // get the buffer to send from
+    mp_buffer_info_t bufinfo;
+    uint8_t data[1];
+    pyb_buf_get_for_send(val, &bufinfo, data);
+
+    // send the data
+    for (uint i = 0; i < bufinfo.len; i++) {
+        lcd_out(self, instr_data, ((byte*)bufinfo.buf)[i]);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_command_obj, pyb_lcd_command);
+
+STATIC mp_obj_t pyb_lcd_contrast(mp_obj_t self_in, mp_obj_t contrast_in) {
+    pyb_lcd_obj_t *self = self_in;
+    int contrast = mp_obj_get_int(contrast_in);
+    if (contrast < 0) {
+        contrast = 0;
+    } else if (contrast > 0x2f) {
+        contrast = 0x2f;
+    }
+    lcd_out(self, LCD_INSTR, 0x81); // electronic volume mode set
+    lcd_out(self, LCD_INSTR, contrast); // electronic volume register set
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_contrast_obj, pyb_lcd_contrast);
+
+STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
+    pyb_lcd_obj_t *self = self_in;
+    if (mp_obj_is_true(value)) {
+        self->pin_bl->gpio->BSRRL = self->pin_bl->pin_mask; // set pin high to turn backlight on
+    } else {
+        self->pin_bl->gpio->BSRRH = self->pin_bl->pin_mask; // set pin low to turn backlight off
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_light_obj, pyb_lcd_light);
+
+STATIC mp_obj_t pyb_lcd_write(mp_obj_t self_in, mp_obj_t str) {
+    pyb_lcd_obj_t *self = self_in;
+    uint len;
+    const char *data = mp_obj_str_get_data(str, &len);
+    lcd_write_strn(self, data, len);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_write_obj, pyb_lcd_write);
+
+STATIC mp_obj_t pyb_lcd_fill(mp_obj_t self_in, mp_obj_t col_in) {
+    pyb_lcd_obj_t *self = self_in;
+    int col = mp_obj_get_int(col_in);
+    if (col) {
+        col = 0xff;
+    }
+    memset(self->pix_buf, col, LCD_PIX_BUF_BYTE_SIZE);
+    memset(self->pix_buf2, col, LCD_PIX_BUF_BYTE_SIZE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_fill_obj, pyb_lcd_fill);
+
+STATIC mp_obj_t pyb_lcd_get(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
+    pyb_lcd_obj_t *self = self_in;
+    int x = mp_obj_get_int(x_in);
+    int y = mp_obj_get_int(y_in);
+    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
+        uint byte_pos = x + 128 * ((uint)y >> 3);
+        if (self->pix_buf[byte_pos] & (1 << (y & 7))) {
+            return mp_obj_new_int(1);
+        }
+    }
+    return mp_obj_new_int(0);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_get_obj, pyb_lcd_get);
+
+STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    pyb_lcd_obj_t *self = args[0];
+    int x = mp_obj_get_int(args[1]);
+    int y = mp_obj_get_int(args[2]);
+    if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
+        uint byte_pos = x + 128 * ((uint)y >> 3);
+        if (mp_obj_get_int(args[3]) == 0) {
+            self->pix_buf2[byte_pos] &= ~(1 << (y & 7));
+        } else {
+            self->pix_buf2[byte_pos] |= 1 << (y & 7);
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_pixel_obj, 4, 4, pyb_lcd_pixel);
+
+STATIC mp_obj_t pyb_lcd_text(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // extract arguments
+    pyb_lcd_obj_t *self = args[0];
+    uint len;
+    const char *data = mp_obj_str_get_data(args[1], &len);
+    int x0 = mp_obj_get_int(args[2]);
+    int y0 = mp_obj_get_int(args[3]);
+    int col = mp_obj_get_int(args[4]);
+
+    // loop over chars
+    for (const char *top = data + len; data < top; data++) {
+        // get char and make sure its in range of font
+        uint chr = *(byte*)data;
+        if (chr < 32 || chr > 127) {
+            chr = 127;
+        }
+        // get char data
+        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        // loop over char data
+        for (uint j = 0; j < 8; j++, x0++) {
+            if (0 <= x0 && x0 < LCD_PIX_BUF_W) { // clip x
+                uint vline_data = chr_data[j]; // each byte of char data is a vertical column of 8 pixels, LSB at top
+                for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
+                    if (vline_data & 1) { // only draw if pixel set
+                        if (0 <= y && y < LCD_PIX_BUF_H) { // clip y
+                            uint byte_pos = x0 + LCD_PIX_BUF_W * ((uint)y >> 3);
+                            if (col == 0) {
+                                // clear pixel
+                                self->pix_buf2[byte_pos] &= ~(1 << (y & 7));
+                            } else {
+                                // set pixel
+                                self->pix_buf2[byte_pos] |= 1 << (y & 7);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_text_obj, 5, 5, pyb_lcd_text);
+
+STATIC mp_obj_t pyb_lcd_show(mp_obj_t self_in) {
+    pyb_lcd_obj_t *self = self_in;
+    memcpy(self->pix_buf, self->pix_buf2, LCD_PIX_BUF_BYTE_SIZE);
+    for (uint page = 0; page < 4; page++) {
+        lcd_out(self, LCD_INSTR, 0xb0 | page); // page address set
+        lcd_out(self, LCD_INSTR, 0x10); // column address set upper; 0
+        lcd_out(self, LCD_INSTR, 0x00); // column address set lower; 0
+        for (uint i = 0; i < 128; i++) {
+            lcd_out(self, LCD_DATA, self->pix_buf[128 * page + 127 - i]);
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_lcd_show_obj, pyb_lcd_show);
+
+STATIC const mp_map_elem_t pyb_lcd_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_command), (mp_obj_t)&pyb_lcd_command_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_contrast), (mp_obj_t)&pyb_lcd_contrast_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_light), (mp_obj_t)&pyb_lcd_light_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_lcd_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fill), (mp_obj_t)&pyb_lcd_fill_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&pyb_lcd_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pixel), (mp_obj_t)&pyb_lcd_pixel_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_lcd_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&pyb_lcd_show_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pyb_lcd_locals_dict, pyb_lcd_locals_dict_table);
+
+const mp_obj_type_t pyb_lcd_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_LCD,
+    .make_new = pyb_lcd_make_new,
+    .locals_dict = (mp_obj_t)&pyb_lcd_locals_dict,
+};
 
 #endif // MICROPY_HW_HAS_LCD

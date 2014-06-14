@@ -196,23 +196,13 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
 }
 
 void stdout_print_strn(void *data, const char *str, unsigned int len) {
-    // send stdout to UART, USB CDC VCP, and LCD if nothing else
-    bool any = false;
-
+    // TODO this needs to be replaced with a proper stdio interface ala CPython
+    // send stdout to UART and USB CDC VCP
     if (pyb_uart_global_debug != PYB_UART_NONE) {
         uart_tx_strn_cooked(pyb_uart_global_debug, str, len);
-        any = true;
     }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
-        any = true;
-    }
-    if (!any) {
-#if 0
-#if MICROPY_HW_HAS_LCD
-        lcd_print_strn(str, len);
-#endif
-#endif
     }
 }
 

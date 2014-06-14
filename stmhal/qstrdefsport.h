@@ -57,7 +57,6 @@ Q(have_cdc)
 Q(hid)
 Q(time)
 Q(rng)
-Q(LCD)
 Q(SD)
 Q(SDcard)
 Q(FileIO)
@@ -246,6 +245,17 @@ Q(sleep)
 
 // for input
 Q(input)
+
+// for LCD class
+Q(LCD)
+Q(command)
+Q(contrast)
+Q(light)
+Q(fill)
+Q(get)
+Q(pixel)
+Q(text)
+Q(show)
 
 // for stm module
 Q(stm)

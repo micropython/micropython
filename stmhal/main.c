@@ -58,7 +58,6 @@
 #include "storage.h"
 #include "sdcard.h"
 #include "ff.h"
-#include "lcd.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -95,10 +94,6 @@ void __fatal_error(const char *msg) {
     led_state(4, 1);
     stdout_tx_strn("\nFATAL ERROR:\n", 14);
     stdout_tx_strn(msg, strlen(msg));
-#if 0 && MICROPY_HW_HAS_LCD
-    lcd_print_strn("\nFATAL ERROR:\n", 14);
-    lcd_print_strn(msg, strlen(msg));
-#endif
     for (uint i = 0;;) {
         led_toggle(((i++) & 3) + 1);
         for (volatile uint delay = 0; delay < 10000000; delay++) {
@@ -332,11 +327,6 @@ soft_reset:
 
     pin_init();
     extint_init();
-
-#if MICROPY_HW_HAS_LCD
-    // LCD init (just creates class, init hardware by calling LCD())
-    lcd_init();
-#endif
 
     // local filesystem init
     {
