@@ -116,7 +116,8 @@ void nlr_jump_fail(void *val) {
 }
 
 #ifndef NDEBUG
-void __assert_func(const char *file, int line, const char *func, const char *expr) {
+void __attribute__((weak))
+    __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     __fatal_error("");
