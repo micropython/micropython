@@ -100,6 +100,7 @@ bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
 unichar unichar_toupper(unichar c);
+#define unichar_charlen(s, bytelen) (bytelen)
 
 /** variable string *********************************************/
 
