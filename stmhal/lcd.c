@@ -368,7 +368,7 @@ STATIC mp_obj_t pyb_lcd_get(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_get_obj, pyb_lcd_get);
 
-STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args) {
     pyb_lcd_obj_t *self = args[0];
     int x = mp_obj_get_int(args[1]);
     int y = mp_obj_get_int(args[2]);
@@ -384,7 +384,7 @@ STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_pixel_obj, 4, 4, pyb_lcd_pixel);
 
-STATIC mp_obj_t pyb_lcd_text(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_lcd_text(uint n_args, const mp_obj_t *args) {
     // extract arguments
     pyb_lcd_obj_t *self = args[0];
     uint len;
