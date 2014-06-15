@@ -70,7 +70,7 @@ typedef struct _pyb_file_obj_t {
 } pyb_file_obj_t;
 
 void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    printf("<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
+    print(env, "<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
 STATIC machine_int_t file_obj_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {

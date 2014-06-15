@@ -195,7 +195,7 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, va_list args) {
     return chrs;
 }
 
-void stdout_print_strn(void *data, const char *str, unsigned int len) {
+STATIC void stdout_print_strn(void *data, const char *str, unsigned int len) {
     // TODO this needs to be replaced with a proper stdio interface ala CPython
     // send stdout to UART and USB CDC VCP
     if (pyb_uart_global_debug != PYB_UART_NONE) {
