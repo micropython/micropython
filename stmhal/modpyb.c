@@ -29,8 +29,9 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
+#include "nlr.h"
 #include "qstr.h"
 #include "obj.h"
 #include "gc.h"
@@ -302,6 +303,28 @@ STATIC mp_obj_t pyb_have_cdc(void ) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 
+/// \function repl_uart(uart)
+/// Get or set the UART object that the REPL is repeated on.
+STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        if (pyb_uart_global_debug == NULL) {
+            return mp_const_none;
+        } else {
+            return pyb_uart_global_debug;
+        }
+    } else {
+        if (args[0] == mp_const_none) {
+            pyb_uart_global_debug = NULL;
+        } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+            pyb_uart_global_debug = args[0];
+        } else {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
+        }
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
+
 /// \function hid((buttons, x, y, z))
 /// Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
 /// signal a HID mouse-motion event.
@@ -342,6 +365,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart), (mp_obj_t)&pyb_repl_uart_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
