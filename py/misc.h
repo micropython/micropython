@@ -166,4 +166,17 @@ int DEBUG_printf(const char *fmt, ...);
 
 extern uint mp_verbose_flag;
 
+// This is useful for unicode handling. Some CPU archs has
+// special instructions for efficient implentation of this
+// function (e.g. CLZ on ARM).
+#ifndef count_lead_ones
+static inline uint count_lead_ones(byte val) {
+    uint c = 0;
+    for (byte mask = 0x80; val & mask; mask >>= 1) {
+        c++;
+    }
+    return c;
+}
+#endif
+
 #endif // _INCLUDED_MINILIB_H
