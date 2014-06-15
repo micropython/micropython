@@ -148,18 +148,9 @@ void led_toggle(pyb_led_t led) {
     }
 #endif
 
+    //Invert LED state.
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
-    GPIO_TypeDef *gpio = led_pin->gpio;
-
-    // We don't know if we're turning the LED on or off, but we don't really
-    // care. Just invert the state.
-    if (gpio->ODR & led_pin->pin_mask) {
-        // pin is high, make it low
-        gpio->BSRRH = led_pin->pin_mask;
-    } else {
-        // pin is low, make it high
-        gpio->BSRRL = led_pin->pin_mask;
-    }
+    HAL_GPIO_TogglePin(led_pin->gpio, led_pin->pin_mask);
 }
 
 int led_get_intensity(pyb_led_t led) {
