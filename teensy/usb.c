@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "Arduino.h"
 
 #include "usb.h"
