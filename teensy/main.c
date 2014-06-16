@@ -3,29 +3,32 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "nlr.h"
 #include "misc.h"
 #include "mpconfig.h"
 #include "qstr.h"
+#include "nlr.h"
 #include "lexer.h"
 #include "lexermemzip.h"
 #include "parse.h"
 #include "obj.h"
-#include "compile.h"
-#include "runtime0.h"
 #include "runtime.h"
-#include "repl.h"
-#include "servo.h"
-#include "usb.h"
 #include "gc.h"
-#include "led.h"
-#include "build/py/py-version.h"
+#include "gccollect.h"
+#include "pyexec.h"
+#include "pybstdio.h"
+#include "readline.h"
 
 #include "Arduino.h"
+#include HAL_H
+
+#include "servo.h"
+#include "usb.h"
+#include "led.h"
+
+//#include "pin.h"
+
 
 extern uint32_t _heap_start;
-
-bool do_file(const char *filename);
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -36,25 +39,36 @@ void flash_error(int n) {
     }
 }
 
-static const char *help_text =
-"Welcome to Micro Python!\n\n"
-"This is a *very* early version of Micro Python and has minimal functionality.\n\n"
-"Specific commands for the board:\n"
-"    pyb.info()             -- print some general information\n"
-"    pyb.gc()               -- run the garbage collector\n"
-"    pyb.delay(<n>)         -- wait for n milliseconds\n"
-"    pyb.Led(<n>)           -- create Led object for LED n (n=0)\n"
-"                              Led methods: on(), off()\n"
-"    pyb.gpio(<pin>)        -- read gpio pin\n"
-"    pyb.gpio(<pin>, <val>) -- set gpio pin\n"
-#if 0
-"    pyb.Servo(<n>) -- create Servo object for servo n (n=1,2,3,4)\n"
-"                      Servo methods: angle(<x>)\n"
-"    pyb.switch()   -- return True/False if switch pressed or not\n"
-"    pyb.accel()    -- get accelerometer values\n"
-"    pyb.rand()     -- get a 16-bit random number\n"
-#endif
-;
+void __fatal_error(const char *msg) {
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    led_state(1, 1);
+    led_state(2, 1);
+    led_state(3, 1);
+    led_state(4, 1);
+    stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    stdout_tx_strn(msg, strlen(msg));
+    for (uint i = 0;;) {
+        led_toggle(((i++) & 3) + 1);
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
+        }
+        if (i >= 16) {
+            // to conserve power
+            __WFI();
+        }
+    }
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught exception %p\n", val);
+    __fatal_error("");
+}
+
+void __assert_func(const char *file, int line, const char *func, const char *expr) {
+
+    printf("Assertion failed: %s, file %s, line %d\n", expr, file, line);
+    __fatal_error("");
+}
 
 mp_obj_t pyb_analog_read(mp_obj_t pin_obj) {
     uint pin = mp_obj_get_int(pin_obj);
@@ -82,12 +96,7 @@ mp_obj_t pyb_analog_write_frequency(mp_obj_t pin_obj, mp_obj_t freq_obj) {
     return mp_const_none;
 }
 
-// get some help about available functions
-static mp_obj_t pyb_help(void) {
-    printf("%s", help_text);
-    return mp_const_none;
-}
-
+#if 0
 // get lots of info about the board
 static mp_obj_t pyb_info(void) {
     // get and print unique id; 96 bits
@@ -101,12 +110,6 @@ static mp_obj_t pyb_info(void) {
 
     // to print info about memory
     {
-        extern void *_sdata;
-        extern void *_edata;
-        extern void *_sbss;
-        extern void *_ebss;
-        extern void *_estack;
-        extern void *_etext;
         printf("_sdata=%p\n", &_sdata);
         printf("_edata=%p\n", &_edata);
         printf("_sbss=%p\n", &_sbss);
@@ -121,9 +124,9 @@ static mp_obj_t pyb_info(void) {
         gc_info_t info;
         gc_info(&info);
         printf("GC:\n");
-        printf("  %lu total\n", info.total);
-        printf("  %lu used %lu free\n", info.used, info.free);
-        printf("  1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
+        printf("  %u total\n", info.total);
+        printf("  %u used %u free\n", info.used, info.free);
+        printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
 #if 0
@@ -139,32 +142,15 @@ static mp_obj_t pyb_info(void) {
     return mp_const_none;
 }
 
+#endif
+
 #define RAM_START (0x1FFF8000) // fixed for chip
 #define HEAP_END  (0x20006000) // tunable
 #define RAM_END   (0x20008000) // fixed for chip
 
+#if 0
+
 void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
-
-void gc_collect(void) {
-    uint32_t start = micros();
-    gc_collect_start();
-    gc_collect_root((void**)RAM_START, (((uint32_t)&_heap_start) - RAM_START) / 4);
-    machine_uint_t regs[10];
-    gc_helper_get_regs_and_clean_stack(regs, HEAP_END);
-    gc_collect_root((void**)HEAP_END, (RAM_END - HEAP_END) / 4); // will trace regs since they now live in this function on the stack
-    gc_collect_end();
-    uint32_t ticks = micros() - start; // TODO implement a function that does this properly
-
-    if (0) {
-        // print GC info
-        gc_info_t info;
-        gc_info(&info);
-        printf("GC@%lu %luus\n", start, ticks);
-        printf(" %lu total\n", info.total);
-        printf(" %lu used %lu free\n", info.used, info.free);
-        printf(" 1=%lu 2=%lu m=%lu\n", info.num_1block, info.num_2block, info.max_block);
-    }
-}
 
 mp_obj_t pyb_gc(void) {
     gc_collect();
@@ -191,7 +177,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     return mp_const_none;
 
 pin_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %d does not exist", pin));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
@@ -209,28 +195,40 @@ mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 #endif
 
-static mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
-static mp_obj_t pyb_config_main = MP_OBJ_NULL;
+#endif // 0
+
+STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
+STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
+STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
 
 mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
     if (MP_OBJ_IS_STR(source_dir)) {
         pyb_config_source_dir = source_dir;
-        printf("source_dir = '");
-        mp_obj_print(source_dir, PRINT_STR);
-        printf("'\n");
     }
     return mp_const_none;
 }
 
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_source_dir_obj, pyb_source_dir);
+
 mp_obj_t pyb_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
         pyb_config_main = main;
-        printf("main = '");
-        mp_obj_print(main, PRINT_STR);
-        printf("'\n");
     }
     return mp_const_none;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
+
+STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
+    if (MP_OBJ_IS_STR(usb_mode)) {
+        pyb_config_usb_mode = usb_mode;
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
+
+#if 0
 
 mp_obj_t pyb_delay(mp_obj_t count) {
     delay(mp_obj_get_int(count));
@@ -242,12 +240,9 @@ mp_obj_t pyb_led(mp_obj_t state) {
     return state;
 }
 
-mp_obj_t pyb_run(mp_obj_t filename_obj) {
-    const char *filename = qstr_str(mp_obj_str_get_qstr(filename_obj));
-    do_file(filename);
-    return mp_const_none;
-}
+#endif  // 0
 
+#if 0
 char *strdup(const char *str) {
     uint32_t len = strlen(str);
     char *s2 = m_new(char, len + 1);
@@ -255,212 +250,19 @@ char *strdup(const char *str) {
     s2[len] = 0;
     return s2;
 }
-
-#define READLINE_HIST_SIZE (8)
-
-static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-
-void stdout_tx_str(const char *str) {
-//    usart_tx_str(str);
-    usb_vcp_send_str(str);
-}
-
-int readline(vstr_t *line, const char *prompt) {
-    stdout_tx_str(prompt);
-    int len = vstr_len(line);
-    int escape = 0;
-    int hist_num = 0;
-    for (;;) {
-        char c;
-        for (;;) {
-            if (usb_vcp_rx_any() != 0) {
-                c = usb_vcp_rx_get();
-                break;
-#if 0
-            } else if (usart_rx_any()) {
-                c = usart_rx_char();
-                break;
 #endif
-            }
-            //delay(1);
-            //if (storage_needs_flush()) {
-            //    storage_flush();
-            //}
-        }
-        if (escape == 0) {
-            if (c == 4 && vstr_len(line) == len) {
-                return 0;
-            } else if (c == '\r') {
-                stdout_tx_str("\r\n");
-                for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
-                    readline_hist[i] = readline_hist[i - 1];
-                }
-                readline_hist[0] = strdup(vstr_str(line));
-                return 1;
-            } else if (c == 27) {
-                escape = true;
-            } else if (c == 127) {
-                if (vstr_len(line) > len) {
-                    vstr_cut_tail(line, 1);
-                    stdout_tx_str("\b \b");
-                }
-            } else if (32 <= c && c <= 126) {
-                vstr_add_char(line, c);
-                stdout_tx_str(line->buf + line->len - 1);
-            }
-        } else if (escape == 1) {
-            if (c == '[') {
-                escape = 2;
-            } else {
-                escape = 0;
-            }
-        } else if (escape == 2) {
-            escape = 0;
-            if (c == 'A') {
-                // up arrow
-                if (hist_num < READLINE_HIST_SIZE && readline_hist[hist_num] != NULL) {
-                    // erase line
-                    for (int i = line->len - len; i > 0; i--) {
-                        stdout_tx_str("\b \b");
-                    }
-                    // set line to history
-                    line->len = len;
-                    vstr_add_str(line, readline_hist[hist_num]);
-                    // draw line
-                    stdout_tx_str(readline_hist[hist_num]);
-                    // increase hist num
-                    hist_num += 1;
-                }
-            }
-        } else {
-            escape = 0;
-        }
-        delay(10);
-    }
-}
-
-bool do_file(const char *filename) {
-    mp_lexer_t *lex = mp_lexer_new_from_memzip_file(filename);
-
-    if (lex == NULL) {
-        printf("could not open file '%s' for reading\n", filename);
-        return false;
-    }
-
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
-    qstr source_name = mp_lexer_source_name(lex);
-
-    if (pn == MP_PARSE_NODE_NULL) {
-        // parse error
-        mp_parse_show_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        return false;
-    }
-
-    mp_lexer_free(lex);
-
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
-    mp_parse_node_free(pn);
-
-    if (module_fun == mp_const_none) {
-        return false;
-    }
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_call_function_0(module_fun);
-        nlr_pop();
-        return true;
-    } else {
-        // uncaught exception
-        mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
-        printf("\n");
-        return false;
-    }
-}
-
-void do_repl(void) {
-    stdout_tx_str("Micro Python build " MICROPY_GIT_HASH " on " MICROPY_BUILD_DATE "; Teensy 3.1 version\n");
-    stdout_tx_str("Type \"help()\" for more information.\r\n");
-
-    vstr_t line;
-    vstr_init(&line, 32);
-
-    for (;;) {
-        vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
-        if (ret == 0) {
-            // EOF
-            break;
-        }
-
-        if (vstr_len(&line) == 0) {
-            continue;
-        }
-
-        while (mp_repl_continue_with_input(vstr_str(&line))) {
-            vstr_add_char(&line, '\n');
-            int ret = readline(&line, "... ");
-            if (ret == 0) {
-                // stop entering compound statement
-                break;
-            }
-        }
-
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
-        mp_parse_error_kind_t parse_error_kind;
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_SINGLE_INPUT, &parse_error_kind);
-        qstr source_name = mp_lexer_source_name(lex);
-
-        if (pn == MP_PARSE_NODE_NULL) {
-            // parse error
-            mp_parse_show_exception(lex, parse_error_kind);
-            mp_lexer_free(lex);
-        } else {
-            // parse okay
-            mp_lexer_free(lex);
-            mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
-            if (module_fun != mp_const_none) {
-                nlr_buf_t nlr;
-                uint32_t start = micros();
-                if (nlr_push(&nlr) == 0) {
-                    mp_call_function_0(module_fun);
-                    nlr_pop();
-                    // optional timing
-                    if (0) {
-                        uint32_t ticks = micros() - start; // TODO implement a function that does this properly
-                        printf("(took %lu ms)\n", ticks);
-                    }
-                } else {
-                    // uncaught exception
-                    mp_obj_print((mp_obj_t)nlr.ret_val, PRINT_REPR);
-                    printf("\n");
-                }
-            }
-        }
-    }
-
-    stdout_tx_str("\r\n");
-}
 
 int main(void) {
     pinMode(LED_BUILTIN, OUTPUT);
-#if 0
-    // Wait for host side to get connected
-    while (!usb_vcp_is_connected()) {
-        ;
-    }
-#else
     delay(1000);
-#endif
 
     led_init();
-    led_state(PYB_LED_BUILTIN, 1);
 
 //    int first_soft_reset = true;
 
 soft_reset:
+
+    led_state(PYB_LED_BUILTIN, 1);
 
     // GC init
     gc_init(&_heap_start, (void*)HEAP_END);
@@ -468,6 +270,11 @@ soft_reset:
     qstr_init();
     mp_init();
 
+    readline_init();
+
+    //pin_init();
+
+#if 0
     // add some functions to the python namespace
     {
         mp_store_name(MP_QSTR_help, mp_make_function_n(0, pyb_help));
@@ -478,7 +285,7 @@ soft_reset:
         mp_store_attr(m, MP_QSTR_gc, mp_make_function_n(0, pyb_gc));
         mp_store_attr(m, MP_QSTR_delay, mp_make_function_n(1, pyb_delay));
         mp_store_attr(m, MP_QSTR_led, mp_make_function_n(1, pyb_led));
-        mp_store_attr(m, MP_QSTR_Led, mp_make_function_n(1, pyb_Led));
+        mp_store_attr(m, MP_QSTR_LED, (mp_obj_t)&pyb_led_type);
         mp_store_attr(m, MP_QSTR_analogRead, mp_make_function_n(1, pyb_analog_read));
         mp_store_attr(m, MP_QSTR_analogWrite, mp_make_function_n(2, pyb_analog_write));
         mp_store_attr(m, MP_QSTR_analogWriteResolution, mp_make_function_n(1, pyb_analog_write_resolution));
@@ -487,15 +294,12 @@ soft_reset:
         mp_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
         mp_store_attr(m, MP_QSTR_Servo, mp_make_function_n(0, pyb_Servo));
         mp_store_name(MP_QSTR_pyb, m);
-        mp_store_name(MP_QSTR_run, mp_make_function_n(1, pyb_run));
     }
+#endif
 
-    printf("About execute /boot.py\n");
-    if (!do_file("/boot.py")) {
-        printf("Unable to open '/boot.py'\n");
+    if (!pyexec_file("/boot.py")) {
         flash_error(4);
     }
-    printf("Done executing /boot.py\n");
 
     // Turn bootup LED off
     led_state(PYB_LED_BUILTIN, 0);
@@ -504,42 +308,35 @@ soft_reset:
     {
         vstr_t *vstr = vstr_new();
         vstr_add_str(vstr, "/");
-        if (pyb_config_source_dir == MP_OBJ_NULL) {
-            vstr_add_str(vstr, "src");
-        } else {
-            vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_source_dir));
-        }
-        vstr_add_char(vstr, '/');
         if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");
         } else {
             vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
-        printf("About execute '%s'\n", vstr_str(vstr));
-        if (!do_file(vstr_str(vstr))) {
-            printf("Unable to open '%s'\n", vstr_str(vstr));
+        if (!pyexec_file(vstr_str(vstr))) {
             flash_error(3);
         }
-        printf("Done executing '%s'\n", vstr_str(vstr));
         vstr_free(vstr);
     }
 
-    do_repl();
+    // enter REPL
+    // REPL mode can change, or it can request a soft reset
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
 
     printf("PYB: soft reboot\n");
 
 //    first_soft_reset = false;
     goto soft_reset;
-}
-
-double sqrt(double x) {
-    // TODO
-    return 0.0;
-}
-
-machine_float_t machine_sqrt(machine_float_t x) {
-    // TODO
-    return x;
 }
 
 // stub out __libc_init_array. It's called by mk20dx128.c and is used to call
@@ -548,6 +345,9 @@ machine_float_t machine_sqrt(machine_float_t x) {
 void __libc_init_array(void) {
 }
 
+// ultoa is used by usb_init_serialnumber. Normally ultoa would be provided
+// by nonstd.c from the teensy core, but it conflicts with some of the
+// MicroPython functions in string0.c, so we provide ultoa here.
 char * ultoa(unsigned long val, char *buf, int radix) 	
 {
 	unsigned digit;
@@ -569,3 +369,12 @@ char * ultoa(unsigned long val, char *buf, int radix)
 	}
 	return buf;
 }
+
+STATIC NORETURN mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
+    int rc = 0;
+    if (n_args > 0) {
+        rc = mp_obj_get_int(args[0]);
+    }
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_SystemExit, mp_obj_new_int(rc)));
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);

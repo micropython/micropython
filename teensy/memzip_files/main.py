@@ -1,11 +1,13 @@
 print("Executing main.py")
 
-x=pyb.led(1)
+led = pyb.LED(1)
+
+led.on()
 pyb.delay(100)
-x=pyb.led(0)
+led.off()
 pyb.delay(100)
-x=pyb.led(1)
+led.on()
 pyb.delay(100)
-x=pyb.led(0)
+led.off()
 
 

@@ -25,8 +25,7 @@
  */
 
 #include <stdio.h>
-
-#include <stm32f4xx_hal.h>
+#include <stdint.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -34,6 +33,8 @@
 #include "obj.h"
 #include "gc.h"
 #include "gccollect.h"
+
+#include HAL_H
 
 machine_uint_t gc_helper_get_regs_and_sp(machine_uint_t *regs);
 

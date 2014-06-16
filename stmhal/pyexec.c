@@ -26,8 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
-#include <stm32f4xx_hal.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -49,6 +48,8 @@
 #include "pyexec.h"
 #include "usb.h"
 #include "genhdr/py-version.h"
+
+#include HAL_H
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;

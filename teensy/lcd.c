@@ -1,5 +1,10 @@
+#include "mpconfig.h"
+#include "nlr.h"
 #include "misc.h"
-#include "../stm/lcd.h"
+#include "qstr.h"
+#include "parse.h"
+#include "obj.h"
+#include "../stmhal/lcd.h"
 
 void lcd_init(void) {
 }

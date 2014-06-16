@@ -104,3 +104,11 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#define HAL_H           <stm32f4xx_hal.h>
+#define PIN_DEFS_PORT_H "pin_defs_stmhal.h"
+
+#define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
+#define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRRL) = (pin_mask))
+#define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRRH) = (pin_mask))
+

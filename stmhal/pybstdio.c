@@ -25,8 +25,7 @@
  */
 
 #include <stdio.h>
-
-#include <stm32f4xx_hal.h>
+#include <stdint.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -37,6 +36,8 @@
 #include "pybstdio.h"
 #include "usb.h"
 #include "uart.h"
+
+#include HAL_H
 
 // TODO make stdin, stdout and stderr writable objects so they can
 // be changed by Python code.

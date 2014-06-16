@@ -25,9 +25,8 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-
-#include <stm32f4xx_hal.h>
 
 #include "misc.h"
 #include "mpconfig.h"
@@ -37,6 +36,8 @@
 #include "pybstdio.h"
 #include "readline.h"
 #include "usb.h"
+
+#include HAL_H
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

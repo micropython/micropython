@@ -28,10 +28,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "misc.h"
 #include "mpconfig.h"
+
+#include HAL_H
+
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
