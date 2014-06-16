@@ -113,7 +113,6 @@ STATIC machine_uint_t gc_lock_depth;
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
-    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, end - start);
 
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
     // T = A + F + P
@@ -121,6 +120,7 @@ void gc_init(void *start, void *end) {
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     machine_uint_t total_byte_len = (byte*)end - (byte*)start;
+    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, total_byte_len);
 #if MICROPY_ENABLE_FINALISER
     gc_alloc_table_byte_len = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
 #else
@@ -268,6 +268,7 @@ STATIC void gc_sweep(void) {
 
             case AT_TAIL:
                 if (free_tail) {
+                    DEBUG_printf("gc_sweep(%p)\n",PTR_FROM_BLOCK(block));
                     ATB_ANY_TO_FREE(block);
                 }
                 break;
@@ -347,7 +348,6 @@ void gc_info(gc_info_t *info) {
 
 void *gc_alloc(machine_uint_t n_bytes, bool has_finaliser) {
     machine_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
-    DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
     // check if GC is locked
     if (gc_lock_depth > 0) {
@@ -401,6 +401,7 @@ found:
 
     // get pointer to first block
     void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
+    DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks ptr %p)\n", n_bytes, n_blocks, ret_ptr);
 
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
@@ -439,6 +440,7 @@ void gc_free(void *ptr_in) {
     }
 
     machine_uint_t ptr = (machine_uint_t)ptr_in;
+    DEBUG_printf("gc_free(%p)\n", ptr);
 
     if (VERIFY_PTR(ptr)) {
         machine_uint_t block = BLOCK_FROM_PTR(ptr);
@@ -590,7 +592,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         return NULL;
     }
 
-    DEBUG_printf("gc_realloc: allocating new block\n");
+    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
     memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
     gc_free(ptr_in);
     return ptr_out;
