@@ -23,7 +23,7 @@ INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 INC += -I$(CORE_PATH)
 
-CFLAGS = $(INC) -Wall -ansi -std=gnu99 $(CFLAGS_CORTEX_M4)
+CFLAGS = $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld
 LIBS = -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
 
