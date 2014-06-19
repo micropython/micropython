@@ -274,6 +274,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     }
 }
 
+#if MICROPY_PY_BUILTINS_COMPLEX
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (arg == mp_const_false) {
         *real = 0;
@@ -296,6 +297,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't convert %s to complex", mp_obj_get_type_str(arg)));
     }
 }
+#endif
 #endif
 
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {

@@ -121,8 +121,10 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_float)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
+#if MICROPY_PY_BUILTINS_COMPLEX
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
+#endif
 #endif
     } else {
         // delegate to generic function to check for extra cases

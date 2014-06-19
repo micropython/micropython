@@ -36,7 +36,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 
-#if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_COMPLEX
 
 #include <math.h>
 

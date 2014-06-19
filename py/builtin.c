@@ -113,10 +113,12 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         } else {
             return o_in;
         }
+#if MICROPY_PY_BUILTINS_COMPLEX
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_complex_get(o_in, &real, &imag);
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
+#endif
 #endif
     } else {
         assert(0);

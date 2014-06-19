@@ -35,6 +35,7 @@
 #include "parsenumbase.h"
 #include "parsenum.h"
 #include "smallint.h"
+#include "runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -252,10 +253,15 @@ mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool f
     }
 
     // return the object
+#if MICROPY_PY_BUILTINS_COMPLEX
     if (imag) {
         return mp_obj_new_complex(0, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
+#else
+    if (imag || force_complex) {
+        mp_not_implemented("complex values not supported");
+#endif
     } else {
         return mp_obj_new_float(dec_val);
     }
