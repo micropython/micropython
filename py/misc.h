@@ -82,7 +82,9 @@ int m_get_peak_bytes_allocated(void);
 /** array helpers ***********************************************/
 
 // get the number of elements in a fixed-size array
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#endif
 
 /** unichar / UTF-8 *********************************************/
 
