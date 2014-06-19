@@ -144,15 +144,7 @@ void gc_collect(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
-#ifdef __MINGW32__
-    // The Mingw cross-compiler on Travis complains
-    // 'warning: dereferencing type-punned pointer will break strict-aliasing rules'
-    // when casting &regs to void** directly so use a union.
-    union { regs_t *r; void **ptr; } cast_regs = { &regs };
-    void **regs_ptr = cast_regs.ptr;
-#else
-    void **regs_ptr = (void**)&regs;
-#endif
+    void **regs_ptr = (void**)(void*)&regs;
     gc_collect_root(regs_ptr, ((machine_uint_t)stack_top - (machine_uint_t)&regs) / sizeof(machine_uint_t));
     gc_collect_end();
 
