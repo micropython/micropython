@@ -26,6 +26,7 @@
  */
 
 #include <string.h>
+#include <assert.h>
 
 #include "mpconfig.h"
 #include "misc.h"
