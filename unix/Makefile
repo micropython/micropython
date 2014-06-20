@@ -18,6 +18,14 @@ INC += -I$(BUILD)
 CWARN = -Wall -Werror
 CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
+# Debugging/Optimization
+ifdef DEBUG
+CFLAGS += -g
+COPT = -O0
+else
+COPT = -Os #-DNDEBUG
+endif
+
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
     LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map,-order_file,$(BUILD)/order.def
@@ -56,14 +64,6 @@ LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif
 
-
-# Debugging/Optimization
-ifdef DEBUG
-CFLAGS += -g
-COPT = -O0
-else
-COPT = -Os #-DNDEBUG
-endif
 
 # source files
 SRC_C = \
