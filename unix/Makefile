@@ -7,6 +7,9 @@ PROG = micropython
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
+# OS name, for simple autoconfig
+UNAME_S := $(shell uname -s)
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -26,12 +29,7 @@ else
 COPT = -Os #-DNDEBUG
 endif
 
-UNAME_S := $(shell uname -s)
- ifeq ($(UNAME_S),Darwin)
-    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map,-order_file,$(BUILD)/order.def
- else
-    LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
- endif
+LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
@@ -76,6 +74,9 @@ SRC_C = \
 	$(SRC_MOD)
 
 ifeq ($(UNAME_S),Darwin)
+
+LDFLAGS+ = -Wl,-order_file,$(BUILD)/order.def
+
 # Must be the last file in list of sources
 SRC_C += seg_helpers.c
 
