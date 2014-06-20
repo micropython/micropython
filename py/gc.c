@@ -113,7 +113,7 @@ STATIC machine_uint_t gc_lock_depth;
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((machine_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
-    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, end - start);
+    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
 
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
     // T = A + F + P
@@ -268,6 +268,7 @@ STATIC void gc_sweep(void) {
 
             case AT_TAIL:
                 if (free_tail) {
+                    DEBUG_printf("gc_sweep(%p)\n",PTR_FROM_BLOCK(block));
                     ATB_ANY_TO_FREE(block);
                 }
                 break;
@@ -401,6 +402,7 @@ found:
 
     // get pointer to first block
     void *ret_ptr = (void*)(gc_pool_start + start_block * WORDS_PER_BLOCK);
+    DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
 
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
@@ -439,6 +441,7 @@ void gc_free(void *ptr_in) {
     }
 
     machine_uint_t ptr = (machine_uint_t)ptr_in;
+    DEBUG_printf("gc_free(%p)\n", ptr);
 
     if (VERIFY_PTR(ptr)) {
         machine_uint_t block = BLOCK_FROM_PTR(ptr);
@@ -590,7 +593,7 @@ void *gc_realloc(void *ptr_in, machine_uint_t n_bytes) {
         return NULL;
     }
 
-    DEBUG_printf("gc_realloc: allocating new block\n");
+    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
     memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
     gc_free(ptr_in);
     return ptr_out;
