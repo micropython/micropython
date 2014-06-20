@@ -15,7 +15,8 @@ INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 
 # compiler settings
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+CWARN = -Wall -Werror
+CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
 
 UNAME_S := $(shell uname -s)
  ifeq ($(UNAME_S),Darwin)
