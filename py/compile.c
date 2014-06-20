@@ -3493,10 +3493,10 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->is_repl = is_repl;
 
     // optimise constants
-    mp_map_t consts;
-    mp_map_init(&consts, 0);
-    pn = fold_constants(comp, pn, &consts);
-    mp_map_deinit(&consts);
+    mp_obj_dict_t *module_globals = mp_globals_get();
+    mp_obj_dict_t *const_dict = mp_obj_new_dict(0);
+    mp_obj_dict_store(module_globals, MP_OBJ_NEW_QSTR(MP_QSTR___const__), const_dict);
+    pn = fold_constants(comp, pn, &const_dict->map);
 
     // set the outer scope
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
