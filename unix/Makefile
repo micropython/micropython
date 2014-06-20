@@ -19,7 +19,7 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT)
+CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -29,7 +29,7 @@ else
 COPT = -Os #-DNDEBUG
 endif
 
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref
+LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref $(LDFLAGS_EXTRA)
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
