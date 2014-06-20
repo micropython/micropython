@@ -53,7 +53,9 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 // Define to 1 to use untested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
+#ifndef MICROPY_GCREGS_SETJMP
 #define MICROPY_GCREGS_SETJMP       (0)
+#endif
 
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
