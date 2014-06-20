@@ -188,7 +188,7 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
     {{&pyb_spi_type}, NULL},
 #endif
 };
-#define PYB_NUM_SPI ARRAY_SIZE(pyb_spi_obj)
+#define PYB_NUM_SPI MP_ARRAY_SIZE(pyb_spi_obj)
 
 STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
@@ -242,7 +242,7 @@ STATIC const mp_arg_t pyb_spi_init_args[] = {
     { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
 };
-#define PYB_SPI_INIT_NUM_ARGS ARRAY_SIZE(pyb_spi_init_args)
+#define PYB_SPI_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_init_args)
 
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
@@ -359,7 +359,7 @@ STATIC const mp_arg_t pyb_spi_send_args[] = {
     { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_SEND_NUM_ARGS ARRAY_SIZE(pyb_spi_send_args)
+#define PYB_SPI_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_send_args)
 
 STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -401,7 +401,7 @@ STATIC const mp_arg_t pyb_spi_recv_args[] = {
     { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_recv_args)
+#define PYB_SPI_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_recv_args)
 
 STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
@@ -449,7 +449,7 @@ STATIC const mp_arg_t pyb_spi_send_recv_args[] = {
     { MP_QSTR_recv,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
-#define PYB_SPI_SEND_RECV_NUM_ARGS ARRAY_SIZE(pyb_spi_send_recv_args)
+#define PYB_SPI_SEND_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_send_recv_args)
 
 STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide

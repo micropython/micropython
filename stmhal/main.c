@@ -308,7 +308,7 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(115200),
         };
         pyb_uart_global_debug = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type,
-                                                       ARRAY_SIZE(args),
+                                                       MP_ARRAY_SIZE(args),
                                                        0, args);
     }
 #else

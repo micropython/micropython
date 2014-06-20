@@ -40,8 +40,8 @@ STATIC const mp_obj_dict_t mp_module_array_globals = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = ARRAY_SIZE(mp_module_array_globals_table),
-        .alloc = ARRAY_SIZE(mp_module_array_globals_table),
+        .used = MP_ARRAY_SIZE(mp_module_array_globals_table),
+        .alloc = MP_ARRAY_SIZE(mp_module_array_globals_table),
         .table = (mp_map_elem_t*)mp_module_array_globals_table,
     },
 };
