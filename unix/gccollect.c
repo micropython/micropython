@@ -97,7 +97,7 @@ void gc_helper_get_regs(regs_t arr) {
 }
 #endif
 
-#ifdef __thumb2__
+#if defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
 typedef machine_uint_t regs_t[10];
 
 void gc_helper_get_regs(regs_t arr) {

@@ -24,19 +24,21 @@
  * THE SOFTWARE.
  */
 
-#if defined(__thumb2__) && !MICROPY_NLR_SETJMP
-/* thumb callee save: bx, bp, sp, r12, r14, r14, r15 */
+#if !MICROPY_NLR_SETJMP && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+/* arm callee save: bx, bp, sp, r12, r14, r14, r15 */
 
     .syntax unified
     /*.cpu cortex-m4*/
-    .thumb
+    /*.thumb*/
     .text
     .align  2
 
 /* uint nlr_push(r0=nlr_buf_t *nlr) */
     .global nlr_push
+#if defined(__thumb2__)
     .thumb
     .thumb_func
+#endif
     .type   nlr_push, %function
 nlr_push:
     str     lr, [r0, #8]            @ store lr into nlr_buf
@@ -64,8 +66,10 @@ nlr_push:
 
 @ void nlr_pop()
     .global nlr_pop
+#if defined(__thumb2__)
     .thumb
     .thumb_func
+#endif
     .type   nlr_pop, %function
 nlr_pop:
     ldr     r3, .L5                 @ load addr of nlr_top
@@ -80,8 +84,10 @@ nlr_pop:
 
 /* void nlr_jump(r0=uint val) */
     .global nlr_jump
+#if defined(__thumb2__)
     .thumb
     .thumb_func
+#endif
     .type   nlr_jump, %function
 nlr_jump:
     ldr     r3, .L2                 @ load addr of nlr_top
