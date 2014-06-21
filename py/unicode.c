@@ -26,8 +26,8 @@
 
 #include <stdint.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 
 // attribute flags
 #define FL_PRINT (0x01)

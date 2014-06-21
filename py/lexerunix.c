@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 
 #if MICROPY_HELPER_LEXER_UNIX
 

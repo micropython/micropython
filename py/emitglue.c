@@ -30,8 +30,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime0.h"

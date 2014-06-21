@@ -29,8 +29,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)

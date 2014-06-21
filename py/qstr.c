@@ -27,8 +27,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
