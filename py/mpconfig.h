@@ -381,3 +381,8 @@ typedef double mp_float_t;
 #ifndef NORETURN
 #define NORETURN __attribute__((noreturn))
 #endif
+
+// Modifier for weak functions
+#ifndef MP_WEAK
+#define MP_WEAK __attribute__((weak))
+#endif
