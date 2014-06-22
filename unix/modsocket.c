@@ -368,18 +368,18 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     }
 
     struct addrinfo hints;
-    struct addrinfo *addr;
+    struct addrinfo *addr_list;
     memset(&hints, 0, sizeof(hints));
-    int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr);
+    int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr_list);
 
     if (res != 0) {
         // CPython: socket.gaierror
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
     }
-    assert(addr);
+    assert(addr_list);
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
-    for (; addr; addr = addr->ai_next) {
+    for (struct addrinfo *addr = addr_list; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
         t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_family);
         t->items[1] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_socktype);
@@ -394,6 +394,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         t->items[4] = mp_obj_new_bytearray(addr->ai_addrlen, addr->ai_addr);
         mp_obj_list_append(list, t);
     }
+    freeaddrinfo(addr_list);
     return list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
