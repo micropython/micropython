@@ -356,6 +356,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
 
     const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
@@ -363,14 +365,24 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         char buf[6];
         sprintf(buf, "%d", port);
         serv = buf;
+        hints.ai_flags = AI_NUMERICSERV;
+#if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
+#warning Working around uClibc bug with numeric service name
+        // Older versions og uClibc have bugs when numeric ports in service
+        // arg require also hints.ai_socktype (or hints.ai_protocol) != 0
+        // This actually was fixed in 0.9.32.1, but uClibc doesn't allow to
+        // test for that.
+        // http://git.uclibc.org/uClibc/commit/libc/inet/getaddrinfo.c?id=bc3be18145e4d5
+        // Note that this is crude workaround, precluding UDP socket addresses
+        // to be returned. TODO: set only if not set by Python args.
+        hints.ai_socktype = SOCK_STREAM;
+#endif
     } else {
         serv = mp_obj_str_get_str(args[1]);
     }
 
-    struct addrinfo hints;
     struct addrinfo *addr_list;
-    memset(&hints, 0, sizeof(hints));
-    int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr_list);
+    int res = getaddrinfo(host, serv, &hints, &addr_list);
 
     if (res != 0) {
         // CPython: socket.gaierror
