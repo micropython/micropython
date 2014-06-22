@@ -917,8 +917,11 @@ STATIC void emit_native_delete_global(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_native_delete_attr(emit_t *emit, qstr qstr) {
-    // not supported
-    assert(0);
+    vtype_kind_t vtype_base;
+    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
+    assert(vtype_base == VTYPE_PYOBJ);
+    emit_call_with_2_imm_args(emit, MP_F_STORE_ATTR, mp_store_attr, qstr, REG_ARG_2, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg2 = attribute name, arg3 = value (null for delete)
+    emit_post(emit);
 }
 
 STATIC void emit_native_delete_subscr(emit_t *emit) {
