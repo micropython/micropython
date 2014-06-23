@@ -41,8 +41,6 @@
 #include <readline/history.h>
 #endif
 
-#define CTRL_D  '\x04'
-
 char *prompt(char *p) {
 #if MICROPY_USE_READLINE
     char *line = readline(p);
