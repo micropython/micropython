@@ -201,8 +201,8 @@ int usage(char **argv) {
     impl_opts_cnt++;
 #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n> -- set the heap size for the GC\n"
-);
+"  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
+, heap_size);
     impl_opts_cnt++;
 #endif
 
