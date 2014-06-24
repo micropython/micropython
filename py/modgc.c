@@ -61,11 +61,27 @@ STATIC mp_obj_t gc_enable(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
 
+STATIC mp_obj_t gc_mem_free(void) {
+    gc_info_t info;
+    gc_info(&info);
+    return MP_OBJ_NEW_SMALL_INT((machine_uint_t)info.free);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(gc_mem_free_obj, gc_mem_free);
+
+STATIC mp_obj_t gc_mem_alloc(void) {
+    gc_info_t info;
+    gc_info(&info);
+    return MP_OBJ_NEW_SMALL_INT((machine_uint_t)info.used);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(gc_mem_alloc_obj, gc_mem_alloc);
+
 STATIC const mp_map_elem_t mp_module_gc_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_gc) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_collect), (mp_obj_t)&gc_collect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&gc_disable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&gc_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_free), (mp_obj_t)&gc_mem_free_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_alloc), (mp_obj_t)&gc_mem_alloc_obj },
 };
 
 STATIC const mp_obj_dict_t mp_module_gc_globals = {
