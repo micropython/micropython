@@ -366,6 +366,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         sprintf(buf, "%d", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
+#ifdef __UCLIBC_MAJOR__
 #if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
 #warning Working around uClibc bug with numeric service name
         // Older versions og uClibc have bugs when numeric ports in service
@@ -376,6 +377,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         // Note that this is crude workaround, precluding UDP socket addresses
         // to be returned. TODO: set only if not set by Python args.
         hints.ai_socktype = SOCK_STREAM;
+#endif
 #endif
     } else {
         serv = mp_obj_str_get_str(args[1]);
