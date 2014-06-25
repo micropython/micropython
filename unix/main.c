@@ -51,6 +51,7 @@
 #include "gc.h"
 #include "genhdr/py-version.h"
 #include "input.h"
+#include "stackctrl.h"
 
 // Command line options, with their defaults
 bool compile_only = false;
@@ -62,9 +63,6 @@ uint mp_verbose_flag;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
 #endif
-
-// Stack top at the start of program
-char *stack_top;
 
 void microsocket_init();
 void time_init();
@@ -214,10 +212,9 @@ int usage(char **argv) {
 }
 
 mp_obj_t mem_info(void) {
-    volatile int stack_dummy;
     printf("mem: total=%d, current=%d, peak=%d\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
-    printf("stack: " INT_FMT "\n", stack_top - (char*)&stack_dummy);
+    printf("stack: %u\n", stack_usage());
 #if MICROPY_ENABLE_GC
     gc_dump_info();
 #endif
@@ -268,8 +265,8 @@ void pre_process_options(int argc, char **argv) {
 #endif
 
 int main(int argc, char **argv) {
-    volatile int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+    stack_ctrl_init();
+    stack_set_limit(32768);
 
     pre_process_options(argc, argv);
 

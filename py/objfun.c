@@ -39,6 +39,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "bc.h"
+#include "stackctrl.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -204,6 +205,8 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 // code_state should have ->ip filled in (pointing past code info block),
 // as well as ->n_state.
 void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
+    // usage for the common case of positional only args.
     mp_obj_fun_bc_t *self = self_in;
     machine_uint_t n_state = code_state->n_state;
     const byte *ip = code_state->ip;
@@ -353,8 +356,7 @@ continue2:;
 
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
-    // usage for the common case of positional only args.
+    STACK_CHECK();
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
