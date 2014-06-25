@@ -377,6 +377,8 @@ Q(gc)
 Q(collect)
 Q(disable)
 Q(enable)
+Q(mem_free)
+Q(mem_alloc)
 #endif
 
 #if MICROPY_PY_BUILTINS_PROPERTY
