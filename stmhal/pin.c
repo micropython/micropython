@@ -100,8 +100,8 @@ STATIC mp_obj_t pin_class_map_dict;
 STATIC bool pin_class_debug;
 
 void pin_init(void) {
-    pin_class_mapper = MP_OBJ_NULL;
-    pin_class_map_dict = MP_OBJ_NULL;
+    pin_class_mapper = mp_const_none;
+    pin_class_map_dict = mp_const_none;
     pin_class_debug = false;
 }
 
@@ -120,7 +120,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    if (pin_class_mapper != MP_OBJ_NULL) {
+    if (pin_class_mapper != mp_const_none) {
         pin_obj = mp_call_function_1(pin_class_mapper, user_obj);
         if (pin_obj != mp_const_none) {
             if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
@@ -139,7 +139,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         // other lookup methods.
     }
 
-    if (pin_class_map_dict != MP_OBJ_NULL) {
+    if (pin_class_map_dict != mp_const_none) {
         mp_map_t *pin_map_map = mp_obj_dict_get_map(pin_class_map_dict);
         mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
         if (elem != NULL && elem->value != NULL) {
