@@ -157,6 +157,12 @@
 #define MICROPY_ENABLE_GC_FINALISER (0)
 #endif
 
+// Whether to check C stack usage. C stack used for calling Python functions,
+// etc. Not checking means segfault on overflow.
+#ifndef MICROPY_STACK_CHECK
+#define MICROPY_STACK_CHECK (1)
+#endif
+
 // Whether to include REPL helper function
 #ifndef MICROPY_HELPER_REPL
 #define MICROPY_HELPER_REPL (0)
