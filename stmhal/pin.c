@@ -100,8 +100,8 @@ STATIC mp_obj_t pin_class_map_dict;
 STATIC bool pin_class_debug;
 
 void pin_init(void) {
-    pin_class_mapper = MP_OBJ_NULL;
-    pin_class_map_dict = MP_OBJ_NULL;
+    pin_class_mapper = mp_const_none;
+    pin_class_map_dict = mp_const_none;
     pin_class_debug = false;
 }
 
