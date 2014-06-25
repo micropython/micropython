@@ -31,18 +31,15 @@
 
 // All Micro Python objects are at least this type
 // It must be of pointer size
-
 typedef machine_ptr_t mp_obj_t;
 typedef machine_const_ptr_t mp_const_obj_t;
 
 // Integers that fit in a pointer have this type
 // (do we need to expose this in the public API?)
-
 typedef machine_int_t mp_small_int_t;
 
 // Anything that wants to be a Micro Python object must have
 // mp_obj_base_t as its first member (except small ints and qstrs)
-
 struct _mp_obj_type_t;
 struct _mp_obj_base_t {
     const struct _mp_obj_type_t *type;
@@ -59,7 +56,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 //
 // For debugging purposes they are all different.  For non-debug mode, we alias
 // as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
-
 #if NDEBUG
 #define MP_OBJ_NULL             ((mp_obj_t)0)
 #define MP_OBJ_STOP_ITERATION   ((mp_obj_t)0)
@@ -71,7 +67,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #endif
 
 // These macros check for small int, qstr or object, and access small int and qstr values
-
 // these macros have now become inline functions; see below
 //#define MP_OBJ_IS_SMALL_INT(o) ((((mp_small_int_t)(o)) & 1) != 0)
 //#define MP_OBJ_IS_QSTR(o) ((((mp_small_int_t)(o)) & 3) == 2)
@@ -88,7 +83,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
-
 #define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_native_t obj_name
 
 #define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&mp_type_fun_native}, is_kw, n_args_min, n_args_max, (void *)fun_name}
@@ -102,7 +96,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // This macro is used to define constant dict objects
 // You can put "static" in front of the definition to make it local
-
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) \
     const mp_obj_dict_t dict_name = { \
         .base = {&mp_type_dict}, \
@@ -117,7 +110,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
-
 #define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
 #define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
 
@@ -125,7 +117,6 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
 // Underlying map/hash table implementation (not dict object or map function)
-
 typedef struct _mp_map_elem_t {
     mp_obj_t key;
     mp_obj_t value;
@@ -163,7 +154,6 @@ void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);
 
 // Underlying set implementation (not set object)
-
 typedef struct _mp_set_t {
     machine_uint_t alloc;
     machine_uint_t used;
@@ -178,7 +168,6 @@ mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
 
 // Type definitions for methods
-
 typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
@@ -360,7 +349,6 @@ extern const struct _mp_obj_exception_t mp_const_MemoryError_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 // General API for objects
-
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 mp_obj_t mp_obj_new_none(void);
 mp_obj_t mp_obj_new_bool(bool value);

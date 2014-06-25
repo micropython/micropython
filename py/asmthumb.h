@@ -85,7 +85,6 @@ void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val);
 
 // argument order follows ARM, in general dest is first
 // note there is a difference between movw and mov.w, and many others!
-
 #define ASM_THUMB_OP_NOP        (0xbf00)
 #define ASM_THUMB_OP_WFI        (0xbf30)
 #define ASM_THUMB_OP_CPSID_I    (0xb672) // cpsid i, disable irq
@@ -95,7 +94,6 @@ void asm_thumb_op16(asm_thumb_t *as, uint op);
 void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2);
 
 // FORMAT 2: add/subtract
-
 #define ASM_THUMB_FORMAT_2_ADD (0x1800)
 #define ASM_THUMB_FORMAT_2_SUB (0x1a00)
 #define ASM_THUMB_FORMAT_2_REG_OPERAND (0x0000)
@@ -114,7 +112,6 @@ static inline void asm_thumb_sub_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint
 
 // FORMAT 3: move/compare/add/subtract immediate
 // These instructions all do zero extension of the i8 value
-
 #define ASM_THUMB_FORMAT_3_MOV (0x2000)
 #define ASM_THUMB_FORMAT_3_CMP (0x2800)
 #define ASM_THUMB_FORMAT_3_ADD (0x3000)
@@ -128,7 +125,6 @@ static inline void asm_thumb_add_rlo_i8(asm_thumb_t *as, uint rlo, int i8) { asm
 static inline void asm_thumb_sub_rlo_i8(asm_thumb_t *as, uint rlo, int i8) { asm_thumb_format_3(as, ASM_THUMB_FORMAT_3_SUB, rlo, i8); }
 
 // FORMAT 4: ALU operations
-
 #define ASM_THUMB_FORMAT_4_AND (0x4000)
 #define ASM_THUMB_FORMAT_4_EOR (0x4040)
 #define ASM_THUMB_FORMAT_4_LSL (0x4080)
@@ -152,16 +148,14 @@ static inline void asm_thumb_cmp_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rl
 
 // FORMAT 9: load/store with immediate offset
 // For word transfers the offset must be aligned, and >>2
-
-// FORMAT 10: load/store halfword
-// The offset must be aligned, and >>1
-// The load is zero extended into the register
-
 #define ASM_THUMB_FORMAT_9_STR (0x6000)
 #define ASM_THUMB_FORMAT_9_LDR (0x6800)
 #define ASM_THUMB_FORMAT_9_WORD_TRANSFER (0x0000)
 #define ASM_THUMB_FORMAT_9_BYTE_TRANSFER (0x1000)
 
+// FORMAT 10: load/store halfword
+// The offset must be aligned, and >>1
+// The load is zero extended into the register
 #define ASM_THUMB_FORMAT_10_STRH (0x8000)
 #define ASM_THUMB_FORMAT_10_LDRH (0x8800)
 

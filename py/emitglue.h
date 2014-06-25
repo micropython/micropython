@@ -25,7 +25,6 @@
  */
 
 // These variables and functions glue the code emitters to the runtime.
-
 typedef enum {
     MP_CODE_UNUSED,
     MP_CODE_RESERVED,

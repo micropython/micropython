@@ -56,7 +56,6 @@ typedef struct _mp_parse_node_struct_t {
 
 // macros for mp_parse_node_t usage
 // some of these evaluate their argument more than once
-
 #define MP_PARSE_NODE_IS_NULL(pn) ((pn) == MP_PARSE_NODE_NULL)
 #define MP_PARSE_NODE_IS_LEAF(pn) ((pn) & 3)
 #define MP_PARSE_NODE_IS_STRUCT(pn) ((pn) != MP_PARSE_NODE_NULL && ((pn) & 3) == 0)

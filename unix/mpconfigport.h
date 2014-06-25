@@ -25,7 +25,6 @@
  */
 
 // options to control how Micro Python is built
-
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_THUMB          (0)
@@ -80,7 +79,6 @@ extern const struct _mp_obj_module_t mp_module_ffi;
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
 
 // type definitions for the specific machine
-
 #ifdef __LP64__
 typedef long machine_int_t; // must be pointer size
 typedef unsigned long machine_uint_t; // must be pointer size
