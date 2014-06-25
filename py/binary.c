@@ -125,6 +125,28 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
+machine_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p) {
+    int delta;
+    if (!big_endian) {
+        delta = -1;
+        p += size - 1;
+    } else {
+        delta = 1;
+    }
+
+    machine_int_t val = 0;
+    if (is_signed && *p & 0x80) {
+        val = -1;
+    }
+    for (uint i = 0; i < size; i++) {
+        val <<= 8;
+        val |= *p;
+        p += delta;
+    }
+
+    return val;
+}
+
 #define is_signed(typecode) (typecode > 'Z')
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
@@ -140,26 +162,10 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
         struct_type = '>';
         #endif
     }
+    *ptr = p + size;
 
-    int delta;
-    if (struct_type == '<') {
-        delta = -1;
-        p += size - 1;
-    } else {
-        delta = 1;
-    }
+    machine_int_t val = mp_binary_get_int(size, is_signed(val_type), (struct_type == '>'), p);
 
-    machine_int_t val = 0;
-    if (is_signed(val_type) && *p & 0x80) {
-        val = -1;
-    }
-    for (uint i = 0; i < size; i++) {
-        val <<= 8;
-        val |= *p;
-        p += delta;
-    }
-
-    *ptr += size;
     if (val_type == 'O') {
         return (mp_obj_t)val;
     } else if (val_type == 'S') {
@@ -185,6 +191,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         struct_type = '>';
         #endif
     }
+    *ptr = p + size;
 
 #if MP_ENDIANNESS_BIG
 #error Not implemented
@@ -215,7 +222,6 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         in += in_delta;
     }
 
-    *ptr += size;
 }
 
 void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {

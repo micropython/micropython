@@ -21,3 +21,7 @@ print(struct.calcsize("100sI"))
 print(struct.calcsize("97sI"))
 print(struct.unpack("<6sH", b"foo\0\0\0\x12\x34"))
 print(struct.pack("<6sH", b"foo", 10000))
+
+s = struct.pack("BHBI", 10, 100, 200, 300)
+v = struct.unpack("BHBI", s)
+print(v == (10, 100, 200, 300))
