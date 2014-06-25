@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "parsenumbase.h"
 
 // find real radix base, and strip preceding '0x', '0o' and '0b'

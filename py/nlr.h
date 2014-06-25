@@ -29,6 +29,7 @@
 
 #include <limits.h>
 #include <setjmp.h>
+#include <assert.h>
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
@@ -44,7 +45,7 @@ struct _nlr_buf_t {
   #else
     void *regs[8];
   #endif
-#elif defined(__thumb2__)
+#elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
     void *regs[10];
 #else
     #define MICROPY_NLR_SETJMP (1)

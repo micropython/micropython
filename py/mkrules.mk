@@ -73,9 +73,9 @@ all: $(PROG)
 
 $(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
+	$(Q)$(CC) $(COPT) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)$(STRIP) $(PROG)
+	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
 	$(Q)$(SIZE) $(PROG)
 

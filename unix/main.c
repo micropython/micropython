@@ -201,8 +201,8 @@ int usage(char **argv) {
     impl_opts_cnt++;
 #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n> -- set the heap size for the GC\n"
-);
+"  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
+, heap_size);
     impl_opts_cnt++;
 #endif
 
@@ -365,7 +365,8 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-            char *basedir = realpath(argv[a], NULL);
+            char *pathbuf = malloc(PATH_MAX);
+            char *basedir = realpath(argv[a], pathbuf);
             if (basedir == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
@@ -377,7 +378,7 @@ int main(int argc, char **argv) {
             // Set base dir of the script as first entry in sys.path
             char *p = strrchr(basedir, '/');
             path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-            free(basedir);
+            free(pathbuf);
 
             for (int i = a; i < argc; i++) {
                 mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));

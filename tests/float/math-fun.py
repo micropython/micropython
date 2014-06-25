@@ -1,6 +1,11 @@
 # Tests the functions imported from math
 
-from math import *
+try:
+    from math import *
+except ImportError:
+    print("SKIP")
+    import sys
+    sys.exit()
 
 test_values = [-100., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 100.]
 p_test_values = [0.1, 0.5, 1.23456]

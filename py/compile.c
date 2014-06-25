@@ -31,8 +31,8 @@
 #include <assert.h>
 #include <math.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
@@ -111,8 +111,8 @@ STATIC const mp_map_elem_t mp_constants_table[] = {
 STATIC const mp_map_t mp_constants_map = {
     .all_keys_are_qstrs = 1,
     .table_is_fixed_array = 1,
-    .used = ARRAY_SIZE(mp_constants_table),
-    .alloc = ARRAY_SIZE(mp_constants_table),
+    .used = MP_ARRAY_SIZE(mp_constants_table),
+    .alloc = MP_ARRAY_SIZE(mp_constants_table),
     .table = (mp_map_elem_t*)mp_constants_table,
 };
 

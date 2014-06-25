@@ -102,9 +102,12 @@ STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
 
 STATIC mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_float_t *lhs = lhs_in;
+#if MICROPY_PY_BUILTINS_COMPLEX
     if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs->value, 0, rhs_in);
-    } else {
+    } else
+#endif
+    {
         return mp_obj_float_binary_op(op, lhs->value, rhs_in);
     }
 }

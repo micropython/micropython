@@ -30,8 +30,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "parse.h"
@@ -167,7 +167,7 @@ STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
         const char *reg_str = qstr_str(reg_qstr);
-        for (uint i = 0; i < ARRAY_SIZE(reg_name_table); i++) {
+        for (uint i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
             const reg_name_t *r = &reg_name_table[i];
             if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
                 if (r->reg > max_reg) {
@@ -286,7 +286,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             asm_thumb_b_n(emit->as, label_num);
         } else if (op_str[0] == 'b' && op_len == 3) {
             uint cc = -1;
-            for (uint i = 0; i < ARRAY_SIZE(cc_name_table); i++) {
+            for (uint i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
                 if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
                     cc = cc_name_table[i].cc;
                 }

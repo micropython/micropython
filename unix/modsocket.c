@@ -356,6 +356,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
 
     const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
@@ -363,23 +365,35 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         char buf[6];
         sprintf(buf, "%d", port);
         serv = buf;
+        hints.ai_flags = AI_NUMERICSERV;
+#ifdef __UCLIBC_MAJOR__
+#if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
+#warning Working around uClibc bug with numeric service name
+        // Older versions og uClibc have bugs when numeric ports in service
+        // arg require also hints.ai_socktype (or hints.ai_protocol) != 0
+        // This actually was fixed in 0.9.32.1, but uClibc doesn't allow to
+        // test for that.
+        // http://git.uclibc.org/uClibc/commit/libc/inet/getaddrinfo.c?id=bc3be18145e4d5
+        // Note that this is crude workaround, precluding UDP socket addresses
+        // to be returned. TODO: set only if not set by Python args.
+        hints.ai_socktype = SOCK_STREAM;
+#endif
+#endif
     } else {
         serv = mp_obj_str_get_str(args[1]);
     }
 
-    struct addrinfo hints;
-    struct addrinfo *addr;
-    memset(&hints, 0, sizeof(hints));
-    int res = getaddrinfo(host, serv, NULL/*&hints*/, &addr);
+    struct addrinfo *addr_list;
+    int res = getaddrinfo(host, serv, &hints, &addr_list);
 
     if (res != 0) {
         // CPython: socket.gaierror
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
     }
-    assert(addr);
+    assert(addr_list);
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
-    for (; addr; addr = addr->ai_next) {
+    for (struct addrinfo *addr = addr_list; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
         t->items[0] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_family);
         t->items[1] = MP_OBJ_NEW_SMALL_INT((machine_int_t)addr->ai_socktype);
@@ -394,6 +408,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
         t->items[4] = mp_obj_new_bytearray(addr->ai_addrlen, addr->ai_addr);
         mp_obj_list_append(list, t);
     }
+    freeaddrinfo(addr_list);
     return list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
@@ -436,8 +451,8 @@ STATIC const mp_obj_dict_t mp_module_socket_globals = {
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = ARRAY_SIZE(mp_module_socket_globals_table),
-        .alloc = ARRAY_SIZE(mp_module_socket_globals_table),
+        .used = MP_ARRAY_SIZE(mp_module_socket_globals_table),
+        .alloc = MP_ARRAY_SIZE(mp_module_socket_globals_table),
         .table = (mp_map_elem_t*)mp_module_socket_globals_table,
     },
 };

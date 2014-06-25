@@ -29,8 +29,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_X64

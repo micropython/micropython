@@ -105,7 +105,7 @@ static uint32_t tim3_counter = 0;
 
 // Used to do callbacks to Python code on interrupt
 STATIC pyb_timer_obj_t *pyb_timer_obj_all[14];
-#define PYB_TIMER_OBJ_ALL_NUM ARRAY_SIZE(pyb_timer_obj_all)
+#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(pyb_timer_obj_all)
 
 void timer_init0(void) {
     tim3_counter = 0;
@@ -234,7 +234,7 @@ STATIC const mp_arg_t pyb_timer_init_args[] = {
     { MP_QSTR_mode,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
     { MP_QSTR_div,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_CLOCKDIVISION_DIV1} },
 };
-#define PYB_TIMER_INIT_NUM_ARGS ARRAY_SIZE(pyb_timer_init_args)
+#define PYB_TIMER_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_init_args)
 
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args

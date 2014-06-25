@@ -113,10 +113,12 @@ mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         } else {
             return o_in;
         }
+#if MICROPY_PY_BUILTINS_COMPLEX
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_complex_get(o_in, &real, &imag);
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
+#endif
 #endif
     } else {
         assert(0);
@@ -154,7 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
 STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
     mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
-    return mp_obj_str_format(ARRAY_SIZE(args), args);
+    return mp_obj_str_format(MP_ARRAY_SIZE(args), args);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_bin_obj, mp_builtin_bin);
