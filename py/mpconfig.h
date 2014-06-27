@@ -249,6 +249,11 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
+// Whether to support bytearray object
+#ifndef MICROPY_PY_BUILTINS_BYTEARRAY
+#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+#endif
+
 // Whether to support set object
 #ifndef MICROPY_PY_BUILTINS_SET
 #define MICROPY_PY_BUILTINS_SET (1)
@@ -267,6 +272,13 @@ typedef double mp_float_t;
 // Whether to support property object
 #ifndef MICROPY_PY_BUILTINS_PROPERTY
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
+#endif
+
+// Whether to provide "array" module. Note that large chunk of the
+// underlying code is shared with "bytearray" builtin type, so to
+// get real savings, it should be disabled too.
+#ifndef MICROPY_PY_ARRAY
+#define MICROPY_PY_ARRAY (1)
 #endif
 
 // Whether to provide "collections" module

@@ -30,6 +30,8 @@
 #include "obj.h"
 #include "builtin.h"
 
+#if MICROPY_PY_ARRAY
+
 STATIC const mp_map_elem_t mp_module_array_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_array) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mp_type_array },
@@ -51,3 +53,5 @@ const mp_obj_module_t mp_module_array = {
     .name = MP_QSTR_array,
     .globals = (mp_obj_dict_t*)&mp_module_array_globals,
 };
+
+#endif

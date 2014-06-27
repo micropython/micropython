@@ -37,6 +37,8 @@
 #include "runtime.h"
 #include "binary.h"
 
+#if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
+
 typedef struct _mp_obj_array_t {
     mp_obj_base_t base;
     machine_uint_t typecode : 8;
@@ -310,3 +312,5 @@ STATIC mp_obj_t array_iterator_new(mp_obj_t array_in) {
     o->cur = 0;
     return o;
 }
+
+#endif // MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
