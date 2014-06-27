@@ -28,6 +28,8 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 
+//#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
