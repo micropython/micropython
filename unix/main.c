@@ -265,7 +265,6 @@ void pre_process_options(int argc, char **argv) {
 #endif
 
 int main(int argc, char **argv) {
-    stack_ctrl_init();
     stack_set_limit(32768);
 
     pre_process_options(argc, argv);

@@ -187,7 +187,6 @@ static const char fresh_readme_txt[] =
 int main(void) {
     // TODO disable JTAG
 
-    stack_ctrl_init();
     // Stack limit should be less than real stack size, so we
     // had chance to recover from limit hit.
     stack_set_limit(&_ram_end - &_heap_end - 512);
