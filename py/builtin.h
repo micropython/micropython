@@ -80,3 +80,6 @@ extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_struct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
+
+// extmod modules
+extern const mp_obj_module_t mp_module_sstruct;

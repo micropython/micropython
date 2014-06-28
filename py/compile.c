@@ -104,6 +104,9 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
 }
 
 STATIC const mp_map_elem_t mp_constants_table[] = {
+    #if MICROPY_PY_SSTRUCT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sstruct), (mp_obj_t)&mp_module_sstruct },
+    #endif
     // Extra constants as defined by a port
     MICROPY_PORT_CONSTANTS
 };
