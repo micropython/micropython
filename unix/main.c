@@ -147,7 +147,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 }
 
 STATIC void do_repl(void) {
-    printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; UNIX version\n");
+    printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     for (;;) {
         char *line = prompt(">>> ");

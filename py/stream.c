@@ -37,6 +37,9 @@
 #include "stream.h"
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#define EWOULDBLOCK 140
+#endif
 #endif
 
 // This file defines generic Python stream read/write methods which
