@@ -351,6 +351,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDFILES (0)
 #endif
 
+
+// Extended modules
+#ifndef MICROPY_PY_UCTYPES
+#define MICROPY_PY_UCTYPES (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 

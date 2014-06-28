@@ -363,6 +363,43 @@ Q(pack)
 Q(unpack)
 #endif
 
+#if MICROPY_PY_UCTYPES
+Q(uctypes)
+Q(sizeof)
+Q(addressof)
+Q(bytes_at)
+Q(bytearray_at)
+
+Q(NATIVE)
+Q(LITTLE_ENDIAN)
+Q(BIG_ENDIAN)
+
+Q(VOID)
+
+Q(UINT8)
+Q(INT8)
+Q(UINT16)
+Q(INT16)
+Q(UINT32)
+Q(INT32)
+Q(UINT64)
+Q(INT64)
+
+Q(BFUINT8)
+Q(BFINT8)
+Q(BFUINT16)
+Q(BFINT16)
+Q(BFUINT32)
+Q(BFINT32)
+
+Q(FLOAT32)
+Q(FLOAT64)
+
+Q(ARRAY)
+Q(PTR)
+//Q(BITFIELD)
+#endif
+
 #if MICROPY_PY_IO
 Q(_io)
 Q(readall)

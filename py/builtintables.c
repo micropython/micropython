@@ -190,6 +190,12 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&mp_module_gc },
 #endif
 
+    // extmod modules
+
+#if MICROPY_PY_UCTYPES
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uctypes), (mp_obj_t)&mp_module_uctypes },
+#endif
+
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
 };
