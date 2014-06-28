@@ -88,10 +88,10 @@ def run_tests(pyb, tests):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            with open(filename_expected, "w") as f:
-                f.write(str(output_expected, "ascii"))
-            with open(filename_mupy, "w") as f:
-                f.write(str(output_mupy, "ascii"))
+            with open(filename_expected, "wb") as f:
+                f.write(output_expected)
+            with open(filename_mupy, "wb") as f:
+                f.write(output_mupy)
             print("FAIL ", test_file)
             failed_tests.append(test_name)
 

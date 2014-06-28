@@ -75,6 +75,7 @@ PY_O_BASENAME = \
 	objset.o \
 	objslice.o \
 	objstr.o \
+	objstrunicode.o \
 	objstringio.o \
 	objtuple.o \
 	objtype.o \

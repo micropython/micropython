@@ -33,6 +33,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objstr.h"
+#include "runtime.h"
 #include "stream.h"
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
@@ -67,6 +68,13 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
         return stream_readall(args[0]);
     }
+
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    if (!o->type->stream_p->is_bytes) {
+        mp_not_implemented("Reading from unicode text streams by character count");
+    }
+    #endif
+
     byte *buf = m_new(byte, sz);
     int error;
     machine_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
