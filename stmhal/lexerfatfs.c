@@ -27,8 +27,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "lexerfatfs.h"

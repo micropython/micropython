@@ -29,10 +29,10 @@
 
 #include "stm32f4xx_hal.h"
 
+#include "mpconfig.h"
 #include "misc.h"
 #include "systick.h"
 #include "pendsv.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "misc.h"
 #include "nlr.h"

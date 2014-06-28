@@ -29,8 +29,8 @@
 
 #include <stm32f4xx_hal.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "misc.h"
 #include "obj.h"

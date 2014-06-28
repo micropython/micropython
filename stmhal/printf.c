@@ -28,10 +28,10 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "mpconfig.h"
 #include "std.h"
 #include "misc.h"
 #include "systick.h"
-#include "mpconfig.h"
 #include "qstr.h"
 #include "obj.h"
 #include "pfenv.h"
