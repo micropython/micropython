@@ -30,8 +30,8 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"

@@ -30,8 +30,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "nlr.h"
 #include "qstr.h"
 #include "obj.h"
