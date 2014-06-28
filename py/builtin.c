@@ -173,7 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    int c = mp_obj_get_int(o_in);
+    machine_int_t c = mp_obj_get_int(o_in);
     char str[4];
     int len = 0;
     if (c < 0x80) {
@@ -198,7 +198,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     }
     return mp_obj_new_str(str, len, true);
     #else
-    int ord = mp_obj_get_int(o_in);
+    machine_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
         char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);

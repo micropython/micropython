@@ -106,7 +106,7 @@ STATIC mp_obj_t uni_unary_op(int op, mp_obj_t self_in) {
         case MP_UNARY_OP_BOOL:
             return MP_BOOL(str_len != 0);
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char *)str_data, str_len));
+            return MP_OBJ_NEW_SMALL_INT((machine_int_t)unichar_charlen((const char *)str_data, str_len));
         default:
             return MP_OBJ_NULL; // op not supported
     }
@@ -311,10 +311,10 @@ const mp_obj_type_t mp_type_str = {
     .print = uni_print,
     .make_new = str_make_new,
     .unary_op = uni_unary_op,
-    .binary_op = str_binary_op,
+    .binary_op = mp_obj_str_binary_op,
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
-    .buffer_p = { .get_buffer = str_get_buffer },
+    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 

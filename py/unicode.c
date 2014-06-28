@@ -107,6 +107,7 @@ machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
     return i;
 }
 
+// TODO: Rename to str_charlen; return machine_uint_t
 uint unichar_charlen(const char *str, uint len)
 {
 #if MICROPY_PY_BUILTINS_STR_UNICODE

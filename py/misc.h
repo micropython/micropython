@@ -100,7 +100,7 @@ bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
 unichar unichar_toupper(unichar c);
-uint unichar_charlen(const char *str, uint len);
+uint unichar_charlen(const char *str, uint len); // TODO this should return machine_uint_t
 #define UTF8_IS_NONASCII(ch) ((ch) & 0x80)
 #define UTF8_IS_CONT(ch) (((ch) & 0xC0) == 0x80)
 
@@ -169,6 +169,7 @@ extern uint mp_verbose_flag;
 // This is useful for unicode handling. Some CPU archs has
 // special instructions for efficient implentation of this
 // function (e.g. CLZ on ARM).
+// NOTE: this function is unused at the moment
 #ifndef count_lead_ones
 static inline uint count_lead_ones(byte val) {
     uint c = 0;

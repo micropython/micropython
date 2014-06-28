@@ -251,7 +251,7 @@ STATIC const byte *find_subbytes(const byte *haystack, machine_uint_t hlen, cons
     return NULL;
 }
 
-mp_obj_t str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
     mp_obj_type_t *rhs_type = mp_obj_get_type(rhs_in);
@@ -565,7 +565,6 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
 
     return res;
 }
-
 
 STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, machine_int_t direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -1610,7 +1609,7 @@ STATIC mp_obj_t str_encode(uint n_args, const mp_obj_t *args) {
 }
 #endif
 
-machine_int_t str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, int flags) {
+machine_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, int flags) {
     if (flags == MP_BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
         bufinfo->buf = (void*)str_data;
@@ -1701,10 +1700,10 @@ const mp_obj_type_t mp_type_str = {
     .name = MP_QSTR_str,
     .print = str_print,
     .make_new = str_make_new,
-    .binary_op = str_binary_op,
+    .binary_op = mp_obj_str_binary_op,
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
-    .buffer_p = { .get_buffer = str_get_buffer },
+    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 #endif
@@ -1715,10 +1714,10 @@ const mp_obj_type_t mp_type_bytes = {
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,
-    .binary_op = str_binary_op,
+    .binary_op = mp_obj_str_binary_op,
     .subscr = str_subscr,
     .getiter = mp_obj_new_bytes_iterator,
-    .buffer_p = { .get_buffer = str_get_buffer },
+    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
 };
 
