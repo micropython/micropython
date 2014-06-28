@@ -252,6 +252,10 @@ typedef double mp_float_t;
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+
+// Whether to support bytearray object
+#ifndef MICROPY_PY_BUILTINS_BYTEARRAY
+#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #endif
 
 // Whether to support set object
@@ -272,6 +276,13 @@ typedef double mp_float_t;
 // Whether to support property object
 #ifndef MICROPY_PY_BUILTINS_PROPERTY
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
+#endif
+
+// Whether to provide "array" module. Note that large chunk of the
+// underlying code is shared with "bytearray" builtin type, so to
+// get real savings, it should be disabled too.
+#ifndef MICROPY_PY_ARRAY
+#define MICROPY_PY_ARRAY (1)
 #endif
 
 // Whether to provide "collections" module

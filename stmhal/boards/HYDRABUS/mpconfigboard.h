@@ -1,6 +1,7 @@
 #define HYDRABUSV10
 
 #define MICROPY_HW_BOARD_NAME       "HydraBus1.0"
+#define MICROPY_HW_MCU_NAME         "STM32F4"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_SDCARD       (1)

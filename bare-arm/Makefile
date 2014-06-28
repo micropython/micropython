@@ -22,7 +22,7 @@ else
 CFLAGS += -Os -DNDEBUG
 endif
 
-LDFLAGS = -nostdlib -T stm32f405.ld
+LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref
 LIBS =
 
 SRC_C = \

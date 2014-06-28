@@ -1,6 +1,7 @@
 #define STM32F4DISC
 
 #define MICROPY_HW_BOARD_NAME       "F4DISC"
+#define MICROPY_HW_MCU_NAME         "STM32F407"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_SDCARD       (0)

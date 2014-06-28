@@ -1,6 +1,7 @@
 #define NETDUINO_PLUS_2
 
 #define MICROPY_HW_BOARD_NAME       "NetduinoPlus2"
+#define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 
