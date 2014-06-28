@@ -372,7 +372,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    uint charlen = unichar_charlen(str, len);
+    machine_uint_t charlen = unichar_charlen(str, len);
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
             machine_int_t ord = *str++ & 0x7F;

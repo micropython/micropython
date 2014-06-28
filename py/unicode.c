@@ -107,11 +107,11 @@ machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
     return i;
 }
 
-// TODO: Rename to str_charlen; return machine_uint_t
-uint unichar_charlen(const char *str, uint len)
+// TODO: Rename to str_charlen
+machine_uint_t unichar_charlen(const char *str, machine_uint_t len)
 {
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-    uint charlen = 0;
+    machine_uint_t charlen = 0;
     for (const char *top = str + len; str < top; ++str) {
         if (!UTF8_IS_CONT(*str)) {
             ++charlen;
