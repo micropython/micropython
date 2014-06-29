@@ -100,6 +100,8 @@ STATIC ffi_type *char2ffi_type(char c)
     switch (c) {
         case 'b': return &ffi_type_schar;
         case 'B': return &ffi_type_uchar;
+        case 'h': return &ffi_type_sshort;
+        case 'H': return &ffi_type_ushort;
         case 'i': return &ffi_type_sint;
         case 'I': return &ffi_type_uint;
         case 'l': return &ffi_type_slong;
