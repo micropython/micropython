@@ -202,7 +202,9 @@ STATIC mp_obj_t adc_read(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
 /// \method read_timed(buf, freq)
-/// Read analog values into the given buffer at the given frequency.
+/// Read analog values into the given buffer at the given frequency. Buffer
+/// can be bytearray or array.array for example. If a buffer with 8-bit elements
+/// is used, sample resolution will be reduced to 8 bits.
 ///
 /// Example:
 ///
