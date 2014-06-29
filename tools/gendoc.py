@@ -228,16 +228,18 @@ class DocModule(DocItem):
         s.append('# module {}'.format(self.name))
         s.append('')
         s.append(super().dump())
-        s.append('')
-        s.append('## Functions')
-        for f in sorted(self.functions.values(), key=lambda x:x.name):
+        if self.functions:
             s.append('')
-            s.append(f.dump(self.name))
-        s.append('')
-        s.append('## Classes')
-        for c in sorted(self.classes.values(), key=lambda x:x.name):
+            s.append('## Functions')
+            for f in sorted(self.functions.values(), key=lambda x:x.name):
+                s.append('')
+                s.append(f.dump(self.name))
+        if self.classes:
             s.append('')
-            s.append('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
+            s.append('## Classes')
+            for c in sorted(self.classes.values(), key=lambda x:x.name):
+                s.append('')
+                s.append('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
         return '\n'.join(s)
 
     def write(self, dir):
