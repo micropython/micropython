@@ -849,6 +849,14 @@ STATIC void emit_bc_yield_from(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_YIELD_FROM);
 }
 
+STATIC void emit_bc_start_except_handler(emit_t *emit) {
+    emit_bc_adjust_stack_size(emit, 6); // stack adjust for the 3 exception items, +3 for possible UNWIND_JUMP state
+}
+
+STATIC void emit_bc_end_except_handler(emit_t *emit) {
+    emit_bc_adjust_stack_size(emit, -5); // stack adjust
+}
+
 const emit_method_table_t emit_bc_method_table = {
     emit_bc_set_native_types,
     emit_bc_start_pass,
@@ -934,6 +942,9 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_raise_varargs,
     emit_bc_yield_value,
     emit_bc_yield_from,
+
+    emit_bc_start_except_handler,
+    emit_bc_end_except_handler,
 };
 
 #endif // !MICROPY_EMIT_CPYTHON

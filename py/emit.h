@@ -134,6 +134,11 @@ typedef struct _emit_method_table_t {
     void (*yield_value)(emit_t *emit);
     void (*yield_from)(emit_t *emit);
 
+    // these methods are used to control entry to/exit from an exception handler
+    // they may or may not emit code
+    void (*start_except_handler)(emit_t *emit);
+    void (*end_except_handler)(emit_t *emit);
+
 #if MICROPY_EMIT_CPYTHON
     // these methods are only needed for emitcpy
     void (*load_const_verbatim_str)(emit_t *emit, const char *str);

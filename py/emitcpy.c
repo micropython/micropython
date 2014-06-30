@@ -792,6 +792,14 @@ STATIC void emit_cpy_yield_from(emit_t *emit) {
     }
 }
 
+STATIC void emit_cpy_start_except_handler(emit_t *emit) {
+    emit_cpy_adjust_stack_size(emit, 3); // stack adjust for the 3 exception items
+}
+
+STATIC void emit_cpy_end_except_handler(emit_t *emit) {
+    emit_cpy_adjust_stack_size(emit, -5); // stack adjust
+}
+
 STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
@@ -898,6 +906,9 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_raise_varargs,
     emit_cpy_yield_value,
     emit_cpy_yield_from,
+
+    emit_cpy_start_except_handler,
+    emit_cpy_end_except_handler,
 
     // emitcpy specific functions
     emit_cpy_load_const_verbatim_str,

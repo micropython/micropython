@@ -1894,7 +1894,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     EMIT_ARG(jump, success_label); // jump over exception handler
 
     EMIT_ARG(label_assign, l1); // start of exception handler
-    EMIT_ARG(adjust_stack_size, 6); // stack adjust for the 3 exception items, +3 for possible UNWIND_JUMP state
+    EMIT(start_except_handler);
 
     uint l2 = comp_next_label(comp);
 
@@ -1966,7 +1966,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
 
     compile_decrease_except_level(comp);
     EMIT(end_finally);
-    EMIT_ARG(adjust_stack_size, -5); // stack adjust
+    EMIT(end_except_handler);
 
     EMIT_ARG(label_assign, success_label);
     compile_node(comp, pn_else); // else block, can be null

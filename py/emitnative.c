@@ -49,6 +49,7 @@
 #include <assert.h>
 
 #include "mpconfig.h"
+#include "nlr.h"
 #include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
@@ -723,7 +724,11 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
         assert(0);
         emit_post_push_imm(emit, VTYPE_PTR, (machine_uint_t)qstr_str(qstr));
     } else {
-        emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_STR, mp_load_const_str, qstr, REG_ARG_1);
+        if (bytes) {
+            emit_call_with_imm_arg(emit, 0, mp_load_const_bytes, qstr, REG_ARG_1); // TODO need to add function to runtime table
+        } else {
+            emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_STR, mp_load_const_str, qstr, REG_ARG_1);
+        }
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
 }
@@ -1057,17 +1062,33 @@ STATIC void emit_native_setup_with(emit_t *emit, uint label) {
     // not supported, or could be with runtime call
     assert(0);
 }
+
 STATIC void emit_native_with_cleanup(emit_t *emit) {
     assert(0);
 }
+
 STATIC void emit_native_setup_except(emit_t *emit, uint label) {
-    assert(0);
+    emit_native_pre(emit);
+    // need to commit stack because we may jump elsewhere
+    need_stack_settled(emit);
+    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(machine_uint_t)); // arg1 = pointer to nlr buf
+    emit_call(emit, 0, nlr_push); // TODO need to add function to runtime table
+#if N_X64
+    asm_x64_test_r8_with_r8(emit->as, REG_RET, REG_RET);
+    asm_x64_jcc_label(emit->as, JCC_JNZ, label);
+#elif N_THUMB
+    asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
+    asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#endif
+    emit_post(emit);
 }
+
 STATIC void emit_native_setup_finally(emit_t *emit, uint label) {
     assert(0);
 }
+
 STATIC void emit_native_end_finally(emit_t *emit) {
-    assert(0);
+    //assert(0);
 }
 
 STATIC void emit_native_get_iter(emit_t *emit) {
@@ -1107,19 +1128,31 @@ STATIC void emit_native_for_iter_end(emit_t *emit) {
 
 STATIC void emit_native_pop_block(emit_t *emit) {
     emit_native_pre(emit);
+    emit_call(emit, 0, nlr_pop); // TODO need to add function to runtime table
+    adjust_stack(emit, -(machine_int_t)(sizeof(nlr_buf_t) / sizeof(machine_uint_t)));
     emit_post(emit);
 }
 
 STATIC void emit_native_pop_except(emit_t *emit) {
-    assert(0);
+    /*
+    emit_native_pre(emit);
+    emit_call(emit, 0, nlr_pop); // TODO need to add function to runtime table
+    adjust_stack(emit, -(machine_int_t)(sizeof(nlr_buf_t) / sizeof(machine_uint_t)));
+    emit_post(emit);
+    */
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
-    vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
-    assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_UNARY_OP, mp_unary_op, op, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    if (op == MP_UNARY_OP_NOT) {
+        // we need to synthesise this operation
+        assert(0);
+    } else {
+        vtype_kind_t vtype;
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+        assert(vtype == VTYPE_PYOBJ);
+        emit_call_with_imm_arg(emit, MP_F_UNARY_OP, mp_unary_op, op, REG_ARG_1);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    }
 }
 
 STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
@@ -1233,17 +1266,26 @@ STATIC void emit_native_set_add(emit_t *emit, int set_index) {
 
 STATIC void emit_native_build_slice(emit_t *emit, int n_args) {
     DEBUG_printf("build_slice %d\n", n_args);
-    assert(n_args == 2);
-    vtype_kind_t vtype_start, vtype_stop;
-    emit_pre_pop_reg_reg(emit, &vtype_stop, REG_ARG_2, &vtype_start, REG_ARG_1); // arg1 = start, arg2 = stop
-    assert(vtype_start == VTYPE_PYOBJ);
-    assert(vtype_stop == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_NEW_SLICE, mp_obj_new_slice, (machine_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg3 = step
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    if (n_args == 2) {
+        vtype_kind_t vtype_start, vtype_stop;
+        emit_pre_pop_reg_reg(emit, &vtype_stop, REG_ARG_2, &vtype_start, REG_ARG_1); // arg1 = start, arg2 = stop
+        assert(vtype_start == VTYPE_PYOBJ);
+        assert(vtype_stop == VTYPE_PYOBJ);
+        emit_call_with_imm_arg(emit, MP_F_NEW_SLICE, mp_obj_new_slice, (machine_uint_t)mp_const_none, REG_ARG_3); // arg3 = step
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    } else {
+        assert(n_args == 3);
+        vtype_kind_t vtype_start, vtype_stop, vtype_step;
+        emit_pre_pop_reg_reg_reg(emit, &vtype_step, REG_ARG_3, &vtype_stop, REG_ARG_2, &vtype_start, REG_ARG_1); // arg1 = start, arg2 = stop, arg3 = step
+        assert(vtype_start == VTYPE_PYOBJ);
+        assert(vtype_stop == VTYPE_PYOBJ);
+        assert(vtype_step == VTYPE_PYOBJ);
+        emit_call(emit, MP_F_NEW_SLICE, mp_obj_new_slice);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    }
 }
 
 STATIC void emit_native_unpack_sequence(emit_t *emit, int n_args) {
-    // TODO this is untested
     DEBUG_printf("unpack_sequence %d\n", n_args);
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = seq
@@ -1253,13 +1295,12 @@ STATIC void emit_native_unpack_sequence(emit_t *emit, int n_args) {
 }
 
 STATIC void emit_native_unpack_ex(emit_t *emit, int n_left, int n_right) {
-    // TODO this is untested
     DEBUG_printf("unpack_ex %d %d\n", n_left, n_right);
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = seq
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, n_left + n_right); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_UNPACK_EX, mp_unpack_ex, n_left + n_right, REG_ARG_2); // arg2 = n_left + n_right
+    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, n_left + n_right + 1); // arg3 = dest ptr
+    emit_call_with_imm_arg(emit, MP_F_UNPACK_EX, mp_unpack_ex, n_left | (n_right << 8), REG_ARG_2); // arg2 = n_left + n_right
 }
 
 STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
@@ -1368,9 +1409,16 @@ STATIC void emit_native_return_value(emit_t *emit) {
 }
 
 STATIC void emit_native_raise_varargs(emit_t *emit, int n_args) {
-    // call runtime
-    assert(0);
+    assert(n_args == 1);
+    vtype_kind_t vtype_err;
+    emit_pre_pop_reg(emit, &vtype_err, REG_ARG_1); // arg1 = object to raise
+    assert(vtype_err == VTYPE_PYOBJ);
+    emit_call(emit, 0, mp_make_raise_obj); // TODO need to add function to runtime table
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    emit_pre_pop_reg(emit, &vtype_err, REG_ARG_1);
+    emit_call(emit, 0, nlr_jump); // TODO need to add function to runtime table
 }
+
 STATIC void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
     assert(0);
@@ -1378,6 +1426,21 @@ STATIC void emit_native_yield_value(emit_t *emit) {
 STATIC void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
     assert(0);
+}
+
+STATIC void emit_native_start_except_handler(emit_t *emit) {
+    // This instruction follows an nlr_pop, so the stack counter is back to zero, when really
+    // it should be up by a whole nlr_buf_t.  We then want to pop the nlr_buf_t here, but save
+    // the first 2 elements, so we can get the thrown value.
+    adjust_stack(emit, 2);
+    vtype_kind_t vtype_nlr;
+    emit_pre_pop_reg(emit, &vtype_nlr, REG_ARG_1); // get the thrown value
+    emit_pre_pop_discard(emit, &vtype_nlr); // discard the linked-list pointer in the nlr_buf
+    emit_post_push_reg_reg_reg(emit, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1); // push the 3 exception items
+}
+
+STATIC void emit_native_end_except_handler(emit_t *emit) {
+    adjust_stack(emit, -3); // stack adjust (not sure why it's this much...)
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
@@ -1465,6 +1528,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_raise_varargs,
     emit_native_yield_value,
     emit_native_yield_from,
+
+    emit_native_start_except_handler,
+    emit_native_end_except_handler,
 };
 
 #endif // (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)
