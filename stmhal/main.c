@@ -86,7 +86,7 @@ void flash_error(int n) {
     led_state(PYB_LED_R2, 0);
 }
 
-void __fatal_error(const char *msg) {
+void NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
     led_state(1, 1);
@@ -112,8 +112,7 @@ void nlr_jump_fail(void *val) {
 }
 
 #ifndef NDEBUG
-void __attribute__((weak))
-    __assert_func(const char *file, int line, const char *func, const char *expr) {
+void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     __fatal_error("");
