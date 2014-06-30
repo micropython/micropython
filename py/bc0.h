@@ -26,7 +26,6 @@
 
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
-
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
 #define MP_BC_LOAD_CONST_NONE    (0x11)
 #define MP_BC_LOAD_CONST_TRUE    (0x12)

@@ -25,14 +25,12 @@
  */
 
 // options to control how Micro Python is built
-
 #define MICROPY_EMIT_CPYTHON        (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_PY_IO               (0)
 
 // type definitions for the specific machine
-
 #ifdef __LP64__
 typedef long machine_int_t; // must be pointer size
 typedef unsigned long machine_uint_t; // must be pointer size

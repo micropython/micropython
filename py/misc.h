@@ -25,7 +25,6 @@
  */
 
 // a mini library of useful types and functions
-
 #ifndef _INCLUDED_MINILIB_H
 #define _INCLUDED_MINILIB_H
 

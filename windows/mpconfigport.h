@@ -25,9 +25,8 @@
  */
 
 // options to control how Micro Python is built
-
-// Linking with GNU readline causes binary to be licensed under GPL
 #ifndef MICROPY_USE_READLINE
+// Linking with GNU readline causes binary to be licensed under GPL
 #define MICROPY_USE_READLINE        (0)
 #endif
 
@@ -63,7 +62,6 @@
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
 
 // type definitions for the specific machine
-
 #if defined( __MINGW32__ ) && defined( __LP64__ )
 typedef long machine_int_t; // must be pointer size
 typedef unsigned long machine_uint_t; // must be pointer size
@@ -103,20 +101,15 @@ void msec_sleep(double msec);
 #ifdef _MSC_VER
 
 // Sanity check
-
 #if ( _MSC_VER < 1800 )
     #error Can only build with Visual Studio 2013 toolset
 #endif
 
-
 // CL specific overrides from mpconfig
-
 #define NORETURN                   __declspec(noreturn)
 #define MICROPY_PORT_CONSTANTS     { "dummy", 0 } //can't have zero-sized array
 
-
 // CL specific definitions
-
 #define restrict
 #define inline                      __inline
 #define STDIN_FILENO                0
@@ -126,7 +119,6 @@ void msec_sleep(double msec);
 #define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 
-
 // Put static/global variables in sections with a known name we can lookup for the GC
 // For this to work this header must be included by all sources, which is the case normally
 #define MICROPY_PORT_DATASECTION "upydata"
@@ -134,14 +126,11 @@ void msec_sleep(double msec);
 #pragma data_seg(MICROPY_PORT_DATASECTION)
 #pragma bss_seg(MICROPY_PORT_BSSSECTION)
 
-
 // System headers (needed e.g. for nlr.h)
-
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
 
 // Functions implemented in platform code
-
 int snprintf(char *dest, size_t count, const char *format, ...);
 #endif
 

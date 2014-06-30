@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 // options to control how Micro Python is built
-
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #define MICROPY_ENABLE_GC           (1)
@@ -9,7 +8,6 @@
 #define MICROPY_PY_BUILTINS_FLOAT   (1)
 
 // type definitions for the specific machine
-
 #define BYTES_PER_WORD (4)
 
 typedef int32_t machine_int_t; // must be pointer size

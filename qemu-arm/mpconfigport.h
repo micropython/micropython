@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 // options to control how Micro Python is built
-
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -17,7 +16,6 @@
 #define MICROPY_PY_IO               (0)
 
 // type definitions for the specific machine
-
 #define BYTES_PER_WORD (4)
 
 #define UINT_FMT "%lu"
