@@ -72,6 +72,7 @@ float __attribute__((pcs("aapcs"))) __aeabi_d2f(double x) {
     fx.m = (dx.m>>(52-23)); // right justify
     return fx.f;
 }
+
 double __aeabi_dmul(double x , double y) {
     return 0.0;
 
@@ -84,6 +85,18 @@ float sqrtf(float x) {
             : [x] "t"  (x));
     return x;
 }
+
+#ifndef NDEBUG
+float copysignf(float x, float y) {
+    float_s_t fx={.f = x};
+    float_s_t fy={.f = y};
+
+    // copy sign bit;
+    fx.s = fy.s;
+
+    return fx.f;
+}
+#endif
 
 // some compilers define log2f in terms of logf
 #ifdef log2f
