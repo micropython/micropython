@@ -51,6 +51,10 @@
  *      s - as argument, the same as "p", as return value, causes string
  *          to be allocated and returned, instead of pointer value.
  *
+ * TODO:
+ *      O - mp_obj_t, passed as is (mostly useful as callback param)
+ *      C - callback function
+ *
  * Note: all constraint specified by typecode can be not enforced at this time,
  * but may be later.
  */
@@ -108,6 +112,7 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'L': return &ffi_type_ulong;
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;
+        case 'C': // (*)()
         case 'P': // const void*
         case 'p': // void*
         case 's': return &ffi_type_pointer;
