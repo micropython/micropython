@@ -32,7 +32,7 @@
 
 #if MICROPY_ENABLE_GC
 
-extern void *stack_top;
+extern char *stack_top;
 
 #if MICROPY_GCREGS_SETJMP
 #include <setjmp.h>

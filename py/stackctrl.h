@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
-void stack_ctrl_init();
-uint stack_usage();
+void mp_stack_ctrl_init();
+uint mp_stack_usage();
 
 #if MICROPY_STACK_CHECK
 
-void stack_set_limit(uint limit);
-void stack_check();
-#define STACK_CHECK() stack_check()
+void mp_stack_set_limit(uint limit);
+void mp_stack_check();
+#define MP_STACK_CHECK() mp_stack_check()
 
 #else
 
-#define stack_set_limit(limit)
-#define STACK_CHECK()
+#define mp_stack_set_limit(limit)
+#define MP_STACK_CHECK()
 
 #endif

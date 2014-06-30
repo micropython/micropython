@@ -61,7 +61,7 @@ void printf_wrapper(void *env, const char *fmt, ...) {
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
-    STACK_CHECK();
+    MP_STACK_CHECK();
 #if !NDEBUG
     if (o_in == NULL) {
         print(env, "(nil)");

@@ -70,7 +70,7 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
-    stack_ctrl_init();
+    mp_stack_ctrl_init();
 
     // call port specific initialization if any
 #ifdef MICROPY_PORT_INIT_FUNC

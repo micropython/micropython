@@ -356,7 +356,7 @@ continue2:;
 
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    STACK_CHECK();
+    MP_STACK_CHECK();
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");

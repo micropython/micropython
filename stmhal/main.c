@@ -188,7 +188,7 @@ int main(void) {
 
     // Stack limit should be less than real stack size, so we
     // had chance to recover from limit hit.
-    stack_set_limit(&_ram_end - &_heap_end - 512);
+    mp_stack_set_limit(&_ram_end - &_heap_end - 512);
 
     /* STM32F4xx HAL library initialization:
          - Configure the Flash prefetch, instruction and Data caches
