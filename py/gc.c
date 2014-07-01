@@ -172,6 +172,10 @@ void gc_unlock(void) {
     gc_lock_depth--;
 }
 
+bool gc_is_locked(void) {
+    return gc_lock_depth != 0;
+}
+
 #define VERIFY_PTR(ptr) ( \
         (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
         && ptr >= (machine_uint_t)gc_pool_start     /* must be above start of pool */ \

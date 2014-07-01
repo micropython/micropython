@@ -37,6 +37,7 @@
 #include "objtype.h"
 #include "runtime.h"
 #include "runtime0.h"
+#include "gc.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
@@ -335,6 +336,13 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
+    #if MICROPY_ENABLE_GC
+    if (gc_is_locked()) {
+        // We can't allocate memory, so don't bother to try
+        return;
+    }
+    #endif
+
     GET_NATIVE_EXCEPTION(self, self_in);
 
     // for traceback, we are just using the list object for convenience, it's not really a list of Python objects

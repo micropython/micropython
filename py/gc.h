@@ -30,6 +30,7 @@ void gc_init(void *start, void *end);
 // They can be used to prevent the GC from allocating/freeing.
 void gc_lock(void);
 void gc_unlock(void);
+bool gc_is_locked(void);
 
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
