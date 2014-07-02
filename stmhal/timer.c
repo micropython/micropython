@@ -107,10 +107,23 @@ static uint32_t tim3_counter = 0;
 STATIC pyb_timer_obj_t *pyb_timer_obj_all[14];
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(pyb_timer_obj_all)
 
+STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
+STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
+
 void timer_init0(void) {
     tim3_counter = 0;
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
         pyb_timer_obj_all[i] = NULL;
+    }
+}
+
+// unregister all interrupt sources
+void timer_deinit(void) {
+    for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
+        pyb_timer_obj_t *tim = pyb_timer_obj_all[i];
+        if (tim != NULL) {
+            pyb_timer_deinit(tim);
+        }
     }
 }
 
@@ -366,8 +379,6 @@ STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 
-STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
-
 /// \method deinit()
 /// Deinitialises the timer.
 ///
@@ -470,16 +481,6 @@ const mp_obj_type_t pyb_timer_type = {
     .make_new = pyb_timer_make_new,
     .locals_dict = (mp_obj_t)&pyb_timer_locals_dict,
 };
-
-// Unregister all interrupt sources
-void timer_deinit(void) {
-    for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        pyb_timer_obj_t *tim = pyb_timer_obj_all[i];
-        if (tim != NULL) {
-            pyb_timer_deinit(tim);
-        }
-    }
-}
 
 void timer_irq_handler(uint tim_id) {
     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {

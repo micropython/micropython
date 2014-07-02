@@ -548,9 +548,8 @@ soft_reset:
     printf("PYB: sync filesystems\n");
     storage_flush();
 
-    timer_deinit();
-
     printf("PYB: soft reboot\n");
+    timer_deinit();
 
     first_soft_reset = false;
     goto soft_reset;
