@@ -70,4 +70,14 @@ typedef enum {
 
 } MEMZIP_RESULT;
 
+typedef struct {
+    uint32_t    file_size;
+    uint16_t    last_mod_date;
+    uint16_t    last_mod_time;
+    uint8_t     is_dir;
+
+} MEMZIP_FILE_INFO;
+
 MEMZIP_RESULT memzip_locate(const char *filename, void **data, size_t *len);
+
+MEMZIP_RESULT memzip_stat(const char *path, MEMZIP_FILE_INFO *info);

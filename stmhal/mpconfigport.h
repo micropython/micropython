@@ -105,3 +105,6 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#define MICROPY_HAL_H           "mphal.h"
+#define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
