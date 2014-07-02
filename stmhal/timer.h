@@ -40,4 +40,6 @@ void timer_tim3_init(void);
 void timer_tim5_init(void);
 void timer_tim6_init(uint freq);
 
+void timer_deinit(void);
+
 void timer_irq_handler(uint tim_id);

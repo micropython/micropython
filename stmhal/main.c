@@ -549,6 +549,7 @@ soft_reset:
     storage_flush();
 
     printf("PYB: soft reboot\n");
+    timer_deinit();
 
     first_soft_reset = false;
     goto soft_reset;
