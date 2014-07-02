@@ -25,8 +25,7 @@
  */
 
 #include <stdio.h>
-
-#include <stm32f4xx_hal.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -34,6 +33,7 @@
 #include "misc.h"
 #include "obj.h"
 #include "stream.h"
+#include MICROPY_HAL_H
 #include "pybstdio.h"
 #include "usb.h"
 #include "uart.h"

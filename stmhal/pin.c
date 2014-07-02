@@ -28,14 +28,13 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include MICROPY_HAL_H
 #include "pin.h"
 
 /// \moduleref pyb
@@ -310,13 +309,13 @@ STATIC mp_obj_t pin_value(uint n_args, mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT((self->gpio->IDR >> self->pin) & 1);
+        return MP_OBJ_NEW_SMALL_INT(GPIO_read_pin(self->gpio, self->pin));
     } else {
         // set pin
         if (mp_obj_is_true(args[1])) {
-            self->gpio->BSRRL = self->pin_mask;
+            GPIO_set_pin(self->gpio, self->pin_mask);
         } else {
-            self->gpio->BSRRH = self->pin_mask;
+            GPIO_clear_pin(self->gpio, self->pin_mask);
         }
         return mp_const_none;
     }
@@ -327,7 +326,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 /// Set the pin to a low logic level.
 STATIC mp_obj_t pin_low(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    self->gpio->BSRRH = self->pin_mask;
+    GPIO_clear_pin(self->gpio, self->pin_mask);;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
@@ -336,7 +335,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
 /// Set the pin to a high logic level.
 STATIC mp_obj_t pin_high(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    self->gpio->BSRRL = self->pin_mask;
+    GPIO_set_pin(self->gpio, self->pin_mask);;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);

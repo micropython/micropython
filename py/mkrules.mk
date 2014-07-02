@@ -97,4 +97,10 @@ print-cfg:
 	$(ECHO) "OBJ    = $(OBJ)"
 .PHONY: print-cfg
 
+print-def:
+	@$(ECHO) "The following defines are built into the $(CC) compiler"
+	touch __empty__.c
+	@$(CC) -E -Wp,-dM __empty__.c
+	@$(RM) -f __empty__.c
+
 -include $(OBJ:.o=.P)

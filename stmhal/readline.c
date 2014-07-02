@@ -25,15 +25,15 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-
-#include <stm32f4xx_hal.h>
 
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"
 #include "misc.h"
 #include "obj.h"
+#include MICROPY_HAL_H
 #include "pybstdio.h"
 #include "readline.h"
 #include "usb.h"

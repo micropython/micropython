@@ -26,8 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
-#include <stm32f4xx_hal.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -43,6 +42,7 @@
 #include "repl.h"
 #include "gc.h"
 #include "gccollect.h"
+#include MICROPY_HAL_H
 #include "systick.h"
 #include "pybstdio.h"
 #include "readline.h"
