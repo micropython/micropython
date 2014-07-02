@@ -119,6 +119,14 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
+void enable_irq(void) {
+    __enable_irq();
+}
+
+void disable_irq(void) {
+    __disable_irq();
+}
+
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
@@ -302,6 +310,9 @@ soft_reset:
 
     // GC init
     gc_init(&_heap_start, &_heap_end);
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    mp_init_emergency_exception_buf();
+#endif
 
     // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
     // as well as on USB VCP

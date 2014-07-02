@@ -453,6 +453,8 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
+void mp_init_emergency_exception_buf(void);
 
 // str
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);

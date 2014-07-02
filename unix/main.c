@@ -273,6 +273,9 @@ int main(int argc, char **argv) {
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
 #endif
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    mp_init_emergency_exception_buf();
+#endif
 
     qstr_init();
     mp_init();
