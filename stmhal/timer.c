@@ -366,13 +366,20 @@ STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 
+STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
+
 /// \method deinit()
 /// Deinitialises the timer.
 ///
-/// *This function is not yet implemented.*
+/// Disables the callback (and the associated irq).
+/// Stops the timer, and disables the timer peripheral.
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
-    //pyb_timer_obj_t *self = self_in;
-    // TODO implement me
+    pyb_timer_obj_t *self = self_in;
+
+    // Disable the interrupt
+    pyb_timer_callback(self_in, mp_const_none);
+
+    HAL_TIM_Base_DeInit(&self->tim);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
@@ -463,6 +470,16 @@ const mp_obj_type_t pyb_timer_type = {
     .make_new = pyb_timer_make_new,
     .locals_dict = (mp_obj_t)&pyb_timer_locals_dict,
 };
+
+// Unregister all interrupt sources
+void timer_deinit(void) {
+    for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
+        pyb_timer_obj_t *tim = pyb_timer_obj_all[i];
+        if (tim != NULL) {
+            pyb_timer_deinit(tim);
+        }
+    }
+}
 
 void timer_irq_handler(uint tim_id) {
     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
