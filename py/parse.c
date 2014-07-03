@@ -109,20 +109,20 @@ STATIC const rule_t *rules[] = {
 };
 
 typedef struct _rule_stack_t {
-    unsigned int src_line : 24;
-    unsigned int rule_id : 8;
-    int32_t arg_i; // what should be the size and signedness?
+    mp_uint_t src_line : 24;
+    mp_uint_t rule_id : 8;
+    mp_uint_t arg_i : 32; // what should the bit-size be?
 } rule_stack_t;
 
 typedef struct _parser_t {
     bool had_memory_error;
 
-    uint rule_stack_alloc;
-    uint rule_stack_top;
+    mp_uint_t rule_stack_alloc;
+    mp_uint_t rule_stack_top;
     rule_stack_t *rule_stack;
 
-    uint result_stack_alloc;
-    uint result_stack_top;
+    mp_uint_t result_stack_alloc;
+    mp_uint_t result_stack_top;
     mp_parse_node_t *result_stack;
 
     mp_lexer_t *lexer;
@@ -132,7 +132,7 @@ STATIC inline void memory_error(parser_t *parser) {
     parser->had_memory_error = true;
 }
 
-STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int arg_i) {
+STATIC void push_rule(parser_t *parser, mp_uint_t src_line, const rule_t *rule, mp_uint_t arg_i) {
     if (parser->had_memory_error) {
         return;
     }
@@ -151,14 +151,14 @@ STATIC void push_rule(parser_t *parser, int src_line, const rule_t *rule, int ar
     rs->arg_i = arg_i;
 }
 
-STATIC void push_rule_from_arg(parser_t *parser, uint arg) {
+STATIC void push_rule_from_arg(parser_t *parser, mp_uint_t arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
-    uint rule_id = arg & RULE_ARG_ARG_MASK;
+    mp_uint_t rule_id = arg & RULE_ARG_ARG_MASK;
     assert(rule_id < RULE_maximum_number_of);
     push_rule(parser, mp_lexer_cur(parser->lexer)->src_line, rules[rule_id], 0);
 }
 
-STATIC void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *src_line) {
+STATIC void pop_rule(parser_t *parser, const rule_t **rule, mp_uint_t *arg_i, mp_uint_t *src_line) {
     assert(!parser->had_memory_error);
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
@@ -176,8 +176,8 @@ mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg) {
 void mp_parse_node_free(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-        uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-        uint rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
+        mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
         if (rule_id == RULE_string) {
             return;
         }
@@ -185,7 +185,7 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         if (adjust) {
             n--;
         }
-        for (uint i = 0; i < n; i++) {
+        for (mp_uint_t i = 0; i < n; i++) {
             mp_parse_node_free(pns->nodes[i]);
         }
         if (adjust) {
@@ -196,13 +196,13 @@ void mp_parse_node_free(mp_parse_node_t pn) {
 }
 
 #if MICROPY_DEBUG_PRINTERS
-void mp_parse_node_print(mp_parse_node_t pn, int indent) {
+void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         printf("[% 4d] ", (int)((mp_parse_node_struct_t*)pn)->source_line);
     } else {
         printf("       ");
     }
-    for (int i = 0; i < indent; i++) {
+    for (mp_uint_t i = 0; i < indent; i++) {
         printf(" ");
     }
     if (MP_PARSE_NODE_IS_NULL(pn)) {
@@ -227,13 +227,13 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_string) {
             printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
         } else {
-            uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+            mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
-            printf("%s(%d) (n=%d)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("%s(" UINT_FMT ") (n=" UINT_FMT ")\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, (mp_uint_t)MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #else
-            printf("rule(%u) (n=%d)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("rule(" UINT_FMT ") (n=" UINT_FMT ")\n", (mp_uint_t)MP_PARSE_NODE_STRUCT_KIND(pns), n);
 #endif
-            for (uint i = 0; i < n; i++) {
+            for (mp_uint_t i = 0; i < n; i++) {
                 mp_parse_node_print(pns->nodes[i], indent + 2);
             }
         }
@@ -244,7 +244,7 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
 /*
 STATIC void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
-    for (int i = parser->result_stack_top - 1; i >= 0; i--) {
+    for (mp_int_t i = parser->result_stack_top - 1; i >= 0; i--) {
         mp_parse_node_print(parser->result_stack[i], 0);
     }
 }
@@ -258,7 +258,7 @@ STATIC mp_parse_node_t pop_result(parser_t *parser) {
     return parser->result_stack[--parser->result_stack_top];
 }
 
-STATIC mp_parse_node_t peek_result(parser_t *parser, int pos) {
+STATIC mp_parse_node_t peek_result(parser_t *parser, mp_uint_t pos) {
     if (parser->had_memory_error) {
         return MP_PARSE_NODE_NULL;
     }
@@ -282,7 +282,7 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
-STATIC void push_result_string(parser_t *parser, int src_line, const char *str, uint len) {
+STATIC void push_result_string(parser_t *parser, mp_uint_t src_line, const char *str, mp_uint_t len) {
     mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 2);
     if (pn == NULL) {
         memory_error(parser);
@@ -306,13 +306,13 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
         bool dec = false;
         bool small_int = true;
         mp_int_t int_val = 0;
-        int len = tok->len;
+        mp_uint_t len = tok->len;
         const char *str = tok->str;
-        int base = 0;
-        int i = mp_parse_num_base(str, len, &base);
+        mp_uint_t base = 0;
+        mp_uint_t i = mp_parse_num_base(str, len, &base);
         bool overflow = false;
         for (; i < len; i++) {
-            int dig;
+            mp_uint_t dig;
             if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
                 dig = str[i] - '0';
             } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
@@ -369,7 +369,7 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     push_result_node(parser, pn);
 }
 
-STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule, int num_args) {
+STATIC void push_result_rule(parser_t *parser, mp_uint_t src_line, const rule_t *rule, mp_uint_t num_args) {
     mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, num_args);
     if (pn == NULL) {
         memory_error(parser);
@@ -377,7 +377,7 @@ STATIC void push_result_rule(parser_t *parser, int src_line, const rule_t *rule,
     }
     pn->source_line = src_line;
     pn->kind_num_nodes = (rule->rule_id & 0xff) | (num_args << 8);
-    for (int i = num_args; i > 0; i--) {
+    for (mp_uint_t i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
     push_result_node(parser, (mp_parse_node_t)pn);
@@ -407,7 +407,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
     }
 
     // work out the top-level rule to use, and push it on the stack
-    int top_level_rule;
+    mp_uint_t top_level_rule;
     switch (input_kind) {
         case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
@@ -417,8 +417,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
     // parse!
 
-    uint n, i; // state for the current rule
-    uint rule_src_line; // source line for the first token matched by the current rule
+    mp_uint_t n, i; // state for the current rule
+    mp_uint_t rule_src_line; // source line for the first token matched by the current rule
     bool backtrack = false;
     const rule_t *rule = NULL;
     mp_token_kind_t tok_kind;
@@ -541,7 +541,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 // count number of arguments for the parse_node
                 i = 0;
                 emit_rule = false;
-                for (int x = 0; x < n; ++x) {
+                for (mp_uint_t x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
@@ -589,8 +589,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     i += 1;
                 }
 
-                int num_not_nil = 0;
-                for (int x = 0; x < i; ++x) {
+                mp_uint_t num_not_nil = 0;
+                for (mp_uint_t x = 0; x < i; ++x) {
                     if (peek_result(&parser, x) != MP_PARSE_NODE_NULL) {
                         num_not_nil += 1;
                     }
@@ -605,7 +605,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 } else if (num_not_nil == 1) {
                     // single result, leave it on stack
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
-                    for (int x = 0; x < i; ++x) {
+                    for (mp_uint_t x = 0; x < i; ++x) {
                         mp_parse_node_t pn2 = pop_result(&parser);
                         if (pn2 != MP_PARSE_NODE_NULL) {
                             pn = pn2;
@@ -653,7 +653,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     }
                 } else {
                     for (;;) {
-                        uint arg = rule->arg[i & 1 & n];
+                        mp_uint_t arg = rule->arg[i & 1 & n];
                         switch (arg & RULE_ARG_KIND_MASK) {
                             case RULE_ARG_TOK:
                                 if (mp_lexer_is_kind(lex, arg & RULE_ARG_ARG_MASK)) {

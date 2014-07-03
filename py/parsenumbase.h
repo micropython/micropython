@@ -24,4 +24,4 @@
  * THE SOFTWARE.
  */
 
-int mp_parse_num_base(const char *str, uint len, int *base);
+mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base);

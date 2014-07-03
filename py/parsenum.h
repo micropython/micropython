@@ -24,5 +24,5 @@
  * THE SOFTWARE.
  */
 
-mp_obj_t mp_parse_num_integer(const char *restrict str, uint len, int base);
-mp_obj_t mp_parse_num_decimal(const char *str, uint len, bool allow_imag, bool force_complex);
+mp_obj_t mp_parse_num_integer(const char *restrict str, mp_uint_t len, mp_uint_t base);
+mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, bool force_complex);
