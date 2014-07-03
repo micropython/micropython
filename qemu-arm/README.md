@@ -1,5 +1,5 @@
 This is experimental, community-supported port for Cortex-M emulation as
-provided my QEMU (http://qemu.org).
+provided by QEMU (http://qemu.org).
 
 The purposes of this port are to enable:
 
