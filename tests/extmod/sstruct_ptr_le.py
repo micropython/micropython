@@ -11,7 +11,7 @@ bytes = b"01"
 addr = sstruct.addressof(bytes)
 buf = addr.to_bytes(4)
 
-S = sstruct.sstruct(desc, sstruct.addressof(buf))
+S = sstruct.sstruct(desc, sstruct.addressof(buf), sstruct.LITTLE_ENDIAN)
 
 print(S.ptr[0])
 assert S.ptr[0] == ord("0")

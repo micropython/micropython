@@ -32,7 +32,7 @@ S5 = {
 
 assert sstruct.sizeof(S5) == 12
 
-s5 = sstruct.sstruct(S5)
+s5 = sstruct.sstruct(S5, 0)
 assert sstruct.sizeof(s5) == 12
 assert sstruct.sizeof(s5.sub) == 2
 

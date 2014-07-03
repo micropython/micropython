@@ -1,4 +1,13 @@
+# This test is exactly like sstruct_le.py, but uses native structure layout.
+# Codepaths for packed vs native structures are different. This test only works
+# on little-endian machine (no matter if 32 or 64 bit).
+import sys
 import sstruct
+
+if sys.byteorder != "little":
+    print("SKIP")
+    sys.exit()
+
 
 desc = {
     "s0": sstruct.UINT16 | 0,
@@ -22,9 +31,9 @@ desc = {
 
 data = b"01"
 
-S = sstruct.sstruct(desc, sstruct.addressof(data))
+S = sstruct.sstruct(desc, sstruct.addressof(data), sstruct.NATIVE)
 
-print(S)
+#print(S)
 print(hex(S.s0))
 assert hex(S.s0) == "0x3130"
 #print(S.sub.b0)
