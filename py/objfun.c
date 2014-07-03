@@ -197,7 +197,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will use the heap.
-#define VM_MAX_STATE_ON_STACK (10 * sizeof(machine_uint_t))
+#define VM_MAX_STATE_ON_STACK (10 * sizeof(mp_uint_t))
 
 // Set this to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
@@ -208,7 +208,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_arg
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
     mp_obj_fun_bc_t *self = self_in;
-    machine_uint_t n_state = code_state->n_state;
+    mp_uint_t n_state = code_state->n_state;
     const byte *ip = code_state->ip;
 
     code_state->code_info = self->bytecode;
@@ -369,12 +369,12 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     const byte *ip = self->bytecode;
 
     // get code info size, and skip line number table
-    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    mp_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
     ip += code_info_size;
 
     // bytecode prelude: state size and exception stack size; 16 bit uints
-    machine_uint_t n_state = ip[0] | (ip[1] << 8);
-    machine_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
+    mp_uint_t n_state = ip[0] | (ip[1] << 8);
+    mp_uint_t n_exc_stack = ip[2] | (ip[3] << 8);
     ip += 4;
 
 #if VM_DETECT_STACK_OVERFLOW
@@ -509,13 +509,13 @@ typedef struct _mp_obj_fun_asm_t {
     void *fun;
 } mp_obj_fun_asm_t;
 
-typedef machine_uint_t (*inline_asm_fun_0_t)();
-typedef machine_uint_t (*inline_asm_fun_1_t)(machine_uint_t);
-typedef machine_uint_t (*inline_asm_fun_2_t)(machine_uint_t, machine_uint_t);
-typedef machine_uint_t (*inline_asm_fun_3_t)(machine_uint_t, machine_uint_t, machine_uint_t);
+typedef mp_uint_t (*inline_asm_fun_0_t)();
+typedef mp_uint_t (*inline_asm_fun_1_t)(mp_uint_t);
+typedef mp_uint_t (*inline_asm_fun_2_t)(mp_uint_t, mp_uint_t);
+typedef mp_uint_t (*inline_asm_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
 
 // convert a Micro Python object to a sensible value for inline asm
-STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
+STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     // TODO for byte_array, pass pointer to the array
     if (MP_OBJ_IS_SMALL_INT(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
@@ -528,42 +528,42 @@ STATIC machine_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     } else if (MP_OBJ_IS_STR(obj)) {
         // pointer to the string (it's probably constant though!)
         uint l;
-        return (machine_uint_t)mp_obj_str_get_data(obj, &l);
+        return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
         if (0) {
 #if MICROPY_PY_BUILTINS_FLOAT
         } else if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
-            return (machine_int_t)mp_obj_float_get(obj);
+            return (mp_int_t)mp_obj_float_get(obj);
 #endif
         } else if (type == &mp_type_tuple) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             uint len;
             mp_obj_t *items;
             mp_obj_tuple_get(obj, &len, &items);
-            return (machine_uint_t)items;
+            return (mp_uint_t)items;
         } else if (type == &mp_type_list) {
             // pointer to start of list (could pass length, but then could use len(x) for that)
             uint len;
             mp_obj_t *items;
             mp_obj_list_get(obj, &len, &items);
-            return (machine_uint_t)items;
+            return (mp_uint_t)items;
         } else {
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_WRITE)) {
                 // supports the buffer protocol, return a pointer to the data
-                return (machine_uint_t)bufinfo.buf;
+                return (mp_uint_t)bufinfo.buf;
             } else {
                 // just pass along a pointer to the object
-                return (machine_uint_t)obj;
+                return (mp_uint_t)obj;
             }
         }
     }
 }
 
 // convert a return value from inline asm to a sensible Micro Python object
-STATIC mp_obj_t convert_val_from_inline_asm(machine_uint_t val) {
+STATIC mp_obj_t convert_val_from_inline_asm(mp_uint_t val) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
@@ -572,7 +572,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
-    machine_uint_t ret;
+    mp_uint_t ret;
     if (n_args == 0) {
         ret = ((inline_asm_fun_0_t)self->fun)();
     } else if (n_args == 1) {

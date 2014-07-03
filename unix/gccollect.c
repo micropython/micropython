@@ -50,7 +50,7 @@ void gc_helper_get_regs(regs_t arr) {
 // to capture caller-saved registers, because they, well, put on the
 // stack already by the caller.
 #ifdef __x86_64__
-typedef machine_uint_t regs_t[6];
+typedef mp_uint_t regs_t[6];
 
 void gc_helper_get_regs(regs_t arr) {
     register long rbx asm ("rbx");
@@ -83,7 +83,7 @@ void gc_helper_get_regs(regs_t arr) {
 #endif
 
 #ifdef __i386__
-typedef machine_uint_t regs_t[4];
+typedef mp_uint_t regs_t[4];
 
 void gc_helper_get_regs(regs_t arr) {
     register long ebx asm ("ebx");
@@ -98,7 +98,7 @@ void gc_helper_get_regs(regs_t arr) {
 #endif
 
 #if defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
-typedef machine_uint_t regs_t[10];
+typedef mp_uint_t regs_t[10];
 
 void gc_helper_get_regs(regs_t arr) {
     register long r4 asm ("r4");
@@ -140,12 +140,12 @@ void gc_collect(void) {
 #endif
     extern char BSS_START, _end;
     //printf(".bss: %p-%p\n", &BSS_START, &_end);
-    gc_collect_root((void**)&BSS_START, ((machine_uint_t)&_end - (machine_uint_t)&BSS_START) / sizeof(machine_uint_t));
+    gc_collect_root((void**)&BSS_START, ((mp_uint_t)&_end - (mp_uint_t)&BSS_START) / sizeof(mp_uint_t));
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
     void **regs_ptr = (void**)(void*)&regs;
-    gc_collect_root(regs_ptr, ((machine_uint_t)stack_top - (machine_uint_t)&regs) / sizeof(machine_uint_t));
+    gc_collect_root(regs_ptr, ((mp_uint_t)stack_top - (mp_uint_t)&regs) / sizeof(mp_uint_t));
     gc_collect_end();
 
     //printf("-----\n");

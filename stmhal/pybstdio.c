@@ -99,7 +99,7 @@ void stdio_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, 
     print(env, "<io.FileIO %d>", self->fd);
 }
 
-STATIC machine_int_t stdio_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     pyb_stdio_obj_t *self = self_in;
     if (self->fd == STDIO_FD_IN) {
         for (uint i = 0; i < size; i++) {
@@ -117,7 +117,7 @@ STATIC machine_int_t stdio_read(mp_obj_t self_in, void *buf, machine_uint_t size
     }
 }
 
-STATIC machine_int_t stdio_write(mp_obj_t self_in, const void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_stdio_obj_t *self = self_in;
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
         stdout_tx_strn(buf, size);

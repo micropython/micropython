@@ -289,7 +289,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp
     if (vals[3].u_obj == mp_const_none) {
         init->Parity = UART_PARITY_NONE;
     } else {
-        machine_int_t parity = mp_obj_get_int(vals[3].u_obj);
+        mp_int_t parity = mp_obj_get_int(vals[3].u_obj);
         init->Parity = (parity & 1) ? UART_PARITY_ODD : UART_PARITY_EVEN;
     }
     init->Mode = UART_MODE_TX_RX;

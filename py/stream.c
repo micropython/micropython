@@ -67,7 +67,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
 
-    machine_int_t sz;
+    mp_int_t sz;
     if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
         return stream_readall(args[0]);
     }
@@ -80,7 +80,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
 
     byte *buf = m_new(byte, sz);
     int error;
-    machine_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
+    mp_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
     if (out_sz == -1) {
         if (is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
@@ -109,7 +109,7 @@ STATIC mp_obj_t stream_write(mp_obj_t self_in, mp_obj_t arg) {
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
 
     int error;
-    machine_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
+    mp_int_t out_sz = o->type->stream_p->write(self_in, bufinfo.buf, bufinfo.len, &error);
     if (out_sz == -1) {
         if (is_nonblocking_error(error)) {
             // http://docs.python.org/3/library/io.html#io.RawIOBase.write
@@ -139,7 +139,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     int error;
     int current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
-        machine_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
+        mp_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == -1) {
             if (is_nonblocking_error(error)) {
                 // With non-blocking streams, we read as much as we can.
@@ -182,7 +182,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
 
-    machine_int_t max_size = -1;
+    mp_int_t max_size = -1;
     if (n_args > 1) {
         max_size = MP_OBJ_SMALL_INT_VALUE(args[1]);
     }
@@ -201,7 +201,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
         }
 
-        machine_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
+        mp_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == -1) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }

@@ -167,7 +167,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    machine_uint_t hash = mp_obj_hash(index);
+    mp_uint_t hash = mp_obj_hash(index);
     uint pos = hash % map->alloc;
     uint start_pos = pos;
     mp_map_elem_t *avail_slot = NULL;
@@ -270,7 +270,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
             return NULL;
         }
     }
-    machine_uint_t hash = mp_obj_hash(index);
+    mp_uint_t hash = mp_obj_hash(index);
     uint pos = hash % set->alloc;
     uint start_pos = pos;
     mp_obj_t *avail_slot = NULL;

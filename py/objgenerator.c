@@ -59,12 +59,12 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp
 
     const byte *bytecode = self_fun->bytecode;
     // get code info size, and skip the line number table
-    machine_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
+    mp_uint_t code_info_size = bytecode[0] | (bytecode[1] << 8) | (bytecode[2] << 16) | (bytecode[3] << 24);
     bytecode += code_info_size;
 
     // bytecode prelude: get state size and exception stack size
-    machine_uint_t n_state = bytecode[0] | (bytecode[1] << 8);
-    machine_uint_t n_exc_stack = bytecode[2] | (bytecode[3] << 8);
+    mp_uint_t n_state = bytecode[0] | (bytecode[1] << 8);
+    mp_uint_t n_exc_stack = bytecode[2] | (bytecode[3] << 8);
     bytecode += 4;
 
     // allocate the generator object, with room for local stack and exception stack

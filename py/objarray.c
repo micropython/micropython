@@ -41,11 +41,11 @@
 
 typedef struct _mp_obj_array_t {
     mp_obj_base_t base;
-    machine_uint_t typecode : 8;
+    mp_uint_t typecode : 8;
     // free is number of unused elements after len used elements
     // alloc size = len + free
-    machine_uint_t free : (8 * sizeof(machine_uint_t) - 8);
-    machine_uint_t len; // in elements
+    mp_uint_t free : (8 * sizeof(mp_uint_t) - 8);
+    mp_uint_t len; // in elements
     void *items;
 } mp_obj_array_t;
 
@@ -206,7 +206,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
     }
 }
 
-STATIC machine_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags) {
+STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
     bufinfo->len = o->len * mp_binary_get_size('@', o->typecode, NULL);
@@ -285,7 +285,7 @@ mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items) {
 typedef struct _mp_obj_array_it_t {
     mp_obj_base_t base;
     mp_obj_array_t *array;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_array_it_t;
 
 STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {

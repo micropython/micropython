@@ -73,7 +73,7 @@ void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, m
     print(env, "<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-STATIC machine_int_t file_obj_read(mp_obj_t self_in, void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t file_obj_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
     UINT sz_out;
     FRESULT res = f_read(&self->fp, buf, size, &sz_out);
@@ -84,7 +84,7 @@ STATIC machine_int_t file_obj_read(mp_obj_t self_in, void *buf, machine_uint_t s
     return sz_out;
 }
 
-STATIC machine_int_t file_obj_write(mp_obj_t self_in, const void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
     UINT sz_out;
     FRESULT res = f_write(&self->fp, buf, size, &sz_out);
@@ -109,8 +109,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj
 
 mp_obj_t file_obj_seek(uint n_args, const mp_obj_t *args) {
     pyb_file_obj_t *self = args[0];
-    machine_int_t offset = mp_obj_get_int(args[1]);
-    machine_int_t whence = 0;
+    mp_int_t offset = mp_obj_get_int(args[1]);
+    mp_int_t whence = 0;
     if (n_args == 3) {
         whence = mp_obj_get_int(args[2]);
     }
@@ -199,7 +199,7 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type, uint n_args, uint n_kw, const m
     FRESULT res = f_open(&o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((machine_int_t)fresult_to_errno_table[res])));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)fresult_to_errno_table[res])));
     }
 
     // for 'a' mode, we must begin at the end of the file

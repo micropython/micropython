@@ -46,7 +46,7 @@ struct _mp_lexer_t;
 #define MP_PARSE_NODE_BYTES     (0x12)
 #define MP_PARSE_NODE_TOKEN     (0x16)
 
-typedef machine_uint_t mp_parse_node_t; // must be pointer size
+typedef mp_uint_t mp_parse_node_t; // must be pointer size
 
 typedef struct _mp_parse_node_struct_t {
     uint32_t source_line;       // line number in source file
@@ -69,12 +69,12 @@ typedef struct _mp_parse_node_struct_t {
 
 #define MP_PARSE_NODE_LEAF_KIND(pn) ((pn) & 0x1f)
 // TODO should probably have int and uint versions of this macro
-#define MP_PARSE_NODE_LEAF_ARG(pn) (((machine_uint_t)(pn)) >> 5)
-#define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((machine_int_t)(pn)) >> 1)
+#define MP_PARSE_NODE_LEAF_ARG(pn) (((mp_uint_t)(pn)) >> 5)
+#define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((mp_int_t)(pn)) >> 1)
 #define MP_PARSE_NODE_STRUCT_KIND(pns) ((pns)->kind_num_nodes & 0xff)
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
 
-mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg);
+mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg);
 void mp_parse_node_free(mp_parse_node_t pn);
 
 void mp_parse_node_print(mp_parse_node_t pn, int indent);

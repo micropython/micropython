@@ -88,7 +88,7 @@ int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
 }
 
 mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
-    machine_int_t val = 0;
+    mp_int_t val = 0;
     switch (typecode) {
         case 'b':
             val = ((int8_t*)p)[index];
@@ -125,7 +125,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-machine_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p) {
+mp_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p) {
     int delta;
     if (!big_endian) {
         delta = -1;
@@ -134,7 +134,7 @@ machine_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte
         delta = 1;
     }
 
-    machine_int_t val = 0;
+    mp_int_t val = 0;
     if (is_signed && *p & 0x80) {
         val = -1;
     }
@@ -155,7 +155,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     int size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
-        p = (byte*)(((machine_uint_t)p + align - 1) & ~((machine_uint_t)align - 1));
+        p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));
         #if MP_ENDIANNESS_LITTLE
         struct_type = '<';
         #else
@@ -164,7 +164,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
     *ptr = p + size;
 
-    machine_int_t val = mp_binary_get_int(size, is_signed(val_type), (struct_type == '>'), p);
+    mp_int_t val = mp_binary_get_int(size, is_signed(val_type), (struct_type == '>'), p);
 
     if (val_type == 'O') {
         return (mp_obj_t)val;
@@ -184,7 +184,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
     int size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
-        p = (byte*)(((machine_uint_t)p + align - 1) & ~((machine_uint_t)align - 1));
+        p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));
         #if MP_ENDIANNESS_LITTLE
         struct_type = '<';
         #else
@@ -196,7 +196,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 #if MP_ENDIANNESS_BIG
 #error Not implemented
 #endif
-    machine_int_t val;
+    mp_int_t val;
     byte *in = (byte*)&val;
     switch (val_type) {
         case 'O':
@@ -239,7 +239,7 @@ void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in)
     }
 }
 
-void mp_binary_set_val_array_from_int(char typecode, void *p, int index, machine_int_t val) {
+void mp_binary_set_val_array_from_int(char typecode, void *p, int index, mp_int_t val) {
     switch (typecode) {
         case 'b':
             ((int8_t*)p)[index] = val;

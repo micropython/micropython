@@ -127,7 +127,7 @@ STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return o;
         }
         case MP_BINARY_OP_MULTIPLY: {
-            machine_int_t n;
+            mp_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return MP_OBJ_NULL; // op not supported
             }
@@ -488,7 +488,7 @@ void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 typedef struct _mp_obj_list_it_t {
     mp_obj_base_t base;
     mp_obj_list_t *list;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_list_it_t;
 
 mp_obj_t list_it_iternext(mp_obj_t self_in) {

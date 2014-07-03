@@ -187,7 +187,7 @@ mp_obj_t mp_unary_op(int op, mp_obj_t arg) {
     DEBUG_OP_printf("unary %d %p\n", op, arg);
 
     if (MP_OBJ_IS_SMALL_INT(arg)) {
-        mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
+        mp_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
         switch (op) {
             case MP_UNARY_OP_BOOL:
                 return MP_BOOL(val != 0);
@@ -272,17 +272,17 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     if (MP_OBJ_IS_SMALL_INT(lhs)) {
-        mp_small_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
+        mp_int_t lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs);
         if (MP_OBJ_IS_SMALL_INT(rhs)) {
-            mp_small_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
+            mp_int_t rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs);
             // This is a binary operation: lhs_val op rhs_val
             // We need to be careful to handle overflow; see CERT INT32-C
             // Operations that can overflow:
-            //      +       result always fits in machine_int_t, then handled by SMALL_INT check
-            //      -       result always fits in machine_int_t, then handled by SMALL_INT check
+            //      +       result always fits in mp_int_t, then handled by SMALL_INT check
+            //      -       result always fits in mp_int_t, then handled by SMALL_INT check
             //      *       checked explicitly
-            //      /       if lhs=MIN and rhs=-1; result always fits in machine_int_t, then handled by SMALL_INT check
-            //      %       if lhs=MIN and rhs=-1; result always fits in machine_int_t, then handled by SMALL_INT check
+            //      /       if lhs=MIN and rhs=-1; result always fits in mp_int_t, then handled by SMALL_INT check
+            //      %       if lhs=MIN and rhs=-1; result always fits in mp_int_t, then handled by SMALL_INT check
             //      <<      checked explicitly
             switch (op) {
                 case MP_BINARY_OP_OR:
@@ -323,7 +323,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_MULTIPLY:
                 case MP_BINARY_OP_INPLACE_MULTIPLY: {
 
-                    // If long long type exists and is larger than machine_int_t, then
+                    // If long long type exists and is larger than mp_int_t, then
                     // we can use the following code to perform overflow-checked multiplication.
                     // Otherwise (eg in x64 case) we must use mp_small_int_mul_overflow.
                     #if 0
@@ -334,7 +334,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                         return mp_obj_new_int_from_ll(res);
                     } else {
                         // use standard precision
-                        lhs_val = (mp_small_int_t)res;
+                        lhs_val = (mp_int_t)res;
                     }
                     #endif
 
@@ -381,7 +381,7 @@ mp_obj_t mp_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative power with no float support"));
                         #endif
                     } else {
-                        machine_int_t ans = 1;
+                        mp_int_t ans = 1;
                         while (rhs_val > 0) {
                             if (rhs_val & 1) {
                                 if (mp_small_int_mul_overflow(ans, lhs_val)) {

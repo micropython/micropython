@@ -30,7 +30,7 @@
 #include "obj.h"
 #include "smallint.h"
 
-bool mp_small_int_mul_overflow(machine_int_t x, machine_int_t y) {
+bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
     // Check for multiply overflow; see CERT INT32-C
     if (x > 0) { // x is positive
         if (y > 0) { // x and y are positive
@@ -56,20 +56,19 @@ bool mp_small_int_mul_overflow(machine_int_t x, machine_int_t y) {
     return false;
 }
 
-machine_int_t mp_small_int_modulo(machine_int_t dividend, machine_int_t divisor) {
-    machine_int_t lsign = (dividend >= 0) ? 1 :-1;
-    machine_int_t rsign = (divisor >= 0) ? 1 :-1;
+mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor) {
+    mp_int_t lsign = (dividend >= 0) ? 1 :-1;
+    mp_int_t rsign = (divisor >= 0) ? 1 :-1;
     dividend %= divisor;
     if (lsign != rsign) {
         dividend += divisor;
     }
-  return dividend;
+    return dividend;
 }
 
-
-machine_int_t mp_small_int_floor_divide(machine_int_t num, machine_int_t denom) {
-    machine_int_t lsign = num > 0 ? 1 : -1;
-    machine_int_t rsign = denom > 0 ? 1 : -1;
+mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom) {
+    mp_int_t lsign = num > 0 ? 1 : -1;
+    mp_int_t rsign = denom > 0 ? 1 : -1;
     if (lsign == -1) {num *= -1;}
     if (rsign == -1) {denom *= -1;}
     if (lsign != rsign){

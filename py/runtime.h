@@ -41,13 +41,13 @@ typedef enum {
 
 typedef union _mp_arg_val_t {
     bool u_bool;
-    machine_int_t u_int;
+    mp_int_t u_int;
     mp_obj_t u_obj;
 } mp_arg_val_t;
 
 typedef struct _mp_arg_t {
     qstr qstr;
-    machine_uint_t flags;
+    mp_uint_t flags;
     mp_arg_val_t defval;
 } mp_arg_t;
 

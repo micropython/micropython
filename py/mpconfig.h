@@ -375,8 +375,8 @@ typedef double mp_float_t;
 
 #define BITS_PER_BYTE (8)
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
-// machine_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (((machine_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
+// mp_int_t value with most significant bit set
+#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
 
 #if !defined(MP_ENDIANNESS_LITTLE) && !defined(MP_ENDIANNESS_BIG)
 // Just because most archs are such?
@@ -387,14 +387,14 @@ typedef double mp_float_t;
 #define MP_ENDIANNESS_LITTLE (0)
 #endif
 
-// printf format spec to use for machine_int_t and friends
+// printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__
-// Archs where machine_int_t == long, long != int
+// Archs where mp_int_t == long, long != int
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #else
-// Archs where machine_int_t == int
+// Archs where mp_int_t == int
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #endif

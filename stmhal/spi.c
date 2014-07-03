@@ -314,7 +314,7 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get SPI number
-    machine_int_t spi_id = mp_obj_get_int(args[0]) - 1;
+    mp_int_t spi_id = mp_obj_get_int(args[0]) - 1;
 
     // check SPI number
     if (!(0 <= spi_id && spi_id < PYB_NUM_SPI && pyb_spi_obj[spi_id].spi != NULL)) {

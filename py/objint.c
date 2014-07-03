@@ -64,7 +64,7 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
                 return mp_parse_num_integer(s, l, 0);
 #if MICROPY_PY_BUILTINS_FLOAT
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
-                return MP_OBJ_NEW_SMALL_INT((machine_int_t)(MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
+                return MP_OBJ_NEW_SMALL_INT((mp_int_t)(MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
 #endif
             } else {
                 // try to convert to small int (eg from bool)
@@ -85,7 +85,7 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
 void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
-    char stack_buf[sizeof(machine_int_t) * 4];
+    char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
     int buf_size = sizeof(stack_buf);
     int fmt_size;
@@ -101,7 +101,7 @@ void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env,
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 typedef mp_longint_impl_t fmt_int_t;
 #else
-typedef mp_small_int_t fmt_int_t;
+typedef mp_int_t fmt_int_t;
 #endif
 
 STATIC const uint log_base2_floor[] = {
@@ -145,7 +145,7 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
         // Not a small int.
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;
-        // Get the value to format; mp_obj_get_int truncates to machine_int_t.
+        // Get the value to format; mp_obj_get_int truncates to mp_int_t.
         num = self->val;
 #else
         // Delegate to the implementation for the long int.
@@ -241,7 +241,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
     return mp_const_none;
 }
 
-mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
+mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     // SMALL_INT accepts only signed numbers, of one bit less size
     // then word size, which totals 2 bits less for unsigned numbers.
     if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
@@ -251,7 +251,7 @@ mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
     return mp_const_none;
 }
 
-mp_obj_t mp_obj_new_int(machine_int_t value) {
+mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
@@ -259,11 +259,11 @@ mp_obj_t mp_obj_new_int(machine_int_t value) {
     return mp_const_none;
 }
 
-machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
-machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
@@ -304,7 +304,7 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
     // convert the bytes to an integer
-    machine_uint_t value = 0;
+    mp_uint_t value = 0;
     for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
         value = (value << 8) | *buf;
     }
@@ -316,7 +316,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_fro
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, (const mp_obj_t)&int_from_bytes_fun_obj);
 
 STATIC mp_obj_t int_to_bytes(uint n_args, const mp_obj_t *args) {
-    machine_int_t val = mp_obj_int_get_checked(args[0]);
+    mp_int_t val = mp_obj_int_get_checked(args[0]);
 
     uint len = MP_OBJ_SMALL_INT_VALUE(args[1]);
     byte *data;
@@ -326,7 +326,7 @@ STATIC mp_obj_t int_to_bytes(uint n_args, const mp_obj_t *args) {
     // TODO: Support signed param
     mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
     memset(data, 0, len);
-    memcpy(data, &val, len < sizeof(machine_int_t) ? len : sizeof(machine_int_t));
+    memcpy(data, &val, len < sizeof(mp_int_t) ? len : sizeof(mp_int_t));
     return mp_obj_str_builder_end(o);
 }
 

@@ -352,7 +352,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_name_obj, pin_name);
 /// Get the pin port.
 STATIC mp_obj_t pin_port(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self->port);
+    return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->port);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_port_obj, pin_port);
 
@@ -360,7 +360,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_port_obj, pin_port);
 /// Get the pin number.
 STATIC mp_obj_t pin_pin(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self->pin);
+    return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->pin);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
 

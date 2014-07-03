@@ -101,7 +101,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 struct class_lookup_data {
     mp_obj_instance_t *obj;
     qstr attr;
-    machine_uint_t meth_offset;
+    mp_uint_t meth_offset;
     mp_obj_t *dest;
     bool is_type;
 };

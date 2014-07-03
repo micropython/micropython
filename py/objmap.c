@@ -36,7 +36,7 @@
 
 typedef struct _mp_obj_map_t {
     mp_obj_base_t base;
-    machine_uint_t n_iters;
+    mp_uint_t n_iters;
     mp_obj_t fun;
     mp_obj_t iters[];
 } mp_obj_map_t;

@@ -351,7 +351,7 @@ STATIC uint mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, mpz_dig_t *kdig
    modifies den_dig memory, but restors it to original state at end
 */
 
-STATIC void mpn_div(mpz_dig_t *num_dig, machine_uint_t *num_len, mpz_dig_t *den_dig, machine_uint_t den_len, mpz_dig_t *quo_dig, machine_uint_t *quo_len) {
+STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, mp_uint_t den_len, mpz_dig_t *quo_dig, mp_uint_t *quo_len) {
     mpz_dig_t *orig_num_dig = num_dig;
     mpz_dig_t *orig_quo_dig = quo_dig;
     mpz_dig_t norm_shift = 0;
@@ -502,12 +502,12 @@ void mpz_init_zero(mpz_t *z) {
     z->dig = NULL;
 }
 
-void mpz_init_from_int(mpz_t *z, machine_int_t val) {
+void mpz_init_from_int(mpz_t *z, mp_int_t val) {
     mpz_init_zero(z);
     mpz_set_from_int(z, val);
 }
 
-void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, uint alloc, machine_int_t val) {
+void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, uint alloc, mp_int_t val) {
     z->neg = 0;
     z->fixed_dig = 1;
     z->alloc = alloc;
@@ -528,7 +528,7 @@ mpz_t *mpz_zero(void) {
     return z;
 }
 
-mpz_t *mpz_from_int(machine_int_t val) {
+mpz_t *mpz_from_int(mp_int_t val) {
     mpz_t *z = mpz_zero();
     mpz_set_from_int(z, val);
     return z;
@@ -594,10 +594,10 @@ void mpz_set(mpz_t *dest, const mpz_t *src) {
     memcpy(dest->dig, src->dig, src->len * sizeof(mpz_dig_t));
 }
 
-void mpz_set_from_int(mpz_t *z, machine_int_t val) {
+void mpz_set_from_int(mpz_t *z, mp_int_t val) {
     mpz_need_dig(z, MPZ_NUM_DIG_FOR_INT);
 
-    machine_uint_t uval;
+    mp_uint_t uval;
     if (val < 0) {
         z->neg = 1;
         uval = -val;
@@ -704,7 +704,7 @@ int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
 #if 0
 // obsolete
 // compares mpz with an integer that fits within DIG_SIZE bits
-int mpz_cmp_sml_int(const mpz_t *z, machine_int_t sml_int) {
+int mpz_cmp_sml_int(const mpz_t *z, mp_int_t sml_int) {
     int cmp;
     if (z->neg == 0) {
         if (sml_int < 0) return 1;
@@ -830,7 +830,7 @@ void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
 /* computes dest = lhs << rhs
    can have dest, lhs the same
 */
-void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs) {
+void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
     } else if (rhs < 0) {
@@ -845,7 +845,7 @@ void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs) {
 /* computes dest = lhs >> rhs
    can have dest, lhs the same
 */
-void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, machine_int_t rhs) {
+void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
     } else if (rhs < 0) {
@@ -1214,12 +1214,12 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 #endif
 
 // TODO check that this correctly handles overflow in all cases
-machine_int_t mpz_as_int(const mpz_t *i) {
-    machine_int_t val = 0;
+mp_int_t mpz_as_int(const mpz_t *i) {
+    mp_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig) {
-        machine_int_t oldval = val;
+        mp_int_t oldval = val;
         val = (val << DIG_SIZE) | *d;
         if (val < oldval) {
             // overflow, return +/- "infinity"
@@ -1241,12 +1241,12 @@ machine_int_t mpz_as_int(const mpz_t *i) {
 }
 
 // TODO check that this correctly handles overflow in all cases
-bool mpz_as_int_checked(const mpz_t *i, machine_int_t *value) {
-    machine_int_t val = 0;
+bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
+    mp_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig) {
-        machine_int_t oldval = val;
+        mp_int_t oldval = val;
         val = (val << DIG_SIZE) | *d;
         if (val < oldval) {
             // overflow

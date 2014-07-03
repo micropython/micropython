@@ -47,7 +47,7 @@ typedef struct _mp_obj_set_t {
 typedef struct _mp_obj_set_it_t {
     mp_obj_base_t base;
     mp_obj_set_t *set;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_set_it_t;
 
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
@@ -160,10 +160,10 @@ const mp_obj_type_t mp_type_set_it = {
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set_it));
     mp_obj_set_it_t *self = self_in;
-    machine_uint_t max = self->set->set.alloc;
+    mp_uint_t max = self->set->set.alloc;
     mp_set_t *set = &self->set->set;
 
-    for (machine_uint_t i = self->cur; i < max; i++) {
+    for (mp_uint_t i = self->cur; i < max; i++) {
         if (MP_SET_SLOT_IS_FILLED(set, i)) {
             self->cur = i + 1;
             return set->table[i];
@@ -476,7 +476,7 @@ STATIC mp_obj_t set_unary_op(int op, mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->set.used);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->set.used);
         default: return MP_OBJ_NULL; // op not supported
     }
 }

@@ -166,7 +166,7 @@ STATIC void pop_rule(parser_t *parser, const rule_t **rule, uint *arg_i, uint *s
     *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
 }
 
-mp_parse_node_t mp_parse_node_new_leaf(machine_int_t kind, machine_int_t arg) {
+mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg) {
     if (kind == MP_PARSE_NODE_SMALL_INT) {
         return (mp_parse_node_t)(kind | (arg << 1));
     }
@@ -208,10 +208,10 @@ void mp_parse_node_print(mp_parse_node_t pn, int indent) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         printf("NULL\n");
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
-        machine_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
+        mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
         printf("int(" INT_FMT ")\n", arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        machine_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
@@ -292,7 +292,7 @@ STATIC void push_result_string(parser_t *parser, int src_line, const char *str, 
     pn->kind_num_nodes = RULE_string | (2 << 8);
     char *p = m_new(char, len);
     memcpy(p, str, len);
-    pn->nodes[0] = (machine_int_t)p;
+    pn->nodes[0] = (mp_int_t)p;
     pn->nodes[1] = len;
     push_result_node(parser, (mp_parse_node_t)pn);
 }
@@ -305,7 +305,7 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
     } else if (tok->kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
-        machine_int_t int_val = 0;
+        mp_int_t int_val = 0;
         int len = tok->len;
         const char *str = tok->str;
         int base = 0;

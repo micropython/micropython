@@ -335,7 +335,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     self->traceback = MP_OBJ_NULL;
 }
 
-void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t line, qstr block) {
+void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block) {
     #if MICROPY_ENABLE_GC
     if (gc_is_locked()) {
         // We can't allocate memory, so don't bother to try
@@ -349,12 +349,12 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, machine_uint_t 
     if (self->traceback == MP_OBJ_NULL) {
         self->traceback = mp_obj_new_list(0, NULL);
     }
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)file);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)line);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(machine_uint_t)block);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)file);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)line);
+    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)block);
 }
 
-void mp_obj_exception_get_traceback(mp_obj_t self_in, machine_uint_t *n, machine_uint_t **values) {
+void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
     if (self->traceback == MP_OBJ_NULL) {

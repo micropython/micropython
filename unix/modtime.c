@@ -68,7 +68,7 @@ STATIC mp_obj_t mod_time_time() {
     mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
     return mp_obj_new_float(val);
 #else
-    return mp_obj_new_int((machine_int_t)time(NULL));
+    return mp_obj_new_int((mp_int_t)time(NULL));
 #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
@@ -81,7 +81,7 @@ STATIC mp_obj_t mod_time_clock() {
     // to preserve integer part resolution.
     return mp_obj_new_float((float)(clock() / 1000) / CLOCK_DIV);
 #else
-    return mp_obj_new_int((machine_int_t)clock());
+    return mp_obj_new_int((mp_int_t)clock());
 #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);

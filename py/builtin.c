@@ -99,7 +99,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print
 
 mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        mp_small_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
+        mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
         if (val < 0) {
             val = -val;
         }
@@ -173,7 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    machine_int_t c = mp_obj_get_int(o_in);
+    mp_int_t c = mp_obj_get_int(o_in);
     char str[4];
     int len = 0;
     if (c < 0x80) {
@@ -198,7 +198,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     }
     return mp_obj_new_str(str, len, true);
     #else
-    machine_int_t ord = mp_obj_get_int(o_in);
+    mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0x10ffff) {
         char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
@@ -250,8 +250,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
 
 STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
     if (MP_OBJ_IS_SMALL_INT(o1_in) && MP_OBJ_IS_SMALL_INT(o2_in)) {
-        mp_small_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
-        mp_small_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
+        mp_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
+        mp_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
         args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
@@ -372,11 +372,11 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     uint len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    machine_uint_t charlen = unichar_charlen(str, len);
+    mp_uint_t charlen = unichar_charlen(str, len);
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
-            machine_int_t ord = *str++ & 0x7F;
-            for (machine_int_t mask = 0x40; ord & mask; mask >>= 1) {
+            mp_int_t ord = *str++ & 0x7F;
+            for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
                 ord &= ~mask;
             }
             while (UTF8_IS_CONT(*str)) {
@@ -478,7 +478,7 @@ STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
 STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
-    return mp_obj_new_int((machine_int_t)o_in);
+    return mp_obj_new_int((mp_int_t)o_in);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);

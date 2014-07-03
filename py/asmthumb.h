@@ -185,7 +185,7 @@ void asm_thumb_ite_ge(asm_thumb_t *as);
 void asm_thumb_b_n(asm_thumb_t *as, uint label);
 void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label);
 
-void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32_src); // convenience
+void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
 void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32); // convenience
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src); // convenience

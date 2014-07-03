@@ -90,7 +90,7 @@
 
 typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
-    machine_uint_t tim_id;
+    mp_uint_t tim_id;
     mp_obj_t callback;
     TIM_HandleTypeDef tim;
     IRQn_Type irqn;

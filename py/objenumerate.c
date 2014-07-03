@@ -36,7 +36,7 @@
 typedef struct _mp_obj_enumerate_t {
     mp_obj_base_t base;
     mp_obj_t iter;
-    machine_int_t cur;
+    mp_int_t cur;
 } mp_obj_enumerate_t;
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);

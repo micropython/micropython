@@ -95,7 +95,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=%u n_args=%d\n", kind, fun, len, n_args);
-    byte *fun_data = (byte*)(((machine_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
+    byte *fun_data = (byte*)(((mp_uint_t)fun) & (~1)); // need to clear lower bit in case it's thumb code
     for (int i = 0; i < 128 && i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");

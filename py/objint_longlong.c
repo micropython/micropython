@@ -140,14 +140,14 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     }
 }
 
-mp_obj_t mp_obj_new_int(machine_int_t value) {
+mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
     return mp_obj_new_int_from_ll(value);
 }
 
-mp_obj_t mp_obj_new_int_from_uint(machine_uint_t value) {
+mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     // SMALL_INT accepts only signed numbers, of one bit less size
     // than word size, which totals 2 bits less for unsigned numbers.
     if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
@@ -174,7 +174,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint 
     return o;
 }
 
-machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
@@ -183,7 +183,7 @@ machine_int_t mp_obj_int_get(mp_const_obj_t self_in) {
     }
 }
 
-machine_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     // TODO: Check overflow
     return mp_obj_int_get(self_in);
 }

@@ -53,9 +53,9 @@ void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void
 
 #if MICROPY_PY_BUILTINS_SLICE
 
-bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
+bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
     mp_obj_t ostart, ostop, ostep;
-    machine_int_t start, stop;
+    mp_int_t start, stop;
     mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
 
     if (ostart == mp_const_none) {
@@ -103,8 +103,8 @@ bool mp_seq_get_fast_slice_indexes(machine_uint_t len, mp_obj_t slice, mp_bound_
 #endif
 
 mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
-    machine_int_t start = indexes->start, stop = indexes->stop;
-    machine_int_t step = indexes->step;
+    mp_int_t start = indexes->start, stop = indexes->stop;
+    mp_int_t step = indexes->step;
 
     mp_obj_t res = mp_obj_new_list(0, NULL);
 
@@ -231,7 +231,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
         }
     }
 
-    for (machine_uint_t i = start; i < stop; i++) {
+    for (mp_uint_t i = start; i < stop; i++) {
         if (mp_obj_equal(items[i], value)) {
             // Common sense says this cannot overflow small int
             return MP_OBJ_NEW_SMALL_INT(i);
@@ -242,7 +242,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
 }
 
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value) {
-    machine_uint_t count = 0;
+    mp_uint_t count = 0;
     for (uint i = 0; i < len; i++) {
          if (mp_obj_equal(items[i], value)) {
               count++;

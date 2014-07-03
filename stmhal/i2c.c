@@ -268,7 +268,7 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get i2c number
-    machine_int_t i2c_id = mp_obj_get_int(args[0]) - 1;
+    mp_int_t i2c_id = mp_obj_get_int(args[0]) - 1;
 
     // check i2c number
     if (!(0 <= i2c_id && i2c_id < MP_ARRAY_SIZE(pyb_i2c_obj) && pyb_i2c_obj[i2c_id].i2c != NULL)) {
@@ -311,7 +311,7 @@ STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "I2C must be a master"));
     }
 
-    machine_uint_t i2c_addr = mp_obj_get_int(i2c_addr_o) << 1;
+    mp_uint_t i2c_addr = mp_obj_get_int(i2c_addr_o) << 1;
 
     for (int i = 0; i < 10; i++) {
         HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c, i2c_addr, 10, 200);
@@ -383,7 +383,7 @@ STATIC mp_obj_t pyb_i2c_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
         if (vals[1].u_int == PYB_I2C_MASTER_ADDRESS) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "addr argument required"));
         }
-        machine_uint_t i2c_addr = vals[1].u_int << 1;
+        mp_uint_t i2c_addr = vals[1].u_int << 1;
         status = HAL_I2C_Master_Transmit(self->i2c, i2c_addr, bufinfo.buf, bufinfo.len, vals[2].u_int);
     } else {
         status = HAL_I2C_Slave_Transmit(self->i2c, bufinfo.buf, bufinfo.len, vals[2].u_int);
@@ -433,7 +433,7 @@ STATIC mp_obj_t pyb_i2c_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
         if (vals[1].u_int == PYB_I2C_MASTER_ADDRESS) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "addr argument required"));
         }
-        machine_uint_t i2c_addr = vals[1].u_int << 1;
+        mp_uint_t i2c_addr = vals[1].u_int << 1;
         status = HAL_I2C_Master_Receive(self->i2c, i2c_addr, bufinfo.buf, bufinfo.len, vals[2].u_int);
     } else {
         status = HAL_I2C_Slave_Receive(self->i2c, bufinfo.buf, bufinfo.len, vals[2].u_int);
@@ -488,8 +488,8 @@ STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args, mp_map_t *kw
     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &bufinfo);
 
     // get the addresses
-    machine_uint_t i2c_addr = vals[1].u_int << 1;
-    machine_uint_t mem_addr = vals[2].u_int;
+    mp_uint_t i2c_addr = vals[1].u_int << 1;
+    mp_uint_t mem_addr = vals[2].u_int;
 
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(self->i2c, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, vals[3].u_int);
 
@@ -535,8 +535,8 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args, mp_map_t *k
     pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
 
     // get the addresses
-    machine_uint_t i2c_addr = vals[1].u_int << 1;
-    machine_uint_t mem_addr = vals[2].u_int;
+    mp_uint_t i2c_addr = vals[1].u_int << 1;
+    mp_uint_t mem_addr = vals[2].u_int;
 
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(self->i2c, i2c_addr, mem_addr, I2C_MEMADD_SIZE_8BIT, bufinfo.buf, bufinfo.len, vals[3].u_int);
 

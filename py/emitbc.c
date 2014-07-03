@@ -99,7 +99,7 @@ STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_writ
 }
 
 STATIC void emit_align_code_info_to_machine_word(emit_t* emit) {
-    emit->code_info_offset = (emit->code_info_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
+    emit->code_info_offset = (emit->code_info_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
 STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
@@ -139,7 +139,7 @@ STATIC byte* emit_get_cur_to_write_bytecode(emit_t* emit, int num_bytes_to_write
 }
 
 STATIC void emit_align_bytecode_to_machine_word(emit_t* emit) {
-    emit->bytecode_offset = (emit->bytecode_offset + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1));
+    emit->bytecode_offset = (emit->bytecode_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
 STATIC void emit_write_bytecode_byte(emit_t* emit, byte b1) {
@@ -171,7 +171,7 @@ STATIC void emit_write_bytecode_uint(emit_t* emit, uint num) {
 }
 
 // Similar to emit_write_bytecode_uint(), just some extra handling to encode sign
-STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, machine_int_t num) {
+STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, mp_int_t num) {
     emit_write_bytecode_byte(emit, b1);
 
     // We store each 7 bits in a separate byte, and that's how many bytes needed
@@ -206,8 +206,8 @@ STATIC void emit_write_bytecode_byte_uint(emit_t* emit, byte b, uint num) {
 STATIC void emit_write_bytecode_byte_ptr(emit_t* emit, byte b, void *ptr) {
     emit_write_bytecode_byte(emit, b);
     emit_align_bytecode_to_machine_word(emit);
-    machine_uint_t *c = (machine_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(machine_uint_t));
-    *c = (machine_uint_t)ptr;
+    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
+    *c = (mp_uint_t)ptr;
 }
 
 /* currently unused
@@ -269,7 +269,7 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     // write code info size; use maximum space (4 bytes) to write it; TODO possible optimise this
     {
         byte* c = emit_get_cur_to_write_code_info(emit, 4);
-        machine_uint_t s = emit->code_info_size;
+        mp_uint_t s = emit->code_info_size;
         c[0] = s & 0xff;
         c[1] = (s >> 8) & 0xff;
         c[2] = (s >> 16) & 0xff;
@@ -428,7 +428,7 @@ STATIC void emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     }
 }
 
-STATIC void emit_bc_load_const_small_int(emit_t *emit, machine_int_t arg) {
+STATIC void emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_int(emit, MP_BC_LOAD_CONST_SMALL_INT, arg);
 }

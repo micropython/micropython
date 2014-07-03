@@ -162,7 +162,7 @@ STATIC mp_obj_t os_sync(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
-    machine_int_t n = mp_obj_get_int(num);
+    mp_int_t n = mp_obj_get_int(num);
     byte *data;
     mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
     for (int i = 0; i < n; i++) {

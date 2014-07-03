@@ -156,7 +156,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
                              mp_obj_t index, bool is_slice) {
-    machine_int_t i;
+    mp_int_t i;
     // Copied from mp_get_index; I don't want bounds checking, just give me
     // the integer as-is. (I can't bounds-check without scanning the whole
     // string; an out-of-bounds index will be caught in the loops below.)
@@ -221,7 +221,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
 
             if (type == &mp_type_bytes) {
-                machine_int_t start = 0, stop = self_len;
+                mp_int_t start = 0, stop = self_len;
                 if (ostart != mp_const_none) {
                     start = MP_OBJ_SMALL_INT_VALUE(ostart);
                     if (start < 0) {
@@ -257,7 +257,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #endif
         if (type == &mp_type_bytes) {
             uint index_val = mp_get_index(type, self_len, index, false);
-            return MP_OBJ_NEW_SMALL_INT((mp_small_int_t)self_data[index_val]);
+            return MP_OBJ_NEW_SMALL_INT((mp_int_t)self_data[index_val]);
         }
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
@@ -324,7 +324,7 @@ const mp_obj_type_t mp_type_str = {
 typedef struct _mp_obj_str_it_t {
     mp_obj_base_t base;
     mp_obj_t str;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_str_it_t;
 
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {

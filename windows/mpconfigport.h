@@ -65,19 +65,19 @@
 // type definitions for the specific machine
 
 #if defined( __MINGW32__ ) && defined( __LP64__ )
-typedef long machine_int_t; // must be pointer size
-typedef unsigned long machine_uint_t; // must be pointer size
+typedef long mp_int_t; // must be pointer size
+typedef unsigned long mp_uint_t; // must be pointer size
 #elif defined ( _MSC_VER ) && defined( _WIN64 )
-typedef __int64 machine_int_t;
-typedef unsigned __int64 machine_uint_t;
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
 // regardless for actual size.
-typedef int machine_int_t; // must be pointer size
-typedef unsigned int machine_uint_t; // must be pointer size
+typedef int mp_int_t; // must be pointer size
+typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 
-#define BYTES_PER_WORD sizeof(machine_int_t)
+#define BYTES_PER_WORD sizeof(mp_int_t)
 
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size

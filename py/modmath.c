@@ -48,7 +48,7 @@
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 #define MATH_FUN_1_TO_INT(py_name, c_name) \
-    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int((machine_int_t)MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int((mp_int_t)MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 // These are also used by cmath.c

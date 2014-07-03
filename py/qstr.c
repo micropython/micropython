@@ -55,9 +55,9 @@
 #define Q_GET_DATA(q)   ((q) + 4)
 
 // this must match the equivalent function in makeqstrdata.py
-machine_uint_t qstr_compute_hash(const byte *data, uint len) {
+mp_uint_t qstr_compute_hash(const byte *data, uint len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
-    machine_uint_t hash = 5381;
+    mp_uint_t hash = 5381;
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
@@ -132,7 +132,7 @@ STATIC qstr qstr_add(const byte *q_ptr) {
 
 qstr qstr_find_strn(const char *str, uint str_len) {
     // work out hash of str
-    machine_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
+    mp_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
     // search pools for the data
     for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
@@ -154,7 +154,7 @@ qstr qstr_from_str(const char *str) {
 qstr qstr_from_strn(const char *str, uint len) {
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
-        machine_uint_t hash = qstr_compute_hash((const byte*)str, len);
+        mp_uint_t hash = qstr_compute_hash((const byte*)str, len);
         byte *q_ptr = m_new(byte, 4 + len + 1);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
@@ -178,8 +178,8 @@ byte *qstr_build_start(uint len, byte **q_ptr) {
 qstr qstr_build_end(byte *q_ptr) {
     qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
-        machine_uint_t len = Q_GET_LENGTH(q_ptr);
-        machine_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
+        mp_uint_t len = Q_GET_LENGTH(q_ptr);
+        mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         q_ptr[4 + len] = '\0';
@@ -190,7 +190,7 @@ qstr qstr_build_end(byte *q_ptr) {
     return q;
 }
 
-machine_uint_t qstr_hash(qstr q) {
+mp_uint_t qstr_hash(qstr q) {
     return Q_GET_HASH(find_qstr(q));
 }
 

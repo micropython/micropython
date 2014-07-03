@@ -26,7 +26,7 @@
 
 typedef struct _mp_obj_tuple_t {
     mp_obj_base_t base;
-    machine_uint_t len;
+    mp_uint_t len;
     mp_obj_t items[];
 } mp_obj_tuple_t;
 

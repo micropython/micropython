@@ -51,7 +51,7 @@ RTC_HandleTypeDef RTCHandle;
 
 // rtc_info indicates various things about RTC startup
 // it's a bit of a hack at the moment
-static machine_uint_t rtc_info;
+static mp_uint_t rtc_info;
 
 // Note: LSI is around (32KHz), these dividers should work either way
 // ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)
@@ -90,7 +90,7 @@ void rtc_init(void) {
     RCC_LSEConfig(RCC_LSE_ON);
 
     // Wait till LSE is ready
-    machine_uint_t sys_tick = sys_tick_counter;
+    mp_uint_t sys_tick = sys_tick_counter;
     while((RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) && (--timeout > 0)) {
     }
 
@@ -181,7 +181,7 @@ void rtc_init(void) {
     RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
-    machine_uint_t tick = HAL_GetTick();
+    mp_uint_t tick = HAL_GetTick();
 
     if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
         // init error

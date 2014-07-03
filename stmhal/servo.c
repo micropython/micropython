@@ -194,7 +194,7 @@ STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // get servo number
-    machine_int_t servo_id = mp_obj_get_int(args[0]) - 1;
+    mp_int_t servo_id = mp_obj_get_int(args[0]) - 1;
 
     // check servo number
     if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {

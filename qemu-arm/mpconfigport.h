@@ -23,8 +23,8 @@
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 
-typedef int32_t machine_int_t; // must be pointer size
-typedef uint32_t machine_uint_t; // must be pointer size
+typedef int32_t mp_int_t; // must be pointer size
+typedef uint32_t mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 

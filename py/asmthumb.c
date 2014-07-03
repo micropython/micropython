@@ -133,7 +133,7 @@ uint asm_thumb_get_code_size(asm_thumb_t *as) {
 
 void *asm_thumb_get_code(asm_thumb_t *as) {
     // need to set low bit to indicate that it's thumb code
-    return (void *)(((machine_uint_t)as->code_base) | 1);
+    return (void *)(((mp_uint_t)as->code_base) | 1);
 }
 
 /*
@@ -378,7 +378,7 @@ void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label) {
     }
 }
 
-void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, machine_uint_t i32) {
+void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32) {
     // movw, movt does it in 8 bytes
     // ldr [pc, #], dw does it in 6 bytes, but we might not reach to end of code for dw
 
@@ -499,7 +499,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
     if (0) {
         // load ptr to function into register using immediate, then branch
         // not relocatable
-        asm_thumb_mov_reg_i32(as, reg_temp, (machine_uint_t)fun_ptr);
+        asm_thumb_mov_reg_i32(as, reg_temp, (mp_uint_t)fun_ptr);
         asm_thumb_op16(as, OP_BLX(reg_temp));
     } else if (1) {
         asm_thumb_op16(as, OP_FORMAT_9_10(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, REG_R7, fun_id));

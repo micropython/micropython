@@ -96,8 +96,8 @@ const byte *utf8_next_char(const byte *s) {
 #endif
 }
 
-machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
-    machine_uint_t i = 0;
+mp_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
+    mp_uint_t i = 0;
     while (ptr > s) {
         if (!UTF8_IS_CONT(*--ptr)) {
             i++;
@@ -108,10 +108,10 @@ machine_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
 }
 
 // TODO: Rename to str_charlen
-machine_uint_t unichar_charlen(const char *str, machine_uint_t len)
+mp_uint_t unichar_charlen(const char *str, mp_uint_t len)
 {
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-    machine_uint_t charlen = 0;
+    mp_uint_t charlen = 0;
     for (const char *top = str + len; str < top; ++str) {
         if (!UTF8_IS_CONT(*str)) {
             ++charlen;

@@ -101,14 +101,14 @@
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 
 typedef struct {
-    mp_obj_base_t  base;
-    mp_small_int_t line;
+    mp_obj_base_t base;
+    mp_int_t line;
 } extint_obj_t;
 
 typedef struct {
-  mp_obj_t callback_obj;
-  void *param;
-  uint32_t mode;
+    mp_obj_t callback_obj;
+    void *param;
+    uint32_t mode;
 } extint_vector_t;
 
 STATIC extint_vector_t extint_vector[EXTI_NUM_VECTORS];

@@ -55,6 +55,6 @@ void mp_bytecode_print(const void *descr, const byte *code, int len);
 void mp_bytecode_print2(const byte *code, int len);
 
 // Helper macros to access pointer with least significant bit holding a flag
-#define MP_TAGPTR_PTR(x) ((void*)((machine_uint_t)(x) & ~((machine_uint_t)1)))
-#define MP_TAGPTR_TAG(x) ((machine_uint_t)(x) & 1)
-#define MP_TAGPTR_MAKE(ptr, tag) ((void*)((machine_uint_t)(ptr) | tag))
+#define MP_TAGPTR_PTR(x) ((void*)((mp_uint_t)(x) & ~((mp_uint_t)1)))
+#define MP_TAGPTR_TAG(x) ((mp_uint_t)(x) & 1)
+#define MP_TAGPTR_MAKE(ptr, tag) ((void*)((mp_uint_t)(ptr) | tag))

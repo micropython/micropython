@@ -74,9 +74,9 @@ typedef enum {
         qst = (qst << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0)
 #define DECODE_PTR do { \
-    ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
-    unum = *(machine_uint_t*)ip; \
-    ip += sizeof(machine_uint_t); \
+    ip = (byte*)(((mp_uint_t)ip + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1))); /* align ip */ \
+    unum = *(mp_uint_t*)ip; \
+    ip += sizeof(mp_uint_t); \
 } while (0)
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
@@ -140,7 +140,7 @@ outer_dispatch_loop:
             // local variables that are not visible to the exception handler
             const byte *ip = code_state->ip;
             mp_obj_t *sp = code_state->sp;
-            machine_uint_t unum;
+            mp_uint_t unum;
             mp_obj_t obj_shared;
 
             // If we have exception to inject, now that we finish setting up
@@ -183,7 +183,7 @@ dispatch_loop:
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT): {
-                    machine_int_t num = 0;
+                    mp_int_t num = 0;
                     if ((ip[0] & 0x40) != 0) {
                         // Number is negative
                         num--;
@@ -503,9 +503,9 @@ dispatch_loop:
                 ENTRY(MP_BC_UNWIND_JUMP):
                     DECODE_SLABEL;
                     PUSH((void*)(ip + unum)); // push destination ip for jump
-                    PUSH((void*)(machine_uint_t)(*ip)); // push number of exception handlers to unwind (0x80 bit set if we also need to pop stack)
+                    PUSH((void*)(mp_uint_t)(*ip)); // push number of exception handlers to unwind (0x80 bit set if we also need to pop stack)
 unwind_jump:
-                    unum = (machine_uint_t)POP(); // get number of exception handlers to unwind
+                    unum = (mp_uint_t)POP(); // get number of exception handlers to unwind
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
@@ -713,7 +713,7 @@ unwind_jump:
 
                 ENTRY(MP_BC_MAKE_CLOSURE): {
                     DECODE_PTR;
-                    machine_uint_t n_closed_over = *ip++;
+                    mp_uint_t n_closed_over = *ip++;
                     // Stack layout: closed_overs <- TOS
                     sp -= n_closed_over - 1;
                     SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, n_closed_over, sp));
@@ -722,7 +722,7 @@ unwind_jump:
 
                 ENTRY(MP_BC_MAKE_CLOSURE_DEFARGS): {
                     DECODE_PTR;
-                    machine_uint_t n_closed_over = *ip++;
+                    mp_uint_t n_closed_over = *ip++;
                     // Stack layout: def_tuple def_dict closed_overs <- TOS
                     sp -= 2 + n_closed_over - 1;
                     SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, 0x100 | n_closed_over, sp));
@@ -909,7 +909,7 @@ exception_handler:
             // check if it's a StopIteration within a for block
             if (*code_state->ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
                 const byte *ip = code_state->ip + 1;
-                machine_uint_t unum;
+                mp_uint_t unum;
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                 code_state->ip = ip + unum; // jump to after for-block
                 code_state->sp -= 1; // pop the exhausted iterator
@@ -922,11 +922,11 @@ exception_handler:
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (mp_obj_is_exception_instance(nlr.ret_val) && nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
                 const byte *code_info = code_state->code_info;
-                machine_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
+                mp_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
                 qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
                 qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-                machine_uint_t source_line = 0;
-                machine_uint_t bc = code_state->ip - code_info - code_info_size;
+                mp_uint_t source_line = 0;
+                mp_uint_t bc = code_state->ip - code_info - code_info_size;
                 //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
                 const byte* ci = code_info + 12;
                 if (*ci) {

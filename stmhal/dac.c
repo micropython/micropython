@@ -97,7 +97,7 @@ typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
     uint32_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
     DMA_Stream_TypeDef *dma_stream; // DMA1_Stream5 or DMA1_Stream6
-    machine_uint_t state;
+    mp_uint_t state;
 } pyb_dac_obj_t;
 
 // create the dac object
@@ -114,7 +114,7 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     pyb_dac_obj_t *dac = m_new_obj(pyb_dac_obj_t);
     dac->base.type = &pyb_dac_type;
 
-    machine_int_t dac_id = mp_obj_get_int(args[0]);
+    mp_int_t dac_id = mp_obj_get_int(args[0]);
     uint32_t pin;
     if (dac_id == 1) {
         pin = GPIO_PIN_4;

@@ -15,7 +15,7 @@
 
 typedef struct _pyb_led_obj_t {
     mp_obj_base_t base;
-    machine_uint_t led_id;
+    mp_uint_t led_id;
     const pin_obj_t *led_pin;
 } pyb_led_obj_t;
 
@@ -98,7 +98,7 @@ STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // get led number
-    machine_int_t led_id = mp_obj_get_int(args[0]);
+    mp_int_t led_id = mp_obj_get_int(args[0]);
 
     // check led number
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {

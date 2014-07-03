@@ -35,10 +35,10 @@
 #include "gccollect.h"
 #include MICROPY_HAL_H
 
-machine_uint_t gc_helper_get_regs_and_sp(machine_uint_t *regs);
+mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 
 // obsolete
-// void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
+// void gc_helper_get_regs_and_clean_stack(mp_uint_t *regs, mp_uint_t heap_end);
 
 void gc_collect(void) {
     // get current time, in case we want to time the GC
@@ -52,8 +52,8 @@ void gc_collect(void) {
     gc_collect_root((void**)&_sbss, ((uint32_t)&_ebss - (uint32_t)&_sbss) / sizeof(uint32_t));
 
     // get the registers and the sp
-    machine_uint_t regs[10];
-    machine_uint_t sp = gc_helper_get_regs_and_sp(regs);
+    mp_uint_t regs[10];
+    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
     gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));

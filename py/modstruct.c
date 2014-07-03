@@ -74,13 +74,13 @@ STATIC char get_fmt_type(const char **fmt) {
     return t;
 }
 
-STATIC machine_uint_t get_fmt_num(const char **p) {
+STATIC mp_uint_t get_fmt_num(const char **p) {
     const char *num = *p;
     uint len = 1;
     while (unichar_isdigit(*++num)) {
         len++;
     }
-    machine_uint_t val = (machine_uint_t)MP_OBJ_SMALL_INT_VALUE(mp_parse_num_integer(*p, len, 10));
+    mp_uint_t val = (mp_uint_t)MP_OBJ_SMALL_INT_VALUE(mp_parse_num_integer(*p, len, 10));
     *p = num;
     return val;
 }
@@ -99,10 +99,10 @@ STATIC uint calcsize_items(const char *fmt) {
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
-    machine_uint_t size;
+    mp_uint_t size;
     for (size = 0; *fmt; fmt++) {
         uint align = 1;
-        machine_uint_t cnt = 1;
+        mp_uint_t cnt = 1;
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
@@ -111,14 +111,14 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
             assert(*fmt == 's');
         }
 
-        machine_uint_t sz;
+        mp_uint_t sz;
         if (*fmt == 's') {
             sz = cnt;
         } else {
-            sz = (machine_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
+            sz = (mp_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
         }
         // TODO
-        assert(sz != (machine_uint_t)-1);
+        assert(sz != (mp_uint_t)-1);
         // Apply alignment
         size = (size + align - 1) & ~(align - 1);
         size += sz;
@@ -138,7 +138,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     byte *p = bufinfo.buf;
 
     for (uint i = 0; i < size; i++) {
-        machine_uint_t sz = 1;
+        mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
@@ -170,7 +170,7 @@ STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
     memset(p, 0, size);
 
     for (uint i = 1; i < n_args; i++) {
-        machine_uint_t sz = 1;
+        mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
@@ -182,7 +182,7 @@ STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
         if (*fmt == 's') {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[i], &bufinfo, MP_BUFFER_READ);
-            machine_uint_t to_copy = sz;
+            mp_uint_t to_copy = sz;
             if (bufinfo.len < to_copy) {
                 to_copy = bufinfo.len;
             }

@@ -252,11 +252,11 @@ void mp_obj_tuple_del(mp_obj_t self_in) {
     m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
 }
 
-machine_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
+mp_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     // start hash with pointer to empty tuple, to make it fairly unique
-    machine_int_t hash = (machine_int_t)mp_const_empty_tuple;
+    mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
     for (uint i = 0; i < self->len; i++) {
         hash += mp_obj_hash(self->items[i]);
     }
@@ -269,7 +269,7 @@ machine_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
 typedef struct _mp_obj_tuple_it_t {
     mp_obj_base_t base;
     mp_obj_tuple_t *tuple;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_tuple_it_t;
 
 STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {

@@ -61,7 +61,7 @@ STATIC mp_obj_t bool_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
 }
 
 STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
-    machine_int_t value = ((mp_obj_bool_t*)o_in)->value;
+    mp_int_t value = ((mp_obj_bool_t*)o_in)->value;
     switch (op) {
         case MP_UNARY_OP_BOOL: return o_in;
         case MP_UNARY_OP_POSITIVE: return MP_OBJ_NEW_SMALL_INT(value);
@@ -74,7 +74,7 @@ STATIC mp_obj_t bool_unary_op(int op, mp_obj_t o_in) {
 
 STATIC mp_obj_t bool_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (MP_BINARY_OP_OR <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
-        return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT((machine_int_t)mp_obj_is_true(lhs_in)), rhs_in);
+        return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT((mp_int_t)mp_obj_is_true(lhs_in)), rhs_in);
     }
     return MP_OBJ_NULL; // op not supported
 }

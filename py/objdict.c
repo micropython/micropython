@@ -75,7 +75,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((machine_int_t)self->map.used);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->map.used);
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -94,10 +94,10 @@ STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                     return mp_const_false;
                 }
 
-                machine_uint_t size = o->map.alloc;
+                mp_uint_t size = o->map.alloc;
                 mp_map_t *map = &o->map;
 
-                for (machine_uint_t i = 0; i < size; i++) {
+                for (mp_uint_t i = 0; i < size; i++) {
                     if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                         mp_map_elem_t *elem = mp_map_lookup(&rhs->map, map->table[i].key, MP_MAP_LOOKUP);
                         if (elem == NULL || !mp_obj_equal(map->table[i].value, elem->value)) {
@@ -155,12 +155,12 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 typedef struct _mp_obj_dict_it_t {
     mp_obj_base_t base;
     mp_obj_dict_t *dict;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_dict_it_t;
 
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
     mp_obj_dict_it_t *self = self_in;
-    machine_uint_t max = self->dict->map.alloc;
+    mp_uint_t max = self->dict->map.alloc;
     mp_map_t *map = &self->dict->map;
 
     for (int i = self->cur; i < max; i++) {
@@ -374,7 +374,7 @@ STATIC mp_obj_t dict_update(uint n_args, const mp_obj_t *args, mp_map_t *kwargs)
     }
 
     // update the dict with any keyword args
-    for (machine_uint_t i = 0; i < kwargs->alloc; i++) {
+    for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
             mp_map_lookup(&self->map, kwargs->table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = kwargs->table[i].value;
         }
@@ -403,7 +403,7 @@ typedef struct _mp_obj_dict_view_it_t {
     mp_obj_base_t base;
     mp_dict_view_kind_t kind;
     mp_obj_dict_it_t *iter;
-    machine_uint_t cur;
+    mp_uint_t cur;
 } mp_obj_dict_view_it_t;
 
 typedef struct _mp_obj_dict_view_t {

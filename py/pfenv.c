@@ -111,14 +111,14 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, in
 
 // 32-bits is 10 digits, add 3 for commas, 1 for sign, 1 for terminating null
 // We can use 16 characters for 32-bit and 32 characters for 64-bit
-#define INT_BUF_SIZE (sizeof(machine_int_t) * 4)
+#define INT_BUF_SIZE (sizeof(mp_int_t) * 4)
 
 // This function is used by stmhal port to implement printf.
 // It needs to be a separate function to pfenv_print_mp_int, since converting to a mp_int looses the MSB.
-int pfenv_print_int(const pfenv_t *pfenv, machine_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     char sign = 0;
     if (sgn) {
-        if ((machine_int_t)x < 0) {
+        if ((mp_int_t)x < 0) {
             sign = '-';
             x = -x;
         } else if (flags & PF_FLAG_SHOW_SIGN) {
@@ -232,7 +232,7 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
 
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
-    char stack_buf[sizeof(machine_int_t) * 4];
+    char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
     int buf_size = sizeof(stack_buf);
     int fmt_size = 0;

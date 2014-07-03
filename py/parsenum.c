@@ -70,7 +70,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, uint len, int base) {
     str += mp_parse_num_base((const char*)str, top - str, &base);
 
     // string should be an integer number
-    machine_int_t int_val = 0;
+    mp_int_t int_val = 0;
     const byte *restrict str_val_start = str;
     for (; str < top; str++) {
         // get next digit as a value

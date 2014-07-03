@@ -27,10 +27,10 @@
 // Functions for small integer arithmetic
 
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
-#define MP_SMALL_INT_MIN ((mp_small_int_t)(((machine_int_t)WORD_MSBIT_HIGH) >> 1))
-#define MP_SMALL_INT_MAX ((mp_small_int_t)(~(MP_SMALL_INT_MIN)))
+#define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 1))
+#define MP_SMALL_INT_MAX ((mp_int_t)(~(MP_SMALL_INT_MIN)))
 #define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
 
-bool mp_small_int_mul_overflow(machine_int_t x, machine_int_t y);
-machine_int_t mp_small_int_modulo(machine_int_t dividend, machine_int_t divisor);
-machine_int_t mp_small_int_floor_divide(machine_int_t num, machine_int_t denom);
+bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y);
+mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor);
+mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom);

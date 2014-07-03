@@ -61,7 +61,7 @@ uint mp_verbose_flag;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 128*1024 * (sizeof(machine_uint_t) / 4);
+long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
 void microsocket_init();

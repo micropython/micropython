@@ -150,7 +150,7 @@ static mp_obj_t pyb_info(void) {
 
 #if 0
 
-void gc_helper_get_regs_and_clean_stack(machine_uint_t *regs, machine_uint_t heap_end);
+void gc_helper_get_regs_and_clean_stack(mp_uint_t *regs, mp_uint_t heap_end);
 
 mp_obj_t pyb_gc(void) {
     gc_collect();

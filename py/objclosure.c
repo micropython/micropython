@@ -37,7 +37,7 @@
 typedef struct _mp_obj_closure_t {
     mp_obj_base_t base;
     mp_obj_t fun;
-    machine_uint_t n_closed;
+    mp_uint_t n_closed;
     mp_obj_t closed[];
 } mp_obj_closure_t;
 

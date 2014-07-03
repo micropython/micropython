@@ -194,7 +194,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 /// \function delay(ms)
 /// Delay for the given number of milliseconds.
 STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
-    machine_int_t ms = mp_obj_get_int(ms_in);
+    mp_int_t ms = mp_obj_get_int(ms_in);
     if (ms >= 0) {
         HAL_Delay(ms);
     }
@@ -205,7 +205,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 /// \function udelay(us)
 /// Delay for the given number of microseconds.
 STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
-    machine_int_t usec = mp_obj_get_int(usec_in);
+    mp_int_t usec = mp_obj_get_int(usec_in);
     if (usec > 0) {
         uint32_t count = 0;
         const uint32_t utime = (168 * usec / 4);

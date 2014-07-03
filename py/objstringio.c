@@ -43,7 +43,7 @@ typedef struct _mp_obj_stringio_t {
     mp_obj_base_t base;
     vstr_t *vstr;
     // StringIO has single pointer used for both reading and writing
-    machine_uint_t pos;
+    mp_uint_t pos;
 } mp_obj_stringio_t;
 
 STATIC void stringio_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -51,9 +51,9 @@ STATIC void stringio_print(void (*print)(void *env, const char *fmt, ...), void 
     print(env, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self->vstr);
 }
 
-STATIC machine_int_t stringio_read(mp_obj_t o_in, void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_stringio_t *o = o_in;
-    machine_uint_t remaining = o->vstr->len - o->pos;
+    mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
         size = remaining;
     }
@@ -62,9 +62,9 @@ STATIC machine_int_t stringio_read(mp_obj_t o_in, void *buf, machine_uint_t size
     return size;
 }
 
-STATIC machine_int_t stringio_write(mp_obj_t o_in, const void *buf, machine_uint_t size, int *errcode) {
+STATIC mp_int_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_stringio_t *o = o_in;
-    machine_uint_t remaining = o->vstr->alloc - o->pos;
+    mp_uint_t remaining = o->vstr->alloc - o->pos;
     if (size > remaining) {
         // Take all what's already allocated...
         o->vstr->len = o->vstr->alloc;

@@ -49,9 +49,9 @@
     } while ((*ip++ & 0x80) != 0); \
 }
 #define DECODE_PTR do { \
-    ip = (byte*)(((machine_uint_t)ip + sizeof(machine_uint_t) - 1) & (~(sizeof(machine_uint_t) - 1))); /* align ip */ \
-    unum = *(machine_uint_t*)ip; \
-    ip += sizeof(machine_uint_t); \
+    ip = (byte*)(((mp_uint_t)ip + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1))); /* align ip */ \
+    unum = *(mp_uint_t*)ip; \
+    ip += sizeof(mp_uint_t); \
 } while (0)
 
 void mp_bytecode_print2(const byte *ip, int len);
@@ -60,7 +60,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
-    machine_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
+    mp_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
     const byte *code_info = ip;
     ip += code_info_size;
 
@@ -92,8 +92,8 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
 
     // print out line number info
     {
-        machine_int_t bc = (code_info + code_info_size) - ip;
-        machine_uint_t source_line = 1;
+        mp_int_t bc = (code_info + code_info_size) - ip;
+        mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         for (const byte* ci = code_info + 12; *ci; ci++) {
             bc += *ci & 31;
@@ -106,7 +106,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
 
 void mp_bytecode_print2(const byte *ip, int len) {
     const byte *ip_start = ip;
-    machine_uint_t unum;
+    mp_uint_t unum;
     qstr qstr;
     while (ip - ip_start < len) {
         printf("%02u ", (uint)(ip - ip_start));
@@ -129,7 +129,7 @@ void mp_bytecode_print2(const byte *ip, int len) {
                 break;
 
             case MP_BC_LOAD_CONST_SMALL_INT: {
-                machine_int_t num = 0;
+                mp_int_t num = 0;
                 if ((ip[0] & 0x40) != 0) {
                     // Number is negative
                     num--;
@@ -445,14 +445,14 @@ void mp_bytecode_print2(const byte *ip, int len) {
 
             case MP_BC_MAKE_CLOSURE: {
                 DECODE_PTR;
-                machine_uint_t n_closed_over = *ip++;
+                mp_uint_t n_closed_over = *ip++;
                 printf("MAKE_CLOSURE %p " UINT_FMT, (void*)unum, n_closed_over);
                 break;
             }
 
             case MP_BC_MAKE_CLOSURE_DEFARGS: {
                 DECODE_PTR;
-                machine_uint_t n_closed_over = *ip++;
+                mp_uint_t n_closed_over = *ip++;
                 printf("MAKE_CLOSURE_DEFARGS %p " UINT_FMT, (void*)unum, n_closed_over);
                 break;
             }
