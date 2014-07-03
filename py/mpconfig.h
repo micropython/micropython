@@ -336,6 +336,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS (1)
 #endif
 
+// Whether to provide "sys.maxsize" constant
+#ifndef MICROPY_PY_SYS_MAXSIZE
+#define MICROPY_PY_SYS_MAXSIZE (0)
+#endif
+
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (0)

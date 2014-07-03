@@ -352,6 +352,9 @@ Q(stdout)
 Q(stderr)
 Q(version)
 Q(version_info)
+#if MICROPY_PY_SYS_MAXSIZE
+Q(maxsize)
+#endif
 #endif
 
 #if MICROPY_PY_STRUCT

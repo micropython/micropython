@@ -50,6 +50,11 @@
 #define SUFFIX ""
 #endif
 
+#if MICROPY_PY_SYS_MAXSIZE
+// Export value for sys.maxsize
+const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, INT_MAX};
+#endif
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;

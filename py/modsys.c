@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+#include <limits.h>
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"
@@ -33,6 +35,8 @@
 #include "objlist.h"
 #include "objtuple.h"
 #include "objstr.h"
+#include "mpz.h"
+#include "objint.h"
 
 #if MICROPY_PY_SYS
 
@@ -43,6 +47,8 @@ extern struct _dummy_t mp_sys_exit_obj;
 extern struct _dummy_t mp_sys_stdin_obj;
 extern struct _dummy_t mp_sys_stdout_obj;
 extern struct _dummy_t mp_sys_stderr_obj;
+
+extern mp_obj_int_t mp_maxsize_obj;
 
 mp_obj_list_t mp_sys_path_obj;
 mp_obj_list_t mp_sys_argv_obj;
@@ -70,6 +76,19 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
 #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_big) },
 #endif
+#if MICROPY_PY_SYS_MAXSIZE
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    // INT_MAX is not representable as small int, as we know that small int
+    // takes one bit for tag. So, we have little choice but to provide this
+    // value. Apps also should be careful to not try to compare sys.maxsize
+    // with some number (which may not fit in available int size), but instead
+    // count number of significant bits in sys.maxsize.
+    { MP_OBJ_NEW_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(INT_MAX >> 1) },
+    #else
+    { MP_OBJ_NEW_QSTR(MP_QSTR_maxsize), (mp_obj_t)&mp_maxsize_obj },
+    #endif
+#endif
+
 
 #if MICROPY_PY_SYS_EXIT
     { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
