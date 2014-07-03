@@ -30,7 +30,7 @@
 #include "lexer.h"
 
 typedef struct _mp_lexer_str_buf_t {
-    uint free_len;              // if > 0, src_beg will be freed when done by: m_free(src_beg, free_len)
+    mp_uint_t free_len;         // if > 0, src_beg will be freed when done by: m_free(src_beg, free_len)
     const char *src_beg;        // beginning of source
     const char *src_cur;        // current location in source
     const char *src_end;        // end (exclusive) of source
@@ -51,7 +51,7 @@ STATIC void str_buf_free(mp_lexer_str_buf_t *sb) {
     m_del_obj(mp_lexer_str_buf_t, sb);
 }
 
-mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, uint len, uint free_len) {
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
     mp_lexer_str_buf_t *sb = m_new_obj(mp_lexer_str_buf_t);
     sb->free_len = free_len;
     sb->src_beg = str;
