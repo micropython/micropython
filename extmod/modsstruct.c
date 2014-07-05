@@ -281,6 +281,18 @@ static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
     return 0;
 }
 
+static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
+    switch (val_type) {
+        case UINT8:
+            *(uint8_t*)p = (uint8_t)v; return;
+        case UINT16:
+            *(uint16_t*)p = (uint16_t)v; return;
+        case UINT32:
+            *(uint32_t*)p = (uint32_t)v; return;
+    }
+    assert(0);
+}
+
 STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
     switch (val_type) {
         case UINT8:
@@ -376,8 +388,20 @@ STATIC mp_obj_t sstruct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val) {
                 assert((val_type & 1) == 0);
                 return mp_obj_new_int(val);
             } else {
-                // TODO: set bitfield
-                return MP_OBJ_NULL;
+                mp_uint_t set_val_int = (mp_uint_t)mp_obj_get_int(set_val);
+                mp_uint_t mask = (1 << bit_len) - 1;
+                set_val_int &= mask;
+                set_val_int <<= bit_offset;
+                mask <<= bit_offset;
+                val = (val & ~mask) | set_val_int;
+
+                if (self->flags == LAYOUT_NATIVE) {
+                    set_aligned_basic(val_type & 6, self->addr + offset, val);
+                } else {
+                    mp_binary_set_int(GET_SCALAR_SIZE(val_type & 7), self->flags == LAYOUT_BIG_ENDIAN,
+                        self->addr + offset, (byte*)&val);
+                }
+                return set_val; // just !MP_OBJ_NULL
             }
         }
 
