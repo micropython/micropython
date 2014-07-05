@@ -177,6 +177,23 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
 }
 
+void mp_binary_set_int(uint val_sz, bool big_endian, byte *p, byte *val_ptr) {
+    int in_delta, out_delta;
+    if (big_endian) {
+        in_delta = -1;
+        out_delta = 1;
+        val_ptr += val_sz - 1;
+    } else {
+        in_delta = out_delta = 1;
+    }
+
+    for (uint i = val_sz; i > 0; i--) {
+        *p = *val_ptr;
+        p += out_delta;
+        val_ptr += in_delta;
+    }
+}
+
 void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr) {
     byte *p = *ptr;
     uint align;
@@ -206,22 +223,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             val = mp_obj_get_int(val_in);
     }
 
-    int in_delta, out_delta;
-    uint val_sz = MIN(size, sizeof(val));
-    if (struct_type == '>') {
-        in_delta = -1;
-        out_delta = 1;
-        in += val_sz - 1;
-    } else {
-        in_delta = out_delta = 1;
-    }
-
-    for (uint i = val_sz; i > 0; i--) {
-        *p = *in;
-        p += out_delta;
-        in += in_delta;
-    }
-
+    mp_binary_set_int(MIN(size, sizeof(val)), struct_type == '>', p, in);
 }
 
 void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {

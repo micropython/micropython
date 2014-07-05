@@ -35,3 +35,4 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, int index, mp_int_
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr);
 void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr);
 mp_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p);
+void mp_binary_set_int(uint val_sz, bool big_endian, byte *p, byte *val_ptr);
