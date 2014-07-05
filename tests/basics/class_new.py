@@ -1,6 +1,4 @@
 class A:
-
-    @staticmethod
     def __new__(cls):
         print("A.__new__")
         return super(cls, A).__new__(cls)
@@ -9,13 +7,21 @@ class A:
         pass
 
     def meth(self):
-        pass
+        print('A.meth')
 
 #print(A.__new__)
 #print(A.__init__)
 
 a = A()
+a.meth()
+
+a = A.__new__(A)
+a.meth()
 
 #print(a.meth)
 #print(a.__init__)
 #print(a.__new__)
+
+# __new__ should automatically be a staticmethod, so this should work
+a = a.__new__(A)
+a.meth()
