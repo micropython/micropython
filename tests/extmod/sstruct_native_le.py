@@ -29,7 +29,7 @@ desc = {
     "ptr2": (sstruct.PTR | 0, {"b": sstruct.UINT8 | 0}),
 }
 
-data = b"01"
+data = bytearray(b"01")
 
 S = sstruct.sstruct(desc, sstruct.addressof(data), sstruct.NATIVE)
 
@@ -64,3 +64,13 @@ assert (S.bitf0, S.bitf1) == (0x30, 0x31)
 
 print("bf 4bit:", S.bf3, S.bf2, S.bf1, S.bf0)
 assert (S.bf3, S.bf2, S.bf1, S.bf0) == (3, 1, 3, 0)
+
+# Write access
+
+S.sub.b0 = ord("2")
+print(data)
+assert bytes(data) == b"21"
+
+S.bf3 = 5
+print(data)
+assert bytes(data) == b"2Q"
