@@ -253,7 +253,7 @@ STATIC mp_obj_t sstruct_sizeof(mp_obj_t obj_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(sstruct_sizeof_obj, sstruct_sizeof);
 
-STATIC inline mp_obj_t deref_unaligned(uint val_type, void *p, int big_endian) {
+STATIC inline mp_obj_t get_unaligned(uint val_type, void *p, int big_endian) {
     mp_int_t val = mp_binary_get_int(GET_SCALAR_SIZE(val_type), val_type & 1, big_endian, p);
     if (val_type == UINT32) {
         return mp_obj_new_int_from_uint(val);
@@ -262,7 +262,13 @@ STATIC inline mp_obj_t deref_unaligned(uint val_type, void *p, int big_endian) {
     }
 }
 
-static inline mp_uint_t deref_aligned_basic(uint val_type, void *p) {
+STATIC inline void set_unaligned(uint val_type, void *p, int big_endian, mp_obj_t val) {
+    char struct_type = big_endian ? '>' : '<';
+    static const char type2char[8] = "BbHhIiQq";
+    mp_binary_set_val(struct_type, type2char[val_type], val, (byte**)&p);
+}
+
+static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
     switch (val_type) {
         case UINT8:
             return *(uint8_t*)p;
@@ -275,7 +281,7 @@ static inline mp_uint_t deref_aligned_basic(uint val_type, void *p) {
     return 0;
 }
 
-STATIC mp_obj_t deref_aligned(uint val_type, void *p, mp_int_t index) {
+STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
     switch (val_type) {
         case UINT8:
             return MP_OBJ_NEW_SMALL_INT((mp_int_t)((uint8_t*)p)[index]);
@@ -301,7 +307,27 @@ STATIC mp_obj_t deref_aligned(uint val_type, void *p, mp_int_t index) {
     }
 }
 
-STATIC void sstruct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
+    mp_int_t v = mp_obj_get_int(val);
+    switch (val_type) {
+        case UINT8:
+            ((uint8_t*)p)[index] = (uint8_t)v; return;
+        case INT8:
+            ((int8_t*)p)[index] = (int8_t)v; return;
+        case UINT16:
+            ((uint16_t*)p)[index] = (uint16_t)v; return;
+        case INT16:
+            ((int16_t*)p)[index] = (int16_t)v; return;
+        case UINT32:
+            ((uint32_t*)p)[index] = (uint32_t)v; return;
+        case INT32:
+            ((int32_t*)p)[index] = (int32_t)v; return;
+        default:
+            assert(0);
+    }
+}
+
+STATIC mp_obj_t sstruct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val) {
     mp_obj_sstruct_t *self = self_in;
 
     // TODO: Support at least OrderedDict in addition
@@ -319,34 +345,52 @@ STATIC void sstruct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (val_type <= INT64) {
 //            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
             if (self->flags == LAYOUT_NATIVE) {
-                *dest = deref_aligned(val_type, self->addr + offset, 0);
+                if (set_val == MP_OBJ_NULL) {
+                    return get_aligned(val_type, self->addr + offset, 0);
+                } else {
+                    set_aligned(val_type, self->addr + offset, 0, set_val);
+                    return set_val; // just !MP_OBJ_NULL
+                }
             } else {
-                *dest = deref_unaligned(val_type, self->addr + offset, self->flags);
+                if (set_val == MP_OBJ_NULL) {
+                    return get_unaligned(val_type, self->addr + offset, self->flags);
+                } else {
+                    set_unaligned(val_type, self->addr + offset, self->flags, set_val);
+                    return set_val; // just !MP_OBJ_NULL
+                }
             }
-            return;
         } else if (val_type >= BFUINT8 && val_type <= BFINT32) {
             uint bit_offset = (offset >> 17) & 31;
             uint bit_len = (offset >> 22) & 31;
             offset &= (1 << 17) - 1;
             mp_uint_t val;
             if (self->flags == LAYOUT_NATIVE) {
-                val = deref_aligned_basic(val_type & 6, self->addr + offset);
+                val = get_aligned_basic(val_type & 6, self->addr + offset);
             } else {
                 val = mp_binary_get_int(GET_SCALAR_SIZE(val_type & 7), val_type & 1, self->flags, self->addr + offset);
             }
-            val >>= bit_offset;
-            val &= (1 << bit_len) - 1;
-            // TODO: signed
-            assert((val_type & 1) == 0);
-            *dest = mp_obj_new_int(val);
-            return;
+            if (set_val == MP_OBJ_NULL) {
+                val >>= bit_offset;
+                val &= (1 << bit_len) - 1;
+                // TODO: signed
+                assert((val_type & 1) == 0);
+                return mp_obj_new_int(val);
+            } else {
+                // TODO: set bitfield
+                return MP_OBJ_NULL;
+            }
         }
 
         assert(0);
-        return;
+        return MP_OBJ_NULL;
     }
 
     if (!MP_OBJ_IS_TYPE(deref, &mp_type_tuple)) {
+        syntax_error();
+    }
+
+    if (set_val != MP_OBJ_NULL) {
+        // Cannot assign to aggregate
         syntax_error();
     }
 
@@ -363,8 +407,7 @@ STATIC void sstruct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             o->desc = sub->items[1];
             o->addr = self->addr + offset;
             o->flags = self->flags;
-            *dest = o;
-            return;
+            return o;
         }
         case PTR: case ARRAY: {
             mp_obj_sstruct_t *o = m_new_obj(mp_obj_sstruct_t);
@@ -373,10 +416,21 @@ STATIC void sstruct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             o->addr = self->addr + offset;
             o->flags = self->flags;
 //printf("PTR/ARR base addr=%p\n", o->addr);
-            *dest = o;
-            return;
+            return o;
         }
     }
+
+    // Should be unreachable once all cases are handled
+    return MP_OBJ_NULL;
+}
+
+STATIC void sstruct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_t val = sstruct_attr_op(self_in, attr, MP_OBJ_NULL);
+    *dest = val;
+}
+
+STATIC bool sstruct_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val) {
+    return sstruct_attr_op(self_in, attr, val) != MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t sstruct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
@@ -407,7 +461,7 @@ STATIC mp_obj_t sstruct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
 
             if (t->len == 2) {
                 byte *p = self->addr + GET_SCALAR_SIZE(val_type) * index;
-                return deref_unaligned(val_type, p, self->flags);
+                return get_unaligned(val_type, p, self->flags);
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = sstruct_size(t->items[2], &dummy);
@@ -422,7 +476,7 @@ STATIC mp_obj_t sstruct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
             byte *p = *(void**)self->addr;
             if (MP_OBJ_IS_SMALL_INT(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
-                return deref_aligned(val_type, p, index);
+                return get_aligned(val_type, p, index);
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = sstruct_size(t->items[1], &dummy);
@@ -477,6 +531,7 @@ STATIC const mp_obj_type_t sstruct_type = {
     .print = sstruct_print,
     .make_new = sstruct_make_new,
     .load_attr = sstruct_load_attr,
+    .store_attr = sstruct_store_attr,
     .subscr = sstruct_subscr,
 };
 
