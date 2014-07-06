@@ -144,7 +144,13 @@ bool sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) 
         return false;
     }
 
-    if (HAL_SD_ReadBlocks(&sd_handle, (uint32_t*)dest, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks) != SD_OK) {
+    HAL_SD_ErrorTypedef err;
+
+    __disable_irq();
+    err = HAL_SD_ReadBlocks(&sd_handle, (uint32_t*)dest, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
+    __enable_irq();
+
+    if (err != SD_OK) {
         return false;
     }
 
