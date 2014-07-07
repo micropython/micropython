@@ -144,10 +144,11 @@ bool sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) 
         return false;
     }
 
-    HAL_SD_ErrorTypedef err;
-
+    // We must disable IRQs because the SDIO peripheral has a small FIFO
+    // buffer and we can't let it fill up in the middle of a read.
+    // This will not be needed when SD uses DMA for transfer.
     __disable_irq();
-    err = HAL_SD_ReadBlocks(&sd_handle, (uint32_t*)dest, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
+    HAL_SD_ErrorTypedef err = HAL_SD_ReadBlocks(&sd_handle, (uint32_t*)dest, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
     __enable_irq();
 
     if (err != SD_OK) {
@@ -168,7 +169,14 @@ bool sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
         return false;
     }
 
-    if (HAL_SD_WriteBlocks(&sd_handle, (uint32_t*)src, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks) != SD_OK) {
+    // We must disable IRQs because the SDIO peripheral has a small FIFO
+    // buffer and we can't let it drain to empty in the middle of a write.
+    // This will not be needed when SD uses DMA for transfer.
+    __disable_irq();
+    HAL_SD_ErrorTypedef err = HAL_SD_WriteBlocks(&sd_handle, (uint32_t*)src, block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
+    __enable_irq();
+
+    if (err != SD_OK) {
         return false;
     }
 
