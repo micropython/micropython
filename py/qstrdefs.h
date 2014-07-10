@@ -398,6 +398,9 @@ Q(FLOAT64)
 Q(ARRAY)
 Q(PTR)
 //Q(BITFIELD)
+
+Q(BF_POS)
+Q(BF_LEN)
 #endif
 
 #if MICROPY_PY_IO
