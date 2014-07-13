@@ -27,7 +27,9 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64            (1)
+#endif
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_ENABLE_GC           (1)
