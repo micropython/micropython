@@ -49,3 +49,6 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
 #if MICROPY_PY_BUILTINS_FLOAT
 int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
 #endif
+
+//int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
+int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...);
