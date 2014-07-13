@@ -413,6 +413,7 @@ Q(TextIOWrapper)
 Q(StringIO)
 Q(BytesIO)
 Q(getvalue)
+Q(file)
 #endif
 
 #if MICROPY_PY_GC
