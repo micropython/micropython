@@ -82,6 +82,13 @@ STATIC mp_int_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int
     return r;
 }
 
+STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
+    mp_obj_fdfile_t *self = self_in;
+    fsync(self->fd);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
+
 STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     close(self->fd);
@@ -166,6 +173,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&fdfile_flush_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&fdfile___exit___obj },

@@ -32,6 +32,7 @@ Q(fileno)
 Q(makefile)
 
 Q(FileIO)
+Q(flush)
 
 Q(_os)
 Q(stat)
