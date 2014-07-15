@@ -84,6 +84,9 @@ int m_get_peak_bytes_allocated(void);
 // get the number of elements in a fixed-size array
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+// align ptr to the nearest multiple of "alignment"
+#define MP_ALIGN(ptr, alignment) (void*)(((mp_uint_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
 /** unichar / UTF-8 *********************************************/
 
 typedef int unichar; // TODO

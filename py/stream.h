@@ -32,3 +32,5 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
 
 // Iterator which uses mp_stream_unbuffered_readline_obj
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
+
+mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);

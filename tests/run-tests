@@ -20,7 +20,7 @@ def rm_f(fname):
     if os.path.exists(fname):
         os.remove(fname)
 
-def run_tests(pyb, tests):
+def run_tests(pyb, tests, args):
     test_count = 0
     testcase_count = 0
     passed_count = 0
@@ -54,8 +54,14 @@ def run_tests(pyb, tests):
             # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output([CPYTHON3, '-B', test_file])
+                if args.write_exp:
+                    with open(test_file_expected, 'wb') as f:
+                        f.write(output_expected)
             except subprocess.CalledProcessError:
                 output_expected = b'CPYTHON3 CRASH'
+
+        if args.write_exp:
+            continue
 
         # run Micro Python
         if pyb is None:
@@ -113,6 +119,7 @@ def main():
     cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
     cmd_parser.add_argument('--pyboard', action='store_true', help='run the tests on the pyboard')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
+    cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
@@ -139,7 +146,7 @@ def main():
         # tests explicitly given
         tests = args.files
 
-    if not run_tests(pyb, tests):
+    if not run_tests(pyb, tests, args):
         sys.exit(1)
 
 if __name__ == "__main__":

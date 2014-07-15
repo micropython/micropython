@@ -50,7 +50,6 @@
 struct _emit_t {
     pass_kind_t pass : 8;
     uint last_emit_was_return_value : 8;
-    byte dummy_data[DUMMY_DATA_SIZE];
 
     int stack_size;
 
@@ -67,6 +66,8 @@ struct _emit_t {
     uint bytecode_offset;
     uint bytecode_size;
     byte *code_base; // stores both byte code and code info
+    // Accessed as uint, so must be aligned as such
+    byte dummy_data[DUMMY_DATA_SIZE];
 };
 
 STATIC void emit_bc_rot_two(emit_t *emit);
@@ -207,6 +208,8 @@ STATIC void emit_write_bytecode_byte_ptr(emit_t* emit, byte b, void *ptr) {
     emit_write_bytecode_byte(emit, b);
     emit_align_bytecode_to_machine_word(emit);
     mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
+    // Verify thar c is already uint-aligned
+    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
     *c = (mp_uint_t)ptr;
 }
 
