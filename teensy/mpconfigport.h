@@ -65,6 +65,7 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 // The following would be from a board specific file, if one existed
 
 #define MICROPY_HW_BOARD_NAME       "Teensy-3.1"
+#define MICROPY_HW_MCU_NAME         "MK20DX256"
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_SDCARD       (0)
