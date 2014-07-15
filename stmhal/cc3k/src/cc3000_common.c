@@ -12,23 +12,23 @@
 *
 *    Redistributions in binary form must reproduce the above copyright
 *    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
+*    documentation and/or other materials provided with the   
 *    distribution.
 *
 *    Neither the name of Texas Instruments Incorporated nor the names of
 *    its contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
@@ -39,15 +39,10 @@
 //
 //*****************************************************************************
 /******************************************************************************
- *
- * Include files
- *
- *****************************************************************************/
-#include <stdint.h>
-#include "mpconfigport.h"
-
-#if MICROPY_HW_ENABLE_CC3K
-
+*
+* Include files
+*
+*****************************************************************************/
 #include "cc3000_common.h"
 #include "socket.h"
 #include "wlan.h"
@@ -65,10 +60,9 @@
 //!  @brief stub function for ASSERT macro
 //
 //*****************************************************************************
-void
-__error__(char *pcFilename, unsigned long ulLine)
+void __error__(CHAR *pcFilename, UINT32 ulLine)
 {
-    //TODO full up function
+	//TODO full up function
 }
 
 
@@ -87,12 +81,12 @@ __error__(char *pcFilename, unsigned long ulLine)
 //
 //*****************************************************************************
 
-unsigned char* UINT32_TO_STREAM_f (unsigned char *p, unsigned long u32)
+UINT8* UINT32_TO_STREAM_f (UINT8 *p, UINT32 u32)
 {
-	*(p)++ = (unsigned char)(u32);
-	*(p)++ = (unsigned char)((u32) >> 8);
-	*(p)++ = (unsigned char)((u32) >> 16);
-	*(p)++ = (unsigned char)((u32) >> 24);
+	*(p)++ = (UINT8)(u32);
+	*(p)++ = (UINT8)((u32) >> 8);
+	*(p)++ = (UINT8)((u32) >> 16);
+	*(p)++ = (UINT8)((u32) >> 24);
 	return p;
 }
 
@@ -110,10 +104,10 @@ unsigned char* UINT32_TO_STREAM_f (unsigned char *p, unsigned long u32)
 //
 //*****************************************************************************
 
-unsigned char* UINT16_TO_STREAM_f (unsigned char *p, unsigned short u16)
+UINT8* UINT16_TO_STREAM_f (UINT8 *p, UINT16 u16)
 {
-	*(p)++ = (unsigned char)(u16);
-	*(p)++ = (unsigned char)((u16) >> 8);
+	*(p)++ = (UINT8)(u16);
+	*(p)++ = (UINT8)((u16) >> 8);
 	return p;
 }
 
@@ -131,10 +125,10 @@ unsigned char* UINT16_TO_STREAM_f (unsigned char *p, unsigned short u16)
 //
 //*****************************************************************************
 
-unsigned short STREAM_TO_UINT16_f(char* p, unsigned short offset)
+UINT16 STREAM_TO_UINT16_f(CHAR* p, UINT16 offset)
 {
-        return (unsigned short)((unsigned short)((unsigned short)
-								(*(p + offset + 1)) << 8) + (unsigned short)(*(p + offset)));
+	return (UINT16)((UINT16)((UINT16)
+		(*(p + offset + 1)) << 8) + (UINT16)(*(p + offset)));
 }
 
 //*****************************************************************************
@@ -151,12 +145,12 @@ unsigned short STREAM_TO_UINT16_f(char* p, unsigned short offset)
 //
 //*****************************************************************************
 
-unsigned long STREAM_TO_UINT32_f(char* p, unsigned short offset)
+UINT32 STREAM_TO_UINT32_f(CHAR* p, UINT16 offset)
 {
-        return (unsigned long)((unsigned long)((unsigned long)
-							 (*(p + offset + 3)) << 24) + (unsigned long)((unsigned long)
-							 (*(p + offset + 2)) << 16) + (unsigned long)((unsigned long)
-							 (*(p + offset + 1)) << 8) + (unsigned long)(*(p + offset)));
+	return (UINT32)((UINT32)((UINT32)
+		(*(p + offset + 3)) << 24) + (UINT32)((UINT32)
+		(*(p + offset + 2)) << 16) + (UINT32)((UINT32)
+		(*(p + offset + 1)) << 8) + (UINT32)(*(p + offset)));
 }
 
 
@@ -167,5 +161,3 @@ unsigned long STREAM_TO_UINT32_f(char* p, unsigned short offset)
 //! @}
 //
 //*****************************************************************************
-
-#endif // MICROPY_HW_ENABLE_CC3K

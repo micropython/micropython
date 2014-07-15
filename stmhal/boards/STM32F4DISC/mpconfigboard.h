@@ -32,3 +32,10 @@
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
+
+// CC3K WLAN
+#define MICROPY_HW_WLAN_PIN_CS      (pin_A15)
+#define MICROPY_HW_WLAN_PIN_EN      (pin_B10)
+#define MICROPY_HW_WLAN_PIN_IRQ     (pin_B11)
+#define MICROPY_HW_WLAN_SPI_HANDLE  (SPIHandle2)
+#define MICROPY_HW_WLAN_IRQ_LINE    (11)

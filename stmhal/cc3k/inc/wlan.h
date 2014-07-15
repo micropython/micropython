@@ -12,23 +12,23 @@
 *
 *    Redistributions in binary form must reproduce the above copyright
 *    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
+*    documentation and/or other materials provided with the   
 *    distribution.
 *
 *    Neither the name of Texas Instruments Incorporated nor the names of
 *    its contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
@@ -63,41 +63,41 @@ extern "C" {
 //
 //!  wlan_init
 //!
-//!  @param  sWlanCB   Asynchronous events callback.
+//!  @param  sWlanCB   Asynchronous events callback.  
 //!                    0 no event call back.
 //!                  -call back parameters:
 //!                   1) event_type: HCI_EVNT_WLAN_UNSOL_CONNECT connect event,
 //!                     HCI_EVNT_WLAN_UNSOL_DISCONNECT disconnect event,
 //!                     HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE config done,
-//!                     HCI_EVNT_WLAN_UNSOL_DHCP dhcp report,
-//!                     HCI_EVNT_WLAN_ASYNC_PING_REPORT ping report OR
+//!                     HCI_EVNT_WLAN_UNSOL_DHCP dhcp report, 
+//!                     HCI_EVNT_WLAN_ASYNC_PING_REPORT ping report OR 
 //!                     HCI_EVNT_WLAN_KEEPALIVE keepalive.
 //!                   2) data: pointer to extra data that received by the event
 //!                     (NULL no data).
 //!                   3) length: data length.
 //!                  -Events with extra data:
-//!                     HCI_EVNT_WLAN_UNSOL_DHCP: 4 bytes IP, 4 bytes Mask,
+//!                     HCI_EVNT_WLAN_UNSOL_DHCP: 4 bytes IP, 4 bytes Mask, 
 //!                     4 bytes default gateway, 4 bytes DHCP server and 4 bytes
 //!                     for DNS server.
-//!                     HCI_EVNT_WLAN_ASYNC_PING_REPORT: 4 bytes Packets sent,
-//!                     4 bytes Packets received, 4 bytes Min round time,
+//!                     HCI_EVNT_WLAN_ASYNC_PING_REPORT: 4 bytes Packets sent, 
+//!                     4 bytes Packets received, 4 bytes Min round time, 
 //!                     4 bytes Max round time and 4 bytes for Avg round time.
 //!
-//!  @param    sFWPatches  0 no patch or pointer to FW patches
+//!  @param    sFWPatches  0 no patch or pointer to FW patches 
 //!  @param    sDriverPatches  0 no patch or pointer to driver patches
 //!  @param    sBootLoaderPatches  0 no patch or pointer to bootloader patches
-//!  @param    sReadWlanInterruptPin    init callback. the callback read wlan
+//!  @param    sReadWlanInterruptPin    init callback. the callback read wlan 
 //!            interrupt status.
-//!  @param    sWlanInterruptEnable   init callback. the callback enable wlan
+//!  @param    sWlanInterruptEnable   init callback. the callback enable wlan 
 //!            interrupt.
 //!  @param    sWlanInterruptDisable   init callback. the callback disable wlan
 //!            interrupt.
-//!  @param    sWriteWlanPin      init callback. the callback write value
-//!            to device pin.
+//!  @param    sWriteWlanPin      init callback. the callback write value 
+//!            to device pin.  
 //!
 //!  @return   none
 //!
-//!  @sa       wlan_set_event_mask , wlan_start , wlan_stop
+//!  @sa       wlan_set_event_mask , wlan_start , wlan_stop 
 //!
 //!  @brief    Initialize wlan driver
 //!
@@ -120,28 +120,28 @@ extern void wlan_init(		tWlanCB	 	sWlanCB,
 //!  wlan_start
 //!
 //!  @param   usPatchesAvailableAtHost -  flag to indicate if patches available
-//!                                    from host or from EEPROM. Due to the
+//!                                    from host or from EEPROM. Due to the 
 //!                                    fact the patches are burn to the EEPROM
-//!                                    using the patch programmer utility, the
+//!                                    using the patch programmer utility, the 
 //!                                    patches will be available from the EEPROM
 //!                                    and not from the host.
 //!
 //!  @return        none
 //!
-//!  @brief        Start WLAN device. This function asserts the enable pin of
+//!  @brief        Start WLAN device. This function asserts the enable pin of 
 //!                the device (WLAN_EN), starting the HW initialization process.
 //!                The function blocked until device Initialization is completed.
-//!                Function also configure patches (FW, driver or bootloader)
+//!                Function also configure patches (FW, driver or bootloader) 
 //!                and calls appropriate device callbacks.
 //!
 //!  @Note          Prior calling the function wlan_init shall be called.
-//!  @Warning       This function must be called after wlan_init and before any
+//!  @Warning       This function must be called after wlan_init and before any 
 //!                 other wlan API
 //!  @sa            wlan_init , wlan_stop
 //!
 //
 //*****************************************************************************
-extern void wlan_start(unsigned short usPatchesAvailableAtHost);
+extern int wlan_start(UINT16 usPatchesAvailableAtHost);
 
 //*****************************************************************************
 //
@@ -163,23 +163,23 @@ extern void wlan_stop(void);
 //!  wlan_connect
 //!
 //!  @param    sec_type   security options:
-//!               WLAN_SEC_UNSEC,
+//!               WLAN_SEC_UNSEC, 
 //!               WLAN_SEC_WEP (ASCII support only),
 //!               WLAN_SEC_WPA or WLAN_SEC_WPA2
 //!  @param    ssid       up to 32 bytes and is ASCII SSID of the AP
 //!  @param    ssid_len   length of the SSID
 //!  @param    bssid      6 bytes specified the AP bssid
 //!  @param    key        up to 32 bytes specified the AP security key
-//!  @param    key_len    key length
+//!  @param    key_len    key length 
 //!
-//!  @return     On success, zero is returned. On error, negative is returned.
+//!  @return     On success, zero is returned. On error, negative is returned. 
 //!              Note that even though a zero is returned on success to trigger
 //!              connection operation, it does not mean that CCC3000 is already
-//!              connected. An asynchronous "Connected" event is generated when
+//!              connected. An asynchronous "Connected" event is generated when 
 //!              actual association process finishes and CC3000 is connected to
-//!              the AP. If DHCP is set, An asynchronous "DHCP" event is
+//!              the AP. If DHCP is set, An asynchronous "DHCP" event is 
 //!              generated when DHCP process is finish.
-//!
+//!              
 //!
 //!  @brief      Connect to AP
 //!  @warning    Please Note that when connection to AP configured with security
@@ -189,10 +189,10 @@ extern void wlan_stop(void);
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER
-extern long wlan_connect(unsigned long ulSecType, const char *ssid, long ssid_len,
-                        unsigned char *bssid, unsigned char *key, long key_len);
+extern INT32 wlan_connect(UINT32 ulSecType, CHAR *ssid, INT32 ssid_len,
+                        UINT8 *bssid, UINT8 *key, INT32 key_len);
 #else
-extern long wlan_connect(const char *ssid, long ssid_len);
+extern INT32 wlan_connect(CHAR *ssid, INT32 ssid_len);
 
 #endif
 
@@ -200,15 +200,15 @@ extern long wlan_connect(const char *ssid, long ssid_len);
 //
 //!  wlan_disconnect
 //!
-//!  @return    0 disconnected done, other CC3000 already disconnected
+//!  @return    0 disconnected done, other CC3000 already disconnected            
 //!
-//!  @brief      Disconnect connection from AP.
+//!  @brief      Disconnect connection from AP. 
 //!
 //!  @sa         wlan_connect
 //
 //*****************************************************************************
 
-extern long wlan_disconnect(void);
+extern INT32 wlan_disconnect(void);
 
 //*****************************************************************************
 //
@@ -221,32 +221,33 @@ extern long wlan_disconnect(void);
 //!  @param    ulPriority ulPriority profile priority. Lowest priority:0.
 //!  @param    ulPairwiseCipher_Or_TxKeyLen  key length for WEP security
 //!  @param    ulGroupCipher_TxKeyIndex  key index
-//!  @param    ulKeyMgmt        KEY management
+//!  @param    ulKeyMgmt        KEY management 
 //!  @param    ucPf_OrKey       security key
 //!  @param    ulPassPhraseLen  security key length for WPA\WPA2
 //!
-//!  @return    On success, zero is returned. On error, -1 is returned
+//!  @return    On success, index (1-7) of the stored profile is returned.         
+//!				On error, -1 is returned.        
 //!
 //!  @brief     When auto start is enabled, the device connects to
-//!             station from the profiles table. Up to 7 profiles are supported.
-//!             If several profiles configured the device choose the highest
-//!             priority profile, within each priority group, device will choose
-//!             profile based on security policy, signal strength, etc
+//!             station from the profiles table. Up to 7 profiles are supported. 
+//!             If several profiles configured the device choose the highest 
+//!             priority profile, within each priority group, device will choose 
+//!             profile based on security policy, signal strength, etc 
 //!             parameters. All the profiles are stored in CC3000 NVMEM.
 //!
-//!  @sa        wlan_ioctl_del_profile
+//!  @sa        wlan_ioctl_del_profile 
 //
 //*****************************************************************************
 
-extern long wlan_add_profile(unsigned long ulSecType, unsigned char* ucSsid,
-										 unsigned long ulSsidLen,
-										 unsigned char *ucBssid,
-                                         unsigned long ulPriority,
-                                         unsigned long ulPairwiseCipher_Or_Key,
-                                         unsigned long ulGroupCipher_TxKeyLen,
-                                         unsigned long ulKeyMgmt,
-                                         unsigned char* ucPf_OrKey,
-                                         unsigned long ulPassPhraseLen);
+extern INT32 wlan_add_profile(UINT32 ulSecType, UINT8* ucSsid,
+										 UINT32 ulSsidLen, 
+										 UINT8 *ucBssid,
+                                         UINT32 ulPriority,
+                                         UINT32 ulPairwiseCipher_Or_Key,
+                                         UINT32 ulGroupCipher_TxKeyLen,
+                                         UINT32 ulKeyMgmt,
+                                         UINT8* ucPf_OrKey,
+                                         UINT32 ulPassPhraseLen);
 
 
 
@@ -256,16 +257,16 @@ extern long wlan_add_profile(unsigned long ulSecType, unsigned char* ucSsid,
 //!
 //!  @param    index   number of profile to delete
 //!
-//!  @return    On success, zero is returned. On error, -1 is returned
+//!  @return    On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief     Delete WLAN profile
+//!  @brief     Delete WLAN profile 
 //!
 //!  @Note      In order to delete all stored profile, set index to 255.
 //!
-//!  @sa        wlan_add_profile
+//!  @sa        wlan_add_profile 
 //
 //*****************************************************************************
-extern long wlan_ioctl_del_profile(unsigned long ulIndex);
+extern INT32 wlan_ioctl_del_profile(UINT32 ulIndex);
 
 //*****************************************************************************
 //
@@ -282,64 +283,64 @@ extern long wlan_ioctl_del_profile(unsigned long ulIndex);
 //!       HCI_EVNT_WLAN_TX_COMPLETE - disable information on end of transmission
 //!   	  Saved: no.
 //!
-//!  @return    On success, zero is returned. On error, -1 is returned
+//!  @return    On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief    Mask event according to bit mask. In case that event is
-//!            masked (1), the device will not send the masked event to host.
+//!  @brief    Mask event according to bit mask. In case that event is 
+//!            masked (1), the device will not send the masked event to host. 
 //
 //*****************************************************************************
-extern long wlan_set_event_mask(unsigned long ulMask);
+extern INT32 wlan_set_event_mask(UINT32 ulMask);
 
 //*****************************************************************************
 //
 //!  wlan_ioctl_statusget
 //!
-//!  @param none
+//!  @param none 
 //!
-//!  @return    WLAN_STATUS_DISCONNECTED, WLAN_STATUS_SCANING,
-//!             STATUS_CONNECTING or WLAN_STATUS_CONNECTED
+//!  @return    WLAN_STATUS_DISCONNECTED, WLAN_STATUS_SCANING, 
+//!             STATUS_CONNECTING or WLAN_STATUS_CONNECTED      
 //!
 //!  @brief    get wlan status: disconnected, scanning, connecting or connected
 //
 //*****************************************************************************
-extern long wlan_ioctl_statusget(void);
+extern INT32 wlan_ioctl_statusget(void);
 
 
 //*****************************************************************************
 //
 //!  wlan_ioctl_set_connection_policy
 //!
-//!  @param    should_connect_to_open_ap  enable(1), disable(0) connect to any
-//!            available AP. This parameter corresponds to the configuration of
+//!  @param    should_connect_to_open_ap  enable(1), disable(0) connect to any 
+//!            available AP. This parameter corresponds to the configuration of 
 //!            item # 3 in the brief description.
-//!  @param    should_use_fast_connect enable(1), disable(0). if enabled, tries
-//!            to connect to the last connected AP. This parameter corresponds
+//!  @param    should_use_fast_connect enable(1), disable(0). if enabled, tries 
+//!            to connect to the last connected AP. This parameter corresponds 
 //!            to the configuration of item # 1 in the brief description.
-//!  @param    auto_start enable(1), disable(0) auto connect
-//!            after reset and periodically reconnect if needed. This
+//!  @param    auto_start enable(1), disable(0) auto connect 
+//!            after reset and periodically reconnect if needed. This 
 //!       	   configuration configures option 2 in the above description.
 //!
-//!  @return     On success, zero is returned. On error, -1 is returned
+//!  @return     On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief      When auto is enabled, the device tries to connect according
+//!  @brief      When auto is enabled, the device tries to connect according 
 //!              the following policy:
-//!              1) If fast connect is enabled and last connection is valid,
-//!                 the device will try to connect to it without the scanning
+//!              1) If fast connect is enabled and last connection is valid, 
+//!                 the device will try to connect to it without the scanning 
 //!                 procedure (fast). The last connection will be marked as
-//!                 invalid, due to adding/removing profile.
-//!              2) If profile exists, the device will try to connect it
+//!                 invalid, due to adding/removing profile. 
+//!              2) If profile exists, the device will try to connect it 
 //!                 (Up to seven profiles).
 //!              3) If fast and profiles are not found, and open mode is
 //!                 enabled, the device will try to connect to any AP.
 //!              * Note that the policy settings are stored in the CC3000 NVMEM.
 //!
-//!  @sa         wlan_add_profile , wlan_ioctl_del_profile
+//!  @sa         wlan_add_profile , wlan_ioctl_del_profile 
 //
 //*****************************************************************************
-extern long wlan_ioctl_set_connection_policy(
-                                        unsigned long should_connect_to_open_ap,
-                                        unsigned long should_use_fast_connect,
-                                        unsigned long ulUseProfiles);
+extern INT32 wlan_ioctl_set_connection_policy(
+                                        UINT32 should_connect_to_open_ap,
+                                        UINT32 should_use_fast_connect,
+                                        UINT32 ulUseProfiles);
 
 //*****************************************************************************
 //
@@ -348,94 +349,94 @@ extern long wlan_ioctl_set_connection_policy(
 //!  @param[in]    scan_timeout   parameter not supported
 //!  @param[out]   ucResults  scan result (_wlan_full_scan_results_args_t)
 //!
-//!  @return    On success, zero is returned. On error, -1 is returned
+//!  @return    On success, zero is returned. On error, -1 is returned        
 //!
 //!  @brief    Gets entry from scan result table.
-//!            The scan results are returned one by one, and each entry
-//!            represents a single AP found in the area. The following is a
-//!            format of the scan result:
+//!            The scan results are returned one by one, and each entry 
+//!            represents a single AP found in the area. The following is a 
+//!            format of the scan result: 
 //!        	 - 4 Bytes: number of networks found
 //!          - 4 Bytes: The status of the scan: 0 - aged results,
 //!                     1 - results valid, 2 - no results
 //!          - 42 bytes: Result entry, where the bytes are arranged as  follows:
-//!
+//!              
 //!          				- 1 bit isValid - is result valid or not
-//!         				- 7 bits rssi - RSSI value;
+//!         				- 7 bits rssi - RSSI value;	 
 //!                 - 2 bits: securityMode - security mode of the AP:
 //!                           0 - Open, 1 - WEP, 2 WPA, 3 WPA2
 //!         				- 6 bits: SSID name length
-//!         				- 2 bytes: the time at which the entry has entered into
+//!         				- 2 bytes: the time at which the entry has entered into 
 //!                            scans result table
 //!         				- 32 bytes: SSID name
-//!                 - 6 bytes:	BSSID
+//!                 - 6 bytes:	BSSID 
 //!
 //!  @Note      scan_timeout, is not supported on this version.
 //!
-//!  @sa        wlan_ioctl_set_scan_params
+//!  @sa        wlan_ioctl_set_scan_params 
 //
 //*****************************************************************************
 
 
-extern long wlan_ioctl_get_scan_results(unsigned long ulScanTimeout,
-                                       unsigned char *ucResults);
+extern INT32 wlan_ioctl_get_scan_results(UINT32 ulScanTimeout,
+                                       UINT8 *ucResults);
 
 //*****************************************************************************
 //
 //!  wlan_ioctl_set_scan_params
 //!
-//!  @param    uiEnable - start/stop application scan:
-//!            1 = start scan with default interval value of 10 min.
-//!            in order to set a different scan interval value apply the value
+//!  @param    uiEnable - start/stop application scan: 
+//!            1 = start scan with default interval value of 10 min. 
+//!            in order to set a different scan interval value apply the value 
 //!            in milliseconds. minimum 1 second. 0=stop). Wlan reset
 //!           (wlan_stop() wlan_start()) is needed when changing scan interval
 //!            value. Saved: No
-//!  @param   uiMinDwellTime   minimum dwell time value to be used for each
+//!  @param   uiMinDwellTime   minimum dwell time value to be used for each 
 //!           channel, in milliseconds. Saved: yes
 //!           Recommended Value: 100 (Default: 20)
 //!  @param   uiMaxDwellTime    maximum dwell time value to be used for each
 //!           channel, in milliseconds. Saved: yes
 //!           Recommended Value: 100 (Default: 30)
-//!  @param   uiNumOfProbeRequests  max probe request between dwell time.
+//!  @param   uiNumOfProbeRequests  max probe request between dwell time. 
 //!           Saved: yes. Recommended Value: 5 (Default:2)
-//!  @param   uiChannelMask  bitwise, up to 13 channels (0x1fff).
+//!  @param   uiChannelMask  bitwise, up to 13 channels (0x1fff). 
 //!           Saved: yes. Default: 0x7ff
 //!  @param   uiRSSIThreshold   RSSI threshold. Saved: yes (Default: -80)
 //!  @param   uiSNRThreshold    NSR threshold. Saved: yes (Default: 0)
 //!  @param   uiDefaultTxPower  probe Tx power. Saved: yes (Default: 205)
-//!  @param   aiIntervalList    pointer to array with 16 entries (16 channels)
-//!           each entry (unsigned long) holds timeout between periodic scan
+//!  @param   aiIntervalList    pointer to array with 16 entries (16 channels) 
+//!           each entry (UINT32) holds timeout between periodic scan 
 //!           (connection scan) - in milliseconds. Saved: yes. Default 2000ms.
 //!
-//!  @return    On success, zero is returned. On error, -1 is returned
+//!  @return    On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief    start and stop scan procedure. Set scan parameters.
+//!  @brief    start and stop scan procedure. Set scan parameters. 
 //!
 //!  @Note     uiDefaultTxPower, is not supported on this version.
 //!
-//!  @sa        wlan_ioctl_get_scan_results
+//!  @sa        wlan_ioctl_get_scan_results 
 //
 //*****************************************************************************
-extern long wlan_ioctl_set_scan_params(unsigned long uiEnable, unsigned long
-											 uiMinDwellTime,unsigned long uiMaxDwellTime,
-										   unsigned long uiNumOfProbeRequests,
-											 unsigned long uiChannelMask,
-										   long iRSSIThreshold,unsigned long uiSNRThreshold,
-										   unsigned long uiDefaultTxPower,
-											 unsigned long *aiIntervalList);
+extern INT32 wlan_ioctl_set_scan_params(UINT32 uiEnable, UINT32 
+											 uiMinDwellTime,UINT32 uiMaxDwellTime,
+										   UINT32 uiNumOfProbeRequests,
+											 UINT32 uiChannelMask,
+										   INT32 iRSSIThreshold,UINT32 uiSNRThreshold,
+										   UINT32 uiDefaultTxPower, 
+											 UINT32 *aiIntervalList);
 
-
+                                           
 //*****************************************************************************
 //
 //!  wlan_smart_config_start
 //!
 //!  @param    algoEncryptedFlag indicates whether the information is encrypted
 //!
-//!  @return   On success, zero is returned. On error, -1 is returned
+//!  @return   On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief   Start to acquire device profile. The device acquire its own
+//!  @brief   Start to acquire device profile. The device acquire its own 
 //!           profile, if profile message is found. The acquired AP information
 //!           is stored in CC3000 EEPROM only in case AES128 encryption is used.
-//!           In case AES128 encryption is not used, a profile is created by
+//!           In case AES128 encryption is not used, a profile is created by 
 //!           CC3000 internally.
 //!
 //!  @Note    An asynchronous event - Smart Config Done will be generated as soon
@@ -443,8 +444,8 @@ extern long wlan_ioctl_set_scan_params(unsigned long uiEnable, unsigned long
 //!
 //!  @sa      wlan_smart_config_set_prefix , wlan_smart_config_stop
 //
-//*****************************************************************************
-extern long wlan_smart_config_start(unsigned long algoEncryptedFlag);
+//*****************************************************************************                                        
+extern INT32 wlan_smart_config_start(UINT32 algoEncryptedFlag);
 
 
 //*****************************************************************************
@@ -453,24 +454,24 @@ extern long wlan_smart_config_start(unsigned long algoEncryptedFlag);
 //!
 //!  @param    algoEncryptedFlag indicates whether the information is encrypted
 //!
-//!  @return   On success, zero is returned. On error, -1 is returned
+//!  @return   On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief   Stop the acquire profile procedure
+//!  @brief   Stop the acquire profile procedure 
 //!
 //!  @sa      wlan_smart_config_start , wlan_smart_config_set_prefix
 //
 //*****************************************************************************
-extern long wlan_smart_config_stop(void);
+extern INT32 wlan_smart_config_stop(void);
 
 //*****************************************************************************
 //
 //!  wlan_smart_config_set_prefix
 //!
-//!  @param   newPrefix  3 bytes identify the SSID prefix for the Smart Config.
+//!  @param   newPrefix  3 bytes identify the SSID prefix for the Smart Config. 
 //!
-//!  @return   On success, zero is returned. On error, -1 is returned
+//!  @return   On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief   Configure station ssid prefix. The prefix is used internally
+//!  @brief   Configure station ssid prefix. The prefix is used internally 
 //!           in CC3000. It should always be TTT.
 //!
 //!  @Note    The prefix is stored in CC3000 NVMEM
@@ -478,23 +479,23 @@ extern long wlan_smart_config_stop(void);
 //!  @sa      wlan_smart_config_start , wlan_smart_config_stop
 //
 //*****************************************************************************
-extern long wlan_smart_config_set_prefix(char* cNewPrefix);
+extern INT32 wlan_smart_config_set_prefix(CHAR* cNewPrefix);
 
 //*****************************************************************************
 //
 //!  wlan_smart_config_process
 //!
-//!  @param   none
+//!  @param   none 
 //!
-//!  @return   On success, zero is returned. On error, -1 is returned
+//!  @return   On success, zero is returned. On error, -1 is returned        
 //!
-//!  @brief   process the acquired data and store it as a profile. The acquired
+//!  @brief   process the acquired data and store it as a profile. The acquired 
 //!           AP information is stored in CC3000 EEPROM encrypted.
 //!           The encrypted data is decrypted and stored as a profile.
 //!           behavior is as defined by connection policy.
 //
 //*****************************************************************************
-extern long wlan_smart_config_process(void);
+extern INT32 wlan_smart_config_process(void);
 
 //*****************************************************************************
 //

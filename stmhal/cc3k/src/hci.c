@@ -12,23 +12,23 @@
 *
 *    Redistributions in binary form must reproduce the above copyright
 *    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
+*    documentation and/or other materials provided with the   
 *    distribution.
 *
 *    Neither the name of Texas Instruments Incorporated nor the names of
 *    its contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
@@ -40,12 +40,7 @@
 //
 //*****************************************************************************
 
-#include <stdint.h>
-#include <string.h> // for memcpy
-#include "mpconfigport.h"
-
-#if MICROPY_HW_ENABLE_CC3K
-
+#include <string.h>
 #include "cc3000_common.h"
 #include "hci.h"
 #include "ccspi.h"
@@ -68,11 +63,9 @@
 //!  @brief               Initiate an HCI command.
 //
 //*****************************************************************************
-unsigned short
-hci_command_send(unsigned short usOpcode, unsigned char *pucBuff,
-                     unsigned char ucArgsLength)
-{
-	unsigned char *stream;
+UINT16 hci_command_send(UINT16 usOpcode, UINT8 *pucBuff, UINT8 ucArgsLength)
+{ 
+	UINT8 *stream;
 
 	stream = (pucBuff + SPI_HEADER_SIZE);
 
@@ -101,15 +94,14 @@ hci_command_send(unsigned short usOpcode, unsigned char *pucBuff,
 //!  @brief              Initiate an HCI data write operation
 //
 //*****************************************************************************
-long
-hci_data_send(unsigned char ucOpcode,
-							unsigned char *ucArgs,
-							unsigned short usArgsLength,
-							unsigned short usDataLength,
-							const unsigned char *ucTail,
-							unsigned short usTailLength)
+INT32 hci_data_send(UINT8 ucOpcode, 
+	UINT8 *ucArgs,
+	UINT16 usArgsLength, 
+	UINT16 usDataLength,
+	const UINT8 *ucTail,
+	UINT16 usTailLength)
 {
-	unsigned char *stream;
+	UINT8 *stream;
 
 	stream = ((ucArgs) + SPI_HEADER_SIZE);
 
@@ -139,10 +131,9 @@ hci_data_send(unsigned char ucOpcode,
 //!  @brief              Prepeare HCI header and initiate an HCI data write operation
 //
 //*****************************************************************************
-void hci_data_command_send(unsigned short usOpcode, unsigned char *pucBuff,
-                     unsigned char ucArgsLength,unsigned short ucDataLength)
-{
- 	unsigned char *stream = (pucBuff + SPI_HEADER_SIZE);
+void hci_data_command_send(UINT16 usOpcode, UINT8 *pucBuff, UINT8 ucArgsLength,UINT16 ucDataLength)
+{ 
+	UINT8 *stream = (pucBuff + SPI_HEADER_SIZE);
 
 	UINT8_TO_STREAM(stream, HCI_TYPE_DATA);
 	UINT8_TO_STREAM(stream, usOpcode);
@@ -161,7 +152,7 @@ void hci_data_command_send(unsigned short usOpcode, unsigned char *pucBuff,
 //!
 //!  @param  usOpcode      command operation code
 //!  @param  pucBuff       pointer to the command's arguments buffer
-//!  @param  patch         pointer to patch content buffer
+//!  @param  patch         pointer to patch content buffer 
 //!  @param  usDataLength  data length
 //!
 //!  @return              none
@@ -169,12 +160,11 @@ void hci_data_command_send(unsigned short usOpcode, unsigned char *pucBuff,
 //!  @brief               Prepeare HCI header and initiate an HCI patch write operation
 //
 //*****************************************************************************
-void
-hci_patch_send(unsigned char ucOpcode, unsigned char *pucBuff, char *patch, unsigned short usDataLength)
-{
- 	unsigned char *data_ptr = (pucBuff + SPI_HEADER_SIZE);
-	unsigned short usTransLength;
-	unsigned char *stream = (pucBuff + SPI_HEADER_SIZE);
+void hci_patch_send(UINT8 ucOpcode, UINT8 *pucBuff, CHAR *patch, UINT16 usDataLength)
+{ 
+	UINT8 *data_ptr = (pucBuff + SPI_HEADER_SIZE);
+	UINT16 usTransLength;
+	UINT8 *stream = (pucBuff + SPI_HEADER_SIZE);
 
 	UINT8_TO_STREAM(stream, HCI_TYPE_PATCH);
 	UINT8_TO_STREAM(stream, ucOpcode);
@@ -216,12 +206,12 @@ hci_patch_send(unsigned char ucOpcode, unsigned char *pucBuff, char *patch, unsi
 				usDataLength -= usTransLength;
 			}
 
-			*(unsigned short *)data_ptr = usTransLength;
+			*(UINT16 *)data_ptr = usTransLength;
 			memcpy(data_ptr + SIMPLE_LINK_HCI_PATCH_HEADER_SIZE, patch, usTransLength);
 			patch += usTransLength;
 
 			// Update the opcode of the event we will be waiting for
-			SpiWrite((unsigned char *)data_ptr, usTransLength + sizeof(usTransLength));
+			SpiWrite((UINT8 *)data_ptr, usTransLength + sizeof(usTransLength));
 		}
 	}
 }
@@ -233,5 +223,3 @@ hci_patch_send(unsigned char ucOpcode, unsigned char *pucBuff, char *patch, unsi
 //
 //
 //*****************************************************************************
-
-#endif // MICROPY_HW_ENABLE_CC3K

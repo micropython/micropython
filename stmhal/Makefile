@@ -38,7 +38,7 @@ INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc_hid/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I$(FATFS_DIR)/src
-INC += -I$(CC3K_DIR)
+INC += -I$(CC3K_DIR)/inc
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
@@ -109,7 +109,9 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
-	pybwlan.c \
+	modwlan.c \
+	modsocket.c \
+	modselect.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
@@ -173,7 +175,7 @@ SRC_FATFS = $(addprefix $(FATFS_DIR)/src/,\
 	option/ccsbcs.c \
 	)
 
-SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
+SRC_CC3K = $(addprefix $(CC3K_DIR)/src/,\
 	cc3000_common.c \
 	evnt_handler.c \
 	hci.c \
@@ -183,7 +185,8 @@ SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 	socket.c \
 	wlan.c \
 	ccspi.c \
-	pybcc3k.c \
+	inet_ntop.c \
+	inet_pton.c \
 	)
 
 OBJ =

@@ -24,5 +24,6 @@
  * THE SOFTWARE.
  */
 
-void pyb_wlan_init(void);
-void pyb_wlan_start(void);
+void modwlan_init0();
+int wlan_get_fd_state(int fd);
+void wlan_clear_fd_state(int fd);
