@@ -14,6 +14,10 @@
  * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
+
 #include <std.h>
 #include <string.h>
 #include "cc3000_common.h"
@@ -193,3 +197,4 @@ char *inet_ntop(int af, const void *src, char *buf, size_t size)
     return NULL;
   }
 }
+#endif // MICROPY_HW_ENABLE_CC3K

@@ -39,6 +39,8 @@
 //! @{
 //
 //*****************************************************************************
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
 
 #include <string.h>
 #include "nvmem.h"
@@ -332,4 +334,4 @@ INT32 nvmem_create_entry(UINT32 ulFileId, UINT32 ulNewLen)
 //! @}
 //
 //*****************************************************************************
-
+#endif // MICROPY_HW_ENABLE_CC3K

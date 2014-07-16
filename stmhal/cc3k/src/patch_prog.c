@@ -1,3 +1,6 @@
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
+
 #include <std.h>
 #include <cc3k.h>
 #include "patch_prog.h"
@@ -404,3 +407,4 @@ void patch_prog_start()
     // Patch update done
     printf("All done, call wlan.patch_version()\n");
 }
+#endif // MICROPY_HW_ENABLE_CC3K

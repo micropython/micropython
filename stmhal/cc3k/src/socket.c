@@ -39,6 +39,8 @@
 //! @{
 //
 //*****************************************************************************
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
 
 #include <string.h>
 #include <stdlib.h>
@@ -1180,4 +1182,4 @@ UINT16 getmssvalue (INT32 sd)
 
 	return ret;
 }
-
+#endif // MICROPY_HW_ENABLE_CC3K

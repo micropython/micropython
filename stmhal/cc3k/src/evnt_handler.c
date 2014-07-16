@@ -42,6 +42,8 @@
 //******************************************************************************
 //                  INCLUDE FILES
 //******************************************************************************
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
 
 #include "cc3000_common.h"
 #include "string.h"
@@ -847,3 +849,4 @@ void SimpleLinkWaitData(UINT8 *pBuf, UINT8 *from, UINT8 *fromlen)
 //! @}
 //
 //*****************************************************************************
+#endif // MICROPY_HW_ENABLE_CC3K

@@ -15,6 +15,8 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
 
 #include <string.h>
 #include "cc3000_common.h"
@@ -214,3 +216,4 @@ static int inet_pton6(const char *src, unsigned char *dst)
   return (1);
 }
 #endif /* ENABLE_IPV6 */
+#endif // MICROPY_HW_ENABLE_CC3K

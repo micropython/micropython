@@ -39,6 +39,8 @@
 //! @{
 //
 //*****************************************************************************
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
 
 #include <string.h>
 #include "cc3000_common.h"
@@ -223,3 +225,4 @@ void hci_patch_send(UINT8 ucOpcode, UINT8 *pucBuff, CHAR *patch, UINT16 usDataLe
 //
 //
 //*****************************************************************************
+#endif // MICROPY_HW_ENABLE_CC3K

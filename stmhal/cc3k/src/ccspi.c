@@ -31,6 +31,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *****************************************************************************/
+#include "mpconfigport.h"
+#if MICROPY_HW_ENABLE_CC3K
+
 #include <std.h>
 #include "stm32f4xx_hal.h"
 #include "mpconfig.h"
@@ -46,6 +49,7 @@
 #include "spi.h"
 #include "ccspi.h"
 #include "evnt_handler.h"
+
 
 #define PIN_CS              MICROPY_HW_WLAN_PIN_CS
 #define PIN_EN              MICROPY_HW_WLAN_PIN_EN
@@ -427,3 +431,5 @@ STATIC mp_obj_t irq_callback(mp_obj_t line)
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(irq_callback_obj, irq_callback);
+
+#endif // MICROPY_HW_ENABLE_CC3K
