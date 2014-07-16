@@ -134,7 +134,7 @@ def main():
         if args.test_dirs is None:
             if pyb is None:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode')
             else:
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'pyb', 'pybnative', 'inlineasm')
