@@ -39,6 +39,10 @@
 #include "runtime.h"
 #include "stream.h"
 
+#ifdef _WIN32
+#define fsync _commit
+#endif
+
 typedef struct _mp_obj_fdfile_t {
     mp_obj_base_t base;
     int fd;
@@ -83,12 +87,9 @@ STATIC mp_int_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int
 }
 
 STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
-#ifndef _WIN32
     mp_obj_fdfile_t *self = self_in;
+    check_fd_is_open(self);
     fsync(self->fd);
-#else
-    //TODO
-#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
