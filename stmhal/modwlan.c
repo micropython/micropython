@@ -176,7 +176,7 @@ STATIC mp_obj_t modwlan_patch_version() {
 }
 
 STATIC mp_obj_t modwlan_patch_program() {
-    //patch_prog_start();
+    patch_prog_start();
     return mp_const_none;
 }
 

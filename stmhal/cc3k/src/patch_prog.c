@@ -2,8 +2,15 @@
 #if MICROPY_HW_ENABLE_CC3K
 
 #include <std.h>
-#include <cc3k.h>
+#include "stm32f4xx_hal.h"
+
+#include "hci.h"
+#include "ccspi.h"
+#include "wlan.h"
+#include "nvmem.h"
+#include "netapp.h"
 #include "patch_prog.h"
+
 #define BIT0    0x1
 #define BIT1    0x2
 #define BIT2    0x4
@@ -26,8 +33,6 @@ static unsigned char cRMParamsFromEeprom[128];
 static unsigned char cMacFromEeprom[MAC_ADDR_LEN];
 // Smart Config Prefix
 static const char aucCC3000_prefix[] = {'T', 'T', 'T'};
-
-extern void systick_sleep(unsigned long ms);
 
 // 2 dim array to store address and length of new FAT
 static const unsigned short aFATEntries[2][NVMEM_RM_FILEID + 1] = 
@@ -157,7 +162,7 @@ static int initDriver(unsigned short cRequestPatch)
                         HCI_EVNT_WLAN_ASYNC_PING_REPORT);
 
     //unsolicicted_events_timer_init();
-    systick_sleep(100);
+    HAL_Delay(100);
     return(0);
 }
 
@@ -393,7 +398,7 @@ void patch_prog_start()
            "If this doesn't work, reset manually...\n");
 
     wlan_stop();
-    systick_sleep(500);
+    HAL_Delay(500);
 
     // Re-Init module and request to load with patches.
     initDriver(0);
