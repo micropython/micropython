@@ -315,7 +315,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
                 uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 uint reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
                 asm_thumb_mov_reg_reg(emit->as, reg_dest, reg_src);
-            } else if (strcmp(op_str, "and") == 0) {
+            } else if (strcmp(op_str, "and_") == 0) {
                 op_code = ASM_THUMB_FORMAT_4_AND;
                 uint reg_dest, reg_src;
                 op_format_4:
@@ -323,7 +323,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
                 reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
                 asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
             // TODO probably uses less ROM if these ops are in a lookup table
-            } else if (strcmp(op_str, "and") == 0) { op_code = ASM_THUMB_FORMAT_4_AND; goto op_format_4;
             } else if (strcmp(op_str, "eor") == 0) { op_code = ASM_THUMB_FORMAT_4_EOR; goto op_format_4;
             } else if (strcmp(op_str, "lsl") == 0) { op_code = ASM_THUMB_FORMAT_4_LSL; goto op_format_4;
             } else if (strcmp(op_str, "lsr") == 0) { op_code = ASM_THUMB_FORMAT_4_LSR; goto op_format_4;
