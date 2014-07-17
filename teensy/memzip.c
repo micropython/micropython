@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "mpconfigport.h"
 #include "misc.h"
 #include "memzip.h"
 

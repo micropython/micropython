@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "nlr.h"
 #include "lexer.h"
