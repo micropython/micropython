@@ -59,7 +59,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
-        print(env, "bytearray(b", o->typecode);
+        print(env, "bytearray(b");
         mp_str_print_quoted(print, env, o->items, o->len, true);
     } else {
         print(env, "array('%c'", o->typecode);
