@@ -99,6 +99,7 @@ SRC_C = \
 	usrsw.c \
 	rng.c \
 	rtc.c \
+	crc.c \
 	flash.c \
 	storage.c \
 	file.c \
@@ -131,6 +132,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
 	stm32f4xx_hal_rng.c \
+	stm32f4xx_hal_crc.c \
 	stm32f4xx_hal_rtc.c \
 	stm32f4xx_hal_rtc_ex.c \
 	stm32f4xx_hal_sd.c \

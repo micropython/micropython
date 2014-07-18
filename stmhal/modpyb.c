@@ -46,6 +46,7 @@
 #include "usrsw.h"
 #include "rng.h"
 #include "rtc.h"
+#include "crc.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -381,6 +382,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
 #if MICROPY_HW_ENABLE_RTC
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC), (mp_obj_t)&pyb_rtc_type },
+#endif
+
+#if MICROPY_HW_ENABLE_CRC
+    { MP_OBJ_NEW_QSTR(MP_QSTR_crc32), (mp_obj_t)&pyb_crc32_obj },
 #endif
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pin_type },
