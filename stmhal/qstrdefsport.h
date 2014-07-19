@@ -61,6 +61,7 @@ Q(rng)
 Q(SD)
 Q(SDcard)
 Q(FileIO)
+Q(flush)
 // Entries for sys.path
 Q(0:/)
 Q(0:/lib)
@@ -237,6 +238,7 @@ Q(remove)
 Q(rmdir)
 Q(unlink)
 Q(sep)
+Q(stat)
 Q(urandom)
 
 // for time module

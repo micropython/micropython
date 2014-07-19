@@ -32,10 +32,12 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
 #include "systick.h"
 #include "rng.h"
 #include "storage.h"
 #include "ff.h"
+#include "file.h"
 #include "portmodules.h"
 
 #if _USE_LFN
@@ -107,8 +109,7 @@ STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
 
     return dir_list;
 }
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 
 STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
@@ -123,8 +124,7 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
     }
 }
-
-MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
 STATIC mp_obj_t os_remove(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
@@ -137,8 +137,7 @@ STATIC mp_obj_t os_remove(mp_obj_t path_o) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
     }
 }
-
-MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 
 STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
@@ -151,15 +150,57 @@ STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing directory '%s'", path));
     }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
-MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
+STATIC mp_obj_t os_stat(mp_obj_t path_in) {
+    const char *path = mp_obj_str_get_str(path_in);
+
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+
+    FRESULT res = f_stat(path, &fno);
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    }
+
+    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    mp_int_t mode = 0;
+    if (fno.fattrib & AM_DIR) {
+        mode |= 0x4000; // stat.S_IFDIR
+    } else {
+        mode |= 0x8000; // stat.S_IFREG
+    }
+    mp_int_t seconds = mod_time_seconds_since_2000(
+        1980 + ((fno.fdate >> 9) & 0x7f),
+        (fno.fdate >> 5) & 0x0f,
+        fno.fdate & 0x1f,
+        (fno.ftime >> 11) & 0x1f,
+        (fno.ftime >> 5) & 0x3f,
+        2 * (fno.ftime & 0x1f)
+    );
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(0); // st_nlink
+    t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(fno.fsize); // st_size
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(seconds); // st_atime
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
+
+    return t;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
 STATIC mp_obj_t os_sync(void) {
     storage_flush();
     return mp_const_none;
 }
-
-MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
@@ -170,8 +211,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     }
     return mp_obj_str_builder_end(o);
 }
-
-MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
@@ -180,6 +220,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir), (mp_obj_t)&os_mkdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&os_remove_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir), (mp_obj_t)&os_rmdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&os_stat_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), (mp_obj_t)&os_remove_obj }, // unlink aliases to remove
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&os_sync_obj },

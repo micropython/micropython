@@ -24,4 +24,6 @@
  * THE SOFTWARE.
  */
 
+const byte fresult_to_errno_table[20];
+
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);
