@@ -12,23 +12,23 @@
 *
 *    Redistributions in binary form must reproduce the above copyright
 *    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
+*    documentation and/or other materials provided with the   
 *    distribution.
 *
 *    Neither the name of Texas Instruments Incorporated nor the names of
 *    its contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
@@ -64,12 +64,12 @@ extern "C" {
 //!
 //!  @brief   AES128 encryption:
 //!           Given AES128 key and  16 bytes plain text, cipher text of 16 bytes
-//!           is computed. The AES implementation is in mode ECB (Electronic
-//!           Code Book).
-//!
+//!           is computed. The AES implementation is in mode ECB (Electronic 
+//!           Code Book). 
+//!	 
 //!
 //*****************************************************************************
-extern void aes_encrypt(unsigned char *state, unsigned char *key);
+extern void aes_encrypt(UINT8 *state, UINT8 *key);
 
 //*****************************************************************************
 //
@@ -82,12 +82,12 @@ extern void aes_encrypt(unsigned char *state, unsigned char *key);
 //!
 //!  @brief   AES128 decryption:
 //!           Given AES128 key and  16 bytes cipher text, plain text of 16 bytes
-//!           is computed The AES implementation is in mode ECB
+//!           is computed The AES implementation is in mode ECB 
 //!           (Electronic Code Book).
-//!
+//!	 
 //!
 //*****************************************************************************
-extern void aes_decrypt(unsigned char *state, unsigned char *key);
+extern void aes_decrypt(UINT8 *state, UINT8 *key);
 
 
 //*****************************************************************************
@@ -100,11 +100,11 @@ extern void aes_decrypt(unsigned char *state, unsigned char *key);
 //!
 //!  @brief   Reads AES128 key from EEPROM
 //!           Reads the AES128 key from fileID #12 in EEPROM
-//!           returns an error if the key does not exist.
-//!
+//!           returns an error if the key does not exist. 
+//!	 
 //!
 //*****************************************************************************
-extern signed long aes_read_key(unsigned char *key);
+extern INT32 aes_read_key(UINT8 *key);
 
 //*****************************************************************************
 //
@@ -116,18 +116,13 @@ extern signed long aes_read_key(unsigned char *key);
 //!
 //!  @brief   writes AES128 key from EEPROM
 //!           Writes the AES128 key to fileID #12 in EEPROM
-//!
+//!	 
 //!
 //*****************************************************************************
-extern signed long aes_write_key(unsigned char *key);
+extern INT32 aes_write_key(UINT8 *key);
 
 #endif //CC3000_UNENCRYPTED_SMART_CONFIG
 
-//*****************************************************************************
-//
-// Mark the end of the C bindings section for C++ compilers.
-//
-//*****************************************************************************
 #ifdef  __cplusplus
 }
 #endif // __cplusplus
