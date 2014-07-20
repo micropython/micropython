@@ -81,7 +81,7 @@ int DEBUG_printf(const char *fmt, ...) {
     (void)stream;
     va_list ap;
     va_start(ap, fmt);
-    int ret = pfenv_printf(&pfenv_stdout, fmt, ap);
+    int ret = pfenv_vprintf(&pfenv_stdout, fmt, ap);
     va_end(ap);
     return ret;
 }
@@ -124,7 +124,7 @@ int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
     pfenv_t pfenv;
     pfenv.data = &strn_pfenv;
     pfenv.print_strn = strn_print_strn;
-    int len = pfenv_printf(&pfenv, fmt, ap);
+    int len = pfenv_vprintf(&pfenv, fmt, ap);
     // add terminating null byte
     if (size > 0) {
         if (strn_pfenv.remain == 0) {
