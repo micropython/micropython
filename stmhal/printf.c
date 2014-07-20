@@ -40,6 +40,7 @@
 #endif
 #include "uart.h"
 #include "usb.h"
+#include "pybstdio.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "formatfloat.h"
@@ -47,22 +48,11 @@
 
 int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
 
-void pfenv_prints(const pfenv_t *pfenv, const char *str) {
-    pfenv->print_strn(pfenv->data, str, strlen(str));
+STATIC void stdout_print_strn(void *dummy_env, const char *str, unsigned int len) {
+    stdout_tx_strn_cooked(str, len);
 }
 
-STATIC void stdout_print_strn(void *data, const char *str, unsigned int len) {
-    // TODO this needs to be replaced with a proper stdio interface ala CPython
-    // send stdout to UART and USB CDC VCP
-    if (pyb_uart_global_debug != PYB_UART_NONE) {
-        uart_tx_strn_cooked(pyb_uart_global_debug, str, len);
-    }
-    if (usb_vcp_is_enabled()) {
-        usb_vcp_send_strn_cooked(str, len);
-    }
-}
-
-static const pfenv_t pfenv_stdout = {0, stdout_print_strn};
+STATIC const pfenv_t pfenv_stdout = {0, stdout_print_strn};
 
 int printf(const char *fmt, ...) {
     va_list ap;

@@ -65,8 +65,6 @@ struct _pyb_uart_obj_t {
     UART_HandleTypeDef uart;
 };
 
-pyb_uart_obj_t *pyb_uart_global_debug = NULL;
-
 // assumes Init parameters have been set up correctly
 bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx = NULL;
@@ -217,10 +215,6 @@ int uart_rx_char(pyb_uart_obj_t *uart_obj) {
 void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
     uint8_t ch = c;
     HAL_UART_Transmit(&uart_obj->uart, &ch, 1, 100000);
-}
-
-void uart_tx_str(pyb_uart_obj_t *uart_obj, const char *str) {
-    HAL_UART_Transmit(&uart_obj->uart, (uint8_t*)str, strlen(str), 100000);
 }
 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {

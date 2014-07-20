@@ -107,10 +107,6 @@ char usb_vcp_rx_get(void) {
     return USBD_CDC_RxGet();
 }
 
-void usb_vcp_send_str(const char *str) {
-    usb_vcp_send_strn(str, strlen(str));
-}
-
 void usb_vcp_send_strn(const char *str, int len) {
 #ifdef USE_DEVICE_MODE
     if (dev_is_enabled) {

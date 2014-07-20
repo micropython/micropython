@@ -34,9 +34,10 @@
 #include "misc.h"
 #include "obj.h"
 #include MICROPY_HAL_H
-#include "pybstdio.h"
 #include "readline.h"
 #include "usb.h"
+#include "uart.h"
+#include "pybstdio.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
