@@ -6,14 +6,7 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
-ifeq ($(ARDUINO),)
-$(error Please define ARDUINO (where TeensyDuino is installed))
-endif
-TOOLS_PATH = $(ARDUINO)/hardware/tools
-COMPILER_PATH = $(TOOLS_PATH)/arm-none-eabi/bin
-CORE_PATH = $(ARDUINO)/hardware/teensy/cores/teensy3
-
-CROSS_COMPILE = $(COMPILER_PATH)/arm-none-eabi-
+CROSS_COMPILE = arm-none-eabi-
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
@@ -22,13 +15,26 @@ INC =  -I.
 INC += -I$(PY_SRC)
 INC += -I../stmhal
 INC += -I$(BUILD)
-INC += -I$(CORE_PATH)
+INC += -Icore
 
 CFLAGS = $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld
-LIBS  = -L $(COMPILER_PATH)/../arm-none-eabi/lib/thumb2 -lm
-LIBS += -L $(COMPILER_PATH)/../arm-none-eabi/lib/thumb2 -lc
-LIBS += -L $(COMPILER_PATH)/../lib/gcc/arm-none-eabi/4.7.2/thumb2 -lgcc
+
+LIBGCC_FILE_NAME = $(shell $(CC) -print-libgcc-file-name)
+LIBM_FILE_NAME   = $(shell $(CC) -print-file-name=libm.a)
+LIBC_FILE_NAME   = $(shell $(CC) -print-file-name=libc.a)
+
+#$(info %%%%% LIBGCC_FILE_NAME = $(LIBGCC_FILE_NAME))
+#$(info %%%%% LIBM_FILE_NAME = $(LIBM_FILE_NAME))
+#$(info %%%%% LIBC_FILE_NAME = $(LIBC_FILE_NAME))
+
+#$(info %%%%% dirname LIBGCC_FILE_NAME = $(dir $(LIBGCC_FILE_NAME)))
+#$(info %%%%% dirname LIBM_FILE_NAME = $(dir $(LIBM_FILE_NAME)))
+#$(info %%%%% dirname LIBC_FILE_NAME = $(dir $(LIBC_FILE_NAME)))
+
+LIBS  = -L $(dir $(LIBM_FILE_NAME)) -lm
+LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
+LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 #Debugging/Optimization
 ifdef DEBUG
@@ -67,7 +73,7 @@ STM_SRC_S = $(addprefix stmhal/,\
 	gchelper.s \
 	)
 
-SRC_TEENSY = \
+SRC_TEENSY = $(addprefix core/,\
 	mk20dx128.c \
 	pins_teensy.c \
 	analog.c \
@@ -76,12 +82,25 @@ SRC_TEENSY = \
 	usb_mem.c \
 	usb_serial.c \
 	yield.c \
+	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 all: hex
 hex: $(BUILD)/micropython-mz.hex
+
+ifeq ($(ARDUINO),)
+post_compile: $(BUILD)/micropython-mz.hex
+	$(ECHO) "Please define ARDUINO (where TeensyDuino is installed)"
+	exit 1
+
+reboot:
+	$(ECHO) "Please define ARDUINO (where TeensyDuino is installed)"
+	exit 1
+
+else
+TOOLS_PATH = $(ARDUINO)/hardware/tools
 
 post_compile: $(BUILD)/micropython-mz.hex
 	$(ECHO) "Preparing $@ for upload"
@@ -90,8 +109,10 @@ post_compile: $(BUILD)/micropython-mz.hex
 reboot:
 	$(ECHO) "REBOOT"
 	-$(Q)$(TOOLS_PATH)/teensy_reboot
+endif
 
-upload: post_compile reboot
+.PHONY: deploy
+deploy: post_compile reboot
 
 $(BUILD)/micropython.elf: $(OBJ)
 	$(ECHO) "LINK $@"
@@ -109,9 +130,6 @@ $(BUILD)/micropython-mz.hex: $(BUILD)/micropython.hex $(shell find ${MEMZIP_DIR}
 $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
-
-$(BUILD)/%.o: $(CORE_PATH)/%.c
-	$(call compile_c)
 
 MAKE_PINS = make-pins.py
 BOARD_PINS = teensy-pins.csv

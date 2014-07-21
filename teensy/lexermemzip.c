@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
 #include "memzip.h"

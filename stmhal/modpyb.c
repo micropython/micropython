@@ -37,7 +37,6 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"
-#include "pybstdio.h"
 #include "pyexec.h"
 #include "led.h"
 #include "pin.h"
@@ -57,6 +56,7 @@
 #include "dac.h"
 #include "lcd.h"
 #include "usb.h"
+#include "pybstdio.h"
 #include "ff.h"
 #include "portmodules.h"
 
@@ -307,16 +307,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (pyb_uart_global_debug == NULL) {
+        if (pyb_stdio_uart == NULL) {
             return mp_const_none;
         } else {
-            return pyb_uart_global_debug;
+            return pyb_stdio_uart;
         }
     } else {
         if (args[0] == mp_const_none) {
-            pyb_uart_global_debug = NULL;
+            pyb_stdio_uart = NULL;
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            pyb_uart_global_debug = args[0];
+            pyb_stdio_uart = args[0];
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
         }

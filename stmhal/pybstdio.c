@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -34,31 +35,41 @@
 #include "obj.h"
 #include "stream.h"
 #include MICROPY_HAL_H
-#include "pybstdio.h"
 #include "usb.h"
 #include "uart.h"
+#include "pybstdio.h"
 
 // TODO make stdin, stdout and stderr writable objects so they can
-// be changed by Python code.
+// be changed by Python code.  This requires some changes, as these
+// objects are in a read-only module (py/modsys.c).
+
+// stdio is repeated on this UART object if it's not null
+pyb_uart_obj_t *pyb_stdio_uart = NULL;
 
 void stdout_tx_str(const char *str) {
-    if (pyb_uart_global_debug != PYB_UART_NONE) {
-        uart_tx_str(pyb_uart_global_debug, str);
-    }
-#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
-    lcd_print_str(str);
-#endif
-    usb_vcp_send_str(str);
+    stdout_tx_strn(str, strlen(str));
 }
 
-void stdout_tx_strn(const char *str, uint len) {
-    if (pyb_uart_global_debug != PYB_UART_NONE) {
-        uart_tx_strn(pyb_uart_global_debug, str, len);
+void stdout_tx_strn(const char *str, mp_uint_t len) {
+    if (pyb_stdio_uart != PYB_UART_NONE) {
+        uart_tx_strn(pyb_stdio_uart, str, len);
     }
 #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
 #endif
-    usb_vcp_send_strn(str, len);
+    if (usb_vcp_is_enabled()) {
+        usb_vcp_send_strn(str, len);
+    }
+}
+
+void stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+    // send stdout to UART and USB CDC VCP
+    if (pyb_stdio_uart != PYB_UART_NONE) {
+        uart_tx_strn_cooked(pyb_stdio_uart, str, len);
+    }
+    if (usb_vcp_is_enabled()) {
+        usb_vcp_send_strn_cooked(str, len);
+    }
 }
 
 int stdin_rx_chr(void) {
@@ -74,13 +85,12 @@ int stdin_rx_chr(void) {
 #endif
         if (usb_vcp_rx_num() != 0) {
             return usb_vcp_rx_get();
-        } else if (pyb_uart_global_debug != PYB_UART_NONE && uart_rx_any(pyb_uart_global_debug)) {
-            return uart_rx_char(pyb_uart_global_debug);
+        } else if (pyb_stdio_uart != PYB_UART_NONE && uart_rx_any(pyb_stdio_uart)) {
+            return uart_rx_char(pyb_stdio_uart);
         }
         __WFI();
     }
 }
-
 
 /******************************************************************************/
 // Micro Python bindings
@@ -120,7 +130,7 @@ STATIC mp_int_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *err
 STATIC mp_int_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_stdio_obj_t *self = self_in;
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
-        stdout_tx_strn(buf, size);
+        stdout_tx_strn_cooked(buf, size);
         *errcode = 0;
         return size;
     } else {

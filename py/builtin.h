@@ -81,5 +81,10 @@ extern const mp_obj_module_t mp_module_struct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
 
+struct _dummy_t;
+extern struct _dummy_t mp_sys_stdin_obj;
+extern struct _dummy_t mp_sys_stdout_obj;
+extern struct _dummy_t mp_sys_stderr_obj;
+
 // extmod modules
 extern const mp_obj_module_t mp_module_uctypes;

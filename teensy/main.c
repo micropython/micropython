@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "nlr.h"
 #include "lexer.h"
@@ -39,7 +39,7 @@ void flash_error(int n) {
     }
 }
 
-void __fatal_error(const char *msg) {
+void NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
     led_state(1, 1);

@@ -44,9 +44,6 @@
 // only addresses.
 struct _dummy_t;
 extern struct _dummy_t mp_sys_exit_obj;
-extern struct _dummy_t mp_sys_stdin_obj;
-extern struct _dummy_t mp_sys_stdout_obj;
-extern struct _dummy_t mp_sys_stderr_obj;
 
 extern mp_obj_int_t mp_maxsize_obj;
 

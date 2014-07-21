@@ -75,7 +75,7 @@ int format_float(float f, char *buf, size_t buf_size, char fmt, int prec, char s
 
     if (buf_size < 7) {
         // Smallest exp notion is -9e+99 which is 6 chars plus terminating
-        // nulll.
+        // null.
 
         if (buf_size >= 2) {
             *s++ = '?';
