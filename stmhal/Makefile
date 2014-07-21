@@ -24,7 +24,7 @@ FATFS_DIR=fatfs
 CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
-DFU_UTIL=dfu-util
+DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 
 CROSS_COMPILE = arm-none-eabi-
