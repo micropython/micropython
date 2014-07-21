@@ -102,6 +102,7 @@ PY_O_BASENAME = \
 	repl.o \
 	smallint.o \
 	pfenv.o \
+	pfenv_printf.o \
 	../extmod/moductypes.o
 
 # prepend the build destination prefix to the py object files

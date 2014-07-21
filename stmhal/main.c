@@ -43,7 +43,6 @@
 #include "stackctrl.h"
 #include "gc.h"
 #include "gccollect.h"
-#include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
 #include "i2c.h"
@@ -64,6 +63,7 @@
 #include "servo.h"
 #include "dac.h"
 #include "pybwlan.h"
+#include "pybstdio.h"
 
 void SystemClock_Config(void);
 
@@ -311,12 +311,10 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        pyb_uart_global_debug = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type,
-                                                       MP_ARRAY_SIZE(args),
-                                                       0, args);
+        pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #else
-    pyb_uart_global_debug = NULL;
+    pyb_stdio_uart = NULL;
 #endif
 
     // Micro Python init

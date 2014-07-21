@@ -34,20 +34,34 @@
 #include "portmodules.h"
 #include "rtc.h"
 
-STATIC const uint days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
-STATIC bool is_leap_year(uint year) {
+STATIC bool is_leap_year(mp_uint_t year) {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
 }
 
 // compute the day of the year, between 1 and 366
 // month should be between 1 and 12, date should start at 1
-STATIC uint year_day(uint year, uint month, uint date) {
-    uint yday = days_since_jan1[month - 1] + date;
+mp_uint_t mod_time_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
+    mp_uint_t yday = days_since_jan1[month - 1] + date;
     if (month >= 3 && is_leap_year(year)) {
         yday += 1;
     }
     return yday;
+}
+
+// returns the number of seconds, as an integer, since 1/1/2000
+mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    return
+        second
+        + minute * 60
+        + hour * 3600
+        + (mod_time_year_day(year, month, date) - 1
+            + ((year - 2000 + 3) / 4) // add a day each 4 years starting with 2001
+            - ((year - 2000 + 99) / 100) // subtract a day each 100 years starting with 2001
+            + ((year - 2000 + 399) / 400) // add a day each 400 years starting with 2001
+            ) * 86400
+        + (year - 2000) * 31536000;
 }
 
 // returns time stored in RTC as: (year, month, date, hour, minute, second, weekday)
@@ -67,7 +81,7 @@ STATIC mp_obj_t time_localtime(void) {
         mp_obj_new_int(time.Minutes),
         mp_obj_new_int(time.Seconds),
         mp_obj_new_int(date.WeekDay - 1),
-        mp_obj_new_int(year_day(2000 + date.Year, date.Month, date.Date)),
+        mp_obj_new_int(mod_time_year_day(2000 + date.Year, date.Month, date.Date)),
     };
     return mp_obj_new_tuple(8, tuple);
 }
@@ -95,17 +109,7 @@ STATIC mp_obj_t time_time(void) {
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
     HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
-    return mp_obj_new_int(
-        time.Seconds
-        + time.Minutes * 60
-        + time.Hours * 3600
-        + (year_day(2000 + date.Year, date.Month, date.Date) - 1
-            + ((date.Year + 3) / 4) // add a day each 4 years starting with 2001
-            - ((date.Year + 99) / 100) // subtract a day each 100 years starting with 2001
-            + ((date.Year + 399) / 400) // add a day each 400 years starting with 2001
-            ) * 86400
-        + date.Year * 31536000
-    );
+    return mp_obj_new_int(mod_time_seconds_since_2000(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

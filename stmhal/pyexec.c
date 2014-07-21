@@ -44,10 +44,11 @@
 #include "gccollect.h"
 #include MICROPY_HAL_H
 #include "systick.h"
-#include "pybstdio.h"
 #include "readline.h"
 #include "pyexec.h"
 #include "usb.h"
+#include "uart.h"
+#include "pybstdio.h"
 #include "genhdr/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
