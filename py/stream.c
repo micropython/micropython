@@ -97,7 +97,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
             }
             int error;
             mp_int_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
-            if (out_sz == -1) {
+            if (out_sz < 0) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
                 if (is_nonblocking_error(error)) {
                     // With non-blocking streams, we read as much as we can.
@@ -113,11 +113,13 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
             }
 
-            if (out_sz == 0) {
+            if (out_sz < more_bytes) {
                 // Finish reading.
                 // TODO what if we have read only half a non-ASCII char?
-                vstr_cut_tail_bytes(&vstr, more_bytes);
-                break;
+                vstr_cut_tail_bytes(&vstr, more_bytes - out_sz);
+                if (out_sz == 0) {
+                    break; 
+                }
             }
 
             // count chars from bytes just read
