@@ -503,7 +503,21 @@ STATIC mp_obj_t mp_builtin_sorted(uint n_args, const mp_obj_t *args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
 STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
-    return mp_obj_new_int((mp_int_t)o_in);
+    mp_int_t id = (mp_int_t)o_in;
+    if (!MP_OBJ_IS_OBJ(o_in)) {
+        return mp_obj_new_int(id);
+    } else if (id >= 0) {
+        // Many OSes and CPUs have affinity for putting "user" memories
+        // into low half of address space, and "system" into upper half.
+        // We're going to take advantage of that and return small int
+        // (signed) for such "user" addresses.
+        return MP_OBJ_NEW_SMALL_INT(id);
+    } else {
+        // If that didn't work, well, let's return long int, just as
+        // a (big) positve value, so it will never clash with the range
+        // of small int returned in previous case.
+        return mp_obj_new_int_from_uint((mp_uint_t)id);
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
