@@ -97,7 +97,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
             }
             int error;
             mp_int_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
-            if (out_sz < 0) {
+            if (out_sz == -1) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
                 if (is_nonblocking_error(error)) {
                     // With non-blocking streams, we read as much as we can.
