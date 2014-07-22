@@ -24,7 +24,7 @@
 #include "usb.h"
 #include "led.h"
 #include "uart.h"
-//#include "pin.h"
+#include "pin.h"
 #include "pybstdio.h"
 
 
@@ -272,7 +272,7 @@ soft_reset:
 
     readline_init0();
 
-    //pin_init();
+    pin_init0();
 
 #if 0
     // add some functions to the python namespace
