@@ -113,7 +113,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
             }
 
-            if (out_sz < more_bytes) {
+            if ((mp_uint_t)out_sz < more_bytes) {
                 // Finish reading.
                 // TODO what if we have read only half a non-ASCII char?
                 vstr_cut_tail_bytes(&vstr, more_bytes - out_sz);
