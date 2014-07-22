@@ -453,7 +453,7 @@ STATIC mp_obj_t pyb_i2c_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_recv_obj, 1, pyb_i2c_recv);
 
-/// \method mem_read(data, addr, memaddr, timeout=5000, use_16bit_addr=False)
+/// \method mem_read(data, addr, memaddr, timeout=5000, addr_size=8)
 ///
 /// Read from the memory of an I2C device:
 ///
@@ -461,7 +461,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_recv_obj, 1, pyb_i2c_recv);
 ///   - `addr` is the I2C device address
 ///   - `memaddr` is the memory location within the I2C device
 ///   - `timeout` is the timeout in milliseconds to wait for the read
-///   - `use_16bit_addr` selects width of memaddr: 8 or 16 bits
+///   - `addr_size` selects width of memaddr: 8 or 16 bits
 ///
 /// Returns the read data.
 /// This is only valid in master mode.
@@ -470,7 +470,7 @@ STATIC const mp_arg_t pyb_i2c_mem_read_args[] = {
     { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_memaddr, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
-    { MP_QSTR_use_16bit_addr, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    { MP_QSTR_addr_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
 };
 #define PYB_I2C_MEM_READ_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_mem_read_args)
 
@@ -492,9 +492,9 @@ STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args, mp_map_t *kw
     // get the addresses
     mp_uint_t i2c_addr = vals[1].u_int << 1;
     mp_uint_t mem_addr = vals[2].u_int;
-    // determine width of mem_addr
+    // determine width of mem_addr; default is 8 bits, entering any other value gives 16 bit width
     mp_uint_t mem_addr_size = I2C_MEMADD_SIZE_8BIT;
-    if (vals[4].u_bool) {
+    if (vals[4].u_int != 8) {
         mem_addr_size = I2C_MEMADD_SIZE_16BIT;
     }
 
@@ -514,7 +514,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(uint n_args, const mp_obj_t *args, mp_map_t *kw
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_read_obj, 1, pyb_i2c_mem_read);
 
-/// \method mem_write(data, addr, memaddr, timeout=5000, use_16bit_addr=False)
+/// \method mem_write(data, addr, memaddr, timeout=5000, addr_size=8)
 ///
 /// Write to the memory of an I2C device:
 ///
@@ -522,7 +522,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_read_obj, 1, pyb_i2c_mem_read);
 ///   - `addr` is the I2C device address
 ///   - `memaddr` is the memory location within the I2C device
 ///   - `timeout` is the timeout in milliseconds to wait for the write
-///   - `use_16bit_addr` selects width of memaddr: 8 or 16 bits
+///   - `addr_size` selects width of memaddr: 8 or 16 bits
 ///
 /// Returns `None`.
 /// This is only valid in master mode.
@@ -545,9 +545,9 @@ STATIC mp_obj_t pyb_i2c_mem_write(uint n_args, const mp_obj_t *args, mp_map_t *k
     // get the addresses
     mp_uint_t i2c_addr = vals[1].u_int << 1;
     mp_uint_t mem_addr = vals[2].u_int;
-    // determine width of mem_addr
+    // determine width of mem_addr; default is 8 bits, entering any other value gives 16 bit width
     mp_uint_t mem_addr_size = I2C_MEMADD_SIZE_8BIT;
-    if (vals[4].u_bool) {
+    if (vals[4].u_int != 8) {
         mem_addr_size = I2C_MEMADD_SIZE_16BIT;
     }
 
