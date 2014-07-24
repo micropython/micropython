@@ -1213,6 +1213,22 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 }
 #endif
 
+// must return actual int value if it fits in mp_int_t
+mp_int_t mpz_hash(const mpz_t *z) {
+    mp_int_t val = 0;
+    mpz_dig_t *d = z->dig + z->len;
+
+    while (--d >= z->dig) {
+        val = (val << DIG_SIZE) | *d;
+    }
+
+    if (z->neg != 0) {
+        val = -val;
+    }
+
+    return val;
+}
+
 // TODO check that this correctly handles overflow in all cases
 mp_int_t mpz_as_int(const mpz_t *i) {
     mp_int_t val = 0;

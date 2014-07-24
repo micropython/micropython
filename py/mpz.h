@@ -96,6 +96,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 mpz_t *mpz_div(const mpz_t *lhs, const mpz_t *rhs);
 mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs);
 
+mp_int_t mpz_hash(const mpz_t *z);
 mp_int_t mpz_as_int(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 #if MICROPY_PY_BUILTINS_FLOAT

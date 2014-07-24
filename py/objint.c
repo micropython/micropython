@@ -215,6 +215,10 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
+mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return mp_obj_get_int(self_in) >= 0;
 }

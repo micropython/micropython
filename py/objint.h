@@ -38,6 +38,7 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
                            int base, const char *prefix, char base_char, char comma);
 char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma);
+mp_int_t mp_obj_int_hash(mp_obj_t self_in);
 bool mp_obj_int_is_positive(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in);
 mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);

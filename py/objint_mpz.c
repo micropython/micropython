@@ -96,6 +96,14 @@ char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_con
     return str;
 }
 
+mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    }
+    mp_obj_int_t *self = self_in;
+    return mpz_hash(&self->mpz);
+}
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
