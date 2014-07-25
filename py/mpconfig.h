@@ -279,6 +279,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
+// Whether to set __file__ for imported modules
+#ifndef MICROPY_PY___FILE__
+#define MICROPY_PY___FILE__ (1)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.

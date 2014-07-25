@@ -43,6 +43,9 @@ Q(__next__)
 Q(__qualname__)
 Q(__path__)
 Q(__repl_print__)
+#if MICROPY_PY___FILE__
+Q(__file__)
+#endif
 
 Q(__bool__)
 Q(__contains__)

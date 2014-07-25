@@ -95,6 +95,11 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     }
 
     qstr source_name = mp_lexer_source_name(lex);
+    #if MICROPY_PY___FILE__
+    if (input_kind == MP_PARSE_FILE_INPUT) {
+        mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    }
+    #endif
     mp_lexer_free(lex);
 
     /*

@@ -120,6 +120,9 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // set the new context
     mp_locals_set(mp_obj_module_get_globals(module_obj));
     mp_globals_set(mp_obj_module_get_globals(module_obj));
+    #if MICROPY_PY___FILE__
+    mp_store_attr(module_obj, MP_QSTR___file__, mp_obj_new_str(vstr_str(file), vstr_len(file), false));
+    #endif
 
     // parse the imported script
     mp_parse_error_kind_t parse_error_kind;
