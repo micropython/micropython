@@ -58,7 +58,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 #define is_nonblocking_error(errno) (0)
 #endif
 
-#define STREAM_CONTENT_TYPE(stream) (((stream)->is_bytes) ? &mp_type_bytes : &mp_type_str)
+#define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
@@ -76,7 +76,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     }
 
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    if (!o->type->stream_p->is_bytes) {
+    if (o->type->stream_p->is_text) {
         // We need to read sz number of unicode characters.  Because we don't have any
         // buffering, and because the stream API can only read bytes, we must read here
         // in units of bytes and must never over read.  If we want sz chars, then reading
@@ -96,8 +96,8 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
             }
             int error;
-            mp_int_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
-            if (out_sz == -1) {
+            mp_uint_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
+            if (out_sz == MP_STREAM_ERROR) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
                 if (is_nonblocking_error(error)) {
                     // With non-blocking streams, we read as much as we can.
@@ -113,7 +113,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
             }
 
-            if ((mp_uint_t)out_sz < more_bytes) {
+            if (out_sz < more_bytes) {
                 // Finish reading.
                 // TODO what if we have read only half a non-ASCII char?
                 vstr_cut_tail_bytes(&vstr, more_bytes - out_sz);
@@ -168,8 +168,8 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
 
     byte *buf = m_new(byte, sz);
     int error;
-    mp_int_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
-    if (out_sz == -1) {
+    mp_uint_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
+    if (out_sz == MP_STREAM_ERROR) {
         if (is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
             // "If the object is in non-blocking mode and no bytes are available,
@@ -194,8 +194,8 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
     }
 
     int error;
-    mp_int_t out_sz = o->type->stream_p->write(self_in, buf, len, &error);
-    if (out_sz == -1) {
+    mp_uint_t out_sz = o->type->stream_p->write(self_in, buf, len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
         if (is_nonblocking_error(error)) {
             // http://docs.python.org/3/library/io.html#io.RawIOBase.write
             // "None is returned if the raw stream is set not to block and
@@ -230,8 +230,8 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     int error;
     int current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
-        mp_int_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
-        if (out_sz == -1) {
+        mp_uint_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
+        if (out_sz == MP_STREAM_ERROR) {
             if (is_nonblocking_error(error)) {
                 // With non-blocking streams, we read as much as we can.
                 // If we read nothing, return None, just like read().
@@ -292,16 +292,15 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
         }
 
-        mp_int_t out_sz = o->type->stream_p->read(o, p, 1, &error);
-        if (out_sz == -1) {
+        mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
+        if (out_sz == MP_STREAM_ERROR) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
         }
         if (out_sz == 0) {
             // Back out previously added byte
-            // TODO: This is a bit hacky, does it supported by vstr API contract?
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.
-            vstr_add_len(vstr, -1);
+            vstr_cut_tail_bytes(vstr, 1);
             break;
         }
         if (*p == '\n') {

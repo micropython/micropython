@@ -66,22 +66,24 @@ STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "<io.%s %d>", mp_obj_get_type_str(self), self->fd);
 }
 
-STATIC mp_int_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     check_fd_is_open(o);
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }
 
-STATIC mp_int_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     check_fd_is_open(o);
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }
@@ -190,7 +192,6 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
-    .is_bytes = true,
 };
 
 const mp_obj_type_t mp_type_fileio = {
@@ -208,6 +209,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
+    .is_text = true,
 };
 
 const mp_obj_type_t mp_type_textio = {

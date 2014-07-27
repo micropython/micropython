@@ -73,24 +73,24 @@ void file_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, m
     print(env, "<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-STATIC mp_int_t file_obj_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t file_obj_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
     UINT sz_out;
     FRESULT res = f_read(&self->fp, buf, size, &sz_out);
     if (res != FR_OK) {
         *errcode = fresult_to_errno_table[res];
-        return -1;
+        return MP_STREAM_ERROR;
     }
     return sz_out;
 }
 
-STATIC mp_int_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_file_obj_t *self = self_in;
     UINT sz_out;
     FRESULT res = f_write(&self->fp, buf, size, &sz_out);
     if (res != FR_OK) {
         *errcode = fresult_to_errno_table[res];
-        return -1;
+        return MP_STREAM_ERROR;
     }
     return sz_out;
 }
@@ -240,7 +240,6 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
-    .is_bytes = true,
 };
 
 const mp_obj_type_t mp_type_fileio = {
@@ -258,6 +257,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
+    .is_text = true,
 };
 
 const mp_obj_type_t mp_type_textio = {

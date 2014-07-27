@@ -91,20 +91,22 @@ STATIC void socket_print(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "<_socket %d>", self->fd);
 }
 
-STATIC mp_int_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = o_in;
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }
 
-STATIC mp_int_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = o_in;
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }

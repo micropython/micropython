@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -109,7 +110,7 @@ void stdio_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, 
     print(env, "<io.FileIO %d>", self->fd);
 }
 
-STATIC mp_int_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     pyb_stdio_obj_t *self = self_in;
     if (self->fd == STDIO_FD_IN) {
         for (uint i = 0; i < size; i++) {
@@ -119,23 +120,21 @@ STATIC mp_int_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *err
             }
             ((byte*)buf)[i] = c;
         }
-        *errcode = 0;
         return size;
     } else {
-        *errcode = 1;
-        return 0;
+        *errcode = EPERM;
+        return MP_STREAM_ERROR;
     }
 }
 
-STATIC mp_int_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_stdio_obj_t *self = self_in;
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
         stdout_tx_strn_cooked(buf, size);
-        *errcode = 0;
         return size;
     } else {
-        *errcode = 1;
-        return 0;
+        *errcode = EPERM;
+        return MP_STREAM_ERROR;
     }
 }
 
@@ -162,6 +161,7 @@ STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 STATIC const mp_stream_p_t stdio_obj_stream_p = {
     .read = stdio_read,
     .write = stdio_write,
+    .is_text = true,
 };
 
 STATIC const mp_obj_type_t stdio_obj_type = {
