@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "stm32f4xx_hal.h"
+#include "gpio_clk.h"
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -202,10 +203,7 @@ int main(void) {
     SystemClock_Config();
 
     // enable GPIO clocks
-    __GPIOA_CLK_ENABLE();
-    __GPIOB_CLK_ENABLE();
-    __GPIOC_CLK_ENABLE();
-    __GPIOD_CLK_ENABLE();
+    GPIO_CLK_ENABLE();
 
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();

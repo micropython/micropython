@@ -110,6 +110,7 @@ SRC_C = \
 	dac.c \
 	adc.c \
 	pybwlan.c \
+	boards/$(BOARD)/gpio_clk.c \
 
 SRC_S = \
 	boards/$(BOARD)/startup.s \
