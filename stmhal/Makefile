@@ -112,7 +112,7 @@ SRC_C = \
 	pybwlan.c \
 
 SRC_S = \
-	startup_stm32f40xx.s \
+	boards/$(BOARD)/startup.s \
 	gchelper.s \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
