@@ -163,6 +163,16 @@
 #define MICROPY_STACK_CHECK (1)
 #endif
 
+// Whether to have an emergency exception buffer
+#ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
+#endif
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+#   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
+#   endif
+#endif
+
 // Whether to include REPL helper function
 #ifndef MICROPY_HELPER_REPL
 #define MICROPY_HELPER_REPL (0)
@@ -382,6 +392,14 @@ typedef double mp_float_t;
 
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
+
+// On embedded platforms, these will typically enable/disable irqs.
+#ifndef MICROPY_BEGIN_ATOMIC_SECTION
+#define MICROPY_BEGIN_ATOMIC_SECTION()
+#endif
+#ifndef MICROPY_END_ATOMIC_SECTION
+#define MICROPY_END_ATOMIC_SECTION()
+#endif
 
 // Allow to override static modifier for global objects, e.g. to use with
 // object code analysis tools which don't support static symbols.

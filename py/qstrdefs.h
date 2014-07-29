@@ -326,6 +326,10 @@ Q(mem_total)
 Q(mem_current)
 Q(mem_peak)
 
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
+Q(alloc_emergency_exception_buf)
+#endif
+
 Q(<module>)
 Q(<lambda>)
 Q(<listcomp>)

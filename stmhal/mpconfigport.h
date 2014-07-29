@@ -52,6 +52,15 @@
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
+
+void enable_irq(void);
+void disable_irq(void);
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()  disable_irq()
+#define MICROPY_END_ATOMIC_SECTION()    enable_irq()
+
 // extra built in names to add to the global namespace
 extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;
 extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
