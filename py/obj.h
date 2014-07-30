@@ -230,12 +230,14 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 // Stream protocol
 #define MP_STREAM_ERROR (-1)
+#define MP_STREAM_FLUSH (1)
+#define MP_STREAM_POLL  (2)
 typedef struct _mp_stream_p_t {
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
-    // add seek() ?
+    mp_uint_t (*ioctl(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
