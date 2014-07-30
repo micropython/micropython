@@ -8,6 +8,8 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+include boards/$(BOARD)/makedef.mk
+
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -53,7 +55,9 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
+LK_SCRIPT ?= stm32f405.ld
+
+LDFLAGS = -nostdlib -T $(LK_SCRIPT) -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # uncomment this if you want libgcc
@@ -111,8 +115,10 @@ SRC_C = \
 	adc.c \
 	pybwlan.c \
 
+STARTUP ?= startup_stm32f40xx.s
+
 SRC_S = \
-	startup_stm32f40xx.s \
+	$(STARTUP) \
 	gchelper.s \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
