@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "stm32f4xx_hal.h"
+#include "gpio_clk.h"
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -76,14 +77,14 @@ static FATFS fatfs1;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
-        led_state(PYB_LED_R1, 1);
-        led_state(PYB_LED_R2, 0);
+        led_state(PYB_LED_1, 1);
+        led_state(PYB_LED_2, 0);
         HAL_Delay(250);
-        led_state(PYB_LED_R1, 0);
-        led_state(PYB_LED_R2, 1);
+        led_state(PYB_LED_1, 0);
+        led_state(PYB_LED_2, 1);
         HAL_Delay(250);
     }
-    led_state(PYB_LED_R2, 0);
+    led_state(PYB_LED_2, 0);
 }
 
 void NORETURN __fatal_error(const char *msg) {
@@ -210,10 +211,7 @@ int main(void) {
     SystemClock_Config();
 
     // enable GPIO clocks
-    __GPIOA_CLK_ENABLE();
-    __GPIOB_CLK_ENABLE();
-    __GPIOC_CLK_ENABLE();
-    __GPIOD_CLK_ENABLE();
+    GPIO_CLK_ENABLE();
 
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();
@@ -349,7 +347,7 @@ soft_reset:
             // no filesystem, or asked to reset it, so create a fresh one
 
             // LED on to indicate creation of LFS
-            led_state(PYB_LED_R2, 1);
+            led_state(PYB_LED_2, 1);
             uint32_t start_tick = HAL_GetTick();
 
             res = f_mkfs("0:", 0, 0);
@@ -379,7 +377,7 @@ soft_reset:
 
             // keep LED on for at least 200ms
             sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
+            led_state(PYB_LED_2, 0);
         } else if (res == FR_OK) {
             // mount sucessful
         } else {
@@ -407,7 +405,7 @@ soft_reset:
             // doesn't exist, create fresh file
 
             // LED on to indicate creation of boot.py
-            led_state(PYB_LED_R2, 1);
+            led_state(PYB_LED_2, 1);
             uint32_t start_tick = HAL_GetTick();
 
             FIL fp;
@@ -419,7 +417,7 @@ soft_reset:
 
             // keep LED on for at least 200ms
             sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
+            led_state(PYB_LED_2, 0);
         }
     }
 

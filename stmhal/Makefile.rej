@@ -1,0 +1,11 @@
+--- stmhal/Makefile	2014-07-23 13:56:25.919414602 +0200
++++ stmhal/Makefile	2014-07-23 13:56:46.475413880 +0200
+@@ -112,7 +112,7 @@
+ 	pybwlan.c \
+ 
+ SRC_S = \
+-	startup_stm32f40xx.s \
++	boards/$(BOARD)/startup.s \
+ 	gchelper.s \
+ 
+ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\

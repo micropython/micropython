@@ -53,7 +53,7 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -T boards/$(BOARD)/flash.ld -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # uncomment this if you want libgcc
@@ -110,9 +110,10 @@ SRC_C = \
 	dac.c \
 	adc.c \
 	pybwlan.c \
+	boards/$(BOARD)/gpio_clk.c \
 
 SRC_S = \
-	startup_stm32f40xx.s \
+	boards/$(BOARD)/startup.s \
 	gchelper.s \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
