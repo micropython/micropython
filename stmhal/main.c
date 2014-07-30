@@ -76,14 +76,14 @@ static FATFS fatfs1;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
-        led_state(PYB_LED_R1, 1);
-        led_state(PYB_LED_R2, 0);
+        led_state(PYB_LED_ERROR1, 1);
+        led_state(PYB_LED_ERROR2, 0);
         HAL_Delay(250);
-        led_state(PYB_LED_R1, 0);
-        led_state(PYB_LED_R2, 1);
+        led_state(PYB_LED_ERROR1, 0);
+        led_state(PYB_LED_ERROR2, 1);
         HAL_Delay(250);
     }
-    led_state(PYB_LED_R2, 0);
+    led_state(PYB_LED_ERROR2, 0);
 }
 
 void NORETURN __fatal_error(const char *msg) {
@@ -349,7 +349,7 @@ soft_reset:
             // no filesystem, or asked to reset it, so create a fresh one
 
             // LED on to indicate creation of LFS
-            led_state(PYB_LED_R2, 1);
+            led_state(PYB_LED_STORAGE2, 1);
             uint32_t start_tick = HAL_GetTick();
 
             res = f_mkfs("0:", 0, 0);
@@ -379,7 +379,7 @@ soft_reset:
 
             // keep LED on for at least 200ms
             sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
+            led_state(PYB_LED_STORAGE2, 0);
         } else if (res == FR_OK) {
             // mount sucessful
         } else {
@@ -407,7 +407,7 @@ soft_reset:
             // doesn't exist, create fresh file
 
             // LED on to indicate creation of boot.py
-            led_state(PYB_LED_R2, 1);
+            led_state(PYB_LED_STORAGE2, 1);
             uint32_t start_tick = HAL_GetTick();
 
             FIL fp;
@@ -419,7 +419,7 @@ soft_reset:
 
             // keep LED on for at least 200ms
             sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
+            led_state(PYB_LED_STORAGE2, 0);
         }
     }
 

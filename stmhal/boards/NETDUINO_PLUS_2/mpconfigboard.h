@@ -29,10 +29,17 @@
 #define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
-#define MICROPY_HW_LED1             (pin_A10)   // Blue LED
-#define MICROPY_HW_LED2             (pin_C13)   // White LED (aka Power)
-#define MICROPY_HW_LED3             (pin_A10)   // Same as Led(1)
-#define MICROPY_HW_LED4             (pin_C13)   // Same as Led(2)
+// These four defines are mandatory
+#define PYB_LED_STORAGE1			1
+#define PYB_LED_STORAGE2			2
+#define PYB_LED_ERROR1				1
+#define PYB_LED_ERROR1				2
+// LED's pin mapping on the board
+// Usage : {{&pyb_led_type, nb_led, pin mapping}
+#define MICROPY_HW_LED_MAPPING \
+	{{&pyb_led_type}, 1, &pin_A10}, /* blue */ \
+	{{&pyb_led_type}, 2, &pin_C13}, /* white */
+
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)

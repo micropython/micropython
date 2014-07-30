@@ -25,10 +25,16 @@
 #define MICROPY_HW_USRSW_PRESSED    (1)
 
 // The HydraBus has 1 LED (Needs jumper on ULED)
-#define MICROPY_HW_LED1             (pin_A4) // green
-#define MICROPY_HW_LED2             (pin_A4) // same as LED1
-#define MICROPY_HW_LED3             (pin_A4) // same as LED1
-#define MICROPY_HW_LED4             (pin_A4)  // same as LED1
+// These four defines are mandatory
+#define PYB_LED_STORAGE1			1
+#define PYB_LED_STORAGE2			1
+#define PYB_LED_ERROR1				1
+#define PYB_LED_ERROR2				1
+// LEDs' pin mapping on the board
+// Usage : {{&pyb_led_type, nb_led, pin mapping}
+#define MICROPY_HW_LED_MAPPING \
+	{{&pyb_led_type}, 1, &pin_A4} /* green */
+
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
