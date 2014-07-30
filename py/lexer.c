@@ -45,7 +45,7 @@
 struct _mp_lexer_t {
     qstr source_name;           // name of source
     void *stream_data;          // data for stream
-    mp_lexer_stream_next_char_t stream_next_char;   // stream callback to get next char
+    mp_lexer_stream_next_byte_t stream_next_byte;   // stream callback to get next byte
     mp_lexer_stream_close_t stream_close;           // stream callback to free
 
     unichar chr0, chr1, chr2;   // current cached characters from source
@@ -103,7 +103,7 @@ void mp_token_show(const mp_token_t *tok) {
 #define CUR_CHAR(lex) ((lex)->chr0)
 
 STATIC bool is_end(mp_lexer_t *lex) {
-    return lex->chr0 == MP_LEXER_CHAR_EOF;
+    return lex->chr0 == MP_LEXER_EOF;
 }
 
 STATIC bool is_physical_newline(mp_lexer_t *lex) {
@@ -171,7 +171,7 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
 }
 
 STATIC void next_char(mp_lexer_t *lex) {
-    if (lex->chr0 == MP_LEXER_CHAR_EOF) {
+    if (lex->chr0 == MP_LEXER_EOF) {
         return;
     }
 
@@ -200,10 +200,10 @@ STATIC void next_char(mp_lexer_t *lex) {
     for (; advance > 0; advance--) {
         lex->chr0 = lex->chr1;
         lex->chr1 = lex->chr2;
-        lex->chr2 = lex->stream_next_char(lex->stream_data);
-        if (lex->chr2 == MP_LEXER_CHAR_EOF) {
+        lex->chr2 = lex->stream_next_byte(lex->stream_data);
+        if (lex->chr2 == MP_LEXER_EOF) {
             // EOF
-            if (lex->chr1 != MP_LEXER_CHAR_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
+            if (lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
                 lex->chr2 = '\n'; // insert newline at end of file
             }
         }
@@ -491,8 +491,8 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         vstr_add_char(&lex->vstr, '\\');
                     } else {
                         switch (c) {
-                            case MP_LEXER_CHAR_EOF: break; // TODO a proper error message?
-                            case '\n': c = MP_LEXER_CHAR_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                            case MP_LEXER_EOF: break; // TODO a proper error message?
+                            case '\n': c = MP_LEXER_EOF; break; // TODO check this works correctly (we are supposed to ignore it
                             case '\\': break;
                             case '\'': break;
                             case '"': break;
@@ -546,7 +546,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                                 break;
                         }
                     }
-                    if (c != MP_LEXER_CHAR_EOF) {
+                    if (c != MP_LEXER_EOF) {
                         if (c < 0x110000 && !is_bytes) {
                             vstr_add_char(&lex->vstr, c);
                         } else if (c < 0x100 && is_bytes) {
@@ -556,7 +556,9 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                         }
                     }
                 } else {
-                    vstr_add_char(&lex->vstr, CUR_CHAR(lex));
+                    // Add the "character" as a byte so that we remain 8-bit clean.
+                    // This way, strings are parsed correctly whether or not they contain utf-8 chars.
+                    vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
                 }
             }
             next_char(lex);
@@ -728,7 +730,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
     }
 }
 
-mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close) {
+mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close) {
     mp_lexer_t *lex = m_new_maybe(mp_lexer_t, 1);
 
     // check for memory allocation error
@@ -741,7 +743,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
 
     lex->source_name = src_name;
     lex->stream_data = stream_data;
-    lex->stream_next_char = stream_next_char;
+    lex->stream_next_byte = stream_next_byte;
     lex->stream_close = stream_close;
     lex->line = 1;
     lex->column = 1;
@@ -762,18 +764,18 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     lex->indent_level[0] = 0;
 
     // preload characters
-    lex->chr0 = stream_next_char(stream_data);
-    lex->chr1 = stream_next_char(stream_data);
-    lex->chr2 = stream_next_char(stream_data);
+    lex->chr0 = stream_next_byte(stream_data);
+    lex->chr1 = stream_next_byte(stream_data);
+    lex->chr2 = stream_next_byte(stream_data);
 
     // if input stream is 0, 1 or 2 characters long and doesn't end in a newline, then insert a newline at the end
-    if (lex->chr0 == MP_LEXER_CHAR_EOF) {
+    if (lex->chr0 == MP_LEXER_EOF) {
         lex->chr0 = '\n';
-    } else if (lex->chr1 == MP_LEXER_CHAR_EOF) {
+    } else if (lex->chr1 == MP_LEXER_EOF) {
         if (lex->chr0 != '\n' && lex->chr0 != '\r') {
             lex->chr1 = '\n';
         }
-    } else if (lex->chr2 == MP_LEXER_CHAR_EOF) {
+    } else if (lex->chr2 == MP_LEXER_EOF) {
         if (lex->chr1 != '\n' && lex->chr1 != '\r') {
             lex->chr2 = '\n';
         }

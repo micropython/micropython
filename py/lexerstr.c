@@ -36,11 +36,11 @@ typedef struct _mp_lexer_str_buf_t {
     const char *src_end;        // end (exclusive) of source
 } mp_lexer_str_buf_t;
 
-STATIC unichar str_buf_next_char(mp_lexer_str_buf_t *sb) {
+STATIC mp_uint_t str_buf_next_byte(mp_lexer_str_buf_t *sb) {
     if (sb->src_cur < sb->src_end) {
         return *sb->src_cur++;
     } else {
-        return MP_LEXER_CHAR_EOF;
+        return MP_LEXER_EOF;
     }
 }
 
@@ -57,5 +57,5 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t 
     sb->src_beg = str;
     sb->src_cur = str;
     sb->src_end = str + len;
-    return mp_lexer_new(src_name, sb, (mp_lexer_stream_next_char_t)str_buf_next_char, (mp_lexer_stream_close_t)str_buf_free);
+    return mp_lexer_new(src_name, sb, (mp_lexer_stream_next_byte_t)str_buf_next_byte, (mp_lexer_stream_close_t)str_buf_free);
 }

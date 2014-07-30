@@ -41,20 +41,20 @@
 
 typedef struct _mp_lexer_file_buf_t {
     int fd;
-    char buf[20];
-    uint len;
-    uint pos;
+    byte buf[20];
+    mp_uint_t len;
+    mp_uint_t pos;
 } mp_lexer_file_buf_t;
 
-STATIC unichar file_buf_next_char(mp_lexer_file_buf_t *fb) {
+STATIC mp_uint_t file_buf_next_byte(mp_lexer_file_buf_t *fb) {
     if (fb->pos >= fb->len) {
         if (fb->len == 0) {
-            return MP_LEXER_CHAR_EOF;
+            return MP_LEXER_EOF;
         } else {
             int n = read(fb->fd, fb->buf, sizeof(fb->buf));
             if (n <= 0) {
                 fb->len = 0;
-                return MP_LEXER_CHAR_EOF;
+                return MP_LEXER_EOF;
             }
             fb->len = n;
             fb->pos = 0;
@@ -78,7 +78,7 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     int n = read(fb->fd, fb->buf, sizeof(fb->buf));
     fb->len = n;
     fb->pos = 0;
-    return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_char_t)file_buf_next_char, (mp_lexer_stream_close_t)file_buf_close);
+    return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_byte_t)file_buf_next_byte, (mp_lexer_stream_close_t)file_buf_close);
 }
 
 #endif // MICROPY_HELPER_LEXER_UNIX
