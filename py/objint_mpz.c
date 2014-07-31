@@ -225,8 +225,7 @@ mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_LSHIFT:
             case MP_BINARY_OP_RSHIFT:
             case MP_BINARY_OP_INPLACE_RSHIFT: {
-                // TODO check conversion overflow
-                mp_int_t irhs = mpz_as_int(zrhs);
+                mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                 }
@@ -303,7 +302,8 @@ mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         const mp_obj_int_t *self = self_in;
-        return mpz_as_int(&self->mpz);
+        // TODO this is a hack until we remove mp_obj_int_get function entirely
+        return mpz_hash(&self->mpz);
     }
 }
 

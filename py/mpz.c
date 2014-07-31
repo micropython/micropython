@@ -1229,49 +1229,41 @@ mp_int_t mpz_hash(const mpz_t *z) {
     return val;
 }
 
-// TODO check that this correctly handles overflow in all cases
-mp_int_t mpz_as_int(const mpz_t *i) {
-    mp_int_t val = 0;
-    mpz_dig_t *d = i->dig + i->len;
-
-    while (--d >= i->dig) {
-        mp_int_t oldval = val;
-        val = (val << DIG_SIZE) | *d;
-        if (val < oldval) {
-            // overflow, return +/- "infinity"
-            if (i->neg == 0) {
-                // +infinity
-                return ~WORD_MSBIT_HIGH;
-            } else {
-                // -infinity
-                return WORD_MSBIT_HIGH;
-            }
-        }
-    }
-
-    if (i->neg != 0) {
-        val = -val;
-    }
-
-    return val;
-}
-
-// TODO check that this correctly handles overflow in all cases
 bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mp_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig) {
-        mp_int_t oldval = val;
-        val = (val << DIG_SIZE) | *d;
-        if (val < oldval) {
-            // overflow
+        if (val > (~(WORD_MSBIT_HIGH) >> DIG_SIZE)) {
+            // will overflow
             return false;
         }
+        val = (val << DIG_SIZE) | *d;
     }
 
     if (i->neg != 0) {
         val = -val;
+    }
+
+    *value = val;
+    return true;
+}
+
+bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
+    if (i->neg != 0) {
+        // can't represent signed values
+        return false;
+    }
+
+    mp_uint_t val = 0;
+    mpz_dig_t *d = i->dig + i->len;
+
+    while (--d >= i->dig) {
+        if (val > ((~0) >> DIG_SIZE)) {
+            // will overflow
+            return false;
+        }
+        val = (val << DIG_SIZE) | *d;
     }
 
     *value = val;
