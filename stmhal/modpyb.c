@@ -141,7 +141,7 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     {
         DWORD nclst;
         FATFS *fatfs;
-        f_getfree("0:", &nclst, &fatfs);
+        f_getfree("/flash", &nclst, &fatfs);
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
 

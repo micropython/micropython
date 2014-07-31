@@ -63,8 +63,10 @@ Q(SDcard)
 Q(FileIO)
 Q(flush)
 // Entries for sys.path
-Q(0:/)
-Q(0:/lib)
+Q(/flash)
+Q(/flash/lib)
+Q(/sd)
+Q(/sd/lib)
 Q(millis)
 
 // for file class
@@ -239,6 +241,10 @@ Q(speed)
 // for os module
 Q(os)
 Q(/)
+Q(flash)
+Q(sd)
+Q(chdir)
+Q(getcwd)
 Q(listdir)
 Q(mkdir)
 Q(remove)

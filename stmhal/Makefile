@@ -104,6 +104,7 @@ SRC_C = \
 	file.c \
 	sdcard.c \
 	diskio.c \
+	ffconf.c \
 	lcd.c \
 	accel.c \
 	servo.c \

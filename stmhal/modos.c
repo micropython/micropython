@@ -38,22 +38,64 @@
 #include "storage.h"
 #include "ff.h"
 #include "file.h"
+#include "sdcard.h"
 #include "portmodules.h"
 
 #if _USE_LFN
 static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
 #endif
 
+STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
+    const char *path;
+    path = mp_obj_str_get_str(path_in);
+
+    FRESULT res = f_chdrive(path);
+
+    if (res == FR_OK) {
+        res = f_chdir(path);
+    }
+
+    if (res != FR_OK) {
+        // TODO should be mp_type_FileNotFoundError
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
+
+STATIC mp_obj_t os_getcwd(void) {
+    char buf[MICROPY_ALLOC_PATH_MAX + 1];
+    FRESULT res = f_getcwd(buf, sizeof buf);
+
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    }
+
+    return mp_obj_new_str(buf, strlen(buf), false);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
+
 STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
-    const mp_obj_type_t *local_str_type = &mp_type_str;
+    bool is_str_type = true;
     const char *path;
     if (n_args == 1) {
         if (mp_obj_get_type(args[0]) == &mp_type_bytes) {
-            local_str_type = &mp_type_bytes;
+            is_str_type = false;
         }
         path = mp_obj_str_get_str(args[0]);
     } else {
-        path = "0:";
+        path = "";
+    }
+
+    // "hack" to list root directory
+    if (path[0] == '/' && path[1] == '\0') {
+        mp_obj_t dir_list = mp_obj_new_list(0, NULL);
+        mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
+        if (sdcard_is_present()) { // TODO this is not the correct logic to check for /sd
+            mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
+        }
+        return dir_list;
     }
 
     FRESULT res;
@@ -72,11 +114,6 @@ STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
 
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);
 
-    uint path_len = strlen(path);
-    if (path[path_len - 1] == '/') {
-        path_len--;
-    }
-
     for (;;) {
         res = f_readdir(&dir, &fno);                   /* Read a directory item */
         if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
@@ -89,20 +126,24 @@ STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
         char *fn = fno.fname;
 #endif
 
-        if (fno.fattrib & AM_DIR) {                    /* It is a directory */
-        } else {                                       /* It is a file. */
+        /*
+        if (fno.fattrib & AM_DIR) {
+            // dir
+        } else {
+            // file
         }
+        */
 
         // make a string object for this entry
-        byte *data;
-        uint fn_len = strlen(fn);
-        mp_obj_t entry_o = mp_obj_str_builder_start(local_str_type, path_len + 1 + fn_len, &data);
-        memcpy(data, path, path_len);
-        data[path_len] = '/';
-        memcpy(data + path_len + 1, fn, fn_len);
+        mp_obj_t entry_o;
+        if (is_str_type) {
+            entry_o = mp_obj_new_str(fn, strlen(fn), false);
+        } else {
+            entry_o = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+        }
 
         // add the entry to the list
-        mp_obj_list_append(dir_list, mp_obj_str_builder_end(entry_o));
+        mp_obj_list_append(dir_list, entry_o);
     }
 
     f_closedir(&dir);
@@ -161,9 +202,17 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     fno.lfsize = 0;
 #endif
 
-    FRESULT res = f_stat(path, &fno);
-    if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    if (path[0] == '/' && path[1] == '\0') {
+        // stat root directory
+	fno.fsize = 0;
+	fno.fdate = 0;
+	fno.ftime = 0;
+	fno.fattrib = AM_DIR;
+    } else {
+        FRESULT res = f_stat(path, &fno);
+        if (res != FR_OK) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        }
     }
 
     mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
@@ -216,6 +265,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), (mp_obj_t)&os_listdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir), (mp_obj_t)&os_mkdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&os_remove_obj },
