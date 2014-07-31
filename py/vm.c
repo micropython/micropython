@@ -931,9 +931,27 @@ exception_handler:
                 const byte* ci = code_info + 12;
                 if (*ci) {
                     source_line = 1;
-                    for (; *ci && bc >= ((*ci) & 31); ci++) {
-                        bc -= *ci & 31;
-                        source_line += *ci >> 5;
+                    mp_uint_t c;
+                    while ((c = *ci)) {
+                        mp_uint_t b, l;
+                        if ((c & 0x80) == 0) {
+                            // 0b0LLBBBBB encoding
+                            b = c & 0x1f;
+                            l = c >> 5;
+                            ci += 1;
+                        } else {
+                            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+                            b = c & 0xf;
+                            l = ((c << 4) & 0x700) | ci[1];
+                            ci += 2;
+                        }
+                        if (bc >= b) {
+                            bc -= b;
+                            source_line += l;
+                        } else {
+                            // found source line corresponding to bytecode offset
+                            break;
+                        }
                     }
                 }
                 mp_obj_exception_add_traceback(nlr.ret_val, source_file, source_line, block_name);

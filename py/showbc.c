@@ -95,9 +95,18 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
         mp_int_t bc = (code_info + code_info_size) - ip;
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
-        for (const byte* ci = code_info + 12; *ci; ci++) {
-            bc += *ci & 31;
-            source_line += *ci >> 5;
+        for (const byte* ci = code_info + 12; *ci;) {
+            if ((ci[0] & 0x80) == 0) {
+                // 0b0LLBBBBB encoding
+                bc += ci[0] & 0x1f;
+                source_line += ci[0] >> 5;
+                ci += 1;
+            } else {
+                // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+                bc += ci[0] & 0xf;
+                source_line += ((ci[0] << 4) & 0x700) | ci[1];
+                ci += 2;
+            }
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
