@@ -368,7 +368,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         MP_OBJ_IS_STR(o_in) ||
 #endif
         MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
-        return MP_OBJ_NEW_SMALL_INT((mp_int_t)mp_obj_str_get_len(o_in));
+        return MP_OBJ_NEW_SMALL_INT(mp_obj_str_get_len(o_in));
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {

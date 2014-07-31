@@ -296,13 +296,13 @@ static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
 STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
     switch (val_type) {
         case UINT8:
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)((uint8_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((uint8_t*)p)[index]);
         case INT8:
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)((int8_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((int8_t*)p)[index]);
         case UINT16:
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)((uint16_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((uint16_t*)p)[index]);
         case INT16:
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)((int16_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((int16_t*)p)[index]);
         case UINT32:
             return mp_obj_new_int_from_uint(((uint32_t*)p)[index]);
         case INT32:

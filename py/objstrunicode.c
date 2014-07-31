@@ -257,7 +257,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #endif
         if (type == &mp_type_bytes) {
             uint index_val = mp_get_index(type, self_len, index, false);
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)self_data[index_val]);
+            return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         }
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;

@@ -476,7 +476,7 @@ STATIC mp_obj_t set_unary_op(int op, mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->set.used);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
         default: return MP_OBJ_NULL; // op not supported
     }
 }
