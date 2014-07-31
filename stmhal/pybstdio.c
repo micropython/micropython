@@ -84,8 +84,10 @@ int stdin_rx_chr(void) {
         }
 #endif
 #endif
-        if (usb_vcp_rx_num() != 0) {
-            return usb_vcp_rx_get();
+
+        byte c;
+        if (usb_vcp_recv_byte(&c) != 0) {
+            return c;
         } else if (pyb_stdio_uart != PYB_UART_NONE && uart_rx_any(pyb_stdio_uart)) {
             return uart_rx_char(pyb_stdio_uart);
         }

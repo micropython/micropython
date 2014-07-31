@@ -71,6 +71,12 @@ Q(millis)
 Q(seek)
 Q(tell)
 
+// for USB VCP class
+Q(USB_VCP)
+Q(send)
+Q(recv)
+Q(timeout)
+
 // for RTC class
 Q(RTC)
 Q(info)
