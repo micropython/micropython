@@ -76,10 +76,10 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
 #define MP_OBJ_QSTR_VALUE(o) (((mp_int_t)(o)) >> 2)
-#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((mp_uint_t)qstr) << 2) | 2))
+#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((mp_uint_t)(qstr)) << 2) | 2))
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local

@@ -35,15 +35,15 @@
 
 #if MICROPY_MEM_STATS
 STATIC mp_obj_t mp_micropython_mem_total() {
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)m_get_total_bytes_allocated());
+    return MP_OBJ_NEW_SMALL_INT(m_get_total_bytes_allocated());
 }
 
 STATIC mp_obj_t mp_micropython_mem_current() {
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)m_get_current_bytes_allocated());
+    return MP_OBJ_NEW_SMALL_INT(m_get_current_bytes_allocated());
 }
 
 STATIC mp_obj_t mp_micropython_mem_peak() {
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)m_get_peak_bytes_allocated());
+    return MP_OBJ_NEW_SMALL_INT(m_get_peak_bytes_allocated());
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_total_obj, mp_micropython_mem_total);

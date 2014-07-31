@@ -76,7 +76,7 @@ STATIC const mp_obj_type_t microsocket_type;
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
-        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)error_val))); } }
+        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
@@ -120,7 +120,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 STATIC mp_obj_t socket_fileno(mp_obj_t self_in) {
     mp_obj_socket_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->fd);
+    return MP_OBJ_NEW_SMALL_INT(self->fd);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
@@ -205,7 +205,7 @@ STATIC mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
     int out_sz = send(self->fd, bufinfo.buf, bufinfo.len, flags);
     RAISE_ERRNO(out_sz, errno);
 
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)out_sz);
+    return MP_OBJ_NEW_SMALL_INT(out_sz);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
@@ -255,7 +255,7 @@ STATIC mp_obj_t socket_makefile(uint n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
-    new_args[0] = MP_OBJ_NEW_SMALL_INT((mp_int_t)self->fd);
+    new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
     return mp_builtin_open(n_args, new_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
@@ -321,7 +321,7 @@ STATIC const mp_obj_type_t microsocket_type = {
 
 #if MICROPY_SOCKET_EXTRA
 STATIC mp_obj_t mod_socket_htons(mp_obj_t arg) {
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)htons(MP_OBJ_SMALL_INT_VALUE(arg)));
+    return MP_OBJ_NEW_SMALL_INT(htons(MP_OBJ_SMALL_INT_VALUE(arg)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
 
@@ -343,7 +343,7 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
         // CPython: socket.herror
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)h_errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(h_errno)));
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
@@ -397,9 +397,9 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (struct addrinfo *addr = addr_list; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = mp_obj_new_tuple(5, NULL);
-        t->items[0] = MP_OBJ_NEW_SMALL_INT((mp_int_t)addr->ai_family);
-        t->items[1] = MP_OBJ_NEW_SMALL_INT((mp_int_t)addr->ai_socktype);
-        t->items[2] = MP_OBJ_NEW_SMALL_INT((mp_int_t)addr->ai_protocol);
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(addr->ai_family);
+        t->items[1] = MP_OBJ_NEW_SMALL_INT(addr->ai_socktype);
+        t->items[2] = MP_OBJ_NEW_SMALL_INT(addr->ai_protocol);
         // "canonname will be a string representing the canonical name of the host
         // if AI_CANONNAME is part of the flags argument; else canonname will be empty." ??
         if (addr->ai_canonname) {
