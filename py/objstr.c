@@ -1744,6 +1744,16 @@ mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     return o;
 }
 
+mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len) {
+    mp_obj_str_t *o = o_in;
+    o->data = m_renew(byte, (byte*)o->data, o->len + 1, len + 1);
+    o->len = len;
+    o->hash = qstr_compute_hash(o->data, o->len);
+    byte *p = (byte*)o->data;
+    p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    return o;
+}
+
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
