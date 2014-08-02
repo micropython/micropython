@@ -137,6 +137,13 @@ void usb_hid_send_report(uint8_t *buf) {
 /******************************************************************************/
 // Micro Python bindings for USB VCP
 
+/// \moduleref pyb
+/// \class USB_VCP - USB virtual comm port
+///
+/// The USB_VCP class allows creation of an object representing the USB
+/// virtual comm port.  It can be used to read and write data over USB to
+/// the connected host.
+
 typedef struct _pyb_usb_vcp_obj_t {
     mp_obj_base_t base;
 } pyb_usb_vcp_obj_t;

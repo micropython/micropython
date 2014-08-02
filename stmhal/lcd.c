@@ -46,6 +46,42 @@
 #include "font_petme128_8x8.h"
 #include "lcd.h"
 
+/// \moduleref pyb
+/// \class LCD - LCD control for the LCD touch-sensor pyskin
+///
+/// The LCD class is used to control the LCD on the LCD touch-sensor pyskin,
+/// LCD32MKv1.0.  The LCD is a 128x32 pixel monochrome screen, part NHD-C12832A1Z.
+///
+/// The pyskin must be connected in either the X or Y positions, and then
+/// an LCD object is made using:
+///
+///     lcd = pyb.LCD('X')      # if pyskin is in the X position
+///     lcd = pyb.LCD('Y')      # if pyskin is in the Y position
+///
+/// Then you can use:
+///
+///     lcd.light(True)                 # turn the backlight on
+///     lcd.write('Hello world!\n')     # print text to the screen
+///
+/// This driver implements a double buffer for setting/getting pixels.
+/// For example, to make a bouncing dot, try:
+///
+///     x = y = 0
+///     dx = dy = 1
+///     while True:
+///         # update the dot's position
+///         x += dx
+///         y += dy
+///
+///         # make the dot bounce of the edges of the screen
+///         if x <= 0 or x >= 127: dx = -dx
+///         if y <= 0 or y >= 31: dy = -dy
+///
+///         lcd.fill(0)                 # clear the buffer
+///         lcd.pixel(x, y, 1)          # draw the dot
+///         lcd.show()                  # show the buffer
+///         pyb.delay(50)               # pause for 50ms
+
 #define LCD_INSTR (0)
 #define LCD_DATA (1)
 
@@ -158,6 +194,10 @@ STATIC void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len
     }
 }
 
+/// \classmethod \constructor(skin_position)
+///
+/// Construct an LCD object in the given skin position.  `skin_position` can be 'X' or 'Y', and
+/// should match the position where the LCD pyskin is plugged in.
 STATIC mp_obj_t pyb_lcd_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -288,6 +328,11 @@ STATIC mp_obj_t pyb_lcd_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     return lcd;
 }
 
+/// \method command(instr_data, buf)
+///
+/// Send an arbitrary command to the LCD.  Pass 0 for `instr_data` to send an
+/// instruction, otherwise pass 1 to send data.  `buf` is a buffer with the
+/// instructions/data to send.
 STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj_t val) {
     pyb_lcd_obj_t *self = self_in;
 
@@ -308,6 +353,9 @@ STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_command_obj, pyb_lcd_command);
 
+/// \method contrast(value)
+///
+/// Set the contrast of the LCD.  Valid values are between 0 and 47.
 STATIC mp_obj_t pyb_lcd_contrast(mp_obj_t self_in, mp_obj_t contrast_in) {
     pyb_lcd_obj_t *self = self_in;
     int contrast = mp_obj_get_int(contrast_in);
@@ -322,6 +370,9 @@ STATIC mp_obj_t pyb_lcd_contrast(mp_obj_t self_in, mp_obj_t contrast_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_contrast_obj, pyb_lcd_contrast);
 
+/// \method light(value)
+///
+/// Turn the backlight on/off.  True or 1 turns it on, False or 0 turns it off.
 STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
     pyb_lcd_obj_t *self = self_in;
     if (mp_obj_is_true(value)) {
@@ -333,6 +384,9 @@ STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_light_obj, pyb_lcd_light);
 
+/// \method write(str)
+///
+/// Write the string `str` to the screen.  It will appear immediately.
 STATIC mp_obj_t pyb_lcd_write(mp_obj_t self_in, mp_obj_t str) {
     pyb_lcd_obj_t *self = self_in;
     uint len;
@@ -342,6 +396,11 @@ STATIC mp_obj_t pyb_lcd_write(mp_obj_t self_in, mp_obj_t str) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_write_obj, pyb_lcd_write);
 
+/// \method fill(colour)
+///
+/// Fill the screen with the given colour (0 or 1 for white or black).
+///
+/// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_fill(mp_obj_t self_in, mp_obj_t col_in) {
     pyb_lcd_obj_t *self = self_in;
     int col = mp_obj_get_int(col_in);
@@ -354,6 +413,11 @@ STATIC mp_obj_t pyb_lcd_fill(mp_obj_t self_in, mp_obj_t col_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_fill_obj, pyb_lcd_fill);
 
+/// \method get(x, y)
+///
+/// Get the pixel at the position `(x, y)`.  Returns 0 or 1.
+///
+/// This method reads from the visible buffer.
 STATIC mp_obj_t pyb_lcd_get(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
     pyb_lcd_obj_t *self = self_in;
     int x = mp_obj_get_int(x_in);
@@ -368,6 +432,11 @@ STATIC mp_obj_t pyb_lcd_get(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_get_obj, pyb_lcd_get);
 
+/// \method pixel(x, y, colour)
+///
+/// Set the pixel at `(x, y)` to the given colour (0 or 1).
+///
+/// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args) {
     pyb_lcd_obj_t *self = args[0];
     int x = mp_obj_get_int(args[1]);
@@ -384,6 +453,11 @@ STATIC mp_obj_t pyb_lcd_pixel(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_pixel_obj, 4, 4, pyb_lcd_pixel);
 
+/// \method text(str, x, y, colour)
+///
+/// Draw the given text to the position `(x, y)` using the given colour (0 or 1).
+///
+/// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_text(uint n_args, const mp_obj_t *args) {
     // extract arguments
     pyb_lcd_obj_t *self = args[0];
@@ -428,6 +502,9 @@ STATIC mp_obj_t pyb_lcd_text(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_text_obj, 5, 5, pyb_lcd_text);
 
+/// \method show()
+///
+/// Show the hidden buffer on the screen.
 STATIC mp_obj_t pyb_lcd_show(mp_obj_t self_in) {
     pyb_lcd_obj_t *self = self_in;
     memcpy(self->pix_buf, self->pix_buf2, LCD_PIX_BUF_BYTE_SIZE);
