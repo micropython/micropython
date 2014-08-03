@@ -15,7 +15,6 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
-#include "pybstdio.h"
 #include "readline.h"
 
 #include "Arduino.h"
@@ -24,8 +23,9 @@
 #include "servo.h"
 #include "usb.h"
 #include "led.h"
-
+#include "uart.h"
 //#include "pin.h"
+#include "pybstdio.h"
 
 
 extern uint32_t _heap_start;

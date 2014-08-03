@@ -39,7 +39,6 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"
-#include "pybstdio.h"
 #include "pyexec.h"
 #include "led.h"
 #include "pin.h"
@@ -59,6 +58,7 @@
 #include "dac.h"
 #include "usb.h"
 #include "portmodules.h"
+#include "pybstdio.h"
 
 /// \module pyb - functions related to the pyboard
 ///

@@ -25,7 +25,7 @@ int usb_vcp_rx_num(void) {
   return usb_serial_available();
 }
 
-char usb_vcp_rx_get(void)
+int usb_vcp_recv_byte(void)
 {
   return usb_serial_getchar();
 }
