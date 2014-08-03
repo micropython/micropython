@@ -104,7 +104,7 @@ TOOLS_PATH = $(ARDUINO)/hardware/tools
 
 post_compile: $(BUILD)/micropython-mz.hex
 	$(ECHO) "Preparing $@ for upload"
-	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(<D)" -tools="$(TOOLS_PATH)"
+	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(abspath $(<D))" -tools="$(TOOLS_PATH)"
 
 reboot:
 	$(ECHO) "REBOOT"
