@@ -48,7 +48,7 @@ void pyb_usb_dev_stop(void);
 bool usb_vcp_is_enabled(void);
 bool usb_vcp_is_connected(void);
 void usb_vcp_set_interrupt_char(int c);
-int usb_vcp_recv_byte(uint8_t *c);
+int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
 void usb_vcp_send_strn(const char* str, int len);
 void usb_vcp_send_strn_cooked(const char *str, int len);
 void usb_hid_send_report(uint8_t *buf); // 4 bytes for mouse: ?, x, y, ?
