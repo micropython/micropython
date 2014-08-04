@@ -24,5 +24,5 @@
  * THE SOFTWARE.
  */
 
-void readline_init(void);
+void readline_init0(void);
 int readline(vstr_t *line, const char *prompt);

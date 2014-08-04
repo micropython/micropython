@@ -45,8 +45,14 @@
 USBD_HandleTypeDef hUSBDDevice;
 #endif
 
-static int dev_is_enabled = 0;
-mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
+STATIC int dev_is_enabled = 0;
+STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
+
+void pyb_usb_init0(void) {
+    // create an exception object for interrupting by VCP
+    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
+    USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
+}
 
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
 #ifdef USE_DEVICE_MODE
@@ -72,9 +78,6 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
         USBD_Start(&hUSBDDevice);
     }
     dev_is_enabled = 1;
-
-    // create an exception object for interrupting by VCP
-    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
 #endif
 }
 

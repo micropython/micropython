@@ -43,6 +43,7 @@ typedef enum {
 
 const mp_obj_type_t pyb_usb_vcp_type;
 
+void pyb_usb_init0(void);
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);
 void pyb_usb_dev_stop(void);
 bool usb_vcp_is_enabled(void);

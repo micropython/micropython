@@ -78,7 +78,7 @@ typedef struct {
 extern const pin_named_pins_obj_t pin_board_pins_obj;
 extern const pin_named_pins_obj_t pin_cpu_pins_obj;
 
-void pin_init(void);
+void pin_init0(void);
 const pin_obj_t *pin_find(mp_obj_t user_obj);
 const pin_obj_t *pin_find_named_pin(const pin_named_pin_t *pins, const char *name);
 const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit, uint8_t pin_type);

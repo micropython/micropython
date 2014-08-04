@@ -333,11 +333,26 @@ soft_reset:
     pyb_stdio_uart = NULL;
 #endif
 
-    readline_init();
-    pin_init();
-    extint_init();
+    // Initialise low-level sub-systems.  Here we need to very basic things like
+    // zeroing out memory and resetting any of the sub-systems.  Following this
+    // we can run Python scripts (eg boot.py), but anything that is configurable
+    // by boot.py must be set after boot.py is run.
 
-    // local filesystem init
+    readline_init0();
+    pin_init0();
+    extint_init0();
+    timer_init0();
+
+#if MICROPY_HW_ENABLE_RNG
+    rng_init0();
+#endif
+
+    i2c_init0();
+    spi_init0();
+    pyb_usb_init0();
+
+    // Initialise the local flash filesystem.
+    // Create it if needed, and mount in on /flash.
     {
         // try to mount the flash
         FRESULT res = f_mount(&fatfs0, "/flash", 1);
@@ -383,7 +398,11 @@ soft_reset:
         }
     }
 
-    // make sure we have a /flash/boot.py
+    // The current directory is used as the boot up directory.
+    // It is set to the internal flash filesystem by default.
+    f_chdrive("/flash");
+
+    // Make sure we have a /flash/boot.py.  Create it if needed.
     {
         FILINFO fno;
 #if _USE_LFN
@@ -419,9 +438,6 @@ soft_reset:
         }
     }
 
-    // root device defaults to internal flash filesystem
-    f_chdrive("/flash");
-
 #if defined(USE_DEVICE_MODE)
     usb_storage_medium_t usb_medium = USB_STORAGE_MEDIUM_FLASH;
 #endif
@@ -433,7 +449,7 @@ soft_reset:
         if (res != FR_OK) {
             printf("[SD] could not mount SD card\n");
         } else {
-            // use SD card as root device
+            // use SD card as current directory
             f_chdrive("/sd");
 
             // TODO these should go before the /flash entries in the path
@@ -448,9 +464,6 @@ soft_reset:
             }
         }
     }
-#else
-    // Get rid of compiler warning if no SDCARD is configured.
-    (void)first_soft_reset;
 #endif
 
     // run boot.py, if it exists
@@ -468,6 +481,10 @@ soft_reset:
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
+
+    // Now we initialise sub-systems that need configuration from boot.py,
+    // or whose initialisation can be safely deferred until after running
+    // boot.py.
 
 #if defined(USE_HOST_MODE)
     // USB host
@@ -487,15 +504,6 @@ soft_reset:
     }
 #endif
 
-    timer_init0();
-
-#if MICROPY_HW_ENABLE_RNG
-    rng_init0();
-#endif
-
-    i2c_init0();
-    spi_init0();
-
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
     accel_init();
@@ -511,7 +519,15 @@ soft_reset:
     dac_init();
 #endif
 
-    // now that everything is initialised, run main script
+#if MICROPY_HW_ENABLE_CC3K
+    // wifi using the CC3000 driver
+    pyb_wlan_init();
+    pyb_wlan_start();
+#endif
+
+    // At this point everything is fully configured and initialised.
+
+    // Run the main script from the current directory.
     if (reset_mode == 1 && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         const char *main_py;
         if (pyb_config_main == MP_OBJ_NULL) {
@@ -527,14 +543,8 @@ soft_reset:
         }
     }
 
-#if MICROPY_HW_ENABLE_CC3K
-    // wifi using the CC3000 driver
-    pyb_wlan_init();
-    pyb_wlan_start();
-#endif
-
-    // enter REPL
-    // REPL mode can change, or it can request a soft reset
+    // Main script is finished, so now go into REPL mode.
+    // The REPL mode can change, or it can request a soft reset.
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
@@ -546,6 +556,8 @@ soft_reset:
             }
         }
     }
+
+    // soft reset
 
     printf("PYB: sync filesystems\n");
     storage_flush();

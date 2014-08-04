@@ -346,7 +346,7 @@ const mp_obj_type_t extint_type = {
     .locals_dict = (mp_obj_t)&extint_locals_dict,
 };
 
-void extint_init(void) {
+void extint_init0(void) {
     for (extint_vector_t *v = extint_vector; v < &extint_vector[EXTI_NUM_VECTORS]; v++) {
         v->callback_obj = mp_const_none;
         v->param = NULL;
