@@ -270,7 +270,7 @@ soft_reset:
     // Micro Python init
     mp_init();
 
-    readline_init();
+    readline_init0();
 
     //pin_init();
 
