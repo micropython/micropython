@@ -310,9 +310,14 @@ soft_reset:
 
     // GC init
     gc_init(&_heap_start, &_heap_end);
-#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-    mp_init_emergency_exception_buf();
-#endif
+
+    // Micro Python init
+    mp_init();
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
+    mp_obj_list_init(mp_sys_argv, 0);
 
     // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
     // as well as on USB VCP
@@ -328,17 +333,7 @@ soft_reset:
     pyb_stdio_uart = NULL;
 #endif
 
-    // Micro Python init
-    qstr_init();
-    mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
-    mp_obj_list_init(mp_sys_argv, 0);
-
     readline_init();
-
     pin_init();
     extint_init();
 

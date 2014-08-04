@@ -267,7 +267,7 @@ soft_reset:
     // GC init
     gc_init(&_heap_start, (void*)HEAP_END);
 
-    qstr_init();
+    // Micro Python init
     mp_init();
 
     readline_init();

@@ -70,7 +70,12 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
+    qstr_init();
     mp_stack_ctrl_init();
+
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    mp_init_emergency_exception_buf();
+#endif
 
     // call port specific initialization if any
 #ifdef MICROPY_PORT_INIT_FUNC

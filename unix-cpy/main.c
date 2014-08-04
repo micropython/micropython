@@ -87,7 +87,6 @@ void do_file(const char *file) {
 }
 
 int main(int argc, char **argv) {
-    qstr_init();
     mp_init();
 
     if (argc == 2) {
