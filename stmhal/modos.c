@@ -253,6 +253,7 @@ STATIC mp_obj_t os_sync(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
+#if MICROPY_HW_ENABLE_RNG
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     byte *data;
@@ -263,6 +264,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     return mp_obj_str_builder_end(o);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
+#endif
 
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
@@ -280,7 +282,9 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
 
+#if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), (mp_obj_t)&os_urandom_obj },
+#endif
 };
 
 STATIC const mp_obj_dict_t os_module_globals = {

@@ -68,6 +68,8 @@
 ///     dac = DAC(1)
 ///     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
+#if MICROPY_HW_ENABLE_DAC
+
 STATIC DAC_HandleTypeDef DAC_Handle;
 
 void dac_init(void) {
@@ -354,3 +356,5 @@ const mp_obj_type_t pyb_dac_type = {
     .make_new = pyb_dac_make_new,
     .locals_dict = (mp_obj_t)&pyb_dac_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_DAC
