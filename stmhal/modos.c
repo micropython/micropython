@@ -45,6 +45,15 @@
 static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
 #endif
 
+STATIC bool sd_in_root(void) {
+#if MICROPY_HW_HAS_SDCARD
+    // TODO this is not the correct logic to check for /sd
+    return sdcard_is_present();
+#else
+    return false;
+#endif
+}
+
 STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
     const char *path;
     path = mp_obj_str_get_str(path_in);
@@ -92,11 +101,9 @@ STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
     if (path[0] == '/' && path[1] == '\0') {
         mp_obj_t dir_list = mp_obj_new_list(0, NULL);
         mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
-#if MICROPY_HW_HAS_SDCARD
-        if (sdcard_is_present()) { // TODO this is not the correct logic to check for /sd
+        if (sd_in_root()) {
             mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
         }
-#endif
         return dir_list;
     }
 
@@ -195,6 +202,21 @@ STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
+// Checks for path equality, ignoring trailing slashes:
+//   path_equal(/, /) -> true
+//   path_equal(/flash//, /flash) -> true
+// second argument must be in canonical form (meaning no trailing slash, unless it's just /)
+STATIC bool path_equal(const char *path, const char *path_canonical) {
+    for (; *path_canonical != '\0' && *path == *path_canonical; ++path, ++path_canonical) {
+    }
+    if (*path_canonical != '\0') {
+        return false;
+    }
+    for (; *path == '/'; ++path) {
+    }
+    return *path == '\0';
+}
+
 STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
 
@@ -204,16 +226,22 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     fno.lfsize = 0;
 #endif
 
-    if (path[0] == '/' && path[1] == '\0') {
-        // stat root directory
+    FRESULT res;
+    if (path_equal(path, "/") || path_equal(path, "/flash") || path_equal(path, "/sd")) {
+        // stat built-in directory
+        if (path[1] == 's' && !sd_in_root()) {
+            // no /sd directory
+            res = FR_NO_PATH;
+            goto error;
+        }
 	fno.fsize = 0;
 	fno.fdate = 0;
 	fno.ftime = 0;
 	fno.fattrib = AM_DIR;
     } else {
-        FRESULT res = f_stat(path, &fno);
+        res = f_stat(path, &fno);
         if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+            goto error;
         }
     }
 
@@ -244,6 +272,9 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
 
     return t;
+
+error:
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
