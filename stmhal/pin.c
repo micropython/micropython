@@ -287,10 +287,18 @@ STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args) {
 
     // enable the peripheral clock for the port of this pin
     switch (self->port) {
+        #ifdef __GPIOA_CLK_ENABLE
         case PORT_A: __GPIOA_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOB_CLK_ENABLE
         case PORT_B: __GPIOB_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOC_CLK_ENABLE
         case PORT_C: __GPIOC_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOD_CLK_ENABLE
         case PORT_D: __GPIOD_CLK_ENABLE(); break;
+        #endif
         #ifdef __GPIOE_CLK_ENABLE
         case PORT_E: __GPIOE_CLK_ENABLE(); break;
         #endif
