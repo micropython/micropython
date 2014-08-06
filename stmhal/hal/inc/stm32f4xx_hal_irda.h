@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_irda.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of IRDA HAL module.
   ******************************************************************************
   * @attention
@@ -233,21 +233,36 @@ typedef struct
 #define IRDA_IT_TC                          ((uint32_t)0x10000040)
 #define IRDA_IT_RXNE                        ((uint32_t)0x10000020)
 #define IRDA_IT_IDLE                        ((uint32_t)0x10000010)
-                         
+
 #define IRDA_IT_LBD                         ((uint32_t)0x20000040)
 
-#define IRDA_IT_CTS                         ((uint32_t)0x30000400)                                
+#define IRDA_IT_CTS                         ((uint32_t)0x30000400)
 #define IRDA_IT_ERR                         ((uint32_t)0x30000001)
 
 /**
   * @}
   */
-                                
+
 /**
   * @}
   */
   
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset IRDA handle state
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_IRDA_STATE_RESET)
+
+/** @brief  Flushs the IRDA DR register 
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  */
+#define __HAL_IRDA_FLUSH_DRREGISTER(__HANDLE__) ((__HANDLE__)->Instance->DR)
 
 /** @brief  Checks whether the specified IRDA flag is set or not.
   * @param  __HANDLE__: specifies the USART Handle.
@@ -287,8 +302,47 @@ typedef struct
   *   
   * @retval None
   */
-#define __HAL_IRDA_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR &= ~(__FLAG__))
+#define __HAL_IRDA_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR = ~(__FLAG__))
 
+/** @brief  Clear the IRDA PE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_CLEAR_PEFLAG(__HANDLE__) do{(__HANDLE__)->Instance->SR;\
+                                               (__HANDLE__)->Instance->DR;}while(0)
+/** @brief  Clear the IRDA FE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_CLEAR_FEFLAG(__HANDLE__) __HAL_IRDA_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the IRDA NE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_CLEAR_NEFLAG(__HANDLE__) __HAL_IRDA_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the IRDA ORE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_CLEAR_OREFLAG(__HANDLE__) __HAL_IRDA_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the IRDA IDLE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_IRDA_CLEAR_IDLEFLAG(__HANDLE__) __HAL_IRDA_CLEAR_PEFLAG(__HANDLE__)
 
 /** @brief  Enables or disables the specified IRDA interrupt.
   * @param  __HANDLE__: specifies the USART Handle.
@@ -358,9 +412,14 @@ HAL_StatusTypeDef HAL_IRDA_Transmit_IT(IRDA_HandleTypeDef *hirda, uint8_t *pData
 HAL_StatusTypeDef HAL_IRDA_Receive_IT(IRDA_HandleTypeDef *hirda, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef HAL_IRDA_Transmit_DMA(IRDA_HandleTypeDef *hirda, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef HAL_IRDA_Receive_DMA(IRDA_HandleTypeDef *hirda, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef HAL_IRDA_DMAPause(IRDA_HandleTypeDef *hirda);
+HAL_StatusTypeDef HAL_IRDA_DMAResume(IRDA_HandleTypeDef *hirda);
+HAL_StatusTypeDef HAL_IRDA_DMAStop(IRDA_HandleTypeDef *hirda);
 void HAL_IRDA_IRQHandler(IRDA_HandleTypeDef *hirda);
 void HAL_IRDA_TxCpltCallback(IRDA_HandleTypeDef *hirda);
 void HAL_IRDA_RxCpltCallback(IRDA_HandleTypeDef *hirda);
+void HAL_IRDA_TxHalfCpltCallback(IRDA_HandleTypeDef *hirda);
+void HAL_IRDA_RxHalfCpltCallback(IRDA_HandleTypeDef *hirda);
 void HAL_IRDA_ErrorCallback(IRDA_HandleTypeDef *hirda);
 
 /* Peripheral State functions  **************************************************/

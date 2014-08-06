@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_usart.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of USART HAL module.
   ******************************************************************************
   * @attention
@@ -62,7 +62,7 @@ typedef struct
 {
   uint32_t BaudRate;                  /*!< This member configures the Usart communication baud rate.
                                            The baud rate is computed using the following formula:
-                                           - IntegerDivider = ((PCLKx) / (8 * (hirda->Init.BaudRate)))
+                                           - IntegerDivider = ((PCLKx) / (8 * (husart->Init.BaudRate)))
                                            - FractionalDivider = ((IntegerDivider - ((uint32_t) IntegerDivider)) * 8) + 0.5 */
 
   uint32_t WordLength;                /*!< Specifies the number of data bits transmitted or received in a frame.
@@ -251,7 +251,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup Usart_NACK_State 
+/** @defgroup USART_NACK_State 
   * @{
   */
 #define USARTNACK_ENABLED           ((uint32_t)USART_CR3_NACK)
@@ -262,7 +262,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup Usart_Flags 
+/** @defgroup USART_Flags 
   *        Elements values convention: 0xXXXX
   *           - 0xXXXX  : Flag mask in the SR register
   * @{
@@ -298,24 +298,29 @@ typedef struct
 
 #define USART_IT_LBD                         ((uint32_t)0x20000040)
 #define USART_IT_CTS                         ((uint32_t)0x30000400)
-                                
+
 #define USART_IT_ERR                         ((uint32_t)0x30000001)
 
 
 /**
   * @}
   */
-                                
+
 /**
   * @}
   */
   
 /* Exported macro ------------------------------------------------------------*/
+/** @brief Reset USART handle state
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_USART_STATE_RESET)
 
 /** @brief  Checks whether the specified Smartcard flag is set or not.
   * @param  __HANDLE__: specifies the USART Handle.
-  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
-  *         UART peripheral.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
   * @param  __FLAG__: specifies the flag to check.
   *        This parameter can be one of the following values:
   *            @arg USART_FLAG_TXE:  Transmit data register empty flag
@@ -333,8 +338,7 @@ typedef struct
 
 /** @brief  Clears the specified Smartcard pending flags.
   * @param  __HANDLE__: specifies the USART Handle.
-  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
-  *         UART peripheral.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
   * @param  __FLAG__: specifies the flag to check.
   *          This parameter can be any combination of the following values:
   *            @arg USART_FLAG_TC:   Transmission Complete flag.
@@ -351,13 +355,46 @@ typedef struct
   *   
   * @retval None
   */
-#define __HAL_USART_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR &= ~(__FLAG__))
+#define __HAL_USART_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR = ~(__FLAG__))
 
+/** @brief  Clear the USART PE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_CLEAR_PEFLAG(__HANDLE__) do{(__HANDLE__)->Instance->SR;\
+                                                (__HANDLE__)->Instance->DR;}while(0)
+/** @brief  Clear the USART FE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_CLEAR_FEFLAG(__HANDLE__) __HAL_USART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the USART NE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_CLEAR_NEFLAG(__HANDLE__) __HAL_USART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the UART ORE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_CLEAR_OREFLAG(__HANDLE__) __HAL_USART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the USART IDLE pending flag.
+  * @param  __HANDLE__: specifies the USART Handle.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
+  * @retval None
+  */
+#define __HAL_USART_CLEAR_IDLEFLAG(__HANDLE__) __HAL_USART_CLEAR_PEFLAG(__HANDLE__)
 
 /** @brief  Enables or disables the specified Usart interrupts.
   * @param  __HANDLE__: specifies the USART Handle.
-  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
-  *         UART peripheral.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
   * @param  __INTERRUPT__: specifies the USART interrupt source to check.
   *          This parameter can be one of the following values:
   *            @arg USART_IT_TXE:  Transmit Data Register empty interrupt
@@ -381,8 +418,7 @@ typedef struct
     
 /** @brief  Checks whether the specified Usart interrupt has occurred or not.
   * @param  __HANDLE__: specifies the USART Handle.
-  *         This parameter can be USARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
-  *         UART peripheral.
+  *         This parameter can be USARTx where x: 1, 2, 3 or 6 to select the USART peripheral.
   * @param  __IT__: specifies the USART interrupt source to check.
   *          This parameter can be one of the following values:
   *            @arg USART_IT_TXE: Transmit Data Register empty interrupt

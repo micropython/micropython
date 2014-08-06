@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_flash_ex.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Extended FLASH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the FLASH extension peripheral:
@@ -30,7 +30,7 @@
            (++) Lock and Unlock the FLASH interface using HAL_FLASH_Unlock() and 
                 HAL_FLASH_Lock() functions
            (++) Erase function: Erase sector, erase all sectors
-           (++) There is two mode of erase :
+           (++) There are two modes of erase :
              (+++) Polling Mode using HAL_FLASHEx_Erase()
              (+++) Interrupt Mode using HAL_FLASHEx_Erase_IT()
              
@@ -113,10 +113,10 @@ static uint16_t           FLASH_OB_GetWRP(void);
 static FlagStatus         FLASH_OB_GetRDP(void);
 static uint8_t            FLASH_OB_GetBOR(void);
 
-#if defined(STM32F401xC) || defined(STM32F401xE)
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
 static HAL_StatusTypeDef  FLASH_OB_EnablePCROP(uint32_t Sector);
 static HAL_StatusTypeDef  FLASH_OB_DisablePCROP(uint32_t Sector);
-#endif /* STM32F401xC || STM32F401xE */
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) 
 static HAL_StatusTypeDef FLASH_OB_EnablePCROP(uint32_t SectorBank1, uint32_t SectorBank2, uint32_t Banks);
@@ -154,7 +154,7 @@ extern HAL_StatusTypeDef         FLASH_WaitForLastOperation(uint32_t Timeout);
   *         contains the configuration information on faulty sector in case of error 
   *         (0xFFFFFFFF means that all the sectors have been correctly erased)
   * 
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t *SectorError)
 {
@@ -224,7 +224,7 @@ HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t
   * @param  pEraseInit: pointer to an FLASH_EraseInitTypeDef structure that
   *         contains the configuration information for the erasing.
   * 
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_Erase_IT(FLASH_EraseInitTypeDef *pEraseInit)
 {
@@ -277,7 +277,7 @@ HAL_StatusTypeDef HAL_FLASHEx_Erase_IT(FLASH_EraseInitTypeDef *pEraseInit)
   * @param  pOBInit: pointer to an FLASH_OBInitStruct structure that
   *         contains the configuration information for the programming.
   * 
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_OBProgram(FLASH_OBProgramInitTypeDef *pOBInit)
 {
@@ -355,13 +355,14 @@ void HAL_FLASHEx_OBGetConfig(FLASH_OBProgramInitTypeDef *pOBInit)
   pOBInit->BORLevel = FLASH_OB_GetBOR();
 }
 
-#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) || defined(STM32F401xC) || defined(STM32F401xE)
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) ||\
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
 /**
   * @brief   Program option bytes
   * @param  pAdvOBInit: pointer to an FLASH_AdvOBProgramInitTypeDef structure that
   *         contains the configuration information for the programming.
   * 
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_AdvOBProgram (FLASH_AdvOBProgramInitTypeDef *pAdvOBInit)
 {
@@ -378,20 +379,20 @@ HAL_StatusTypeDef HAL_FLASHEx_AdvOBProgram (FLASH_AdvOBProgramInitTypeDef *pAdvO
     if ((pAdvOBInit->PCROPState) == PCROPSTATE_ENABLE)
     {
       /*Enable of Write protection on the selected Sector*/
-#if defined(STM32F401xC) || defined(STM32F401xE) 
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE) 
       status = FLASH_OB_EnablePCROP(pAdvOBInit->Sectors);
 #else  /* STM32F427xx || STM32F437xx || STM32F429xx|| STM32F439xx */
       status = FLASH_OB_EnablePCROP(pAdvOBInit->SectorsBank1, pAdvOBInit->SectorsBank2, pAdvOBInit->Banks);
-#endif /* STM32F401xC || STM32F401xE */
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
     }
     else
     {
       /*Disable of Write protection on the selected Sector*/
-#if defined(STM32F401xC) || defined(STM32F401xE) 
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE) 
       status = FLASH_OB_DisablePCROP(pAdvOBInit->Sectors);
 #else /* STM32F427xx || STM32F437xx || STM32F429xx|| STM32F439xx */
       status = FLASH_OB_DisablePCROP(pAdvOBInit->SectorsBank1, pAdvOBInit->SectorsBank2, pAdvOBInit->Banks);
-#endif /* STM32F401xC || STM32F401xE */
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
     }
   }
    
@@ -415,7 +416,7 @@ HAL_StatusTypeDef HAL_FLASHEx_AdvOBProgram (FLASH_AdvOBProgramInitTypeDef *pAdvO
   */
 void HAL_FLASHEx_AdvOBGetConfig(FLASH_AdvOBProgramInitTypeDef *pAdvOBInit)
 {
-#if defined(STM32F401xC) || defined(STM32F401xE)
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
   /*Get Sector*/
   pAdvOBInit->Sectors = (*(__IO uint16_t *)(OPTCR_BYTE2_ADDRESS));
 #else  /* STM32F427xx || STM32F437xx || STM32F429xx|| STM32F439xx */
@@ -427,7 +428,7 @@ void HAL_FLASHEx_AdvOBGetConfig(FLASH_AdvOBProgramInitTypeDef *pAdvOBInit)
 
   /*Get Boot config OB*/
   pAdvOBInit->BootConfig = *(__IO uint8_t *)OPTCR_BYTE0_ADDRESS;
-#endif /* STM32F401xC || STM32F401xE */
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
 }
 
 /**
@@ -440,7 +441,7 @@ void HAL_FLASHEx_AdvOBGetConfig(FLASH_AdvOBProgramInitTypeDef *pAdvOBInit)
   * @note   This function can be used only for STM32F427xx/STM32F429xx/STM32F437xx/STM32F439xx/STM32F401xx devices.     
   * 
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_OB_SelectPCROP(void)
 {
@@ -466,7 +467,7 @@ HAL_StatusTypeDef HAL_FLASHEx_OB_SelectPCROP(void)
   * @note   This function can be used only for STM32F427xx/STM32F429xx/STM32F437xx/STM32F439xx/STM32F401xx devices.     
   * 
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASHEx_OB_DeSelectPCROP(void)
 {
@@ -481,7 +482,7 @@ HAL_StatusTypeDef HAL_FLASHEx_OB_DeSelectPCROP(void)
   return HAL_OK;
 }
 
-#endif /* STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx || STM32F401xC || STM32F401xE */
+#endif /* STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx || STM32F401xC || STM32F401xE || STM32F411xE */
 
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx)
 
@@ -522,7 +523,7 @@ uint16_t HAL_FLASHEx_OB_GetBank2WRP(void)
   *            @arg FLASH_BANK_2: Bank2 to be erased
   *            @arg FLASH_BANK_BOTH: Bank1 and Bank2 to be erased
   *
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 static void FLASH_MassErase(uint8_t VoltageRange, uint32_t Banks)
 {
@@ -801,7 +802,7 @@ static HAL_StatusTypeDef FLASH_OB_BootConfig(uint8_t BootConfig)
   *            @arg FLASH_BANK_2: WRP on all sectors of bank2
   *            @arg FLASH_BANK_BOTH: WRP on all sectors of bank1 & bank2
   *
-  * @retval HAL_StatusTypeDef HAL Status  
+  * @retval HAL Status  
   */
 static HAL_StatusTypeDef FLASH_OB_EnablePCROP(uint32_t SectorBank1, uint32_t SectorBank2, uint32_t Banks)
 {
@@ -865,7 +866,7 @@ static HAL_StatusTypeDef FLASH_OB_EnablePCROP(uint32_t SectorBank1, uint32_t Sec
   *            @arg FLASH_BANK_2: WRP on all sectors of bank2
   *            @arg FLASH_BANK_BOTH: WRP on all sectors of bank1 & bank2
   *
-  * @retval HAL_StatusTypeDef HAL Status  
+  * @retval HAL Status  
   */
 static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t SectorBank1, uint32_t SectorBank2, uint32_t Banks)
 {  
@@ -914,7 +915,8 @@ static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t SectorBank1, uint32_t Se
 
 #endif /* STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx */
 
-#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx)|| defined(STM32F417xx) || defined(STM32F401xC) || defined(STM32F401xE) 
+#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx)|| defined(STM32F417xx) ||\
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
 /**
   * @brief  Mass erase of FLASH memory
   * @param  VoltageRange: The device voltage range which defines the erase parallelism.  
@@ -1014,7 +1016,7 @@ void FLASH_Erase_Sector(uint32_t Sector, uint8_t VoltageRange)
   *          This parameter can be one of the following values:
   *            @arg FLASH_BANK_1: WRP on all sectors of bank1
   *
-  * @retval HAL_StatusTypeDef HAL Status 
+  * @retval HAL Status 
   */
 static HAL_StatusTypeDef FLASH_OB_EnableWRP(uint32_t WRPSector, uint32_t Banks)
 {
@@ -1050,7 +1052,7 @@ static HAL_StatusTypeDef FLASH_OB_EnableWRP(uint32_t WRPSector, uint32_t Banks)
   *          This parameter can be one of the following values:
   *            @arg FLASH_BANK_1: WRP on all sectors of bank1
   *
-  * @retval HAL_StatusTypeDef HAL Status 
+  * @retval HAL Status 
   */
 static HAL_StatusTypeDef FLASH_OB_DisableWRP(uint32_t WRPSector, uint32_t Banks)
 {
@@ -1070,9 +1072,9 @@ static HAL_StatusTypeDef FLASH_OB_DisableWRP(uint32_t WRPSector, uint32_t Banks)
   
   return status;
 }
-#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F401xC || STM32F401xE */
+#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F401xC || STM32F401xE || STM32F411xE */
 
-#if defined(STM32F401xC) || defined(STM32F401xE)
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
 /**
   * @brief  Enable the read/write protection (PCROP) of the desired sectors.
   * @note   This function can be used only for STM32F401xx devices.
@@ -1080,7 +1082,7 @@ static HAL_StatusTypeDef FLASH_OB_DisableWRP(uint32_t WRPSector, uint32_t Banks)
   *          This parameter can be one of the following values:
   *            @arg OB_PCROP: A value between OB_PCROP_Sector0 and OB_PCROP_Sector5
   *            @arg OB_PCROP_Sector_All                         
-  * @retval HAL_StatusTypeDef HAL Status  
+  * @retval HAL Status  
   */
 static HAL_StatusTypeDef FLASH_OB_EnablePCROP(uint32_t Sector)
 {
@@ -1108,7 +1110,7 @@ static HAL_StatusTypeDef FLASH_OB_EnablePCROP(uint32_t Sector)
   *          This parameter can be one of the following values:
   *            @arg OB_PCROP: A value between OB_PCROP_Sector0 and OB_PCROP_Sector5
   *            @arg OB_PCROP_Sector_All                         
-  * @retval HAL_StatusTypeDef HAL Status  
+  * @retval HAL Status  
   */
 static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t Sector)
 {  
@@ -1128,7 +1130,7 @@ static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t Sector)
   return status;
 
 }
-#endif /* STM32F401xC || STM32F401xE */
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
 
 /**
   * @brief  Set the read protection level.
@@ -1140,7 +1142,7 @@ static HAL_StatusTypeDef FLASH_OB_DisablePCROP(uint32_t Sector)
   *   
   * @note WARNING: When enabling OB_RDP level 2 it's no more possible to go back to level 1 or 0
   *    
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 static HAL_StatusTypeDef FLASH_OB_RDP_LevelConfig(uint8_t Level)
 {
@@ -1174,7 +1176,7 @@ static HAL_StatusTypeDef FLASH_OB_RDP_LevelConfig(uint8_t Level)
   *          This parameter  can be one of the following values:
   *            @arg OB_STDBY_NO_RST: No reset generated when entering in STANDBY
   *            @arg OB_STDBY_RST: Reset generated when entering in STANDBY
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 static HAL_StatusTypeDef FLASH_OB_UserConfig(uint8_t Iwdg, uint8_t Stop, uint8_t Stdby)
 {
@@ -1210,7 +1212,7 @@ static HAL_StatusTypeDef FLASH_OB_UserConfig(uint8_t Iwdg, uint8_t Stop, uint8_t
   *            @arg OB_BOR_LEVEL2: Supply voltage ranges from 2.4 to 2.7 V
   *            @arg OB_BOR_LEVEL1: Supply voltage ranges from 2.1 to 2.4 V
   *            @arg OB_BOR_OFF: Supply voltage ranges from 1.62 to 2.1 V
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 static HAL_StatusTypeDef FLASH_OB_BOR_LevelConfig(uint8_t Level)
 {

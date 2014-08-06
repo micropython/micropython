@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_ll_fsmc.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   FSMC Low Layer HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -630,21 +630,22 @@ HAL_StatusTypeDef FSMC_NAND_ECC_Disable(FSMC_NAND_TypeDef *Device, uint32_t Bank
   */
 HAL_StatusTypeDef FSMC_NAND_GetECC(FSMC_NAND_TypeDef *Device, uint32_t *ECCval, uint32_t Bank, uint32_t Timeout)
 {
-  uint32_t timeout = 0;
+  uint32_t tickstart = 0;
   
   /* Check the parameters */ 
   assert_param(IS_FSMC_NAND_DEVICE(Device)); 
   assert_param(IS_FSMC_NAND_BANK(Bank));
-    
-  timeout = HAL_GetTick() + Timeout;
-  
+
+  /* Get tick */ 
+  tickstart = HAL_GetTick();
+
   /* Wait untill FIFO is empty */
   while(__FSMC_NAND_GET_FLAG(Device, Bank, FSMC_FLAG_FEMPT))
   {
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         return HAL_TIMEOUT;
       }

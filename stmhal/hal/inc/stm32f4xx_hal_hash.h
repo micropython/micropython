@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_hash.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of HASH HAL module.
   ******************************************************************************
   * @attention
@@ -33,7 +33,7 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F4xx_HAL_HASH_H
@@ -56,72 +56,68 @@
   * @{
   */ 
 
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 
 /** 
-  * @brief  HASH Configuration Structure definition  
+  * @brief  HASH Configuration Structure definition
   */
 typedef struct
-{  
+{
   uint32_t DataType;  /*!< 32-bit data, 16-bit data, 8-bit data or 1-bit string.
                            This parameter can be a value of @ref HASH_Data_Type */
-  
+
   uint32_t KeySize;   /*!< The key size is used only in HMAC operation          */
-  
+
   uint8_t* pKey;      /*!< The key is used only in HMAC operation               */
-    
 }HASH_InitTypeDef;
 
 /** 
-  * @brief HAL State structures definition  
+  * @brief HAL State structures definition
   */ 
 typedef enum
 {
   HAL_HASH_STATE_RESET     = 0x00,  /*!< HASH not yet initialized or disabled */
-  HAL_HASH_STATE_READY     = 0x01,  /*!< HASH initialized and ready for use   */ 
-  HAL_HASH_STATE_BUSY      = 0x02,  /*!< HASH internal process is ongoing     */  
+  HAL_HASH_STATE_READY     = 0x01,  /*!< HASH initialized and ready for use   */
+  HAL_HASH_STATE_BUSY      = 0x02,  /*!< HASH internal process is ongoing     */
   HAL_HASH_STATE_TIMEOUT   = 0x03,  /*!< HASH timeout state                   */
   HAL_HASH_STATE_ERROR     = 0x04   /*!< HASH error state                     */
-    
 }HAL_HASH_STATETypeDef;
 
 /** 
-  * @brief HAL phase structures definition  
-  */ 
+  * @brief HAL phase structures definition
+  */
 typedef enum
 {
   HAL_HASH_PHASE_READY     = 0x01,  /*!< HASH peripheral is ready for initialization */
   HAL_HASH_PHASE_PROCESS   = 0x02,  /*!< HASH peripheral is in processing phase      */
-
 }HAL_HASHPhaseTypeDef;
 
 /** 
-  * @brief  HASH Handle Structure definition  
-  */ 
+  * @brief  HASH Handle Structure definition
+  */
 typedef struct
-{   
+{
       HASH_InitTypeDef           Init;              /*!< HASH required parameters       */
-  
+
       uint8_t                    *pHashInBuffPtr;   /*!< Pointer to input buffer        */
-  
+
       uint8_t                    *pHashOutBuffPtr;  /*!< Pointer to input buffer        */
-  
+
      __IO uint32_t               HashBuffSize;      /*!< Size of buffer to be processed */
-  
+
      __IO uint32_t               HashInCount;       /*!< Counter of inputed data        */
-                              
+
      __IO uint32_t               HashITCounter;     /*!< Counter of issued interrupts   */
-        
+
       HAL_StatusTypeDef          Status;            /*!< HASH peripheral status         */
-  
+
       HAL_HASHPhaseTypeDef       Phase;             /*!< HASH peripheral phase          */
-  
+
       DMA_HandleTypeDef          *hdmain;           /*!< HASH In DMA handle parameters  */
-  
+
       HAL_LockTypeDef            Lock;              /*!< HASH locking object            */
-  
+
      __IO HAL_HASH_STATETypeDef  State;             /*!< HASH peripheral state          */
-  
 } HASH_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
@@ -130,9 +126,9 @@ typedef struct
   * @{
   */
 
-/** @defgroup HASH_Algo_Selection 
+/** @defgroup HASH_Algo_Selection
   * @{
-  */ 
+  */
 #define HASH_AlgoSelection_SHA1      ((uint32_t)0x0000)  /*!< HASH function is SHA1   */
 #define HASH_AlgoSelection_SHA224    HASH_CR_ALGO_1      /*!< HASH function is SHA224 */
 #define HASH_AlgoSelection_SHA256    HASH_CR_ALGO        /*!< HASH function is SHA256 */
@@ -146,7 +142,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup HASH_Algorithm_Mode 
+/** @defgroup HASH_Algorithm_Mode
   * @{
   */ 
 #define HASH_AlgoMode_HASH         ((uint32_t)0x00000000)  /*!< Algorithm is HASH */ 
@@ -158,9 +154,9 @@ typedef struct
   * @}
   */
 
-/** @defgroup HASH_Data_Type  
+/** @defgroup HASH_Data_Type
   * @{
-  */  
+  */
 #define HASH_DATATYPE_32B          ((uint32_t)0x0000) /*!< 32-bit data. No swapping                     */
 #define HASH_DATATYPE_16B          HASH_CR_DATATYPE_0 /*!< 16-bit data. Each half word is swapped       */
 #define HASH_DATATYPE_8B           HASH_CR_DATATYPE_1 /*!< 8-bit data. All bytes are swapped            */
@@ -174,7 +170,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup HASH_HMAC_Long_key_only_for_HMAC_mode  
+/** @defgroup HASH_HMAC_Long_key_only_for_HMAC_mode
   * @{
   */ 
 #define HASH_HMACKeyType_ShortKey      ((uint32_t)0x00000000)  /*!< HMAC Key is <= 64 bytes */
@@ -186,9 +182,9 @@ typedef struct
   * @}
   */
 
-/** @defgroup HASH_flags_definition   
+/** @defgroup HASH_flags_definition
   * @{
-  */  
+  */
 #define HASH_FLAG_DINIS            HASH_SR_DINIS  /*!< 16 locations are free in the DIN : A new block can be entered into the input buffer */
 #define HASH_FLAG_DCIS             HASH_SR_DCIS   /*!< Digest calculation complete                                                         */
 #define HASH_FLAG_DMAS             HASH_SR_DMAS   /*!< DMA interface is enabled (DMAE=1) or a transfer is ongoing                          */
@@ -196,9 +192,9 @@ typedef struct
 #define HASH_FLAG_DINNE            HASH_CR_DINNE  /*!< DIN not empty : The input buffer contains at least one word of data                 */
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup HASH_interrupts_definition   
+/** @defgroup HASH_interrupts_definition
   * @{
   */  
 #define HASH_IT_DINI               HASH_IMR_DINIM  /*!< A new block can be entered into the input buffer (DIN) */
@@ -212,6 +208,12 @@ typedef struct
   */
 
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset HASH handle state
+  * @param  __HANDLE__: specifies the HASH handle.
+  * @retval None
+  */
+#define __HAL_HASH_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_HASH_STATE_RESET)
 
 /** @brief  Check whether the specified HASH flag is set or not.
   * @param  __FLAG__: specifies the flag to check.

@@ -1,22 +1,14 @@
 /**
   ******************************************************************************
-  * @file    stm32f4xx_hal_msp_template.c
+  * @file    stm32f4xx_hal_pcd_ex.c
   * @author  MCD Application Team
   * @version V1.1.0
   * @date    19-June-2014
-  * @brief   HAL MSP module.
-  *          This file template is located in the HAL folder and should be copied 
-  *          to the user folder.
-  *         
-  @verbatim
- ===============================================================================
-                     ##### How to use this driver #####
- ===============================================================================
-    [..]
-    This file is generated automatically by MicroXplorer and eventually modified 
-    by the user
-
-  @endverbatim
+  * @brief   PCD HAL module driver.
+  *          This file provides firmware functions to manage the following 
+  *          functionalities of the USB Peripheral Controller:
+  *           + Extended features functions
+  *
   ******************************************************************************
   * @attention
   *
@@ -54,10 +46,12 @@
   * @{
   */
 
-/** @defgroup HAL_MSP
-  * @brief HAL MSP module.
+/** @defgroup PCDEx 
+  * @brief PCD Extended HAL module driver
   * @{
   */
+
+#ifdef HAL_PCD_MODULE_ENABLED
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -66,62 +60,89 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-/** @defgroup HAL_MSP_Private_Functions
+/** @defgroup PCDEx_Private_Functions
+  * @{
+  */
+
+  
+/** @defgroup PCDEx_Group1 Extended features functions 
+ *  @brief    Extended features functions  
+ *
+@verbatim   
+ ===============================================================================
+                 ##### Extended features functions #####
+ ===============================================================================  
+    [..]  This section provides functions allowing to:
+      (+) Update FIFO configuration
+
+@endverbatim
   * @{
   */
 
 /**
-  * @brief  Initializes the Global MSP.
-  * @param  None
-  * @retval None
+  * @brief  Update FIFO configuration
+  * @param  hpcd: PCD handle
+  * @retval HAL status
   */
-void HAL_MspInit(void)
+HAL_StatusTypeDef HAL_PCDEx_SetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo, uint16_t size)
 {
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */ 
+  uint8_t i = 0;
+  uint32_t Tx_Offset = 0;
+
+  /*  TXn min size = 16 words. (n  : Transmit FIFO index)
+      When a TxFIFO is not used, the Configuration should be as follows: 
+          case 1 :  n > m    and Txn is not used    (n,m  : Transmit FIFO indexes)
+         --> Txm can use the space allocated for Txn.
+         case2  :  n < m    and Txn is not used    (n,m  : Transmit FIFO indexes)
+         --> Txn should be configured with the minimum space of 16 words
+     The FIFO is used optimally when used TxFIFOs are allocated in the top 
+         of the FIFO.Ex: use EP1 and EP2 as IN instead of EP1 and EP3 as IN ones.
+     When DMA is used 3n * FIFO locations should be reserved for internal DMA registers */
+  
+  Tx_Offset = hpcd->Instance->GRXFSIZ;
+  
+  if(fifo == 0)
+  {
+    hpcd->Instance->DIEPTXF0_HNPTXFSIZ = (size << 16) | Tx_Offset;
+  }
+  else
+  {
+    Tx_Offset += (hpcd->Instance->DIEPTXF0_HNPTXFSIZ) >> 16;
+    for (i = 0; i < (fifo - 1); i++)
+    {
+      Tx_Offset += (hpcd->Instance->DIEPTXF[i] >> 16);
+    }
+    
+    /* Multiply Tx_Size by 2 to get higher performance */
+    hpcd->Instance->DIEPTXF[fifo - 1] = (size << 16) | Tx_Offset;
+    
+  }
+  
+  return HAL_OK;
 }
 
 /**
-  * @brief  DeInitializes the Global MSP.
-  * @param  None  
-  * @retval None
+  * @brief  Update FIFO configuration
+  * @param  hpcd: PCD handle
+  * @retval HAL status
   */
-void HAL_MspDeInit(void)
+HAL_StatusTypeDef HAL_PCDEx_SetRxFiFo(PCD_HandleTypeDef *hpcd, uint16_t size)
 {
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */
-}
-
-/**
-  * @brief  Initializes the PPP MSP.
-  * @param  None
-  * @retval None
-  */
-void HAL_PPP_MspInit(void)
-{
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */ 
-}
-
-/**
-  * @brief  DeInitializes the PPP MSP.
-  * @param  None  
-  * @retval None
-  */
-void HAL_PPP_MspDeInit(void)
-{
-  /* NOTE : This function is generated automatically by MicroXplorer and eventually  
-            modified by the user
-   */
+  
+  hpcd->Instance->GRXFSIZ = size;
+  
+  return HAL_OK;
 }
 
 /**
   * @}
   */
 
+/**
+  * @}
+  */
+
+#endif /* HAL_PCD_MODULE_ENABLED */
 /**
   * @}
   */

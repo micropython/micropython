@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_rtc.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of RTC HAL module.
   ******************************************************************************
   * @attention
@@ -98,7 +98,7 @@ typedef struct
 typedef struct
 {
   uint8_t Hours;            /*!< Specifies the RTC Time Hour.
-                                 This parameter must be a number between Min_Data = 0 and Max_Data = 12 if the RTC_HourFormat_12 is selected
+                                 This parameter must be a number between Min_Data = 0 and Max_Data = 12 if the RTC_HourFormat_12 is selected.
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 23 if the RTC_HourFormat_24 is selected  */
 
   uint8_t Minutes;          /*!< Specifies the RTC Time Minutes.
@@ -113,7 +113,7 @@ typedef struct
   uint8_t TimeFormat;       /*!< Specifies the RTC AM/PM Time.
                                  This parameter can be a value of @ref RTC_AM_PM_Definitions */ 
   
-  uint32_t DayLightSaving;  /*!< Specifies RTC_DayLightSaveOperation: the value of hour adjustment. 
+  uint32_t DayLightSaving;  /*!< Specifies DayLight Save Operation.
                                  This parameter can be a value of @ref RTC_DayLightSaving_Definitions */
   
   uint32_t StoreOperation;  /*!< Specifies RTC_StoreOperation value to be written in the BCK bit 
@@ -542,6 +542,12 @@ typedef struct
   
 /* Exported macro ------------------------------------------------------------*/
 
+/** @brief Reset RTC handle state
+  * @param  __HANDLE__: specifies the RTC handle.
+  * @retval None
+  */
+#define __HAL_RTC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_RTC_STATE_RESET)
+
 /**
   * @brief  Disable the write protection for RTC registers.
   * @param  __HANDLE__: specifies the RTC handle.
@@ -657,34 +663,55 @@ typedef struct
   * @brief  Enable the RTC Exti line.
   * @param  __EXTILINE__: specifies the RTC Exti sources to be enabled or disabled.
   *         This parameter can be:
-  *            @arg RTC_EXTI_LINE_ALARM_EVENT   
-  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT 
-  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT      
+  *            @arg RTC_EXTI_LINE_ALARM_EVENT
+  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT
+  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT
   * @retval None
-  */                                         
-#define __HAL_RTC_ENABLE_IT(__EXTILINE__)   (EXTI->IMR |= (__EXTILINE__))
+  */
+#define __HAL_RTC_EXTI_ENABLE_IT(__EXTILINE__)   (EXTI->IMR |= (__EXTILINE__))
+
+/* alias define maintained for legacy */
+#define __HAL_RTC_ENABLE_IT   __HAL_RTC_EXTI_ENABLE_IT
 
 /**
   * @brief  Disable the RTC Exti line.
   * @param  __EXTILINE__: specifies the RTC Exti sources to be enabled or disabled.
   *         This parameter can be:
-  *            @arg RTC_EXTI_LINE_ALARM_EVENT   
-  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT 
-  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT     
+  *            @arg RTC_EXTI_LINE_ALARM_EVENT
+  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT
+  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT
   * @retval None
   */
-#define __HAL_RTC_DISABLE_IT(__EXTILINE__)  (EXTI->IMR &= ~(__EXTILINE__))
+#define __HAL_RTC_EXTI_DISABLE_IT(__EXTILINE__)  (EXTI->IMR &= ~(__EXTILINE__))
+
+/* alias define maintained for legacy */
+#define __HAL_RTC_DISABLE_IT   __HAL_RTC_EXTI_DISABLE_IT
+
+/**
+  * @brief  Generates a Software interrupt on selected EXTI line.
+  * @param  __EXTILINE__: specifies the RTC Exti sources to be enabled or disabled.
+  *         This parameter can be:
+  *            @arg RTC_EXTI_LINE_ALARM_EVENT
+  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT
+  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT
+  * @retval None
+  */
+#define __HAL_RTC_EXTI_GENERATE_SWIT(__EXTI_LINE__) (EXTI->SWIER |= (__EXTI_LINE__))
 
 /**
   * @brief  Clear the RTC Exti flags.
   * @param  __FLAG__: specifies the RTC Exti sources to be enabled or disabled.
   *         This parameter can be:
-  *            @arg RTC_EXTI_LINE_ALARM_EVENT   
-  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT 
-  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT      
+  *            @arg RTC_EXTI_LINE_ALARM_EVENT
+  *            @arg RTC_EXTI_LINE_TAMPER_TIMESTAMP_EVENT
+  *            @arg RTC_EXTI_LINE_WAKEUPTIMER_EVENT
   * @retval None
   */
-#define __HAL_RTC_CLEAR_FLAG(__FLAG__)  (EXTI->PR = (__FLAG__))
+#define __HAL_RTC_EXTI_CLEAR_FLAG(__FLAG__)  (EXTI->PR = (__FLAG__))
+
+/* alias define maintained for legacy */
+#define __HAL_RTC_CLEAR_FLAG   __HAL_RTC_EXTI_CLEAR_FLAG
+
 
 /* Include RTC HAL Extension module */
 #include "stm32f4xx_hal_rtc_ex.h"

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_sai.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of SAI HAL module.
   ******************************************************************************
   * @attention
@@ -177,35 +177,34 @@ typedef enum
 typedef struct
 {
   SAI_Block_TypeDef         *Instance;  /*!< SAI Blockx registers base address        */
-  
+
   SAI_InitTypeDef           Init;       /*!< SAI communication parameters             */
-  
+
   SAI_FrameInitTypeDef      FrameInit;  /*!< SAI Frame configuration parameters       */
-  
+
   SAI_SlotInitTypeDef       SlotInit;   /*!< SAI Slot configuration parameters        */
-    
-  uint16_t                  *pTxBuffPtr; /*!< Pointer to SAI Tx transfer Buffer        */
-  
-  uint16_t                  TxXferSize;  /*!< SAI Tx transfer size                     */ 
-  
-  uint16_t                  TxXferCount; /*!< SAI Tx transfer counter                  */ 
-  
-  uint16_t                  *pRxBuffPtr; /*!< Pointer to SAI Rx transfer buffer        */
-  
-  uint16_t                  RxXferSize;  /*!< SAI Rx transfer size                     */
-  
-  uint16_t                  RxXferCount; /*!< SAI Rx transfer counter                  */
-                        
-  DMA_HandleTypeDef         *hdmatx;     /*!< SAI Tx DMA handle parameters             */
-  
-  DMA_HandleTypeDef         *hdmarx;     /*!< SAI Rx DMA handle parameters             */
 
-  HAL_LockTypeDef           Lock;        /*!< SAI locking object                       */
-                                                                             
-  __IO HAL_SAI_StateTypeDef State;       /*!< SAI communication state                  */
-  
-  __IO uint32_t             ErrorCode;   /*!< SAI Error code                           */
+  uint16_t                  *pTxBuffPtr; /*!< Pointer to SAI Tx transfer Buffer       */
 
+  uint16_t                  TxXferSize;  /*!< SAI Tx transfer size                    */
+
+  uint16_t                  TxXferCount; /*!< SAI Tx transfer counter                 */
+
+  uint16_t                  *pRxBuffPtr; /*!< Pointer to SAI Rx transfer buffer       */
+
+  uint16_t                  RxXferSize;  /*!< SAI Rx transfer size                    */
+
+  uint16_t                  RxXferCount; /*!< SAI Rx transfer counter                 */
+
+  DMA_HandleTypeDef         *hdmatx;     /*!< SAI Tx DMA handle parameters            */
+
+  DMA_HandleTypeDef         *hdmarx;     /*!< SAI Rx DMA handle parameters            */
+
+  HAL_LockTypeDef           Lock;        /*!< SAI locking object                      */
+
+  __IO HAL_SAI_StateTypeDef State;       /*!< SAI communication state                 */
+
+  __IO uint32_t             ErrorCode;   /*!< SAI Error code                          */
 }SAI_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
@@ -218,7 +217,7 @@ typedef struct
   */ 
 #define HAL_SAI_ERROR_NONE      ((uint32_t)0x00000000)     /*!< No error             */
 #define HAL_SAI_ERROR_OVR       ((uint32_t)0x00000001)     /*!< Overrun Error        */
-#define HAL_SAI_ERROR_UDR       ((uint32_t)0x00000002)     /*!< Underrun error       */   
+#define HAL_SAI_ERROR_UDR       ((uint32_t)0x00000002)     /*!< Underrun error       */
 #define HAL_SAI_ERROR_TIMEOUT   ((uint32_t)0x00000020)     /*!< Timeout error        */
 /**
   * @}
@@ -236,7 +235,7 @@ typedef struct
                                    ((SOURCE) == SAI_CLKSOURCE_EXT))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup SAI_Audio_Frequency
   * @{
@@ -462,8 +461,8 @@ typedef struct
 /** @defgroup SAI_Block_Slot_Active
   * @{
   */
-#define SAI_SLOT_NOTACTIVE           ((uint32_t)0x00000000)  
-#define SAI_SLOTACTIVE_0             ((uint32_t)0x00010000)  
+#define SAI_SLOT_NOTACTIVE           ((uint32_t)0x00000000)
+#define SAI_SLOTACTIVE_0             ((uint32_t)0x00010000)
 #define SAI_SLOTACTIVE_1             ((uint32_t)0x00020000)
 #define SAI_SLOTACTIVE_2             ((uint32_t)0x00040000)
 #define SAI_SLOTACTIVE_3             ((uint32_t)0x00080000)
@@ -645,6 +644,11 @@ typedef struct
   */
   
 /* Exported macro ------------------------------------------------------------*/
+/** @brief Reset SAI handle state
+  * @param  __HANDLE__: specifies the SAI Handle.
+  * @retval None
+  */
+#define __HAL_SAI_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SAI_STATE_RESET)
 
 /** @brief  Enable or disable the specified SAI interrupts.
   * @param  __HANDLE__: specifies the SAI Handle.
@@ -704,7 +708,7 @@ typedef struct
   *   
   * @retval None
   */
-#define __HAL_SAI_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->CLRFR |= (__FLAG__))                                        
+#define __HAL_SAI_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->CLRFR = (__FLAG__))                                        
 
 #define __HAL_SAI_ENABLE(__HANDLE__) ((__HANDLE__)->Instance->CR1 |=  SAI_xCR1_SAIEN)
 #define __HAL_SAI_DISABLE(__HANDLE__) ((__HANDLE__)->Instance->CR1 &=  ~SAI_xCR1_SAIEN)

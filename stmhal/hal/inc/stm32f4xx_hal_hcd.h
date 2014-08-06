@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_hcd.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of HCD HAL module.
   ******************************************************************************
   * @attention
@@ -61,10 +61,11 @@
   */  
 typedef enum 
 {
-  HCD_READY    = 0x00,
-  HCD_ERROR    = 0x01,
-  HCD_BUSY     = 0x02,
-  HCD_TIMEOUT  = 0x03
+  HAL_HCD_STATE_RESET    = 0x00,
+  HAL_HCD_STATE_READY    = 0x01,
+  HAL_HCD_STATE_ERROR    = 0x02,
+  HAL_HCD_STATE_BUSY     = 0x03,
+  HAL_HCD_STATE_TIMEOUT  = 0x04
 } HCD_StateTypeDef;
 
 typedef USB_OTG_GlobalTypeDef   HCD_TypeDef;
@@ -95,16 +96,11 @@ typedef struct
 /** @defgroup HCD_Instance_definition 
   * @{
   */ 
-   
-#define __HAL_HCD_GET_FLAG(__HANDLE__, __INTERRUPT__)      ((USB_ReadInterrupts((__HANDLE__)->Instance) & (__INTERRUPT__)) == (__INTERRUPT__))
-#define __HAL_HCD_CLEAR_FLAG(__HANDLE__, __INTERRUPT__)    (((__HANDLE__)->Instance->GINTSTS) |= (__INTERRUPT__))
-#define __HAL_HCD_IS_INVALID_INTERRUPT(__HANDLE__)         (USB_ReadInterrupts((__HANDLE__)->Instance) == 0)   
-
 
 #if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
  #define IS_HCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB_OTG_FS) || \
                                         ((INSTANCE) == USB_OTG_HS))
-#elif defined(STM32F401xC) || defined(STM32F401xE)
+#elif defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
  #define IS_HCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB_OTG_FS))
 #endif
 
@@ -144,9 +140,10 @@ typedef struct
 #define __HAL_HCD_ENABLE(__HANDLE__)                   USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_HCD_DISABLE(__HANDLE__)                  USB_DisableGlobalInt ((__HANDLE__)->Instance)
    
-#define __HAL_GET_FLAG(__HANDLE__, __INTERRUPT__)      ((USB_ReadInterrupts((__HANDLE__)->Instance) & (__INTERRUPT__)) == (__INTERRUPT__))
-#define __HAL_CLEAR_FLAG(__HANDLE__, __INTERRUPT__)    (((__HANDLE__)->Instance->GINTSTS) |= (__INTERRUPT__))
-#define __HAL_IS_INVALID_INTERRUPT(__HANDLE__)         (USB_ReadInterrupts((__HANDLE__)->Instance) == 0)   
+   
+#define __HAL_HCD_GET_FLAG(__HANDLE__, __INTERRUPT__)      ((USB_ReadInterrupts((__HANDLE__)->Instance) & (__INTERRUPT__)) == (__INTERRUPT__))
+#define __HAL_HCD_CLEAR_FLAG(__HANDLE__, __INTERRUPT__)    (((__HANDLE__)->Instance->GINTSTS) = (__INTERRUPT__))
+#define __HAL_HCD_IS_INVALID_INTERRUPT(__HANDLE__)         (USB_ReadInterrupts((__HANDLE__)->Instance) == 0)    
    
    
 #define __HAL_HCD_CLEAR_HC_INT(chnum, __INTERRUPT__)  (USBx_HC(chnum)->HCINT = (__INTERRUPT__)) 

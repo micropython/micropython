@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pcd.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of PCD HAL module.
   ******************************************************************************
   * @attention
@@ -61,10 +61,11 @@
   */  
 typedef enum 
 {
-  PCD_READY    = 0x00,
-  PCD_ERROR    = 0x01,
-  PCD_BUSY     = 0x02,
-  PCD_TIMEOUT  = 0x03
+  HAL_PCD_STATE_RESET   = 0x00,
+  HAL_PCD_STATE_READY   = 0x01,
+  HAL_PCD_STATE_ERROR   = 0x02,
+  HAL_PCD_STATE_BUSY    = 0x03,
+  HAL_PCD_STATE_TIMEOUT = 0x04
 } PCD_StateTypeDef;
 
 
@@ -118,7 +119,7 @@ typedef struct
 #if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
  #define IS_PCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB_OTG_FS) || \
                                         ((INSTANCE) == USB_OTG_HS))
-#elif defined(STM32F401xC) || defined(STM32F401xE)
+#elif defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
  #define IS_PCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB_OTG_FS))
 #endif
 
@@ -139,9 +140,9 @@ typedef struct
 #define __HAL_PCD_ENABLE(__HANDLE__)                   USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_PCD_DISABLE(__HANDLE__)                  USB_DisableGlobalInt ((__HANDLE__)->Instance)
    
-#define __HAL_GET_FLAG(__HANDLE__, __INTERRUPT__)      ((USB_ReadInterrupts((__HANDLE__)->Instance) & (__INTERRUPT__)) == (__INTERRUPT__))
-#define __HAL_CLEAR_FLAG(__HANDLE__, __INTERRUPT__)    (((__HANDLE__)->Instance->GINTSTS) |= (__INTERRUPT__))
-#define __HAL_IS_INVALID_INTERRUPT(__HANDLE__)         (USB_ReadInterrupts((__HANDLE__)->Instance) == 0)
+#define __HAL_PCD_GET_FLAG(__HANDLE__, __INTERRUPT__)      ((USB_ReadInterrupts((__HANDLE__)->Instance) & (__INTERRUPT__)) == (__INTERRUPT__))
+#define __HAL_PCD_CLEAR_FLAG(__HANDLE__, __INTERRUPT__)    (((__HANDLE__)->Instance->GINTSTS) = (__INTERRUPT__))
+#define __HAL_PCD_IS_INVALID_INTERRUPT(__HANDLE__)         (USB_ReadInterrupts((__HANDLE__)->Instance) == 0)
 
 
 #define __HAL_PCD_UNGATE_PHYCLOCK(__HANDLE__)             *(__IO uint32_t *)((uint32_t)((__HANDLE__)->Instance) + USB_OTG_PCGCCTL_BASE) &= \
@@ -184,7 +185,9 @@ typedef struct
                                                         EXTI->RTSR |= USB_HS_EXTI_LINE_WAKEUP;\
                                                         EXTI->FTSR |= USB_HS_EXTI_LINE_WAKEUP
 
-
+#define __HAL_USB_HS_EXTI_GENERATE_SWIT()             (EXTI->SWIER |= USB_FS_EXTI_LINE_WAKEUP) 
+                                                          
+                                                          
 #define __HAL_USB_FS_EXTI_ENABLE_IT()    EXTI->IMR |= USB_FS_EXTI_LINE_WAKEUP
 #define __HAL_USB_FS_EXTI_DISABLE_IT()   EXTI->IMR &= ~(USB_FS_EXTI_LINE_WAKEUP)
 #define __HAL_USB_FS_EXTI_GET_FLAG()     EXTI->PR & (USB_FS_EXTI_LINE_WAKEUP)
@@ -201,11 +204,16 @@ typedef struct
 #define __HAL_USB_FS_EXTI_SET_FALLINGRISING_TRIGGER()  EXTI->RTSR &= ~(USB_FS_EXTI_LINE_WAKEUP);\
                                                        EXTI->FTSR &= ~(USB_FS_EXTI_LINE_WAKEUP);\
                                                        EXTI->RTSR |= USB_FS_EXTI_LINE_WAKEUP;\
-                                                       EXTI->FTSR |= USB_FS_EXTI_LINE_WAKEUP  
+                                                       EXTI->FTSR |= USB_FS_EXTI_LINE_WAKEUP 
+                                                         
+#define __HAL_USB_FS_EXTI_GENERATE_SWIT()             (EXTI->SWIER |= USB_FS_EXTI_LINE_WAKEUP)                                                          
 
 /**
   * @}
   */
+
+/* Include PCD HAL Extension module */
+#include "stm32f4xx_hal_pcd_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -233,8 +241,6 @@ void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
 void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd);
 
-
-
 /* Peripheral Control functions  ************************************************/
 HAL_StatusTypeDef HAL_PCD_DevConnect(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_DevDisconnect(PCD_HandleTypeDef *hpcd);
@@ -247,10 +253,13 @@ uint16_t          HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr
 HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr);
 HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr);
 HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr);
-HAL_StatusTypeDef HAL_PCD_SetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo, uint16_t size);
-HAL_StatusTypeDef HAL_PCD_SetRxFiFo(PCD_HandleTypeDef *hpcd, uint16_t size);
 HAL_StatusTypeDef HAL_PCD_ActiveRemoteWakeup(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_DeActiveRemoteWakeup(PCD_HandleTypeDef *hpcd);
+
+/* Create an alias to keep compatibility with the old name */ 
+#define HAL_PCD_SetTxFiFo    HAL_PCDEx_SetTxFiFo
+#define HAL_PCD_SetRxFiFo    HAL_PCDEx_SetRxFiFo
+
 /* Peripheral State functions  **************************************************/
 PCD_StateTypeDef HAL_PCD_GetState(PCD_HandleTypeDef *hpcd);
 

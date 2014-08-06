@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_iwdg.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of IWDG HAL module.
   ******************************************************************************
   * @attention
@@ -112,6 +112,10 @@ typedef struct
 #define KR_KEY_EWA      ((uint32_t)0x5555)  /*!< IWDG KR write Access enable  */
 #define KR_KEY_DWA      ((uint32_t)0x0000)  /*!< IWDG KR write Access disable */
 
+#define IS_IWDG_KR(__KR__) (((__KR__) == KR_KEY_RELOAD) || \
+                            ((__KR__) == KR_KEY_ENABLE))|| \
+                            ((__KR__) == KR_KEY_EWA))   || \
+                            ((__KR__) == KR_KEY_DWA))
 /**
   * @}
   */
@@ -133,12 +137,13 @@ typedef struct
   * @{
   */ 
 #define IWDG_PRESCALER_4     ((uint8_t)0x00)  /*!< IWDG prescaler set to 4   */
-#define IWDG_PRESCALER_8     ((uint8_t)0x01)  /*!< IWDG prescaler set to 8   */
-#define IWDG_PRESCALER_16    ((uint8_t)0x02)  /*!< IWDG prescaler set to 16  */
-#define IWDG_PRESCALER_32    ((uint8_t)0x03)  /*!< IWDG prescaler set to 32  */
-#define IWDG_PRESCALER_64    ((uint8_t)0x04)  /*!< IWDG prescaler set to 64  */
-#define IWDG_PRESCALER_128   ((uint8_t)0x05)  /*!< IWDG prescaler set to 128 */
-#define IWDG_PRESCALER_256   ((uint8_t)0x06)  /*!< IWDG prescaler set to 256 */
+#define IWDG_PRESCALER_8     ((uint8_t)(IWDG_PR_PR_0))                  /*!< IWDG prescaler set to 8   */
+#define IWDG_PRESCALER_16    ((uint8_t)(IWDG_PR_PR_1))                  /*!< IWDG prescaler set to 16  */
+#define IWDG_PRESCALER_32    ((uint8_t)(IWDG_PR_PR_1 | IWDG_PR_PR_0))   /*!< IWDG prescaler set to 32  */
+#define IWDG_PRESCALER_64    ((uint8_t)(IWDG_PR_PR_2))                  /*!< IWDG prescaler set to 64  */
+#define IWDG_PRESCALER_128   ((uint8_t)(IWDG_PR_PR_2 | IWDG_PR_PR_0))   /*!< IWDG prescaler set to 128 */
+#define IWDG_PRESCALER_256   ((uint8_t)(IWDG_PR_PR_2 | IWDG_PR_PR_1))   /*!< IWDG prescaler set to 256 */
+
 
 #define IS_IWDG_PRESCALER(PRESCALER) (((PRESCALER) == IWDG_PRESCALER_4)  || \
                                       ((PRESCALER) == IWDG_PRESCALER_8)  || \
@@ -167,12 +172,18 @@ typedef struct
 
 /* Exported macro ------------------------------------------------------------*/
 
+/** @brief Reset IWDG handle state
+  * @param  __HANDLE__: IWDG handle
+  * @retval None
+  */
+#define __HAL_IWDG_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_IWDG_STATE_RESET)
+
 /**
   * @brief  Enables the IWDG peripheral.
   * @param  __HANDLE__: IWDG handle
   * @retval None
   */
-#define __HAL_IWDG_START(__HANDLE__) ((__HANDLE__)->Instance->KR |=  KR_KEY_ENABLE)
+#define __HAL_IWDG_START(__HANDLE__) WRITE_REG((__HANDLE__)->Instance->KR, KR_KEY_ENABLE)
 
 /**
   * @brief  Reloads IWDG counter with value defined in the reload register
@@ -180,21 +191,21 @@ typedef struct
   * @param  __HANDLE__: IWDG handle
   * @retval None
   */
-#define __HAL_IWDG_RELOAD_COUNTER(__HANDLE__) (((__HANDLE__)->Instance->KR) |= KR_KEY_RELOAD)
+#define __HAL_IWDG_RELOAD_COUNTER(__HANDLE__) WRITE_REG((__HANDLE__)->Instance->KR, KR_KEY_RELOAD)
 
 /**
   * @brief  Enables write access to IWDG_PR and IWDG_RLR registers.
   * @param  __HANDLE__: IWDG handle
   * @retval None
   */
-#define __HAL_IWDG_ENABLE_WRITE_ACCESS(__HANDLE__) (((__HANDLE__)->Instance->KR) |= KR_KEY_EWA)
+#define __HAL_IWDG_ENABLE_WRITE_ACCESS(__HANDLE__) WRITE_REG((__HANDLE__)->Instance->KR, KR_KEY_EWA)
 
 /**
   * @brief  Disables write access to IWDG_PR and IWDG_RLR registers.
   * @param  __HANDLE__: IWDG handle
   * @retval None
   */
-#define __HAL_IWDG_DISABLE_WRITE_ACCESS(__HANDLE__) (((__HANDLE__)->Instance->KR) |= KR_KEY_DWA)
+#define __HAL_IWDG_DISABLE_WRITE_ACCESS(__HANDLE__) WRITE_REG((__HANDLE__)->Instance->KR, KR_KEY_DWA)
 
 /**
   * @brief  Gets the selected IWDG's flag status.
@@ -206,18 +217,6 @@ typedef struct
   * @retval The new state of __FLAG__ (TRUE or FALSE).
   */
 #define __HAL_IWDG_GET_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR & (__FLAG__)) == (__FLAG__))
-
-/**
-  * @brief  Clears the IWDG's pending flags.
-  * @param  __HANDLE__: IWDG handle
-  * @param  __FLAG__: specifies the flag to clear.
-  *         This parameter can be one of the following values:
-  *            @arg IWDG_FLAG_PVU: Watchdog counter reload value update flag
-  *            @arg IWDG_FLAG_RVU: Watchdog counter prescaler value flag
-  * @retval None
-  */
-#define __HAL_IWDG_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR &= ~(__FLAG__))
-
 
 /* Exported functions --------------------------------------------------------*/
 

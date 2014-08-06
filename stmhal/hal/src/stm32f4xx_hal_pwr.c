@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pwr.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   PWR HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Power Controller (PWR) peripheral:
@@ -276,6 +276,9 @@ void HAL_PWR_PVDConfig(PWR_PVDTypeDef *sConfigPVD)
   {
     __HAL_PVD_EXTI_ENABLE_IT(PWR_EXTI_LINE_PVD);
   }
+  /* Clear the edge trigger  for the EXTI Line 16 (PVD) */
+  EXTI->RTSR &= ~EXTI_RTSR_TR16;
+  EXTI->FTSR &= ~EXTI_FTSR_TR16;  
   /* Configure the rising edge */
   if((sConfigPVD->Mode == PWR_MODE_IT_RISING_FALLING) ||\
      (sConfigPVD->Mode == PWR_MODE_IT_RISING))
@@ -312,7 +315,7 @@ void HAL_PWR_DisablePVD(void)
 
 /**
   * @brief Enables the WakeUp PINx functionality.
-  * @param WakeUpPinx: Specifies the Power Wake-Up pin to enable
+  * @param WakeUpPinx: Specifies the Power Wake-Up pin to enable.
   *         This parameter can be one of the following values:
   *           @arg PWR_WAKEUP_PIN1
   * @retval None
@@ -326,7 +329,7 @@ void HAL_PWR_EnableWakeUpPin(uint32_t WakeUpPinx)
 
 /**
   * @brief Disables the WakeUp PINx functionality.
-  * @param WakeUpPinx: Specifies the Power Wake-Up pin to disable
+  * @param WakeUpPinx: Specifies the Power Wake-Up pin to disable.
   *         This parameter can be one of the following values:
   *           @arg PWR_WAKEUP_PIN1
   * @retval None
@@ -363,10 +366,7 @@ void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry)
   /* Check the parameters */
   assert_param(IS_PWR_REGULATOR(Regulator));
   assert_param(IS_PWR_SLEEP_ENTRY(SLEEPEntry));
-  
-  /* Disable SysTick Timer */
-  SysTick->CTRL  &= 0xFE;
-  
+
   /* Select SLEEP mode entry -------------------------------------------------*/
   if(SLEEPEntry == PWR_SLEEPENTRY_WFI)
   {   
@@ -376,11 +376,10 @@ void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry)
   else
   {
     /* Request Wait For Event */
+    __SEV();
+    __WFE();
     __WFE();
   }
-
-  /* Enable SysTick Timer */
-  SysTick->CTRL  |= 0x01;
 }
 
 /**
@@ -452,9 +451,6 @@ void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
   */
 void HAL_PWR_EnterSTANDBYMode(void)
 {
-  /* Clear Wakeup flag */
-  PWR->CR |= PWR_CR_CWUF;
-  
   /* Select Standby mode */
   PWR->CR |= PWR_CR_PDDS;
   
@@ -490,8 +486,8 @@ void HAL_PWR_PVD_IRQHandler(void)
 
 /**
   * @brief  PWR PVD interrupt callback
-  * @param  none 
-  * @retval none
+  * @param  None 
+  * @retval None
   */
 __weak void HAL_PWR_PVDCallback(void)
 {

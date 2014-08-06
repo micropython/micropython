@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dma.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of DMA HAL module.
   ******************************************************************************
   * @attention
@@ -54,36 +54,36 @@
   * @{
   */ 
 
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 
 /** 
-  * @brief  DMA Configuration Structure definition  
+  * @brief  DMA Configuration Structure definition
   */
 typedef struct
 {
   uint32_t Channel;              /*!< Specifies the channel used for the specified stream. 
                                       This parameter can be a value of @ref DMA_Channel_selection                    */
-                               
+
   uint32_t Direction;            /*!< Specifies if the data will be transferred from memory to peripheral, 
                                       from memory to memory or from peripheral to memory.
                                       This parameter can be a value of @ref DMA_Data_transfer_direction              */
 
   uint32_t PeriphInc;            /*!< Specifies whether the Peripheral address register should be incremented or not.
-                                      This parameter can be a value of @ref DMA_Peripheral_incremented_mode          */  
-                               
+                                      This parameter can be a value of @ref DMA_Peripheral_incremented_mode          */
+
   uint32_t MemInc;               /*!< Specifies whether the memory address register should be incremented or not.
                                       This parameter can be a value of @ref DMA_Memory_incremented_mode              */
-  
+
   uint32_t PeriphDataAlignment;  /*!< Specifies the Peripheral data width.
-                                      This parameter can be a value of @ref DMA_Peripheral_data_size                 */   
+                                      This parameter can be a value of @ref DMA_Peripheral_data_size                 */
 
   uint32_t MemDataAlignment;     /*!< Specifies the Memory data width.
                                       This parameter can be a value of @ref DMA_Memory_data_size                     */
-                               
+
   uint32_t Mode;                 /*!< Specifies the operation mode of the DMAy Streamx.
                                       This parameter can be a value of @ref DMA_mode
                                       @note The circular buffer mode cannot be used if the memory-to-memory
-                                            data transfer is configured on the selected Stream                        */ 
+                                            data transfer is configured on the selected Stream                        */
 
   uint32_t Priority;             /*!< Specifies the software priority for the DMAy Streamx.
                                       This parameter can be a value of @ref DMA_Priority_level                       */
@@ -92,80 +92,75 @@ typedef struct
                                       This parameter can be a value of @ref DMA_FIFO_direct_mode
                                       @note The Direct mode (FIFO mode disabled) cannot be used if the 
                                             memory-to-memory data transfer is configured on the selected stream       */
-                               
+
   uint32_t FIFOThreshold;        /*!< Specifies the FIFO threshold level.
                                       This parameter can be a value of @ref DMA_FIFO_threshold_level                  */
-   
+
   uint32_t MemBurst;             /*!< Specifies the Burst transfer configuration for the memory transfers. 
                                       It specifies the amount of data to be transferred in a single non interruptable 
-                                      transaction. 
+                                      transaction.
                                       This parameter can be a value of @ref DMA_Memory_burst 
                                       @note The burst mode is possible only if the address Increment mode is enabled. */
-  
+
   uint32_t PeriphBurst;          /*!< Specifies the Burst transfer configuration for the peripheral transfers. 
                                       It specifies the amount of data to be transferred in a single non interruptable 
                                       transaction. 
                                       This parameter can be a value of @ref DMA_Peripheral_burst
                                       @note The burst mode is possible only if the address Increment mode is enabled. */
-  
 }DMA_InitTypeDef;
 
 /** 
-  * @brief  HAL DMA State structures definition  
-  */ 
+  * @brief  HAL DMA State structures definition
+  */
 typedef enum
 {
-  HAL_DMA_STATE_RESET             = 0x00,  /*!< DMA not yet initialized or disabled */  
+  HAL_DMA_STATE_RESET             = 0x00,  /*!< DMA not yet initialized or disabled */
   HAL_DMA_STATE_READY             = 0x01,  /*!< DMA initialized and ready for use   */
   HAL_DMA_STATE_READY_MEM0        = 0x11,  /*!< DMA Mem0 process success            */
-  HAL_DMA_STATE_READY_MEM1        = 0x21,  /*!< DMA Mem1 process success            */ 
+  HAL_DMA_STATE_READY_MEM1        = 0x21,  /*!< DMA Mem1 process success            */
   HAL_DMA_STATE_READY_HALF_MEM0   = 0x31,  /*!< DMA Mem0 Half process success       */
-  HAL_DMA_STATE_READY_HALF_MEM1   = 0x41,  /*!< DMA Mem1 Half process success       */  
+  HAL_DMA_STATE_READY_HALF_MEM1   = 0x41,  /*!< DMA Mem1 Half process success       */
   HAL_DMA_STATE_BUSY              = 0x02,  /*!< DMA process is ongoing              */
   HAL_DMA_STATE_BUSY_MEM0         = 0x12,  /*!< DMA Mem0 process is ongoing         */
-  HAL_DMA_STATE_BUSY_MEM1         = 0x22,  /*!< DMA Mem1 process is ongoing         */       
-  HAL_DMA_STATE_TIMEOUT           = 0x03,  /*!< DMA timeout state                   */  
+  HAL_DMA_STATE_BUSY_MEM1         = 0x22,  /*!< DMA Mem1 process is ongoing         */
+  HAL_DMA_STATE_TIMEOUT           = 0x03,  /*!< DMA timeout state                   */
   HAL_DMA_STATE_ERROR             = 0x04,  /*!< DMA error state                     */
-  
 }HAL_DMA_StateTypeDef;
 
 /** 
-  * @brief  HAL DMA Error Code structure definition  
-  */ 
+  * @brief  HAL DMA Error Code structure definition
+  */
 typedef enum
 {
   HAL_DMA_FULL_TRANSFER      = 0x00,    /*!< Full transfer     */
   HAL_DMA_HALF_TRANSFER      = 0x01,    /*!< Half Transfer     */
-
 }HAL_DMA_LevelCompleteTypeDef;
 
-
 /** 
-  * @brief  DMA handle Structure definition  
-  */ 
+  * @brief  DMA handle Structure definition
+  */
 typedef struct __DMA_HandleTypeDef
-{  
+{
   DMA_Stream_TypeDef         *Instance;                                                    /*!< Register base address                  */
-  
+
   DMA_InitTypeDef            Init;                                                         /*!< DMA communication parameters           */ 
-  
+
   HAL_LockTypeDef            Lock;                                                         /*!< DMA locking object                     */  
-  
+
   __IO HAL_DMA_StateTypeDef  State;                                                        /*!< DMA transfer state                     */
-  
+
   void                       *Parent;                                                      /*!< Parent object state                    */  
-    
+
   void                       (* XferCpltCallback)( struct __DMA_HandleTypeDef * hdma);     /*!< DMA transfer complete callback         */
-  
+
   void                       (* XferHalfCpltCallback)( struct __DMA_HandleTypeDef * hdma); /*!< DMA Half transfer complete callback    */
-  
+
   void                       (* XferM1CpltCallback)( struct __DMA_HandleTypeDef * hdma);   /*!< DMA transfer complete Memory1 callback */
-  
+
   void                       (* XferErrorCallback)( struct __DMA_HandleTypeDef * hdma);    /*!< DMA transfer error callback            */
 
   __IO uint32_t              ErrorCode;                                                    /*!< DMA Error code                         */
-  
-}DMA_HandleTypeDef;    
+}DMA_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -178,7 +173,7 @@ typedef struct __DMA_HandleTypeDef
   */ 
 #define HAL_DMA_ERROR_NONE      ((uint32_t)0x00000000)    /*!< No error             */
 #define HAL_DMA_ERROR_TE        ((uint32_t)0x00000001)    /*!< Transfer error       */
-#define HAL_DMA_ERROR_FE        ((uint32_t)0x00000002)    /*!< FIFO error           */   
+#define HAL_DMA_ERROR_FE        ((uint32_t)0x00000002)    /*!< FIFO error           */
 #define HAL_DMA_ERROR_DME       ((uint32_t)0x00000004)    /*!< Direct Mode error    */
 #define HAL_DMA_ERROR_TIMEOUT   ((uint32_t)0x00000020)    /*!< Timeout error        */
 /**
@@ -418,6 +413,13 @@ typedef struct __DMA_HandleTypeDef
   */
   
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset DMA handle state
+  * @param  __HANDLE__: specifies the DMA handle.
+  * @retval None
+  */
+#define __HAL_DMA_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_DMA_STATE_RESET)
+
 /**
   * @brief  Return the current DMA Stream FIFO filled level.
   * @param  __HANDLE__: DMA handle
@@ -580,9 +582,9 @@ typedef struct __DMA_HandleTypeDef
   * @retval None
   */
 #define __HAL_DMA_CLEAR_FLAG(__HANDLE__, __FLAG__) \
-(((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA2_Stream3)? (DMA2->HIFCR |= (__FLAG__)) :\
- ((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA1_Stream7)? (DMA2->LIFCR |= (__FLAG__)) :\
- ((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA1_Stream3)? (DMA1->HIFCR |= (__FLAG__)) : (DMA1->LIFCR |= (__FLAG__)))
+(((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA2_Stream3)? (DMA2->HIFCR = (__FLAG__)) :\
+ ((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA1_Stream7)? (DMA2->LIFCR = (__FLAG__)) :\
+ ((uint32_t)((__HANDLE__)->Instance) > (uint32_t)DMA1_Stream3)? (DMA1->HIFCR = (__FLAG__)) : (DMA1->LIFCR = (__FLAG__)))
 
 /**
   * @brief  Enable the specified DMA Stream interrupts.

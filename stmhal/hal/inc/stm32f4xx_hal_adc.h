@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_adc.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of ADC HAL extension module.
   ******************************************************************************
   * @attention
@@ -139,9 +139,9 @@ typedef struct
   */ 
 typedef struct 
 {
-  uint32_t Channel;        /*!< The ADC channel to configure 
+  uint32_t Channel;        /*!< The ADC channel to configure. 
                                 This parameter can be a value of @ref ADC_channels */
-  uint32_t Rank;           /*!< The rank in the regular group sequencer 
+  uint32_t Rank;           /*!< The rank in the regular group sequencer. 
                                 This parameter must be a number between Min_Data = 1 and Max_Data = 16 */
   uint32_t SamplingTime;   /*!< The sample time value to be set for the selected channel.
                                 This parameter can be a value of @ref ADC_sampling_times */
@@ -154,14 +154,14 @@ typedef struct
 typedef struct
 {
   uint32_t WatchdogMode;      /*!< Configures the ADC analog watchdog mode.
-                                   This parameter can be a value of @ref ADC_analog_watchdog_selection. */
+                                   This parameter can be a value of @ref ADC_analog_watchdog_selection */
   uint32_t HighThreshold;     /*!< Configures the ADC analog watchdog High threshold value.
                                    This parameter must be a 12-bit value. */     
   uint32_t LowThreshold;      /*!< Configures the ADC analog watchdog High threshold value.
                                    This parameter must be a 12-bit value. */
   uint32_t Channel;           /*!< Configures ADC channel for the analog watchdog. 
                                    This parameter has an effect only if watchdog mode is configured on single channel 
-                                   This parameter can be a value of @ref ADC_channels. */      
+                                   This parameter can be a value of @ref ADC_channels */      
   uint32_t ITMode;            /*!< Specifies whether the analog watchdog is configured
                                    is interrupt mode or in polling mode.
                                    This parameter can be set to ENABLE or DISABLE */
@@ -538,6 +538,13 @@ typedef struct
   */ 
 
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset ADC handle state
+  * @param  __HANDLE__: ADC handle
+  * @retval None
+  */
+#define __HAL_ADC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_ADC_STATE_RESET)
+
 /**
   * @brief  Enable the ADC peripheral.
   * @param  __HANDLE__: ADC handle
@@ -663,7 +670,7 @@ typedef struct
   * @param  __FLAG__: ADC flag.
   * @retval None
   */
-#define __HAL_ADC_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) &= ~(__FLAG__))
+#define __HAL_ADC_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) = ~(__FLAG__))
 
 /**
   * @brief  Get the selected ADC's flag status.

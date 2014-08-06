@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_ll_usb.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   USB Low Layer HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -1420,8 +1420,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 #pragma O0
 #elif defined (__GNUC__) /*!< GNU Compiler */
 #pragma GCC optimize ("O0")
-#elif defined  (__TASKING__) /*!< TASKING Compiler */ 
-#pragma optimize=0                          
 #endif /* __CC_ARM */
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint8_t dma)
 {
@@ -1436,6 +1434,11 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
     {
       USB_DoPing(USBx, hc->ch_num);
       return HAL_OK;
+    }
+    else if(dma == 1)
+    {
+      USBx_HC(hc->ch_num)->HCINTMSK &= ~(USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM);
+      hc->do_ping = 0;
     }
   }
   
@@ -1463,15 +1466,15 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   
   /* Initialize the HCTSIZn register */
   USBx_HC(hc->ch_num)->HCTSIZ = (((hc->xfer_len) & USB_OTG_HCTSIZ_XFRSIZ)) |\
-                                ((num_packets << 19) & USB_OTG_HCTSIZ_PKTCNT) |\
-                                (((hc->data_pid) << 29) & USB_OTG_HCTSIZ_DPID);
+    ((num_packets << 19) & USB_OTG_HCTSIZ_PKTCNT) |\
+      (((hc->data_pid) << 29) & USB_OTG_HCTSIZ_DPID);
   
   if (dma)
   {
     /* xfer_buff MUST be 32-bits aligned */
     USBx_HC(hc->ch_num)->HCDMA = (uint32_t)hc->xfer_buff;
   }
-
+  
   is_oddframe = (USBx_HOST->HFNUM & 0x01) ? 0 : 1;
   USBx_HC(hc->ch_num)->HCCHAR &= ~USB_OTG_HCCHAR_ODDFRM;
   USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << 29);
@@ -1479,7 +1482,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   /* Set host channel enable */
   USBx_HC(hc->ch_num)->HCCHAR &= ~USB_OTG_HCCHAR_CHDIS;
   USBx_HC(hc->ch_num)->HCCHAR |= USB_OTG_HCCHAR_CHENA;
-
+  
   if (dma == 0) /* Slave mode */
   {  
     if((hc->ep_is_in == 0) && (hc->xfer_len > 0))

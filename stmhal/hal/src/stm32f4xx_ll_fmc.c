@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_ll_fmc.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   FMC Low Layer HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -685,21 +685,22 @@ HAL_StatusTypeDef FMC_NAND_ECC_Disable(FMC_NAND_TypeDef *Device, uint32_t Bank)
   */
 HAL_StatusTypeDef FMC_NAND_GetECC(FMC_NAND_TypeDef *Device, uint32_t *ECCval, uint32_t Bank, uint32_t Timeout)
 {
-  uint32_t timeout = 0;
+  uint32_t tickstart = 0;
 
   /* Check the parameters */ 
   assert_param(IS_FMC_NAND_DEVICE(Device)); 
   assert_param(IS_FMC_NAND_BANK(Bank));
-      
-  timeout = HAL_GetTick() + Timeout;
-  
+
+  /* Get tick */ 
+  tickstart = HAL_GetTick();
+
   /* Wait untill FIFO is empty */
   while(__FMC_NAND_GET_FLAG(Device, Bank, FMC_FLAG_FEMPT))
   {
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         return HAL_TIMEOUT;
       }
@@ -1145,7 +1146,7 @@ HAL_StatusTypeDef FMC_SDRAM_WriteProtection_Disable(FMC_SDRAM_TypeDef *Device, u
 HAL_StatusTypeDef FMC_SDRAM_SendCommand(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_CommandTypeDef *Command, uint32_t Timeout)
 {
   __IO uint32_t tmpr = 0;
-  uint32_t timeout = 0;
+  uint32_t tickstart = 0;
   
   /* Check the parameters */
   assert_param(IS_FMC_SDRAM_DEVICE(Device));
@@ -1158,12 +1159,13 @@ HAL_StatusTypeDef FMC_SDRAM_SendCommand(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_Com
   tmpr = (uint32_t)((Command->CommandMode)                  |\
                     (Command->CommandTarget)                |\
                     (((Command->AutoRefreshNumber)-1) << 5) |\
-                    ((Command->ModeRegisterDefinition) << 9)     
+                    ((Command->ModeRegisterDefinition) << 9)
                     );
     
   Device->SDCMR = tmpr;
-   
-  timeout = HAL_GetTick() + Timeout;
+
+  /* Get tick */ 
+  tickstart = HAL_GetTick();
 
   /* wait until command is send */
   while(HAL_IS_BIT_SET(Device->SDSR, FMC_SDSR_BUSY))
@@ -1171,7 +1173,7 @@ HAL_StatusTypeDef FMC_SDRAM_SendCommand(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_Com
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         return HAL_TIMEOUT;
       }

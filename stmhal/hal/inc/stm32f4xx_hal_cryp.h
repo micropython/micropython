@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_cryp.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of CRYP HAL module.
   ******************************************************************************
   * @attention
@@ -53,59 +53,57 @@
 
 /** @addtogroup CRYP
   * @{
-  */ 
+  */
 
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 
 /** 
-  * @brief  CRYP Configuration Structure definition  
+  * @brief  CRYP Configuration Structure definition
   */
 typedef struct
-{  
+{
   uint32_t DataType;    /*!< 32-bit data, 16-bit data, 8-bit data or 1-bit string.
                              This parameter can be a value of @ref CRYP_Data_Type */
-  
+
   uint32_t KeySize;     /*!< Used only in AES mode only : 128, 192 or 256 bit key length. 
                              This parameter can be a value of @ref CRYP_Key_Size */
-  
+
   uint8_t* pKey;        /*!< The key used for encryption/decryption */
-  
+
   uint8_t* pInitVect;   /*!< The initialization vector used also as initialization
                              counter in CTR mode */
-  
+
   uint8_t IVSize;       /*!< The size of initialization vector. 
                              This parameter (called nonce size in CCM) is used only 
                              in AES-128/192/256 encryption/decryption CCM mode */
-  
+
   uint8_t TagSize;      /*!< The size of returned authentication TAG. 
                              This parameter is used only in AES-128/192/256 
                              encryption/decryption CCM mode */
-  
+
   uint8_t* Header;      /*!< The header used in GCM and CCM modes */
-  
+
   uint16_t HeaderSize;  /*!< The size of header buffer in bytes */
-  
+
   uint8_t* pScratch;    /*!< Scratch buffer used to append the header. It's size must be equal to header size + 21 bytes.
                              This parameter is used only in AES-128/192/256 encryption/decryption CCM mode */
-  
 }CRYP_InitTypeDef;
 
 /** 
-  * @brief HAL CRYP State structures definition  
-  */ 
+  * @brief HAL CRYP State structures definition
+  */
 typedef enum
 {
   HAL_CRYP_STATE_RESET             = 0x00,  /*!< CRYP not yet initialized or disabled  */
   HAL_CRYP_STATE_READY             = 0x01,  /*!< CRYP initialized and ready for use    */
   HAL_CRYP_STATE_BUSY              = 0x02,  /*!< CRYP internal processing is ongoing   */
   HAL_CRYP_STATE_TIMEOUT           = 0x03,  /*!< CRYP timeout state                    */
-  HAL_CRYP_STATE_ERROR             = 0x04   /*!< CRYP error state                      */ 
-    
+  HAL_CRYP_STATE_ERROR             = 0x04   /*!< CRYP error state                      */
 }HAL_CRYP_STATETypeDef;
 
 /** 
-  * @brief HAL CRYP phase structures definition  
-  */ 
+  * @brief HAL CRYP phase structures definition
+  */
 typedef enum
 {
   HAL_CRYP_PHASE_READY             = 0x01,    /*!< CRYP peripheral is ready for initialization. */
@@ -115,32 +113,31 @@ typedef enum
 }HAL_PhaseTypeDef;
 
 /** 
-  * @brief  CRYP handle Structure definition  
+  * @brief  CRYP handle Structure definition
   */ 
 typedef struct
-{   
+{
       CRYP_InitTypeDef         Init;             /*!< CRYP required parameters */
-  
+
       uint8_t                  *pCrypInBuffPtr;  /*!< Pointer to CRYP processing (encryption, decryption,...) buffer */
-  
+
       uint8_t                  *pCrypOutBuffPtr; /*!< Pointer to CRYP processing (encryption, decryption,...) buffer */
-  
+
       __IO uint16_t            CrypInCount;      /*!< Counter of inputed data */
-                          
+
       __IO uint16_t            CrypOutCount;     /*!< Counter of outputed data */
-  
+
       HAL_StatusTypeDef        Status;           /*!< CRYP peripheral status */
-  
+
       HAL_PhaseTypeDef         Phase;            /*!< CRYP peripheral phase */
-  
+
       DMA_HandleTypeDef        *hdmain;          /*!< CRYP In DMA handle parameters */
-  
+
       DMA_HandleTypeDef        *hdmaout;         /*!< CRYP Out DMA handle parameters */
-  
+
       HAL_LockTypeDef          Lock;             /*!< CRYP locking object */
-  
+
    __IO  HAL_CRYP_STATETypeDef State;            /*!< CRYP peripheral state */
-  
 }CRYP_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
@@ -151,7 +148,7 @@ typedef struct
 
 /** @defgroup CRYP_Key_Size 
   * @{
-  */ 
+  */
 #define CRYP_KEYSIZE_128B         ((uint32_t)0x00000000)
 #define CRYP_KEYSIZE_192B         CRYP_CR_KEYSIZE_0
 #define CRYP_KEYSIZE_256B         CRYP_CR_KEYSIZE_1
@@ -210,7 +207,6 @@ typedef struct
   * @}
   */
 
-
 /** @defgroup CRYP_Flags 
   * @{
   */
@@ -229,13 +225,19 @@ typedef struct
                                                       interrupt status */
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
   */
 
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset CRYP handle state
+  * @param  __HANDLE__: specifies the CRYP handle.
+  * @retval None
+  */
+#define __HAL_CRYP_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_CRYP_STATE_RESET)
 
 /**
   * @brief  Enable/Disable the CRYP peripheral.
@@ -253,12 +255,11 @@ typedef struct
 #define __HAL_CRYP_FIFO_FLUSH() (CRYP->CR |=  CRYP_CR_FFLUSH)
 
 /**
-  * @brief  Set the algorithm mode: AES-ECB, AES-CBC, AES-CTR, DES-ECB, DES-CBC,...
+  * @brief  Set the algorithm mode: AES-ECB, AES-CBC, AES-CTR, DES-ECB, DES-CBC.
   * @param  MODE: The algorithm mode.
   * @retval None
   */
 #define __HAL_CRYP_SET_MODE(MODE)  CRYP->CR |= (uint32_t)(MODE)
-
 
 /** @brief  Check whether the specified CRYP flag is set or not.
   * @param  __FLAG__: specifies the flag to check.
@@ -304,7 +305,7 @@ typedef struct
 #include "stm32f4xx_hal_cryp_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
-/* Initialization/de-initialization functions  **********************************/
+/* Initialization/de-initialization functions  ********************************/
 HAL_StatusTypeDef HAL_CRYP_Init(CRYP_HandleTypeDef *hcryp);
 HAL_StatusTypeDef HAL_CRYP_DeInit(CRYP_HandleTypeDef *hcryp);
 
@@ -368,10 +369,10 @@ HAL_StatusTypeDef HAL_CRYP_TDESECB_Decrypt_DMA(CRYP_HandleTypeDef *hcryp, uint8_
 HAL_StatusTypeDef HAL_CRYP_TDESCBC_Encrypt_DMA(CRYP_HandleTypeDef *hcryp, uint8_t *pPlainData, uint16_t Size, uint8_t *pCypherData);
 HAL_StatusTypeDef HAL_CRYP_TDESCBC_Decrypt_DMA(CRYP_HandleTypeDef *hcryp, uint8_t *pCypherData, uint16_t Size, uint8_t *pPlainData);
 
-/* Processing functions  ********************************************************/
+/* Processing functions  ******************************************************/
 void HAL_CRYP_IRQHandler(CRYP_HandleTypeDef *hcryp);
 
-/* Peripheral State functions  **************************************************/
+/* Peripheral State functions  ************************************************/
 HAL_CRYP_STATETypeDef HAL_CRYP_GetState(CRYP_HandleTypeDef *hcryp);
 
 /* MSP functions  *************************************************************/

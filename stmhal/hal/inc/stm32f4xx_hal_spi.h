@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_spi.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of SPI HAL module.
   ******************************************************************************
   * @attention
@@ -346,6 +346,13 @@ typedef struct __SPI_HandleTypeDef
 
 /* Exported macro ------------------------------------------------------------*/
 
+/** @brief Reset SPI handle state
+  * @param  __HANDLE__: specifies the SPI handle.
+  *         This parameter can be SPI where x: 1, 2, or 3 to select the SPI peripheral.
+  * @retval None
+  */
+#define __HAL_SPI_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SPI_STATE_RESET)
+
 /** @brief  Enable or disable the specified SPI interrupts.
   * @param  __HANDLE__: specifies the SPI handle.
   *         This parameter can be SPI where x: 1, 2, or 3 to select the SPI peripheral.
@@ -392,7 +399,7 @@ typedef struct __SPI_HandleTypeDef
   *         This parameter can be SPI where x: 1, 2, or 3 to select the SPI peripheral.
   * @retval None
   */
-#define __HAL_SPI_CLEAR_CRCERRFLAG(__HANDLE__) ((__HANDLE__)->Instance->SR &= ~(SPI_FLAG_CRCERR))
+#define __HAL_SPI_CLEAR_CRCERRFLAG(__HANDLE__) ((__HANDLE__)->Instance->SR = ~(SPI_FLAG_CRCERR))
 
 /** @brief  Clear the SPI MODF pending flag.
   * @param  __HANDLE__: specifies the SPI handle.
@@ -447,11 +454,18 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_IT(SPI_HandleTypeDef *hspi, uint8_t *p
 HAL_StatusTypeDef HAL_SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
+HAL_StatusTypeDef HAL_SPI_DMAPause(SPI_HandleTypeDef *hspi);
+HAL_StatusTypeDef HAL_SPI_DMAResume(SPI_HandleTypeDef *hspi);
+HAL_StatusTypeDef HAL_SPI_DMAStop(SPI_HandleTypeDef *hspi);
+
 void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi);
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi);
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi);
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi);
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi);
+void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi);
+void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi);
+void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi);
 
 /* Peripheral State and Control functions  **************************************/
 HAL_SPI_StateTypeDef HAL_SPI_GetState(SPI_HandleTypeDef *hspi);

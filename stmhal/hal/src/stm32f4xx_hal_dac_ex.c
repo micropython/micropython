@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dac_ex.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   DAC HAL module driver.
   *         This file provides firmware functions to manage the following 
   *         functionalities of DAC extension peripheral:
@@ -123,8 +123,7 @@ uint32_t HAL_DACEx_DualGetValue(DAC_HandleTypeDef* hdac)
   *         the configuration information for the specified DAC.
   * @param  Channel: The selected DAC channel. 
   *          This parameter can be one of the following values:
-  *            @arg DAC_CHANNEL_1: DAC Channel1 selected
-  *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+  *            DAC_CHANNEL_1 / DAC_CHANNEL_2
   * @param  Amplitude: Select max triangle amplitude. 
   *          This parameter can be one of the following values:
   *            @arg DAC_TRIANGLEAMPLITUDE_1: Select max triangle amplitude of 1
@@ -172,8 +171,7 @@ HAL_StatusTypeDef HAL_DACEx_TriangleWaveGenerate(DAC_HandleTypeDef* hdac, uint32
   *         the configuration information for the specified DAC. 
   * @param  Channel: The selected DAC channel. 
   *          This parameter can be one of the following values:
-  *            @arg DAC_CHANNEL_1: DAC Channel1 selected
-  *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+  *            DAC_CHANNEL_1 / DAC_CHANNEL_2
   * @param  Amplitude: Unmask DAC channel LFSR for noise wave generation. 
   *          This parameter can be one of the following values: 
   *            @arg DAC_LFSRUNMASK_BIT0: Unmask DAC channel LFSR bit0 for noise wave generation
@@ -221,9 +219,9 @@ HAL_StatusTypeDef HAL_DACEx_NoiseWaveGenerate(DAC_HandleTypeDef* hdac, uint32_t 
   *               the configuration information for the specified DAC.
   * @param  Alignment: Specifies the data alignment for dual channel DAC.
   *          This parameter can be one of the following values:
-  *            @arg DAC_Align_8b_R: 8bit right data alignment selected
-  *            @arg DAC_Align_12b_L: 12bit left data alignment selected
-  *            @arg DAC_Align_12b_R: 12bit right data alignment selected
+  *            DAC_ALIGN_8B_R: 8bit right data alignment selected
+  *            DAC_ALIGN_12B_L: 12bit left data alignment selected
+  *            DAC_ALIGN_12B_R: 12bit right data alignment selected
   * @param  Data1: Data for DAC Channel2 to be loaded in the selected data holding register.
   * @param  Data2: Data for DAC Channel1 to be loaded in the selected data  holding register.
   * @note   In dual mode, a unique register access is required to write in both
@@ -317,7 +315,8 @@ __weak void HAL_DACEx_DMAUnderrunCallbackCh2(DAC_HandleTypeDef *hdac)
 
 /**
   * @brief  DMA conversion complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 void DAC_DMAConvCpltCh2(DMA_HandleTypeDef *hdma)   
@@ -331,7 +330,8 @@ void DAC_DMAConvCpltCh2(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA half transfer complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 void DAC_DMAHalfConvCpltCh2(DMA_HandleTypeDef *hdma)   
@@ -343,7 +343,8 @@ void DAC_DMAHalfConvCpltCh2(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA error callback 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 void DAC_DMAErrorCh2(DMA_HandleTypeDef *hdma)   

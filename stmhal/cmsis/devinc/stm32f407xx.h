@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f407xx.h
   * @author  MCD Application Team
-  * @version V2.0.0
-  * @date    18-February-2014
+  * @version V2.1.0
+  * @date    19-June-2014
   * @brief   CMSIS STM32F407xx Device Peripheral Access Layer Header File.
   *
   *          This file contains:
@@ -948,6 +948,8 @@ USB_OTG_HostChannelTypeDef;
 #define SRAM3_BB_BASE         ((uint32_t)0x22020000) /*!< SRAM3(64 KB) base address in the bit-band region                              */
 #define PERIPH_BB_BASE        ((uint32_t)0x42000000) /*!< Peripheral base address in the bit-band region                                */
 #define BKPSRAM_BB_BASE       ((uint32_t)0x42024000) /*!< Backup SRAM(4 KB) base address in the bit-band region                         */
+#define FLASH_END             ((uint32_t)0x080FFFFF) /*!< FLASH end address */
+#define CCMDATARAM_END        ((uint32_t)0x1000FFFF) /*!< CCM data RAM end address */
 
 /* Legacy defines */
 #define SRAM_BASE             SRAM1_BASE
@@ -4498,6 +4500,25 @@ USB_OTG_HostChannelTypeDef;
 #define GPIO_BSRR_BR_14                      ((uint32_t)0x40000000)
 #define GPIO_BSRR_BR_15                      ((uint32_t)0x80000000)
 
+/****************** Bit definition for GPIO_LCKR register *********************/
+#define GPIO_LCKR_LCK0                       ((uint32_t)0x00000001)
+#define GPIO_LCKR_LCK1                       ((uint32_t)0x00000002)
+#define GPIO_LCKR_LCK2                       ((uint32_t)0x00000004)
+#define GPIO_LCKR_LCK3                       ((uint32_t)0x00000008)
+#define GPIO_LCKR_LCK4                       ((uint32_t)0x00000010)
+#define GPIO_LCKR_LCK5                       ((uint32_t)0x00000020)
+#define GPIO_LCKR_LCK6                       ((uint32_t)0x00000040)
+#define GPIO_LCKR_LCK7                       ((uint32_t)0x00000080)
+#define GPIO_LCKR_LCK8                       ((uint32_t)0x00000100)
+#define GPIO_LCKR_LCK9                       ((uint32_t)0x00000200)
+#define GPIO_LCKR_LCK10                      ((uint32_t)0x00000400)
+#define GPIO_LCKR_LCK11                      ((uint32_t)0x00000800)
+#define GPIO_LCKR_LCK12                      ((uint32_t)0x00001000)
+#define GPIO_LCKR_LCK13                      ((uint32_t)0x00002000)
+#define GPIO_LCKR_LCK14                      ((uint32_t)0x00004000)
+#define GPIO_LCKR_LCK15                      ((uint32_t)0x00008000)
+#define GPIO_LCKR_LCKK                       ((uint32_t)0x00010000)
+
 /******************************************************************************/
 /*                                                                            */
 /*                      Inter-integrated Circuit Interface                    */
@@ -7895,6 +7916,19 @@ USB_OTG_HostChannelTypeDef;
 /****************************** WWDG Instances ********************************/
 #define IS_WWDG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == WWDG)
 
+/******************************************************************************/
+/*  For a painless codes migration between the STM32F4xx device product       */
+/*  lines, the aliases defined below are put in place to overcome the         */
+/*  differences in the interrupt handlers and IRQn definitions.               */
+/*  No need to update developed interrupt code when moving across             */
+/*  product lines within the same STM32F4 Family                              */
+/******************************************************************************/
+
+/* Aliases for __IRQn */
+#define FMC_IRQn              FSMC_IRQn
+
+/* Aliases for __IRQHandler */
+#define FMC_IRQHandler        FSMC_IRQHandler
 
 /**
   * @}

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_adc.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the Analog to Digital Convertor (ADC) peripheral:
   *           + Initialization and de-initialization functions
@@ -63,7 +63,7 @@
      (#) Configure the ADC regular channels group features, use HAL_ADC_Init()
          and HAL_ADC_ConfigChannel() functions.
          
-     (#) Three mode of operations are available within this driver :     
+     (#) Three operation modes are available within this driver :     
   
      *** Polling mode IO operation ***
      =================================
@@ -89,7 +89,7 @@
      ==============================
      [..]    
        (+) Start the ADC peripheral using HAL_ADC_Start_DMA(), at this stage the user specify the length 
-           of data to be transfered at each end of conversion 
+           of data to be transferred at each end of conversion 
        (+) At The end of data transfer by HAL_ADC_ConvCpltCallback() function is executed and user can 
             add his own code by customization of function pointer HAL_ADC_ConvCpltCallback 
        (+) In case of transfer Error, HAL_ADC_ErrorCallback() function is executed and user can 
@@ -410,7 +410,7 @@ HAL_StatusTypeDef HAL_ADC_Start(ADC_HandleTypeDef* hadc)
   *
   * @param  hadc: pointer to a ADC_HandleTypeDef structure that contains
   *         the configuration information for the specified ADC.
-  *         last transfer and End of conversion selection).
+  *
   * @retval HAL status.
   */
 HAL_StatusTypeDef HAL_ADC_Stop(ADC_HandleTypeDef* hadc)
@@ -434,10 +434,10 @@ HAL_StatusTypeDef HAL_ADC_Stop(ADC_HandleTypeDef* hadc)
   */
 HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 {
-  uint32_t timeout;
+  uint32_t tickstart = 0;
  
-  /* Get timeout */
-  timeout = HAL_GetTick() + Timeout;  
+  /* Get tick */ 
+  tickstart = HAL_GetTick();
 
   /* Check End of conversion flag */
   while(!(__HAL_ADC_GET_FLAG(hadc, ADC_FLAG_EOC)))
@@ -445,7 +445,7 @@ HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Ti
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         hadc->State= HAL_ADC_STATE_TIMEOUT;
         /* Process unlocked */
@@ -484,13 +484,13 @@ HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Ti
   */
 HAL_StatusTypeDef HAL_ADC_PollForEvent(ADC_HandleTypeDef* hadc, uint32_t EventType, uint32_t Timeout)
 {
+  uint32_t tickstart = 0;
+  
   /* Check the parameters */
   assert_param(IS_ADC_EVENT_TYPE(EventType));
-  
-  uint32_t timeout; 
 
-  /* Get timeout */
-  timeout = HAL_GetTick() + Timeout;   
+  /* Get tick */
+  tickstart = HAL_GetTick();
 
   /* Check selected event flag */
   while(!(__HAL_ADC_GET_FLAG(hadc,EventType)))
@@ -498,7 +498,7 @@ HAL_StatusTypeDef HAL_ADC_PollForEvent(ADC_HandleTypeDef* hadc, uint32_t EventTy
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         hadc->State= HAL_ADC_STATE_TIMEOUT;
         /* Process unlocked */
@@ -780,7 +780,7 @@ void HAL_ADC_IRQHandler(ADC_HandleTypeDef* hadc)
   *         the configuration information for the specified ADC.
   * @param  pData: The destination Buffer address.
   * @param  Length: The length of data to be transferred from ADC peripheral to memory.
-  * @retval None
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 {
@@ -846,7 +846,7 @@ HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef* hadc, uint32_t* pData, ui
   * @brief  Disables ADC DMA (Single-ADC mode) and disables ADC peripheral    
   * @param  hadc: pointer to a ADC_HandleTypeDef structure that contains
   *         the configuration information for the specified ADC.
-  * @retval None
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ADC_Stop_DMA(ADC_HandleTypeDef* hadc)
 {
@@ -1221,7 +1221,8 @@ static void ADC_Init(ADC_HandleTypeDef* hadc)
 
 /**
   * @brief  DMA transfer complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void ADC_DMAConvCplt(DMA_HandleTypeDef *hdma)   
@@ -1245,7 +1246,8 @@ static void ADC_DMAConvCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA half transfer complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void ADC_DMAHalfConvCplt(DMA_HandleTypeDef *hdma)   
@@ -1257,7 +1259,8 @@ static void ADC_DMAHalfConvCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA error callback 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void ADC_DMAError(DMA_HandleTypeDef *hdma)   

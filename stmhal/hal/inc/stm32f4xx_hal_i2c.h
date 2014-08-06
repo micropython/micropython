@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_i2c.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of I2C HAL module.
   ******************************************************************************
   * @attention
@@ -80,7 +80,7 @@ typedef struct
                                   This parameter can be a 7-bit address. */
 
   uint32_t GeneralCallMode;  /*!< Specifies if general call mode is selected.
-                                  This parameter can be a value of @ref I2C_general_call_addressing_mode. */
+                                  This parameter can be a value of @ref I2C_general_call_addressing_mode */
 
   uint32_t NoStretchMode;    /*!< Specifies if nostretch mode is selected.
                                   This parameter can be a value of @ref I2C_nostretch_mode */
@@ -268,6 +268,13 @@ typedef struct
 
 /* Exported macro ------------------------------------------------------------*/
 
+/** @brief Reset I2C handle state
+  * @param  __HANDLE__: specifies the I2C Handle.
+  *         This parameter can be I2C where x: 1, 2, or 3 to select the I2C peripheral.
+  * @retval None
+  */
+#define __HAL_I2C_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_I2C_STATE_RESET)
+
 /** @brief  Enable or disable the specified I2C interrupts.
   * @param  __HANDLE__: specifies the I2C Handle.
   *         This parameter can be I2C where x: 1, 2, or 3 to select the I2C peripheral.
@@ -341,7 +348,7 @@ typedef struct
   *            @arg I2C_FLAG_BERR: Bus error flag
   * @retval None
   */
-#define __HAL_I2C_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR1 &= ~((__FLAG__) & I2C_FLAG_MASK))
+#define __HAL_I2C_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR1 = ~((__FLAG__) & I2C_FLAG_MASK))
 
 /** @brief  Clears the I2C ADDR pending flag.
   * @param  __HANDLE__: specifies the I2C Handle.

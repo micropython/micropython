@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    stm32f401xc.h
+  * @file    stm32f411xe.h
   * @author  MCD Application Team
   * @version V2.1.0
   * @date    19-June-2014
-  * @brief   CMSIS STM32F401xCxx Device Peripheral Access Layer Header File.
+  * @brief   CMSIS STM32F411xExx Device Peripheral Access Layer Header File. 
   *
   *          This file contains:
   *           - Data structures and the address mapping for all peripherals
@@ -45,12 +45,12 @@
   * @{
   */
 
-/** @addtogroup stm32f401xc
+/** @addtogroup stm32f401xe
   * @{
   */
     
-#ifndef __STM32F401xC_H
-#define __STM32F401xC_H
+#ifndef __STM32F401xE_H
+#define __STM32F401xE_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -148,8 +148,9 @@ typedef enum
   USART6_IRQn                 = 71,     /*!< USART6 global interrupt                                           */
   I2C3_EV_IRQn                = 72,     /*!< I2C3 event interrupt                                              */
   I2C3_ER_IRQn                = 73,     /*!< I2C3 error interrupt                                              */
-  FPU_IRQn                    = 81,      /*!< FPU global interrupt                                             */
-  SPI4_IRQn                   = 84       /*!< SPI4 global Interrupt                                            */
+  FPU_IRQn                    = 81,     /*!< FPU global interrupt                                              */
+  SPI4_IRQn                   = 84,     /*!< SPI4 global Interrupt                                             */
+  SPI5_IRQn                   = 85      /*!< SPI5 global Interrupt                                             */
 } IRQn_Type;
 
 /**
@@ -536,7 +537,8 @@ typedef struct
   __IO uint32_t CFR;  /*!< WWDG Configuration register, Address offset: 0x04 */
   __IO uint32_t SR;   /*!< WWDG Status register,        Address offset: 0x08 */
 } WWDG_TypeDef;
- 
+
+
 /** 
   * @brief __USB_OTG_Core_register
   */
@@ -675,7 +677,7 @@ USB_OTG_HostChannelTypeDef;
 #define SRAM3_BB_BASE         ((uint32_t)0x22020000) /*!< SRAM3(64 KB) base address in the bit-band region                              */
 #define PERIPH_BB_BASE        ((uint32_t)0x42000000) /*!< Peripheral base address in the bit-band region                                */
 #define BKPSRAM_BB_BASE       ((uint32_t)0x42024000) /*!< Backup SRAM(4 KB) base address in the bit-band region                         */
-#define FLASH_END             ((uint32_t)0x0803FFFF) /*!< FLASH end address */
+#define FLASH_END             ((uint32_t)0x0807FFFF) /*!< FLASH end address */
 
 /* Legacy defines */
 #define SRAM_BASE             SRAM1_BASE
@@ -720,6 +722,7 @@ USB_OTG_HostChannelTypeDef;
 #define TIM9_BASE             (APB2PERIPH_BASE + 0x4000)
 #define TIM10_BASE            (APB2PERIPH_BASE + 0x4400)
 #define TIM11_BASE            (APB2PERIPH_BASE + 0x4800)
+#define SPI5_BASE             (APB2PERIPH_BASE + 0x5000)
 
 /*!< AHB1 peripherals */
 #define GPIOA_BASE            (AHB1PERIPH_BASE + 0x0000)
@@ -805,6 +808,7 @@ USB_OTG_HostChannelTypeDef;
 #define TIM9                ((TIM_TypeDef *) TIM9_BASE)
 #define TIM10               ((TIM_TypeDef *) TIM10_BASE)
 #define TIM11               ((TIM_TypeDef *) TIM11_BASE)
+#define SPI5                ((SPI_TypeDef *) SPI5_BASE)
 #define GPIOA               ((GPIO_TypeDef *) GPIOA_BASE)
 #define GPIOB               ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC               ((GPIO_TypeDef *) GPIOC_BASE)
@@ -2125,10 +2129,13 @@ USB_OTG_HostChannelTypeDef;
 #define  PWR_CR_LPLVDS                       ((uint32_t)0x00000400)     /*!< Low Power Regulator Low Voltage in Deep Sleep mode         */
 #define  PWR_CR_MRLVDS                       ((uint32_t)0x00000800)     /*!< Main Regulator Low Voltage in Deep Sleep mode              */
 #define  PWR_CR_ADCDC1                       ((uint32_t)0x00002000)     /*!< Refer to AN4073 on how to use this bit                     */
+
 #define  PWR_CR_VOS                          ((uint32_t)0x0000C000)     /*!< VOS[1:0] bits (Regulator voltage scaling output selection) */
 #define  PWR_CR_VOS_0                        ((uint32_t)0x00004000)     /*!< Bit 0 */
 #define  PWR_CR_VOS_1                        ((uint32_t)0x00008000)     /*!< Bit 1 */
 
+#define  PWR_CR_FMSSR                        ((uint32_t)0x00100000)     /*!< Flash Memory Sleep System Run        */
+#define  PWR_CR_FISSR                        ((uint32_t)0x00200000)     /*!< Flash Interface Stop while System Run */
 /* Legacy define */
 #define  PWR_CR_PMODE                        PWR_CR_VOS
 
@@ -2369,6 +2376,7 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_APB2RSTR_TIM9RST                ((uint32_t)0x00010000)
 #define  RCC_APB2RSTR_TIM10RST               ((uint32_t)0x00020000)
 #define  RCC_APB2RSTR_TIM11RST               ((uint32_t)0x00040000)
+#define  RCC_APB2RSTR_SPI5RST                ((uint32_t)0x00100000)
 
 /* Old SPI1RST bit definition, maintained for legacy purpose */
 #define  RCC_APB2RSTR_SPI1                   RCC_APB2RSTR_SPI1RST
@@ -2417,6 +2425,7 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_APB2ENR_TIM9EN                  ((uint32_t)0x00010000)
 #define  RCC_APB2ENR_TIM10EN                 ((uint32_t)0x00020000)
 #define  RCC_APB2ENR_TIM11EN                 ((uint32_t)0x00040000)
+#define  RCC_APB2ENR_SPI5EN                  ((uint32_t)0x00100000)
 
 /********************  Bit definition for RCC_AHB1LPENR register  *************/
 #define  RCC_AHB1LPENR_GPIOALPEN             ((uint32_t)0x00000001)
@@ -2466,11 +2475,13 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_APB2LPENR_TIM9LPEN              ((uint32_t)0x00010000)
 #define  RCC_APB2LPENR_TIM10LPEN             ((uint32_t)0x00020000)
 #define  RCC_APB2LPENR_TIM11LPEN             ((uint32_t)0x00040000)
+#define  RCC_APB2LPENR_SPI5LPEN              ((uint32_t)0x00100000)
 
 /********************  Bit definition for RCC_BDCR register  ******************/
 #define  RCC_BDCR_LSEON                      ((uint32_t)0x00000001)
 #define  RCC_BDCR_LSERDY                     ((uint32_t)0x00000002)
 #define  RCC_BDCR_LSEBYP                     ((uint32_t)0x00000004)
+#define  RCC_BDCR_LSEMOD                     ((uint32_t)0x00000008)
 
 #define  RCC_BDCR_RTCSEL                    ((uint32_t)0x00000300)
 #define  RCC_BDCR_RTCSEL_0                  ((uint32_t)0x00000100)
@@ -2498,6 +2509,14 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_SSCGR_SSCGEN                    ((uint32_t)0x80000000)
 
 /********************  Bit definition for RCC_PLLI2SCFGR register  ************/
+#define  RCC_PLLI2SCFGR_PLLI2SM              ((uint32_t)0x0000003F)
+#define  RCC_PLLI2SCFGR_PLLI2SM_0            ((uint32_t)0x00000001)
+#define  RCC_PLLI2SCFGR_PLLI2SM_1            ((uint32_t)0x00000002)
+#define  RCC_PLLI2SCFGR_PLLI2SM_2            ((uint32_t)0x00000004)
+#define  RCC_PLLI2SCFGR_PLLI2SM_3            ((uint32_t)0x00000008)
+#define  RCC_PLLI2SCFGR_PLLI2SM_4            ((uint32_t)0x00000010)
+#define  RCC_PLLI2SCFGR_PLLI2SM_5            ((uint32_t)0x00000020)
+
 #define  RCC_PLLI2SCFGR_PLLI2SN              ((uint32_t)0x00007FC0)
 #define  RCC_PLLI2SCFGR_PLLI2SN_0            ((uint32_t)0x00000040)
 #define  RCC_PLLI2SCFGR_PLLI2SN_1            ((uint32_t)0x00000080)
@@ -2513,6 +2532,7 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_PLLI2SCFGR_PLLI2SR_0            ((uint32_t)0x10000000)
 #define  RCC_PLLI2SCFGR_PLLI2SR_1            ((uint32_t)0x20000000)
 #define  RCC_PLLI2SCFGR_PLLI2SR_2            ((uint32_t)0x40000000)
+
 
 /******************************************************************************/
 /*                                                                            */
@@ -4511,14 +4531,18 @@ USB_OTG_HostChannelTypeDef;
                                        ((INSTANCE) == I2C3))
 
 /******************************** I2S Instances *******************************/
-#define IS_I2S_INSTANCE(INSTANCE)  (((INSTANCE) == SPI2) || \
-                                    ((INSTANCE) == SPI3))
+#define IS_I2S_INSTANCE(INSTANCE)  (((INSTANCE) == SPI1) || \
+                                    ((INSTANCE) == SPI2) || \
+                                    ((INSTANCE) == SPI3) || \
+                                    ((INSTANCE) == SPI4) || \
+                                    ((INSTANCE) == SPI5))
 
 /*************************** I2S Extended Instances ***************************/
 #define IS_I2S_INSTANCE_EXT(PERIPH)  (((INSTANCE) == SPI2)    || \
                                       ((INSTANCE) == SPI3)    || \
                                       ((INSTANCE) == I2S2ext) || \
                                       ((INSTANCE) == I2S3ext))
+
 
 /****************************** RTC Instances *********************************/
 #define IS_RTC_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == RTC)
@@ -4527,12 +4551,14 @@ USB_OTG_HostChannelTypeDef;
 #define IS_SPI_ALL_INSTANCE(INSTANCE) (((INSTANCE) == SPI1) || \
                                        ((INSTANCE) == SPI2) || \
                                        ((INSTANCE) == SPI3) || \
-                                       ((INSTANCE) == SPI4))
-
+                                       ((INSTANCE) == SPI4) || \
+                                       ((INSTANCE) == SPI5))
 /*************************** SPI Extended Instances ***************************/
 #define IS_SPI_ALL_INSTANCE_EXT(INSTANCE) (((INSTANCE) == SPI1)    || \
                                            ((INSTANCE) == SPI2)    || \
                                            ((INSTANCE) == SPI3)    || \
+                                           ((INSTANCE) == SPI4)    || \
+                                           ((INSTANCE) == SPI5)    || \
                                            ((INSTANCE) == I2S2ext) || \
                                            ((INSTANCE) == I2S3ext))
 
@@ -4745,7 +4771,7 @@ USB_OTG_HostChannelTypeDef;
 }
 #endif /* __cplusplus */
 
-#endif /* __STM32F401xC_H */
+#endif /* __STM32F411xE_H */
 
 
 

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dma.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   DMA HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -47,7 +47,7 @@
           (+) At the end of data transfer HAL_DMA_IRQHandler() function is executed and user can 
               add his own function by customization of function pointer XferCpltCallback and 
               XferErrorCallback (i.e a member of DMA handle structure). 
-                
+    [..]                
      (#) Use HAL_DMA_GetState() function to return the DMA state and HAL_DMA_GetError() in case of error 
          detection.
          
@@ -262,6 +262,12 @@ HAL_StatusTypeDef HAL_DMA_Init(DMA_HandleTypeDef *hdma)
 HAL_StatusTypeDef HAL_DMA_DeInit(DMA_HandleTypeDef *hdma)
 {
   /* Check the DMA peripheral state */
+  if(hdma == NULL)
+  {
+    return HAL_ERROR;
+  }
+  
+  /* Check the DMA peripheral state */
   if(hdma->State == HAL_DMA_STATE_BUSY)
   {
      return HAL_ERROR;
@@ -423,19 +429,19 @@ HAL_StatusTypeDef HAL_DMA_Start_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress,
   */
 HAL_StatusTypeDef HAL_DMA_Abort(DMA_HandleTypeDef *hdma)
 {
-  uint32_t timeout = 0x00;
+  uint32_t tickstart = 0;
 
   /* Disable the stream */
   __HAL_DMA_DISABLE(hdma);
 
-  /* Get timeout */
-  timeout = HAL_GetTick() + HAL_TIMEOUT_DMA_ABORT;
+  /* Get tick */
+  tickstart = HAL_GetTick();
 
   /* Check if the DMA Stream is effectively disabled */
   while((hdma->Instance->CR & DMA_SxCR_EN) != 0)
   {
     /* Check for the Timeout */
-    if(HAL_GetTick() >= timeout)
+    if((HAL_GetTick() - tickstart ) > HAL_TIMEOUT_DMA_ABORT)
     {
       /* Update error code */
       hdma->ErrorCode |= HAL_DMA_ERROR_TIMEOUT;
@@ -469,7 +475,7 @@ HAL_StatusTypeDef HAL_DMA_Abort(DMA_HandleTypeDef *hdma)
 HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t CompleteLevel, uint32_t Timeout)
 {
   uint32_t temp, tmp, tmp1, tmp2;
-  uint32_t timeout = 0x00; 
+  uint32_t tickstart = 0; 
 
   /* Get the level transfer complete flag */
   if(CompleteLevel == HAL_DMA_FULL_TRANSFER)
@@ -483,8 +489,8 @@ HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t Comp
     temp = __HAL_DMA_GET_HT_FLAG_INDEX(hdma);
   }
 
-  /* Get timeout */
-  timeout = HAL_GetTick() + Timeout;
+  /* Get tick */
+  tickstart = HAL_GetTick();
 
   while(__HAL_DMA_GET_FLAG(hdma, temp) == RESET)
   {
@@ -493,13 +499,30 @@ HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t Comp
     tmp2 = __HAL_DMA_GET_FLAG(hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
     if((tmp != RESET) || (tmp1 != RESET) || (tmp2 != RESET))
     {
-      /* Clear the transfer error flag */
-      __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
-      /* Clear the FIFO error flag */
-      __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
-      /* Clear the DIrect Mode error flag */
-      __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+      if(tmp != RESET)
+      {
+        /* Update error code */
+        hdma->ErrorCode |= HAL_DMA_ERROR_TE;
 
+        /* Clear the transfer error flag */
+        __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+      }
+      if(tmp1 != RESET)
+      {
+        /* Update error code */
+        hdma->ErrorCode |= HAL_DMA_ERROR_FE;
+ 
+        /* Clear the FIFO error flag */
+        __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+      }
+      if(tmp2 != RESET)
+      {
+        /* Update error code */
+        hdma->ErrorCode |= HAL_DMA_ERROR_DME;
+
+        /* Clear the Direct Mode error flag */
+        __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+      }
       /* Change the DMA state */
       hdma->State= HAL_DMA_STATE_ERROR;
       
@@ -511,32 +534,29 @@ HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t Comp
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         /* Update error code */
         hdma->ErrorCode |= HAL_DMA_ERROR_TIMEOUT;
 
-        /* Process Unlocked */
-        __HAL_UNLOCK(hdma);
-
         /* Change the DMA state */
         hdma->State = HAL_DMA_STATE_TIMEOUT;
 
+        /* Process Unlocked */
+        __HAL_UNLOCK(hdma);
+        
         return HAL_TIMEOUT;
       }
     }
   }
-  /* Clear the half transfer complete flag */
-  __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
-
-  /* Change DMA peripheral state */
-  hdma->State = HAL_DMA_STATE_READY_HALF_MEM0;
 
   if(CompleteLevel == HAL_DMA_FULL_TRANSFER)
   {
     /* Multi_Buffering mode enabled */
     if(((hdma->Instance->CR) & (uint32_t)(DMA_SxCR_DBM)) != 0)
     {
+      /* Clear the half transfer complete flag */
+      __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
       /* Clear the transfer complete flag */
       __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma));
 
@@ -555,6 +575,8 @@ HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t Comp
     }
     else
     {
+      /* Clear the half transfer complete flag */
+      __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
       /* Clear the transfer complete flag */
       __HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma)); 
 

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_i2s.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of I2S HAL module.
   ******************************************************************************
   * @attention
@@ -187,17 +187,25 @@ typedef struct
 /** @defgroup I2S_Standard 
   * @{
   */
-#define I2S_STANDARD_PHILLIPS            ((uint32_t)0x00000000)
+#define I2S_STANDARD_PHILIPS             ((uint32_t)0x00000000)
 #define I2S_STANDARD_MSB                 ((uint32_t)0x00000010)
 #define I2S_STANDARD_LSB                 ((uint32_t)0x00000020)
 #define I2S_STANDARD_PCM_SHORT           ((uint32_t)0x00000030)
 #define I2S_STANDARD_PCM_LONG            ((uint32_t)0x000000B0)
 
-#define IS_I2S_STANDARD(STANDARD) (((STANDARD) == I2S_STANDARD_PHILLIPS)  || \
+#define IS_I2S_STANDARD(STANDARD) (((STANDARD) == I2S_STANDARD_PHILIPS)  || \
                                    ((STANDARD) == I2S_STANDARD_MSB)       || \
                                    ((STANDARD) == I2S_STANDARD_LSB)       || \
                                    ((STANDARD) == I2S_STANDARD_PCM_SHORT) || \
                                    ((STANDARD) == I2S_STANDARD_PCM_LONG))
+/** @defgroup I2S_Legacy 
+  * @{
+  */
+#define I2S_STANDARD_PHILLIPS      I2S_STANDARD_PHILIPS
+/**
+  * @}
+  */
+
 /**
   * @}
   */
@@ -306,6 +314,13 @@ typedef struct
   */ 
   
 /* Exported macro ------------------------------------------------------------*/
+
+
+/** @brief Reset I2S handle state
+  * @param  __HANDLE__: specifies the I2S Handle.
+  * @retval None
+  */
+#define __HAL_I2S_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_I2S_STATE_RESET)
 
 /** @brief  Enable or disable the specified SPI peripheral (in I2S mode).
   * @param  __HANDLE__: specifies the I2S Handle. 

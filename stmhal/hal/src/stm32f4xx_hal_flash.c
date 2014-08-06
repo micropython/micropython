@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_flash.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   FLASH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the internal FLASH memory:
@@ -212,7 +212,7 @@ HAL_StatusTypeDef HAL_FLASH_Program(uint32_t TypeProgram, uint32_t Address, uint
   * @param  Address:  specifies the address to be programmed.
   * @param  Data: specifies the data to be programmed
   * 
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASH_Program_IT(uint32_t TypeProgram, uint32_t Address, uint64_t Data)
 {
@@ -387,11 +387,11 @@ void HAL_FLASH_IRQHandler(void)
 /**
   * @brief  FLASH end of operation interrupt callback
   * @param  ReturnValue: The value saved in this parameter depends on the ongoing procedure
-  *                 - Mass Erase: Bank number which has been requested to erase
-  *                 - Sectors Erase: Sector which has been erased 
+  *                  Mass Erase: Bank number which has been requested to erase
+  *                  Sectors Erase: Sector which has been erased 
   *                    (if 0xFFFFFFFF, it means that all the selected sectors have been erased)
-  *                 - Program: Address which was selected for data program
-  * @retval none
+  *                  Program: Address which was selected for data program
+  * @retval None
   */
 __weak void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
 {
@@ -403,10 +403,10 @@ __weak void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
 /**
   * @brief  FLASH operation error interrupt callback
   * @param  ReturnValue: The value saved in this parameter depends on the ongoing procedure
-  *                 - Mass Erase: Bank number which has been requested to erase
-  *                 - Sectors Erase: Sector number which returned an error
-  *                 - Program: Address which was selected for data program
-  * @retval none
+  *                 Mass Erase: Bank number which has been requested to erase
+  *                 Sectors Erase: Sector number which returned an error
+  *                 Program: Address which was selected for data program
+  * @retval None
   */
 __weak void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
 {
@@ -437,7 +437,7 @@ __weak void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
 /**
   * @brief  Unlock the FLASH control register access
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASH_Unlock(void)
 {
@@ -458,7 +458,7 @@ HAL_StatusTypeDef HAL_FLASH_Unlock(void)
 /**
   * @brief  Locks the FLASH control register access
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASH_Lock(void)
 {
@@ -472,7 +472,7 @@ HAL_StatusTypeDef HAL_FLASH_Lock(void)
 /**
   * @brief  Unlock the FLASH Option Control Registers access.
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASH_OB_Unlock(void)
 {
@@ -493,7 +493,7 @@ HAL_StatusTypeDef HAL_FLASH_OB_Unlock(void)
 /**
   * @brief  Lock the FLASH Option Control Registers access.
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status 
+  * @retval HAL Status 
   */
 HAL_StatusTypeDef HAL_FLASH_OB_Lock(void)
 {
@@ -506,7 +506,7 @@ HAL_StatusTypeDef HAL_FLASH_OB_Lock(void)
 /**
   * @brief  Launch the option byte loading.
   * @param  None
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef HAL_FLASH_OB_Launch(void)
 {
@@ -529,7 +529,7 @@ HAL_StatusTypeDef HAL_FLASH_OB_Launch(void)
                 ##### Peripheral Errors functions #####
  ===============================================================================  
     [..]
-    This subsection permit to get in run-time Errors of the FLASH peripheral.
+    This subsection permits to get in run-time Errors of the FLASH peripheral.
 
 @endverbatim
   * @{
@@ -558,21 +558,22 @@ FLASH_ErrorTypeDef HAL_FLASH_GetError(void)
 /**
   * @brief  Wait for a FLASH operation to complete.
   * @param  Timeout: maximum flash operationtimeout
-  * @retval HAL_StatusTypeDef HAL Status
+  * @retval HAL Status
   */
 HAL_StatusTypeDef FLASH_WaitForLastOperation(uint32_t Timeout)
 { 
+  uint32_t tickstart = 0;
   /* Wait for the FLASH operation to complete by polling on BUSY flag to be reset.
      Even if the FLASH operation fails, the BUSY flag will be reset and an error
      flag will be set */
-    
-  uint32_t timeout = HAL_GetTick() + Timeout;
-     
+  /* Get tick */
+  tickstart = HAL_GetTick();
+
   while(__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY) != RESET) 
   { 
     if(Timeout != HAL_MAX_DELAY)
     {
-      if(HAL_GetTick() >= timeout)
+      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
       {
         return HAL_TIMEOUT;
       }
