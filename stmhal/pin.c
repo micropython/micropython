@@ -285,6 +285,32 @@ STATIC mp_obj_t pin_obj_init(uint n_args, mp_obj_t *args) {
         }
     }
 
+    // enable the peripheral clock for the port of this pin
+    switch (self->port) {
+        case PORT_A: __GPIOA_CLK_ENABLE(); break;
+        case PORT_B: __GPIOB_CLK_ENABLE(); break;
+        case PORT_C: __GPIOC_CLK_ENABLE(); break;
+        case PORT_D: __GPIOD_CLK_ENABLE(); break;
+        #ifdef __GPIOE_CLK_ENABLE
+        case PORT_E: __GPIOE_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOF_CLK_ENABLE
+        case PORT_F: __GPIOF_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOG_CLK_ENABLE
+        case PORT_G: __GPIOG_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOH_CLK_ENABLE
+        case PORT_H: __GPIOH_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOI_CLK_ENABLE
+        case PORT_I: __GPIOI_CLK_ENABLE(); break;
+        #endif
+        #ifdef __GPIOJ_CLK_ENABLE
+        case PORT_J: __GPIOJ_CLK_ENABLE(); break;
+        #endif
+    }
+
     // configure the GPIO as requested
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Pin = self->pin_mask;
