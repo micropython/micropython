@@ -89,12 +89,12 @@ STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
     mpz_dbl_dig_t d = 0;
     for (uint i = jlen; i > 0; i--, idig--, jdig--) {
         d |= *jdig;
-        *idig = d >> (DIG_SIZE - n_part);
+        *idig = (d >> (DIG_SIZE - n_part)) & DIG_MASK;
         d <<= DIG_SIZE;
     }
 
     // store remaining bits
-    *idig = d >> (DIG_SIZE - n_part);
+    *idig = (d >> (DIG_SIZE - n_part)) & DIG_MASK;
     idig -= n_whole - 1;
     memset(idig, 0, (n_whole - 1) * sizeof(mpz_dig_t));
 
@@ -1132,10 +1132,7 @@ mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2) {
   lcm(0, 0) = 0
   lcm(z, 0) = 0
 */
-mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2)
-{
-    // braces below are required for compilation to succeed with CL, see bug report
-    // https://connect.microsoft.com/VisualStudio/feedback/details/864169/compilation-error-when-braces-are-left-out-of-single-line-if-statement
+mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2) {
     if (z1->len == 0 || z2->len == 0) {
         return mpz_zero();
     }
