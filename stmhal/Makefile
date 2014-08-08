@@ -224,12 +224,12 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv
-AF_FILE = boards/stm32f4xx-af.csv
-PREFIX_FILE = boards/stm32f4xx-prefix.c
+AF_FILE = boards/stm32f4xx_af.csv
+PREFIX_FILE = boards/stm32f4xx_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins-af-const.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
@@ -250,7 +250,7 @@ $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%-af-const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) > $(GEN_PINS_SRC)
 

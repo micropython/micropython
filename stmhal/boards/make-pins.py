@@ -326,13 +326,13 @@ def main():
         "-a", "--af",
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
-        default="stm32f4xx-af.csv"
+        default="stm32f4xx_af.csv"
     )
     parser.add_argument(
         "--af-const",
         dest="af_const_filename",
         help="Specifies header file for alternate function constants.",
-        default="build/pins-af-const.h"
+        default="build/pins_af_const.h"
     )
     parser.add_argument(
         "-b", "--board",
@@ -343,13 +343,13 @@ def main():
         "-p", "--prefix",
         dest="prefix_filename",
         help="Specifies beginning portion of generated pins file",
-        default="stm32f4xx-prefix.c"
+        default="stm32f4xx_prefix.c"
     )
     parser.add_argument(
         "-q", "--qstr",
         dest="qstr_filename",
         help="Specifies name of generated qstr header file",
-        default="build/pins-qstr.h"
+        default="build/pins_qstr.h"
     )
     parser.add_argument(
         "-r", "--hdr",

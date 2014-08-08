@@ -133,13 +133,13 @@ $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
 MAKE_PINS = make-pins.py
-BOARD_PINS = teensy-pins.csv
-AF_FILE = mk20dx256-af.csv
-PREFIX_FILE = mk20dx256-prefix.c
+BOARD_PINS = teensy_pins.csv
+AF_FILE = mk20dx256_af.csv
+PREFIX_FILE = mk20dx256_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins-af-const.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -150,7 +150,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%-af-const.h $(BUILD)/%_qstr.h: teensy-%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: teensy_%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) > $(GEN_PINS_SRC)
 

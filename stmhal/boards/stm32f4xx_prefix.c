@@ -1,4 +1,4 @@
-// stm32fxx-prefix.c becomes the initial portion of the generated pins file.
+// stm32f4xx_prefix.c becomes the initial portion of the generated pins file.
 
 #include <stdio.h>
 #include <stdint.h>

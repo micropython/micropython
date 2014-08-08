@@ -534,7 +534,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
 
-#include "genhdr/pins-af-const.h"
+#include "genhdr/pins_af_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
