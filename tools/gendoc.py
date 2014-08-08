@@ -336,7 +336,7 @@ class Doc:
         return '\n'.join(s)
 
     def write(self, dir):
-        with open(os.path.join(dir, 'index.html'), 'wt') as f:
+        with open(os.path.join(dir, 'module', 'index.html'), 'wt') as f:
             f.write(markdown.markdown(self.dump()))
         for m in self.modules.values():
             mod_dir = os.path.join(dir, 'module', m.name)
