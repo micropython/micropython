@@ -126,17 +126,20 @@ void gc_init(void *start, void *end) {
     gc_alloc_table_byte_len = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
 #endif
 
-
     gc_alloc_table_start = (byte*)start;
 
 #if MICROPY_ENABLE_FINALISER
-    mp_uint_t gc_finaliser_table_byte_len = (gc_alloc_table_byte_len * BLOCKS_PER_ATB) / BLOCKS_PER_FTB;
+    mp_uint_t gc_finaliser_table_byte_len = (gc_alloc_table_byte_len * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     gc_finaliser_table_start = gc_alloc_table_start + gc_alloc_table_byte_len;
 #endif
 
     mp_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     gc_pool_start = (mp_uint_t*)((byte*)end - gc_pool_block_len * BYTES_PER_BLOCK);
     gc_pool_end = (mp_uint_t*)end;
+
+#if MICROPY_ENABLE_FINALISER
+    assert((byte*)gc_pool_start >= gc_finaliser_table_start + gc_finaliser_table_byte_len);
+#endif
 
     // clear ATBs
     memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
