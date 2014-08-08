@@ -25,11 +25,17 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         if ((GPIO_Init->Mode == GPIO_MODE_AF_PP) || (GPIO_Init->Mode == GPIO_MODE_AF_OD)) {
             /* Check the Alternate function parameter */
             assert_param(IS_GPIO_AF(GPIO_Init->Alternate));
-            /* Configure Alternate function mapped with the current IO */
-
-            *port_pcr &= ~PORT_PCR_MUX_MASK;
-            *port_pcr |= PORT_PCR_MUX(GPIO_Init->Alternate);
         }
+        else if (GPIO_Init->Mode == GPIO_MODE_ANALOG) {
+            GPIO_Init->Alternate = 0;
+        }
+        else {
+            GPIO_Init->Alternate = 1;
+        }
+
+        /* Configure Alternate function mapped with the current IO */
+        *port_pcr &= ~PORT_PCR_MUX_MASK;
+        *port_pcr |= PORT_PCR_MUX(GPIO_Init->Alternate);
 
         /* Configure IO Direction mode (Input, Output, Alternate or Analog) */
         if (GPIO_Init->Mode == GPIO_MODE_INPUT || GPIO_Init->Mode == GPIO_MODE_ANALOG) {
@@ -112,4 +118,3 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 #endif
     }
 }
-

@@ -81,6 +81,7 @@ typedef struct {
 #define  GPIO_SPEED_FAST        ((uint32_t)2)
 #define  GPIO_SPEED_HIGH        ((uint32_t)3)
 
+#define IS_GPIO_AF(af)      ((af) >= 0 && (af) <= 7)
 
 typedef struct {
     uint32_t    Pin;
@@ -96,6 +97,22 @@ typedef struct {
 #define GPIO_PIN_TO_PORT_PCR(GPIOx, pin) \
     (&PORTA_PCR0 + GPIO_PORT_TO_PORT_NUM(GPIOx) * 32 + (pin))
 
+#define GPIO_AF2_I2C0   2
+#define GPIO_AF2_I2C1   2
+#define GPIO_AF2_SPI0   2
+#define GPIO_AF3_FTM0   3
+#define GPIO_AF3_FTM1   3
+#define GPIO_AF3_FTM2   3
+#define GPIO_AF3_UART0  3
+#define GPIO_AF3_UART1  3
+#define GPIO_AF3_UART2  3
+#define GPIO_AF4_FTM0   4
+#define GPIO_AF6_FTM1   6
+#define GPIO_AF6_FTM2   6
+#define GPIO_AF6_I2C1   6
+#define GPIO_AF7_FTM1   7
+
+
 __attribute__(( always_inline )) static inline void __WFI(void)
 {
   __asm volatile ("wfi");
@@ -109,3 +126,4 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *init);
 #define GPIO_read_pin(gpio, pin)        (((gpio)->PDIR >> (pin)) & 1)
 #define GPIO_set_pin(gpio, pin_mask)    (((gpio)->PSOR) = (pin_mask))
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->PCOR) = (pin_mask))
+#define GPIO_read_output_pin(gpio, pin) (((gpio)->PDOR >> (pin)) & 1)

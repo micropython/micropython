@@ -43,4 +43,3 @@ enum {
     SPI_TypeDef   *SPI;
 
 typedef GPIO_TypeDef pin_gpio_t;
-
