@@ -34,6 +34,11 @@
 #include "portmodules.h"
 #include "rtc.h"
 
+/// \module time - time related functions
+///
+/// The `time` module provides functions for getting the current time and date,
+/// and for sleeping.
+
 STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
 STATIC bool is_leap_year(mp_uint_t year) {
@@ -64,8 +69,9 @@ mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t
         + (year - 2000) * 31536000;
 }
 
-// returns time stored in RTC as: (year, month, date, hour, minute, second, weekday)
-// weekday is 0-6 for Mon-Sun
+/// \function localtime()
+/// Returns time stored in RTC as: (year, month, date, hour, minute, second, weekday).
+/// Weekday is 0-6 for Mon-Sun.
 STATIC mp_obj_t time_localtime(void) {
     // get date and time
     // note: need to call get time then get date to correctly access the registers
@@ -87,6 +93,9 @@ STATIC mp_obj_t time_localtime(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_localtime_obj, time_localtime);
 
+/// \function sleep(seconds)
+/// Sleep for the given number of seconds.  Seconds can be a floating-point number to
+/// sleep for a fractional number of seconds.
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 #if MICROPY_PY_BUILTINS_FLOAT
     if (MP_OBJ_IS_INT(seconds_o)) {
@@ -101,7 +110,8 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
-// returns the number of seconds, as an integer, since 1/1/2000
+/// \function time()
+/// Returns the number of seconds, as an integer, since 1/1/2000.
 STATIC mp_obj_t time_time(void) {
     // get date and time
     // note: need to call get time then get date to correctly access the registers

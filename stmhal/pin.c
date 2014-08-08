@@ -589,7 +589,7 @@ STATIC mp_obj_t pin_af_index(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_index_obj, pin_af_index);
 
-/// \method index()
+/// \method name()
 /// Return the name of the alternate function.
 STATIC mp_obj_t pin_af_name(mp_obj_t self_in) {
     pin_af_obj_t *af = self_in;
@@ -597,7 +597,7 @@ STATIC mp_obj_t pin_af_name(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_name_obj, pin_af_name);
 
-/// \method index()
+/// \method reg()
 /// Return the base register associated with the peripheral assigned to this
 /// alternate function. For example, if the alternate function were TIM2_CH3
 /// this would return stm.TIM2
