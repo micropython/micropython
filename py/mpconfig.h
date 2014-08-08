@@ -368,8 +368,13 @@ typedef double mp_float_t;
 
 
 // Extended modules
+
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (0)
+#endif
+
+#ifndef MICROPY_PY_ZLIBD
+#define MICROPY_PY_ZLIBD (0)
 #endif
 
 /*****************************************************************************/
