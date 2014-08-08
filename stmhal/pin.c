@@ -273,7 +273,7 @@ STATIC mp_obj_t pin_map_dict(uint n_args, mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, (mp_obj_t)&pin_map_dict_fun_obj);
 
-/// |classmethod af_list()
+/// \classmethod af_list()
 /// Returns an array of alternate functions available for this pin.
 STATIC mp_obj_t pin_af_list(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
@@ -299,7 +299,7 @@ STATIC mp_obj_t pin_debug(uint n_args, mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);
 
-/// \method init(mode, pull=Pin.PULL_NONE, af)
+/// \method init(mode, pull=Pin.PULL_NONE, af=None)
 /// Initialise the pin:
 ///
 ///   - `mode` can be one of:
@@ -320,7 +320,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_o
 STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
     { MP_QSTR_pull,                   MP_ARG_INT, {.u_int = GPIO_NOPULL}},
-    { MP_QSTR_af,   MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+    { MP_QSTR_af,                     MP_ARG_OBJ, {.u_obj = mp_const_none}},
 };
 #define PIN_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
@@ -345,17 +345,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, uint n_args, const mp
     mp_int_t af_idx = -1;
     mp_obj_t af_obj = vals[2].u_obj;
     if (af_obj != mp_const_none) {
-        if (MP_OBJ_IS_STR(af_obj)) {
-            const pin_af_obj_t *af;
-            const char *af_str = mp_obj_str_get_str(af_obj);
-            af = pin_find_af_by_name(self, af_str);
-            if (af == NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %s", af_str));
-            }
-            af_idx = af->idx;
-        } else {
-            af_idx = mp_obj_get_int(af_obj);
-        }
+        af_idx = mp_obj_get_int(af_obj);
     }
     if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af_idx)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af_idx));
@@ -406,6 +396,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, uint n_args, const mp
 
     return mp_const_none;
 }
+
 STATIC mp_obj_t pin_obj_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
@@ -542,6 +533,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_NOPULL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
+
 #include "genhdr/pins-af-const.h"
 };
 
