@@ -299,7 +299,7 @@ STATIC mp_obj_t pin_debug(uint n_args, mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);
 
-/// \method init(mode, pull=Pin.PULL_NONE, af=None)
+/// \method init(mode, pull=Pin.PULL_NONE, af=-1)
 /// Initialise the pin:
 ///
 ///   - `mode` can be one of:
@@ -320,7 +320,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_o
 STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
     { MP_QSTR_pull,                   MP_ARG_INT, {.u_int = GPIO_NOPULL}},
-    { MP_QSTR_af,                     MP_ARG_OBJ, {.u_obj = mp_const_none}},
+    { MP_QSTR_af,                     MP_ARG_INT, {.u_int = -1}},
 };
 #define PIN_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
@@ -342,13 +342,9 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, uint n_args, const mp
     }
 
     // get af (alternate function)
-    mp_int_t af_idx = -1;
-    mp_obj_t af_obj = vals[2].u_obj;
-    if (af_obj != mp_const_none) {
-        af_idx = mp_obj_get_int(af_obj);
-    }
-    if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af_idx)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af_idx));
+    mp_int_t af = vals[2].u_int;
+    if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af));
     }
 
     // enable the peripheral clock for the port of this pin
@@ -391,7 +387,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, uint n_args, const mp
     GPIO_InitStructure.Mode = mode;
     GPIO_InitStructure.Pull = pull;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Alternate = af_idx;
+    GPIO_InitStructure.Alternate = af;
     HAL_GPIO_Init(self->gpio, &GPIO_InitStructure);
 
     return mp_const_none;
