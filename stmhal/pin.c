@@ -190,7 +190,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     pin_obj_t *self = self_in;
 
     // pin name
-    print(env, "Pin(Pin.cpu.%s, mode=Pin.", qstr_str(self->name));
+    print(env, "Pin(Pin.cpu.%q, mode=Pin.", self->name);
 
     uint32_t mode = pin_get_mode(self);
 
@@ -216,7 +216,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
                 mode_qst = MP_QSTR_AF_OD;
             }
         }
-        print(env, qstr_str(mode_qst)); // safe because mode_qst has no formating chars
+        print(env, "%q", mode_qst);
 
         // pull mode
         qstr pull_qst = MP_QSTR_NULL;
@@ -227,7 +227,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
             pull_qst = MP_QSTR_PULL_DOWN;
         }
         if (pull_qst != MP_QSTR_NULL) {
-            print(env, ", pull=Pin.%s", qstr_str(pull_qst));
+            print(env, ", pull=Pin.%q", pull_qst);
         }
 
         // AF mode
@@ -237,7 +237,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
             if (af_obj == NULL) {
                 print(env, ", af=%d)", af_idx);
             } else {
-                print(env, ", af=Pin.%s)", qstr_str(af_obj->name));
+                print(env, ", af=Pin.%q)", af_obj->name);
             }
         } else {
             print(env, ")");
@@ -591,7 +591,7 @@ const mp_obj_type_t pin_type = {
 /// Return a string describing the alternate function.
 STATIC void pin_af_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_af_obj_t *self = self_in;
-    print(env, "Pin.%s", qstr_str(self->name));
+    print(env, "Pin.%q", self->name);
 }
 
 /// \method index()

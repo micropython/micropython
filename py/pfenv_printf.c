@@ -126,6 +126,15 @@ int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 chrs += pfenv_print_strn(pfenv, &str, 1, flags, fill, width);
                 break;
             }
+            case 'q':
+            {
+                qstr q = va_arg(args, qstr);
+                if (prec < 0) {
+                    prec = qstr_len(q);
+                }
+                chrs += pfenv_print_strn(pfenv, qstr_str(q), prec, flags, fill, width);
+                break;
+            }
             case 's':
             {
                 const char *str = va_arg(args, const char*);

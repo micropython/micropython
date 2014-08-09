@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
@@ -1055,7 +1056,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
                 // A proper solution would involve adding a special flag
                 // or something to format_float, and create a format_double
                 // to deal with doubles. In order to fix this when using
-                // sprintf, we'd need to use the e format and tweak the
+                // snprintf, we'd need to use the e format and tweak the
                 // returned result to strip trailing zeros like the g format
                 // does.
                 //

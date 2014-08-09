@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>

@@ -75,7 +75,7 @@ void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *e
     if (type->print != NULL) {
         type->print(print, env, o_in, kind);
     } else {
-        print(env, "<%s>", qstr_str(type->name));
+        print(env, "<%q>", type->name);
     }
 }
 
@@ -340,7 +340,7 @@ uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s indices must be integers, not %s", qstr_str(type->name), mp_obj_get_type_str(index)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%q indices must be integers, not %s", type->name, mp_obj_get_type_str(index)));
     }
 
     if (i < 0) {
@@ -354,7 +354,7 @@ uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool
         }
     } else {
         if (i < 0 || i >= len) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%s index out of range", qstr_str(type->name)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "%q index out of range", type->name));
         }
     }
     return i;
