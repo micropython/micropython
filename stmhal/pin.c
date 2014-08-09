@@ -189,41 +189,58 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
 STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
 
-    // Need to query mode, pull, af
+    // pin name
+    print(env, "Pin(Pin.cpu.%s, mode=Pin.", qstr_str(self->name));
 
-    print(env, "Pin(Pin.cpu.%s", qstr_str(self->name));
     uint32_t mode = pin_get_mode(self);
+
     if (mode == GPIO_MODE_ANALOG) {
-        print(env, ", mode=Pin.ANALOG)", qstr_str(self->name));
+        // analog
+        print(env, "ANALOG)");
+
     } else {
-        const char *pull_str = "";
+        // IO mode
+        bool af = false;
+        qstr mode_qst;
+        if (mode == GPIO_MODE_INPUT) {
+            mode_qst = MP_QSTR_IN;
+        } else if (mode == GPIO_MODE_OUTPUT_PP) {
+            mode_qst = MP_QSTR_OUT_PP;
+        } else if (mode == GPIO_MODE_OUTPUT_OD) {
+            mode_qst = MP_QSTR_OUT_OD;
+        } else {
+            af = true;
+            if (mode == GPIO_MODE_AF_PP) {
+                mode_qst = MP_QSTR_AF_PP;
+            } else {
+                mode_qst = MP_QSTR_AF_OD;
+            }
+        }
+        print(env, qstr_str(mode_qst)); // safe because mode_qst has no formating chars
+
+        // pull mode
+        qstr pull_qst = MP_QSTR_NULL;
         uint32_t pull = pin_get_pull(self);
         if (pull == GPIO_PULLUP) {
-            pull_str = ", pull=Pin.PULL_UP";
+            pull_qst = MP_QSTR_PULL_UP;
         } else if (pull == GPIO_PULLDOWN) {
-            pull_str = ", pull=Pin.PULL_DOWN";
+            pull_qst = MP_QSTR_PULL_DOWN;
         }
-        if (mode == GPIO_MODE_INPUT) {
-            print(env, ", mode=Pin.IN%s)", pull_str);
-        } else if (mode == GPIO_MODE_OUTPUT_PP || mode == GPIO_MODE_OUTPUT_OD) {
-            if (mode == GPIO_MODE_OUTPUT_PP) {
-                print(env, ", mode=Pin.OUT_PP%s)", pull_str);
+        if (pull_qst != MP_QSTR_NULL) {
+            print(env, ", pull=Pin.%s", qstr_str(pull_qst));
+        }
+
+        // AF mode
+        if (af) {
+            mp_uint_t af_idx = pin_get_af(self);
+            const pin_af_obj_t *af_obj = pin_find_af_by_index(self, af_idx);
+            if (af_obj == NULL) {
+                print(env, ", af=%d)", af_idx);
             } else {
-                print(env, ", mode=Pin.OUT_OD%s)", pull_str);
+                print(env, ", af=Pin.%s)", qstr_str(af_obj->name));
             }
         } else {
-            if (mode == GPIO_MODE_AF_PP) {
-                print(env, ", mode=Pin.AF_PP");
-            } else {
-                print(env, ", mode=Pin.AF_OD");
-            }
-            mp_uint_t af_idx = pin_get_af(self);
-            const pin_af_obj_t *af = pin_find_af_by_index(self, af_idx);
-            if (af == NULL) {
-                print(env, ", af=%d%s)", af_idx, pull_str);
-            } else {
-                print(env, ", af=Pin.%s)", qstr_str(af->name), pull_str);
-            }
+            print(env, ")");
         }
     }
 }
