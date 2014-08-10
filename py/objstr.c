@@ -472,6 +472,9 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
 
     } else {
         // sep given
+        if (mp_obj_get_type(sep) != self_type) {
+            arg_type_mixup();
+        }
 
         uint sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);

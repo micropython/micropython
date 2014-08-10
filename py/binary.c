@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <assert.h>
 
@@ -36,6 +37,10 @@
 #include "binary.h"
 
 // Helpers to work with binary-encoded data
+
+#ifndef alignof
+#define alignof(type) offsetof(struct { char c; type t; }, t)
+#endif
 
 int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
     int size = 0;
@@ -68,16 +73,20 @@ int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
                 case 'b': case 'B':
                     align = size = 1; break;
                 case 'h': case 'H':
-                    align = size = sizeof(short); break;
+                    align = alignof(short);
+                    size = sizeof(short); break;
                 case 'i': case 'I':
-                    align = size = sizeof(int); break;
+                    align = alignof(int);
+                    size = sizeof(int); break;
                 case 'l': case 'L':
-                    align = size = sizeof(long); break;
+                    align = alignof(long);
+                    size = sizeof(long); break;
                 case 'q': case 'Q':
-                    // TODO: This is for x86
-                    align = sizeof(int); size = sizeof(long long); break;
+                    align = alignof(long long);
+                    size = sizeof(long long); break;
                 case 'P': case 'O': case 'S':
-                    align = size = sizeof(void*); break;
+                    align = alignof(void*);
+                    size = sizeof(void*); break;
             }
         }
     }
