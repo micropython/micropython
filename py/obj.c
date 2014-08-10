@@ -410,7 +410,7 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
         return false;
     }
     int ret = type->buffer_p.get_buffer(obj, bufinfo, flags);
-    if (ret != 0 || bufinfo->buf == NULL) {
+    if (ret != 0) {
         return false;
     }
     return true;

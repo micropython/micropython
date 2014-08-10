@@ -210,7 +210,7 @@ typedef struct _mp_buffer_info_t {
     // them with ver = sizeof(struct). Cons: overkill for *micro*?
     //int ver; // ?
 
-    void *buf;
+    void *buf;    // can be NULL if len == 0
     mp_int_t len; // in bytes
     int typecode; // as per binary.h
 
