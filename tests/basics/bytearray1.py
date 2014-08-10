@@ -17,3 +17,12 @@ print(s)
 print(a[1:])
 print(a[:-1])
 print(a[2:3])
+
+# Comparisons
+print(bytearray([1]) == bytearray([1]))
+print(bytearray([1]) == bytearray([2]))
+print(bytearray([1]) == b"1")
+print(b"1" == bytearray([1]))
+print(bytearray() == bytearray())
+
+# TODO: other comparisons

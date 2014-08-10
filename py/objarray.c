@@ -52,6 +52,7 @@ typedef struct _mp_obj_array_t {
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
 STATIC mp_obj_array_t *array_new(char typecode, uint n);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
+STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags);
 
 /******************************************************************************/
 /* array                                                                       */
@@ -146,6 +147,22 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
+STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        case MP_BINARY_OP_EQUAL: {
+            mp_buffer_info_t lhs_bufinfo;
+            mp_buffer_info_t rhs_bufinfo;
+            array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
+            if (!mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
+                    return mp_const_false;
+            }
+            return MP_BOOL(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+        }
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
@@ -227,6 +244,7 @@ const mp_obj_type_t mp_type_array = {
     .make_new = array_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
+    .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
@@ -239,6 +257,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .make_new = bytearray_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
+    .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_t)&array_locals_dict,
