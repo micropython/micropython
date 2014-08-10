@@ -569,6 +569,10 @@ soft_reset:
     goto soft_reset;
 }
 
+/// \moduleref sys
+/// \function exit([retval])
+/// Raise a `SystemExit` exception.  If an argument is given, it is the
+/// value given to `SystemExit`.
 STATIC NORETURN mp_obj_t mp_sys_exit(uint n_args, const mp_obj_t *args) {
     int rc = 0;
     if (n_args > 0) {

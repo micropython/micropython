@@ -177,6 +177,10 @@ STATIC const mp_obj_type_t stdio_obj_type = {
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
 };
 
+/// \moduleref sys
+/// \constant stdin - standard input (connected to USB VCP, and optional UART object)
+/// \constant stdout - standard output (connected to USB VCP, and optional UART object)
+/// \constant stderr - standard error (connected to USB VCP, and optional UART object)
 const pyb_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
 const pyb_stdio_obj_t mp_sys_stdout_obj = {{&stdio_obj_type}, .fd = STDIO_FD_OUT};
 const pyb_stdio_obj_t mp_sys_stderr_obj = {{&stdio_obj_type}, .fd = STDIO_FD_ERR};
