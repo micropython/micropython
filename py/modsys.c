@@ -49,14 +49,16 @@ extern struct _dummy_t mp_sys_exit_obj;
 
 extern mp_obj_int_t mp_maxsize_obj;
 
-// TODO document these, they aren't constants or functions...
+// TODO document these properly, they aren't constants or functions...
+/// \constant path - a mutable list of directories to search for imported modules
 mp_obj_list_t mp_sys_path_obj;
+/// \constant argv - a mutable list of arguments this program started with
 mp_obj_list_t mp_sys_argv_obj;
 
 /// \constant version - Python language version that this implementation conforms to, as a string
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
-/// \constant version - Python language version that this implementation conforms to, as a tuple of ints
+/// \constant version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
