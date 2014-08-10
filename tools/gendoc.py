@@ -327,12 +327,13 @@ class Doc:
 
     def dump(self):
         s = []
-        if self.modules:
+        s.append('# Modules')
+        s.append('')
+        s.append('These are the Python modules that are implemented.')
+        s.append('')
+        for m in sorted(self.modules.values(), key=lambda x:x.name):
             s.append('')
-            s.append('# Modules')
-            for m in sorted(self.modules.values(), key=lambda x:x.name):
-                s.append('')
-                s.append('[`{}`]({}) - {}'.format(m.name, m.name, m.descr))
+            s.append('[`{}`]({}/) - {}'.format(m.name, m.name, m.descr))
         return '\n'.join(s)
 
     def write(self, dir):
