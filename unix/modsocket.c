@@ -45,6 +45,7 @@
 #include "obj.h"
 #include "objtuple.h"
 #include "objarray.h"
+#include "objstr.h"
 #include "runtime.h"
 #include "stream.h"
 #include "builtin.h"
@@ -179,11 +180,11 @@ STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
         flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
     }
 
-    char *buf = m_new(char, sz);
+    byte *buf = m_new(byte, sz);
     int out_sz = recv(self->fd, buf, sz, flags);
     RAISE_ERRNO(out_sz, errno);
 
-    mp_obj_t ret = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, out_sz));
+    mp_obj_t ret = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
     m_del(char, buf, sz);
     return ret;
 }
