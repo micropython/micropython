@@ -37,3 +37,8 @@ def gen():
     for i in range(4):
         yield i
 print(bytes(gen()))
+
+# Make sure bytes are not mistreated as unicode
+x = b"\xff\x8e\xfe}\xfd\x7f"
+print(len(x))
+print(x[0], x[1], x[2], x[3])

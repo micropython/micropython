@@ -353,7 +353,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, u
 }
 #endif
 
-STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+// This is used for both bytes and 8-bit strings. This is not used for unicode strings.
+STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
@@ -368,11 +369,11 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
-        const byte *p = str_index_to_ptr(type, self_data, self_len, index, false);
+        mp_uint_t index_val = mp_get_index(type, self_len, index, false);
         if (type == &mp_type_bytes) {
-            return MP_OBJ_NEW_SMALL_INT(*p);
+            return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         } else {
-            return mp_obj_new_str((char*)p, 1, true);
+            return mp_obj_new_str((char*)&self_data[index_val], 1, true);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -1704,7 +1705,7 @@ const mp_obj_type_t mp_type_str = {
     .print = str_print,
     .make_new = str_make_new,
     .binary_op = mp_obj_str_binary_op,
-    .subscr = str_subscr,
+    .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
@@ -1718,7 +1719,7 @@ const mp_obj_type_t mp_type_bytes = {
     .print = str_print,
     .make_new = bytes_make_new,
     .binary_op = mp_obj_str_binary_op,
-    .subscr = str_subscr,
+    .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
