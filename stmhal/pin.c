@@ -508,6 +508,33 @@ STATIC mp_obj_t pin_gpio(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_gpio_obj, pin_gpio);
 
+/// \method mode()
+/// Returns the currently configured mode of the pin. The integer returned
+/// will match one of the allowed constants for the mode argument to the init
+/// function.
+STATIC mp_obj_t pin_mode(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_mode(self_in));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_mode_obj, pin_mode);
+
+/// \method pull()
+/// Returns the currently configured pull of the pin. The integer returned
+/// will match one of the allowed constants for the pull argument to the init
+/// function.
+STATIC mp_obj_t pin_pull(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_pull(self_in));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pull_obj, pin_pull);
+
+/// \method af()
+/// Returns the currently configured af of the pin. The integer returned
+/// will match one of the allowed constants for the af argument to the init
+/// function.
+STATIC mp_obj_t pin_af(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_af(self_in));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
+
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pin_init_obj },
@@ -520,6 +547,9 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_port),    (mp_obj_t)&pin_port_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin),     (mp_obj_t)&pin_pin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gpio),    (mp_obj_t)&pin_gpio_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),    (mp_obj_t)&pin_mode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pull),    (mp_obj_t)&pin_pull_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_af),      (mp_obj_t)&pin_af_obj },
 
     // class methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_mapper),  (mp_obj_t)&pin_mapper_obj },
