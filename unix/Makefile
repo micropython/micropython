@@ -97,3 +97,15 @@ include ../py/mkrules.mk
 test: $(PROG) ../tests/run-tests
 	$(eval DIRNAME=$(notdir $(CURDIR)))
 	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+
+# install micropython in /usr/local/bin
+TARGET = micropython
+PREFIX = $(DESTDIR)/usr/local
+BINDIR = $(PREFIX)/bin
+
+install: micropython
+	install -D $(TARGET) $(BINDIR)/$(TARGET)
+
+# uninstall micropython
+uninstall:
+	-rm $(BINDIR)/$(TARGET)
