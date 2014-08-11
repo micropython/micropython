@@ -370,7 +370,8 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         }
 #endif
         mp_uint_t index_val = mp_get_index(type, self_len, index, false);
-        if (type == &mp_type_bytes) {
+        // If we have unicode enabled the type will always be bytes, so take the short cut.
+        if (MICROPY_PY_BUILTINS_STR_UNICODE || type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         } else {
             return mp_obj_new_str((char*)&self_data[index_val], 1, true);
