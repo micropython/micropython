@@ -54,6 +54,7 @@
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 
 #define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_ZLIBD            (1)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
