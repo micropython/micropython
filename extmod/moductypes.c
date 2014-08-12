@@ -315,6 +315,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
             return mp_obj_new_float(((double*)p)[index]);
         default:
             assert(0);
+            return MP_OBJ_NULL;
     }
 }
 
@@ -513,6 +514,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
         }
 
         assert(0);
+        return MP_OBJ_NULL;
     } else {
         // store
         return MP_OBJ_NULL; // op not supported
