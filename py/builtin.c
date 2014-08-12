@@ -99,7 +99,7 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
 
-mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
+STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
         if (val < 0) {
@@ -286,7 +286,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
 STATIC mp_obj_t mp_builtin_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
-    if (len == NULL) {
+    if (len == MP_OBJ_NULL) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
     } else {
         return len;
