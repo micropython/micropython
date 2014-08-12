@@ -47,7 +47,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-STATIC mp_obj_t mod_zlib_decompress(uint n_args, mp_obj_t *args) {
+STATIC mp_obj_t mod_zlibd_decompress(uint n_args, mp_obj_t *args) {
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
@@ -81,28 +81,28 @@ STATIC mp_obj_t mod_zlib_decompress(uint n_args, mp_obj_t *args) {
     m_del_obj(tinfl_decompressor, decomp);
     return mp_obj_new_bytearray_by_ref(dst_buf_ofs, out);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_zlib_decompress_obj, 1, 3, mod_zlib_decompress);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_zlibd_decompress_obj, 1, 3, mod_zlibd_decompress);
 
-STATIC const mp_map_elem_t mp_module_zlib_globals_table[] = {
+STATIC const mp_map_elem_t mp_module_zlibd_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_zlibd) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_decompress), (mp_obj_t)&mod_zlib_decompress_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_decompress), (mp_obj_t)&mod_zlibd_decompress_obj },
 };
 
-STATIC const mp_obj_dict_t mp_module_zlib_globals = {
+STATIC const mp_obj_dict_t mp_module_zlibd_globals = {
     .base = {&mp_type_dict},
     .map = {
         .all_keys_are_qstrs = 1,
         .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_zlib_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_zlib_globals_table),
-        .table = (mp_map_elem_t*)mp_module_zlib_globals_table,
+        .used = MP_ARRAY_SIZE(mp_module_zlibd_globals_table),
+        .alloc = MP_ARRAY_SIZE(mp_module_zlibd_globals_table),
+        .table = (mp_map_elem_t*)mp_module_zlibd_globals_table,
     },
 };
 
 const mp_obj_module_t mp_module_zlibd = {
     .base = { &mp_type_module },
     .name = MP_QSTR_zlibd,
-    .globals = (mp_obj_dict_t*)&mp_module_zlib_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_zlibd_globals,
 };
 
 #endif //MICROPY_PY_ZLIBD
