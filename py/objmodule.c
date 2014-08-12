@@ -40,7 +40,7 @@ STATIC mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules
 
 STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_module_t *self = self_in;
-    print(env, "<module '%s' from '-unknown-file-'>", qstr_str(self->name));
+    print(env, "<module '%q' from '-unknown-file-'>", self->name);
 }
 
 STATIC void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {

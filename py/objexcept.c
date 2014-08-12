@@ -41,6 +41,7 @@
 #include "runtime.h"
 #include "runtime0.h"
 #include "gc.h"
+#include "mpsnprintf.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
@@ -111,7 +112,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
-        print(env, "%s", qstr_str(o->base.type->name));
+        print(env, "%q", o->base.type->name);
     }
 
     if (k == PRINT_EXC) {
@@ -337,7 +338,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
             va_list ap;
             va_start(ap, fmt);
-            str->len = vsnprintf((char *)str_data, max_len, fmt, ap);
+            str->len = mp_vsnprintf((char *)str_data, max_len, fmt, ap);
             va_end(ap);
 
             str->base.type = &mp_type_str;

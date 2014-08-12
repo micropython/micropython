@@ -153,7 +153,7 @@ mp_obj_t mp_load_global(qstr qstr) {
         // TODO lookup in dynamic table of builtins first
         elem = mp_map_lookup((mp_map_t*)&mp_builtin_object_dict_obj.map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%s' is not defined", qstr_str(qstr)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError, "name '%q' is not defined", qstr));
         }
     }
     return elem->value;
@@ -879,9 +879,9 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
         // following CPython, we give a more detailed error message for type objects
         if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-                "type object '%s' has no attribute '%s'", qstr_str(((mp_obj_type_t*)base)->name), qstr_str(attr)));
+                "type object '%q' has no attribute '%q'", ((mp_obj_type_t*)base)->name, attr));
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%q'", mp_obj_get_type_str(base), attr));
         }
     }
 }
@@ -894,7 +894,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             return;
         }
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%s'", mp_obj_get_type_str(base), qstr_str(attr)));
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError, "'%s' object has no attribute '%q'", mp_obj_get_type_str(base), attr));
 }
 
 mp_obj_t mp_getiter(mp_obj_t o_in) {
@@ -1086,7 +1086,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     if (dest[1] != MP_OBJ_NULL) {
         // Hopefully we can't import bound method from an object
 import_error:
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %s", qstr_str(name)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %q", name));
     }
 
     if (dest[0] != MP_OBJ_NULL) {

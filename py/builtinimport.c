@@ -297,7 +297,7 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
 
             // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", qstr_str(mod_name)));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%q'", mod_name));
             }
 
             module_obj = mp_module_get(mod_name);

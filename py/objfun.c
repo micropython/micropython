@@ -275,7 +275,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_arg
                 if (arg_name == self->args[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "function got multiple values for argument '%s'", qstr_str(arg_name)));
+                            "function got multiple values for argument '%q'", arg_name));
                     }
                     code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
                     goto continue2;
@@ -324,7 +324,7 @@ continue2:;
                     code_state->state[n_state - 1 - self->n_pos_args - i] = elem->value;
                 } else {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "function missing required keyword argument '%s'", qstr_str(self->args[self->n_pos_args + i])));
+                        "function missing required keyword argument '%q'", self->args[self->n_pos_args + i]));
                 }
             }
         }

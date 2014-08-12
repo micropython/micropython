@@ -74,7 +74,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
             mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qstr), MP_MAP_LOOKUP);
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%s' argument required", qstr_str(allowed[i].qstr)));
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'%q' argument required", allowed[i].qstr));
                 }
                 out_vals[i] = allowed[i].defval;
                 continue;

@@ -31,6 +31,7 @@
 #include <assert.h>
 #include "mpconfig.h"
 #include "misc.h"
+#include "mpsnprintf.h"
 
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
@@ -360,11 +361,11 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
 
     while (1) {
         // try to print in the allocated space
-        // need to make a copy of the va_list because we may call vsnprintf multiple times
+        // need to make a copy of the va_list because we may call mp_vsnprintf multiple times
         int size = vstr->alloc - vstr->len;
         va_list ap2;
         va_copy(ap2, ap);
-        int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap2);
+        int n = mp_vsnprintf(vstr->buf + vstr->len, size, fmt, ap2);
         va_end(ap2);
 
         // if that worked, return

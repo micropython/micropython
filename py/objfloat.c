@@ -57,7 +57,7 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
     }
 #else
     char buf[32];
-    sprintf(buf, "%.17g", (double) o->value);
+    snprintf(buf, sizeof(buf), "%.17g", (double) o->value);
     print(env, buf);
     if (strchr(buf, '.') == NULL) {
         // Python floats always have decimal point

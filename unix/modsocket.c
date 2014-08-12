@@ -366,7 +366,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
         int port = (short)MP_OBJ_SMALL_INT_VALUE(args[1]);
         char buf[6];
-        sprintf(buf, "%d", port);
+        snprintf(buf, sizeof(buf), "%d", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
 #ifdef __UCLIBC_MAJOR__

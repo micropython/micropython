@@ -217,7 +217,7 @@ STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void 
         // Handle Exception subclasses specially
         if (mp_obj_is_native_exception_instance(self->subobj[0])) {
             if (kind != PRINT_STR) {
-                print(env, "%s", qstr_str(self->base.type->name));
+                print(env, "%q", self->base.type->name);
             }
             mp_obj_print_helper(print, env, self->subobj[0], kind | PRINT_EXC_SUBCLASS);
         } else {
@@ -639,7 +639,7 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
 
 STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_type_t *self = self_in;
-    print(env, "<class '%s'>", qstr_str(self->name));
+    print(env, "<class '%q'>", self->name);
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
@@ -666,7 +666,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj
     mp_obj_type_t *self = self_in;
 
     if (self->make_new == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot create '%s' instances", qstr_str(self->name)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot create '%q' instances", self->name));
     }
 
     // make new instance
@@ -762,7 +762,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         mp_obj_type_t *t = items[i];
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "type '%s' is not an acceptable base type", qstr_str(t->name)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "type '%q' is not an acceptable base type", t->name));
         }
     }
 

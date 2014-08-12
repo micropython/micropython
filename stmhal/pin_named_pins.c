@@ -38,7 +38,7 @@
 
 STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;
-    print(env, "<Pin.%s>", qstr_str(self->name));
+    print(env, "<Pin.%q>", self->name);
 }
 
 const mp_obj_type_t pin_cpu_pins_obj_type = {
