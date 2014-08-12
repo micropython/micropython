@@ -360,6 +360,16 @@ uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool
     return i;
 }
 
+// will raise a TypeError if object has no length
+mp_obj_t mp_obj_len(mp_obj_t o_in) {
+    mp_obj_t len = mp_obj_len_maybe(o_in);
+    if (len == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+    } else {
+        return len;
+    }
+}
+
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (

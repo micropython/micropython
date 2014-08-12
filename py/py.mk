@@ -72,6 +72,7 @@ PY_O_BASENAME = \
 	objnone.o \
 	objnamedtuple.o \
 	objrange.o \
+	objreversed.o \
 	objset.o \
 	objslice.o \
 	objstr.o \

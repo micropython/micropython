@@ -284,17 +284,6 @@ STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
-STATIC mp_obj_t mp_builtin_len(mp_obj_t o_in) {
-    mp_obj_t len = mp_obj_len_maybe(o_in);
-    if (len == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
-    } else {
-        return len;
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_builtin_len);
-
 STATIC mp_obj_t mp_builtin_max(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // given an iterable
@@ -569,6 +558,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
 
-// These two are defined in terms of MicroPython API functions right away
+// These are defined in terms of MicroPython API functions right away
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_globals_get);
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_locals_get);

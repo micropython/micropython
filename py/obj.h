@@ -312,6 +312,7 @@ extern const mp_obj_type_t mp_type_classmethod;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
+extern const mp_obj_type_t mp_type_reversed;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -424,6 +425,7 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
+mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 
