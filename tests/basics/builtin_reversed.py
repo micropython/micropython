@@ -18,8 +18,8 @@ for b in reversed(b'1234'):
     print(b)
 
 # range
-#for i in reversed(range(3)):
-#    print(i)
+for i in reversed(range(3)):
+    print(i)
 
 # user object
 class A:
