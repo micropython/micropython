@@ -136,7 +136,11 @@ Q(calcsize)
 Q(chr)
 Q(classmethod)
 Q(_collections)
+#if MICROPY_PY_BUILTINS_COMPLEX
 Q(complex)
+Q(real)
+Q(imag)
+#endif
 Q(dict)
 Q(dir)
 Q(divmod)
