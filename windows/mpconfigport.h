@@ -119,6 +119,7 @@ void msec_sleep(double msec);
 
 #define restrict
 #define inline                      __inline
+#define alignof(t)                  __alignof(t)
 #define STDIN_FILENO                0
 #define STDOUT_FILENO               1
 #define STDERR_FILENO               2
