@@ -290,10 +290,16 @@ mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             break;
 
         case MP_BINARY_OP_MULTIPLY: {
-            if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
+            mp_int_t n;
+            if (!mp_obj_get_int_maybe(rhs_in, &n)) {
                 return MP_OBJ_NULL; // op not supported
             }
-            int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
+            if (n <= 0) {
+                if (lhs_type == &mp_type_str) {
+                    return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
+                }
+                n = 0;
+            }
             byte *data;
             mp_obj_t s = mp_obj_str_builder_start(lhs_type, lhs_len * n, &data);
             mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);

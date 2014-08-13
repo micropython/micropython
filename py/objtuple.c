@@ -137,10 +137,13 @@ mp_obj_t mp_obj_tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
             return s;
         }
         case MP_BINARY_OP_MULTIPLY: {
-            if (!MP_OBJ_IS_SMALL_INT(rhs)) {
+            mp_int_t n;
+            if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return MP_OBJ_NULL; // op not supported
             }
-            int n = MP_OBJ_SMALL_INT_VALUE(rhs);
+            if (n <= 0) {
+                return mp_const_empty_tuple;
+            }
             mp_obj_tuple_t *s = mp_obj_new_tuple(o->len * n, NULL);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return s;
