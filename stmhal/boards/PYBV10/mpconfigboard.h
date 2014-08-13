@@ -19,8 +19,6 @@
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CC3K      (0)
 
-#define MICROPY_HW_HAS_NRF24        (1)
-
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define MICROPY_HW_USRSW_PIN        (pin_B3)
 #define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)

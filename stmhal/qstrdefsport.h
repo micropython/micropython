@@ -281,9 +281,6 @@ Q(pixel)
 Q(text)
 Q(show)
 
-// for nRF24 class
-Q(nRF24)
-
 
 // for stm module
 Q(stm)
