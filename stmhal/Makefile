@@ -113,6 +113,7 @@ SRC_C = \
 	dac.c \
 	adc.c \
 	pybwlan.c \
+	nrf24.c \
 
 SRC_S = \
 	startup_stm32f40xx.s \
