@@ -274,8 +274,11 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
             tim_clock = HAL_RCC_GetPCLK1Freq();
         }
 
-        // compute the prescaler value so TIM triggers at freq-Hz
-        // dpgeorge: I don't understand why we need to multiply tim_clock by 2
+        // Compute the prescaler value so TIM triggers at freq-Hz
+        // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
+        // If the APB prescaler is 1, then the timer clock is equal to its respective
+        // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
+        // respective APB clock.  See DM00031020 Rev 4, page 115.
         uint32_t period = MAX(1, 2 * tim_clock / vals[0].u_int);
         uint32_t prescaler = 1;
         while (period > 0xffff) {
