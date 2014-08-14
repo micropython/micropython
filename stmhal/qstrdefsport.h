@@ -151,6 +151,17 @@ Q(freq)
 Q(mode)
 Q(div)
 
+// For PWM
+Q(PWM)
+Q(channel)
+Q(oc_mode)
+Q(pulse)  
+Q(oc_polarity) 
+Q(ocn_polarity) 
+Q(oc_fast_mode)
+Q(oc_idle_state)
+Q(ocn_idle_state)
+
 // for ExtInt class
 Q(ExtInt)
 Q(pin)

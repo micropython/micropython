@@ -88,14 +88,6 @@
 // TIM6:
 //  - ADC, DAC for read_timed and write_timed
 
-typedef struct _pyb_timer_obj_t {
-    mp_obj_base_t base;
-    mp_uint_t tim_id;
-    mp_obj_t callback;
-    TIM_HandleTypeDef tim;
-    IRQn_Type irqn;
-} pyb_timer_obj_t;
-
 TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
@@ -108,7 +100,6 @@ STATIC pyb_timer_obj_t *pyb_timer_obj_all[14];
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(pyb_timer_obj_all)
 
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
-STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 
 void timer_init0(void) {
     tim3_counter = 0;
@@ -122,6 +113,8 @@ void timer_deinit(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
         pyb_timer_obj_t *tim = pyb_timer_obj_all[i];
         if (tim != NULL) {
+// TODO: Make this call the deinit function via python so derived classes
+//       get the correct function called.
             pyb_timer_deinit(tim);
         }
     }
@@ -241,19 +234,24 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
 ///     tim.init(freq=100)                  # set the timer to trigger at 100Hz
 ///     tim.init(prescaler=100, period=300) # set the prescaler and period directly
 STATIC const mp_arg_t pyb_timer_init_args[] = {
-    { MP_QSTR_freq,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_period,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_mode,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
-    { MP_QSTR_div,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_CLOCKDIVISION_DIV1} },
+    TIMER_BASE_ARGS
 };
 #define PYB_TIMER_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_init_args)
 
-STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC void pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    printf("pyb_timer_init_helper called\n");
     // parse args
     mp_arg_val_t vals[PYB_TIMER_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_TIMER_INIT_NUM_ARGS, pyb_timer_init_args, vals);
 
+    pyb_timer_base_init_helper(self, vals);
+
+    HAL_TIM_Base_Init(&self->tim);
+    HAL_TIM_Base_Start(&self->tim);
+}
+
+void pyb_timer_base_init_helper(pyb_timer_obj_t *self, mp_arg_val_t *vals) {
+    printf("pyb_timer_base_init_helper called\n");
     // set the TIM configuration values
     TIM_Base_InitTypeDef *init = &self->tim.Init;
 
@@ -316,35 +314,21 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
         case 13: __TIM13_CLK_ENABLE(); break;
         case 14: __TIM14_CLK_ENABLE(); break;
     }
-    HAL_TIM_Base_Init(&self->tim);
-    HAL_TIM_Base_Start(&self->tim);
 
     // set the priority (if not a special timer)
     if (self->tim_id != 3 && self->tim_id != 5) {
         HAL_NVIC_SetPriority(self->irqn, 0xe, 0xe); // next-to lowest priority
     }
-
-    return mp_const_none;
 }
 
-/// \classmethod \constructor(id, ...)
-/// Construct a new timer object of the given id.  If additional
-/// arguments are given, then the timer is initialised by `init(...)`.
-/// `id` can be 1 to 14, excluding 3.
-STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+void pyb_timer_init_new(pyb_timer_obj_t *tim, mp_uint_t tim_id) {
+    printf("pyb_timer_init_new called\n");
 
-    // create new Timer object
-    pyb_timer_obj_t *tim = m_new_obj(pyb_timer_obj_t);
-    tim->base.type = &pyb_timer_type;
+    tim->tim_id = tim_id;
     tim->callback = mp_const_none;
     memset(&tim->tim, 0, sizeof(tim->tim));
 
-    // get TIM number
-    tim->tim_id = mp_obj_get_int(args[0]);
-
-    switch (tim->tim_id) {
+    switch (tim_id) {
         case 1: tim->tim.Instance = TIM1; tim->irqn = TIM1_UP_TIM10_IRQn; break;
         case 2: tim->tim.Instance = TIM2; tim->irqn = TIM2_IRQn; break;
         case 3: nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Timer 3 is for internal use only")); // TIM3 used for low-level stuff; go via regs if necessary
@@ -362,6 +346,27 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
         default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d does not exist", tim->tim_id));
     }
 
+    // set the global variable for interrupt callbacks
+    if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
+        pyb_timer_obj_all[tim->tim_id - 1] = tim;
+    }
+}
+
+/// \classmethod \constructor(id, ...)
+/// Construct a new timer object of the given id.  If additional
+/// arguments are given, then the timer is initialised by `init(...)`.
+/// `id` can be 1 to 14, excluding 3.
+STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    printf("pyb_timer_make_new called\n");
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+
+    // create new Timer object
+    pyb_timer_obj_t *tim = m_new_obj(pyb_timer_obj_t);
+    tim->base.type = &pyb_timer_type;
+
+    pyb_timer_init_new(tim, mp_obj_get_int(args[0]));
+
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
         mp_map_t kw_args;
@@ -369,16 +374,13 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
         pyb_timer_init_helper(tim, n_args - 1, args + 1, &kw_args);
     }
 
-    // set the global variable for interrupt callbacks
-    if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
-        pyb_timer_obj_all[tim->tim_id - 1] = tim;
-    }
-
     return (mp_obj_t)tim;
 }
 
 STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return pyb_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    printf("pyb_timer_init called\n");
+    pyb_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 
@@ -388,6 +390,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 /// Disables the callback (and the associated irq).
 /// Stops the timer, and disables the timer peripheral.
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
+    printf("pyb_timer_deinit called\n");
     pyb_timer_obj_t *self = self_in;
 
     // Disable the interrupt
@@ -411,7 +414,7 @@ mp_obj_t pyb_timer_counter(uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_timer_counter);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_timer_counter);
 
 /// \method prescaler([value])
 /// Get or set the prescaler for the timer.
@@ -426,7 +429,7 @@ mp_obj_t pyb_timer_prescaler(uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_timer_prescaler);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_timer_prescaler);
 
 /// \method period([value])
 /// Get or set the period of the timer.
@@ -441,13 +444,13 @@ mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer_period);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer_period);
 
 /// \method callback(fun)
 /// Set the function to be called when the timer triggers.
 /// `fun` is passed 1 argument, the timer object.
 /// If `fun` is `None` then the callback will be disabled.
-STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
+mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_timer_obj_t *self = self_in;
     if (callback == mp_const_none) {
         // stop interrupt (but not timer)
@@ -463,7 +466,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
 
 STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     // instance methods
