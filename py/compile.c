@@ -3017,7 +3017,7 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
                 qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
                 EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ARG, id_info->local_num, arg_type);
             } else {
-                compile_syntax_error(comp, pn_annotation, "annotation must be an identifier");
+                compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
             }
         }
         #endif // MICROPY_EMIT_NATIVE
@@ -3155,17 +3155,20 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_annotations);
 
             // pns->nodes[2] is return/whole function annotation
-            #if MICROPY_EMIT_NATIVE
-            if (scope->emit_options == MP_EMIT_OPT_VIPER) {
-                // nodes[2] can be null or a test-expr
-                if (MP_PARSE_NODE_IS_ID(pns->nodes[2])) {
-                    qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pns->nodes[2]);
-                    EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
-                } else {
-                    compile_syntax_error(comp, pns->nodes[2], "annotation must be an identifier");
+            mp_parse_node_t pn_annotation = pns->nodes[2];
+            if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
+                #if MICROPY_EMIT_NATIVE
+                if (scope->emit_options == MP_EMIT_OPT_VIPER) {
+                    // nodes[2] can be null or a test-expr
+                    if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
+                        qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
+                        EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
+                    } else {
+                        compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
+                    }
                 }
+                #endif // MICROPY_EMIT_NATIVE
             }
-            #endif // MICROPY_EMIT_NATIVE
         }
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
@@ -3625,7 +3628,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                     comp->emit_method_table = &emit_native_thumb_method_table;
 #endif
                     comp->emit = emit_native;
-                    comp->emit_method_table->set_native_type(comp->emit, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
+                    EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
 
                     // native emitters need an extra pass to compute stack size
                     compile_scope(comp, s, MP_PASS_STACK_SIZE);

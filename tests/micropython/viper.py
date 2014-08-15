@@ -10,6 +10,25 @@ def f(x:int, y:int) -> int:
 def g(x:object, y:object) -> object:
     return x + y
 
+# a local (should have automatic type int)
+@micropython.viper
+def h(x:int) -> int:
+    y = 4
+    return x + y
+
+# without type annotation, types should default to object
+@micropython.viper
+def i(x, y):
+    return x * y
+
+# a for loop
+@micropython.viper
+def viper_sum(a:int, b:int) -> int:
+    total = 0
+    for x in range(a, b):
+        total += x
+    return total
+
 # this doesn't work at the moment
 #@micropython.viper
 #def g() -> uint:
@@ -17,4 +36,6 @@ def g(x:object, y:object) -> object:
 
 print(f(1, 2))
 print(g(1, 2))
-#print(h())
+print(h(3))
+print(i(4, 5))
+print(viper_sum(10, 10000))

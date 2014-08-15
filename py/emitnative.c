@@ -241,12 +241,19 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // set default type for return and arguments
     emit->return_vtype = VTYPE_PYOBJ;
-    for (int i = 0; i < emit->local_vtype_alloc; i++) {
+    for (mp_uint_t i = 0; i < emit->scope->num_pos_args; i++) {
         emit->local_vtype[i] = VTYPE_PYOBJ;
     }
-    for (int i = 0; i < emit->stack_info_alloc; i++) {
+
+    // local variables begin unbound, and have unknown type
+    for (mp_uint_t i = emit->scope->num_pos_args; i < emit->local_vtype_alloc; i++) {
+        emit->local_vtype[i] = VTYPE_UNBOUND;
+    }
+
+    // values on stack begin unbound
+    for (mp_uint_t i = 0; i < emit->stack_info_alloc; i++) {
         emit->stack_info[i].kind = STACK_VALUE;
-        emit->stack_info[i].vtype = VTYPE_PYOBJ;
+        emit->stack_info[i].vtype = VTYPE_UNBOUND;
     }
 
 #if N_X64
@@ -844,7 +851,6 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do subscr of types %d and %d\n", vtype_lhs, vtype_rhs);
-        assert(0);
     }
 }
 
@@ -1212,7 +1218,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
-        assert(0);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
 }
 
