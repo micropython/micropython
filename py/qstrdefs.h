@@ -67,9 +67,13 @@ Q(__lt__)
 
 Q(micropython)
 Q(bytecode)
+Q(const)
+
+#if MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB
 Q(native)
 Q(viper)
-Q(const)
+Q(uint)
+#endif
 
 #if MICROPY_EMIT_INLINE_THUMB
 Q(asm_thumb)

@@ -86,12 +86,14 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint 
 #endif
 }
 
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun, uint len, int n_args) {
+#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_THUMB
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun, uint len, int n_args, mp_uint_t type_sig) {
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
     rc->kind = kind;
     rc->scope_flags = 0;
     rc->n_pos_args = n_args;
     rc->u_native.fun = fun;
+    rc->u_native.type_sig = type_sig;
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=%u n_args=%d\n", kind, fun, len, n_args);
@@ -111,6 +113,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 #endif
 #endif
 }
+#endif
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
@@ -128,13 +131,19 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
         case MP_CODE_BYTECODE:
             fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
             break;
+        #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
             fun = mp_make_function_n(rc->n_pos_args, rc->u_native.fun);
             break;
         case MP_CODE_NATIVE_VIPER:
+            fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->u_native.fun, rc->u_native.type_sig);
+            break;
+        #endif
+        #if MICROPY_EMIT_INLINE_THUMB
         case MP_CODE_NATIVE_ASM:
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->u_native.fun);
             break;
+        #endif
         default:
             // raw code was never set (this should not happen)
             assert(0);

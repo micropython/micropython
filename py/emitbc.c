@@ -265,7 +265,7 @@ STATIC void emit_write_bytecode_byte_signed_label(emit_t* emit, byte b1, uint la
     c[2] = bytecode_offset >> 8;
 }
 
-STATIC void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
+STATIC void emit_bc_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
 }
 
 STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
@@ -872,7 +872,7 @@ STATIC void emit_bc_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t emit_bc_method_table = {
-    emit_bc_set_native_types,
+    emit_bc_set_native_type,
     emit_bc_start_pass,
     emit_bc_end_pass,
     emit_bc_last_emit_was_return_value,

@@ -48,6 +48,7 @@ typedef struct _mp_code_t {
         } u_byte;
         struct {
             void *fun;
+            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
         } u_native;
     };
 } mp_raw_code_t;
@@ -55,7 +56,7 @@ typedef struct _mp_code_t {
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *f, uint len, int n_args);
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *f, uint len, int n_args, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args);

@@ -39,6 +39,12 @@
 */
 #define MP_SCOPE_FLAG_NOFREE       0x40
 
+// types for native (viper) function signature
+#define MP_NATIVE_TYPE_OBJ  (0x00)
+#define MP_NATIVE_TYPE_BOOL (0x01)
+#define MP_NATIVE_TYPE_INT  (0x02)
+#define MP_NATIVE_TYPE_UINT (0x03)
+
 typedef enum {
     MP_UNARY_OP_BOOL, // __bool__
     MP_UNARY_OP_LEN, // __len__

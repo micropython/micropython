@@ -111,6 +111,9 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
+// Convenience definition for whether any native emitter is enabled
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB)
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 

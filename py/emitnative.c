@@ -126,10 +126,11 @@ typedef enum {
 } stack_info_kind_t;
 
 typedef enum {
+    VTYPE_PYOBJ = MP_NATIVE_TYPE_OBJ,
+    VTYPE_BOOL = MP_NATIVE_TYPE_BOOL,
+    VTYPE_INT = MP_NATIVE_TYPE_INT,
+    VTYPE_UINT = MP_NATIVE_TYPE_UINT,
     VTYPE_UNBOUND,
-    VTYPE_PYOBJ,
-    VTYPE_BOOL,
-    VTYPE_INT,
     VTYPE_PTR,
     VTYPE_PTR_NONE,
     VTYPE_BUILTIN_V_INT,
@@ -148,6 +149,8 @@ struct _emit_t {
     int pass;
 
     bool do_viper_types;
+
+    vtype_kind_t return_vtype;
 
     uint local_vtype_alloc;
     vtype_kind_t *local_vtype;
@@ -190,8 +193,30 @@ void EXPORT_FUN(free)(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-STATIC void emit_native_set_viper_types(emit_t *emit, bool do_viper_types) {
-    emit->do_viper_types = do_viper_types;
+STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
+    switch (op) {
+        case MP_EMIT_NATIVE_TYPE_ENABLE:
+            emit->do_viper_types = arg1;
+            break;
+
+        default: {
+            vtype_kind_t type;
+            switch (arg2) {
+                case MP_QSTR_object: type = VTYPE_PYOBJ; break;
+                case MP_QSTR_bool: type = VTYPE_BOOL; break;
+                case MP_QSTR_int: type = VTYPE_INT; break;
+                case MP_QSTR_uint: type = VTYPE_UINT; break;
+                default: printf("ViperTypeError: unknown type %s\n", qstr_str(arg2)); return;
+            }
+            if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
+                emit->return_vtype = type;
+            } else {
+                assert(arg1 < emit->local_vtype_alloc);
+                emit->local_vtype[arg1] = type;
+            }
+            break;
+        }
+    }
 }
 
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
@@ -214,23 +239,14 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
-    if (emit->do_viper_types) {
-        // TODO set types of arguments based on type signature
-        for (int i = 0; i < emit->local_vtype_alloc; i++) {
-            emit->local_vtype[i] = VTYPE_UNBOUND;
-        }
-        for (int i = 0; i < emit->stack_info_alloc; i++) {
-            emit->stack_info[i].kind = STACK_VALUE;
-            emit->stack_info[i].vtype = VTYPE_UNBOUND;
-        }
-    } else {
-        for (int i = 0; i < emit->local_vtype_alloc; i++) {
-            emit->local_vtype[i] = VTYPE_PYOBJ;
-        }
-        for (int i = 0; i < emit->stack_info_alloc; i++) {
-            emit->stack_info[i].kind = STACK_VALUE;
-            emit->stack_info[i].vtype = VTYPE_PYOBJ;
-        }
+    // set default type for return and arguments
+    emit->return_vtype = VTYPE_PYOBJ;
+    for (int i = 0; i < emit->local_vtype_alloc; i++) {
+        emit->local_vtype[i] = VTYPE_PYOBJ;
+    }
+    for (int i = 0; i < emit->stack_info_alloc; i++) {
+        emit->stack_info[i].kind = STACK_VALUE;
+        emit->stack_info[i].vtype = VTYPE_PYOBJ;
     }
 
 #if N_X64
@@ -310,11 +326,20 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     if (emit->pass == MP_PASS_EMIT) {
 #if N_X64
         void *f = asm_x64_get_code(emit->as);
-        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, asm_x64_get_code_size(emit->as), emit->scope->num_pos_args);
+        mp_uint_t f_len = asm_x64_get_code_size(emit->as);
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args);
+        mp_uint_t f_len = asm_thumb_get_code_size(emit->as);
 #endif
+
+        // compute type signature
+        // TODO check that viper types here convert correctly to valid types for emit glue
+        mp_uint_t type_sig = emit->return_vtype & 3;
+        for (mp_uint_t i = 0; i < emit->scope->num_pos_args; i++) {
+            type_sig |= (emit->local_vtype[i] & 3) << (i * 2 + 2);
+        }
+
+        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, f_len, emit->scope->num_pos_args, type_sig);
     }
 }
 
@@ -1394,7 +1419,9 @@ STATIC void emit_native_return_value(emit_t *emit) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_RET);
     if (emit->do_viper_types) {
-        assert(vtype == VTYPE_PTR_NONE);
+        if (vtype != emit->return_vtype) {
+            printf("ViperTypeError: incompatible return type\n");
+        }
     } else {
         assert(vtype == VTYPE_PYOBJ);
     }
@@ -1444,7 +1471,7 @@ STATIC void emit_native_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
-    emit_native_set_viper_types,
+    emit_native_set_native_type,
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,

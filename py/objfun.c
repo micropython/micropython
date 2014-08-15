@@ -501,7 +501,88 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
 }
 
 /******************************************************************************/
+/* viper functions                                                            */
+
+#if MICROPY_EMIT_NATIVE
+
+typedef struct _mp_obj_fun_viper_t {
+    mp_obj_base_t base;
+    int n_args;
+    void *fun;
+    mp_uint_t type_sig;
+} mp_obj_fun_viper_t;
+
+typedef mp_uint_t (*viper_fun_0_t)();
+typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
+typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
+typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
+
+// convert a Micro Python object to a valid value for viper, based on wanted type
+STATIC mp_uint_t convert_obj_for_viper(mp_obj_t obj, mp_uint_t type) {
+    switch (type & 3) {
+        case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
+        case MP_NATIVE_TYPE_BOOL:
+        case MP_NATIVE_TYPE_INT:
+        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int(obj);
+        default: assert(0); return 0;
+    }
+}
+
+// convert a return value from viper to a Micro Python object based on viper return type
+STATIC mp_obj_t convert_val_from_viper(mp_uint_t val, mp_uint_t type) {
+    switch (type & 3) {
+        case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
+        case MP_NATIVE_TYPE_BOOL: return MP_BOOL(val);
+        case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
+        case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
+        default: assert(0); return mp_const_none;
+    }
+}
+
+STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    mp_obj_fun_viper_t *self = self_in;
+
+    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+
+    mp_uint_t ret;
+    if (n_args == 0) {
+        ret = ((viper_fun_0_t)self->fun)();
+    } else if (n_args == 1) {
+        ret = ((viper_fun_1_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2));
+    } else if (n_args == 2) {
+        ret = ((viper_fun_2_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2), convert_obj_for_viper(args[1], self->type_sig >> 4));
+    } else if (n_args == 3) {
+        ret = ((viper_fun_3_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2), convert_obj_for_viper(args[1], self->type_sig >> 4), convert_obj_for_viper(args[2], self->type_sig >> 6));
+    } else {
+        assert(0);
+        ret = 0;
+    }
+
+    return convert_val_from_viper(ret, self->type_sig);
+}
+
+STATIC const mp_obj_type_t mp_type_fun_viper = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_viper_call,
+    .binary_op = fun_binary_op,
+};
+
+mp_obj_t mp_obj_new_fun_viper(uint n_args, void *fun, mp_uint_t type_sig) {
+    mp_obj_fun_viper_t *o = m_new_obj(mp_obj_fun_viper_t);
+    o->base.type = &mp_type_fun_viper;
+    o->n_args = n_args;
+    o->fun = fun;
+    o->type_sig = type_sig;
+    return o;
+}
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
 /* inline assembler functions                                                 */
+
+#if MICROPY_EMIT_INLINE_THUMB
 
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
@@ -603,3 +684,5 @@ mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {
     o->fun = fun;
     return o;
 }
+
+#endif // MICROPY_EMIT_INLINE_THUMB

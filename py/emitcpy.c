@@ -63,7 +63,7 @@ emit_t *emit_cpython_new(uint max_num_labels) {
     return emit;
 }
 
-STATIC void emit_cpy_set_native_types(emit_t *emit, bool do_native_types) {
+STATIC void emit_cpy_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
 }
 
 STATIC void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
@@ -822,7 +822,7 @@ STATIC void emit_cpy_setup_loop(emit_t *emit, uint label) {
 }
 
 const emit_method_table_t emit_cpython_method_table = {
-    emit_cpy_set_native_types,
+    emit_cpy_set_native_type,
     emit_cpy_start_pass,
     emit_cpy_end_pass,
     emit_cpy_last_emit_was_return_value,
