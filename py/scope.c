@@ -83,11 +83,10 @@ void scope_free(scope_t *scope) {
 }
 
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
-    for (int i = 0; i < scope->id_info_len; i++) {
-        if (scope->id_info[i].qstr == qstr) {
-            *added = false;
-            return &scope->id_info[i];
-        }
+    id_info_t *id_info = scope_find(scope, qstr);
+    if (id_info != NULL) {
+        *added = false;
+        return id_info;
     }
 
     // make sure we have enough memory
@@ -99,7 +98,7 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
     // add new id to end of array of all ids; this seems to match CPython
     // important thing is that function arguments are first, but that is
     // handled by the compiler because it adds arguments before compiling the body
-    id_info_t *id_info = &scope->id_info[scope->id_info_len++];
+    id_info = &scope->id_info[scope->id_info_len++];
 
     id_info->kind = 0;
     id_info->flags = 0;
@@ -110,7 +109,7 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
 }
 
 id_info_t *scope_find(scope_t *scope, qstr qstr) {
-    for (int i = 0; i < scope->id_info_len; i++) {
+    for (mp_uint_t i = 0; i < scope->id_info_len; i++) {
         if (scope->id_info[i].qstr == qstr) {
             return &scope->id_info[i];
         }
@@ -122,12 +121,7 @@ id_info_t *scope_find_global(scope_t *scope, qstr qstr) {
     while (scope->parent != NULL) {
         scope = scope->parent;
     }
-    for (int i = 0; i < scope->id_info_len; i++) {
-        if (scope->id_info[i].qstr == qstr) {
-            return &scope->id_info[i];
-        }
-    }
-    return NULL;
+    return scope_find(scope, qstr);
 }
 
 id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr) {
@@ -135,10 +129,9 @@ id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr) {
         return NULL;
     }
     for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
-        for (int i = 0; i < s->id_info_len; i++) {
-            if (s->id_info[i].qstr == qstr) {
-                return &s->id_info[i];
-            }
+        id_info_t *id = scope_find(s, qstr);
+        if (id != NULL) {
+            return id;
         }
     }
     return NULL;
@@ -147,18 +140,10 @@ id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr) {
 void scope_close_over_in_parents(scope_t *scope, qstr qstr) {
     assert(scope->parent != NULL); // we should have at least 1 parent
     for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
-        id_info_t *id = NULL;
-        for (int i = 0; i < s->id_info_len; i++) {
-            if (s->id_info[i].qstr == qstr) {
-                id = &s->id_info[i];
-                break;
-            }
-        }
-        if (id == NULL) {
-            // variable not declared in this scope, so declare it as free and keep searching parents
-            bool added;
-            id = scope_find_or_add_id(s, qstr, &added);
-            assert(added);
+        bool added;
+        id_info_t *id = scope_find_or_add_id(s, qstr, &added);
+        if (added) {
+            // variable not previously declared in this scope, so declare it as free and keep searching parents
             id->kind = ID_INFO_KIND_FREE;
         } else {
             // variable is declared in this scope, so finish

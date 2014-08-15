@@ -354,7 +354,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
-void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind);
+STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind);
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 STATIC uint comp_next_label(compiler_t *comp) {
@@ -729,9 +729,9 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
 }
 
 typedef enum { ASSIGN_STORE, ASSIGN_AUG_LOAD, ASSIGN_AUG_STORE } assign_kind_t;
-void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t kind);
+STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t kind);
 
-void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign_kind_t assign_kind) {
+STATIC void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign_kind_t assign_kind) {
     if (assign_kind != ASSIGN_AUG_STORE) {
         compile_node(comp, pns->nodes[0]);
     }
@@ -792,7 +792,7 @@ cannot_assign:
 }
 
 // we need to allow for a caller passing in 1 initial node (node_head) followed by an array of nodes (nodes_tail)
-void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, mp_parse_node_t *nodes_tail) {
+STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, mp_parse_node_t *nodes_tail) {
     uint num_head = (node_head == MP_PARSE_NODE_NULL) ? 0 : 1;
 
     // look for star expression
@@ -832,7 +832,7 @@ void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, 
 }
 
 // assigns top of stack to pn
-void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
+STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
     tail_recursion:
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         assert(0);
@@ -947,7 +947,7 @@ void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
 //  if n_pos_defaults > 0 then there is a tuple on the stack with the positional defaults
 //  if n_kw_defaults > 0 then there is a dictionary on the stack with the keyword defaults
 //  if both exist, the tuple is above the dictionary (ie the first pop gets the tuple)
-void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_defaults, int n_kw_defaults) {
+STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_defaults, int n_kw_defaults) {
     assert(n_pos_defaults >= 0);
     assert(n_kw_defaults >= 0);
 
@@ -982,7 +982,7 @@ void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int n_pos_d
     }
 }
 
-void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)) {
         comp->have_star = true;
         /* don't need to distinguish bare from named star
@@ -1254,7 +1254,7 @@ void compile_funcdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(store_id, fname);
 }
 
-void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
         EMIT_ARG(delete_id, MP_PARSE_NODE_LEAF_ARG(pn));
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_power)) {
@@ -1406,7 +1406,7 @@ void compile_raise_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 // q_base holds the base of the name
 // eg   a -> q_base=a
 //      a.b.c -> q_base=a
-void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
+STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
     bool is_as = false;
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dotted_as_name)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -1466,7 +1466,7 @@ void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
     }
 }
 
-void compile_dotted_as_name(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void compile_dotted_as_name(compiler_t *comp, mp_parse_node_t pn) {
     EMIT_ARG(load_const_small_int, 0); // level 0 import
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // not importing from anything
     qstr q_base;
@@ -1748,7 +1748,7 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 // TODO preload end and step onto stack if they are not constants
 // Note that, as per semantics of for .. range, the final failing value should not be stored in the loop variable
 // And, if the loop never runs, the loop variable should never be assigned
-void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
+STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
     // note that we don't need to pop anything when breaking from an optimise for loop
 
@@ -1884,7 +1884,7 @@ void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(label_assign, end_label);
 }
 
-void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_excepts, mp_parse_node_t pn_else) {
+STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_excepts, mp_parse_node_t pn_else) {
     // setup code
     uint l1 = comp_next_label(comp);
     uint success_label = comp_next_label(comp);
@@ -1976,7 +1976,7 @@ void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except,
     EMIT_ARG(label_assign, l2);
 }
 
-void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_except, mp_parse_node_t pn_else, mp_parse_node_t pn_finally) {
+STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_except, mp_parse_node_t pn_else, mp_parse_node_t pn_finally) {
     uint l_finally_block = comp_next_label(comp);
 
     EMIT_ARG(setup_finally, l_finally_block);
@@ -2028,7 +2028,7 @@ void compile_try_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *nodes, mp_parse_node_t body) {
+STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *nodes, mp_parse_node_t body) {
     if (n == 0) {
         // no more pre-bits, compile the body of the with
         compile_node(comp, body);
@@ -2178,7 +2178,7 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, mp_binary_op_t binary_op) {
+STATIC void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, mp_binary_op_t binary_op) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
     for (int i = 1; i < num_nodes; i += 1) {
@@ -2562,7 +2562,7 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
-void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind) {
+STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind) {
     assert(MP_PARSE_NODE_STRUCT_NUM_NODES(pns) == 2);
     assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_comp_for));
     mp_parse_node_struct_t *pns_comp_for = (mp_parse_node_struct_t*)pns->nodes[1];
@@ -2857,7 +2857,7 @@ STATIC compile_function_t compile_function[] = {
 #undef DEF_RULE
 };
 
-void compile_node(compiler_t *comp, mp_parse_node_t pn) {
+STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // pass
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
@@ -2902,7 +2902,7 @@ void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star, bool allow_annotations) {
+STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star, bool allow_annotations) {
     // TODO verify that *k and **k are last etc
     qstr param_name = MP_QSTR_NULL;
     uint param_flag = ID_FLAG_IS_PARAM;
@@ -3004,7 +3004,7 @@ STATIC void compile_scope_lambda_param(compiler_t *comp, mp_parse_node_t pn) {
     compile_scope_func_lambda_param(comp, pn, PN_varargslist_name, PN_varargslist_star, PN_varargslist_dbl_star, false);
 }
 
-void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, mp_parse_node_t pn_inner_expr, int l_top, int for_depth) {
+STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, mp_parse_node_t pn_inner_expr, int l_top, int for_depth) {
     tail_recursion:
     if (MP_PARSE_NODE_IS_NULL(pn_iter)) {
         // no more nested if/for; compile inner expression
