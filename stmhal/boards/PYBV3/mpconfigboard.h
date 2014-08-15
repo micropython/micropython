@@ -25,10 +25,19 @@
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // LEDs
-#define MICROPY_HW_LED1             (pin_A8)  // R1 - red
-#define MICROPY_HW_LED2             (pin_A10) // R2 - red
-#define MICROPY_HW_LED3             (pin_C4)  // G1 - green
-#define MICROPY_HW_LED4             (pin_C5)  // G2 - green
+// These four defines are mandatory
+#define PYB_LED_STORAGE1			1
+#define PYB_LED_STORAGE2			2
+#define PYB_LED_ERROR1				1
+#define PYB_LED_ERROR2				2
+// LED's pin mapping on the board
+// Usage : {{&pyb_led_type, nb_led, pin mapping}
+#define MICROPY_HW_LED_MAPPING \
+	{{&pyb_led_type}, 1, &pin_A8}, /* red */ \
+	{{&pyb_led_type}, 2, &pin_A10}, /* red */ \
+	{{&pyb_led_type}, 3, &pin_C4}, /* green */ \
+	{{&pyb_led_type}, 3, &pin_C5}, /* green */
+
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)

@@ -1,0 +1,10 @@
+--- stmhal/Makefile	2014-07-30 11:18:25.234531362 +0200
++++ stmhal/Makefile	2014-07-30 11:49:36.194465607 +0200
+@@ -1,6 +1,6 @@
+ # Select the board to build for: if not given on the command line,
+ # then default to PYBV10.
+-BOARD ?= STM32F4EVAL
++BOARD ?= STM32F4DISC
+ ifeq ($(wildcard boards/$(BOARD)/.),)
+ $(error Invalid BOARD specified)
+ endif
