@@ -29,6 +29,13 @@ def viper_sum(a:int, b:int) -> int:
         total += x
     return total
 
+# accessing a global
+@micropython.viper
+def access_global():
+    global gl
+    gl = 1
+    return gl
+
 # this doesn't work at the moment
 #@micropython.viper
 #def g() -> uint:
@@ -39,3 +46,4 @@ print(g(1, 2))
 print(h(3))
 print(i(4, 5))
 print(viper_sum(10, 10000))
+print(access_global(), gl)

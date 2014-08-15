@@ -1163,8 +1163,34 @@ NORETURN void mp_not_implemented(const char *msg) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, msg));
 }
 
+// convert a Micro Python object to a valid native value based on type
+mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
+    DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
+    switch (type & 3) {
+        case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
+        case MP_NATIVE_TYPE_BOOL:
+        case MP_NATIVE_TYPE_INT:
+        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int(obj);
+        default: assert(0); return 0;
+    }
+}
+
+// convert a native value to a Micro Python object based on type
+mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
+    DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
+    switch (type & 3) {
+        case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
+        case MP_NATIVE_TYPE_BOOL: return MP_BOOL(val);
+        case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
+        case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
+        default: assert(0); return mp_const_none;
+    }
+}
+
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
+    mp_convert_obj_to_native,
+    mp_convert_native_to_obj,
     mp_load_const_int,
     mp_load_const_dec,
     mp_load_const_str,
@@ -1174,6 +1200,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_attr,
     mp_load_method,
     mp_store_name,
+    mp_store_global,
     mp_store_attr,
     mp_obj_subscr,
     mp_obj_is_true,

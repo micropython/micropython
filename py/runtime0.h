@@ -102,7 +102,9 @@ typedef enum {
 } mp_binary_op_t;
 
 typedef enum {
-    MP_F_LOAD_CONST_INT = 0,
+    MP_F_CONVERT_OBJ_TO_NATIVE = 0,
+    MP_F_CONVERT_NATIVE_TO_OBJ,
+    MP_F_LOAD_CONST_INT,
     MP_F_LOAD_CONST_DEC,
     MP_F_LOAD_CONST_STR,
     MP_F_LOAD_NAME,
@@ -111,6 +113,7 @@ typedef enum {
     MP_F_LOAD_ATTR,
     MP_F_LOAD_METHOD,
     MP_F_STORE_NAME,
+    MP_F_STORE_GLOBAL,
     MP_F_STORE_ATTR,
     MP_F_OBJ_SUBSCR,
     MP_F_OBJ_IS_TRUE,

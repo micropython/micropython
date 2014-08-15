@@ -903,8 +903,16 @@ STATIC void emit_native_store_name(emit_t *emit, qstr qstr) {
 }
 
 STATIC void emit_native_store_global(emit_t *emit, qstr qstr) {
-    // not implemented
-    assert(0);
+    vtype_kind_t vtype = peek_vtype(emit);
+    if (vtype == VTYPE_PYOBJ) {
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+    } else {
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+        emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, mp_convert_native_to_obj, vtype, REG_ARG_2); // arg2 = type
+        ASM_MOV_REG_TO_REG(REG_RET, REG_ARG_2);
+    }
+    emit_call_with_imm_arg(emit, MP_F_STORE_GLOBAL, mp_store_global, qstr, REG_ARG_1); // arg1 = name
+    emit_post(emit);
 }
 
 STATIC void emit_native_store_attr(emit_t *emit, qstr qstr) {
@@ -1420,12 +1428,14 @@ STATIC void emit_native_call_method(emit_t *emit, int n_positional, int n_keywor
 
 STATIC void emit_native_return_value(emit_t *emit) {
     DEBUG_printf("return_value\n");
-    // easy.  since we don't know who we return to, just return the raw value.
-    // runtime needs then to know our type signature, but I think that's possible.
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_RET);
     if (emit->do_viper_types) {
-        if (vtype != emit->return_vtype) {
+        if (vtype == VTYPE_PTR_NONE) {
+            if (emit->return_vtype == VTYPE_PYOBJ) {
+                ASM_MOV_IMM_TO_REG((mp_uint_t)mp_const_none, REG_RET);
+            }
+        } else if (vtype != emit->return_vtype) {
             printf("ViperTypeError: incompatible return type\n");
         }
     } else {

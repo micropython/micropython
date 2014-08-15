@@ -517,28 +517,6 @@ typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
 
-// convert a Micro Python object to a valid value for viper, based on wanted type
-STATIC mp_uint_t convert_obj_for_viper(mp_obj_t obj, mp_uint_t type) {
-    switch (type & 3) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL:
-        case MP_NATIVE_TYPE_INT:
-        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int(obj);
-        default: assert(0); return 0;
-    }
-}
-
-// convert a return value from viper to a Micro Python object based on viper return type
-STATIC mp_obj_t convert_val_from_viper(mp_uint_t val, mp_uint_t type) {
-    switch (type & 3) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
-        case MP_NATIVE_TYPE_BOOL: return MP_BOOL(val);
-        case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
-        case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
-        default: assert(0); return mp_const_none;
-    }
-}
-
 STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     mp_obj_fun_viper_t *self = self_in;
 
@@ -548,17 +526,17 @@ STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, uint n_args, uint n_kw, const m
     if (n_args == 0) {
         ret = ((viper_fun_0_t)self->fun)();
     } else if (n_args == 1) {
-        ret = ((viper_fun_1_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2));
+        ret = ((viper_fun_1_t)self->fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2));
     } else if (n_args == 2) {
-        ret = ((viper_fun_2_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2), convert_obj_for_viper(args[1], self->type_sig >> 4));
+        ret = ((viper_fun_2_t)self->fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4));
     } else if (n_args == 3) {
-        ret = ((viper_fun_3_t)self->fun)(convert_obj_for_viper(args[0], self->type_sig >> 2), convert_obj_for_viper(args[1], self->type_sig >> 4), convert_obj_for_viper(args[2], self->type_sig >> 6));
+        ret = ((viper_fun_3_t)self->fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4), mp_convert_obj_to_native(args[2], self->type_sig >> 6));
     } else {
         assert(0);
         ret = 0;
     }
 
-    return convert_val_from_viper(ret, self->type_sig);
+    return mp_convert_native_to_obj(ret, self->type_sig);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_viper = {

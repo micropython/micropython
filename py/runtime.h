@@ -115,6 +115,9 @@ void mp_import_all(mp_obj_t module);
 // Raise NotImplementedError with given message
 NORETURN void mp_not_implemented(const char *msg);
 
+mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
+mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
+
 extern struct _mp_obj_list_t mp_sys_path_obj;
 extern struct _mp_obj_list_t mp_sys_argv_obj;
 #define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)
