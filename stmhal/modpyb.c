@@ -341,7 +341,6 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_source_dir_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 
@@ -360,7 +359,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
 

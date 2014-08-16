@@ -127,18 +127,8 @@ void disable_irq(void) {
     __disable_irq();
 }
 
-STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
-
-STATIC mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
-    if (MP_OBJ_IS_STR(source_dir)) {
-        pyb_config_source_dir = source_dir;
-    }
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_source_dir_obj, pyb_source_dir);
 
 STATIC mp_obj_t pyb_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
@@ -146,7 +136,6 @@ STATIC mp_obj_t pyb_main(mp_obj_t main) {
     }
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
 STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
@@ -155,7 +144,6 @@ STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
     }
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
 
 static const char fresh_boot_py[] =
@@ -444,7 +432,7 @@ soft_reset:
 
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
-    if (reset_mode == 1 && sdcard_is_present()) {
+    if (sdcard_is_present()) {
         FRESULT res = f_mount(&fatfs1, "/sd", 1);
         if (res != FR_OK) {
             printf("[SD] could not mount SD card\n");
@@ -466,7 +454,12 @@ soft_reset:
     }
 #endif
 
+    // reset config variables; they should be set by boot.py
+    pyb_config_main = MP_OBJ_NULL;
+    pyb_config_usb_mode = MP_OBJ_NULL;
+
     // run boot.py, if it exists
+    // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1) {
         const char *boot_py = "boot.py";
         FRESULT res = f_stat(boot_py, NULL);
@@ -491,17 +484,14 @@ soft_reset:
     pyb_usb_host_init();
 #elif defined(USE_DEVICE_MODE)
     // USB device
-    if (reset_mode == 1) {
-        usb_device_mode_t usb_mode = USB_DEVICE_MODE_CDC_MSC;
-        if (pyb_config_usb_mode != MP_OBJ_NULL) {
-            if (strcmp(mp_obj_str_get_str(pyb_config_usb_mode), "CDC+HID") == 0) {
-                usb_mode = USB_DEVICE_MODE_CDC_HID;
-            }
+    usb_device_mode_t usb_mode = USB_DEVICE_MODE_CDC_MSC;
+    // if we are not in reset_mode==1, this config variable will always be NULL
+    if (pyb_config_usb_mode != MP_OBJ_NULL) {
+        if (strcmp(mp_obj_str_get_str(pyb_config_usb_mode), "CDC+HID") == 0) {
+            usb_mode = USB_DEVICE_MODE_CDC_HID;
         }
-        pyb_usb_dev_init(usb_mode, usb_medium);
-    } else {
-        pyb_usb_dev_init(USB_DEVICE_MODE_CDC_MSC, usb_medium);
     }
+    pyb_usb_dev_init(usb_mode, usb_medium);
 #endif
 
 #if MICROPY_HW_HAS_MMA7660
