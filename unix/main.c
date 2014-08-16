@@ -130,7 +130,12 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         // check for SystemExit
         mp_obj_t exc = (mp_obj_t)nlr.ret_val;
         if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
-            exit(mp_obj_get_int(mp_obj_exception_get_value(exc)));
+            mp_obj_t exit_val = mp_obj_exception_get_value(exc);
+            mp_int_t val;
+            if (!mp_obj_get_int_maybe(exit_val, &val)) {
+                val = 0;
+            }
+            exit(val);
         }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return 1;
