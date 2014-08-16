@@ -530,56 +530,6 @@ STATIC void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, in
     emit_post_push_reg(emit, vtyped, regd);
 }
 
-// vtype of all n_pop objects is VTYPE_PYOBJ
-// does not use any temporary registers (but may use reg_dest before loading it with stack pointer)
-// TODO this needs some thinking for viper code
-STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, int reg_dest, int n_pop) {
-    need_reg_all(emit);
-    for (int i = 0; i < n_pop; i++) {
-        stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
-        // must push any imm's to stack
-        // must convert them to VTYPE_PYOBJ for viper code
-        if (si->kind == STACK_IMM) {
-            si->kind = STACK_VALUE;
-            switch (si->vtype) {
-                case VTYPE_PYOBJ:
-                    ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
-                    break;
-                case VTYPE_BOOL:
-                    si->vtype = VTYPE_PYOBJ;
-                    if (si->u_imm == 0) {
-                        ASM_MOV_IMM_TO_LOCAL_USING((mp_uint_t)mp_const_false, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
-                    } else {
-                        ASM_MOV_IMM_TO_LOCAL_USING((mp_uint_t)mp_const_true, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
-                    }
-                    break;
-                case VTYPE_INT:
-                    si->vtype = VTYPE_PYOBJ;
-                    ASM_MOV_IMM_TO_LOCAL_USING((si->u_imm << 1) | 1, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
-                    break;
-                default:
-                    // not handled
-                    assert(0);
-            }
-        }
-        assert(si->kind == STACK_VALUE);
-        assert(si->vtype == VTYPE_PYOBJ);
-    }
-    adjust_stack(emit, -n_pop);
-    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
-}
-
-// vtype of all n_push objects is VTYPE_PYOBJ
-STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, int reg_dest, int n_push) {
-    need_reg_all(emit);
-    for (int i = 0; i < n_push; i++) {
-        emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
-        emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;
-    }
-    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
-    adjust_stack(emit, n_push);
-}
-
 STATIC void emit_call(emit_t *emit, mp_fun_kind_t fun_kind, void *fun) {
     need_reg_all(emit);
 #if N_X64
@@ -634,26 +584,84 @@ STATIC void emit_call_with_3_imm_args_and_first_aligned(emit_t *emit, mp_fun_kin
 #endif
 }
 
-STATIC void emit_native_load_id(emit_t *emit, qstr qstr) {
-    // check for built-ins
-    if (strcmp(qstr_str(qstr), "v_int") == 0) {
-        assert(0);
-        emit_native_pre(emit);
-        //emit_post_push_blank(emit, VTYPE_BUILTIN_V_INT);
+// vtype of all n_pop objects is VTYPE_PYOBJ
+// Will convert any items that are not VTYPE_PYOBJ to this type and put them back on the stack.
+// If any conversions of non-immediate values are needed, then it uses REG_ARG_1, REG_ARG_2 and REG_RET.
+// Otherwise, it does not use any temporary registers (but may use reg_dest before loading it with stack pointer).
+STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_dest, mp_uint_t n_pop) {
+    need_reg_all(emit);
 
-    // not a built-in, so do usual thing
-    } else {
-        emit_common_load_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
+    // First, store any immediate values to their respective place on the stack.
+    for (mp_uint_t i = 0; i < n_pop; i++) {
+        stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
+        // must push any imm's to stack
+        // must convert them to VTYPE_PYOBJ for viper code
+        if (si->kind == STACK_IMM) {
+            si->kind = STACK_VALUE;
+            switch (si->vtype) {
+                case VTYPE_PYOBJ:
+                    ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    break;
+                case VTYPE_BOOL:
+                    if (si->u_imm == 0) {
+                        ASM_MOV_IMM_TO_LOCAL_USING((mp_uint_t)mp_const_false, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    } else {
+                        ASM_MOV_IMM_TO_LOCAL_USING((mp_uint_t)mp_const_true, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    }
+                    si->vtype = VTYPE_PYOBJ;
+                    break;
+                case VTYPE_INT:
+                case VTYPE_UINT:
+                    ASM_MOV_IMM_TO_LOCAL_USING((si->u_imm << 1) | 1, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    si->vtype = VTYPE_PYOBJ;
+                    break;
+                default:
+                    // not handled
+                    assert(0);
+            }
+        }
+
+        // verify that this value is on the stack
+        assert(si->kind == STACK_VALUE);
     }
+
+    // Second, convert any non-VTYPE_PYOBJ to that type.
+    for (mp_uint_t i = 0; i < n_pop; i++) {
+        stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
+        if (si->vtype != VTYPE_PYOBJ) {
+            mp_uint_t local_num = emit->stack_start + emit->stack_size - 1 - i;
+            ASM_MOV_LOCAL_TO_REG(local_num, REG_ARG_1);
+            emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, mp_convert_native_to_obj, si->vtype, REG_ARG_2); // arg2 = type
+            ASM_MOV_REG_TO_LOCAL(REG_RET, local_num);
+            si->vtype = VTYPE_PYOBJ;
+        }
+    }
+
+    // Adujust the stack for a pop of n_pop items, and load the stack pointer into reg_dest.
+    adjust_stack(emit, -n_pop);
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
+}
+
+// vtype of all n_push objects is VTYPE_PYOBJ
+STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, mp_uint_t reg_dest, mp_uint_t n_push) {
+    need_reg_all(emit);
+    for (mp_uint_t i = 0; i < n_push; i++) {
+        emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
+        emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;
+    }
+    ASM_MOV_LOCAL_ADDR_TO_REG(emit->stack_start + emit->stack_size, reg_dest);
+    adjust_stack(emit, n_push);
+}
+
+STATIC void emit_native_load_id(emit_t *emit, qstr qstr) {
+    emit_common_load_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
 STATIC void emit_native_store_id(emit_t *emit, qstr qstr) {
-    // TODO check for built-ins and disallow
     emit_common_store_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
 STATIC void emit_native_delete_id(emit_t *emit, qstr qstr) {
-    // TODO check for built-ins and disallow
     emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qstr);
 }
 
@@ -1396,7 +1404,7 @@ STATIC void emit_native_call_function(emit_t *emit, int n_positional, int n_keyw
     vtype_kind_t vtype_fun;
     emit_pre_pop_reg(emit, &vtype_fun, REG_ARG_1); // the function
     assert(vtype_fun == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_CALL_FUNCTION_N_KW_FOR_NATIVE, mp_call_function_n_kw_for_native, n_positional | (n_keyword << 8), REG_ARG_2);
+    emit_call_with_imm_arg(emit, MP_F_NATIVE_CALL_FUNCTION_N_KW, mp_native_call_function_n_kw, n_positional | (n_keyword << 8), REG_ARG_2);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1453,13 +1461,13 @@ STATIC void emit_native_return_value(emit_t *emit) {
 
 STATIC void emit_native_raise_varargs(emit_t *emit, int n_args) {
     assert(n_args == 1);
-    vtype_kind_t vtype_err;
-    emit_pre_pop_reg(emit, &vtype_err, REG_ARG_1); // arg1 = object to raise
-    assert(vtype_err == VTYPE_PYOBJ);
-    emit_call(emit, 0, mp_make_raise_obj); // TODO need to add function to runtime table
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-    emit_pre_pop_reg(emit, &vtype_err, REG_ARG_1);
-    emit_call(emit, 0, nlr_jump); // TODO need to add function to runtime table
+    vtype_kind_t vtype_exc;
+    emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise
+    if (vtype_exc != VTYPE_PYOBJ) {
+        printf("ViperTypeError: must raise an object\n");
+    }
+    // TODO probably make this 1 call to the runtime (which could even call convert, native_raise(obj, type))
+    emit_call(emit, MP_F_NATIVE_RAISE, mp_native_raise);
 }
 
 STATIC void emit_native_yield_value(emit_t *emit) {

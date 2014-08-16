@@ -517,12 +517,6 @@ mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
     return mp_call_function_n_kw(fun, 2, 0, args);
 }
 
-// wrapper that accepts n_args and n_kw in one argument
-// native emitter can only pass at most 3 arguments to a function
-mp_obj_t mp_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args) {
-    return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
-}
-
 // args contains, eg: arg0  arg1  key0  value0  key1  value1
 mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, uint n_args, uint n_kw, const mp_obj_t *args) {
     // TODO improve this: fun object can specify its type and we parse here the arguments,
@@ -1187,6 +1181,17 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
     }
 }
 
+// wrapper that accepts n_args and n_kw in one argument
+// (native emitter can only pass at most 3 arguments to a function)
+mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args) {
+    return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
+}
+
+// wrapper that makes raise obj and raises it
+NORETURN void mp_native_raise(mp_obj_t o) {
+    nlr_raise(mp_make_raise_obj(o));
+}
+
 // these must correspond to the respective enum
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_convert_obj_to_native,
@@ -1216,10 +1221,11 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_set_store,
 #endif
     mp_make_function_from_raw_code,
-    mp_call_function_n_kw_for_native,
+    mp_native_call_function_n_kw,
     mp_call_method_n_kw,
     mp_getiter,
     mp_iternext,
+    mp_native_raise,
     mp_import_name,
     mp_import_from,
     mp_import_all,
