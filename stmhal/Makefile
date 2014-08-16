@@ -200,6 +200,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
+# We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
+# If we compile these using -O0 then it won't fit. So if you really want these
+# to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
+# and comment out the following 2 lines.
+$(BUILD)/$(FATFS_DIR)/src/ff.o: COPT += -Os
+$(BUILD)/$(HAL_DIR)/src/stm32f4xx_hal_sd.o: COPT += -Os
+
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 .PHONY: deploy
