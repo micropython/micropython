@@ -3626,6 +3626,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                         emit_native = emit_native_thumb_new(max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_thumb_method_table;
+#elif MICROPY_EMIT_ARM
+                    if (emit_native == NULL) {
+                        emit_native = emit_native_arm_new(max_num_labels);
+                    }
+                    comp->emit_method_table = &emit_native_arm_method_table;
 #endif
                     comp->emit = emit_native;
                     EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
@@ -3669,6 +3674,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
         emit_native_x64_free(emit_native);
 #elif MICROPY_EMIT_THUMB
         emit_native_thumb_free(emit_native);
+#elif MICROPY_EMIT_ARM
+	emit_native_arm_free(emit_native);
 #endif
     }
 #endif

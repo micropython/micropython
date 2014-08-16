@@ -69,7 +69,7 @@
 #endif
 
 // wrapper around everything in this file
-#if (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)
+#if (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB) || (MICROPY_EMIT_ARM && N_ARM)
 
 #if N_X64
 
@@ -116,6 +116,30 @@
 #define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_thumb_mov_reg_local(emit->as, (reg), (local_num))
 #define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_thumb_mov_reg_reg(emit->as, (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_thumb_mov_reg_local_addr(emit->as, (reg), (local_num))
+
+#elif N_ARM
+
+// ARM specific stuff
+
+#include "asmarm.h"
+
+#define REG_LOCAL_1 (REG_R4)
+#define REG_LOCAL_2 (REG_R5)
+#define REG_LOCAL_3 (REG_R6)
+#define REG_LOCAL_NUM (3)
+
+#define EXPORT_FUN(name) emit_native_arm_##name
+
+#define REG_TEMP0 (REG_R0)
+#define REG_TEMP1 (REG_R1)
+#define REG_TEMP2 (REG_R2)
+#define ASM_MOV_REG_TO_LOCAL(reg, local_num) asm_arm_mov_local_reg(emit->as, (local_num), (reg))
+#define ASM_MOV_IMM_TO_REG(imm, reg) asm_arm_mov_reg_i32(emit->as, (reg), (imm))
+#define ASM_MOV_ALIGNED_IMM_TO_REG(imm, reg) asm_arm_mov_reg_i32(emit->as, (reg), (imm))
+#define ASM_MOV_IMM_TO_LOCAL_USING(imm, local_num, reg_temp) do { asm_arm_mov_reg_i32(emit->as, (reg_temp), (imm)); asm_arm_mov_local_reg(emit->as, (local_num), (reg_temp)); } while (false)
+#define ASM_MOV_LOCAL_TO_REG(local_num, reg) asm_arm_mov_reg_local(emit->as, (reg), (local_num))
+#define ASM_MOV_REG_TO_REG(reg_src, reg_dest) asm_arm_mov_reg_reg(emit->as, (reg_dest), (reg_src))
+#define ASM_MOV_LOCAL_ADDR_TO_REG(local_num, reg) asm_arm_mov_reg_local_addr(emit->as, (reg), (local_num))
 
 #endif
 
@@ -169,6 +193,8 @@ struct _emit_t {
     asm_x64_t *as;
 #elif N_THUMB
     asm_thumb_t *as;
+#elif N_ARM
+    asm_arm_t *as;
 #endif
 };
 
@@ -178,6 +204,8 @@ emit_t *EXPORT_FUN(new)(uint max_num_labels) {
     emit->as = asm_x64_new(max_num_labels);
 #elif N_THUMB
     emit->as = asm_thumb_new(max_num_labels);
+#elif N_ARM
+    emit->as = asm_arm_new(max_num_labels);
 #endif
     return emit;
 }
@@ -187,6 +215,8 @@ void EXPORT_FUN(free)(emit_t *emit) {
     asm_x64_free(emit->as, false);
 #elif N_THUMB
     asm_thumb_free(emit->as, false);
+#elif N_ARM
+    asm_arm_free(emit->as, false);
 #endif
     m_del(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc);
     m_del(stack_info_t, emit->stack_info, emit->stack_info_alloc);
@@ -260,6 +290,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     asm_x64_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_X64_PASS_EMIT : ASM_X64_PASS_COMPUTE);
 #elif N_THUMB
     asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
+#elif N_ARM
+    asm_arm_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_ARM_PASS_EMIT : ASM_ARM_PASS_COMPUTE);
 #endif
 
     // entry to function
@@ -276,6 +308,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     asm_x64_entry(emit->as, num_locals);
 #elif N_THUMB
     asm_thumb_entry(emit->as, num_locals);
+#elif N_ARM
+    asm_arm_entry(emit->as, num_locals);
 #endif
 
     // initialise locals from parameters
@@ -309,6 +343,23 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     }
 
     asm_thumb_mov_reg_i32(emit->as, REG_R7, (mp_uint_t)mp_fun_table);
+#elif N_ARM
+    for (int i = 0; i < scope->num_pos_args; i++) {
+        if (i == 0) {
+            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
+        } else if (i == 1) {
+            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_2, REG_ARG_2);
+        } else if (i == 2) {
+            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_3, REG_ARG_3);
+        } else if (i == 3) {
+            asm_arm_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
+        } else {
+            // TODO not implemented
+            assert(0);
+        }
+    }
+
+    asm_arm_mov_reg_i32(emit->as, REG_R7, (mp_uint_t)mp_fun_table);
 #endif
 }
 
@@ -323,6 +374,11 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         asm_thumb_exit(emit->as);
     }
     asm_thumb_end_pass(emit->as);
+#elif N_ARM
+    if (!emit->last_emit_was_return_value) {
+        asm_arm_exit(emit->as);
+    }
+    asm_arm_end_pass(emit->as);    
 #endif
 
     // check stack is back to zero size
@@ -337,6 +393,9 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 #elif N_THUMB
         void *f = asm_thumb_get_code(emit->as);
         mp_uint_t f_len = asm_thumb_get_code_size(emit->as);
+#elif N_ARM
+	void *f = asm_arm_get_code(emit->as);
+        mp_uint_t f_len = asm_arm_get_code_size(emit->as);
 #endif
 
         // compute type signature
@@ -536,6 +595,8 @@ STATIC void emit_call(emit_t *emit, mp_fun_kind_t fun_kind) {
     asm_x64_call_ind(emit->as, mp_fun_table[fun_kind], REG_RAX);
 #elif N_THUMB
     asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#elif N_ARM
+    asm_arm_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
 
@@ -546,6 +607,8 @@ STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_
     asm_x64_call_ind(emit->as, mp_fun_table[fun_kind], REG_RAX);
 #elif N_THUMB
     asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#elif N_ARM
+    asm_arm_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
 
@@ -557,6 +620,8 @@ STATIC void emit_call_with_imm_arg_aligned(emit_t *emit, mp_fun_kind_t fun_kind,
     asm_x64_call_ind(emit->as, mp_fun_table[fun_kind], REG_RAX);
 #elif N_THUMB
     asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#elif N_ARM
+    asm_arm_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
 
@@ -568,6 +633,8 @@ STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, mp_i
     asm_x64_call_ind(emit->as, mp_fun_table[fun_kind], REG_RAX);
 #elif N_THUMB
     asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#elif N_ARM
+    asm_arm_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
 
@@ -581,6 +648,8 @@ STATIC void emit_call_with_3_imm_args_and_first_aligned(emit_t *emit, mp_fun_kin
     asm_x64_call_ind(emit->as, mp_fun_table[fun_kind], REG_RAX);
 #elif N_THUMB
     asm_thumb_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
+#elif N_ARM
+    asm_arm_bl_ind(emit->as, mp_fun_table[fun_kind], fun_kind, REG_R3);
 #endif
 }
 
@@ -673,6 +742,8 @@ STATIC void emit_native_label_assign(emit_t *emit, uint l) {
     asm_x64_label_assign(emit->as, l);
 #elif N_THUMB
     asm_thumb_label_assign(emit->as, l);
+#elif N_ARM
+    asm_arm_label_assign(emit->as, l);
 #endif
     emit_post(emit);
 }
@@ -804,6 +875,18 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
         asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - REG_LOCAL_NUM);
         emit_post_push_reg(emit, vtype, REG_R0);
     }
+#elif N_ARM
+    if (local_num == 0) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
+    } else {
+        need_reg_single(emit, REG_R0, 0);
+        asm_arm_mov_reg_local(emit->as, REG_R0, local_num - REG_LOCAL_NUM);
+        emit_post_push_reg(emit, vtype, REG_R0);
+    }
 #endif
 }
 
@@ -881,6 +964,17 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_R0);
         asm_thumb_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_R0);
+    }
+#elif N_ARM
+    if (local_num == 0) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
+    } else {
+        emit_pre_pop_reg(emit, &vtype, REG_R0);
+        asm_arm_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_R0);
     }
 #endif
 
@@ -1022,6 +1116,8 @@ STATIC void emit_native_jump(emit_t *emit, uint label) {
     asm_x64_jmp_label(emit->as, label);
 #elif N_THUMB
     asm_thumb_b_label(emit->as, label);
+#elif N_ARM
+    asm_arm_b_label(emit->as, label);
 #endif
     emit_post(emit);
 }
@@ -1055,6 +1151,9 @@ STATIC void emit_native_pop_jump_if_true(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
     asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_NE, label);
 #endif
     emit_post(emit);
 }
@@ -1067,6 +1166,9 @@ STATIC void emit_native_pop_jump_if_false(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
     asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_EQ, label);
 #endif
     emit_post(emit);
 }
@@ -1079,6 +1181,9 @@ STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
     asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_NE, label);
 #endif
     adjust_stack(emit, -1);
     emit_post(emit);
@@ -1092,6 +1197,9 @@ STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
     asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_EQ, label);
 #endif
     adjust_stack(emit, -1);
     emit_post(emit);
@@ -1126,6 +1234,9 @@ STATIC void emit_native_setup_except(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_i8(emit->as, REG_RET, 0);
     asm_thumb_bcc_label(emit->as, THUMB_CC_NE, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_NE, label);
 #endif
     emit_post(emit);
 }
@@ -1162,6 +1273,9 @@ STATIC void emit_native_for_iter(emit_t *emit, uint label) {
 #elif N_THUMB
     asm_thumb_cmp_rlo_rlo(emit->as, REG_RET, REG_TEMP1);
     asm_thumb_bcc_label(emit->as, THUMB_CC_EQ, label);
+#elif N_ARM
+    asm_arm_cmp_reg_i8(emit->as, REG_RET, 0);
+    asm_arm_bcc_label(emit->as, ARM_CC_EQ, label);
 #endif
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
@@ -1211,6 +1325,8 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
 #elif N_THUMB
             asm_thumb_add_rlo_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
+#elif N_ARM
+            asm_arm_add_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
 #endif
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_LESS) {
@@ -1223,6 +1339,8 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_thumb_ite_ge(emit->as);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
+#elif N_ARM
+            asm_arm_less_op(emit->as, REG_ARG_2, REG_ARG_3);
 #endif
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {
@@ -1456,6 +1574,9 @@ STATIC void emit_native_return_value(emit_t *emit) {
 #elif N_THUMB
     //asm_thumb_call_ind(emit->as, 0, REG_R0); to seg fault for debugging with gdb
     asm_thumb_exit(emit->as);
+#elif N_ARM
+    //asm_arm_bkpt(emit->as); to insert a bkpt and not segfault for debugging
+    asm_arm_exit(emit->as);
 #endif
 }
 
@@ -1584,4 +1705,4 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_end_except_handler,
 };
 
-#endif // (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB)
+#endif // (MICROPY_EMIT_X64 && N_X64) || (MICROPY_EMIT_THUMB && N_THUMB) || (MICROPY_EMIT_ARM && N_ARM)
