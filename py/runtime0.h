@@ -107,6 +107,7 @@ typedef enum {
     MP_F_LOAD_CONST_INT,
     MP_F_LOAD_CONST_DEC,
     MP_F_LOAD_CONST_STR,
+    MP_F_LOAD_CONST_BYTES,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
     MP_F_LOAD_BUILD_CLASS,
@@ -133,9 +134,11 @@ typedef enum {
     MP_F_CALL_METHOD_N_KW,
     MP_F_GETITER,
     MP_F_ITERNEXT,
+    MP_F_NLR_PUSH,
+    MP_F_NLR_POP,
     MP_F_NATIVE_RAISE,
     MP_F_IMPORT_NAME,
-    MP_F_IMPORT_FROM, // = 31 XXX this is the limit for thumb code...
+    MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,
 #if MICROPY_PY_BUILTINS_SLICE
     MP_F_NEW_SLICE,

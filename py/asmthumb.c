@@ -496,17 +496,14 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
     asm_thumb_op16(as, 0x4780 | (REG_R9 << 3)); // blx reg
     */
 
-    if (0) {
-        // load ptr to function into register using immediate, then branch
-        // not relocatable
-        asm_thumb_mov_reg_i32(as, reg_temp, (mp_uint_t)fun_ptr);
-        asm_thumb_op16(as, OP_BLX(reg_temp));
-    } else if (1) {
+    if (fun_id < 32) {
+        // load ptr to function from table, indexed by fun_id (must be in range 0-31); 4 bytes
         asm_thumb_op16(as, OP_FORMAT_9_10(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, REG_R7, fun_id));
         asm_thumb_op16(as, OP_BLX(reg_temp));
     } else {
-        // use SVC
-        asm_thumb_op16(as, OP_SVC(fun_id));
+        // load ptr to function into register using immediate; 6 bytes
+        asm_thumb_mov_reg_i32(as, reg_temp, (mp_uint_t)fun_ptr);
+        asm_thumb_op16(as, OP_BLX(reg_temp));
     }
 }
 
