@@ -51,6 +51,10 @@ ifeq ($(MICROPY_PY_TIME),1)
 CFLAGS_MOD += -DMICROPY_PY_TIME=1
 SRC_MOD += modtime.c
 endif
+ifeq ($(MICROPY_PY_TERMIOS),1)
+CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
+SRC_MOD += modtermios.c
+endif
 ifeq ($(MICROPY_PY_FFI),1)
 LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
