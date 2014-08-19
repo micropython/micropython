@@ -74,6 +74,7 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "extint.h"
 #include "timer.h"
 #include "storage.h"

@@ -34,6 +34,7 @@
 #include "nlr.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "gc.h"
 #include "gccollect.h"
 #include "systick.h"
@@ -41,6 +42,7 @@
 #include "led.h"
 #include "pin.h"
 #include "timer.h"
+#include "timer_pwm.h"
 #include "extint.h"
 #include "usrsw.h"
 #include "rng.h"
@@ -373,6 +375,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM), (mp_obj_t)&pyb_pwm_type },
 
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_rng), (mp_obj_t)&pyb_rng_get_obj },

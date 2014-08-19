@@ -73,6 +73,7 @@ SRC_C = \
 	pendsv.c \
 	systick.c  \
 	timer.c \
+	timer_pwm.c \
 	led.c \
 	pin.c \
 	pin_defs_stmhal.c \
