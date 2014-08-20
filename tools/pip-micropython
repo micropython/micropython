@@ -16,6 +16,7 @@ if [ -z "$TMPDIR" ]; then
     TMPDIR=/tmp
 fi
 TMPVENV="$TMPDIR/pip-micropy-venv"
+mkdir -p $TMPVENV
 
 if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
@@ -25,7 +26,8 @@ elif [ -n "$MICROPYPATH" ]; then
     echo "Destination library directory: $libdest"
 else
     echo "Warning: MICROPYPATH is not set, assuming default value"
-    libdest=~/.micropython/lib
+    #libdest=~/.micropython/lib
+    libdest=/usr/lib/micropython
     echo "Destination library directory: $libdest"
 fi
 
@@ -51,6 +53,7 @@ def new_imp(*a, **kw):
 __builtin__.__import__ = new_imp
 EOF
 fi
+mkdir -p "$TMPVENV"/bin/activate
 . "$TMPVENV"/bin/activate
 
 # We need to specify --record to override this switch as passed by pip
