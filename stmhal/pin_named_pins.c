@@ -64,17 +64,15 @@ const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t na
     return NULL;
 }
 
-/* unused
-const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit, uint8_t type) {
+const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit) {
     const pin_af_obj_t *af = pin->af;
     for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
-        if (af->fn == fn && af->unit == unit && af->type == type) {
+        if (af->fn == fn && af->unit == unit) {
             return af;
         }
     }
     return NULL;
 }
-*/
 
 const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx) {
     const pin_af_obj_t *af = pin->af;

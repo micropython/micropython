@@ -8,7 +8,7 @@ import sys
 import csv
 
 SUPPORTED_FN = {
-    'FTM'   : ['CH0',  'CH1',  'CH2',  'CH3',
+    'FTM'   : ['CH0',  'CH1',  'CH2',  'CH3', 'CH4', 'CH5', 'CH6', 'CH7',
                'QD_PHA', 'QD_PHB'],
     'I2C'   : ['SDA', 'SCL'],
     'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
@@ -313,6 +313,17 @@ class Pins(object):
                 print('    { %-*s %s },' % (mux_name_width + 26, key, val),
                       file=af_const_file)
 
+    def print_af_py(self, af_py_filename):
+        with open(af_py_filename,  'wt') as af_py_file:
+            print('PINS_AF = (', file=af_py_file);
+            for named_pin in self.board_pins:
+                print("  ('%s', " % named_pin.name(), end='', file=af_py_file)
+                for af in named_pin.pin().alt_fn:
+                    if af.is_supported():
+                        print("(%d, '%s'), " % (af.idx, af.af_str), end='', file=af_py_file)
+                print('),', file=af_py_file)
+            print(')',  file=af_py_file)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -324,13 +335,19 @@ def main():
         "-a", "--af",
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
-        default="stm32f4xx-af.csv"
+        default="mk20dx256_af.csv"
     )
     parser.add_argument(
         "--af-const",
         dest="af_const_filename",
         help="Specifies header file for alternate function constants.",
-        default="build/pins-af-const.h"
+        default="build/pins_af_const.h"
+    )
+    parser.add_argument(
+        "--af-py",
+        dest="af_py_filename",
+        help="Specifies the filename for the python alternate function mappings.",
+        default="build/pins_af.py"
     )
     parser.add_argument(
         "-b", "--board",
@@ -341,13 +358,13 @@ def main():
         "-p", "--prefix",
         dest="prefix_filename",
         help="Specifies beginning portion of generated pins file",
-        default="stm32f4xx-prefix.c"
+        default="mk20dx256_prefix.c"
     )
     parser.add_argument(
         "-q", "--qstr",
         dest="qstr_filename",
         help="Specifies name of generated qstr header file",
-        default="build/pins-qstr.h"
+        default="build/pins_qstr.h"
     )
     parser.add_argument(
         "-r", "--hdr",
@@ -381,6 +398,7 @@ def main():
     pins.print_header(args.hdr_filename)
     pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)
+    pins.print_af_py(args.af_py_filename)
 
 
 if __name__ == "__main__":
