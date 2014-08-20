@@ -265,6 +265,7 @@ Q(urandom)
 // for time module
 Q(time)
 Q(localtime)
+Q(mktime)
 Q(sleep)
 
 // for input

@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <string.h>
 #include "stm32f4xx_hal.h"
 
 #include "mpconfig.h"
@@ -34,15 +36,39 @@
 #include "portmodules.h"
 #include "rtc.h"
 
+#define DAYS_PER_400Y (365*400 + 97)
+#define DAYS_PER_100Y (365*100 + 24)
+#define DAYS_PER_4Y   (365*4   + 1)
+
+typedef struct {
+    uint16_t    tm_year;    // i.e. 2014
+    uint8_t     tm_mon;     // 1..12
+    uint8_t     tm_mday;    // 1..31
+    uint8_t     tm_hour;    // 0..23
+    uint8_t     tm_min;     // 0..59
+    uint8_t     tm_sec;     // 0..59
+    uint8_t     tm_wday;    // 0..6  0 = Monday
+    uint16_t    tm_yday;    // 1..366
+} mod_struct_time;
+
 /// \module time - time related functions
 ///
 /// The `time` module provides functions for getting the current time and date,
 /// and for sleeping.
 
-STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
 STATIC bool is_leap_year(mp_uint_t year) {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+}
+
+// Month is one based
+STATIC mp_uint_t days_in_month(mp_uint_t year, mp_uint_t month) {
+    mp_uint_t mdays = days_since_jan1[month] - days_since_jan1[month - 1];
+    if (month == 2 && is_leap_year(year)) {
+        mdays++;
+    }
+    return mdays;
 }
 
 // compute the day of the year, between 1 and 366
@@ -55,7 +81,7 @@ mp_uint_t mod_time_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
     return yday;
 }
 
-// returns the number of seconds, as an integer, since 1/1/2000
+// returns the number of seconds, as an integer, since 2000-01-01
 mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
     return
         second
@@ -69,29 +95,213 @@ mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t
         + (year - 2000) * 31536000;
 }
 
-/// \function localtime()
-/// Returns time stored in RTC as: (year, month, date, hour, minute, second, weekday).
-/// Weekday is 0-6 for Mon-Sun.
-STATIC mp_obj_t time_localtime(void) {
-    // get date and time
-    // note: need to call get time then get date to correctly access the registers
-    RTC_DateTypeDef date;
-    RTC_TimeTypeDef time;
-    HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
-    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+// LEAPOCH corresponds to 2000-03-01, which is a mod-400 year, immediately
+// after Feb 29. We calculate seconds as a signed integer relative to that.
+//
+// Our timebase is is relative to 2000-01-01.
+
+#define LEAPOCH ((31 + 29) * 86400)
+
+void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm) {
+    memset(tm, 0, sizeof(*tm));
+
+    // The following algorithm was adapted from musl's __secs_to_tm and adapted
+    // for differences in MicroPython's timebase.
+
+    mp_int_t seconds = t - LEAPOCH;
+
+    mp_int_t days = seconds / 86400;
+    seconds %= 86400;
+    tm->tm_hour = seconds / 3600;
+    tm->tm_min = seconds / 60 % 60;
+    tm->tm_sec = seconds % 60;
+
+    mp_int_t wday = (days + 2) % 7;   // Mar 1, 2000 was a Wednesday (2)
+    if (wday < 0) {
+        wday += 7;
+    }
+    tm->tm_wday = wday;
+
+    mp_int_t qc_cycles = days / DAYS_PER_400Y;
+    days %= DAYS_PER_400Y;
+    if (days < 0) {
+        days += DAYS_PER_400Y;
+        qc_cycles--;
+    }
+    mp_int_t c_cycles = days / DAYS_PER_100Y;
+    if (c_cycles == 4) {
+        c_cycles--;
+    }
+    days -= (c_cycles * DAYS_PER_100Y);
+
+    mp_int_t q_cycles = days / DAYS_PER_4Y;
+    if (q_cycles == 25) {
+        q_cycles--;
+    }
+    days -= q_cycles * DAYS_PER_4Y;
+
+    mp_int_t years = days / 365;
+    if (years == 4) {
+        years--;
+    }
+    days -= (years * 365);
+
+    mp_int_t leap = !years && (q_cycles || !c_cycles);
+
+    tm->tm_yday = days + 31 + 28 + leap;
+    if (tm->tm_yday >= 365 + leap) {
+        tm->tm_yday -= 365 + leap;
+    }
+
+    tm->tm_year = 2000 + years + 4 * q_cycles + 100 * c_cycles + 400 * qc_cycles;
+
+    // Note: days_in_month[0] corresponds to March
+    static const int8_t  days_in_month[] = {31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
+
+    mp_int_t month;
+    for (month = 0; days_in_month[month] <= days; month++) {
+        days -= days_in_month[month];
+    }
+
+    tm->tm_mon = month + 2;
+    if (tm->tm_mon >= 12) {
+        tm->tm_mon -= 12;
+        tm->tm_year++;
+    }
+    tm->tm_mday = days + 1; // Make one based
+    tm->tm_mon++;   // Make one based
+    tm->tm_yday++;  // Make one based
+}
+
+
+/// \function localtime([secs])
+/// Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which
+/// contains: (year, month, mday, hour, minute, second, weekday, yearday)
+/// If secs is not provided or None, then the current time from the RTC is used.
+/// year includes the century (for example 2014)
+/// month   is 1-12
+/// mday    is 1-31
+/// hour    is 0-23
+/// minute  is 0-59
+/// second  is 0-59
+/// weekday is 0-6 for Mon-Sun.
+/// yearday is 1-366
+STATIC mp_obj_t time_localtime(uint n_args, const mp_obj_t *args) {
+    if (n_args == 0 || args[0] == mp_const_none) {
+        // get current date and time
+        // note: need to call get time then get date to correctly access the registers
+        RTC_DateTypeDef date;
+        RTC_TimeTypeDef time;
+        HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
+        HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+        mp_obj_t tuple[8] = {
+            mp_obj_new_int(2000 + date.Year),
+            mp_obj_new_int(date.Month),
+            mp_obj_new_int(date.Date),
+            mp_obj_new_int(time.Hours),
+            mp_obj_new_int(time.Minutes),
+            mp_obj_new_int(time.Seconds),
+            mp_obj_new_int(date.WeekDay - 1),
+            mp_obj_new_int(mod_time_year_day(2000 + date.Year, date.Month, date.Date)),
+        };
+        return mp_obj_new_tuple(8, tuple);
+    }
+
+    mp_int_t seconds = mp_obj_get_int(args[0]);
+    mod_struct_time tm;
+    mod_time_seconds_since_2000_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
-        mp_obj_new_int(2000 + date.Year),
-        mp_obj_new_int(date.Month),
-        mp_obj_new_int(date.Date),
-        mp_obj_new_int(time.Hours),
-        mp_obj_new_int(time.Minutes),
-        mp_obj_new_int(time.Seconds),
-        mp_obj_new_int(date.WeekDay - 1),
-        mp_obj_new_int(mod_time_year_day(2000 + date.Year, date.Month, date.Date)),
+        mp_obj_new_int(tm.tm_year),
+        mp_obj_new_int(tm.tm_mon),
+        mp_obj_new_int(tm.tm_mday),
+        mp_obj_new_int(tm.tm_hour),
+        mp_obj_new_int(tm.tm_min),
+        mp_obj_new_int(tm.tm_sec),
+        mp_obj_new_int(tm.tm_wday),
+        mp_obj_new_int(tm.tm_yday),
     };
     return mp_obj_new_tuple(8, tuple);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(time_localtime_obj, time_localtime);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
+
+
+/// \function mktime()
+/// This is inverse function of localtime. It's argument is a full 8-tuple
+/// which expresses a time as per localtime. It returns an integer which is
+/// the number of seconds since Jan 1, 2000.
+STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
+
+    uint len;
+    mp_obj_t *elem;
+
+    mp_obj_get_array(tuple, &len, &elem);
+
+    // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
+    if (len < 8 || len > 9) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "mktime needs a tuple of length 8 or 9 (%d given)", len));
+    }
+
+    mp_int_t year    = mp_obj_get_int(elem[0]);
+    mp_int_t month   = mp_obj_get_int(elem[1]);
+    mp_int_t mday    = mp_obj_get_int(elem[2]);
+    mp_int_t hours   = mp_obj_get_int(elem[3]);
+    mp_int_t minutes = mp_obj_get_int(elem[4]);
+    mp_int_t seconds = mp_obj_get_int(elem[5]);
+
+    // Normalize the tuple. This allows things like:
+    //
+    // tm_tomorrow = list(time.localtime())
+    // tm_tomorrow[2] += 1 # Adds 1 to mday
+    // tomorrow = time.mktime(tm_tommorrow)
+    // 
+    // And not have to worry about all the weird overflows.
+    //
+    // You can subtract dates/times this way as well.
+
+    minutes += seconds / 60;
+    if ((seconds = seconds % 60) < 0) {
+        seconds += 60;
+        minutes--;
+    }
+
+    hours += minutes / 60;
+    if ((minutes = minutes % 60) < 0) {
+        minutes += 60;
+        hours--;
+    }
+
+    mday += hours / 24;
+    if ((hours = hours % 24) < 0) {
+        hours += 24;
+        mday--;
+    }
+
+    month--; // make month zero based
+    year += month / 12;
+    if ((month = month % 12) < 0) {
+        month += 12;
+        year--;
+    }
+    month++; // back to one based
+
+    while (mday < 1) {
+        if (--month == 0) {
+            month = 12;
+            year--;
+        }
+        mday += days_in_month(year, month);
+    }
+    while (mday > days_in_month(year, month)) {
+        mday -= days_in_month(year, month);
+        if (++month == 13) {
+            month = 1;
+            year++;
+        }
+    }
+    return mp_obj_new_int_from_uint(mod_time_seconds_since_2000(year, month, mday, hours, minutes, seconds));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
+
 
 /// \function sleep(seconds)
 /// Sleep for the given number of seconds.  Seconds can be a floating-point number to
@@ -127,6 +337,7 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_time) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_localtime), (mp_obj_t)&time_localtime_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mktime), (mp_obj_t)&time_mktime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_time_obj },
 };
