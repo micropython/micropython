@@ -35,15 +35,9 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objlist.h"
+#include "pybioctl.h"
 
 /// \moduleref select
-
-#define MP_IOCTL_POLL (0x100 | 1)
-
-#define MP_IOCTL_POLL_RD  (0x0001)
-#define MP_IOCTL_POLL_WR  (0x0002)
-#define MP_IOCTL_POLL_HUP (0x0004)
-#define MP_IOCTL_POLL_ERR (0x0008)
 
 typedef struct _poll_obj_t {
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
@@ -85,13 +79,13 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
         }
 
         poll_obj_t *poll_obj = (poll_obj_t*)poll_map->table[i].value;
-        int errno;
-        mp_int_t ret = poll_obj->ioctl(poll_map->table[i].key, MP_IOCTL_POLL, &errno, poll_obj->flags);
+        int errcode;
+        mp_int_t ret = poll_obj->ioctl(poll_map->table[i].key, MP_IOCTL_POLL, &errcode, poll_obj->flags);
         poll_obj->flags_ret = ret;
 
         if (ret == -1) {
             // error doing ioctl
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errcode)));
         }
 
         if (ret != 0) {
