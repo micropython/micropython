@@ -463,3 +463,11 @@ Q(deleter)
 Q(zlibd)
 Q(decompress)
 #endif
+
+#if MICROPY_PY_SELECT
+Q(select)
+Q(poll)
+Q(register)
+Q(unregister)
+Q(modify)
+#endif
