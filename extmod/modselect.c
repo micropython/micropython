@@ -42,15 +42,16 @@
 ///
 /// This module provides the select function.
 
-/// \function select(rlist, wlist, xlist[, timeout])
-mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
-    return mp_obj_new_bytes((void*)mp_obj_int_get(ptr), mp_obj_int_get(size));
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(select_select_obj, 3, 4, select_select);
+// This is just a skeleton.  Individual functions must be implemented by a port.
+// For the following, specific types don't matter, only addresses.
+struct _dummy_t;
+extern struct _dummy_t mp_select_select_obj;
+extern struct _dummy_t mp_select_poll_obj;
 
 STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_select) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&select_select_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_select_select_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
 };
 
 STATIC const mp_obj_dict_t mp_module_select_globals = {

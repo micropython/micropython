@@ -95,6 +95,7 @@ SRC_C = \
 	modpyb.c \
 	modstm.c \
 	modtime.c \
+	modselect.c \
 	import.c \
 	lexerfatfs.c \
 	extint.c \
