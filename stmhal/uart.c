@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "stm32f4xx_hal.h"
 
@@ -37,6 +38,7 @@
 #include "runtime.h"
 #include "bufhelper.h"
 #include "uart.h"
+#include "pybioctl.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -475,10 +477,41 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
+mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+    pyb_uart_obj_t *self = self_in;
+    va_list vargs;
+    va_start(vargs, errcode);
+    mp_uint_t ret;
+    if (request == MP_IOCTL_POLL) {
+        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        ret = 0;
+        if (flags & MP_IOCTL_POLL_RD && uart_rx_any(self)) {
+            ret |= MP_IOCTL_POLL_RD;
+        }
+        if (flags & MP_IOCTL_POLL_WR) {
+            // TODO can we always write?
+            ret |= MP_IOCTL_POLL_WR;
+        }
+    } else {
+        *errcode = 1; // EPERM, operation not permitted
+        ret = -1;
+    }
+    va_end(vargs);
+    return ret;
+}
+
+STATIC const mp_stream_p_t uart_stream_p = {
+    //.read = uart_read, // TODO
+    //.write = uart_write, // TODO
+    .ioctl = uart_ioctl,
+    .is_text = false,
+};
+
 const mp_obj_type_t pyb_uart_type = {
     { &mp_type_type },
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
+    .stream_p = &uart_stream_p,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
 };
