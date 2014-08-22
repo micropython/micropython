@@ -458,25 +458,6 @@ STATIC mp_obj_t mp_builtin_sorted(mp_uint_t n_args, const mp_obj_t *args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
-STATIC mp_obj_t mp_builtin_id(mp_obj_t o_in) {
-    mp_int_t id = (mp_int_t)o_in;
-    if (!MP_OBJ_IS_OBJ(o_in)) {
-        return mp_obj_new_int(id);
-    } else if (id >= 0) {
-        // Many OSes and CPUs have affinity for putting "user" memories
-        // into low half of address space, and "system" into upper half.
-        // We're going to take advantage of that and return small int
-        // (signed) for such "user" addresses.
-        return MP_OBJ_NEW_SMALL_INT(id);
-    } else {
-        // If that didn't work, well, let's return long int, just as
-        // a (big) positve value, so it will never clash with the range
-        // of small int returned in previous case.
-        return mp_obj_new_int_from_uint((mp_uint_t)id);
-    }
-}
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_builtin_id);
-
 // See mp_load_attr() if making any changes
 STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     mp_obj_t dest[2];
@@ -523,6 +504,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
 
 // These are defined in terms of MicroPython API functions right away
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_globals_get);
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_locals_get);
