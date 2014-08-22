@@ -26,10 +26,9 @@
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
-    // XXX here we assume the hash size is 16 bits (it is at the moment; see qstr.c)
-    mp_uint_t hash : 16;
+    mp_uint_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
-    mp_uint_t len : 16;
+    mp_uint_t len;
     const byte *data;
 } mp_obj_str_t;
 
