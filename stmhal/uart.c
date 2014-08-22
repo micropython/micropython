@@ -485,7 +485,7 @@ mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
     if (request == MP_IOCTL_POLL) {
         mp_uint_t flags = va_arg(vargs, mp_uint_t);
         ret = 0;
-        if (flags & MP_IOCTL_POLL_RD && uart_rx_any(self)) {
+        if ((flags & MP_IOCTL_POLL_RD) && uart_rx_any(self)) {
             ret |= MP_IOCTL_POLL_RD;
         }
         if (flags & MP_IOCTL_POLL_WR) {

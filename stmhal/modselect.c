@@ -40,6 +40,7 @@
 /// \moduleref select
 
 typedef struct _poll_obj_t {
+    mp_obj_t obj;
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
     mp_uint_t flags;
     mp_uint_t flags_ret;
@@ -47,7 +48,7 @@ typedef struct _poll_obj_t {
 
 STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t flags, bool or_flags) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
-        mp_map_elem_t *elem = mp_map_lookup(poll_map, obj[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+        mp_map_elem_t *elem = mp_map_lookup(poll_map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         if (elem->value == NULL) {
             // object not found; get its ioctl and add it to the poll list
             mp_obj_type_t *type = mp_obj_get_type(obj[i]);
@@ -55,6 +56,7 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object with stream.ioctl required"));
             }
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
+            poll_obj->obj = obj[i];
             poll_obj->ioctl = type->stream_p->ioctl;
             poll_obj->flags = flags;
             poll_obj->flags_ret = 0;
@@ -80,7 +82,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
 
         poll_obj_t *poll_obj = (poll_obj_t*)poll_map->table[i].value;
         int errcode;
-        mp_int_t ret = poll_obj->ioctl(poll_map->table[i].key, MP_IOCTL_POLL, &errcode, poll_obj->flags);
+        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_IOCTL_POLL, &errcode, poll_obj->flags);
         poll_obj->flags_ret = ret;
 
         if (ret == -1) {
@@ -153,13 +155,13 @@ STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
                 }
                 poll_obj_t *poll_obj = (poll_obj_t*)poll_map.table[i].value;
                 if (poll_obj->flags_ret & MP_IOCTL_POLL_RD) {
-                    ((mp_obj_list_t*)list_array[0])->items[rwx_len[0]++] = poll_map.table[i].key;
+                    ((mp_obj_list_t*)list_array[0])->items[rwx_len[0]++] = poll_obj->obj;
                 }
                 if (poll_obj->flags_ret & MP_IOCTL_POLL_WR) {
-                    ((mp_obj_list_t*)list_array[1])->items[rwx_len[1]++] = poll_map.table[i].key;
+                    ((mp_obj_list_t*)list_array[1])->items[rwx_len[1]++] = poll_obj->obj;
                 }
                 if ((poll_obj->flags_ret & ~(MP_IOCTL_POLL_RD | MP_IOCTL_POLL_WR)) != 0) {
-                    ((mp_obj_list_t*)list_array[2])->items[rwx_len[2]++] = poll_map.table[i].key;
+                    ((mp_obj_list_t*)list_array[2])->items[rwx_len[2]++] = poll_obj->obj;
                 }
             }
             mp_map_deinit(&poll_map);
@@ -194,7 +196,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 /// \method unregister(obj)
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = self_in;
-    mp_map_lookup(&self->poll_map, obj_in, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     // TODO raise KeyError if obj didn't exist in map
     return mp_const_none;
 }
@@ -203,7 +205,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 /// \method modify(obj, eventmask)
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = self_in;
-    mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, obj_in, MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
     if (elem == NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IOError, "object was never registered"));
     }
@@ -243,11 +245,10 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
                 }
                 poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
                 if (poll_obj->flags_ret != 0) {
-                    mp_obj_t tuple[2] = {self->poll_map.table[i].key, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
+                    mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
                     ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
                 }
             }
-            mp_map_deinit(&self->poll_map);
             return ret_list;
         }
         __WFI();
