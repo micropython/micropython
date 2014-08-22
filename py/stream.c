@@ -225,8 +225,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 
     int total_size = 0;
     vstr_t *vstr = vstr_new_size(DEFAULT_BUFFER_SIZE);
-    char *buf = vstr_str(vstr);
-    char *p = buf;
+    char *p = vstr_str(vstr);
     int error;
     int current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
