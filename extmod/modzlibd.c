@@ -53,7 +53,7 @@ STATIC mp_obj_t mod_zlibd_decompress(uint n_args, mp_obj_t *args) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     tinfl_decompressor *decomp = m_new_obj(tinfl_decompressor);
     tinfl_init(decomp);
-    DEBUG_printf("sizeof(tinfl_decompressor)=%d\n", sizeof(tinfl_decompressor));
+    DEBUG_printf("sizeof(tinfl_decompressor)=" UINT_FMT "\n", sizeof(tinfl_decompressor));
 
     byte *out = m_new(byte, bufinfo.len);
     size_t out_len = bufinfo.len;
