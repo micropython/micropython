@@ -174,6 +174,11 @@ void PendSV_Handler(void) {
   */
 void SysTick_Handler(void) {
     HAL_IncTick();
+
+    // Read the systick control regster. This has the side effect of clearing
+    // the COUNTFLAG bit, which makes the logic in sys_tick_get_microseconds
+    // work properly.
+    SysTick->CTRL;
 }
 
 /******************************************************************************/
