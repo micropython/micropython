@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This tool can be used to install a new package into MicroPython
 # library location (for unix port, default behavior), or produce
@@ -12,22 +12,28 @@ if [ "$1" != "install" ]; then
 fi
 shift
 
+if [ "$1" == "to" ]; then
+    PIP_MICROPY_DEST="$2"
+    export PIP_MICROPY_DEST
+fi
+shift
+shift
+
 if [ -z "$TMPDIR" ]; then
     TMPDIR=/tmp
 fi
 TMPVENV="$TMPDIR/pip-micropy-venv"
-mkdir -p $TMPVENV
-
+echo $PIP_MICROPY_DEST
 if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
+    unset PIP_MICROPY_DEST
     echo "Destination snapshot directory: $dest"
 elif [ -n "$MICROPYPATH" ]; then
     libdest=$(echo "$MICROPYPATH" | awk -F: ' {print $1}')
     echo "Destination library directory: $libdest"
 else
     echo "Warning: MICROPYPATH is not set, assuming default value"
-    #libdest=~/.micropython/lib
-    libdest=/usr/lib/micropython
+    libdest=~/.micropython/lib
     echo "Destination library directory: $libdest"
 fi
 
@@ -53,7 +59,6 @@ def new_imp(*a, **kw):
 __builtin__.__import__ = new_imp
 EOF
 fi
-mkdir -p "$TMPVENV"/bin/activate
 . "$TMPVENV"/bin/activate
 
 # We need to specify --record to override this switch as passed by pip
