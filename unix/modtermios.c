@@ -63,7 +63,7 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
             cc->items[i] = MP_OBJ_NEW_SMALL_INT(term.c_cc[i]);
         } else {
             // https://docs.python.org/3/library/termios.html says value is *string*,
-            // but now way unicode chars could be there.
+            // but no way unicode chars could be there.
             cc->items[i] = mp_obj_new_bytes(&term.c_cc[i], 1);
         }
     }

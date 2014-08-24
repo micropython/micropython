@@ -238,6 +238,7 @@ GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
@@ -260,7 +261,7 @@ $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 # both pins_$(BOARD).c and pins.h
 $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)

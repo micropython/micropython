@@ -79,3 +79,12 @@ except SystemError as e:
 #@micropython.viper
 #def g() -> uint:
 #    return -1
+
+# calling GC after defining the function
+@micropython.viper
+def viper_gc() -> int:
+    return 1
+print(viper_gc())
+import gc
+gc.collect()
+print(viper_gc())

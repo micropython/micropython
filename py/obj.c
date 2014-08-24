@@ -161,7 +161,7 @@ mp_int_t mp_obj_hash(mp_obj_t o_in) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (mp_int_t)o_in;
-    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_fun_native) || MP_OBJ_IS_TYPE(o_in, &mp_type_fun_bc)) {
+    } else if (MP_OBJ_IS_FUN(o_in)) {
         return (mp_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);

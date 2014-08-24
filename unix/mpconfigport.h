@@ -84,6 +84,11 @@ extern const struct _mp_obj_module_t mp_module_ffi;
 #else
 #define MICROPY_PY_TIME_DEF
 #endif
+#if MICROPY_PY_TERMIOS
+#define MICROPY_PY_TERMIOS_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_termios), (mp_obj_t)&mp_module_termios },
+#else
+#define MICROPY_PY_TERMIOS_DEF
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
@@ -91,6 +96,8 @@ extern const struct _mp_obj_module_t mp_module_ffi;
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_termios), (mp_obj_t)&mp_module_termios }, \
+    MICROPY_PY_TERMIOS_DEF \
+
 
 // type definitions for the specific machine
 
@@ -109,8 +116,8 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
-extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
