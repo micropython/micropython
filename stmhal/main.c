@@ -119,14 +119,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-void enable_irq(void) {
-    __enable_irq();
-}
-
-void disable_irq(void) {
-    __disable_irq();
-}
-
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
 

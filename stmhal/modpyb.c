@@ -36,6 +36,7 @@
 #include "obj.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "irq.h"
 #include "systick.h"
 #include "pyexec.h"
 #include "led.h"
@@ -215,32 +216,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
-
-/// \function wfi()
-/// Wait for an interrupt.
-/// This executies a `wfi` instruction which reduces power consumption
-/// of the MCU until an interrupt occurs, at which point execution continues.
-STATIC mp_obj_t pyb_wfi(void) {
-    __WFI();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
-
-/// \function disable_irq()
-/// Disable interrupt requests.
-STATIC mp_obj_t pyb_disable_irq(void) {
-    __disable_irq();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
-
-/// \function enable_irq()
-/// Enable interrupt requests.
-STATIC mp_obj_t pyb_enable_irq(void) {
-    __enable_irq();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_irq_obj, pyb_enable_irq);
 
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
