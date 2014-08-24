@@ -132,8 +132,7 @@ uint asm_thumb_get_code_size(asm_thumb_t *as) {
 }
 
 void *asm_thumb_get_code(asm_thumb_t *as) {
-    // need to set low bit to indicate that it's thumb code
-    return (void *)(((mp_uint_t)as->code_base) | 1);
+    return as->code_base;
 }
 
 /*

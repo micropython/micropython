@@ -119,5 +119,4 @@ STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj, 0, 1, pyb_help);
