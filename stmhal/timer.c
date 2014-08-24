@@ -39,6 +39,7 @@
 #include "gc.h"
 #include "obj.h"
 #include "runtime.h"
+#include "pin.h"
 #include "timer.h"
 #include "servo.h"
 
@@ -465,6 +466,68 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
 
+/// \method pwm(pin, pulse)
+/// Enable PWM on the given pin, with given pulse width.
+STATIC mp_obj_t pyb_timer_pwm(mp_obj_t self_in, mp_obj_t pin_in, mp_obj_t pulse_in) {
+    pyb_timer_obj_t *self = self_in;
+
+    // find channel for this timer with given pin
+    uint32_t channel = -1;
+    if (MP_OBJ_IS_INT(pin_in)) {
+        channel = mp_obj_get_int(pin_in);
+    } else {
+        const pin_obj_t *pin = pin_find(pin_in);
+        const pin_af_obj_t *af = pin->af;
+        for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
+            if (af->fn == AF_FN_TIM && af->TIM == self->tim.Instance) {
+                switch (af->type) {
+                    case AF_PIN_TYPE_TIM_CH1: channel = TIM_CHANNEL_1; break;
+                    case AF_PIN_TYPE_TIM_CH2: channel = TIM_CHANNEL_2; break;
+                    case AF_PIN_TYPE_TIM_CH3: channel = TIM_CHANNEL_3; break;
+                    case AF_PIN_TYPE_TIM_CH4: channel = TIM_CHANNEL_4; break;
+                }
+                break;
+            }
+        }
+        if (channel == -1) {
+            // no timer function on given pin
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have Timer capabilities", qstr_str(pin->name)));
+        }
+
+        // set AF mode for pin
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitStructure.Pin = pin->pin_mask;
+        uint32_t orig_mode = pin_get_mode(pin);
+        if (orig_mode == GPIO_MODE_OUTPUT_OD || orig_mode == GPIO_MODE_AF_OD) {
+            GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
+        } else {
+            GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+        }
+        GPIO_InitStructure.Pull = pin_get_pull(pin);
+        GPIO_InitStructure.Speed = GPIO_SPEED_FAST; // TODO leave as existing speed
+        GPIO_InitStructure.Alternate = af->idx;
+        HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+    }
+
+    if (!IS_TIM_CHANNELS(channel)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid Timer channel: %d", channel));
+    }
+
+    // PWM mode configuration
+    TIM_OC_InitTypeDef oc_init;
+    oc_init.OCMode = TIM_OCMODE_PWM1;
+    oc_init.Pulse = mp_obj_get_int(pulse_in);
+    oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
+    oc_init.OCFastMode = TIM_OCFAST_DISABLE;
+    HAL_TIM_PWM_ConfigChannel(&self->tim, &oc_init, channel);
+
+    // start PWM
+    HAL_TIM_PWM_Start(&self->tim, channel);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_timer_pwm_obj, pyb_timer_pwm);
+
 STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_timer_init_obj },
@@ -473,6 +536,7 @@ STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_prescaler), (mp_obj_t)&pyb_timer_prescaler_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_period), (mp_obj_t)&pyb_timer_period_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pwm), (mp_obj_t)&pyb_timer_pwm_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
