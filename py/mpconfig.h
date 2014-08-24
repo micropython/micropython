@@ -429,6 +429,12 @@ typedef double mp_float_t;
 #define MP_ENDIANNESS_LITTLE (0)
 #endif
 
+// Make a pointer to RAM callable (eg set lower bit for Thumb code)
+// (This scheme won't work if we want to mix Thumb and normal ARM code.)
+#ifndef MICROPY_MAKE_POINTER_CALLABLE
+#define MICROPY_MAKE_POINTER_CALLABLE(p) (p)
+#endif
+
 // printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__
