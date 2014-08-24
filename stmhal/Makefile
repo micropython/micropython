@@ -70,6 +70,7 @@ SRC_C = \
 	usbd_desc_cdc_msc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
+	irq.c \
 	pendsv.c \
 	systick.c  \
 	timer.c \
