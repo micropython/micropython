@@ -527,9 +527,9 @@ STATIC mp_obj_t pin_pull(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pull_obj, pin_pull);
 
 /// \method af()
-/// Returns the currently configured af of the pin. The integer returned
-/// will match one of the allowed constants for the af argument to the init
-/// function.
+/// Returns the currently configured alternate-function of the pin. The
+/// integer returned will match one of the allowed constants for the af
+/// argument to the init function.
 STATIC mp_obj_t pin_af(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pin_get_af(self_in));
 }
@@ -564,6 +564,9 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     /// \constant IN - initialise the pin to input mode
     /// \constant OUT_PP - initialise the pin to output mode with a push-pull drive
     /// \constant OUT_OD - initialise the pin to output mode with an open-drain drive
+    /// \constant AF_PP - initialise the pin to alternate-function mode with a push-pull drive
+    /// \constant AF_OD - initialise the pin to alternate-function mode with an open-drain drive
+    /// \constant ANALOG - initialise the pin to analog mode
     /// \constant PULL_NONE - don't enable any pull up or down resistors on the pin
     /// \constant PULL_UP - enable the pull-up resistor on the pin
     /// \constant PULL_DOWN - enable the pull-down resistor on the pin
