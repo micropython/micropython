@@ -97,7 +97,6 @@ extern const struct _mp_obj_module_t mp_module_ffi;
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_termios), (mp_obj_t)&mp_module_termios }, \
     MICROPY_PY_TERMIOS_DEF \
-    MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
 
