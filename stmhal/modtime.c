@@ -36,21 +36,6 @@
 #include "portmodules.h"
 #include "rtc.h"
 
-#define DAYS_PER_400Y (365*400 + 97)
-#define DAYS_PER_100Y (365*100 + 24)
-#define DAYS_PER_4Y   (365*4   + 1)
-
-typedef struct {
-    uint16_t    tm_year;    // i.e. 2014
-    uint8_t     tm_mon;     // 1..12
-    uint8_t     tm_mday;    // 1..31
-    uint8_t     tm_hour;    // 0..23
-    uint8_t     tm_min;     // 0..59
-    uint8_t     tm_sec;     // 0..59
-    uint8_t     tm_wday;    // 0..6  0 = Monday
-    uint16_t    tm_yday;    // 1..366
-} mod_struct_time;
-
 /// \module time - time related functions
 ///
 /// The `time` module provides functions for getting the current time and date,
@@ -63,7 +48,7 @@ STATIC bool is_leap_year(mp_uint_t year) {
 }
 
 // Month is one based
-STATIC mp_uint_t days_in_month(mp_uint_t year, mp_uint_t month) {
+STATIC mp_uint_t mod_time_days_in_month(mp_uint_t year, mp_uint_t month) {
     mp_uint_t mdays = days_since_jan1[month] - days_since_jan1[month - 1];
     if (month == 2 && is_leap_year(year)) {
         mdays++;
@@ -73,7 +58,7 @@ STATIC mp_uint_t days_in_month(mp_uint_t year, mp_uint_t month) {
 
 // compute the day of the year, between 1 and 366
 // month should be between 1 and 12, date should start at 1
-mp_uint_t mod_time_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
+STATIC mp_uint_t mod_time_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
     mp_uint_t yday = days_since_jan1[month - 1] + date;
     if (month >= 3 && is_leap_year(year)) {
         yday += 1;
@@ -102,11 +87,24 @@ mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t
 
 #define LEAPOCH ((31 + 29) * 86400)
 
-void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm) {
-    memset(tm, 0, sizeof(*tm));
+#define DAYS_PER_400Y (365*400 + 97)
+#define DAYS_PER_100Y (365*100 + 24)
+#define DAYS_PER_4Y   (365*4   + 1)
 
+typedef struct {
+    uint16_t    tm_year;    // i.e. 2014
+    uint8_t     tm_mon;     // 1..12
+    uint8_t     tm_mday;    // 1..31
+    uint8_t     tm_hour;    // 0..23
+    uint8_t     tm_min;     // 0..59
+    uint8_t     tm_sec;     // 0..59
+    uint8_t     tm_wday;    // 0..6  0 = Monday
+    uint16_t    tm_yday;    // 1..366
+} mod_struct_time;
+
+STATIC void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm) {
     // The following algorithm was adapted from musl's __secs_to_tm and adapted
-    // for differences in MicroPython's timebase.
+    // for differences in Micro Python's timebase.
 
     mp_int_t seconds = t - LEAPOCH;
 
@@ -146,6 +144,7 @@ void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm
     }
     days -= (years * 365);
 
+    /* We will compute tm_yday at the very end
     mp_int_t leap = !years && (q_cycles || !c_cycles);
 
     tm->tm_yday = days + 31 + 28 + leap;
@@ -153,10 +152,13 @@ void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm
         tm->tm_yday -= 365 + leap;
     }
 
+    tm->tm_yday++;  // Make one based
+    */
+
     tm->tm_year = 2000 + years + 4 * q_cycles + 100 * c_cycles + 400 * qc_cycles;
 
     // Note: days_in_month[0] corresponds to March
-    static const int8_t  days_in_month[] = {31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
+    STATIC const int8_t days_in_month[] = {31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
 
     mp_int_t month;
     for (month = 0; days_in_month[month] <= days; month++) {
@@ -170,9 +172,9 @@ void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm
     }
     tm->tm_mday = days + 1; // Make one based
     tm->tm_mon++;   // Make one based
-    tm->tm_yday++;  // Make one based
-}
 
+    tm->tm_yday = mod_time_year_day(tm->tm_year, tm->tm_mon, tm->tm_mday);
+}
 
 /// \function localtime([secs])
 /// Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which
@@ -205,22 +207,22 @@ STATIC mp_obj_t time_localtime(uint n_args, const mp_obj_t *args) {
             mp_obj_new_int(mod_time_year_day(2000 + date.Year, date.Month, date.Date)),
         };
         return mp_obj_new_tuple(8, tuple);
+    } else {
+        mp_int_t seconds = mp_obj_get_int(args[0]);
+        mod_struct_time tm;
+        mod_time_seconds_since_2000_to_struct_time(seconds, &tm);
+        mp_obj_t tuple[8] = {
+            tuple[0] = mp_obj_new_int(tm.tm_year),
+            tuple[1] = mp_obj_new_int(tm.tm_mon),
+            tuple[2] = mp_obj_new_int(tm.tm_mday),
+            tuple[3] = mp_obj_new_int(tm.tm_hour),
+            tuple[4] = mp_obj_new_int(tm.tm_min),
+            tuple[5] = mp_obj_new_int(tm.tm_sec),
+            tuple[6] = mp_obj_new_int(tm.tm_wday),
+            tuple[7] = mp_obj_new_int(tm.tm_yday),
+        };
+        return mp_obj_new_tuple(8, tuple);
     }
-
-    mp_int_t seconds = mp_obj_get_int(args[0]);
-    mod_struct_time tm;
-    mod_time_seconds_since_2000_to_struct_time(seconds, &tm);
-    mp_obj_t tuple[8] = {
-        mp_obj_new_int(tm.tm_year),
-        mp_obj_new_int(tm.tm_mon),
-        mp_obj_new_int(tm.tm_mday),
-        mp_obj_new_int(tm.tm_hour),
-        mp_obj_new_int(tm.tm_min),
-        mp_obj_new_int(tm.tm_sec),
-        mp_obj_new_int(tm.tm_wday),
-        mp_obj_new_int(tm.tm_yday),
-    };
-    return mp_obj_new_tuple(8, tuple);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
@@ -248,12 +250,12 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     mp_int_t minutes = mp_obj_get_int(elem[4]);
     mp_int_t seconds = mp_obj_get_int(elem[5]);
 
-    // Normalize the tuple. This allows things like:
+    // Normalise the tuple. This allows things like:
     //
     // tm_tomorrow = list(time.localtime())
     // tm_tomorrow[2] += 1 # Adds 1 to mday
     // tomorrow = time.mktime(tm_tommorrow)
-    // 
+    //
     // And not have to worry about all the weird overflows.
     //
     // You can subtract dates/times this way as well.
@@ -289,10 +291,10 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
             month = 12;
             year--;
         }
-        mday += days_in_month(year, month);
+        mday += mod_time_days_in_month(year, month);
     }
-    while (mday > days_in_month(year, month)) {
-        mday -= days_in_month(year, month);
+    while (mday > mod_time_days_in_month(year, month)) {
+        mday -= mod_time_days_in_month(year, month);
         if (++month == 13) {
             month = 1;
             year++;
