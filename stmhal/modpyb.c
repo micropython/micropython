@@ -198,11 +198,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 /// always get the right answer and not have to worry about whether pyb.millis()
 /// wraps around.
 STATIC mp_obj_t pyb_millis(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int. So we shift it
-    // left by 1 to throw away the top bit, and then shift it right by one
-    // to sign extend.
-    mp_int_t val = HAL_GetTick() << 1;
-    return mp_obj_new_int(val >> 1);
+    // We want to "cast" the 32 bit unsigned into a small-int.  This means
+    // copying the MSB down 1 bit (extending the sign down), which is
+    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
@@ -219,11 +218,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 /// always get the right answer and not have to worry about whether pyb.micros()
 /// wraps around.
 STATIC mp_obj_t pyb_micros(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int. So we shift it
-    // left by 1 to throw away the top bit, and then shift it right by one
-    // to sign extend.
-    mp_int_t val = sys_tick_get_microseconds() << 1;
-    return mp_obj_new_int(val >> 1);
+    // We want to "cast" the 32 bit unsigned into a small-int.  This means
+    // copying the MSB down 1 bit (extending the sign down), which is
+    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 

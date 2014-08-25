@@ -5,7 +5,7 @@
   void assert_failed(uint8_t* file, uint32_t line);
 #else
   #define assert_param(expr) ((void)0)
-#endif /* USE_FULL_ASSERT */    
+#endif /* USE_FULL_ASSERT */
 
 #define FTM0    ((FTM_TypeDef *)&FTM0_SC)
 #define FTM1    ((FTM_TypeDef *)&FTM1_SC)
@@ -113,24 +113,19 @@ typedef struct {
 #define GPIO_AF6_I2C1   6
 #define GPIO_AF7_FTM1   7
 
-
-__attribute__(( always_inline )) static inline void __WFI(void)
-{
+__attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
 }
 
-__attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void)
-{
+__attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void) {
     uint32_t result;
     __asm volatile ("MRS %0, primask" : "=r" (result));
     return(result);
 }
 
-__attribute__(( always_inline )) static inline void __set_PRIMASK(uint32_t priMask)
-{
+__attribute__(( always_inline )) static inline void __set_PRIMASK(uint32_t priMask) {
     __asm volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
 }
-
 
 uint32_t HAL_GetTick(void);
 void     HAL_Delay(uint32_t Delay);
