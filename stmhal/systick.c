@@ -33,6 +33,18 @@
 #include "irq.h"
 #include "systick.h"
 
+// We provide our own version of HAL_Delay that calls __WFI while waiting, in
+// order to reduce power consumption.
+void HAL_Delay(uint32_t Delay) {
+    extern __IO uint32_t uwTick;
+    uint32_t start = uwTick;
+    // Wraparound of tick is taken care of by 2's complement arithmetic.
+    while (uwTick - start < Delay) {
+        // Enter sleep mode, waiting for (at least) the SysTick interrupt.
+        __WFI();
+    }
+}
+
 bool sys_tick_has_passed(uint32_t start_tick, uint32_t delay_ms) {
     return HAL_GetTick() - start_tick >= delay_ms;
 }
