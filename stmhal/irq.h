@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
-void sys_tick_wait_at_least(uint32_t stc, uint32_t delay_ms);
-bool sys_tick_has_passed(uint32_t stc, uint32_t delay_ms);
-uint32_t sys_tick_get_microseconds(void);
+// The prototypes for disable_irq/enable_irq are in mpconfigport.h
+// Once we switch around to using traitional #include headers, then they
+// can be move back into here.
+
+// mp_int_t disable_irq(void);
+// void enable_irq(mp_int_t enabled);
+
+MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
+MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);

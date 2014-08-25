@@ -67,6 +67,7 @@ Q(/flash/lib)
 Q(/sd)
 Q(/sd/lib)
 Q(millis)
+Q(micros)
 
 // for file class
 Q(seek)

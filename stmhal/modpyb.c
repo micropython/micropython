@@ -36,6 +36,7 @@
 #include "obj.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "irq.h"
 #include "systick.h"
 #include "pyexec.h"
 #include "led.h"
@@ -98,7 +99,7 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n", 
+        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n",
                HAL_RCC_GetSysClockFreq(),
                HAL_RCC_GetHCLKFreq(),
                HAL_RCC_GetPCLK1Freq(),
@@ -186,10 +187,45 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
+///
+/// Note that this may return a negative number. This allows you to always
+/// do:
+///     start = pyb.millis()
+///     ...do some operation...
+///     elapsed = pyb.millis() - start
+///
+/// and as long as the time of your operation is less than 24 days, you'll
+/// always get the right answer and not have to worry about whether pyb.millis()
+/// wraps around.
 STATIC mp_obj_t pyb_millis(void) {
-    return mp_obj_new_int(HAL_GetTick());
+    // We want to "cast" the 32 bit unsigned into a small-int. So we shift it
+    // left by 1 to throw away the top bit, and then shift it right by one
+    // to sign extend.
+    mp_int_t val = HAL_GetTick() << 1;
+    return mp_obj_new_int(val >> 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
+
+/// \function micros()
+/// Returns the number of microseconds since the board was last reset.
+///
+/// Note that this may return a negative number. This allows you to always
+/// do:
+///     start = pyb.micros()
+///     ...do some operation...
+///     elapsed = pyb.micros() - start
+///
+/// and as long as the time of your operation is less than 35 minutes, you'll
+/// always get the right answer and not have to worry about whether pyb.micros()
+/// wraps around.
+STATIC mp_obj_t pyb_micros(void) {
+    // We want to "cast" the 32 bit unsigned into a small-int. So we shift it
+    // left by 1 to throw away the top bit, and then shift it right by one
+    // to sign extend.
+    mp_int_t val = sys_tick_get_microseconds() << 1;
+    return mp_obj_new_int(val >> 1);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 
 /// \function delay(ms)
 /// Delay for the given number of milliseconds.
@@ -215,32 +251,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
-
-/// \function wfi()
-/// Wait for an interrupt.
-/// This executies a `wfi` instruction which reduces power consumption
-/// of the MCU until an interrupt occurs, at which point execution continues.
-STATIC mp_obj_t pyb_wfi(void) {
-    __WFI();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
-
-/// \function disable_irq()
-/// Disable interrupt requests.
-STATIC mp_obj_t pyb_disable_irq(void) {
-    __disable_irq();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
-
-/// \function enable_irq()
-/// Enable interrupt requests.
-STATIC mp_obj_t pyb_enable_irq(void) {
-    __enable_irq();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_irq_obj, pyb_enable_irq);
 
 #if 0
 STATIC void SYSCLKConfig_STOP(void) {
@@ -276,7 +286,7 @@ STATIC mp_obj_t pyb_stop(void) {
     /* Enter Stop Mode */
     PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
 
-    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select 
+    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
      *        PLL as system clock source (HSE and PLL are disabled in STOP mode) */
     SYSCLKConfig_STOP();
 
@@ -368,6 +378,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_USB_VCP), (mp_obj_t)&pyb_usb_vcp_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
