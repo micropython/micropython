@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-// The prototypes for disable_irq/enable_irq are in mpconfigport.h
-// Once we switch around to using traitional #include headers, then they
-// can be move back into here.
+// these states correspond to values from enable_irq and disable_irq
+#define IRQ_STATE_DISABLED (0x00000001)
+#define IRQ_STATE_ENABLED  (0x00000000)
 
-// mp_int_t disable_irq(void);
-// void enable_irq(mp_int_t enabled);
+// enable_irq and disable_irq are defined inline in mpconfigport.h
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);

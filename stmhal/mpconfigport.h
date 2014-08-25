@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+#ifndef __INCLUDED_MPCONFIGPORT_H
+#define __INCLUDED_MPCONFIGPORT_H
+
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (128)
@@ -96,11 +100,28 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
-mp_int_t disable_irq(void);
-void enable_irq(mp_int_t enable);
+// We have inlined IRQ functions for efficiency (they are generally
+// 1 machine instruction).
+//
+// Note on IRQ state: you should not need to know the specific
+// value of the state variable, but rather just pass the return
+// value from disable_irq back to enable_irq.  If you really need
+// to know the machine-specific values, see irq.h.
 
-#define MICROPY_BEGIN_ATOMIC_SECTION()      disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(enable)  enable_irq(enable)
+#include <stm32f4xx_hal.h>
+
+static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via
@@ -121,3 +142,5 @@ void enable_irq(mp_int_t enable);
 
 #define MICROPY_HAL_H           "mphal.h"
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
+
+#endif // __INCLUDED_MPCONFIGPORT_H

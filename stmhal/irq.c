@@ -33,17 +33,6 @@
 
 #include MICROPY_HAL_H
 
-void enable_irq(mp_int_t enable) {
-  // With __set_PRIMASK 1 = disable, 0 = enable
-    __set_PRIMASK(!enable);
-}
-
-mp_int_t disable_irq(void) {
-    mp_int_t enabled = !__get_PRIMASK();
-    __disable_irq();
-    return enabled;
-}
-
 /// \function wfi()
 /// Wait for an interrupt.
 /// This executies a `wfi` instruction which reduces power consumption
@@ -56,19 +45,22 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
 
 /// \function disable_irq()
 /// Disable interrupt requests.
+/// Returns the previous IRQ state: `False`/`True` for disabled/enabled IRQs
+/// respectively.  This return value can be passed to enable_irq to restore
+/// the IRQ to its original state.
 STATIC mp_obj_t pyb_disable_irq(void) {
-  return MP_BOOL(disable_irq());
+    return MP_BOOL(disable_irq() == IRQ_STATE_ENABLED);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
 
-/// \function enable_irq()
+/// \function enable_irq(state=True)
 /// Enable interrupt requests.
+/// If `state` is `True` (the default value) then IRQs are enabled.
+/// If `state` is `False` then IRQs are disabled.  The most common use of
+/// this function is to pass it the value returned by `disable_irq` to
+/// exit a critical section.
 STATIC mp_obj_t pyb_enable_irq(uint n_args, const mp_obj_t *arg) {
-    mp_int_t enabled = true;
-    if (n_args > 0) {
-        enabled = mp_obj_is_true(arg[0]);
-    }
-    enable_irq(enabled);
+    enable_irq((n_args == 0 || mp_obj_is_true(arg[0])) ? IRQ_STATE_ENABLED : IRQ_STATE_DISABLED);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_enable_irq_obj, 0, 1, pyb_enable_irq);
