@@ -28,6 +28,7 @@ extern const mp_obj_module_t os_module;
 extern const mp_obj_module_t pyb_module;
 extern const mp_obj_module_t stm_module;
 extern const mp_obj_module_t time_module;
+extern const mp_obj_module_t mp_module_select;
 
 // additional helper functions exported by the modules
 

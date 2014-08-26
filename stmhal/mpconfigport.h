@@ -57,7 +57,6 @@
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_ZLIBD            (1)
-#define MICROPY_PY_SELECT           (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
@@ -76,6 +75,7 @@ extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t time_module;
+extern const struct _mp_obj_module_t mp_module_select;
 
 #if MICROPY_PY_WIZNET5K
 extern const struct _mp_obj_module_t mp_module_wiznet5k;
@@ -89,6 +89,7 @@ extern const struct _mp_obj_module_t mp_module_wiznet5k;
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_select }, \
     MICROPY_PY_WIZNET5K_DEF \
 
 // extra constants

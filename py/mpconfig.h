@@ -390,10 +390,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_ZLIBD (0)
 #endif
 
-#ifndef MICROPY_PY_SELECT
-#define MICROPY_PY_SELECT (0)
-#endif
-
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
