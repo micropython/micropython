@@ -25,6 +25,7 @@
  */
 
 extern pyb_uart_obj_t *pyb_stdio_uart;
+extern pyb_uart_obj_t *pyb_stdio_last_input_source;
 
 void stdout_tx_str(const char *str);
 void stdout_tx_strn(const char *str, mp_uint_t len);

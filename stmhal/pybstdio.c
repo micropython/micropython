@@ -46,6 +46,7 @@
 
 // stdio is repeated on this UART object if it's not null
 pyb_uart_obj_t *pyb_stdio_uart = NULL;
+pyb_uart_obj_t *pyb_stdio_last_input_sources = NULL;
 
 void stdout_tx_str(const char *str) {
     stdout_tx_strn(str, strlen(str));
@@ -87,8 +88,10 @@ int stdin_rx_chr(void) {
 
         byte c;
         if (usb_vcp_recv_byte(&c) != 0) {
+            pyb_stdio_last_input_source = NULL;
             return c;
         } else if (pyb_stdio_uart != PYB_UART_NONE && uart_rx_any(pyb_stdio_uart)) {
+            pyb_stdio_last_input_source = pyb_stdio_uart;
             return uart_rx_char(pyb_stdio_uart);
         }
         __WFI();
