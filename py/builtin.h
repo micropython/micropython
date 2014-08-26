@@ -26,7 +26,6 @@
 
 mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args);
 mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args);
-mp_obj_t mp_builtin_len(mp_obj_t o);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___import___obj);
@@ -90,3 +89,4 @@ extern struct _dummy_t mp_sys_stderr_obj;
 // extmod modules
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_zlibd;
+extern const mp_obj_module_t mp_module_select;

@@ -229,12 +229,14 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 
 // Stream protocol
 #define MP_STREAM_ERROR (-1)
+#define MP_STREAM_FLUSH (1)
+#define MP_STREAM_POLL  (2)
 typedef struct _mp_stream_p_t {
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
-    // add seek() ?
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
     int is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
@@ -427,6 +429,7 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
+mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
