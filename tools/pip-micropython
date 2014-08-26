@@ -5,34 +5,19 @@
 # complete library snapshot to be deployed on a device for baremetal
 # ports (if PIP_MICROPY_DEST environment var is set).
 #
-# Currently supported usage:
-#
-# pip-micropython install [-t/--target <dir>] <packages>
 
-# parse command
 if [ "$1" != "install" ]; then
     echo "Only install command is supported currently"
     exit 1
 fi
 shift
 
-# parse options
-targetdest=''
-if [ "$1" == "-t" -o "$1" == "--target" ]; then
-    targetdest="$2"
-    shift
-    shift
-fi
-
 if [ -z "$TMPDIR" ]; then
     TMPDIR=/tmp
 fi
 TMPVENV="$TMPDIR/pip-micropy-venv"
 
-if [ -n "$targetdest" ]; then
-    dest="$targetdest"
-    echo "Destination snapshot directory: $dest"
-elif [ -n "$PIP_MICROPY_DEST" ]; then
+if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
     echo "Destination snapshot directory: $dest"
 elif [ -n "$MICROPYPATH" ]; then
