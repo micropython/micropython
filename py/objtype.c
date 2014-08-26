@@ -381,11 +381,12 @@ STATIC const qstr binary_op_method_name[] = {
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,*/
     [MP_BINARY_OP_LESS] = MP_QSTR___lt__,
-    /*MP_BINARY_OP_MORE,
-    MP_BINARY_OP_EQUAL,
-    MP_BINARY_OP_LESS_EQUAL,
-    MP_BINARY_OP_MORE_EQUAL,
-    MP_BINARY_OP_NOT_EQUAL,
+    [MP_BINARY_OP_MORE] = MP_QSTR___gt__,
+    [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
+    [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
+    [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
+    /*
+    MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
     */
     [MP_BINARY_OP_IN] = MP_QSTR___contains__,
     /*
