@@ -49,10 +49,6 @@ STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 STATIC NORETURN void arg_type_mixup();
 
-STATIC bool is_str_or_bytes(mp_obj_t o) {
-    return MP_OBJ_IS_STR(o) || MP_OBJ_IS_TYPE(o, &mp_type_bytes);
-}
-
 /******************************************************************************/
 /* str                                                                        */
 
@@ -388,7 +384,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
-    assert(is_str_or_bytes(self_in));
+    assert(MP_OBJ_IS_STR_OR_BYTES(self_in));
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
 
     // get separation string
@@ -660,7 +656,7 @@ enum { LSTRIP, RSTRIP, STRIP };
 
 STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
-    assert(is_str_or_bytes(args[0]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
     const byte *chars_to_del;
@@ -1477,7 +1473,7 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, mp_int_t direction) {
-    if (!is_str_or_bytes(self_in)) {
+    if (!MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         assert(0);
     }
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
@@ -1877,7 +1873,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
 }
 
 const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
-    if (is_str_or_bytes(self_in)) {
+    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;
         return (const char*)s;
