@@ -39,7 +39,7 @@ class STAccel:
         self.cs_pin.high()
         self.spi = SPI(1, SPI.MASTER, baudrate=328125, polarity=0, phase=1, bits=8)
         self.wr(LIS302DL_CTRL_REG1_ADDR, bytearray([LIS302DL_CONF]))
-        if(self.read_id()[0] != LIS302DL_WHO_AM_I_VAL):
+        if self.read_id()[0] != LIS302DL_WHO_AM_I_VAL:
             raise Exception('LIS302DL accelerometer not present')
 
     def rd(self, addr, nbytes):
