@@ -37,7 +37,9 @@
 #include "objlist.h"
 #include "pybioctl.h"
 
-/// \moduleref select
+/// \module select - Provides select function to wait for events on a stream
+///
+/// This module provides the select function.
 
 typedef struct _poll_obj_t {
     mp_obj_t obj;
@@ -278,3 +280,26 @@ STATIC mp_obj_t select_poll(void) {
     return poll;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
+
+STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_select) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_select_select_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
+};
+
+STATIC const mp_obj_dict_t mp_module_select_globals = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = MP_ARRAY_SIZE(mp_module_select_globals_table),
+        .alloc = MP_ARRAY_SIZE(mp_module_select_globals_table),
+        .table = (mp_map_elem_t*)mp_module_select_globals_table,
+    },
+};
+
+const mp_obj_module_t mp_module_select = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_select,
+    .globals = (mp_obj_dict_t*)&mp_module_select_globals,
+};
