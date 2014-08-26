@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This tool can be used to install a new package into MicroPython
 # library location (for unix port, default behavior), or produce
@@ -12,13 +12,21 @@ if [ "$1" != "install" ]; then
 fi
 shift
 
+if [ "$1" == "to" ]; then
+    PIP_MICROPY_DEST="$2"
+    export PIP_MICROPY_DEST
+fi
+shift
+shift
+
 if [ -z "$TMPDIR" ]; then
     TMPDIR=/tmp
 fi
 TMPVENV="$TMPDIR/pip-micropy-venv"
-
+echo $PIP_MICROPY_DEST
 if [ -n "$PIP_MICROPY_DEST" ]; then
     dest="$PIP_MICROPY_DEST"
+    unset PIP_MICROPY_DEST
     echo "Destination snapshot directory: $dest"
 elif [ -n "$MICROPYPATH" ]; then
     libdest=$(echo "$MICROPYPATH" | awk -F: ' {print $1}')

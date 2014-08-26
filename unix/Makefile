@@ -106,10 +106,14 @@ test: $(PROG) ../tests/run-tests
 TARGET = micropython
 PREFIX = $(DESTDIR)/usr/local
 BINDIR = $(PREFIX)/bin
+PIP = ../tools/pip-micropython
+PIPTARGET = pip-micropython
 
 install: micropython
 	install -D $(TARGET) $(BINDIR)/$(TARGET)
+	install -D $(PIP) $(BINDIR)/$(PIPTARGET)
 
 # uninstall micropython
 uninstall:
 	-rm $(BINDIR)/$(TARGET)
+	-rm $(BINDIR)/$(PIPTARGET)
