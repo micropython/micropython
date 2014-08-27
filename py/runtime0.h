@@ -134,8 +134,11 @@ typedef enum {
     MP_F_CALL_METHOD_N_KW,
     MP_F_GETITER,
     MP_F_ITERNEXT,
+// If nlr_push is a proper function, not a macro
+#ifndef nlr_push
     MP_F_NLR_PUSH,
     MP_F_NLR_POP,
+#endif
     MP_F_NATIVE_RAISE,
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,

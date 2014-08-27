@@ -1226,8 +1226,11 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_call_method_n_kw,
     mp_getiter,
     mp_iternext,
+// If nlr_push is a proper function, not a macro
+#ifndef nlr_push
     nlr_push,
     nlr_pop,
+#endif
     mp_native_raise,
     mp_import_name,
     mp_import_from,
