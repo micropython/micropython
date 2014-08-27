@@ -333,6 +333,22 @@ STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
 
+/// \function repl_source()
+/// Returns the source of the last character which was input. The returned
+/// value will either be the uart object passed into the repl_uart function
+/// or None to indicate the USB serial connection.
+///
+/// This function is useful when querying information from the terminal, like
+/// the current cursor position, since the UART and and USB repl will each
+/// have a different cursor position.
+STATIC mp_obj_t pyb_repl_source(uint n_args, const mp_obj_t *args) {
+    if (pyb_stdio_last_input_source) {
+        return pyb_stdio_last_input_source;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_repl_source_obj, pyb_repl_source);
+
 /// \function hid((buttons, x, y, z))
 /// Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
 /// signal a HID mouse-motion event.
@@ -372,6 +388,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart), (mp_obj_t)&pyb_repl_uart_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_source), (mp_obj_t)&pyb_repl_source_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_USB_VCP), (mp_obj_t)&pyb_usb_vcp_type },
 
