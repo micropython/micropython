@@ -38,6 +38,7 @@
 #include "smallint.h"
 #include "mpz.h"
 #include "objint.h"
+#include "objstr.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -57,7 +58,7 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
             if (MP_OBJ_IS_INT(args[0])) {
                 // already an int (small or long), just return it
                 return args[0];
-            } else if (MP_OBJ_IS_STR(args[0])) {
+            } else if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
                 // a string, parse it
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);

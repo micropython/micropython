@@ -47,6 +47,7 @@ print(int('0100', 2))
 print(int(' \t 0o12', 8))
 print(int('0o12  \t  ', 8))
 print(int(b"12", 10))
+print(int(b"12"))
 
 
 def test(value, base):
