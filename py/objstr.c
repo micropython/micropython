@@ -247,6 +247,9 @@ STATIC const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byt
     return NULL;
 }
 
+// Note: this function is used to check if an object is a str or bytes, which
+// works because both those types use it as their binary_op method.  Revisit
+// MP_OBJ_IS_STR_OR_BYTES if this fact changes.
 mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);

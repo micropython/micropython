@@ -38,6 +38,7 @@
 #include "smallint.h"
 #include "mpz.h"
 #include "objint.h"
+#include "objstr.h"
 #include "runtime0.h"
 #include "runtime.h"
 
