@@ -55,6 +55,7 @@
 #include "usrsw.h"
 #include "usb.h"
 #include "rtc.h"
+#include "crc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "ff.h"
@@ -325,6 +326,10 @@ soft_reset:
 
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
+#endif
+
+#if MICROPY_HW_ENABLE_CRC
+    crc_init0();
 #endif
 
     i2c_init0();
