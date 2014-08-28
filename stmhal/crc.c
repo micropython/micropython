@@ -103,8 +103,9 @@ uint32_t crc32(const char *buf, uint32_t len) {
 }
 
 STATIC mp_obj_t pyb_crc32(mp_obj_t buffer) {
-    const char *buf = mp_obj_str_get_str(buffer);
-    return mp_obj_new_int(crc32(buf, strlen(buf)));
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
+    return mp_obj_new_int(crc32(bufinfo.buf, bufinfo.len));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_crc32_obj, pyb_crc32);
