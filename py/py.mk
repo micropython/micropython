@@ -45,6 +45,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
 	map.o \
