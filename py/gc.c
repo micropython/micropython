@@ -386,13 +386,6 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
             if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
             if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
         }
-        for (i = 0; i < gc_last_free_atb_index; i++) {
-            byte a = gc_alloc_table_start[i];
-            if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
-            if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
-            if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
-            if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
-        }
 
         // nothing found!
         if (collected) {
@@ -409,8 +402,13 @@ found:
     end_block = i;
     start_block = i - n_free + 1;
 
-    // set last free ATB index to last block we found, for start of next scan
-    gc_last_free_atb_index = i / BLOCKS_PER_ATB;
+    // Set last free ATB index to block after last block we found, for start of
+    // next scan.  To reduce fragmentation, we only do this if we were looking
+    // for a single free block, which guarantees that there are no free blocks
+    // before this one.
+    if (n_free == 1) {
+        gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    }
 
     // mark first block as used head
     ATB_FREE_TO_HEAD(start_block);
