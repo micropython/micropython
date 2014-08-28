@@ -46,6 +46,9 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+// make this 1 to dump the heap each time it changes
+#define EXTENSIVE_HEAP_PROFILING (0)
+
 #define WORDS_PER_BLOCK (4)
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
 #define STACK_SIZE (64) // tunable; minimum is 1
@@ -405,7 +408,8 @@ found:
     // Set last free ATB index to block after last block we found, for start of
     // next scan.  To reduce fragmentation, we only do this if we were looking
     // for a single free block, which guarantees that there are no free blocks
-    // before this one.
+    // before this one.  Also, whenever we free or shink a block we must check
+    // if this index needs adjusting (see gc_realloc and gc_free).
     if (n_free == 1) {
         gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
@@ -439,6 +443,10 @@ found:
     }
 #endif
 
+    #if EXTENSIVE_HEAP_PROFILING
+    gc_dump_alloc_table();
+    #endif
+
     return ret_ptr;
 }
 
@@ -465,11 +473,20 @@ void gc_free(void *ptr_in) {
     if (VERIFY_PTR(ptr)) {
         mp_uint_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
+            // set the last_free pointer to this block if it's earlier in the heap
+            if (block / BLOCKS_PER_ATB < gc_last_free_atb_index) {
+                gc_last_free_atb_index = block / BLOCKS_PER_ATB;
+            }
+
             // free head and all of its tail blocks
             do {
                 ATB_ANY_TO_FREE(block);
                 block += 1;
             } while (ATB_GET_KIND(block) == AT_TAIL);
+
+            #if EXTENSIVE_HEAP_PROFILING
+            gc_dump_alloc_table();
+            #endif
         }
     }
 }
@@ -581,6 +598,16 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
         for (mp_uint_t bl = block + new_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
             ATB_ANY_TO_FREE(bl);
         }
+
+        // set the last_free pointer to end of this block if it's earlier in the heap
+        if ((block + new_blocks) / BLOCKS_PER_ATB < gc_last_free_atb_index) {
+            gc_last_free_atb_index = (block + new_blocks) / BLOCKS_PER_ATB;
+        }
+
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
+
         return ptr_in;
     }
 
@@ -594,6 +621,10 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 
         // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
         memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
+
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
 
         return ptr_in;
     }
@@ -628,9 +659,34 @@ void gc_dump_info() {
 }
 
 void gc_dump_alloc_table(void) {
+    static const mp_uint_t DUMP_BYTES_PER_LINE = 64;
+    #if !EXTENSIVE_HEAP_PROFILING
+    // When comparing heap output we don't want to print the starting
+    // pointer of the heap because it changes from run to run.
     printf("GC memory layout; from %p:", gc_pool_start);
+    #endif
     for (mp_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
-        if (bl % 64 == 0) {
+        if (bl % DUMP_BYTES_PER_LINE == 0) {
+            // a new line of blocks
+            #if EXTENSIVE_HEAP_PROFILING
+            {
+                // check if this line contains only free blocks
+                bool only_free_blocks = true;
+                for (mp_uint_t bl2 = bl; bl2 < gc_alloc_table_byte_len * BLOCKS_PER_ATB && bl2 < bl + DUMP_BYTES_PER_LINE; bl2++) {
+                    if (ATB_GET_KIND(bl2) != AT_FREE) {
+
+                        only_free_blocks = false;
+                        break;
+                    }
+                }
+                if (only_free_blocks) {
+                    // line contains only free blocks, so skip printing it
+                    bl += DUMP_BYTES_PER_LINE - 1;
+                    continue;
+                }
+            }
+            #endif
+            // print header for new line of blocks
             printf("\n%04x: ", (uint)bl);
         }
         int c = ' ';
