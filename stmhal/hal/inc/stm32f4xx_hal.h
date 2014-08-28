@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   This file contains all the functions prototypes for the HAL 
   *          module driver.
   ******************************************************************************
@@ -152,11 +152,14 @@ HAL_StatusTypeDef HAL_Init(void);
 HAL_StatusTypeDef HAL_DeInit(void);
 void HAL_MspInit(void);
 void HAL_MspDeInit(void);
+HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
 
 /* Peripheral Control functions  ************************************************/
-void     HAL_IncTick(void);
-void     HAL_Delay(__IO uint32_t Delay);
+void HAL_IncTick(void);
+void HAL_Delay(__IO uint32_t Delay);
 uint32_t HAL_GetTick(void);
+void HAL_SuspendTick(void);
+void HAL_ResumeTick(void);
 uint32_t HAL_GetHalVersion(void);
 uint32_t HAL_GetREVID(void);
 uint32_t HAL_GetDEVID(void);

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_sram.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of SRAM HAL module.
   ******************************************************************************
   * @attention
@@ -97,8 +97,15 @@ typedef struct
   
 }SRAM_HandleTypeDef; 
 
-/* Exported constants --------------------------------------------------------*/ 
+/* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset SRAM handle state
+  * @param  __HANDLE__: SRAM handle
+  * @retval None
+  */
+#define __HAL_SRAM_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SRAM_STATE_RESET)
+
 /* Exported functions --------------------------------------------------------*/
 
 /* Initialization/de-initialization functions  **********************************/

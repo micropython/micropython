@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_sdram.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of SDRAM HAL module.
   ******************************************************************************
   * @attention
@@ -89,8 +89,15 @@ typedef struct
   
 }SDRAM_HandleTypeDef;
          
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset SDRAM handle state
+  * @param  __HANDLE__: specifies the SDRAM handle.
+  * @retval None
+  */
+#define __HAL_SDRAM_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SDRAM_STATE_RESET)
+
 /* Exported functions --------------------------------------------------------*/
 
 /* Initialization/de-initialization functions  **********************************/

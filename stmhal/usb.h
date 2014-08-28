@@ -41,14 +41,15 @@ typedef enum {
     USB_STORAGE_MEDIUM_SDCARD,
 } usb_storage_medium_t;
 
+const mp_obj_type_t pyb_usb_vcp_type;
+
+void pyb_usb_init0(void);
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);
 void pyb_usb_dev_stop(void);
 bool usb_vcp_is_enabled(void);
 bool usb_vcp_is_connected(void);
 void usb_vcp_set_interrupt_char(int c);
-int usb_vcp_rx_num(void);
-char usb_vcp_rx_get(void);
-void usb_vcp_send_str(const char* str);
+int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
 void usb_vcp_send_strn(const char* str, int len);
 void usb_vcp_send_strn_cooked(const char *str, int len);
 void usb_hid_send_report(uint8_t *buf); // 4 bytes for mouse: ?, x, y, ?

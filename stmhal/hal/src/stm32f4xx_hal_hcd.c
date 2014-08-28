@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_hcd.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   HCD HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the USB Peripheral Controller:
@@ -25,9 +25,9 @@
     (#)Call HAL_HCD_Init() API to initialize the HCD peripheral (Core, Host core, ...) 
 
     (#)Initialize the HCD low level resources through the HAL_HCD_MspInit() API:
-        (##) Enable the HCD/USB Low Level interface clock using 
-             (+++) __OTGFS-OTG_CLK_ENABLE()/__OTGHS-OTG_CLK_ENABLE();
-             (+++) __OTGHSULPI_CLK_ENABLE(); (For High Speed Mode)
+        (##) Enable the HCD/USB Low Level interface clock using the following macros
+             (+++) __OTGFS-OTG_CLK_ENABLE() or __OTGHS-OTG_CLK_ENABLE()
+             (+++) __OTGHSULPI_CLK_ENABLE() For High Speed Mode
            
         (##) Initialize the related GPIO clocks
         (##) Configure HCD pin-out
@@ -113,8 +113,8 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd);
 
 /**
   * @brief  Initialize the host driver
-  * @param  hhcd : HCD handle
-  * @retval HAL state
+  * @param  hhcd: HCD handle
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
 { 
@@ -127,7 +127,7 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
   /* Check the parameters */
   assert_param(IS_HCD_ALL_INSTANCE(hhcd->Instance));
 
-  hhcd->State = HCD_BUSY;
+  hhcd->State = HAL_HCD_STATE_BUSY;
   
   /* Init the low level hardware : GPIO, CLOCK, NVIC... */
   HAL_HCD_MspInit(hhcd);
@@ -144,34 +144,34 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
  /* Init Host */
  USB_HostInit(hhcd->Instance, hhcd->Init);
  
- hhcd->State= HCD_READY;
+ hhcd->State= HAL_HCD_STATE_READY;
  
  return HAL_OK;
 }
 
 /**
   * @brief  Initialize a host channel
-  * @param  hhcd : HCD handle
-  * @param  ch_num : Channel number
+  * @param  hhcd: HCD handle
+  * @param  ch_num: Channel number.
   *         This parameter can be a value from 1 to 15
-  * @param  epnum : Endpoint number
+  * @param  epnum: Endpoint number.
   *          This parameter can be a value from 1 to 15
   * @param  dev_address : Current device address
   *          This parameter can be a value from 0 to 255
-  * @param  speed : Current device speed
-  *          This parameter can be one of the these values:
-  *            @arg HCD_SPEED_HIGH: High speed mode
-  *            @arg HCD_SPEED_FULL: Full speed mode
-  *            @arg HCD_SPEED_LOW: Low speed mode
-  * @param  ep_type : Endpoint Type
-  *          This parameter can be one of the these values:
-  *            @arg EP_TYPE_CTRL: Control type
-  *            @arg EP_TYPE_ISOC: Isochrounous type
-  *            @arg EP_TYPE_BULK: Bulk type
-  *            @arg EP_TYPE_INTR: Interrupt type
-  * @param  mps : Max Packet Size
+  * @param  speed: Current device speed.
+  *          This parameter can be one of these values:
+  *            HCD_SPEED_HIGH: High speed mode,
+  *            HCD_SPEED_FULL: Full speed mode,
+  *            HCD_SPEED_LOW: Low speed mode
+  * @param  ep_type: Endpoint Type.
+  *          This parameter can be one of these values:
+  *            EP_TYPE_CTRL: Control type,
+  *            EP_TYPE_ISOC: Isochrounous type,
+  *            EP_TYPE_BULK: Bulk type,
+  *            EP_TYPE_INTR: Interrupt type
+  * @param  mps: Max Packet Size.
   *          This parameter can be a value from 0 to32K
-  * @retval HAL state
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,  
                                   uint8_t ch_num,
@@ -209,10 +209,10 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
 
 /**
   * @brief  Halt a host channel
-  * @param  hhcd : HCD handle
-  * @param  ch_num : Channel number
+  * @param  hhcd: HCD handle
+  * @param  ch_num: Channel number.
   *         This parameter can be a value from 1 to 15
-  * @retval HAL state
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_HC_Halt(HCD_HandleTypeDef *hhcd,  
                                   uint8_t ch_num)
@@ -227,8 +227,8 @@ HAL_StatusTypeDef HAL_HCD_HC_Halt(HCD_HandleTypeDef *hhcd,
 }
 /**
   * @brief  DeInitialize the host driver
-  * @param  hhcd : HCD handle
-  * @retval HAL state
+  * @param  hhcd: HCD handle
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd)
 {
@@ -238,14 +238,14 @@ HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd)
     return HAL_ERROR;
   }
   
-  hhcd->State = HCD_BUSY;
+  hhcd->State = HAL_HCD_STATE_BUSY;
   
   /* DeInit the low level hardware */
   HAL_HCD_MspDeInit(hhcd);
   
    __HAL_HCD_DISABLE(hhcd);
   
-  hhcd->State = HCD_READY; 
+  hhcd->State = HAL_HCD_STATE_RESET; 
   
   return HAL_OK;
 }
@@ -294,30 +294,27 @@ __weak void  HAL_HCD_MspDeInit(HCD_HandleTypeDef *hhhcd)
   
 /**                                
   * @brief  Submit a new URB for processing 
-  * @param  hhcd : HCD handle
-  * @param  ch_num : Channel number
+  * @param  hhcd: HCD handle
+  * @param  ch_num: Channel number.
   *         This parameter can be a value from 1 to 15
-  * @param  direction : Channel number
-  *          This parameter can be one of the these values:
-  *           0 : Output 
-  *           1 : Input
-  * @param  ep_type : Endpoint Type
-  *          This parameter can be one of the these values:
-  *            @arg EP_TYPE_CTRL: Control type
-  *            @arg EP_TYPE_ISOC: Isochrounous type
-  *            @arg EP_TYPE_BULK: Bulk type
-  *            @arg EP_TYPE_INTR: Interrupt type
-  * @param  token : Endpoint Type
-  *          This parameter can be one of the these values:
-  *            @arg 0: HC_PID_SETUP
-  *            @arg 1: HC_PID_DATA1
-  * @param  pbuff : pointer to URB data
-  * @param  length : Length of URB data
-  * @param  do_ping : activate do ping protocol (for high speed only)
-  *          This parameter can be one of the these values:
-  *           0 : do ping inactive 
-  *           1 : do ping active 
-  * @retval HAL state
+  * @param  direction: Channel number.
+  *          This parameter can be one of these values:
+  *           0 : Output / 1 : Input
+  * @param  ep_type: Endpoint Type.
+  *          This parameter can be one of these values:
+  *            EP_TYPE_CTRL: Control type/
+  *            EP_TYPE_ISOC: Isochrounous type/
+  *            EP_TYPE_BULK: Bulk type/
+  *            EP_TYPE_INTR: Interrupt type/
+  * @param  token: Endpoint Type.
+  *          This parameter can be one of these values:
+  *            0: HC_PID_SETUP / 1: HC_PID_DATA1
+  * @param  pbuff: pointer to URB data
+  * @param  length: Length of URB data
+  * @param  do_ping: activate do ping protocol (for high speed only).
+  *          This parameter can be one of these values:
+  *           0 : do ping inactive / 1 : do ping active 
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
                                             uint8_t ch_num, 
@@ -442,7 +439,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 /**
   * @brief  This function handles HCD interrupt request.
   * @param  hhcd: HCD handle
-  * @retval none
+  * @retval None
   */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
@@ -583,16 +580,16 @@ __weak void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd)
 /**
   * @brief  Notify URB state change callback.
   * @param  hhcd: HCD handle
-  * @param  chnum : Channel number
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
   * @param  urb_state:
-  *          This parameter can be one of the these values:
-  *            @arg URB_IDLE
-  *            @arg URB_DONE
-  *            @arg URB_NOTREADY
-  *            @arg URB_NYET 
-  *            @arg URB_ERROR  
-  *            @arg URB_STALL    
+  *          This parameter can be one of these values:
+  *            URB_IDLE/
+  *            URB_DONE/
+  *            URB_NOTREADY/
+  *            URB_NYET/ 
+  *            URB_ERROR/  
+  *            URB_STALL/    
   * @retval None
   */
 __weak void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state)
@@ -623,8 +620,8 @@ __weak void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t
 
 /**
   * @brief  Start the host driver
-  * @param  hhcd : HCD handle
-  * @retval HAL state
+  * @param  hhcd: HCD handle
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_Start(HCD_HandleTypeDef *hhcd)
 { 
@@ -637,8 +634,8 @@ HAL_StatusTypeDef HAL_HCD_Start(HCD_HandleTypeDef *hhcd)
 
 /**
   * @brief  Stop the host driver
-  * @param  hhcd : HCD handle
-  * @retval HAL state
+  * @param  hhcd: HCD handle
+  * @retval HAL status
   */
 
 HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
@@ -651,8 +648,8 @@ HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
 
 /**
   * @brief  Reset the host port
-  * @param  hhcd : HCD handle
-  * @retval HAL state
+  * @param  hhcd: HCD handle
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
 {
@@ -671,7 +668,7 @@ HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
                       ##### Peripheral State functions #####
  ===============================================================================  
     [..]
-    This subsection permit to get in run-time the status of the peripheral 
+    This subsection permits to get in run-time the status of the peripheral 
     and the data flow.
 
 @endverbatim
@@ -680,7 +677,7 @@ HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
 
 /**
   * @brief  Return the HCD state
-  * @param  hhcd : HCD handle
+  * @param  hhcd: HCD handle
   * @retval HAL state
   */
 HCD_StateTypeDef HAL_HCD_GetState(HCD_HandleTypeDef *hhcd)
@@ -690,17 +687,17 @@ HCD_StateTypeDef HAL_HCD_GetState(HCD_HandleTypeDef *hhcd)
 
 /**
   * @brief  Return  URB state for a channel
-  * @param  hhcd : HCD handle
-  * @param  chnum : Channel number
+  * @param  hhcd: HCD handle
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
-  * @retval URB state
-  *          This parameter can be one of the these values:
-  *            @arg URB_IDLE
-  *            @arg URB_DONE
-  *            @arg URB_NOTREADY
-  *            @arg URB_NYET 
-  *            @arg URB_ERROR  
-  *            @arg URB_STALL      
+  * @retval URB state.
+  *          This parameter can be one of these values:
+  *            URB_IDLE/
+  *            URB_DONE/
+  *            URB_NOTREADY/
+  *            URB_NYET/ 
+  *            URB_ERROR/  
+  *            URB_STALL      
   */
 HCD_URBStateTypeDef HAL_HCD_HC_GetURBState(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 {
@@ -710,8 +707,8 @@ HCD_URBStateTypeDef HAL_HCD_HC_GetURBState(HCD_HandleTypeDef *hhcd, uint8_t chnu
 
 /**
   * @brief  Return the last host transfer size
-  * @param  hhcd : HCD handle
-  * @param  chnum : Channel number
+  * @param  hhcd: HCD handle
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval last transfer size in byte
   */
@@ -722,20 +719,20 @@ uint32_t HAL_HCD_HC_GetXferCount(HCD_HandleTypeDef *hhcd, uint8_t chnum)
   
 /**
   * @brief  Return the Host Channel state
-  * @param  hhcd : HCD handle
-  * @param  chnum : Channel number
+  * @param  hhcd: HCD handle
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval Host channel state
   *          This parameter can be one of the these values:
-  *            @arg HC_IDLE
-  *            @arg HC_XFRC
-  *            @arg HC_HALTED
-  *            @arg HC_NYET 
-  *            @arg HC_NAK  
-  *            @arg HC_STALL 
-  *            @arg HC_XACTERR  
-  *            @arg HC_BBLERR  
-  *            @arg HC_DATATGLERR    
+  *            HC_IDLE/
+  *            HC_XFRC/
+  *            HC_HALTED/
+  *            HC_NYET/ 
+  *            HC_NAK/  
+  *            HC_STALL/ 
+  *            HC_XACTERR/  
+  *            HC_BBLERR/  
+  *            HC_DATATGLERR/    
   */
 HCD_HCStateTypeDef  HAL_HCD_HC_GetState(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 {
@@ -744,8 +741,8 @@ HCD_HCStateTypeDef  HAL_HCD_HC_GetState(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 
 /**
   * @brief  Return the current Host frame number
-  * @param  hhcd : HCD handle
-  * @retval current Host frame number
+  * @param  hhcd: HCD handle
+  * @retval Current Host frame number
   */
 uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 {
@@ -754,7 +751,7 @@ uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 
 /**
   * @brief  Return the Host enumeration speed
-  * @param  hhcd : HCD handle
+  * @param  hhcd: HCD handle
   * @retval Enumeration speed
   */
 uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
@@ -769,7 +766,7 @@ uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
 /**
   * @brief  This function handles Host Channel IN interrupt requests.
   * @param  hhcd: HCD handle
-  * @param  chnum : Channel number
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval none
   */
@@ -908,7 +905,7 @@ static void HCD_HC_IN_IRQHandler   (HCD_HandleTypeDef *hhcd, uint8_t chnum)
 /**
   * @brief  This function handles Host Channel OUT interrupt requests.
   * @param  hhcd: HCD handle
-  * @param  chnum : Channel number
+  * @param  chnum: Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval none
   */
@@ -1100,7 +1097,7 @@ static void HCD_RXQLVL_IRQHandler  (HCD_HandleTypeDef *hhcd)
 /**
   * @brief  This function handles Host Port interrupt requests.
   * @param  hhcd: HCD handle
-  * @retval none
+  * @retval None
   */
 static void HCD_Port_IRQHandler  (HCD_HandleTypeDef *hhcd)
 {

@@ -83,11 +83,11 @@ STATIC void accel_start(void) {
     I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
     i2c_init(&I2CHandle1);
 
-    // turn off AVDD, wait 20ms, turn on AVDD, wait 20ms again
+    // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     GPIOB->BSRRH = GPIO_PIN_5; // turn off
-    HAL_Delay(20);
+    HAL_Delay(30);
     GPIOB->BSRRL = GPIO_PIN_5; // turn on
-    HAL_Delay(20);
+    HAL_Delay(30);
 
     HAL_StatusTypeDef status;
 
@@ -100,11 +100,12 @@ STATIC void accel_start(void) {
         }
     }
 
-    //printf("MemWrite\n");
-    uint8_t data[1];
-    data[0] = 1; // active mode
+    // set MMA to active mode
+    uint8_t data[1] = {1}; // active mode
     status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
-    //printf("  got %d\n", status);
+
+    // wait for MMA to become active
+    HAL_Delay(30);
 }
 
 /******************************************************************************/

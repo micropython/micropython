@@ -27,12 +27,15 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objlist.h"
+#include "objstr.h"
 #include "objtuple.h"
 #include "objtype.h"
 #include "runtime.h"
@@ -50,6 +53,53 @@ const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_
 
 // Local non-heap memory for allocating an exception when we run out of RAM
 STATIC mp_obj_exception_t mp_emergency_exception_obj;
+
+// Optionally allocated buffer for storing the first argument of an exception
+// allocated when the heap is locked.
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#   if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+STATIC byte  mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE];
+#define mp_emergency_exception_buf_size MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+
+void mp_init_emergency_exception_buf(void) {
+    // Nothing to do since the buffer was declared statically. We put this
+    // definition here so that the calling code can call this function
+    // regardless of how its configured (makes the calling code a bit cleaner).
+}
+
+#else
+STATIC mp_int_t mp_emergency_exception_buf_size = 0;
+STATIC byte *mp_emergency_exception_buf = NULL;
+
+void mp_init_emergency_exception_buf(void) {
+    mp_emergency_exception_buf_size = 0;
+    mp_emergency_exception_buf = NULL;
+}
+
+mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
+    mp_int_t size = mp_obj_get_int(size_in);
+    void *buf = NULL;
+    if (size > 0) {
+        buf = m_malloc(size);
+    }
+
+    int old_size = mp_emergency_exception_buf_size;
+    void *old_buf = mp_emergency_exception_buf;
+
+    // Update the 2 variables atomically so that an interrupt can't occur
+    // between the assignments.
+    mp_uint_t irq_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    mp_emergency_exception_buf_size = size;
+    mp_emergency_exception_buf = buf;
+    MICROPY_END_ATOMIC_SECTION(irq_state);
+
+    if (old_buf != NULL) {
+        m_free(old_buf, old_size);
+    }
+    return mp_const_none;
+}
+#endif
+#endif  // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
@@ -268,6 +318,50 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         o->base.type = exc_type;
         o->traceback = MP_OBJ_NULL;
         o->args = mp_const_empty_tuple;
+
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+        // If the user has provided a buffer, then we try to create a tuple
+        // of length 1, which has a string object and the string data.
+
+        if (mp_emergency_exception_buf_size > (sizeof(mp_obj_tuple_t) + sizeof(mp_obj_str_t) + sizeof(mp_obj_t))) {
+            mp_obj_tuple_t *tuple = (mp_obj_tuple_t *)mp_emergency_exception_buf;
+            mp_obj_str_t *str = (mp_obj_str_t *)&tuple->items[1];
+
+            tuple->base.type = &mp_type_tuple;
+            tuple->len = 1;
+            tuple->items[0] = str;
+
+            byte *str_data = (byte *)&str[1];
+            uint max_len = mp_emergency_exception_buf + mp_emergency_exception_buf_size
+                         - str_data;
+
+            va_list ap;
+            va_start(ap, fmt);
+            str->len = vsnprintf((char *)str_data, max_len, fmt, ap);
+            va_end(ap);
+
+            str->base.type = &mp_type_str;
+            str->hash = qstr_compute_hash(str_data, str->len);
+            str->data = str_data;
+
+            o->args = tuple;
+
+            uint offset = &str_data[str->len] - mp_emergency_exception_buf;
+            offset += sizeof(void *) - 1;
+            offset &= ~(sizeof(void *) - 1);
+
+            if ((mp_emergency_exception_buf_size - offset) > (sizeof(mp_obj_list_t) + sizeof(mp_obj_t) * 3)) {
+                // We have room to store some traceback.
+                mp_obj_list_t *list = (mp_obj_list_t *)((byte *)mp_emergency_exception_buf + offset);
+                list->base.type = &mp_type_list;
+                list->items = (mp_obj_t)&list[1];
+                list->alloc = (mp_emergency_exception_buf + mp_emergency_exception_buf_size - (byte *)list->items) / sizeof(list->items[0]);
+                list->len = 0;
+
+                o->traceback = list;
+            }
+        }
+#endif // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     } else {
         o->base.type = exc_type;
         o->traceback = MP_OBJ_NULL;
@@ -336,14 +430,23 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block) {
+    GET_NATIVE_EXCEPTION(self, self_in);
+
     #if MICROPY_ENABLE_GC
     if (gc_is_locked()) {
-        // We can't allocate memory, so don't bother to try
-        return;
+        if (self->traceback == MP_OBJ_NULL) {
+            // We can't allocate any memory, and no memory has been
+            // pre-allocated, so there is nothing else we can do.
+            return;
+        }
+        mp_obj_list_t *list = self->traceback;
+        if (list->alloc <= (list->len + 3)) {
+            // There is some preallocated memory, but not enough to store an
+            // entire record.
+            return;
+        }
     }
     #endif
-
-    GET_NATIVE_EXCEPTION(self, self_in);
 
     // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
     if (self->traceback == MP_OBJ_NULL) {

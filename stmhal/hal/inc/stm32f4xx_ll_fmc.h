@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_ll_fmc.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of FMC HAL module.
   ******************************************************************************
   * @attention
@@ -63,70 +63,69 @@
 #define FMC_PCCARD_TypeDef             FMC_Bank4_TypeDef
 #define FMC_SDRAM_TypeDef              FMC_Bank5_6_TypeDef
 
-#define FMC_NORSRAM_DEVICE             FMC_Bank1            
-#define FMC_NORSRAM_EXTENDED_DEVICE    FMC_Bank1E   
-#define FMC_NAND_DEVICE                FMC_Bank2_3             
-#define FMC_PCCARD_DEVICE              FMC_Bank4             
-#define FMC_SDRAM_DEVICE               FMC_Bank5_6    
-
+#define FMC_NORSRAM_DEVICE             FMC_Bank1
+#define FMC_NORSRAM_EXTENDED_DEVICE    FMC_Bank1E
+#define FMC_NAND_DEVICE                FMC_Bank2_3
+#define FMC_PCCARD_DEVICE              FMC_Bank4
+#define FMC_SDRAM_DEVICE               FMC_Bank5_6
 
 /** 
-  * @brief  FMC_NORSRAM Configuration Structure definition  
+  * @brief  FMC_NORSRAM Configuration Structure definition
   */ 
 typedef struct
 {
   uint32_t NSBank;                       /*!< Specifies the NORSRAM memory device that will be used.
-                                              This parameter can be a value of @ref FMC_NORSRAM_Bank                     */  
-                                                    
+                                              This parameter can be a value of @ref FMC_NORSRAM_Bank                     */
+
   uint32_t DataAddressMux;               /*!< Specifies whether the address and data values are
                                               multiplexed on the data bus or not. 
                                               This parameter can be a value of @ref FMC_Data_Address_Bus_Multiplexing    */
-  
+
   uint32_t MemoryType;                   /*!< Specifies the type of external memory attached to
                                               the corresponding memory device.
                                               This parameter can be a value of @ref FMC_Memory_Type                      */
-                                              
+
   uint32_t MemoryDataWidth;              /*!< Specifies the external memory device width.
                                               This parameter can be a value of @ref FMC_NORSRAM_Data_Width               */
-  
+
   uint32_t BurstAccessMode;              /*!< Enables or disables the burst access mode for Flash memory,
                                               valid only with synchronous burst Flash memories.
                                               This parameter can be a value of @ref FMC_Burst_Access_Mode                */
-                                               
+
   uint32_t WaitSignalPolarity;           /*!< Specifies the wait signal polarity, valid only when accessing
                                               the Flash memory in burst mode.
                                               This parameter can be a value of @ref FMC_Wait_Signal_Polarity             */
-  
+
   uint32_t WrapMode;                     /*!< Enables or disables the Wrapped burst access mode for Flash
                                               memory, valid only when accessing Flash memories in burst mode.
                                               This parameter can be a value of @ref FMC_Wrap_Mode                        */
-  
+
   uint32_t WaitSignalActive;             /*!< Specifies if the wait signal is asserted by the memory one
                                               clock cycle before the wait state or during the wait state,
                                               valid only when accessing memories in burst mode. 
                                               This parameter can be a value of @ref FMC_Wait_Timing                      */
-  
+
   uint32_t WriteOperation;               /*!< Enables or disables the write operation in the selected device by the FMC. 
                                               This parameter can be a value of @ref FMC_Write_Operation                  */
-  
+
   uint32_t WaitSignal;                   /*!< Enables or disables the wait state insertion via wait
                                               signal, valid for Flash memory access in burst mode. 
                                               This parameter can be a value of @ref FMC_Wait_Signal                      */
-  
+
   uint32_t ExtendedMode;                 /*!< Enables or disables the extended mode.
                                               This parameter can be a value of @ref FMC_Extended_Mode                    */
-  
+
   uint32_t AsynchronousWait;             /*!< Enables or disables wait signal during asynchronous transfers,
                                               valid only with asynchronous Flash memories.
                                               This parameter can be a value of @ref FMC_AsynchronousWait                 */
-  
+
   uint32_t WriteBurst;                   /*!< Enables or disables the write burst operation.
-                                              This parameter can be a value of @ref FMC_Write_Burst                      */ 
-  
+                                              This parameter can be a value of @ref FMC_Write_Burst                      */
+
   uint32_t ContinuousClock;              /*!< Enables or disables the FMC clock output to external memory devices.
                                               This parameter is only enabled through the FMC_BCR1 register, and don't care 
                                               through FMC_BCR2..4 registers.
-                                              This parameter can be a value of @ref FMC_Continous_Clock                  */                                      
+                                              This parameter can be a value of @ref FMC_Continous_Clock                  */
 
 }FMC_NORSRAM_InitTypeDef;
 
@@ -139,28 +138,28 @@ typedef struct
                                               the duration of the address setup time. 
                                               This parameter can be a value between Min_Data = 0 and Max_Data = 15.
                                               @note This parameter is not used with synchronous NOR Flash memories.      */
-  
+
   uint32_t AddressHoldTime;              /*!< Defines the number of HCLK cycles to configure
                                               the duration of the address hold time.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 15. 
                                               @note This parameter is not used with synchronous NOR Flash memories.      */
-  
+
   uint32_t DataSetupTime;                /*!< Defines the number of HCLK cycles to configure
                                               the duration of the data setup time.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 255.
                                               @note This parameter is used for SRAMs, ROMs and asynchronous multiplexed 
                                               NOR Flash memories.                                                        */
-  
+
   uint32_t BusTurnAroundDuration;        /*!< Defines the number of HCLK cycles to configure
                                               the duration of the bus turnaround.
                                               This parameter can be a value between Min_Data = 0 and Max_Data = 15.
                                               @note This parameter is only used for multiplexed NOR Flash memories.      */
-  
+
   uint32_t CLKDivision;                  /*!< Defines the period of CLK clock output signal, expressed in number of 
                                               HCLK cycles. This parameter can be a value between Min_Data = 2 and Max_Data = 16.
                                               @note This parameter is not used for asynchronous NOR Flash, SRAM or ROM 
                                               accesses.                                                                  */
-  
+
   uint32_t DataLatency;                  /*!< Defines the number of memory clock cycles to issue
                                               to the memory before getting the first data.
                                               The parameter value depends on the memory type as shown below:
@@ -168,10 +167,9 @@ typedef struct
                                               - It is don't care in asynchronous NOR, SRAM or ROM accesses
                                               - It may assume a value between Min_Data = 2 and Max_Data = 17 in NOR Flash memories
                                                 with synchronous burst mode enable                                       */
-  
+
   uint32_t AccessMode;                   /*!< Specifies the asynchronous access mode. 
                                               This parameter can be a value of @ref FMC_Access_Mode                      */
-
 }FMC_NORSRAM_TimingTypeDef;
 
 /** 
@@ -180,29 +178,28 @@ typedef struct
 typedef struct
 {
   uint32_t NandBank;               /*!< Specifies the NAND memory device that will be used.
-                                        This parameter can be a value of @ref FMC_NAND_Bank                    */           
-  
+                                        This parameter can be a value of @ref FMC_NAND_Bank                    */
+
   uint32_t Waitfeature;            /*!< Enables or disables the Wait feature for the NAND Memory device.
                                         This parameter can be any value of @ref FMC_Wait_feature               */
-  
+
   uint32_t MemoryDataWidth;        /*!< Specifies the external memory device width.
                                         This parameter can be any value of @ref FMC_NAND_Data_Width            */
-  
+
   uint32_t EccComputation;         /*!< Enables or disables the ECC computation.
                                         This parameter can be any value of @ref FMC_ECC                        */
-  
+
   uint32_t ECCPageSize;            /*!< Defines the page size for the extended ECC.
                                         This parameter can be any value of @ref FMC_ECC_Page_Size              */
-  
+
   uint32_t TCLRSetupTime;          /*!< Defines the number of HCLK cycles to configure the
                                         delay between CLE low and RE low.
                                         This parameter can be a value between Min_Data = 0 and Max_Data = 255  */
-  
+
   uint32_t TARSetupTime;           /*!< Defines the number of HCLK cycles to configure the
                                         delay between ALE low and RE low.
                                         This parameter can be a number between Min_Data = 0 and Max_Data = 255 */
-                                     
-}FMC_NAND_InitTypeDef;  
+}FMC_NAND_InitTypeDef;
 
 /** 
   * @brief  FMC_NAND_PCCARD Timing parameters structure definition
@@ -214,45 +211,43 @@ typedef struct
                                       to common/Attribute or I/O memory space (depending on
                                       the memory space timing to be configured).
                                       This parameter can be a value between Min_Data = 0 and Max_Data = 255    */
-  
+
   uint32_t WaitSetupTime;        /*!< Defines the minimum number of HCLK cycles to assert the
                                       command for NAND-Flash read or write access to
                                       common/Attribute or I/O memory space (depending on the
                                       memory space timing to be configured). 
                                       This parameter can be a number between Min_Data = 0 and Max_Data = 255   */
-  
+
   uint32_t HoldSetupTime;        /*!< Defines the number of HCLK clock cycles to hold address
                                       (and data for write access) after the command de-assertion
                                       for NAND-Flash read or write access to common/Attribute
                                       or I/O memory space (depending on the memory space timing
                                       to be configured).
                                       This parameter can be a number between Min_Data = 0 and Max_Data = 255   */
-  
+
   uint32_t HiZSetupTime;         /*!< Defines the number of HCLK clock cycles during which the
                                       data bus is kept in HiZ after the start of a NAND-Flash
                                       write access to common/Attribute or I/O memory space (depending
                                       on the memory space timing to be configured).
                                       This parameter can be a number between Min_Data = 0 and Max_Data = 255   */
-  
 }FMC_NAND_PCC_TimingTypeDef;
 
 /** 
-  * @brief  FMC_NAND Configuration Structure definition  
+  * @brief  FMC_NAND Configuration Structure definition
   */ 
 typedef struct
 {
   uint32_t Waitfeature;            /*!< Enables or disables the Wait feature for the PCCARD Memory device.
                                         This parameter can be any value of @ref FMC_Wait_feature               */
-  
+
   uint32_t TCLRSetupTime;          /*!< Defines the number of HCLK cycles to configure the
                                         delay between CLE low and RE low.
                                         This parameter can be a value between Min_Data = 0 and Max_Data = 255  */
-  
+
   uint32_t TARSetupTime;           /*!< Defines the number of HCLK cycles to configure the
                                         delay between ALE low and RE low.
                                         This parameter can be a number between Min_Data = 0 and Max_Data = 255 */
-                                     
-}FMC_PCCARD_InitTypeDef;  
+}FMC_PCCARD_InitTypeDef;
 
 /** 
   * @brief  FMC_SDRAM Configuration Structure definition  
@@ -260,37 +255,36 @@ typedef struct
 typedef struct
 {
   uint32_t SDBank;                      /*!< Specifies the SDRAM memory device that will be used.
-                                             This parameter can be a value of @ref FMC_SDRAM_Bank                */ 
-  
+                                             This parameter can be a value of @ref FMC_SDRAM_Bank                */
+
   uint32_t ColumnBitsNumber;            /*!< Defines the number of bits of column address.
                                              This parameter can be a value of @ref FMC_SDRAM_Column_Bits_number. */
-  
+
   uint32_t RowBitsNumber;               /*!< Defines the number of bits of column address.
                                              This parameter can be a value of @ref FMC_SDRAM_Row_Bits_number.    */
-  
+
   uint32_t MemoryDataWidth;             /*!< Defines the memory device width.
                                              This parameter can be a value of @ref FMC_SDRAM_Memory_Bus_Width.   */
-  
+
   uint32_t InternalBankNumber;          /*!< Defines the number of the device's internal banks.
                                              This parameter can be of @ref FMC_SDRAM_Internal_Banks_Number.      */
-  
+
   uint32_t CASLatency;                  /*!< Defines the SDRAM CAS latency in number of memory clock cycles.
                                              This parameter can be a value of @ref FMC_SDRAM_CAS_Latency.        */
-  
+
   uint32_t WriteProtection;             /*!< Enables the SDRAM device to be accessed in write mode.
                                              This parameter can be a value of @ref FMC_SDRAM_Write_Protection.   */
-  
+
   uint32_t SDClockPeriod;               /*!< Define the SDRAM Clock Period for both SDRAM devices and they allow 
                                              to disable the clock before changing frequency.
                                              This parameter can be a value of @ref FMC_SDRAM_Clock_Period.       */
-  
+
   uint32_t ReadBurst;                   /*!< This bit enable the SDRAM controller to anticipate the next read 
                                              commands during the CAS latency and stores data in the Read FIFO.
                                              This parameter can be a value of @ref FMC_SDRAM_Read_Burst.         */
-  
+
   uint32_t ReadPipeDelay;               /*!< Define the delay in system clock cycles on read data path.
                                              This parameter can be a value of @ref FMC_SDRAM_Read_Pipe_Delay.    */
-  
 }FMC_SDRAM_InitTypeDef;
 
 /** 
@@ -301,32 +295,31 @@ typedef struct
   uint32_t LoadToActiveDelay;            /*!< Defines the delay between a Load Mode Register command and 
                                               an active or Refresh command in number of memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t ExitSelfRefreshDelay;         /*!< Defines the delay from releasing the self refresh command to 
                                               issuing the Activate command in number of memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t SelfRefreshTime;              /*!< Defines the minimum Self Refresh period in number of memory clock 
                                               cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t RowCycleDelay;                /*!< Defines the delay between the Refresh command and the Activate command
                                               and the delay between two consecutive Refresh commands in number of 
                                               memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t WriteRecoveryTime;            /*!< Defines the Write recovery Time in number of memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t RPDelay;                      /*!< Defines the delay between a Precharge Command and an other command 
                                               in number of memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */
-  
+
   uint32_t RCDDelay;                     /*!< Defines the delay between the Activate Command and a Read/Write 
                                               command in number of memory clock cycles.
                                               This parameter can be a value between Min_Data = 1 and Max_Data = 16  */ 
-                  
-}FMC_SDRAM_TimingTypeDef;    
+}FMC_SDRAM_TimingTypeDef;
 
 /** 
   * @brief  SDRAM command parameters structure definition
@@ -334,25 +327,23 @@ typedef struct
 typedef struct
 {
   uint32_t CommandMode;                  /*!< Defines the command issued to the SDRAM device.
-                                              This parameter can be a value of @ref FMC_SDRAM_Command_Mode.          */                                                      
-  
+                                              This parameter can be a value of @ref FMC_SDRAM_Command_Mode.          */
+
   uint32_t CommandTarget;                /*!< Defines which device (1 or 2) the command will be issued to.
-                                              This parameter can be a value of @ref FMC_SDRAM_Command_Target.        */                                     
-  
+                                              This parameter can be a value of @ref FMC_SDRAM_Command_Target.        */
+
   uint32_t AutoRefreshNumber;            /*!< Defines the number of consecutive auto refresh command issued
                                               in auto refresh mode.
-                                              This parameter can be a value between Min_Data = 1 and Max_Data = 16   */                                                                                                             
-  
-  uint32_t ModeRegisterDefinition;       /*!< Defines the SDRAM Mode register content                                */ 
-  
+                                              This parameter can be a value between Min_Data = 1 and Max_Data = 16   */
+  uint32_t ModeRegisterDefinition;       /*!< Defines the SDRAM Mode register content                                */
 }FMC_SDRAM_CommandTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 
 /** @defgroup FMC_NOR_SRAM_Controller 
   * @{
-  */ 
-  
+  */
+
 /** @defgroup FMC_NORSRAM_Bank 
   * @{
   */
@@ -474,7 +465,7 @@ typedef struct
 #define FMC_WRITE_OPERATION_ENABLE              ((uint32_t)0x00001000)
 
 #define IS_FMC_WRITE_OPERATION(OPERATION) (((OPERATION) == FMC_WRITE_OPERATION_DISABLE) || \
-                                           ((OPERATION) == FMC_WRITE_OPERATION_ENABLE))                       
+                                           ((OPERATION) == FMC_WRITE_OPERATION_ENABLE))
 /**
   * @}
   */
@@ -630,7 +621,7 @@ typedef struct
 #define FMC_NAND_PCC_WAIT_FEATURE_ENABLE            ((uint32_t)0x00000002)
 
 #define IS_FMC_WAIT_FEATURE(FEATURE) (((FEATURE) == FMC_NAND_PCC_WAIT_FEATURE_DISABLE) || \
-                                      ((FEATURE) == FMC_NAND_PCC_WAIT_FEATURE_ENABLE))                                              
+                                      ((FEATURE) == FMC_NAND_PCC_WAIT_FEATURE_ENABLE))
 /**
   * @}
   */
@@ -1131,16 +1122,16 @@ typedef struct
   * @retval None
   */  
 #define __FMC_NAND_ENABLE(__INSTANCE__, __BANK__)  (((__BANK__) == FMC_NAND_BANK2)? ((__INSTANCE__)->PCR2 |= FMC_PCR2_PBKEN): \
-                                                    ((__INSTANCE__)->PCR3 |= FMC_PCR3_PBKEN))                                        
+                                                    ((__INSTANCE__)->PCR3 |= FMC_PCR3_PBKEN))
 
 /**
   * @brief  Disable the NAND device access.
   * @param  __INSTANCE__: FMC_NAND Instance
   * @param  __BANK__: FMC_NAND Bank  
   * @retval None
-  */                                          
+  */
 #define __FMC_NAND_DISABLE(__INSTANCE__, __BANK__) (((__BANK__) == FMC_NAND_BANK2)? ((__INSTANCE__)->PCR2 &= ~FMC_PCR2_PBKEN): \
-                                                   ((__INSTANCE__)->PCR3 &= ~FMC_PCR3_PBKEN))                                                                                
+                                                   ((__INSTANCE__)->PCR3 &= ~FMC_PCR3_PBKEN))
 /**
   * @}
   */ 

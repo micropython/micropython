@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pwr_ex.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of PWR HAL Extension module.
   ******************************************************************************
   * @attention
@@ -54,12 +54,13 @@
   * @{
   */ 
 
-#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
-
 /* Exported types ------------------------------------------------------------*/ 
 /* Exported constants --------------------------------------------------------*/
 /* ------------- PWR registers bit address in the alias region ---------------*/
 /* --- CR Register ---*/
+/* Alias word address of FPDS bit */
+#define FPDS_BitNumber  0x09
+#define CR_FPDS_BB      (PERIPH_BB_BASE + (CR_OFFSET * 32) + (FPDS_BitNumber * 4))
 
 /* Alias word address of ODEN bit   */
 #define ODEN_BitNumber           0x10
@@ -69,7 +70,33 @@
 #define ODSWEN_BitNumber         0x11
 #define CR_ODSWEN_BB             (PERIPH_BB_BASE + (CR_OFFSET * 32) + (ODSWEN_BitNumber * 4))
     
+/* Alias word address of MRLVDS bit */
+#define MRLVDS_BitNumber         0x0B
+#define CR_MRLVDS_BB             (PERIPH_BB_BASE + (CR_OFFSET * 32) + (MRLVDS_BitNumber * 4))
 
+/* Alias word address of LPLVDS bit */
+#define LPLVDS_BitNumber         0x0A
+#define CR_LPLVDS_BB             (PERIPH_BB_BASE + (CR_OFFSET * 32) + (LPLVDS_BitNumber * 4))
+
+/* --- CSR Register ---*/
+/* Alias word address of BRE bit */
+#define BRE_BitNumber   0x09
+#define CSR_BRE_BB      (PERIPH_BB_BASE + (CSR_OFFSET * 32) + (BRE_BitNumber * 4))    
+
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
+   
+/** @defgroup PWREx_Regulator_state_in_UnderDrive_mode 
+  * @{
+  */
+#define PWR_MAINREGULATOR_UNDERDRIVE_ON                       PWR_CR_MRUDS
+#define PWR_LOWPOWERREGULATOR_UNDERDRIVE_ON                   ((uint32_t)(PWR_CR_LPDS | PWR_CR_LPUDS))
+
+#define IS_PWR_REGULATOR_UNDERDRIVE(REGULATOR) (((REGULATOR) == PWR_MAINREGULATOR_UNDERDRIVE_ON) || \
+                                                ((REGULATOR) == PWR_LOWPOWERREGULATOR_UNDERDRIVE_ON))
+/**
+  * @}
+  */ 
+  
 /** @defgroup PWREx_Over_Under_Drive_Flag 
   * @{
   */
@@ -79,13 +106,14 @@
 /**
   * @}
   */
-
+#endif /* STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx */
 /**
   * @}
   */ 
   
 /* Exported macro ------------------------------------------------------------*/
   
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
 /** @brief Macros to enable or disable the Over drive mode.
   * @note  These macros can be used only for STM32F42xx/STM3243xx devices.
   */
@@ -138,9 +166,17 @@ void              HAL_PWREx_DisableFlashPowerDown(void);
 HAL_StatusTypeDef HAL_PWREx_EnableBkUpReg(void);
 HAL_StatusTypeDef HAL_PWREx_DisableBkUpReg(void); 
 
+#if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
+void HAL_PWREx_EnableMainRegulatorLowVoltage(void);
+void HAL_PWREx_DisableMainRegulatorLowVoltage(void);
+void HAL_PWREx_EnableLowRegulatorLowVoltage(void);
+void HAL_PWREx_DisableLowRegulatorLowVoltage(void);
+#endif /* STM32F401xC || STM32F401xE || STM32F411xE */
+
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
 HAL_StatusTypeDef HAL_PWREx_ActivateOverDrive(void);
 HAL_StatusTypeDef HAL_PWREx_DeactivateOverDrive(void);
+HAL_StatusTypeDef HAL_PWREx_EnterUnderDriveSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
 #endif /* STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx */
 
 /**

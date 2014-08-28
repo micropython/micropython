@@ -66,6 +66,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_range), (mp_obj_t)&mp_type_range },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reversed), (mp_obj_t)&mp_type_reversed },
 #if MICROPY_PY_BUILTINS_SET
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&mp_type_set },
 #endif
@@ -137,6 +138,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_StopIteration), (mp_obj_t)&mp_type_StopIteration },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SyntaxError), (mp_obj_t)&mp_type_SyntaxError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SystemError), (mp_obj_t)&mp_type_SystemError },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SystemExit), (mp_obj_t)&mp_type_SystemExit },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TypeError), (mp_obj_t)&mp_type_TypeError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ValueError), (mp_obj_t)&mp_type_ValueError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ZeroDivisionError), (mp_obj_t)&mp_type_ZeroDivisionError },
@@ -194,6 +196,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 
 #if MICROPY_PY_UCTYPES
     { MP_OBJ_NEW_QSTR(MP_QSTR_uctypes), (mp_obj_t)&mp_module_uctypes },
+#endif
+#if MICROPY_PY_ZLIBD
+    { MP_OBJ_NEW_QSTR(MP_QSTR_zlibd), (mp_obj_t)&mp_module_zlibd },
 #endif
 
     // extra builtin modules as defined by a port

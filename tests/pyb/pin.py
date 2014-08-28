@@ -1,17 +1,21 @@
 from pyb import Pin
 
-p = Pin('X1')
+p = Pin('X1', Pin.IN)
 print(p)
 print(p.name())
 print(p.pin())
 print(p.port())
 
 p = Pin('X1', Pin.IN, Pin.PULL_UP)
-#p = Pin('X1', Pin.IN, pull=Pin.PULL_UP)
+p = Pin('X1', Pin.IN, pull=Pin.PULL_UP)
+p = Pin('X1', mode=Pin.IN, pull=Pin.PULL_UP)
+print(p)
 print(p.value())
 
 p.init(p.IN, p.PULL_DOWN)
-#p.init(p.IN, pull=p.PULL_DOWN)
+p.init(p.IN, pull=p.PULL_DOWN)
+p.init(mode=p.IN, pull=p.PULL_DOWN)
+print(p)
 print(p.value())
 
 p.init(p.OUT_PP)

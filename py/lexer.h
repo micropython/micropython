@@ -139,18 +139,18 @@ typedef struct _mp_token_t {
     mp_uint_t len;              // (byte) length of string of token
 } mp_token_t;
 
-// the next-char function must return the next character in the stream
-// it must return MP_LEXER_CHAR_EOF if end of stream
-// it can be called again after returning MP_LEXER_CHAR_EOF, and in that case must return MP_LEXER_CHAR_EOF
-#define MP_LEXER_CHAR_EOF (-1)
-typedef unichar (*mp_lexer_stream_next_char_t)(void*);
+// the next-byte function must return the next byte in the stream
+// it must return MP_LEXER_EOF if end of stream
+// it can be called again after returning MP_LEXER_EOF, and in that case must return MP_LEXER_EOF
+#define MP_LEXER_EOF (-1)
+typedef mp_uint_t (*mp_lexer_stream_next_byte_t)(void*);
 typedef void (*mp_lexer_stream_close_t)(void*);
 
 typedef struct _mp_lexer_t mp_lexer_t;
 
 void mp_token_show(const mp_token_t *tok);
 
-mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_char_t stream_next_char, mp_lexer_stream_close_t stream_close);
+mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close);
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);

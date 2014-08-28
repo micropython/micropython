@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_def.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   This file contains HAL common defines, enumeration, macros and 
   *          structures definitions. 
   ******************************************************************************
@@ -79,14 +79,32 @@ typedef enum
 #define HAL_IS_BIT_SET(REG, BIT)         (((REG) & (BIT)) != RESET)
 #define HAL_IS_BIT_CLR(REG, BIT)         (((REG) & (BIT)) == RESET)
 
-#define __HAL_LINKDMA(__HANDLE__, __PPP_DMA_FIELD_, __DMA_HANDLE_)               \
+#define __HAL_LINKDMA(__HANDLE__, __PPP_DMA_FIELD__, __DMA_HANDLE__)               \
                         do{                                                      \
-                              (__HANDLE__)->__PPP_DMA_FIELD_ = &(__DMA_HANDLE_); \
-                              (__DMA_HANDLE_).Parent = (__HANDLE__);             \
+                              (__HANDLE__)->__PPP_DMA_FIELD__ = &(__DMA_HANDLE__); \
+                              (__DMA_HANDLE__).Parent = (__HANDLE__);             \
                           } while(0)
+
+/** @brief Reset the Handle's State field.
+  * @param __HANDLE__: specifies the Peripheral Handle.
+  * @note  This macro can be used for the following purpose: 
+  *          - When the Handle is declared as local variable; before passing it as parameter
+  *            to HAL_PPP_Init() for the first time, it is mandatory to use this macro 
+  *            to set to 0 the Handle's "State" field.
+  *            Otherwise, "State" field may have any random value and the first time the function 
+  *            HAL_PPP_Init() is called, the low level hardware initialization will be missed
+  *            (i.e. HAL_PPP_MspInit() will not be executed).
+  *          - When there is a need to reconfigure the low level hardware: instead of calling
+  *            HAL_PPP_DeInit() then HAL_PPP_Init(), user can make a call to this macro then HAL_PPP_Init().
+  *            In this later function, when the Handle's "State" field is set to 0, it will execute the function
+  *            HAL_PPP_MspInit() which will reconfigure the low level hardware.
+  * @retval None
+  */
+#define __HAL_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = 0)
 
 #if (USE_RTOS == 1)
   /* Reserved for future use */
+  #error “USE_RTOS should be 0 in the current HAL release”
 #else
   #define __HAL_LOCK(__HANDLE__)                                           \
                                 do{                                        \
@@ -133,11 +151,43 @@ typedef enum
       #define __ALIGN_BEGIN    __align(4)  
     #elif defined (__ICCARM__)    /* IAR Compiler */
       #define __ALIGN_BEGIN 
-    #elif defined  (__TASKING__)  /* TASKING Compiler */
-      #define __ALIGN_BEGIN    __align(4) 
     #endif /* __CC_ARM */
   #endif /* __ALIGN_BEGIN */
 #endif /* __GNUC__ */
+
+
+/** 
+  * @brief  __RAM_FUNC definition
+  */ 
+#if defined ( __CC_ARM   )
+/* ARM Compiler
+   ------------
+   RAM functions are defined using the toolchain options. 
+   Functions that are executed in RAM should reside in a separate source module.
+   Using the 'Options for File' dialog you can simply change the 'Code / Const' 
+   area of a module to a memory space in physical RAM.
+   Available memory areas are declared in the 'Target' tab of the 'Options for Target'
+   dialog. 
+*/
+#define __RAM_FUNC HAL_StatusTypeDef 
+
+#elif defined ( __ICCARM__ )
+/* ICCARM Compiler
+   ---------------
+   RAM functions are defined using a specific toolchain keyword "__ramfunc". 
+*/
+#define __RAM_FUNC __ramfunc HAL_StatusTypeDef
+
+#elif defined   (  __GNUC__  )
+/* GNU Compiler
+   ------------
+  RAM functions are defined using a specific toolchain attribute 
+   "__attribute__((section(".RamFunc")))".
+*/
+#define __RAM_FUNC HAL_StatusTypeDef  __attribute__((section(".RamFunc")))
+
+#endif
+
 
 #ifdef __cplusplus
 }

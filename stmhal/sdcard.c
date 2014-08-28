@@ -90,6 +90,9 @@ bool sdcard_power_on(void) {
     if (!sdcard_is_present()) {
         return false;
     }
+    if (sd_handle.Instance) {
+        return true;
+    }
 
     // SD device interface configuration
     sd_handle.Instance = SDIO;
@@ -120,7 +123,10 @@ error:
 }
 
 void sdcard_power_off(void) {
-    HAL_SD_DeInit(&sd_handle);
+    if (!sd_handle.Instance) {
+        return;
+    }
+    HAL_SD_DeInit(&sd_handle); 
     sd_handle.Instance = NULL;
 }
 

@@ -47,7 +47,7 @@
 #include "cc3k/wlan.h"
 #include "cc3k/nvmem.h"
 
-mp_obj_t pyb_wlan_connect(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_wlan_connect(uint n_args, const mp_obj_t *args) {
   const char *ap;
   const char *key;
     if (n_args == 2) {
@@ -61,11 +61,13 @@ mp_obj_t pyb_wlan_connect(uint n_args, const mp_obj_t *args) {
     int ret = wlan_connect(WLAN_SEC_WPA2, ap, strlen(ap), NULL, (byte*)key, strlen(key));
     return mp_obj_new_int(ret);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_wlan_connect_obj, 0, 2, pyb_wlan_connect);
 
-mp_obj_t pyb_wlan_disconnect(void) {
+STATIC mp_obj_t pyb_wlan_disconnect(void) {
     int ret = wlan_disconnect();
     return mp_obj_new_int(ret);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_wlan_disconnect_obj, pyb_wlan_disconnect);
 
 mp_obj_t decode_addr(unsigned char *ip, int n_bytes) {
     char data[64] = "";
@@ -76,7 +78,7 @@ mp_obj_t decode_addr(unsigned char *ip, int n_bytes) {
     } else if (n_bytes == 32) {
         snprintf(data, 64, "%s", ip);
     }
-    return mp_obj_new_str((byte*)data, strlen(data), false);
+    return mp_obj_new_str(data, strlen(data), false);
 }
 
 void decode_addr_and_store(mp_obj_t object, qstr q_attr, unsigned char *ip, int n_bytes) {
@@ -85,7 +87,7 @@ void decode_addr_and_store(mp_obj_t object, qstr q_attr, unsigned char *ip, int 
 
 static mp_obj_t net_address_type = MP_OBJ_NULL;
 
-mp_obj_t pyb_wlan_get_ip(void) {
+STATIC mp_obj_t pyb_wlan_get_ip(void) {
     tNetappIpconfigRetArgs ipconfig;
     netapp_ipconfig(&ipconfig);
 
@@ -113,9 +115,10 @@ mp_obj_t pyb_wlan_get_ip(void) {
 
     return net_addr;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_wlan_get_ip_obj, pyb_wlan_get_ip);
 
 uint32_t last_ip = 0; // XXX such a hack!
-mp_obj_t pyb_wlan_get_host(mp_obj_t host_name) {
+STATIC mp_obj_t pyb_wlan_get_host(mp_obj_t host_name) {
     const char *host = mp_obj_str_get_str(host_name);
     uint32_t ip;
     if (gethostbyname(host, strlen(host), &ip) < 0) {
@@ -134,8 +137,9 @@ mp_obj_t pyb_wlan_get_host(mp_obj_t host_name) {
     ip_data[3] = ((ip >> 24) & 0xff);
     return decode_addr(ip_data, 4);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wlan_get_host_obj, pyb_wlan_get_host);
 
-mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
+STATIC mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
     int port;
     if (mp_obj_is_integer(host_name)) {
         last_ip = (192 << 24) | (168 << 16) | (0 << 8) | (mp_obj_get_int(host_name));
@@ -259,7 +263,7 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
             vstr_add_strn(vstr, buf, ret);
         }
 
-        mp_ret = mp_obj_new_str((byte*)vstr->buf, vstr->len, false);
+        mp_ret = mp_obj_new_str(vstr->buf, vstr->len, false);
     }
 
     closesocket(sd);
@@ -267,8 +271,9 @@ mp_obj_t pyb_wlan_http_get(mp_obj_t host_name, mp_obj_t host_path) {
 
     return mp_ret;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_wlan_http_get_obj, pyb_wlan_http_get);
 
-mp_obj_t pyb_wlan_serve(void) {
+STATIC mp_obj_t pyb_wlan_serve(void) {
     printf("serve socket\n");
     int sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     printf("serve socket got %d\n", sd);
@@ -340,6 +345,7 @@ mp_obj_t pyb_wlan_serve(void) {
 
     return mp_const_none;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_wlan_serve_obj, pyb_wlan_serve);
 
 //*****************************************************************************
 //
@@ -415,12 +421,12 @@ void pyb_wlan_init(void) {
     wlan_init(CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
 
     mp_obj_t m = mp_obj_new_module(QSTR_FROM_STR_STATIC("wlan"));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("connect"), mp_make_function_var(0, pyb_wlan_connect));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("disconnect"), mp_make_function_n(0, pyb_wlan_disconnect));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("ip"), mp_make_function_n(0, pyb_wlan_get_ip));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("get_host"), mp_make_function_n(1, pyb_wlan_get_host));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("http_get"), mp_make_function_n(2, pyb_wlan_http_get));
-    mp_store_attr(m, QSTR_FROM_STR_STATIC("serve"), mp_make_function_n(0, pyb_wlan_serve));
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("connect"), (mp_obj_t)&pyb_wlan_connect_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("disconnect"), (mp_obj_t)&pyb_wlan_disconnect_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("ip"), (mp_obj_t)&pyb_wlan_get_ip_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("get_host"), (mp_obj_t)&pyb_wlan_get_host_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("http_get"), (mp_obj_t)&pyb_wlan_http_get_obj);
+    mp_store_attr(m, QSTR_FROM_STR_STATIC("serve"), (mp_obj_t)&pyb_wlan_serve_obj);
     mp_store_name(QSTR_FROM_STR_STATIC("wlan"), m);
 }
 

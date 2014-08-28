@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dma_ex.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   DMA Extension HAL module driver
   *         This file provides firmware functions to manage the following 
   *         functionalities of the DMA Extension peripheral:
@@ -21,7 +21,7 @@
      -@-  In Memory-to-Memory transfer mode, Multi (Double) Buffer mode is not allowed.
      -@-  When Multi (Double) Buffer mode is enabled the, transfer is circular by default.
      -@-  In Multi (Double) buffer mode, it is possible to update the base address for 
-          the AHB memory port on-the-fly (DMA_SxM0AR or DMA_SxM1AR) when the stream is enabled. 
+          the AHB memory port on the fly (DMA_SxM0AR or DMA_SxM1AR) when the stream is enabled. 
   
   @endverbatim
   ******************************************************************************
@@ -217,8 +217,8 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
   * @param  Address:    The new address
   * @param  memory:     the memory to be changed, This parameter can be one of 
   *                     the following values:
-  *                      @arg MEMORY0
-  *                      @arg MEMORY1
+  *                      MEMORY0 /
+  *                      MEMORY1
   * @note   The MEMORY0 address can be changed only when the current transfer use
   *         MEMORY1 and the MEMORY1 address can be changed only when the current 
   *         transfer use MEMORY0.

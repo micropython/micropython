@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_i2s_ex.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   I2S HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of I2S extension peripheral:
@@ -16,21 +16,21 @@
   [..]
      (#) In I2S full duplex mode, each SPI peripheral is able to manage sending and receiving 
          data simultaneously using two data lines. Each SPI peripheral has an extended block 
-         called I2Sxext ie. I2S2ext for SPI2 and I2S3ext for SPI3).
+         called I2Sxext (i.e I2S2ext for SPI2 and I2S3ext for SPI3).
      (#) The extension block is not a full SPI IP, it is used only as I2S slave to
          implement full duplex mode. The extension block uses the same clock sources
          as its master.
 
      (#) Both I2Sx and I2Sx_ext can be configured as transmitters or receivers.
 
-     -@- Only I2Sx can deliver SCK and WS to I2Sx_ext in full duplex mode, where 
+     [..]
+       (@) Only I2Sx can deliver SCK and WS to I2Sx_ext in full duplex mode, where 
          I2Sx can be I2S2 or I2S3.
 
- ===============================================================================
                   ##### How to use this driver #####
  ===============================================================================
  [..]    
-   Three mode of operations are available within this driver :     
+   Three operation modes are available within this driver :     
   
    *** Polling mode IO operation ***
    =================================
@@ -137,7 +137,7 @@
     This subsection provides a set of functions allowing to manage the I2S data 
     transfers.
 
-    (#) There is two mode of transfer:
+    (#) There are two modes of transfer:
        (++) Blocking mode : The communication is performed in the polling mode. 
             The status of all data processing is returned by the same function 
             after finishing transfer.  
@@ -156,7 +156,7 @@
     (#) No-Blocking mode functions with DMA are :
         (++) HAL_I2S_TransmitReceive_DMA()
 
-    (#) A set of Transfer Complete Callbacks are provided in No_Blocking mode:
+    (#) A set of Transfer Complete Callbacks are provided in non Blocking mode:
         (++) HAL_I2S_TxCpltCallback()
         (++) HAL_I2S_RxCpltCallback()
         (++) HAL_I2S_ErrorCallback()
@@ -167,7 +167,8 @@
 
 /**
   * @brief Full-Duplex Transmit/Receive data in blocking mode.
-  * @param hi2s: I2S handle
+  * @param  hi2s: pointer to a I2S_HandleTypeDef structure that contains
+  *         the configuration information for I2S module
   * @param pTxData: a 16-bit pointer to the Transmit data buffer.
   * @param pRxData: a 16-bit pointer to the Receive data buffer.
   * @param Size: number of data sample to be sent:
@@ -182,8 +183,8 @@
   */
 HAL_StatusTypeDef HAL_I2SEx_TransmitReceive(I2S_HandleTypeDef *hi2s, uint16_t *pTxData, uint16_t *pRxData, uint16_t Size, uint32_t Timeout)
 {
-  uint32_t timeout = 0;
-  uint32_t tmp1 = 0, tmp2 = 0;   
+  uint32_t tickstart = 0;
+  uint32_t tmp1 = 0, tmp2 = 0;
  
   if((pTxData == NULL ) || (pRxData == NULL ) || (Size == 0)) 
   {
@@ -246,14 +247,15 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive(I2S_HandleTypeDef *hi2s, uint16_t *p
         }
         hi2s->Instance->DR = (*pTxData++);
 
-        /* Wait until RXNE flag is set */
-        timeout = HAL_GetTick() + Timeout;
+        /* Get tick */
+        tickstart = HAL_GetTick();
 
+        /* Wait until RXNE flag is set */
         while((I2SxEXT(hi2s->Instance)->SR & SPI_SR_RXNE) != SPI_SR_RXNE)
         {
           if(Timeout != HAL_MAX_DELAY)
           {
-            if(HAL_GetTick() >= timeout)
+            if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
             {
               /* Process Unlocked */
               __HAL_UNLOCK(hi2s);
@@ -292,14 +294,15 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive(I2S_HandleTypeDef *hi2s, uint16_t *p
       }
       while(hi2s->TxXferCount > 0)
       {
-        /* Wait until TXE flag is set */
-        timeout = HAL_GetTick() + Timeout;
+        /* Get tick */
+        tickstart = HAL_GetTick();
 
+        /* Wait until TXE flag is set */
         while((I2SxEXT(hi2s->Instance)->SR & SPI_SR_TXE) != SPI_SR_TXE)
         {
           if(Timeout != HAL_MAX_DELAY)
           {
-            if(HAL_GetTick() >= timeout)
+            if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
             {
               /* Process Unlocked */
               __HAL_UNLOCK(hi2s);
@@ -338,7 +341,8 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive(I2S_HandleTypeDef *hi2s, uint16_t *p
 
 /**
   * @brief Full-Duplex Transmit/Receive data in non-blocking mode using Interrupt 
-  * @param hi2s: I2S handle
+  * @param  hi2s: pointer to a I2S_HandleTypeDef structure that contains
+  *         the configuration information for I2S module
   * @param pTxData: a 16-bit pointer to the Transmit data buffer.
   * @param pRxData: a 16-bit pointer to the Receive data buffer.
   * @param Size: number of data sample to be sent:
@@ -346,7 +350,6 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive(I2S_HandleTypeDef *hi2s, uint16_t *p
   *       configuration phase, the Size parameter means the number of 16-bit data length 
   *       in the transaction and when a 24-bit data frame or a 32-bit data frame is selected 
   *       the Size parameter means the number of 16-bit data length. 
-  * @param Timeout: Timeout duration
   * @note The I2S is kept enabled at the end of transaction to avoid the clock de-synchronization 
   *       between Master and Slave(example: audio streaming).
   * @retval HAL status
@@ -464,7 +467,8 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive_IT(I2S_HandleTypeDef *hi2s, uint16_t
 
 /**
   * @brief Full-Duplex Transmit/Receive data in non-blocking mode using DMA  
-  * @param hi2s: I2S handle
+  * @param  hi2s: pointer to a I2S_HandleTypeDef structure that contains
+  *         the configuration information for I2S module
   * @param pTxData: a 16-bit pointer to the Transmit data buffer.
   * @param pRxData: a 16-bit pointer to the Receive data buffer.
   * @param Size: number of data sample to be sent:
@@ -472,7 +476,6 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive_IT(I2S_HandleTypeDef *hi2s, uint16_t
   *       configuration phase, the Size parameter means the number of 16-bit data length 
   *       in the transaction and when a 24-bit data frame or a 32-bit data frame is selected 
   *       the Size parameter means the number of 16-bit data length. 
-  * @param Timeout: Timeout duration
   * @note The I2S is kept enabled at the end of transaction to avoid the clock de-synchronization 
   *       between Master and Slave(example: audio streaming).
   * @retval HAL status
@@ -621,7 +624,8 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive_DMA(I2S_HandleTypeDef *hi2s, uint16_
 
 /**
   * @brief Full-Duplex Transmit/Receive data in non-blocking mode using Interrupt 
-  * @param hi2s: I2S handle
+  * @param  hi2s: pointer to a I2S_HandleTypeDef structure that contains
+  *         the configuration information for I2S module
   * @retval HAL status
   */
 HAL_StatusTypeDef I2SEx_TransmitReceive_IT(I2S_HandleTypeDef *hi2s)

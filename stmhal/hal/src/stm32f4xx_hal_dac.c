@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dac.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   DAC HAL module driver.
   *         This file provides firmware functions to manage the following 
   *         functionalities of the Digital to Analog Converter (DAC) peripheral:
@@ -116,7 +116,7 @@
      ==============================
      [..]    
        (+) Start the DAC peripheral using HAL_DAC_Start_DMA(), at this stage the user specify the length 
-           of data to be transfered at each end of conversion 
+           of data to be transferred at each end of conversion 
        (+) At The end of data transfer HAL_DAC_ConvCpltCallbackCh1()or HAL_DAC_ConvCpltCallbackCh2()  
            function is executed and user can add his own code by customization of function pointer 
            HAL_DAC_ConvCpltCallbackCh1 or HAL_DAC_ConvCpltCallbackCh2
@@ -430,9 +430,9 @@ HAL_StatusTypeDef HAL_DAC_Stop(DAC_HandleTypeDef* hdac, uint32_t Channel)
   * @param  Length: The length of data to be transferred from memory to DAC peripheral
   * @param  Alignment: Specifies the data alignment for DAC channel.
   *          This parameter can be one of the following values:
-  *            @arg DAC_Align_8b_R: 8bit right data alignment selected
-  *            @arg DAC_Align_12b_L: 12bit left data alignment selected
-  *            @arg DAC_Align_12b_R: 12bit right data alignment selected
+  *            @arg DAC_ALIGN_8B_R: 8bit right data alignment selected
+  *            @arg DAC_ALIGN_12B_L: 12bit left data alignment selected
+  *            @arg DAC_ALIGN_12B_R: 12bit right data alignment selected
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel, uint32_t* pData, uint32_t Length, uint32_t Alignment)
@@ -448,27 +448,18 @@ HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel, u
   
   /* Change DAC state */
   hdac->State = HAL_DAC_STATE_BUSY;
-  
-  /* Set the DMA transfer complete callback for channel1 */
-  hdac->DMA_Handle1->XferCpltCallback = DAC_DMAConvCpltCh1;
-  
-  /* Set the DMA half transfer complete callback for channel1 */
-  hdac->DMA_Handle1->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh1;
-     
-  /* Set the DMA error callback for channel1 */
-  hdac->DMA_Handle1->XferErrorCallback = DAC_DMAErrorCh1;
-  
-  /* Set the DMA transfer complete callback for channel2 */
-  hdac->DMA_Handle2->XferCpltCallback = DAC_DMAConvCpltCh2;
-  
-  /* Set the DMA half transfer complete callback for channel2 */
-  hdac->DMA_Handle2->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh2;
-     
-  /* Set the DMA error callback for channel2 */
-  hdac->DMA_Handle2->XferErrorCallback = DAC_DMAErrorCh2;
-  
+
   if(Channel == DAC_CHANNEL_1)
   {
+    /* Set the DMA transfer complete callback for channel1 */
+    hdac->DMA_Handle1->XferCpltCallback = DAC_DMAConvCpltCh1;
+
+    /* Set the DMA half transfer complete callback for channel1 */
+    hdac->DMA_Handle1->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh1;
+
+    /* Set the DMA error callback for channel1 */
+    hdac->DMA_Handle1->XferErrorCallback = DAC_DMAErrorCh1;
+
     /* Enable the selected DAC channel1 DMA request */
     hdac->Instance->CR |= DAC_CR_DMAEN1;
     
@@ -493,9 +484,18 @@ HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel, u
   }
   else
   {
+    /* Set the DMA transfer complete callback for channel2 */
+    hdac->DMA_Handle2->XferCpltCallback = DAC_DMAConvCpltCh2;
+
+    /* Set the DMA half transfer complete callback for channel2 */
+    hdac->DMA_Handle2->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh2;
+
+    /* Set the DMA error callback for channel2 */
+    hdac->DMA_Handle2->XferErrorCallback = DAC_DMAErrorCh2;
+
     /* Enable the selected DAC channel2 DMA request */
     hdac->Instance->CR |= DAC_CR_DMAEN2;
-    
+
     /* Case of use of channel 2 */
     switch(Alignment)
     {
@@ -556,20 +556,42 @@ HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel, u
   */
 HAL_StatusTypeDef HAL_DAC_Stop_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel)
 {
+  HAL_StatusTypeDef status = HAL_OK;
+
   /* Check the parameters */
   assert_param(IS_DAC_CHANNEL(Channel));
   
   /* Disable the selected DAC channel DMA request */
-    hdac->Instance->CR &= ~(DAC_CR_DMAEN1 << Channel);
+   hdac->Instance->CR &= ~(DAC_CR_DMAEN1 << Channel);
     
   /* Disable the Peripharal */
   __HAL_DAC_DISABLE(hdac, Channel);
   
-  /* Change DAC state */
-  hdac->State = HAL_DAC_STATE_READY;
-  
+  /* Disable the DMA Channel */
+  /* Channel1 is used */
+  if(Channel == DAC_CHANNEL_1)
+  { 
+    status = HAL_DMA_Abort(hdac->DMA_Handle1);
+  }
+  else /* Channel2 is used for */
+  { 
+    status = HAL_DMA_Abort(hdac->DMA_Handle2); 
+  }
+
+  /* Check if DMA Channel effectively disabled */
+  if(status == HAL_ERROR)
+  {
+    /* Update ADC state machine to error */
+    hdac->State = HAL_DAC_STATE_ERROR;      
+  }
+  else
+  {
+    /* Change DAC state */
+    hdac->State = HAL_DAC_STATE_READY;
+  }
+
   /* Return function status */
-  return HAL_OK;
+  return status;
 }
 
 /**
@@ -732,7 +754,6 @@ HAL_StatusTypeDef HAL_DAC_ConfigChannel(DAC_HandleTypeDef* hdac, DAC_ChannelConf
   /* Check the DAC parameters */
   assert_param(IS_DAC_TRIGGER(sConfig->DAC_Trigger));
   assert_param(IS_DAC_OUTPUT_BUFFER_STATE(sConfig->DAC_OutputBuffer));
-  assert_param(IS_DAC_TRIGGER(sConfig->DAC_Trigger));
   assert_param(IS_DAC_CHANNEL(Channel));
   
   /* Process locked */
@@ -776,9 +797,9 @@ HAL_StatusTypeDef HAL_DAC_ConfigChannel(DAC_HandleTypeDef* hdac, DAC_ChannelConf
   *            @arg DAC_CHANNEL_2: DAC Channel2 selected  
   * @param  Alignment: Specifies the data alignment.
   *          This parameter can be one of the following values:
-  *            @arg DAC_Align_8b_R: 8bit right data alignment selected
-  *            @arg DAC_Align_12b_L: 12bit left data alignment selected
-  *            @arg DAC_Align_12b_R: 12bit right data alignment selected
+  *            @arg DAC_ALIGN_8B_R: 8bit right data alignment selected
+  *            @arg DAC_ALIGN_12B_L: 12bit left data alignment selected
+  *            @arg DAC_ALIGN_12B_R: 12bit right data alignment selected
   * @param  Data: Data to be loaded in the selected data holding register.
   * @retval HAL status
   */
@@ -858,7 +879,8 @@ uint32_t HAL_DAC_GetError(DAC_HandleTypeDef *hdac)
 
 /**
   * @brief  DMA conversion complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void DAC_DMAConvCpltCh1(DMA_HandleTypeDef *hdma)   
@@ -872,7 +894,8 @@ static void DAC_DMAConvCpltCh1(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA half transfer complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void DAC_DMAHalfConvCpltCh1(DMA_HandleTypeDef *hdma)   
@@ -884,7 +907,8 @@ static void DAC_DMAHalfConvCpltCh1(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA error callback 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void DAC_DMAErrorCh1(DMA_HandleTypeDef *hdma)   

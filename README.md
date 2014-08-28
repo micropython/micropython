@@ -92,4 +92,4 @@ You will need the dfu-util program, on Arch Linux it's dfu-util-git in the
 AUR.  If the above does not work it may be because you don't have the
 correct permissions.  Try then:
 
-    $ sudo dfu-util -a 0 -D build-PYBV10/firmware.dfu
+    $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV10/firmware.dfu

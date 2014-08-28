@@ -71,22 +71,24 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 //#define MP_OBJ_IS_SMALL_INT(o) ((((mp_int_t)(o)) & 1) != 0)
 //#define MP_OBJ_IS_QSTR(o) ((((mp_int_t)(o)) & 3) == 2)
 //#define MP_OBJ_IS_OBJ(o) ((((mp_int_t)(o)) & 3) == 0)
-#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking a string, use below macro for that
+#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
 #define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
+#define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)(o))->type->binary_op == mp_obj_str_binary_op))
+#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->binary_op == mp_obj_fun_binary_op))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((small_int) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
 #define MP_OBJ_QSTR_VALUE(o) (((mp_int_t)(o)) >> 2)
-#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((mp_uint_t)qstr) << 2) | 2))
+#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((mp_uint_t)(qstr)) << 2) | 2))
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
 
-#define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_native_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_builtin_t obj_name
 
-#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_native_t obj_name = {{&mp_type_fun_native}, is_kw, n_args_min, n_args_max, (void *)fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_builtin_t obj_name = {{&mp_type_fun_builtin}, is_kw, n_args_min, n_args_max, (void *)fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 0, 0, (mp_fun_0_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 1, 1, (mp_fun_1_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 2, 2, (mp_fun_2_t)fun_name)
@@ -178,7 +180,6 @@ typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
-typedef mp_obj_t (*mp_fun_t)(void);
 typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
 
@@ -210,7 +211,7 @@ typedef struct _mp_buffer_info_t {
     // them with ver = sizeof(struct). Cons: overkill for *micro*?
     //int ver; // ?
 
-    void *buf;
+    void *buf;    // can be NULL if len == 0
     mp_int_t len; // in bytes
     int typecode; // as per binary.h
 
@@ -228,13 +229,14 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
 
 // Stream protocol
+#define MP_STREAM_ERROR (-1)
 typedef struct _mp_stream_p_t {
-    // On error, functions should return -1 and fill in *errcode (values are
-    // implementation-dependent, but will be exposed to user, e.g. via exception).
-    mp_int_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
-    mp_int_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
+    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
+    // are implementation-dependent, but will be exposed to user, e.g. via exception).
+    mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
+    mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     // add seek() ?
-    int is_bytes : 1;
+    int is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
 struct _mp_obj_type_t {
@@ -303,7 +305,7 @@ extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
 extern const mp_obj_type_t mp_type_gen_instance;
-extern const mp_obj_type_t mp_type_fun_native;
+extern const mp_obj_type_t mp_type_fun_builtin;
 extern const mp_obj_type_t mp_type_fun_bc;
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
@@ -311,6 +313,7 @@ extern const mp_obj_type_t mp_type_classmethod;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
+extern const mp_obj_type_t mp_type_reversed;
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -375,8 +378,10 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, uint n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code);
-mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun);
+mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, qstr *args, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code);
+mp_obj_t mp_obj_new_fun_native(mp_uint_t n_args, void *fun_data);
+mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig);
+mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
@@ -423,6 +428,7 @@ void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
 void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
 uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
+mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 
@@ -453,10 +459,13 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
+void mp_init_emergency_exception_buf(void);
 
 // str
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data);
 mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in);
+mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len);
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
 uint mp_obj_str_get_hash(mp_obj_t self_in);
 uint mp_obj_str_get_len(mp_obj_t self_in);
@@ -518,17 +527,15 @@ mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items);
 
 // functions
 #define MP_OBJ_FUN_ARGS_MAX (0xffff) // to set maximum value in n_args_max below
-typedef struct _mp_obj_fun_native_t { // need this so we can define const objects (to go in ROM)
+typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go in ROM
     mp_obj_base_t base;
     bool is_kw : 1;
-    uint n_args_min : 15; // inclusive
-    uint n_args_max : 16; // inclusive
-    void *fun;
-    // TODO add mp_map_t *globals
-    // for const function objects, make an empty, const map
-    // such functions won't be able to access the global scope, but that's probably okay
-} mp_obj_fun_native_t;
+    mp_uint_t n_args_min : 15; // inclusive
+    mp_uint_t n_args_max : 16; // inclusive
+    void *fun; // must be a pointer to a callable function in ROM
+} mp_obj_fun_builtin_t;
 
+mp_obj_t mp_obj_fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 const char *mp_obj_fun_get_name(mp_const_obj_t fun);
 const char *mp_obj_code_get_name(const byte *code_info);
 

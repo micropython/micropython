@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_ltdc.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of LTDC HAL module.
   ******************************************************************************
   * @attention
@@ -59,9 +59,9 @@
 /* Exported types ------------------------------------------------------------*/
 
 #define MAX_LAYER  2
-    
+
 /** 
-  * @brief  LTDC color structure definition  
+  * @brief  LTDC color structure definition
   */
 typedef struct
 {
@@ -70,15 +70,15 @@ typedef struct
 
   uint8_t Green;                   /*!< Configures the green value.
                                         This parameter must be a number between Min_Data = 0x00 and Max_Data = 0xFF. */
-            
+
   uint8_t Red;                     /*!< Configures the red value. 
                                         This parameter must be a number between Min_Data = 0x00 and Max_Data = 0xFF. */
-                                          
-  uint8_t Reserved;                /*!< Reserved 0xFF */                                          
-} LTDC_ColorTypeDef;    
-    
+
+  uint8_t Reserved;                /*!< Reserved 0xFF */
+} LTDC_ColorTypeDef;
+
 /** 
-  * @brief  LTDC Init structure definition  
+  * @brief  LTDC Init structure definition
   */
 typedef struct
 {
@@ -95,7 +95,7 @@ typedef struct
                                                       This parameter can be one of value of @ref LTDC_PC_POLARITY */
 
   uint32_t            HorizontalSync;            /*!< configures the number of Horizontal synchronization width.
-                                                      This parameter must be a number between Min_Data = 0x000 and Max_Data = 0xFFF. */ 
+                                                      This parameter must be a number between Min_Data = 0x000 and Max_Data = 0xFFF. */
 
   uint32_t            VerticalSync;              /*!< configures the number of Vertical synchronization heigh. 
                                                       This parameter must be a number between Min_Data = 0x000 and Max_Data = 0x7FF. */
@@ -104,42 +104,41 @@ typedef struct
                                                       This parameter must be a number between Min_Data = LTDC_HorizontalSync and Max_Data = 0xFFF. */
 
   uint32_t            AccumulatedVBP;            /*!< configures the accumulated vertical back porch heigh.
-                                                      This parameter must be a number between Min_Data = LTDC_VerticalSync and Max_Data = 0x7FF. */  
-            
-  uint32_t            AccumulatedActiveW;        /*!< configures the accumulated active width. This parameter 
-                                                      This parameter must be a number between Min_Data = LTDC_AccumulatedHBP and Max_Data = 0xFFF. */ 
+                                                      This parameter must be a number between Min_Data = LTDC_VerticalSync and Max_Data = 0x7FF. */
 
-  uint32_t            AccumulatedActiveH;        /*!< configures the accumulated active heigh. This parameter 
+  uint32_t            AccumulatedActiveW;        /*!< configures the accumulated active width. 
+                                                      This parameter must be a number between Min_Data = LTDC_AccumulatedHBP and Max_Data = 0xFFF. */
+
+  uint32_t            AccumulatedActiveH;        /*!< configures the accumulated active heigh.
                                                       This parameter must be a number between Min_Data = LTDC_AccumulatedVBP and Max_Data = 0x7FF. */
 
-  uint32_t            TotalWidth;                /*!< configures the total width. This parameter 
+  uint32_t            TotalWidth;                /*!< configures the total width.
                                                       This parameter must be a number between Min_Data = LTDC_AccumulatedActiveW and Max_Data = 0xFFF. */
 
-  uint32_t            TotalHeigh;                /*!< configures the total heigh. This parameter 
+  uint32_t            TotalHeigh;                /*!< configures the total heigh.
                                                       This parameter must be a number between Min_Data = LTDC_AccumulatedActiveH and Max_Data = 0x7FF. */
-  
-  LTDC_ColorTypeDef   Backcolor;                 /*!< Configures the background color. */
 
+  LTDC_ColorTypeDef   Backcolor;                 /*!< Configures the background color. */
 } LTDC_InitTypeDef;
 
 
 /** 
-  * @brief  LTDC Layer structure definition  
+  * @brief  LTDC Layer structure definition
   */
 typedef struct
 {
   uint32_t WindowX0;                   /*!< Configures the Window Horizontal Start Position.
                                             This parameter must be a number between Min_Data = 0x000 and Max_Data = 0xFFF. */
-            
+
   uint32_t WindowX1;                   /*!< Configures the Window Horizontal Stop Position.
                                             This parameter must be a number between Min_Data = 0x000 and Max_Data = 0xFFF. */
-  
+
   uint32_t WindowY0;                   /*!< Configures the Window vertical Start Position.
                                             This parameter must be a number between Min_Data = 0x000 and Max_Data = 0xFFF. */
 
   uint32_t WindowY1;                   /*!< Configures the Window vertical Stop Position.
                                             This parameter must be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF. */
-  
+
   uint32_t PixelFormat;                /*!< Specifies the pixel format. 
                                             This parameter can be one of value of @ref LTDC_Pixelformat */
 
@@ -154,60 +153,58 @@ typedef struct
 
   uint32_t BlendingFactor2;            /*!< Select the blending factor 2. 
                                             This parameter can be one of value of @ref LTDC_BlendingFactor2 */
-            
+
   uint32_t FBStartAdress;              /*!< Configures the color frame buffer address */
 
   uint32_t ImageWidth;                 /*!< Configures the color frame buffer line length. 
                                             This parameter must be a number between Min_Data = 0x0000 and Max_Data = 0x1FFF. */
-                                                 
+
   uint32_t ImageHeight;                /*!< Specifies the number of line in frame buffer. 
                                             This parameter must be a number between Min_Data = 0x000 and Max_Data = 0x7FF. */
-  
+
   LTDC_ColorTypeDef   Backcolor;       /*!< Configures the layer background color. */
-  
 } LTDC_LayerCfgTypeDef;
 
 /** 
-  * @brief  HAL LTDC State structures definition  
-  */ 
+  * @brief  HAL LTDC State structures definition
+  */
 typedef enum
 {
-  HAL_LTDC_STATE_RESET             = 0x00,    /*!< LTDC not yet initialized or disabled */  
+  HAL_LTDC_STATE_RESET             = 0x00,    /*!< LTDC not yet initialized or disabled */
   HAL_LTDC_STATE_READY             = 0x01,    /*!< LTDC initialized and ready for use   */
-  HAL_LTDC_STATE_BUSY              = 0x02,    /*!< LTDC internal process is ongoing     */     
-  HAL_LTDC_STATE_TIMEOUT           = 0x03,    /*!< LTDC Timeout state                   */  
-  HAL_LTDC_STATE_ERROR             = 0x04     /*!< LTDC state error                     */      
-                                                                        
+  HAL_LTDC_STATE_BUSY              = 0x02,    /*!< LTDC internal process is ongoing     */
+  HAL_LTDC_STATE_TIMEOUT           = 0x03,    /*!< LTDC Timeout state                   */
+  HAL_LTDC_STATE_ERROR             = 0x04     /*!< LTDC state error                     */
 }HAL_LTDC_StateTypeDef;
 
 /** 
-  * @brief  LTDC handle Structure definition  
-  */   
+  * @brief  LTDC handle Structure definition
+  */
 typedef struct
-{  
+{
   LTDC_TypeDef                *Instance;                /*!< LTDC Register base address                */
-  
+
   LTDC_InitTypeDef            Init;                     /*!< LTDC parameters                           */
-  
+
   LTDC_LayerCfgTypeDef        LayerCfg[MAX_LAYER];      /*!< LTDC Layers parameters                    */
-  
-  HAL_LockTypeDef             Lock;                     /*!< LTDC Lock                                 */  
-  
+
+  HAL_LockTypeDef             Lock;                     /*!< LTDC Lock                                 */
+
   __IO HAL_LTDC_StateTypeDef  State;                    /*!< LTDC state                                */
 
-  __IO uint32_t               ErrorCode;                /*!< LTDC Error code                           */  
-  
-} LTDC_HandleTypeDef;    
+  __IO uint32_t               ErrorCode;                /*!< LTDC Error code                           */
+
+} LTDC_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 /** @defgroup LTDC_Exported_Constants
   * @{
   */
- 
+
 /** @defgroup LTDC_Layer 
   * @{
   */  
-#define IS_LTDC_LAYER(LAYER) ((LAYER) <= MAX_LAYER)           
+#define IS_LTDC_LAYER(LAYER) ((LAYER) <= MAX_LAYER)
 /**
   * @}
   */
@@ -331,7 +328,7 @@ typedef struct
   */
 #define LTDC_PIXEL_FORMAT_ARGB8888                  ((uint32_t)0x00000000)      /*!< ARGB8888 LTDC pixel format */
 #define LTDC_PIXEL_FORMAT_RGB888                    ((uint32_t)0x00000001)      /*!< RGB888 LTDC pixel format   */
-#define LTDC_PIXEL_FORMAT_RGB565                    ((uint32_t)0x00000002)      /*!< RGB565 LTDC pixel format   */        
+#define LTDC_PIXEL_FORMAT_RGB565                    ((uint32_t)0x00000002)      /*!< RGB565 LTDC pixel format   */
 #define LTDC_PIXEL_FORMAT_ARGB1555                  ((uint32_t)0x00000003)      /*!< ARGB1555 LTDC pixel format */
 #define LTDC_PIXEL_FORMAT_ARGB4444                  ((uint32_t)0x00000004)      /*!< ARGB4444 LTDC pixel format */
 #define LTDC_PIXEL_FORMAT_L8                        ((uint32_t)0x00000005)      /*!< L8 LTDC pixel format       */
@@ -388,7 +385,7 @@ typedef struct
 
 /** @defgroup LTDC_Interrupts 
   * @{
-  */                           
+  */
 #define LTDC_IT_LI                      LTDC_IER_LIE
 #define LTDC_IT_FU                      LTDC_IER_FUIE
 #define LTDC_IT_TE                      LTDC_IER_TERRIE
@@ -411,13 +408,20 @@ typedef struct
                                ((FLAG) == LTDC_FLAG_TERR) || ((FLAG) == LTDC_FLAG_RR))
 /**
   * @}
-  */    
+  */
 
 /**
   * @}
   */  
 
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset LTDC handle state
+  * @param  __HANDLE__: specifies the LTDC handle.
+  * @retval None
+  */
+#define __HAL_LTDC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_LTDC_STATE_RESET)
+
 /**
   * @brief  Enable the LTDC.
   * @param  __HANDLE__: LTDC handle
@@ -442,7 +446,6 @@ typedef struct
 #define __HAL_LTDC_LAYER(__HANDLE__, __LAYER__)   ((LTDC_Layer_TypeDef *)(((uint32_t)((__HANDLE__)->Instance)) + 0x84 + (0x80*(__LAYER__))))
 
 #define __HAL_LTDC_LAYER_ENABLE(__HANDLE__, __LAYER__)  ((__HAL_LTDC_LAYER((__HANDLE__), (__LAYER__)))->CR |= (uint32_t)LTDC_LxCR_LEN)
-
 
 /**
   * @brief  Disable the LTDC Layer.
@@ -485,7 +488,7 @@ typedef struct
   *            @arg LTDC_FLAG_RR: Register Reload Interrupt Flag 
   * @retval None
   */
-#define __HAL_LTDC_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->ICR |= (__FLAG__))
+#define __HAL_LTDC_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->ICR = (__FLAG__))
 
 /**
   * @brief  Enables the specified LTDC interrupts.
@@ -525,10 +528,10 @@ typedef struct
   * @retval The state of INTERRUPT (SET or RESET).
   */
 #define __HAL_LTDC_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__) ((__HANDLE__)->Instance->ISR & (__INTERRUPT__))
-    
-/* Exported functions --------------------------------------------------------*/  
 
-/* Initialization and de-initialization functions *******************************/
+/* Exported functions --------------------------------------------------------*/
+
+/* Initialization and de-initialization functions *****************************/
 HAL_StatusTypeDef HAL_LTDC_Init(LTDC_HandleTypeDef *hltdc);
 HAL_StatusTypeDef HAL_LTDC_DeInit(LTDC_HandleTypeDef *hltdc);
 void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc);
@@ -536,10 +539,10 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* hltdc);
 void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc);
 void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc);
 
-/* IO operation functions *******************************************************/
+/* IO operation functions *****************************************************/
 void  HAL_LTDC_IRQHandler(LTDC_HandleTypeDef *hltdc);
 
-/* Peripheral Control functions *************************************************/
+/* Peripheral Control functions ***********************************************/
 HAL_StatusTypeDef HAL_LTDC_ConfigLayer(LTDC_HandleTypeDef *hltdc, LTDC_LayerCfgTypeDef *pLayerCfg, uint32_t LayerIdx);
 HAL_StatusTypeDef HAL_LTDC_SetWindowSize(LTDC_HandleTypeDef *hltdc, uint32_t XSize, uint32_t YSize, uint32_t LayerIdx);
 HAL_StatusTypeDef HAL_LTDC_SetWindowPosition(LTDC_HandleTypeDef *hltdc, uint32_t X0, uint32_t Y0, uint32_t LayerIdx);
@@ -556,7 +559,7 @@ HAL_StatusTypeDef HAL_LTDC_ProgramLineEvent(LTDC_HandleTypeDef *hltdc, uint32_t 
 HAL_StatusTypeDef HAL_LTDC_EnableDither(LTDC_HandleTypeDef *hltdc);
 HAL_StatusTypeDef HAL_LTDC_DisableDither(LTDC_HandleTypeDef *hltdc);
 
-/* Peripheral State functions ***************************************************/
+/* Peripheral State functions *************************************************/
 HAL_LTDC_StateTypeDef HAL_LTDC_GetState(LTDC_HandleTypeDef *hltdc);
 uint32_t              HAL_LTDC_GetError(LTDC_HandleTypeDef *hltdc);
 

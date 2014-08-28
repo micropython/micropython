@@ -80,14 +80,9 @@ mp_obj_t mp_load_const_dec(qstr qstr);
 mp_obj_t mp_load_const_str(qstr qstr);
 mp_obj_t mp_load_const_bytes(qstr qstr);
 
-mp_obj_t mp_make_function_n(int n_args, void *fun); // fun must have the correct signature for n_args fixed arguments
-mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun);
-mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun); // min and max are inclusive
-
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);
 mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
-mp_obj_t mp_call_function_n_kw_for_native(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args);
 mp_obj_t mp_call_function_n_kw(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw(uint n_args, uint n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_t *args);
@@ -114,6 +109,12 @@ void mp_import_all(mp_obj_t module);
 
 // Raise NotImplementedError with given message
 NORETURN void mp_not_implemented(const char *msg);
+
+// helper functions for native/viper code
+mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
+mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
+mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, uint n_args_kw, const mp_obj_t *args);
+NORETURN void mp_native_raise(mp_obj_t o);
 
 extern struct _mp_obj_list_t mp_sys_path_obj;
 extern struct _mp_obj_list_t mp_sys_argv_obj;

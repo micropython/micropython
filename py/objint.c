@@ -38,6 +38,7 @@
 #include "smallint.h"
 #include "mpz.h"
 #include "objint.h"
+#include "objstr.h"
 #include "runtime0.h"
 #include "runtime.h"
 
@@ -57,14 +58,14 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, co
             if (MP_OBJ_IS_INT(args[0])) {
                 // already an int (small or long), just return it
                 return args[0];
-            } else if (MP_OBJ_IS_STR(args[0])) {
+            } else if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
                 // a string, parse it
                 uint l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_integer(s, l, 0);
 #if MICROPY_PY_BUILTINS_FLOAT
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
-                return MP_OBJ_NEW_SMALL_INT((mp_int_t)(MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
+                return MP_OBJ_NEW_SMALL_INT((MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
 #endif
             } else {
                 // try to convert to small int (eg from bool)
@@ -215,6 +216,10 @@ char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_ob
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
+mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return mp_obj_get_int(self_in) >= 0;
 }
@@ -285,7 +290,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
         // true acts as 0
         return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(1));
     } else if (op == MP_BINARY_OP_MULTIPLY) {
-        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
+        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_bytes) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
             // multiply is commutative for these types, so delegate to them
             return mp_binary_op(op, rhs_in, lhs_in);
         }

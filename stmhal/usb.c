@@ -32,18 +32,27 @@
 #include "usbd_cdc_interface.h"
 #include "usbd_msc_storage.h"
 
-#include "misc.h"
 #include "mpconfig.h"
+#include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
+#include "stream.h"
+#include "bufhelper.h"
 #include "usb.h"
 
 #ifdef USE_DEVICE_MODE
 USBD_HandleTypeDef hUSBDDevice;
 #endif
 
-static int dev_is_enabled = 0;
-mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
+STATIC int dev_is_enabled = 0;
+STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
+
+void pyb_usb_init0(void) {
+    // create an exception object for interrupting by VCP
+    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
+    USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
+}
 
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
 #ifdef USE_DEVICE_MODE
@@ -69,9 +78,6 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
         USBD_Start(&hUSBDDevice);
     }
     dev_is_enabled = 1;
-
-    // create an exception object for interrupting by VCP
-    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
 #endif
 }
 
@@ -99,22 +105,14 @@ void usb_vcp_set_interrupt_char(int c) {
     }
 }
 
-int usb_vcp_rx_num(void) {
-    return USBD_CDC_RxNum();
-}
-
-char usb_vcp_rx_get(void) {
-    return USBD_CDC_RxGet();
-}
-
-void usb_vcp_send_str(const char *str) {
-    usb_vcp_send_strn(str, strlen(str));
+int usb_vcp_recv_byte(uint8_t *c) {
+    return USBD_CDC_Rx(c, 1, 0);
 }
 
 void usb_vcp_send_strn(const char *str, int len) {
 #ifdef USE_DEVICE_MODE
     if (dev_is_enabled) {
-        USBD_CDC_Tx(str, len);
+        USBD_CDC_TxAlways((const uint8_t*)str, len);
     }
 #endif
 }
@@ -124,9 +122,9 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
     if (dev_is_enabled) {
         for (const char *top = str + len; str < top; str++) {
             if (*str == '\n') {
-                USBD_CDC_Tx("\r\n", 2);
+                USBD_CDC_TxAlways((const uint8_t*)"\r\n", 2);
             } else {
-                USBD_CDC_Tx(str, 1);
+                USBD_CDC_TxAlways((const uint8_t*)str, 1);
             }
         }
     }
@@ -138,6 +136,160 @@ void usb_hid_send_report(uint8_t *buf) {
     USBD_HID_SendReport(&hUSBDDevice, buf, 4);
 #endif
 }
+
+/******************************************************************************/
+// Micro Python bindings for USB VCP
+
+/// \moduleref pyb
+/// \class USB_VCP - USB virtual comm port
+///
+/// The USB_VCP class allows creation of an object representing the USB
+/// virtual comm port.  It can be used to read and write data over USB to
+/// the connected host.
+
+typedef struct _pyb_usb_vcp_obj_t {
+    mp_obj_base_t base;
+} pyb_usb_vcp_obj_t;
+
+STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}};
+
+STATIC void pyb_usb_vcp_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    print(env, "USB_VCP()");
+}
+
+/// \classmethod \constructor()
+/// Create a new USB_VCP object.
+STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return the USB VCP object
+    return (mp_obj_t)&pyb_usb_vcp_obj;
+}
+
+/// \method any()
+/// Return `True` if any characters waiting, else `False`.
+STATIC mp_obj_t pyb_usb_vcp_any(mp_obj_t self_in) {
+    if (USBD_CDC_RxNum() > 0) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_any_obj, pyb_usb_vcp_any);
+
+/// \method send(data, *, timeout=5000)
+/// Send data over the USB VCP:
+///
+///   - `data` is the data to send (an integer to send, or a buffer object).
+///   - `timeout` is the timeout in milliseconds to wait for the send.
+///
+/// Return value: number of bytes sent.
+STATIC const mp_arg_t pyb_usb_vcp_send_args[] = {
+    { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+};
+#define PYB_USB_VCP_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_usb_vcp_send_args)
+
+STATIC mp_obj_t pyb_usb_vcp_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_val_t vals[PYB_USB_VCP_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USB_VCP_SEND_NUM_ARGS, pyb_usb_vcp_send_args, vals);
+
+    // get the buffer to send from
+    mp_buffer_info_t bufinfo;
+    uint8_t data[1];
+    pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
+
+    // send the data
+    int ret = USBD_CDC_Tx(bufinfo.buf, bufinfo.len, vals[1].u_int);
+
+    return mp_obj_new_int(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_send_obj, 1, pyb_usb_vcp_send);
+
+/// \method recv(data, *, timeout=5000)
+///
+/// Receive data on the bus:
+///
+///   - `data` can be an integer, which is the number of bytes to receive,
+///     or a mutable buffer, which will be filled with received bytes.
+///   - `timeout` is the timeout in milliseconds to wait for the receive.
+///
+/// Return value: if `data` is an integer then a new buffer of the bytes received,
+/// otherwise the number of bytes read into `data` is returned.
+STATIC mp_obj_t pyb_usb_vcp_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_val_t vals[PYB_USB_VCP_SEND_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USB_VCP_SEND_NUM_ARGS, pyb_usb_vcp_send_args, vals);
+
+    // get the buffer to receive into
+    mp_buffer_info_t bufinfo;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &bufinfo);
+
+    // receive the data
+    int ret = USBD_CDC_Rx(bufinfo.buf, bufinfo.len, vals[1].u_int);
+
+    // return the received data
+    if (o_ret == MP_OBJ_NULL) {
+        return mp_obj_new_int(ret); // number of bytes read into given buffer
+    } else {
+        return mp_obj_str_builder_end_with_len(o_ret, ret); // create a new buffer
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);
+
+STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+    int ret = USBD_CDC_Rx((byte*)buf, size, -1);
+    return ret;
+}
+
+STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+    int ret = USBD_CDC_Tx((const byte*)buf, size, -1);
+    return ret;
+}
+
+mp_obj_t pyb_usb_vcp___exit__(uint n_args, const mp_obj_t *args) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
+
+STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usb_vcp_any_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_vcp_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_vcp_recv_obj },
+    /// \method read([nbytes])
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    /// \method readall()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    /// \method readline()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    /// \method write(buf)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    /// \method close()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&pyb_usb_vcp___exit___obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
+
+STATIC const mp_stream_p_t pyb_usb_vcp_stream_p = {
+    .read = pyb_usb_vcp_read,
+    .write = pyb_usb_vcp_write,
+};
+
+const mp_obj_type_t pyb_usb_vcp_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_USB_VCP,
+    .print = pyb_usb_vcp_print,
+    .make_new = pyb_usb_vcp_make_new,
+    .getiter = mp_identity,
+    .iternext = mp_stream_unbuffered_iter,
+    .stream_p = &pyb_usb_vcp_stream_p,
+    .locals_dict = (mp_obj_t)&pyb_usb_vcp_locals_dict,
+};
 
 /******************************************************************************/
 // code for experimental USB OTG support

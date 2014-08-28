@@ -17,6 +17,7 @@
 #define MICROPY_PY_BUILTINS_SET     (0)
 #define MICROPY_PY_BUILTINS_SLICE   (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (0)
+#define MICROPY_PY_GC               (0)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_MATH             (0)
@@ -34,6 +35,8 @@
 
 #define BYTES_PER_WORD (4)
 
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 
@@ -43,7 +46,7 @@ typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
 // extra built in names to add to the global namespace
-extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 

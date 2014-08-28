@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_rng.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of RNG HAL module.
   ******************************************************************************
   * @attention
@@ -43,6 +43,8 @@
  extern "C" {
 #endif
 
+#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx) ||\
+    defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal_def.h"
 
@@ -121,6 +123,12 @@ typedef struct
   
 /* Exported macro ------------------------------------------------------------*/
 
+/** @brief Reset RNG handle state
+  * @param  __HANDLE__: RNG Handle
+  * @retval None
+  */
+#define __HAL_RNG_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_RNG_STATE_RESET)
+
 /**
   * @brief  Enables the RNG peripheral.
   * @param  __HANDLE__: RNG Handle
@@ -149,7 +157,7 @@ typedef struct
   * @param  __FLAG__: RNG flag
   * @retval None
   */
-#define __HAL_RNG_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) &= ~(__FLAG__))
+#define __HAL_RNG_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) = ~(__FLAG__))
     
 /**
   * @brief  Enables the RNG interrupts.
@@ -194,6 +202,8 @@ void HAL_RNG_ErrorCallback(RNG_HandleTypeDef *hrng);
 
 /* Peripheral State functions  **************************************************/
 HAL_RNG_StateTypeDef HAL_RNG_GetState(RNG_HandleTypeDef *hrng);
+
+#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx */
 
 /**
   * @}

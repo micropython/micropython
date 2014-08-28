@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_adc.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of ADC HAL module.
   ******************************************************************************
   * @attention
@@ -61,8 +61,8 @@
   */ 
 typedef struct 
 {
-  uint32_t InjectedChannel;                /*!< Configure the ADC injected channel
-                                                This parameter can be a value of @ref ADC_channels. */ 
+  uint32_t InjectedChannel;                /*!< Configure the ADC injected channel.
+                                                This parameter can be a value of @ref ADC_channels */ 
   uint32_t InjectedRank;                   /*!< The rank in the injected group sequencer
                                                 This parameter must be a number between Min_Data = 1 and Max_Data = 4. */ 
   uint32_t InjectedSamplingTime;           /*!< The sample time value to be set for the selected channel.
@@ -77,9 +77,9 @@ typedef struct
   uint32_t InjectedDiscontinuousConvMode;  /*!< Specifies whether the conversion is performed in Discontinuous mode or not for injected channels.
                                                 This parameter can be set to ENABLE or DISABLE. */
   uint32_t ExternalTrigInjecConvEdge;      /*!< Select the external trigger edge and enable the trigger of an injected channels. 
-                                                This parameter can be a value of @ref ADC_External_trigger_Source_Injected. */
+                                                This parameter can be a value of @ref ADCEx_External_trigger_edge_Injected */
   uint32_t ExternalTrigInjecConv;          /*!< Select the external event used to trigger the start of conversion of a injected channels.
-                                                This parameter can be a value of @ref ADC_External_trigger_Source_Injected */
+                                                This parameter can be a value of @ref ADCEx_External_trigger_Source_Injected */
 }ADC_InjectionConfTypeDef;
 
 /** 
@@ -88,9 +88,9 @@ typedef struct
 typedef struct
 {
   uint32_t Mode;              /*!< Configures the ADC to operate in independent or multi mode. 
-                                   This parameter can be a value of @ref ADC_Common_mode */
+                                   This parameter can be a value of @ref ADCEx_Common_mode */
   uint32_t DMAAccessMode;     /*!< Configures the Direct memory access mode for multi ADC mode.
-                                   This parameter can be a value of @ref ADC_Direct_memory_access_mode_for_multi_mode */
+                                   This parameter can be a value of @ref ADCEx_Direct_memory_access_mode_for_multi_mode */
   uint32_t TwoSamplingDelay;  /*!< Configures the Delay between 2 sampling phases.
                                    This parameter can be a value of @ref ADC_delay_between_2_sampling_phases */
 }ADC_MultiModeTypeDef;

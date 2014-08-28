@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -68,9 +69,12 @@
 ///     dac = DAC(1)
 ///     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
+#if MICROPY_HW_ENABLE_DAC
+
 STATIC DAC_HandleTypeDef DAC_Handle;
 
 void dac_init(void) {
+    memset(&DAC_Handle, 0, sizeof DAC_Handle);
     DAC_Handle.Instance = DAC;
     DAC_Handle.State = HAL_DAC_STATE_RESET;
     HAL_DAC_Init(&DAC_Handle);
@@ -140,7 +144,10 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
 
     // stop anything already going on
     HAL_DAC_Stop(&DAC_Handle, dac->dac_channel);
-    HAL_DAC_Stop_DMA(&DAC_Handle, dac->dac_channel);
+    if ((dac->dac_channel == DAC_CHANNEL_1 && DAC_Handle.DMA_Handle1 != NULL)
+            || (dac->dac_channel == DAC_CHANNEL_2 && DAC_Handle.DMA_Handle2 != NULL)) {
+        HAL_DAC_Stop_DMA(&DAC_Handle, dac->dac_channel);
+    }
 
     dac->state = 0;
 
@@ -354,3 +361,5 @@ const mp_obj_type_t pyb_dac_type = {
     .make_new = pyb_dac_make_new,
     .locals_dict = (mp_obj_t)&pyb_dac_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_DAC

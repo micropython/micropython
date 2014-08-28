@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -33,6 +34,8 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "mpz.h"
+#include "objint.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "stackctrl.h"
@@ -152,11 +155,13 @@ mp_int_t mp_obj_hash(mp_obj_t o_in) {
         return 1; // needs to hash to same as the integer 1, since True==1
     } else if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return MP_OBJ_SMALL_INT_VALUE(o_in);
+    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_int)) {
+        return mp_obj_int_hash(o_in);
     } else if (MP_OBJ_IS_STR(o_in) || MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         return mp_obj_str_get_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_NoneType)) {
         return (mp_int_t)o_in;
-    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_fun_native) || MP_OBJ_IS_TYPE(o_in, &mp_type_fun_bc)) {
+    } else if (MP_OBJ_IS_FUN(o_in)) {
         return (mp_int_t)o_in;
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_tuple)) {
         return mp_obj_tuple_hash(o_in);
@@ -355,6 +360,16 @@ uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool
     return i;
 }
 
+// will raise a TypeError if object has no length
+mp_obj_t mp_obj_len(mp_obj_t o_in) {
+    mp_obj_t len = mp_obj_len_maybe(o_in);
+    if (len == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+    } else {
+        return len;
+    }
+}
+
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
@@ -363,7 +378,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         MP_OBJ_IS_STR(o_in) ||
 #endif
         MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
-        return MP_OBJ_NEW_SMALL_INT((mp_int_t)mp_obj_str_get_len(o_in));
+        return MP_OBJ_NEW_SMALL_INT(mp_obj_str_get_len(o_in));
     } else {
         mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
@@ -405,7 +420,7 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
         return false;
     }
     int ret = type->buffer_p.get_buffer(obj, bufinfo, flags);
-    if (ret != 0 || bufinfo->buf == NULL) {
+    if (ret != 0) {
         return false;
     }
     return true;

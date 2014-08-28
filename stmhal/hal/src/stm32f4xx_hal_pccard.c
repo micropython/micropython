@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pccard.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   PCCARD HAL module driver.
   *          This file provides a generic firmware to drive PCCARD memories mounted 
   *          as external device.
@@ -116,7 +116,8 @@
     
 /**
   * @brief  Perform the PCCARD memory Initialization sequence
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @param  ComSpaceTiming: Common space timing structure
   * @param  AttSpaceTiming: Attribute space timing structure
   * @param  IOSpaceTiming: IO space timing structure     
@@ -163,7 +164,8 @@ HAL_StatusTypeDef HAL_PCCARD_Init(PCCARD_HandleTypeDef *hpccard, FMC_NAND_PCC_Ti
 
 /**
   * @brief  Perform the PCCARD memory De-initialization sequence
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval HAL status
   */
 HAL_StatusTypeDef  HAL_PCCARD_DeInit(PCCARD_HandleTypeDef *hpccard)
@@ -185,7 +187,8 @@ HAL_StatusTypeDef  HAL_PCCARD_DeInit(PCCARD_HandleTypeDef *hpccard)
 
 /**
   * @brief  PCCARD MSP Init
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval None
   */
 __weak void HAL_PCCARD_MspInit(PCCARD_HandleTypeDef *hpccard)
@@ -197,7 +200,8 @@ __weak void HAL_PCCARD_MspInit(PCCARD_HandleTypeDef *hpccard)
 
 /**
   * @brief  PCCARD MSP DeInit
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval None
   */
 __weak void HAL_PCCARD_MspDeInit(PCCARD_HandleTypeDef *hpccard)
@@ -227,8 +231,9 @@ __weak void HAL_PCCARD_MspDeInit(PCCARD_HandleTypeDef *hpccard)
   
 /**
   * @brief  Read Compact Flash's ID.
-  * @param  hpccard : pointer to PCCARD handle
-  * @param  CF_ID: Compact flash ID structure.  
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
+  * @param  CompactFlash_ID: Compact flash ID structure.  
   * @param  pStatus: pointer to compact flash status         
   * @retval HAL status
   *   
@@ -289,10 +294,11 @@ HAL_StatusTypeDef HAL_CF_Read_ID(PCCARD_HandleTypeDef *hpccard, uint8_t CompactF
    
 /**
   * @brief  Read sector from PCCARD memory
-  * @param  hpccard : pointer to PCCARD handle
-  * @param  pBuffer : pointer to destination read buffer
-  * @param  SectorAddress : Sector address to read
-  * @param  pStatus  : pointer to CF status
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
+  * @param  pBuffer: pointer to destination read buffer
+  * @param  SectorAddress: Sector address to read
+  * @param  pStatus: pointer to CF status
   * @retval HAL status
   */    
 HAL_StatusTypeDef HAL_CF_Read_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t *pBuffer, uint16_t SectorAddress, uint8_t *pStatus)
@@ -364,10 +370,11 @@ HAL_StatusTypeDef HAL_CF_Read_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t *pB
 
 /**
   * @brief  Write sector to PCCARD memory
-  * @param  hpccard : pointer to PCCARD handle
-  * @param  pBuffer : pointer to source write buffer
-  * @param  SectorAddress : Sector address to write
-  * @param  pStatus  : pointer to CF status
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
+  * @param  pBuffer: pointer to source write buffer
+  * @param  SectorAddress: Sector address to write
+  * @param  pStatus: pointer to CF status
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_CF_Write_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t *pBuffer, uint16_t SectorAddress,  uint8_t *pStatus)
@@ -437,9 +444,10 @@ HAL_StatusTypeDef HAL_CF_Write_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t *p
 
 /**
   * @brief  Erase sector from PCCARD memory 
-  * @param  hpccard : pointer to PCCARD handle
-  * @param  SectorAddress : Sector address to erase
-  * @param  pStatus  : pointer to CF status
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
+  * @param  SectorAddress: Sector address to erase
+  * @param  pStatus: pointer to CF status
   * @retval HAL status
   */
 HAL_StatusTypeDef  HAL_CF_Erase_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t SectorAddress, uint8_t *pStatus)
@@ -495,7 +503,8 @@ HAL_StatusTypeDef  HAL_CF_Erase_Sector(PCCARD_HandleTypeDef *hpccard, uint16_t S
 
 /**
   * @brief  Reset the PCCARD memory 
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_CF_Reset(PCCARD_HandleTypeDef *hpccard)
@@ -533,7 +542,8 @@ HAL_StatusTypeDef HAL_CF_Reset(PCCARD_HandleTypeDef *hpccard)
 
 /**
   * @brief  This function handles PCCARD device interrupt request.
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval HAL status
 */
 void HAL_PCCARD_IRQHandler(PCCARD_HandleTypeDef *hpccard)
@@ -582,7 +592,8 @@ void HAL_PCCARD_IRQHandler(PCCARD_HandleTypeDef *hpccard)
 
 /**
   * @brief  PCCARD interrupt feature callback
-  * @param  hpccard : pointer to PCCARD handle
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
   * @retval None
   */
 __weak void HAL_PCCARD_ITCallback(PCCARD_HandleTypeDef *hpccard)
@@ -604,7 +615,7 @@ __weak void HAL_PCCARD_ITCallback(PCCARD_HandleTypeDef *hpccard)
                       ##### PCCARD State functions #####
   ==============================================================================  
   [..]
-    This subsection permit to get in run-time the status of the PCCARD controller 
+    This subsection permits to get in run-time the status of the PCCARD controller 
     and the data flow.
 
 @endverbatim
@@ -613,8 +624,9 @@ __weak void HAL_PCCARD_ITCallback(PCCARD_HandleTypeDef *hpccard)
   
 /**
   * @brief  return the PCCARD controller state
-  * @param  hpccard : pointer to PCCARD handle
-  * @retval PCCARD controller state
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.
+  * @retval HAL state
   */
 HAL_PCCARD_StateTypeDef HAL_PCCARD_GetState(PCCARD_HandleTypeDef *hpccard)
 {
@@ -623,7 +635,8 @@ HAL_PCCARD_StateTypeDef HAL_PCCARD_GetState(PCCARD_HandleTypeDef *hpccard)
  
 /**
   * @brief  Get the compact flash memory status
-  * @param  hpccard: PCCARD handle       
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.       
   * @retval New status of the CF operation. This parameter can be:
   *          - CompactFlash_TIMEOUT_ERROR: when the previous operation generate 
   *            a Timeout error
@@ -659,7 +672,8 @@ CF_StatusTypedef HAL_CF_GetStatus(PCCARD_HandleTypeDef *hpccard)
   
 /**
   * @brief  Reads the Compact Flash memory status using the Read status command
-  * @param  hpccard : pointer to PCCARD handle      
+  * @param  hpccard: pointer to a PCCARD_HandleTypeDef structure that contains
+  *                the configuration information for PCCARD module.      
   * @retval The status of the Compact Flash memory. This parameter can be:
   *          - CompactFlash_BUSY: when memory is busy
   *          - CompactFlash_READY: when memory is ready for the next operation    

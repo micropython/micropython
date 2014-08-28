@@ -53,7 +53,6 @@ void do_str(const char *src) {
 }
 
 int main(int argc, char **argv) {
-    qstr_init();
     mp_init();
     do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\n')");
     mp_deinit();

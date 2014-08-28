@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_tim.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of TIM HAL module.
   ******************************************************************************
   * @attention
@@ -52,9 +52,9 @@
 
 /** @addtogroup TIM
   * @{
-  */ 
+  */
 
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 
 /** 
   * @brief  TIM Time base Configuration Structure definition  
@@ -69,7 +69,7 @@ typedef struct
 
   uint32_t Period;            /*!< Specifies the period value to be loaded into the active
                                    Auto-Reload Register at the next update event.
-                                   This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF.  */ 
+                                   This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF.  */
 
   uint32_t ClockDivision;     /*!< Specifies the clock division.
                                    This parameter can be a value of @ref TIM_ClockDivision */
@@ -89,12 +89,12 @@ typedef struct
   */
 
 typedef struct
-{                                 
+{
   uint32_t OCMode;        /*!< Specifies the TIM mode.
                                This parameter can be a value of @ref TIM_Output_Compare_and_PWM_modes */
 
   uint32_t Pulse;         /*!< Specifies the pulse value to be loaded into the Capture Compare Register. 
-                               This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF */                          
+                               This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF */
 
   uint32_t OCPolarity;    /*!< Specifies the output polarity.
                                This parameter can be a value of @ref TIM_Output_Compare_Polarity */
@@ -121,12 +121,12 @@ typedef struct
   * @brief  TIM One Pulse Mode Configuration Structure definition  
   */
 typedef struct
-{                               
+{
   uint32_t OCMode;        /*!< Specifies the TIM mode.
                                This parameter can be a value of @ref TIM_Output_Compare_and_PWM_modes */
 
   uint32_t Pulse;         /*!< Specifies the pulse value to be loaded into the Capture Compare Register. 
-                               This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF */                          
+                               This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF */
 
   uint32_t OCPolarity;    /*!< Specifies the output polarity.
                                This parameter can be a value of @ref TIM_Output_Compare_Polarity */
@@ -159,7 +159,7 @@ typedef struct
   */
 
 typedef struct
-{                                  
+{
   uint32_t  ICPolarity;   /*!< Specifies the active edge of the input signal.
                                This parameter can be a value of @ref TIM_Input_Capture_Polarity */
 
@@ -204,7 +204,7 @@ typedef struct
                                This parameter can be a value of @ref TIM_Input_Capture_Prescaler */
 
   uint32_t IC2Filter;     /*!< Specifies the input capture filter.
-                               This parameter can be a number between Min_Data = 0x0 and Max_Data = 0xF */                                 
+                               This parameter can be a number between Min_Data = 0x0 and Max_Data = 0xF */
 } TIM_Encoder_InitTypeDef;
 
 /** 
@@ -212,14 +212,14 @@ typedef struct
   */ 
 typedef struct
 {
-  uint32_t ClockSource;     /*!< TIM clock sources 
+  uint32_t ClockSource;     /*!< TIM clock sources. 
                                  This parameter can be a value of @ref TIM_Clock_Source */ 
-  uint32_t ClockPolarity;   /*!< TIM clock polarity 
+  uint32_t ClockPolarity;   /*!< TIM clock polarity. 
                                  This parameter can be a value of @ref TIM_Clock_Polarity */
-  uint32_t ClockPrescaler;  /*!< TIM clock prescaler 
+  uint32_t ClockPrescaler;  /*!< TIM clock prescaler. 
                                  This parameter can be a value of @ref TIM_Clock_Prescaler */
-  uint32_t ClockFilter;    /*!< TIM clock filter 
-                                This parameter can be a value of @ref TIM_Clock_Filter */                                   
+  uint32_t ClockFilter;    /*!< TIM clock filter. 
+                                This parameter can be a number between Min_Data = 0x0 and Max_Data = 0xF */
 }TIM_ClockConfigTypeDef;
 
 /** 
@@ -227,16 +227,16 @@ typedef struct
   */ 
 typedef struct
 { 
-  uint32_t ClearInputState;      /*!< TIM clear Input state 
+  uint32_t ClearInputState;      /*!< TIM clear Input state. 
                                       This parameter can be ENABLE or DISABLE */  
-  uint32_t ClearInputSource;     /*!< TIM clear Input sources 
+  uint32_t ClearInputSource;     /*!< TIM clear Input sources. 
                                       This parameter can be a value of @ref TIM_ClearInput_Source */ 
-  uint32_t ClearInputPolarity;   /*!< TIM Clear Input polarity 
+  uint32_t ClearInputPolarity;   /*!< TIM Clear Input polarity. 
                                       This parameter can be a value of @ref TIM_ClearInput_Polarity */
-  uint32_t ClearInputPrescaler;  /*!< TIM Clear Input prescaler 
+  uint32_t ClearInputPrescaler;  /*!< TIM Clear Input prescaler. 
                                       This parameter can be a value of @ref TIM_ClearInput_Prescaler */
-  uint32_t ClearInputFilter;    /*!< TIM Clear Input filter 
-                                     This parameter can be a value of @ref TIM_ClearInput_Filter */ 
+  uint32_t ClearInputFilter;    /*!< TIM Clear Input filter. 
+                                     This parameter can be a number between Min_Data = 0x0 and Max_Data = 0xF */
 }TIM_ClearInputConfigTypeDef;
 
 /** 
@@ -252,7 +252,7 @@ typedef struct {
   uint32_t  TriggerPrescaler;  /*!< Input trigger prescaler 
                                   This parameter can be a value of @ref TIM_Trigger_Prescaler */
   uint32_t  TriggerFilter;     /*!< Input trigger filter 
-                                  This parameter can be a value of @ref TIM_Trigger_Filter */  
+                                  This parameter can be a number between Min_Data = 0x0 and Max_Data = 0xF */  
 
 }TIM_SlaveConfigTypeDef;
 
@@ -263,9 +263,9 @@ typedef enum
 {
   HAL_TIM_STATE_RESET             = 0x00,    /*!< Peripheral not yet initialized or disabled  */
   HAL_TIM_STATE_READY             = 0x01,    /*!< Peripheral Initialized and ready for use    */
-  HAL_TIM_STATE_BUSY              = 0x02,    /*!< An internal process is ongoing              */    
-  HAL_TIM_STATE_TIMEOUT           = 0x03,    /*!< Timeout state                               */  
-  HAL_TIM_STATE_ERROR             = 0x04     /*!< Reception process is ongoing                */                                                                             
+  HAL_TIM_STATE_BUSY              = 0x02,    /*!< An internal process is ongoing              */
+  HAL_TIM_STATE_TIMEOUT           = 0x03,    /*!< Timeout state                               */
+  HAL_TIM_STATE_ERROR             = 0x04     /*!< Reception process is ongoing                */
 }HAL_TIM_StateTypeDef;
 
 /** 
@@ -275,9 +275,9 @@ typedef enum
 {
   HAL_TIM_ACTIVE_CHANNEL_1        = 0x01,    /*!< The active channel is 1     */
   HAL_TIM_ACTIVE_CHANNEL_2        = 0x02,    /*!< The active channel is 2     */
-  HAL_TIM_ACTIVE_CHANNEL_3        = 0x04,    /*!< The active channel is 3     */   
+  HAL_TIM_ACTIVE_CHANNEL_3        = 0x04,    /*!< The active channel is 3     */
   HAL_TIM_ACTIVE_CHANNEL_4        = 0x08,    /*!< The active channel is 4     */
-  HAL_TIM_ACTIVE_CHANNEL_CLEARED  = 0x00     /*!< All active channels cleared */    
+  HAL_TIM_ACTIVE_CHANNEL_CLEARED  = 0x00     /*!< All active channels cleared */
 }HAL_TIM_ActiveChannel;
 
 /** 
@@ -285,13 +285,13 @@ typedef enum
   */ 
 typedef struct
 {
-  TIM_TypeDef                 *Instance;     /*!< Register base address             */ 
+  TIM_TypeDef                 *Instance;     /*!< Register base address             */
   TIM_Base_InitTypeDef        Init;          /*!< TIM Time Base required parameters */
-  HAL_TIM_ActiveChannel       Channel;       /*!< Active channel                    */ 
+  HAL_TIM_ActiveChannel       Channel;       /*!< Active channel                    */
   DMA_HandleTypeDef           *hdma[7];      /*!< DMA Handlers array
                                              This array is accessed by a @ref DMA_Handle_index */
   HAL_LockTypeDef             Lock;          /*!< Locking object                    */
-  __IO HAL_TIM_StateTypeDef   State;         /*!< TIM operation state               */  
+  __IO HAL_TIM_StateTypeDef   State;         /*!< TIM operation state               */
 }TIM_HandleTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
@@ -312,15 +312,15 @@ typedef struct
 /** @defgroup TIM_ETR_Polarity 
   * @{
   */
-#define TIM_ETRPOLARITY_INVERTED              (TIM_SMCR_ETP)                    /*!< Polarity for ETR source */ 
-#define TIM_ETRPOLARITY_NONINVERTED           ((uint32_t)0x0000)                /*!< Polarity for ETR source */ 
+#define TIM_ETRPOLARITY_INVERTED              (TIM_SMCR_ETP)                    /*!< Polarity for ETR source */
+#define TIM_ETRPOLARITY_NONINVERTED           ((uint32_t)0x0000)                /*!< Polarity for ETR source */
 /**
   * @}
   */
 
 /** @defgroup TIM_ETR_Prescaler 
   * @{
-  */                
+  */
 #define TIM_ETRPRESCALER_DIV1                 ((uint32_t)0x0000)                /*!< No prescaler is used */
 #define TIM_ETRPRESCALER_DIV2                 (TIM_SMCR_ETPS_0)                 /*!< ETR input source is divided by 2 */
 #define TIM_ETRPRESCALER_DIV4                 (TIM_SMCR_ETPS_1)                 /*!< ETR input source is divided by 4 */
@@ -332,7 +332,6 @@ typedef struct
 /** @defgroup TIM_Counter_Mode 
   * @{
   */
-
 #define TIM_COUNTERMODE_UP                 ((uint32_t)0x0000)
 #define TIM_COUNTERMODE_DOWN               TIM_CR1_DIR
 #define TIM_COUNTERMODE_CENTERALIGNED1     TIM_CR1_CMS_0
@@ -346,12 +345,11 @@ typedef struct
                                    ((MODE) == TIM_COUNTERMODE_CENTERALIGNED3))
 /**
   * @}
-  */ 
-  
+  */
+
 /** @defgroup TIM_ClockDivision 
   * @{
   */
-
 #define TIM_CLOCKDIVISION_DIV1                       ((uint32_t)0x0000)
 #define TIM_CLOCKDIVISION_DIV2                       (TIM_CR1_CKD_0)
 #define TIM_CLOCKDIVISION_DIV4                       (TIM_CR1_CKD_1)
@@ -366,7 +364,6 @@ typedef struct
 /** @defgroup TIM_Output_Compare_and_PWM_modes 
   * @{
   */
-
 #define TIM_OCMODE_TIMING                   ((uint32_t)0x0000)
 #define TIM_OCMODE_ACTIVE                   (TIM_CCMR1_OC1M_0)
 #define TIM_OCMODE_INACTIVE                 (TIM_CCMR1_OC1M_1)
@@ -392,7 +389,6 @@ typedef struct
 /** @defgroup TIM_Output_Compare_State 
   * @{
   */
-
 #define TIM_OUTPUTSTATE_DISABLE            ((uint32_t)0x0000)
 #define TIM_OUTPUTSTATE_ENABLE             (TIM_CCER_CC1E)
 
@@ -400,7 +396,8 @@ typedef struct
                                     ((STATE) == TIM_OUTPUTSTATE_ENABLE))
 /**
   * @}
-  */ 
+  */
+
 /** @defgroup TIM_Output_Fast_State 
   * @{
   */
@@ -411,11 +408,11 @@ typedef struct
                                   ((STATE) == TIM_OCFAST_ENABLE))
 /**
   * @}
-  */ 
+  */
+
 /** @defgroup TIM_Output_Compare_N_State
   * @{
   */
-
 #define TIM_OUTPUTNSTATE_DISABLE            ((uint32_t)0x0000)
 #define TIM_OUTPUTNSTATE_ENABLE             (TIM_CCER_CC1NE)
 
@@ -424,11 +421,10 @@ typedef struct
 /**
   * @}
   */ 
-  
+
 /** @defgroup TIM_Output_Compare_Polarity 
   * @{
   */
-
 #define TIM_OCPOLARITY_HIGH                ((uint32_t)0x0000)
 #define TIM_OCPOLARITY_LOW                 (TIM_CCER_CC1P)
 
@@ -441,7 +437,6 @@ typedef struct
 /** @defgroup TIM_Output_Compare_N_Polarity 
   * @{
   */
-  
 #define TIM_OCNPOLARITY_HIGH               ((uint32_t)0x0000)
 #define TIM_OCNPOLARITY_LOW                (TIM_CCER_CC1NP)
 
@@ -454,7 +449,6 @@ typedef struct
 /** @defgroup TIM_Output_Compare_Idle_State 
   * @{
   */
-
 #define TIM_OCIDLESTATE_SET                (TIM_CR2_OIS1)
 #define TIM_OCIDLESTATE_RESET              ((uint32_t)0x0000)
 #define IS_TIM_OCIDLE_STATE(STATE) (((STATE) == TIM_OCIDLESTATE_SET) || \
@@ -466,7 +460,6 @@ typedef struct
 /** @defgroup TIM_Output_Compare_N_Idle_State 
   * @{
   */
-
 #define TIM_OCNIDLESTATE_SET               (TIM_CR2_OIS1N)
 #define TIM_OCNIDLESTATE_RESET             ((uint32_t)0x0000)
 #define IS_TIM_OCNIDLE_STATE(STATE) (((STATE) == TIM_OCNIDLESTATE_SET) || \
@@ -478,7 +471,6 @@ typedef struct
 /** @defgroup TIM_Channel 
   * @{
   */
-
 #define TIM_CHANNEL_1                      ((uint32_t)0x0000)
 #define TIM_CHANNEL_2                      ((uint32_t)0x0004)
 #define TIM_CHANNEL_3                      ((uint32_t)0x0008)
@@ -495,35 +487,32 @@ typedef struct
                                        ((CHANNEL) == TIM_CHANNEL_2))
 
 #define IS_TIM_OPM_CHANNELS(CHANNEL) (((CHANNEL) == TIM_CHANNEL_1) || \
-                                      ((CHANNEL) == TIM_CHANNEL_2))                                       
+                                      ((CHANNEL) == TIM_CHANNEL_2))
                                       
 #define IS_TIM_COMPLEMENTARY_CHANNELS(CHANNEL) (((CHANNEL) == TIM_CHANNEL_1) || \
                                                 ((CHANNEL) == TIM_CHANNEL_2) || \
                                                 ((CHANNEL) == TIM_CHANNEL_3))
 /**
   * @}
-  */ 
-
+  */
 
 /** @defgroup TIM_Input_Capture_Polarity 
   * @{
   */
-
 #define  TIM_ICPOLARITY_RISING             TIM_INPUTCHANNELPOLARITY_RISING
 #define  TIM_ICPOLARITY_FALLING            TIM_INPUTCHANNELPOLARITY_FALLING
 #define  TIM_ICPOLARITY_BOTHEDGE           TIM_INPUTCHANNELPOLARITY_BOTHEDGE
-    
+
 #define IS_TIM_IC_POLARITY(POLARITY) (((POLARITY) == TIM_ICPOLARITY_RISING)   || \
                                       ((POLARITY) == TIM_ICPOLARITY_FALLING)  || \
                                       ((POLARITY) == TIM_ICPOLARITY_BOTHEDGE))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_Input_Capture_Selection 
   * @{
   */
-
 #define TIM_ICSELECTION_DIRECTTI           (TIM_CCMR1_CC1S_0)   /*!< TIM Input 1, 2, 3 or 4 is selected to be 
                                                                      connected to IC1, IC2, IC3 or IC4, respectively */
 #define TIM_ICSELECTION_INDIRECTTI         (TIM_CCMR1_CC1S_1)   /*!< TIM Input 1, 2, 3 or 4 is selected to be
@@ -535,12 +524,11 @@ typedef struct
                                         ((SELECTION) == TIM_ICSELECTION_TRC))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_Input_Capture_Prescaler 
   * @{
   */
-
 #define TIM_ICPSC_DIV1                     ((uint32_t)0x0000)       /*!< Capture performed each time an edge is detected on the capture input */
 #define TIM_ICPSC_DIV2                     (TIM_CCMR1_IC1PSC_0)     /*!< Capture performed once every 2 events */
 #define TIM_ICPSC_DIV4                     (TIM_CCMR1_IC1PSC_1)     /*!< Capture performed once every 4 events */
@@ -557,17 +545,17 @@ typedef struct
 /** @defgroup TIM_One_Pulse_Mode 
   * @{
   */
-
 #define TIM_OPMODE_SINGLE                  (TIM_CR1_OPM)
 #define TIM_OPMODE_REPETITIVE              ((uint32_t)0x0000)
 #define IS_TIM_OPM_MODE(MODE) (((MODE) == TIM_OPMODE_SINGLE) || \
                                ((MODE) == TIM_OPMODE_REPETITIVE))
 /**
   * @}
-  */ 
+  */
+
 /** @defgroup TIM_Encoder_Mode 
   * @{
-  */ 
+  */
 #define TIM_ENCODERMODE_TI1                (TIM_SMCR_SMS_0)
 #define TIM_ENCODERMODE_TI2                (TIM_SMCR_SMS_1)
 #define TIM_ENCODERMODE_TI12               (TIM_SMCR_SMS_1 | TIM_SMCR_SMS_0)
@@ -576,7 +564,8 @@ typedef struct
                                    ((MODE) == TIM_ENCODERMODE_TI12))   
 /**
   * @}
-  */   
+  */
+
 /** @defgroup TIM_Interrupt_definition 
   * @{
   */ 
@@ -598,7 +587,7 @@ typedef struct
                            ((IT) == TIM_IT_CC4)     || \
                            ((IT) == TIM_IT_COM)     || \
                            ((IT) == TIM_IT_TRIGGER) || \
-                           ((IT) == TIM_IT_BREAK))                               
+                           ((IT) == TIM_IT_BREAK))
 /**
   * @}
   */
@@ -608,7 +597,6 @@ typedef struct
 /** @defgroup TIM_DMA_sources 
   * @{
   */
-
 #define TIM_DMA_UPDATE                     (TIM_DIER_UDE)
 #define TIM_DMA_CC1                        (TIM_DIER_CC1DE)
 #define TIM_DMA_CC2                        (TIM_DIER_CC2DE)
@@ -617,15 +605,13 @@ typedef struct
 #define TIM_DMA_COM                        (TIM_DIER_COMDE)
 #define TIM_DMA_TRIGGER                    (TIM_DIER_TDE)
 #define IS_TIM_DMA_SOURCE(SOURCE) ((((SOURCE) & 0xFFFF80FF) == 0x00000000) && ((SOURCE) != 0x00000000))
-
 /**
   * @}
   */
-    
+
 /** @defgroup TIM_Event_Source 
   * @{
   */
-
 #define TIM_EventSource_Update              TIM_EGR_UG  
 #define TIM_EventSource_CC1                 TIM_EGR_CC1G
 #define TIM_EventSource_CC2                 TIM_EGR_CC2G
@@ -634,16 +620,14 @@ typedef struct
 #define TIM_EventSource_COM                 TIM_EGR_COMG
 #define TIM_EventSource_Trigger             TIM_EGR_TG  
 #define TIM_EventSource_Break               TIM_EGR_BG  
-#define IS_TIM_EVENT_SOURCE(SOURCE) ((((SOURCE) & 0xFFFFFF00) == 0x00000000) && ((SOURCE) != 0x00000000))                                          
-  
+#define IS_TIM_EVENT_SOURCE(SOURCE) ((((SOURCE) & 0xFFFFFF00) == 0x00000000) && ((SOURCE) != 0x00000000))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_Flag_definition 
   * @{
-  */ 
-                                
+  */
 #define TIM_FLAG_UPDATE                    (TIM_SR_UIF)
 #define TIM_FLAG_CC1                       (TIM_SR_CC1IF)
 #define TIM_FLAG_CC2                       (TIM_SR_CC2IF)
@@ -668,14 +652,14 @@ typedef struct
                            ((FLAG) == TIM_FLAG_CC1OF)   || \
                            ((FLAG) == TIM_FLAG_CC2OF)   || \
                            ((FLAG) == TIM_FLAG_CC3OF)   || \
-                           ((FLAG) == TIM_FLAG_CC4OF))                                  
+                           ((FLAG) == TIM_FLAG_CC4OF))
 /**
   * @}
   */
 
 /** @defgroup TIM_Clock_Source 
   * @{
-  */ 
+  */
 #define	TIM_CLOCKSOURCE_ETRMODE2    (TIM_SMCR_ETPS_1) 
 #define	TIM_CLOCKSOURCE_INTERNAL    (TIM_SMCR_ETPS_0) 
 #define	TIM_CLOCKSOURCE_ITR0        ((uint32_t)0x0000)
@@ -699,7 +683,7 @@ typedef struct
                                    ((CLOCK) == TIM_CLOCKSOURCE_ETRMODE1))
 /**
   * @}
-  */   
+  */
 
 /** @defgroup TIM_Clock_Polarity 
   * @{
@@ -718,9 +702,10 @@ typedef struct
 /**
   * @}
   */
+
 /** @defgroup TIM_Clock_Prescaler 
   * @{
-  */                
+  */
 #define TIM_CLOCKPRESCALER_DIV1                 TIM_ETRPRESCALER_DIV1     /*!< No prescaler is used */
 #define TIM_CLOCKPRESCALER_DIV2                 TIM_ETRPRESCALER_DIV2     /*!< Prescaler for External ETR Clock: Capture performed once every 2 events. */
 #define TIM_CLOCKPRESCALER_DIV4                 TIM_ETRPRESCALER_DIV4     /*!< Prescaler for External ETR Clock: Capture performed once every 4 events. */
@@ -732,15 +717,15 @@ typedef struct
                                           ((PRESCALER) == TIM_CLOCKPRESCALER_DIV8)) 
 /**
   * @}
-  */ 
+  */
+
 /** @defgroup TIM_Clock_Filter
   * @{
   */
-
 #define IS_TIM_CLOCKFILTER(ICFILTER)      ((ICFILTER) <= 0xF) 
 /**
   * @}
-  */  
+  */
 
 /** @defgroup TIM_ClearInput_Source
   * @{
@@ -763,7 +748,7 @@ typedef struct
                                                ((POLARITY) == TIM_CLEARINPUTPOLARITY_NONINVERTED))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_ClearInput_Prescaler
   * @{
@@ -779,15 +764,14 @@ typedef struct
 /**
   * @}
   */
-  
+
 /** @defgroup TIM_ClearInput_Filter
   * @{
   */
-
 #define IS_TIM_CLEARINPUT_FILTER(ICFILTER) ((ICFILTER) <= 0xF) 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_OSSR_Off_State_Selection_for_Run_mode_state
   * @{
@@ -882,7 +866,7 @@ typedef struct
                                     ((SOURCE) == TIM_TRGO_OC3REF) || \
                                     ((SOURCE) == TIM_TRGO_OC4REF))
       
-   
+
 /**
   * @}
   */ 
@@ -902,7 +886,7 @@ typedef struct
                                  ((MODE) == TIM_SLAVEMODE_EXTERNAL1))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup TIM_Master_Slave_Mode 
   * @{
@@ -918,7 +902,6 @@ typedef struct
 /** @defgroup TIM_Trigger_Selection 
   * @{
   */
-
 #define TIM_TS_ITR0                        ((uint32_t)0x0000)
 #define TIM_TS_ITR1                        ((uint32_t)0x0010)
 #define TIM_TS_ITR2                        ((uint32_t)0x0020)
@@ -969,7 +952,7 @@ typedef struct
 
 /** @defgroup TIM_Trigger_Prescaler 
   * @{
-  */                
+  */
 #define TIM_TRIGGERPRESCALER_DIV1             TIM_ETRPRESCALER_DIV1     /*!< No prescaler is used */
 #define TIM_TRIGGERPRESCALER_DIV2             TIM_ETRPRESCALER_DIV2     /*!< Prescaler for External ETR Trigger: Capture performed once every 2 events. */
 #define TIM_TRIGGERPRESCALER_DIV4             TIM_ETRPRESCALER_DIV4     /*!< Prescaler for External ETR Trigger: Capture performed once every 4 events. */
@@ -986,30 +969,26 @@ typedef struct
 /** @defgroup TIM_Trigger_Filter
   * @{
   */
-
 #define IS_TIM_TRIGGERFILTER(ICFILTER)     ((ICFILTER) <= 0xF) 
 /**
   * @}
-  */  
+  */
 
   /** @defgroup TIM_TI1_Selection
   * @{
   */
-
 #define TIM_TI1SELECTION_CH1                ((uint32_t)0x0000)
 #define TIM_TI1SELECTION_XORCOMBINATION     (TIM_CR2_TI1S)
 
 #define IS_TIM_TI1SELECTION(TI1SELECTION)   (((TI1SELECTION) == TIM_TI1SELECTION_CH1) || \
                                              ((TI1SELECTION) == TIM_TI1SELECTION_XORCOMBINATION))
-
 /**
   * @}
   */ 
-  
+
 /** @defgroup TIM_DMA_Base_address 
   * @{
   */
-
 #define TIM_DMABase_CR1                    (0x00000000)
 #define TIM_DMABase_CR2                    (0x00000001)
 #define TIM_DMABase_SMCR                   (0x00000002)
@@ -1049,7 +1028,7 @@ typedef struct
                                ((BASE) == TIM_DMABase_CCR4) || \
                                ((BASE) == TIM_DMABase_BDTR) || \
                                ((BASE) == TIM_DMABase_DCR) || \
-                               ((BASE) == TIM_DMABase_OR))                     
+                               ((BASE) == TIM_DMABase_OR))
 /**
   * @}
   */ 
@@ -1057,7 +1036,6 @@ typedef struct
 /** @defgroup TIM_DMA_Burst_Length 
   * @{
   */
-
 #define TIM_DMABurstLength_1Transfer           (0x00000000)
 #define TIM_DMABurstLength_2Transfers          (0x00000100)
 #define TIM_DMABurstLength_3Transfers          (0x00000200)
@@ -1096,11 +1074,11 @@ typedef struct
                                    ((LENGTH) == TIM_DMABurstLength_18Transfers))
 /**
   * @}
-  */ 
+  */
+
 /** @defgroup TIM_Input_Capture_Filer_Value 
   * @{
   */
-
 #define IS_TIM_IC_FILTER(ICFILTER) ((ICFILTER) <= 0xF) 
 /**
   * @}
@@ -1136,6 +1114,12 @@ typedef struct
   */   
   
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset TIM handle state
+  * @param  __HANDLE__: TIM handle
+  * @retval None
+  */
+#define __HAL_TIM_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_TIM_STATE_RESET)
 
 /**
   * @brief  Enable the TIM peripheral.
@@ -1173,8 +1157,8 @@ typedef struct
                           } \
                         } while(0)
 
-/* The Main Output Enable of a timer instance is disabled only if all the CCx and CCxN
-   channels have been disabled */                          
+/* The Main Output of a timer instance is disabled only if all the CCx and CCxN
+   channels have been disabled */
 /**
   * @brief  Disable the TIM main Output.
   * @param  __HANDLE__: TIM handle
@@ -1189,20 +1173,20 @@ typedef struct
                               (__HANDLE__)->Instance->BDTR &= ~(TIM_BDTR_MOE); \
                             } \
                           } \
-                        } while(0)  
+                        } while(0)
 
 #define __HAL_TIM_ENABLE_IT(__HANDLE__, __INTERRUPT__)    ((__HANDLE__)->Instance->DIER |= (__INTERRUPT__))
 #define __HAL_TIM_ENABLE_DMA(__HANDLE__, __DMA__)         ((__HANDLE__)->Instance->DIER |= (__DMA__))
 #define __HAL_TIM_DISABLE_IT(__HANDLE__, __INTERRUPT__)   ((__HANDLE__)->Instance->DIER &= ~(__INTERRUPT__))
 #define __HAL_TIM_DISABLE_DMA(__HANDLE__, __DMA__)        ((__HANDLE__)->Instance->DIER &= ~(__DMA__))
 #define __HAL_TIM_GET_FLAG(__HANDLE__, __FLAG__)          (((__HANDLE__)->Instance->SR &(__FLAG__)) == (__FLAG__))
-#define __HAL_TIM_CLEAR_FLAG(__HANDLE__, __FLAG__)        ((__HANDLE__)->Instance->SR &= ~(__FLAG__))
+#define __HAL_TIM_CLEAR_FLAG(__HANDLE__, __FLAG__)        ((__HANDLE__)->Instance->SR = ~(__FLAG__))
 
 #define __HAL_TIM_GET_ITSTATUS(__HANDLE__, __INTERRUPT__) ((((__HANDLE__)->Instance->DIER & (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
-#define __HAL_TIM_CLEAR_IT(__HANDLE__, __INTERRUPT__)     ((__HANDLE__)->Instance->SR &= ~(__INTERRUPT__))
+#define __HAL_TIM_CLEAR_IT(__HANDLE__, __INTERRUPT__)     ((__HANDLE__)->Instance->SR = ~(__INTERRUPT__))
 
 #define __HAL_TIM_DIRECTION_STATUS(__HANDLE__)            (((__HANDLE__)->Instance->CR1 &(TIM_CR1_DIR)) == (TIM_CR1_DIR))
-#define __HAL_TIM_PRESCALER (__HANDLE__, __PRESC__)       ((__HANDLE__)->Instance->PSC |= (__PRESC__))
+#define __HAL_TIM_PRESCALER (__HANDLE__, __PRESC__)       ((__HANDLE__)->Instance->PSC = (__PRESC__))
 
 #define __HAL_TIM_SetICPrescalerValue(__HANDLE__, __CHANNEL__, __ICPSC__) \
 (((__CHANNEL__) == TIM_CHANNEL_1) ? ((__HANDLE__)->Instance->CCMR1 |= (__ICPSC__)) :\
@@ -1215,7 +1199,7 @@ typedef struct
  ((__CHANNEL__) == TIM_CHANNEL_2) ? ((__HANDLE__)->Instance->CCMR1 &= (uint16_t)~TIM_CCMR1_IC2PSC) :\
  ((__CHANNEL__) == TIM_CHANNEL_3) ? ((__HANDLE__)->Instance->CCMR2 &= (uint16_t)~TIM_CCMR2_IC3PSC) :\
  ((__HANDLE__)->Instance->CCMR2 &= (uint16_t)~TIM_CCMR2_IC4PSC))
-                          
+
 /**
   * @brief  Sets the TIM Capture Compare Register value on runtime without
   *         calling another time ConfigChannel function.
@@ -1233,12 +1217,33 @@ typedef struct
 (*(__IO uint32_t *)(&((__HANDLE__)->Instance->CCR1) + ((__CHANNEL__) >> 2)) = (__COMPARE__))
 
 /**
+  * @brief  Gets the TIM Capture Compare Register value on runtime
+  * @param  __HANDLE__: TIM handle.
+  * @param  __CHANNEL__ : TIM Channel associated with the capture compare register
+  *          This parameter can be one of the following values:
+  *            @arg TIM_CHANNEL_1: get capture/compare 1 register value
+  *            @arg TIM_CHANNEL_2: get capture/compare 2 register value
+  *            @arg TIM_CHANNEL_3: get capture/compare 3 register value
+  *            @arg TIM_CHANNEL_4: get capture/compare 4 register value
+  * @retval None
+  */
+#define __HAL_TIM_GetCompare(__HANDLE__, __CHANNEL__) \
+  (*(__IO uint32_t *)(&((__HANDLE__)->Instance->CCR1) + ((__CHANNEL__) >> 2)))
+
+/**
   * @brief  Sets the TIM Counter Register value on runtime.
   * @param  __HANDLE__: TIM handle.
   * @param  __COUNTER__: specifies the Counter register new value.
   * @retval None
   */
-#define __HAL_TIM_SetCounter(__HANDLE__, __COUNTER__)  ((__HANDLE__)->Instance->CNT = (__COUNTER__))
+#define __HAL_TIM_SetCounter(__HANDLE__, __COUNTER__) ((__HANDLE__)->Instance->CNT = (__COUNTER__))
+
+/**
+  * @brief  Gets the TIM Counter Register value on runtime.
+  * @param  __HANDLE__: TIM handle.
+  * @retval None
+  */
+#define __HAL_TIM_GetCounter(__HANDLE__) ((__HANDLE__)->Instance->CNT)
 
 /**
   * @brief  Sets the TIM Autoreload Register value on runtime without calling 
@@ -1247,11 +1252,17 @@ typedef struct
   * @param  __AUTORELOAD__: specifies the Counter register new value.
   * @retval None
   */
-#define __HAL_TIM_SetAutoreload(__HANDLE__, __AUTORELOAD__) \
-                        do{                                                    \
-                              (__HANDLE__)->Instance->ARR = (__AUTORELOAD__);  \
-                              (__HANDLE__)->Init.Period = (__AUTORELOAD__);    \
+#define __HAL_TIM_SetAutoreload(__HANDLE__, __AUTORELOAD__)                  \
+                        do{                                                  \
+                            (__HANDLE__)->Instance->ARR = (__AUTORELOAD__);  \
+                            (__HANDLE__)->Init.Period = (__AUTORELOAD__);    \
                           } while(0)
+/**
+  * @brief  Gets the TIM Autoreload Register value on runtime
+  * @param  __HANDLE__: TIM handle.
+  * @retval None
+  */
+#define __HAL_TIM_GetAutoreload(__HANDLE__) ((__HANDLE__)->Instance->ARR)
 
 /**
   * @brief  Sets the TIM Clock Division value on runtime without calling 
@@ -1261,16 +1272,22 @@ typedef struct
   *          This parameter can be one of the following value:
   *            @arg TIM_CLOCKDIVISION_DIV1
   *            @arg TIM_CLOCKDIVISION_DIV2
-  *            @arg TIM_CLOCKDIVISION_DIV4                           
+  *            @arg TIM_CLOCKDIVISION_DIV4
   * @retval None
   */
 #define __HAL_TIM_SetClockDivision(__HANDLE__, __CKD__) \
-                        do{                                                    \
+                        do{                                                             \
                               (__HANDLE__)->Instance->CR1 &= (uint16_t)(~TIM_CR1_CKD);  \
-                              (__HANDLE__)->Instance->CR1 |= (__CKD__);                   \
+                              (__HANDLE__)->Instance->CR1 |= (__CKD__);                 \
                               (__HANDLE__)->Init.ClockDivision = (__CKD__);             \
                           } while(0)
-                            
+/**
+  * @brief  Gets the TIM Clock Division value on runtime
+  * @param  __HANDLE__: TIM handle.
+  * @retval None
+  */
+#define __HAL_TIM_GetClockDivision(__HANDLE__) ((__HANDLE__)->Instance->CR1 & TIM_CR1_CKD)
+
 /**
   * @brief  Sets the TIM Input Capture prescaler on runtime without calling 
   *         another time HAL_TIM_IC_ConfigChannel() function.
@@ -1293,8 +1310,24 @@ typedef struct
                         do{                                                    \
                               __HAL_TIM_ResetICPrescalerValue((__HANDLE__), (__CHANNEL__));  \
                               __HAL_TIM_SetICPrescalerValue((__HANDLE__), (__CHANNEL__), (__ICPSC__)); \
-                          } while(0)                            
+                          } while(0)
 
+/**
+  * @brief  Gets the TIM Input Capture prescaler on runtime
+  * @param  __HANDLE__: TIM handle.
+  * @param  __CHANNEL__ : TIM Channels to be configured.
+  *          This parameter can be one of the following values:
+  *            @arg TIM_CHANNEL_1: get input capture 1 prescaler value
+  *            @arg TIM_CHANNEL_2: get input capture 2 prescaler value
+  *            @arg TIM_CHANNEL_3: get input capture 3 prescaler value
+  *            @arg TIM_CHANNEL_4: get input capture 4 prescaler value
+  * @retval None
+  */
+#define __HAL_TIM_GetICPrescaler(__HANDLE__, __CHANNEL__)  \
+  (((__CHANNEL__) == TIM_CHANNEL_1) ? ((__HANDLE__)->Instance->CCMR1 & TIM_CCMR1_IC1PSC) :\
+   ((__CHANNEL__) == TIM_CHANNEL_2) ? (((__HANDLE__)->Instance->CCMR1 & TIM_CCMR1_IC2PSC) >> 8) :\
+   ((__CHANNEL__) == TIM_CHANNEL_3) ? ((__HANDLE__)->Instance->CCMR2 & TIM_CCMR2_IC3PSC) :\
+   (((__HANDLE__)->Instance->CCMR2 & TIM_CCMR2_IC4PSC)) >> 8)
 /**
   * @}
   */

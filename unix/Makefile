@@ -51,6 +51,10 @@ ifeq ($(MICROPY_PY_TIME),1)
 CFLAGS_MOD += -DMICROPY_PY_TIME=1
 SRC_MOD += modtime.c
 endif
+ifeq ($(MICROPY_PY_TERMIOS),1)
+CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
+SRC_MOD += modtermios.c
+endif
 ifeq ($(MICROPY_PY_FFI),1)
 LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -97,3 +101,19 @@ include ../py/mkrules.mk
 test: $(PROG) ../tests/run-tests
 	$(eval DIRNAME=$(notdir $(CURDIR)))
 	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+
+# install micropython in /usr/local/bin
+TARGET = micropython
+PREFIX = $(DESTDIR)/usr/local
+BINDIR = $(PREFIX)/bin
+PIPSRC = ../tools/pip-micropython
+PIPTARGET = pip-micropython
+
+install: micropython
+	install -D $(TARGET) $(BINDIR)/$(TARGET)
+	install -D $(PIPSRC) $(BINDIR)/$(PIPTARGET)
+
+# uninstall micropython
+uninstall:
+	-rm $(BINDIR)/$(TARGET)
+	-rm $(BINDIR)/$(PIPTARGET)

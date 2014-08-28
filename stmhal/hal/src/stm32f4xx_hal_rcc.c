@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_rcc.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   RCC HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Reset and Clock Control (RCC) peripheral:
@@ -115,7 +115,7 @@ const uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 
            ##### Initialization and de-initialization functions #####
  ===============================================================================
     [..]
-      This section provide functions allowing to configure the internal/external oscillators
+      This section provides functions allowing to configure the internal/external oscillators
       (HSE, HSI, LSE, LSI, PLL, CSS and MCO) and the System busses clocks (SYSCLK, AHB, APB1 
        and APB2).
 
@@ -176,77 +176,17 @@ const uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 
          (#) For the STM32F405xx/07xx and STM32F415xx/17xx devices, the maximum
              frequency of the SYSCLK and HCLK is 168 MHz, PCLK2 84 MHz and PCLK1 42 MHz. 
              Depending on the device voltage range, the maximum frequency should
-             be adapted accordingly:
- +-------------------------------------------------------------------------------------+
- | Latency       |                HCLK clock frequency (MHz)                           |
- |               |---------------------------------------------------------------------|
- |               | voltage range  | voltage range  | voltage range   | voltage range   |
- |               | 2.7 V - 3.6 V  | 2.4 V - 2.7 V  | 2.1 V - 2.4 V   | 1.8 V - 2.1 V   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |0WS(1CPU cycle)|0 < HCLK <= 30  |0 < HCLK <= 24  |0 < HCLK <= 22   |0 < HCLK <= 20   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |1WS(2CPU cycle)|30 < HCLK <= 60 |24 < HCLK <= 48 |22 < HCLK <= 44  |20 < HCLK <= 40  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |2WS(3CPU cycle)|60 < HCLK <= 90 |48 < HCLK <= 72 |44 < HCLK <= 66  |40 < HCLK <= 60  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |3WS(4CPU cycle)|90 < HCLK <= 120|72 < HCLK <= 96 |66 < HCLK <= 88  |60 < HCLK <= 80  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |4WS(5CPU cycle)|120< HCLK <= 150|96 < HCLK <= 120|88 < HCLK <= 110 |80 < HCLK <= 100 |
- |---------------|----------------|----------------|-----------------|-----------------|
- |5WS(6CPU cycle)|150< HCLK <= 168|120< HCLK <= 144|110 < HCLK <= 132|100 < HCLK <= 120|
- |---------------|----------------|----------------|-----------------|-----------------|
- |6WS(7CPU cycle)|      NA        |144< HCLK <= 168|132 < HCLK <= 154|120 < HCLK <= 140|
- |---------------|----------------|----------------|-----------------|-----------------|
- |7WS(8CPU cycle)|      NA        |      NA        |154 < HCLK <= 168|140 < HCLK <= 160|
- +-------------------------------------------------------------------------------------+
+             be adapted accordingly (refer to the product datasheets for more details).
+             
          (#) For the STM32F42xxx and STM32F43xxx devices, the maximum frequency
              of the SYSCLK and HCLK is 180 MHz, PCLK2 90 MHz and PCLK1 45 MHz. 
              Depending on the device voltage range, the maximum frequency should
-             be adapted accordingly:
- +-------------------------------------------------------------------------------------+
- | Latency       |                HCLK clock frequency (MHz)                           |
- |               |---------------------------------------------------------------------|
- |               | voltage range  | voltage range  | voltage range   | voltage range   |
- |               | 2.7 V - 3.6 V  | 2.4 V - 2.7 V  | 2.1 V - 2.4 V   | 1.8 V - 2.1 V   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |0WS(1CPU cycle)|0 < HCLK <= 30  |0 < HCLK <= 24  |0 < HCLK <= 22   |0 < HCLK <= 20   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |1WS(2CPU cycle)|30 < HCLK <= 60 |24 < HCLK <= 48 |22 < HCLK <= 44  |20 < HCLK <= 40  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |2WS(3CPU cycle)|60 < HCLK <= 90 |48 < HCLK <= 72 |44 < HCLK <= 66  |40 < HCLK <= 60  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |3WS(4CPU cycle)|90 < HCLK <= 120|72 < HCLK <= 96 |66 < HCLK <= 88  |60 < HCLK <= 80  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |4WS(5CPU cycle)|120< HCLK <= 150|96 < HCLK <= 120|88 < HCLK <= 110 |80 < HCLK <= 100 |
- |---------------|----------------|----------------|-----------------|-----------------|
- |5WS(6CPU cycle)|150< HCLK <= 180|120< HCLK <= 144|110 < HCLK <= 132|100 < HCLK <= 120|
- |---------------|----------------|----------------|-----------------|-----------------|
- |6WS(7CPU cycle)|      NA        |144< HCLK <= 168|132 < HCLK <= 154|120 < HCLK <= 140|
- |---------------|----------------|----------------|-----------------|-----------------|
- |7WS(8CPU cycle)|      NA        |168< HCLK <= 180|154 < HCLK <= 176|140 < HCLK <= 160|
- |-------------------------------------------------------------------------------------|
- |8WS(9CPU cycle)|      NA        |       NA       |176 < HCLK <= 180|160 < HCLK <= 180|
- +-------------------------------------------------------------------------------------+
+             be adapted accordingly (refer to the product datasheets for more details).
+             
          (#) For the STM32F401xx, the maximum frequency of the SYSCLK and HCLK is 84 MHz,
              PCLK2 84 MHz and PCLK1 42 MHz. 
              Depending on the device voltage range, the maximum frequency should
-             be adapted accordingly:
- +-------------------------------------------------------------------------------------+
- | Latency       |                HCLK clock frequency (MHz)                           |
- |               |---------------------------------------------------------------------|
- |               | voltage range  | voltage range  | voltage range   | voltage range   |
- |               | 2.7 V - 3.6 V  | 2.4 V - 2.7 V  | 2.1 V - 2.4 V   | 1.8 V - 2.1 V   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |0WS(1CPU cycle)|0 < HCLK <= 30  |0 < HCLK <= 24  |0 < HCLK <= 22   |0 < HCLK <= 20   |
- |---------------|----------------|----------------|-----------------|-----------------|
- |1WS(2CPU cycle)|30 < HCLK <= 60 |24 < HCLK <= 48 |22 < HCLK <= 44  |20 < HCLK <= 40  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |2WS(3CPU cycle)|60 < HCLK <= 84 |48 < HCLK <= 72 |44 < HCLK <= 66  |40 < HCLK <= 60  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |3WS(4CPU cycle)|      NA        |72 < HCLK <= 84 |66 < HCLK <= 84  |60 < HCLK <= 80  |
- |---------------|----------------|----------------|-----------------|-----------------|
- |4WS(5CPU cycle)|      NA        |      NA        |      NA         |80 < HCLK <= 84  |
- +-------------------------------------------------------------------------------------+
+             be adapted accordingly (refer to the product datasheets for more details).
 @endverbatim
   * @{
   */
@@ -301,8 +241,7 @@ void HAL_RCC_DeInit(void)
   */
 HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
 {
-
-  uint32_t timeout = 0;   
+  uint32_t tickstart = 0;  
  
   /* Check the parameters */
   assert_param(IS_RCC_OSCILLATORTYPE(RCC_OscInitStruct->OscillatorType));
@@ -324,16 +263,16 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
       /* Reset HSEON and HSEBYP bits before configuring the HSE --------------*/
       __HAL_RCC_HSE_CONFIG(RCC_HSE_OFF);
       
-      /* Get timeout */
-      timeout = HAL_GetTick() + HSE_TIMEOUT_VALUE;
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       /* Wait till HSE is disabled */  
       while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) != RESET)
       {
-        if(HAL_GetTick() >= timeout)
+        if((HAL_GetTick() - tickstart ) > HSE_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
-        }      
+        }       
       }
       
       /* Set the new HSE configuration ---------------------------------------*/
@@ -342,30 +281,30 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
       /* Check the HSE State */
       if((RCC_OscInitStruct->HSEState) == RCC_HSE_ON)
       {
-        /* Get timeout */
-        timeout = HAL_GetTick() + HSE_TIMEOUT_VALUE;
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
       
         /* Wait till HSE is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > HSE_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }
+          } 
         }
       }
       else
       {
-        /* Get timeout */
-        timeout = HAL_GetTick() + HSE_TIMEOUT_VALUE;
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
 
         /* Wait till HSE is bypassed or disabled */
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) != RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > HSE_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }
+          } 
         }
       }
     }
@@ -377,12 +316,19 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     assert_param(IS_RCC_HSI(RCC_OscInitStruct->HSIState));
     assert_param(IS_RCC_CALIBRATION_VALUE(RCC_OscInitStruct->HSICalibrationValue));
     
-    /* When the HSI is used as system clock it will not disabled */
+    /* Check if HSI is used as system clock or as PLL source when PLL is selected as system clock */ 
     if((__HAL_RCC_GET_SYSCLK_SOURCE() == RCC_CFGR_SWS_HSI) || ((__HAL_RCC_GET_SYSCLK_SOURCE() == RCC_CFGR_SWS_PLL) && ((RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) == RCC_PLLCFGR_PLLSRC_HSI)))
     {
+      /* When HSI is used as system clock it will not disabled */
       if((__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY) != RESET) && (RCC_OscInitStruct->HSIState != RCC_HSI_ON))
       {
         return HAL_ERROR;
+      }
+      /* Otherwise, just the calibration is allowed */
+      else
+      {
+        /* Adjusts the Internal High Speed oscillator (HSI) calibration value.*/
+        __HAL_RCC_HSI_CALIBRATIONVALUE_ADJUST(RCC_OscInitStruct->HSICalibrationValue);
       }
     }
     else
@@ -393,16 +339,16 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
         /* Enable the Internal High Speed oscillator (HSI). */
         __HAL_RCC_HSI_ENABLE();
 
-        /* Get timeout */
-        timeout = HAL_GetTick() + HSI_TIMEOUT_VALUE;
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
 
         /* Wait till HSI is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY) == RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > HSI_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }      
+          }       
         } 
                 
         /* Adjusts the Internal High Speed oscillator (HSI) calibration value.*/
@@ -413,16 +359,16 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
         /* Disable the Internal High Speed oscillator (HSI). */
         __HAL_RCC_HSI_DISABLE();
 
-        /* Get timeout */
-        timeout = HAL_GetTick() + HSI_TIMEOUT_VALUE;
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
       
         /* Wait till HSI is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY) != RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > HSI_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }
+          } 
         } 
       }
     }
@@ -438,34 +384,34 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     {
       /* Enable the Internal Low Speed oscillator (LSI). */
       __HAL_RCC_LSI_ENABLE();
-
-      /* Get timeout */
-      timeout = HAL_GetTick() + LSI_TIMEOUT_VALUE;
-
+      
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
+      
       /* Wait till LSI is ready */
       while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET)
       {
-        if(HAL_GetTick() >= timeout)
+        if((HAL_GetTick() - tickstart ) > LSI_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
-        }
+        } 
       }
     }
     else
     {
       /* Disable the Internal Low Speed oscillator (LSI). */
       __HAL_RCC_LSI_DISABLE();
-
-      /* Get timeout */
-      timeout = HAL_GetTick() + LSI_TIMEOUT_VALUE;
+      
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       /* Wait till LSI is ready */  
       while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) != RESET)
       {
-        if(HAL_GetTick() >= timeout)
+        if((HAL_GetTick() - tickstart ) > LSI_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
-        }      
+        }       
       } 
     }
   }
@@ -482,29 +428,29 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     PWR->CR |= PWR_CR_DBP;
     
     /* Wait for Backup domain Write protection disable */
-    timeout = HAL_GetTick() + DBP_TIMEOUT_VALUE;
+    tickstart = HAL_GetTick();
     
     while((PWR->CR & PWR_CR_DBP) == RESET)
     {
-      if(HAL_GetTick() >= timeout)
+      if((HAL_GetTick() - tickstart ) > DBP_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }      
     }
-
+    
     /* Reset LSEON and LSEBYP bits before configuring the LSE ----------------*/
     __HAL_RCC_LSE_CONFIG(RCC_LSE_OFF);
     
-    /* Get timeout */
-    timeout = HAL_GetTick() + LSE_TIMEOUT_VALUE;
-      
+    /* Get Start Tick*/
+    tickstart = HAL_GetTick();
+    
     /* Wait till LSE is ready */  
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) != RESET)
     {
-      if(HAL_GetTick() >= timeout)
+      if((HAL_GetTick() - tickstart ) > LSE_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
-      }      
+      }    
     } 
     
     /* Set the new LSE configuration -----------------------------------------*/
@@ -512,30 +458,30 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     /* Check the LSE State */
     if((RCC_OscInitStruct->LSEState) == RCC_LSE_ON)
     {
-      /* Get timeout */
-      timeout = HAL_GetTick() + LSE_TIMEOUT_VALUE;
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       /* Wait till LSE is ready */  
       while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET)
       {
-        if(HAL_GetTick() >= timeout)
+        if((HAL_GetTick() - tickstart ) > LSE_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
-        }      
+        }       
       }
     }
     else
     {
-      /* Get timeout */
-      timeout = HAL_GetTick() + LSE_TIMEOUT_VALUE;
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       /* Wait till LSE is ready */  
       while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) != RESET)
       {
-        if(HAL_GetTick() >= timeout)
+        if((HAL_GetTick() - tickstart ) > LSE_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
-        }      
+        }       
       }
     }
   }
@@ -558,17 +504,17 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
         
         /* Disable the main PLL. */
         __HAL_RCC_PLL_DISABLE();
-
-        /* Get timeout */
-        timeout = HAL_GetTick() + PLL_TIMEOUT_VALUE;
-      
+        
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
+        
         /* Wait till PLL is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) != RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }      
+          }
         }        
 
         /* Configure the main PLL clock source, multiplication and division factors. */
@@ -580,32 +526,33 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
         /* Enable the main PLL. */
         __HAL_RCC_PLL_ENABLE();
 
-        /* Get timeout */
-        timeout = HAL_GetTick() + PLL_TIMEOUT_VALUE;
-      
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
+        
         /* Wait till PLL is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }      
+          } 
         }
       }
       else
       {
         /* Disable the main PLL. */
         __HAL_RCC_PLL_DISABLE();
-        /* Get timeout */
-        timeout = HAL_GetTick() + PLL_TIMEOUT_VALUE;
-      
+ 
+        /* Get Start Tick*/
+        tickstart = HAL_GetTick();
+        
         /* Wait till PLL is ready */  
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) != RESET)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }      
+          }
         }
       }
     }
@@ -644,8 +591,7 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
   */
 HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, uint32_t FLatency)
 {
-
-  uint32_t timeout = 0;   
+  uint32_t tickstart = 0;   
  
   /* Check the parameters */
   assert_param(IS_RCC_CLOCKTYPE(RCC_ClkInitStruct->ClockType));
@@ -668,6 +614,13 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       return HAL_ERROR;
     }
 
+    /*-------------------------- HCLK Configuration --------------------------*/
+    if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_HCLK) == RCC_CLOCKTYPE_HCLK)
+    {
+      assert_param(IS_RCC_HCLK(RCC_ClkInitStruct->AHBCLKDivider));
+      MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_ClkInitStruct->AHBCLKDivider);
+    }
+
     /*------------------------- SYSCLK Configuration ---------------------------*/ 
     if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_SYSCLK) == RCC_CLOCKTYPE_SYSCLK)
     {    
@@ -702,34 +655,34 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       }
       MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_ClkInitStruct->SYSCLKSource);
  
-      /* Get timeout */
-      timeout = HAL_GetTick() + CLOCKSWITCH_TIMEOUT_VALUE;
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       if(RCC_ClkInitStruct->SYSCLKSource == RCC_SYSCLKSOURCE_HSE)
       {
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSE)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          } 
+          }
         }
       }
       else if(RCC_ClkInitStruct->SYSCLKSource == RCC_SYSCLKSOURCE_PLLCLK)
       {
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          } 
+          }
         }
       }
       else
       {
         while(__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSI)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
           }
@@ -740,7 +693,14 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
   /* Decreasing the CPU frequency */
   else
   {
-    /*------------------------- SYSCLK Configuration ---------------------------*/ 
+    /*-------------------------- HCLK Configuration --------------------------*/
+    if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_HCLK) == RCC_CLOCKTYPE_HCLK)
+    {
+      assert_param(IS_RCC_HCLK(RCC_ClkInitStruct->AHBCLKDivider));
+      MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_ClkInitStruct->AHBCLKDivider);
+    }
+
+    /*------------------------- SYSCLK Configuration -------------------------*/
     if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_SYSCLK) == RCC_CLOCKTYPE_SYSCLK)
     {    
       assert_param(IS_RCC_SYSCLKSOURCE(RCC_ClkInitStruct->SYSCLKSource));
@@ -774,14 +734,14 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       }
       MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_ClkInitStruct->SYSCLKSource);
       
-      /* Get timeout */
-      timeout = HAL_GetTick() + CLOCKSWITCH_TIMEOUT_VALUE;
+      /* Get Start Tick*/
+      tickstart = HAL_GetTick();
       
       if(RCC_ClkInitStruct->SYSCLKSource == RCC_SYSCLKSOURCE_HSE)
       {
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSE)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
           } 
@@ -791,7 +751,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       {
         while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
           } 
@@ -801,10 +761,10 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       {
         while(__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSI)
         {
-          if(HAL_GetTick() >= timeout)
+          if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
-          }  
+          }
         }
       }
     }
@@ -819,14 +779,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
       return HAL_ERROR;
     }
  }
-  
-  /*-------------------------- HCLK Configuration ----------------------------*/ 
-  if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_HCLK) == RCC_CLOCKTYPE_HCLK)
-  {
-    assert_param(IS_RCC_HCLK(RCC_ClkInitStruct->AHBCLKDivider));
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_ClkInitStruct->AHBCLKDivider);
-  }
-  
+
   /*-------------------------- PCLK1 Configuration ---------------------------*/ 
   if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK1)
   {
@@ -841,16 +794,8 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
     MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, ((RCC_ClkInitStruct->APB2CLKDivider) << 3));
   }
 
-  /* Setup SysTick Timer for 1 msec interrupts.
-     ------------------------------------------
-    The SysTick_Config() function is a CMSIS function which configure:
-       - The SysTick Reload register with value passed as function parameter.
-       - Configure the SysTick IRQ priority to the lowest value (0x0F).
-       - Reset the SysTick Counter register.
-       - Configure the SysTick Counter clock source to be Core Clock Source (HCLK).
-       - Enable the SysTick Interrupt.
-       - Start the SysTick Counter.*/
-  SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
+  /* Configure the source of time base considering new system clocks settings*/
+  HAL_InitTick (TICK_INT_PRIORITY);
   
   return HAL_OK;
 }

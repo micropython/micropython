@@ -32,3 +32,6 @@ tests/*.out
 # Python cache files
 ######################
 __pycache__/
+
+# Customized Makefile overrides
+GNUmakefile

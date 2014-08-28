@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_wwdg.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of WWDG HAL module.
   ******************************************************************************
   * @attention
@@ -54,19 +54,18 @@
   * @{
   */ 
 
-/* Exported types ------------------------------------------------------------*/ 
+/* Exported types ------------------------------------------------------------*/
 
-/** 
-  * @brief  WWDG HAL State Structure definition  
-  */ 
+/**
+  * @brief  WWDG HAL State Structure definition
+  */
 typedef enum
 {
   HAL_WWDG_STATE_RESET     = 0x00,  /*!< WWDG not yet initialized or disabled */
   HAL_WWDG_STATE_READY     = 0x01,  /*!< WWDG initialized and ready for use   */
-  HAL_WWDG_STATE_BUSY      = 0x02,  /*!< WWDG internal process is ongoing     */ 
+  HAL_WWDG_STATE_BUSY      = 0x02,  /*!< WWDG internal process is ongoing     */
   HAL_WWDG_STATE_TIMEOUT   = 0x03,  /*!< WWDG timeout state                   */
   HAL_WWDG_STATE_ERROR     = 0x04   /*!< WWDG error state                     */
-    
 }HAL_WWDG_StateTypeDef;
 
 /** 
@@ -74,14 +73,14 @@ typedef enum
   */ 
 typedef struct
 {
-  uint32_t Prescaler;  /*!< Specifies the prescaler value of the WWDG.  
+  uint32_t Prescaler;  /*!< Specifies the prescaler value of the WWDG.
                             This parameter can be a value of @ref WWDG_Prescaler */
   
   uint32_t Window;     /*!< Specifies the WWDG window value to be compared to the downcounter.
                             This parameter must be a number lower than Max_Data = 0x80 */ 
   
-  uint32_t Counter;    /*!< Specifies the WWDG free-running downcounter  value.
-                            This parameter must be a number between Min_Data = 0x40 and Max_Data = 0x7F */                                    
+  uint32_t Counter;    /*!< Specifies the WWDG free-running downcounter value.
+                            This parameter must be a number between Min_Data = 0x40 and Max_Data = 0x7F */
 
 }WWDG_InitTypeDef;
 
@@ -90,7 +89,7 @@ typedef struct
   */ 
 typedef struct
 {
-  WWDG_TypeDef                 *Instance;  /*!< Register base address    */ 
+  WWDG_TypeDef                 *Instance;  /*!< Register base address    */
   
   WWDG_InitTypeDef             Init;       /*!< WWDG required parameters */
   
@@ -107,6 +106,7 @@ typedef struct
   */
 
 /** @defgroup WWDG_BitAddress_AliasRegion
+  * @brief WWDG registers bit address in the alias region
   * @{
   */
 
@@ -123,7 +123,7 @@ typedef struct
   */ 
 #define WWDG_IT_EWI   ((uint32_t)WWDG_CFR_EWI)  
 
-#define IS_WWDG_IT(IT) ((IT) == WWDG_IT_EWI)
+#define IS_WWDG_IT(__IT__) ((__IT__) == WWDG_IT_EWI)
 
 /**
   * @}
@@ -133,26 +133,26 @@ typedef struct
   * @brief WWDG Flag definition
   * @{
   */ 
-#define WWDG_FLAG_EWIF   ((uint32_t)0x0001)  /*!< Early wakeup interrupt flag */
+#define WWDG_FLAG_EWIF   ((uint32_t)WWDG_SR_EWIF)  /*!< Early wakeup interrupt flag */
+#define IS_WWDG_FLAG(__FLAG__) ((__FLAG__) == WWDG_FLAG_EWIF)) 
 
-#define IS_WWDG_FLAG(FLAG) ((FLAG) == WWDG_FLAG_EWIF)) 
 
 /**
   * @}
   */
-        
+
 /** @defgroup WWDG_Prescaler 
   * @{
   */ 
 #define WWDG_PRESCALER_1   ((uint32_t)0x00000000)  /*!< WWDG counter clock = (PCLK1/4096)/1 */
-#define WWDG_PRESCALER_2   ((uint32_t)0x00000080)  /*!< WWDG counter clock = (PCLK1/4096)/2 */
-#define WWDG_PRESCALER_4   ((uint32_t)0x00000100)  /*!< WWDG counter clock = (PCLK1/4096)/4 */
-#define WWDG_PRESCALER_8   ((uint32_t)0x00000180)  /*!< WWDG counter clock = (PCLK1/4096)/8 */
+#define WWDG_PRESCALER_2   ((uint32_t)WWDG_CFR_WDGTB0)  /*!< WWDG counter clock = (PCLK1/4096)/2 */
+#define WWDG_PRESCALER_4   ((uint32_t)WWDG_CFR_WDGTB1)  /*!< WWDG counter clock = (PCLK1/4096)/4 */
+#define WWDG_PRESCALER_8   ((uint32_t)WWDG_CFR_WDGTB)  /*!< WWDG counter clock = (PCLK1/4096)/8 */
 
-#define IS_WWDG_PRESCALER(PRESCALER) (((PRESCALER) == WWDG_PRESCALER_1) || \
-                                      ((PRESCALER) == WWDG_PRESCALER_2) || \
-                                      ((PRESCALER) == WWDG_PRESCALER_4) || \
-                                      ((PRESCALER) == WWDG_PRESCALER_8))                                     
+#define IS_WWDG_PRESCALER(__PRESCALER__) (((__PRESCALER__) == WWDG_PRESCALER_1) || \
+                                          ((__PRESCALER__) == WWDG_PRESCALER_2) || \
+                                          ((__PRESCALER__) == WWDG_PRESCALER_4) || \
+                                          ((__PRESCALER__) == WWDG_PRESCALER_8))
 
 /**
   * @}
@@ -161,7 +161,7 @@ typedef struct
 /** @defgroup WWDG_Window 
   * @{
   */ 
-#define IS_WWDG_WINDOW(WINDOW) ((WINDOW) <= 0x7F)
+#define IS_WWDG_WINDOW(__WINDOW__) ((__WINDOW__) <= 0x7F)
 
 /**
   * @}
@@ -170,24 +170,30 @@ typedef struct
 /** @defgroup WWDG_Counter 
   * @{
   */ 
-#define IS_WWDG_COUNTER(COUNTER) (((COUNTER) >= 0x40) && ((COUNTER) <= 0x7F))
-
-/**
-  * @}
-  */ 
+#define IS_WWDG_COUNTER(__COUNTER__) (((__COUNTER__) >= 0x40) && ((__COUNTER__) <= 0x7F))
 
 /**
   * @}
   */
 
+/**
+  * @}
+  */ 
+
 /* Exported macro ------------------------------------------------------------*/
+
+/** @brief Reset WWDG handle state
+  * @param  __HANDLE__: WWDG handle
+  * @retval None
+  */
+#define __HAL_WWDG_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_WWDG_STATE_RESET)
 
 /**
   * @brief  Enables the WWDG peripheral.
   * @param  __HANDLE__: WWDG handle
   * @retval None
   */
-#define __HAL_WWDG_ENABLE(__HANDLE__) ((__HANDLE__)->Instance->CR |=  WWDG_CR_WDGA)
+#define __HAL_WWDG_ENABLE(__HANDLE__) SET_BIT((__HANDLE__)->Instance->CR, WWDG_CR_WDGA)
 
 /**
   * @brief  Gets the selected WWDG's flag status.
@@ -207,16 +213,26 @@ typedef struct
   *            @arg WWDG_FLAG_EWIF: Early wakeup interrupt flag
   * @retval None
   */
-#define __HAL_WWDG_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) &= ~(__FLAG__))
+#define __HAL_WWDG_CLEAR_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->Instance->SR) = ~(__FLAG__))
 
 /**
   * @brief  Enables the WWDG early wakeup interrupt.
+  * @param  __INTERRUPT__: specifies the interrupt to enable.
+  *         This parameter can be one of the following values:
+  *            @arg WWDG_IT_EWI: Early wakeup interrupt
   * @note   Once enabled this interrupt cannot be disabled except by a system reset.
   * @retval None
   */
 #define __HAL_WWDG_ENABLE_IT(__INTERRUPT__) (*(__IO uint32_t *) CFR_BASE |= (__INTERRUPT__))
 
-    
+/** @brief  Clear the WWDG's interrupt pending bits
+  *         bits to clear the selected interrupt pending bits.
+  * @param  __HANDLE__: WWDG handle
+  * @param  __INTERRUPT__: specifies the interrupt pending bit to clear.
+  *         This parameter can be one of the following values:
+  *            @arg WWDG_FLAG_EWIF: Early wakeup interrupt flag
+  */
+#define __HAL_WWDG_CLEAR_IT(__HANDLE__, __INTERRUPT__) __HAL_WWDG_CLEAR_FLAG((__HANDLE__), (__INTERRUPT__))
 /* Exported functions --------------------------------------------------------*/
 
 /* Initialization/de-initialization functions  **********************************/

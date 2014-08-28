@@ -59,7 +59,6 @@ end:
 
 int main() {
     const char a[] = {"sim"};
-    qstr_init();
     mp_init();
     int r = tinytest_main(1, (const char **) a, groups);
     mp_deinit();

@@ -95,6 +95,11 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     }
 
     qstr source_name = mp_lexer_source_name(lex);
+    #if MICROPY_PY___FILE__
+    if (input_kind == MP_PARSE_FILE_INPUT) {
+        mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    }
+    #endif
     mp_lexer_free(lex);
 
     /*
@@ -125,7 +130,12 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         // check for SystemExit
         mp_obj_t exc = (mp_obj_t)nlr.ret_val;
         if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
-            exit(mp_obj_get_int(mp_obj_exception_get_value(exc)));
+            mp_obj_t exit_val = mp_obj_exception_get_value(exc);
+            mp_int_t val;
+            if (!mp_obj_get_int_maybe(exit_val, &val)) {
+                val = 0;
+            }
+            exit(val);
         }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return 1;
@@ -211,7 +221,7 @@ int usage(char **argv) {
     return 1;
 }
 
-mp_obj_t mem_info(void) {
+STATIC mp_obj_t mem_info(void) {
     printf("mem: total=%d, current=%d, peak=%d\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
     printf("stack: %u\n", mp_stack_usage());
@@ -220,13 +230,15 @@ mp_obj_t mem_info(void) {
 #endif
     return mp_const_none;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mem_info_obj, mem_info);
 
-mp_obj_t qstr_info(void) {
+STATIC mp_obj_t qstr_info(void) {
     uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
     printf("qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     return mp_const_none;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(qstr_info_obj, qstr_info);
 
 // Process options which set interpreter init options
 void pre_process_options(int argc, char **argv) {
@@ -274,7 +286,6 @@ int main(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 #endif
 
-    qstr_init();
     mp_init();
 
     char *home = getenv("HOME");
@@ -313,8 +324,8 @@ int main(int argc, char **argv) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    mp_store_name(qstr_from_str("mem_info"), mp_make_function_n(0, mem_info));
-    mp_store_name(qstr_from_str("qstr_info"), mp_make_function_n(0, qstr_info));
+    mp_store_name(qstr_from_str("mem_info"), (mp_obj_t*)&mem_info_obj);
+    mp_store_name(qstr_from_str("qstr_info"), (mp_obj_t*)&qstr_info_obj);
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.

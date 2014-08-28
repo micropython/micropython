@@ -62,6 +62,7 @@ STATIC int gc_stack_overflow;
 STATIC mp_uint_t gc_stack[STACK_SIZE];
 STATIC mp_uint_t *gc_sp;
 STATIC mp_uint_t gc_lock_depth;
+STATIC mp_uint_t gc_last_free_atb_index;
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
@@ -126,17 +127,20 @@ void gc_init(void *start, void *end) {
     gc_alloc_table_byte_len = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
 #endif
 
-
     gc_alloc_table_start = (byte*)start;
 
 #if MICROPY_ENABLE_FINALISER
-    mp_uint_t gc_finaliser_table_byte_len = (gc_alloc_table_byte_len * BLOCKS_PER_ATB) / BLOCKS_PER_FTB;
+    mp_uint_t gc_finaliser_table_byte_len = (gc_alloc_table_byte_len * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     gc_finaliser_table_start = gc_alloc_table_start + gc_alloc_table_byte_len;
 #endif
 
     mp_uint_t gc_pool_block_len = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     gc_pool_start = (mp_uint_t*)((byte*)end - gc_pool_block_len * BYTES_PER_BLOCK);
     gc_pool_end = (mp_uint_t*)end;
+
+#if MICROPY_ENABLE_FINALISER
+    assert((byte*)gc_pool_start >= gc_finaliser_table_start + gc_finaliser_table_byte_len);
+#endif
 
     // clear ATBs
     memset(gc_alloc_table_start, 0, gc_alloc_table_byte_len);
@@ -152,6 +156,9 @@ void gc_init(void *start, void *end) {
     for (int i = 0; i < WORDS_PER_BLOCK; i++) {
         gc_pool_start[i] = 0;
     }
+
+    // set last free ATB index to start of heap
+    gc_last_free_atb_index = 0;
 
     // unlock the GC
     gc_lock_depth = 0;
@@ -301,6 +308,7 @@ void gc_collect_root(void **ptrs, mp_uint_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
+    gc_last_free_atb_index = 0;
     gc_unlock();
 }
 
@@ -371,7 +379,7 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     for (;;) {
 
         // look for a run of n_blocks available blocks
-        for (i = 0; i < gc_alloc_table_byte_len; i++) {
+        for (i = gc_last_free_atb_index; i < gc_alloc_table_byte_len; i++) {
             byte a = gc_alloc_table_start[i];
             if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
             if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
@@ -393,6 +401,14 @@ found:
     // get starting and end blocks, both inclusive
     end_block = i;
     start_block = i - n_free + 1;
+
+    // Set last free ATB index to block after last block we found, for start of
+    // next scan.  To reduce fragmentation, we only do this if we were looking
+    // for a single free block, which guarantees that there are no free blocks
+    // before this one.
+    if (n_free == 1) {
+        gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    }
 
     // mark first block as used head
     ATB_FREE_TO_HEAD(start_block);

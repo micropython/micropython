@@ -179,7 +179,7 @@ STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
@@ -253,7 +253,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
     o->base.type = &ffivar_type;
@@ -269,7 +269,7 @@ STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
     o->base.type = type_in;

@@ -111,6 +111,9 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
+// Convenience definition for whether any native emitter is enabled
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB)
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
@@ -161,6 +164,16 @@
 // etc. Not checking means segfault on overflow.
 #ifndef MICROPY_STACK_CHECK
 #define MICROPY_STACK_CHECK (1)
+#endif
+
+// Whether to have an emergency exception buffer
+#ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
+#endif
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+#   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
+#   endif
 #endif
 
 // Whether to include REPL helper function
@@ -279,6 +292,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
+// Whether to set __file__ for imported modules
+#ifndef MICROPY_PY___FILE__
+#define MICROPY_PY___FILE__ (1)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
@@ -353,8 +371,13 @@ typedef double mp_float_t;
 
 
 // Extended modules
+
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (0)
+#endif
+
+#ifndef MICROPY_PY_ZLIBD
+#define MICROPY_PY_ZLIBD (0)
 #endif
 
 /*****************************************************************************/
@@ -378,6 +401,14 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
+// On embedded platforms, these will typically enable/disable irqs.
+#ifndef MICROPY_BEGIN_ATOMIC_SECTION
+#define MICROPY_BEGIN_ATOMIC_SECTION()
+#endif
+#ifndef MICROPY_END_ATOMIC_SECTION
+#define MICROPY_END_ATOMIC_SECTION()
+#endif
+
 // Allow to override static modifier for global objects, e.g. to use with
 // object code analysis tools which don't support static symbols.
 #ifndef STATIC
@@ -396,6 +427,12 @@ typedef double mp_float_t;
 // Ensure we don't accidentally set both endiannesses
 #if MP_ENDIANNESS_BIG
 #define MP_ENDIANNESS_LITTLE (0)
+#endif
+
+// Make a pointer to RAM callable (eg set lower bit for Thumb code)
+// (This scheme won't work if we want to mix Thumb and normal ARM code.)
+#ifndef MICROPY_MAKE_POINTER_CALLABLE
+#define MICROPY_MAKE_POINTER_CALLABLE(p) (p)
 #endif
 
 // printf format spec to use for mp_int_t and friends

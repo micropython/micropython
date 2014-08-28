@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_pwr.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of PWR HAL module.
   ******************************************************************************
   * @attention
@@ -60,7 +60,7 @@
   */
 typedef struct
 {
-  uint32_t PVDLevel;   /*!< PVDLevel: Specifies the PVD detection level
+  uint32_t PVDLevel;   /*!< PVDLevel: Specifies the PVD detection level.
                             This parameter can be a value of @ref PWR_PVD_detection_level */
 
   uint32_t Mode;      /*!< Mode: Specifies the operating mode for the selected pins.
@@ -81,10 +81,6 @@ typedef struct
 #define PVDE_BitNumber  0x04
 #define CR_PVDE_BB      (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PVDE_BitNumber * 4))
 
-/* Alias word address of FPDS bit */
-#define FPDS_BitNumber  0x09
-#define CR_FPDS_BB      (PERIPH_BB_BASE + (CR_OFFSET * 32) + (FPDS_BitNumber * 4))
-
 /* Alias word address of PMODE bit */
 #define PMODE_BitNumber 0x0E
 #define CR_PMODE_BB     (PERIPH_BB_BASE + (CR_OFFSET * 32) + (PMODE_BitNumber * 4))
@@ -94,10 +90,6 @@ typedef struct
 #define CSR_OFFSET      (PWR_OFFSET + 0x04)
 #define EWUP_BitNumber  0x08
 #define CSR_EWUP_BB     (PERIPH_BB_BASE + (CSR_OFFSET * 32) + (EWUP_BitNumber * 4))
-
-/* Alias word address of BRE bit */
-#define BRE_BitNumber   0x09
-#define CSR_BRE_BB      (PERIPH_BB_BASE + (CSR_OFFSET * 32) + (BRE_BitNumber * 4))
    
 /** @defgroup PWR_Exported_Constants
   * @{
@@ -289,29 +281,41 @@ typedef struct
   */
 #define __HAL_PVD_EXTI_CLEAR_FLAG(__EXTILINE__)  (EXTI->PR = (__EXTILINE__))
 
+/**
+  * @brief  Generates a Software interrupt on selected EXTI line.
+  * @param  __EXTILINE__: specifies the PVD EXTI sources to be disabled.
+  * This parameter can be:
+  *  @arg PWR_EXTI_LINE_PVD
+  * @retval None
+  */
+#define __HAL_PVD_EXTI_GENERATE_SWIT(__EXTI_LINE__) (EXTI->SWIER |= (__EXTI_LINE__))
 
 /* Include PWR HAL Extension module */
 #include "stm32f4xx_hal_pwr_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
 
-/* Initialization and de-initialization functions *******************************/
-void        HAL_PWR_DeInit(void);
-void        HAL_PWR_EnableBkUpAccess(void);
-void        HAL_PWR_DisableBkUpAccess(void);
+/* Initialization and de-initialization functions *****************************/
+void HAL_PWR_DeInit(void);
+void HAL_PWR_EnableBkUpAccess(void);
+void HAL_PWR_DisableBkUpAccess(void);
 
-/* Peripheral Control functions  ************************************************/
-void        HAL_PWR_PVDConfig(PWR_PVDTypeDef *sConfigPVD);
-void        HAL_PWR_EnablePVD(void);
-void        HAL_PWR_DisablePVD(void);
-void        HAL_PWR_EnableWakeUpPin(uint32_t WakeUpPinx);
-void        HAL_PWR_DisableWakeUpPin(uint32_t WakeUpPinx);
+/* Peripheral Control functions  **********************************************/
+/* PVD configuration */
+void HAL_PWR_PVDConfig(PWR_PVDTypeDef *sConfigPVD);
+void HAL_PWR_EnablePVD(void);
+void HAL_PWR_DisablePVD(void);
 
-void        HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
-void        HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry);
-void        HAL_PWR_EnterSTANDBYMode(void);
+/* WakeUp pins configuration */
+void HAL_PWR_EnableWakeUpPin(uint32_t WakeUpPinx);
+void HAL_PWR_DisableWakeUpPin(uint32_t WakeUpPinx);
 
-void        HAL_PWR_PVD_IRQHandler(void);
+/* Low Power modes entry */
+void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
+void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry);
+void HAL_PWR_EnterSTANDBYMode(void);
+
+void HAL_PWR_PVD_IRQHandler(void);
 void HAL_PWR_PVDCallback(void);
 
 

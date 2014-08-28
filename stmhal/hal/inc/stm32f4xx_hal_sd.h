@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_sd.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of SD HAL module.
   ******************************************************************************
   * @attention
@@ -55,6 +55,9 @@
   */ 
 
 /* Exported types ------------------------------------------------------------*/ 
+/** @defgroup SD_Exported_Types
+  * @{
+  */
 #define SD_InitTypeDef      SDIO_InitTypeDef 
 #define SD_TypeDef          SDIO_TypeDef
 
@@ -63,11 +66,11 @@
   */ 
 typedef struct
 {
-  SD_TypeDef                   *Instance;        /*!< SDIO register base address                     */ 
+  SD_TypeDef                   *Instance;        /*!< SDIO register base address                     */
   
   SD_InitTypeDef               Init;             /*!< SD required parameters                         */
   
-  HAL_LockTypeDef              Lock;             /*!< SD locking object                              */  
+  HAL_LockTypeDef              Lock;             /*!< SD locking object                              */
   
   uint32_t                     CardType;         /*!< SD card type                                   */
   
@@ -79,13 +82,13 @@ typedef struct
   
   __IO uint32_t                SdTransferCplt;   /*!< SD transfer complete flag in non blocking mode */
   
-  __IO uint32_t                SdTransferErr;    /*!< SD transfer error flag in non blocking mode    */  
+  __IO uint32_t                SdTransferErr;    /*!< SD transfer error flag in non blocking mode    */
   
   __IO uint32_t                DmaTransferCplt;  /*!< SD DMA transfer complete flag                  */
   
   __IO uint32_t                SdOperation;      /*!< SD transfer operation (read/write)             */
   
-  DMA_HandleTypeDef            *hdmarx;          /*!< SD Rx DMA handle parameters                    */  
+  DMA_HandleTypeDef            *hdmarx;          /*!< SD Rx DMA handle parameters                    */
   
   DMA_HandleTypeDef            *hdmatx;          /*!< SD Tx DMA handle parameters                    */
   
@@ -199,7 +202,7 @@ typedef enum
   SD_CMD_RSP_TIMEOUT                 = (3),   /*!< Command response timeout                                      */
   SD_DATA_TIMEOUT                    = (4),   /*!< Data timeout                                                  */
   SD_TX_UNDERRUN                     = (5),   /*!< Transmit FIFO underrun                                        */
-  SD_RX_OVERRUN                      = (6),   /*!< Receive FIFO overrun                                          */                                 
+  SD_RX_OVERRUN                      = (6),   /*!< Receive FIFO overrun                                          */
   SD_START_BIT_ERR                   = (7),   /*!< Start bit not detected on all data signals in wide bus mode   */
   SD_CMD_OUT_OF_RANGE                = (8),   /*!< Command's argument was out of range.                          */
   SD_ADDR_MISALIGNED                 = (9),   /*!< Misaligned address                                            */
@@ -231,20 +234,20 @@ typedef enum
 /** 
   * @brief  Standard error defines   
   */ 
-  SD_INTERNAL_ERROR                  = (34),   
+  SD_INTERNAL_ERROR                  = (34),
   SD_NOT_CONFIGURED                  = (35),
-  SD_REQUEST_PENDING                 = (36), 
-  SD_REQUEST_NOT_APPLICABLE          = (37), 
-  SD_INVALID_PARAMETER               = (38),  
-  SD_UNSUPPORTED_FEATURE             = (39),  
-  SD_UNSUPPORTED_HW                  = (40),  
-  SD_ERROR                           = (41),  
+  SD_REQUEST_PENDING                 = (36),
+  SD_REQUEST_NOT_APPLICABLE          = (37),
+  SD_INVALID_PARAMETER               = (38),
+  SD_UNSUPPORTED_FEATURE             = (39),
+  SD_UNSUPPORTED_HW                  = (40),
+  SD_ERROR                           = (41),
   SD_OK                              = (0) 
 
 }HAL_SD_ErrorTypedef;
 
 /** 
-  * @brief  SD Transfer state enumeration structure   
+  * @brief  SD Transfer state enumeration structure
   */   
 typedef enum
 {
@@ -394,7 +397,7 @@ typedef enum
   
 /* Exported macro ------------------------------------------------------------*/
 
-/** @defgroup SD_Interrupt_Clock
+/** @defgroup SD_Exported_macros
  *  @brief macros to handle interrupts and specific clock configurations
  * @{
  */
@@ -606,14 +609,26 @@ typedef enum
   */
   
 /* Exported functions --------------------------------------------------------*/
-
-/* Initialization/de-initialization functions  **********************************/
+/** @addtogroup SD_Exported_Functions
+  * @{
+  */
+  
+/* Initialization/de-initialization functions  ********************************/
+/** @addtogroup SD_Group1
+  * @{
+  */
 HAL_SD_ErrorTypedef HAL_SD_Init(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypedef *SDCardInfo);
 HAL_StatusTypeDef   HAL_SD_DeInit (SD_HandleTypeDef *hsd);
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd);
 void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd);
-
-/* I/O operation functions  *****************************************************/
+/**
+  * @}
+  */
+  
+/* I/O operation functions  ***************************************************/
+/** @addtogroup SD_Group2
+  * @{
+  */
 /* Blocking mode: Polling */
 HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint64_t ReadAddr, uint32_t BlockSize, uint32_t NumberOfBlocks);
 HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks);
@@ -635,18 +650,37 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pRead
 HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks);
 HAL_SD_ErrorTypedef HAL_SD_CheckWriteOperation(SD_HandleTypeDef *hsd, uint32_t Timeout);
 HAL_SD_ErrorTypedef HAL_SD_CheckReadOperation(SD_HandleTypeDef *hsd, uint32_t Timeout);
-
-/* Peripheral Control functions  ************************************************/
+/**
+  * @}
+  */
+  
+/* Peripheral Control functions  **********************************************/
+/** @addtogroup SD_Group3
+  * @{
+  */
 HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypedef *pCardInfo);
 HAL_SD_ErrorTypedef HAL_SD_WideBusOperation_Config(SD_HandleTypeDef *hsd, uint32_t WideMode);
 HAL_SD_ErrorTypedef HAL_SD_StopTransfer(SD_HandleTypeDef *hsd);
 HAL_SD_ErrorTypedef HAL_SD_HighSpeed (SD_HandleTypeDef *hsd);
-
-/* Peripheral State functions  **************************************************/
+/**
+  * @}
+  */
+  
+/* Peripheral State functions  ************************************************/
+/** @addtogroup SD_Group4
+  * @{
+  */
 HAL_SD_ErrorTypedef HAL_SD_SendSDStatus(SD_HandleTypeDef *hsd, uint32_t *pSDstatus);
 HAL_SD_ErrorTypedef HAL_SD_GetCardStatus(SD_HandleTypeDef *hsd, HAL_SD_CardStatusTypedef *pCardStatus);
 HAL_SD_TransferStateTypedef HAL_SD_GetStatus(SD_HandleTypeDef *hsd);
-
+/**
+  * @}
+  */
+  
+/**
+  * @}
+  */
+    
 /**
   * @}
   */ 

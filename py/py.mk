@@ -72,6 +72,7 @@ PY_O_BASENAME = \
 	objnone.o \
 	objnamedtuple.o \
 	objrange.o \
+	objreversed.o \
 	objset.o \
 	objslice.o \
 	objstr.o \
@@ -102,7 +103,9 @@ PY_O_BASENAME = \
 	repl.o \
 	smallint.o \
 	pfenv.o \
-	../extmod/moductypes.o
+	pfenv_printf.o \
+	../extmod/moductypes.o \
+	../extmod/modzlibd.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))

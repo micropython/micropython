@@ -33,11 +33,18 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include <stdbool.h>
+
 #include "stm32f4xx_hal.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
+
+#include "mpconfig.h"
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
 #include "usb.h"
 
 // CDC control commands
@@ -59,7 +66,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-static uint8_t dev_is_connected = 0; // indicates if we are connected
+static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
 
 static uint8_t UserRxBuffer[APP_RX_DATA_SIZE]; // received data from USB OUT endpoint is stored in this buffer
 static uint16_t UserRxBufCur = 0; // points to next available character in UserRxBuffer
@@ -399,7 +406,34 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
     user_interrupt_data = data;
 }
 
-void USBD_CDC_Tx(const char *str, uint32_t len) {
+// timout in milliseconds.
+// Returns number of bytes written to the device.
+int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout) {
+    for (uint32_t i = 0; i < len; i++) {
+        // Wait until the device is connected and the buffer has space, with a given timeout
+        uint32_t start = HAL_GetTick();
+        while (!dev_is_connected || ((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut) {
+            // Wraparound of tick is taken care of by 2's complement arithmetic.
+            if (HAL_GetTick() - start >= timeout) {
+                // timeout
+                return i;
+            }
+            __WFI(); // enter sleep mode, waiting for interrupt
+        }
+
+        // Write data to device buffer
+        UserTxBuffer[UserTxBufPtrIn] = buf[i];
+        UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
+    }
+
+    // Success, return number of bytes read
+    return len;
+}
+
+// Always write all of the data to the device tx buffer, even if the
+// device is not connected, or if the buffer is full.  Has a small timeout
+// to wait for the buffer to be drained, in the case the device is connected.
+void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len) {
     for (int i = 0; i < len; i++) {
         // If the CDC device is not connected to the host then we don't have anyone to receive our data.
         // The device may become connected in the future, so we should at least try to fill the buffer
@@ -433,23 +467,36 @@ void USBD_CDC_Tx(const char *str, uint32_t len) {
             */
         }
 
-        UserTxBuffer[UserTxBufPtrIn] = str[i];
+        UserTxBuffer[UserTxBufPtrIn] = buf[i];
         UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
     }
 }
 
+// Returns number of bytes in the rx buffer.
 int USBD_CDC_RxNum(void) {
     return UserRxBufLen - UserRxBufCur;
 }
 
-int USBD_CDC_RxGet(void) {
-    // wait for buffer to have at least 1 character in it
-    while (USBD_CDC_RxNum() == 0) {
-        __WFI();
+// timout in milliseconds.
+// Returns number of bytes read from the device.
+int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
+    // loop to read bytes
+    for (uint32_t i = 0; i < len; i++) {
+        // Wait until we have at least 1 byte to read
+        uint32_t start = HAL_GetTick();
+        while (!dev_is_connected || UserRxBufLen == UserRxBufCur) {
+            // Wraparound of tick is taken care of by 2's complement arithmetic.
+            if (HAL_GetTick() - start >= timeout) {
+                // timeout
+                return i;
+            }
+            __WFI(); // enter sleep mode, waiting for interrupt
+        }
+
+        // Copy byte from device to user buffer
+        buf[i] = UserRxBuffer[UserRxBufCur++];
     }
 
-    // get next character
-    int c = UserRxBuffer[UserRxBufCur++];
-
-    return c;
+    // Success, return number of bytes read
+    return len;
 }

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_uart.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of UART HAL module.
   ******************************************************************************
   * @attention
@@ -300,19 +300,32 @@ typedef struct
 
 #define UART_IT_LBD                         ((uint32_t)0x20000040)
 #define UART_IT_CTS                         ((uint32_t)0x30000400)
-                                
+
 #define UART_IT_ERR                         ((uint32_t)0x30000001)
 
 /**
   * @}
   */
-                                
+
 /**
   * @}
   */
   
 /* Exported macro ------------------------------------------------------------*/
-  
+
+/** @brief Reset UART handle state
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_UART_STATE_RESET)
+
+/** @brief  Flushs the UART DR register 
+  * @param  __HANDLE__: specifies the UART Handle.
+  */
+#define __HAL_UART_FLUSH_DRREGISTER(__HANDLE__) ((__HANDLE__)->Instance->DR)
+
 /** @brief  Checks whether the specified UART flag is set or not.
   * @param  __HANDLE__: specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
@@ -356,8 +369,48 @@ typedef struct
   *   
   * @retval None
   */
-#define __HAL_UART_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR &= ~(__FLAG__))
+#define __HAL_UART_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->SR = ~(__FLAG__))
 
+/** @brief  Clear the UART PE pending flag.
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_CLEAR_PEFLAG(__HANDLE__) do{(__HANDLE__)->Instance->SR;\
+                                               (__HANDLE__)->Instance->DR;}while(0)
+/** @brief  Clear the UART FE pending flag.
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_CLEAR_FEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the UART NE pending flag.
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_CLEAR_NEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the UART ORE pending flag.
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_CLEAR_OREFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
+
+/** @brief  Clear the UART IDLE pending flag.
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
+  *         UART peripheral.
+  * @retval None
+  */
+#define __HAL_UART_CLEAR_IDLEFLAG(__HANDLE__) __HAL_UART_CLEAR_PEFLAG(__HANDLE__)
+                                                 
 /** @brief  Enables or disables the specified UART interrupt.
   * @param  __HANDLE__: specifies the UART Handle.
   *         This parameter can be UARTx where x: 1, 2, 3, 4, 5, 6, 7 or 8 to select the USART or 
@@ -401,6 +454,82 @@ typedef struct
   */
 #define __HAL_UART_GET_IT_SOURCE(__HANDLE__, __IT__) (((((__IT__) >> 28) == 1)? (__HANDLE__)->Instance->CR1:(((((uint32_t)(__IT__)) >> 28) == 2)? \
                                                       (__HANDLE__)->Instance->CR2 : (__HANDLE__)->Instance->CR3)) & (((uint32_t)(__IT__)) & UART_IT_MASK))
+
+/** @brief  Enable CTS flow control 
+  *         This macro allows to enable CTS hardware flow control for a given UART instance, 
+  *         without need to call HAL_UART_Init() function.
+  *         As involving direct access to UART registers, usage of this macro should be fully endorsed by user.
+  * @note   As macro is expected to be used for modifying CTS Hw flow control feature activation, without need
+  *         for USART instance Deinit/Init, following conditions for macro call should be fulfilled :
+  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
+  *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
+  *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)).                                                                                                                  
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         The Handle Instance can be USART1, USART2 or LPUART.
+  * @retval None
+  */
+#define __HAL_UART_HWCONTROL_CTS_ENABLE(__HANDLE__)        \
+  do{                                                      \
+    SET_BIT((__HANDLE__)->Instance->CR3, USART_CR3_CTSE);  \
+    (__HANDLE__)->Init.HwFlowCtl |= USART_CR3_CTSE;        \
+  } while(0)
+
+/** @brief  Disable CTS flow control 
+  *         This macro allows to disable CTS hardware flow control for a given UART instance, 
+  *         without need to call HAL_UART_Init() function.
+  *         As involving direct access to UART registers, usage of this macro should be fully endorsed by user.
+  * @note   As macro is expected to be used for modifying CTS Hw flow control feature activation, without need
+  *         for USART instance Deinit/Init, following conditions for macro call should be fulfilled :
+  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
+  *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
+  *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         The Handle Instance can be USART1, USART2 or LPUART.
+  * @retval None
+  */
+#define __HAL_UART_HWCONTROL_CTS_DISABLE(__HANDLE__)        \
+  do{                                                       \
+    CLEAR_BIT((__HANDLE__)->Instance->CR3, USART_CR3_CTSE); \
+    (__HANDLE__)->Init.HwFlowCtl &= ~(USART_CR3_CTSE);      \
+  } while(0)
+
+/** @brief  Enable RTS flow control 
+  *         This macro allows to enable RTS hardware flow control for a given UART instance, 
+  *         without need to call HAL_UART_Init() function.
+  *         As involving direct access to UART registers, usage of this macro should be fully endorsed by user.
+  * @note   As macro is expected to be used for modifying RTS Hw flow control feature activation, without need
+  *         for USART instance Deinit/Init, following conditions for macro call should be fulfilled :
+  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
+  *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
+  *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         The Handle Instance can be USART1, USART2 or LPUART.
+  * @retval None
+  */
+#define __HAL_UART_HWCONTROL_RTS_ENABLE(__HANDLE__)       \
+  do{                                                     \
+    SET_BIT((__HANDLE__)->Instance->CR3, USART_CR3_RTSE); \
+    (__HANDLE__)->Init.HwFlowCtl |= USART_CR3_RTSE;       \
+  } while(0)
+
+/** @brief  Disable RTS flow control 
+  *         This macro allows to disable RTS hardware flow control for a given UART instance, 
+  *         without need to call HAL_UART_Init() function.
+  *         As involving direct access to UART registers, usage of this macro should be fully endorsed by user.
+  * @note   As macro is expected to be used for modifying RTS Hw flow control feature activation, without need
+  *         for USART instance Deinit/Init, following conditions for macro call should be fulfilled :
+  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
+  *           - macro could only be called when corresponding UART instance is disabled (i.e __HAL_UART_DISABLE(__HANDLE__))
+  *             and should be followed by an Enable macro (i.e __HAL_UART_ENABLE(__HANDLE__)). 
+  * @param  __HANDLE__: specifies the UART Handle.
+  *         The Handle Instance can be USART1, USART2 or LPUART.
+  * @retval None
+  */
+#define __HAL_UART_HWCONTROL_RTS_DISABLE(__HANDLE__)       \
+  do{                                                      \
+    CLEAR_BIT((__HANDLE__)->Instance->CR3, USART_CR3_RTSE);\
+    (__HANDLE__)->Init.HwFlowCtl &= ~(USART_CR3_RTSE);     \
+  } while(0)
 
 /** @brief  macros to enables or disables the UART's one bit sampling method
   * @param  __HANDLE__: specifies the UART Handle.  

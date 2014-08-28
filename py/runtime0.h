@@ -39,6 +39,12 @@
 */
 #define MP_SCOPE_FLAG_NOFREE       0x40
 
+// types for native (viper) function signature
+#define MP_NATIVE_TYPE_OBJ  (0x00)
+#define MP_NATIVE_TYPE_BOOL (0x01)
+#define MP_NATIVE_TYPE_INT  (0x02)
+#define MP_NATIVE_TYPE_UINT (0x03)
+
 typedef enum {
     MP_UNARY_OP_BOOL, // __bool__
     MP_UNARY_OP_LEN, // __len__
@@ -96,15 +102,19 @@ typedef enum {
 } mp_binary_op_t;
 
 typedef enum {
-    MP_F_LOAD_CONST_INT = 0,
+    MP_F_CONVERT_OBJ_TO_NATIVE = 0,
+    MP_F_CONVERT_NATIVE_TO_OBJ,
+    MP_F_LOAD_CONST_INT,
     MP_F_LOAD_CONST_DEC,
     MP_F_LOAD_CONST_STR,
+    MP_F_LOAD_CONST_BYTES,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
     MP_F_LOAD_BUILD_CLASS,
     MP_F_LOAD_ATTR,
     MP_F_LOAD_METHOD,
     MP_F_STORE_NAME,
+    MP_F_STORE_GLOBAL,
     MP_F_STORE_ATTR,
     MP_F_OBJ_SUBSCR,
     MP_F_OBJ_IS_TRUE,
@@ -120,10 +130,13 @@ typedef enum {
     MP_F_STORE_SET,
 #endif
     MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
-    MP_F_CALL_FUNCTION_N_KW_FOR_NATIVE,
+    MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
     MP_F_GETITER,
     MP_F_ITERNEXT,
+    MP_F_NLR_PUSH,
+    MP_F_NLR_POP,
+    MP_F_NATIVE_RAISE,
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_rtc_ex.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of RTC HAL Extension module.
   ******************************************************************************
   * @attention
@@ -335,7 +335,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup RTC_Smooth_calib_period_Definitions 
+/** @defgroup RTCEx_Smooth_calib_period_Definitions 
   * @{
   */ 
 #define RTC_SMOOTHCALIB_PERIOD_32SEC   ((uint32_t)0x00000000)  /*!< If RTCCLK = 32768 Hz, Smooth calibation

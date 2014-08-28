@@ -288,6 +288,8 @@ int ff_del_syncobj (_SYNC_t sobj);				/* Delete a sync object */
 #endif
 
 
+/* Returns logical drive number (-1:invalid drive) */
+int ff_get_ldnumber(const TCHAR** path);
 
 
 /*--------------------------------------------------------------*/

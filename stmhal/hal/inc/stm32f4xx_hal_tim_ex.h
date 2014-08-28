@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_tim_ex.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of TIM HAL Extension module.
   ******************************************************************************
   * @attention
@@ -79,9 +79,9 @@ typedef struct
   * @brief  TIM Master configuration Structure definition  
   */ 
 typedef struct {
-  uint32_t  MasterOutputTrigger;   /*!< Trigger output (TRGO) selection 
+  uint32_t  MasterOutputTrigger;   /*!< Trigger output (TRGO) selection. 
                                       This parameter can be a value of @ref TIM_Master_Mode_Selection */ 
-  uint32_t  MasterSlaveMode;       /*!< Master/slave mode selection 
+  uint32_t  MasterSlaveMode;       /*!< Master/slave mode selection. 
                                       This parameter can be a value of @ref TIM_Master_Slave_Mode */
 }TIM_MasterConfigTypeDef;
 
@@ -90,19 +90,19 @@ typedef struct {
   */ 
 typedef struct
 {
-  uint32_t OffStateRunMode;	        /*!< TIM off state in run mode
+  uint32_t OffStateRunMode;	        /*!< TIM off state in run mode.
                                          This parameter can be a value of @ref TIM_OSSR_Off_State_Selection_for_Run_mode_state */
-  uint32_t OffStateIDLEMode;	      /*!< TIM off state in IDLE mode
+  uint32_t OffStateIDLEMode;	      /*!< TIM off state in IDLE mode.
                                          This parameter can be a value of @ref TIM_OSSI_Off_State_Selection_for_Idle_mode_state */
-  uint32_t LockLevel;	 	            /*!< TIM Lock level
+  uint32_t LockLevel;	 	            /*!< TIM Lock level.
                                          This parameter can be a value of @ref TIM_Lock_level */                             
-  uint32_t DeadTime;	 	            /*!< TIM dead Time 
+  uint32_t DeadTime;	 	            /*!< TIM dead Time. 
                                          This parameter can be a number between Min_Data = 0x00 and Max_Data = 0xFF */
-  uint32_t BreakState;	 	          /*!< TIM Break State 
+  uint32_t BreakState;	 	          /*!< TIM Break State. 
                                          This parameter can be a value of @ref TIM_Break_Input_enable_disable */
-  uint32_t BreakPolarity;	 	        /*!< TIM Break input polarity 
+  uint32_t BreakPolarity;	 	        /*!< TIM Break input polarity. 
                                          This parameter can be a value of @ref TIM_Break_Polarity */
-  uint32_t AutomaticOutput;	 	      /*!< TIM Automatic Output Enable state 
+  uint32_t AutomaticOutput;	 	      /*!< TIM Automatic Output Enable state. 
                                          This parameter can be a value of @ref TIM_AOE_Bit_Set_Reset */           
 }TIM_BreakDeadTimeConfigTypeDef;
 
@@ -110,7 +110,7 @@ typedef struct
 /** @defgroup TIMEx_Exported_Constants
   * @{
   */
-
+  
 /** @defgroup TIMEx_Remap 
   * @{
   */

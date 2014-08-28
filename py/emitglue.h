@@ -37,25 +37,26 @@ typedef enum {
 
 typedef struct _mp_code_t {
     mp_raw_code_kind_t kind : 3;
-    uint scope_flags : 7;
-    uint n_pos_args : 11;
-    uint n_kwonly_args : 11;
+    mp_uint_t scope_flags : 7;
+    mp_uint_t n_pos_args : 11;
+    mp_uint_t n_kwonly_args : 11;
     qstr *arg_names;
     union {
         struct {
             byte *code;
-            uint len;
+            mp_uint_t len;
         } u_byte;
         struct {
-            void *fun;
+            void *fun_data;
+            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
         } u_native;
     };
 } mp_raw_code_t;
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, uint len, uint n_pos_args, uint n_kwonly_args, qstr *arg_names, uint scope_flags);
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *f, uint len, int n_args);
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, qstr *arg_names, mp_uint_t scope_flags);
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, mp_uint_t n_args, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
-mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, uint n_closed_over, const mp_obj_t *args);
+mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);

@@ -49,10 +49,6 @@ STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 STATIC NORETURN void arg_type_mixup();
 
-STATIC bool is_str_or_bytes(mp_obj_t o) {
-    return MP_OBJ_IS_STR(o) || MP_OBJ_IS_TYPE(o, &mp_type_bytes);
-}
-
 /******************************************************************************/
 /* str                                                                        */
 
@@ -251,6 +247,9 @@ STATIC const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byt
     return NULL;
 }
 
+// Note: this function is used to check if an object is a str or bytes, which
+// works because both those types use it as their binary_op method.  Revisit
+// MP_OBJ_IS_STR_OR_BYTES if this fact changes.
 mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
@@ -290,10 +289,16 @@ mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             break;
 
         case MP_BINARY_OP_MULTIPLY: {
-            if (!MP_OBJ_IS_SMALL_INT(rhs_in)) {
+            mp_int_t n;
+            if (!mp_obj_get_int_maybe(rhs_in, &n)) {
                 return MP_OBJ_NULL; // op not supported
             }
-            int n = MP_OBJ_SMALL_INT_VALUE(rhs_in);
+            if (n <= 0) {
+                if (lhs_type == &mp_type_str) {
+                    return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
+                }
+                n = 0;
+            }
             byte *data;
             mp_obj_t s = mp_obj_str_builder_start(lhs_type, lhs_len * n, &data);
             mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);
@@ -353,7 +358,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, u
 }
 #endif
 
-STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+// This is used for both bytes and 8-bit strings. This is not used for unicode strings.
+STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
@@ -368,11 +374,12 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
 #endif
-        const byte *p = str_index_to_ptr(type, self_data, self_len, index, false);
-        if (type == &mp_type_bytes) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)*p);
+        mp_uint_t index_val = mp_get_index(type, self_len, index, false);
+        // If we have unicode enabled the type will always be bytes, so take the short cut.
+        if (MICROPY_PY_BUILTINS_STR_UNICODE || type == &mp_type_bytes) {
+            return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         } else {
-            return mp_obj_new_str((char*)p, 1, true);
+            return mp_obj_new_str((char*)&self_data[index_val], 1, true);
         }
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -380,7 +387,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
-    assert(is_str_or_bytes(self_in));
+    assert(MP_OBJ_IS_STR_OR_BYTES(self_in));
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
 
     // get separation string
@@ -472,6 +479,9 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
 
     } else {
         // sep given
+        if (mp_obj_get_type(sep) != self_type) {
+            arg_type_mixup();
+        }
 
         uint sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
@@ -649,7 +659,7 @@ enum { LSTRIP, RSTRIP, STRIP };
 
 STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
-    assert(is_str_or_bytes(args[0]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
     const byte *chars_to_del;
@@ -1466,7 +1476,7 @@ STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, mp_int_t direction) {
-    if (!is_str_or_bytes(self_in)) {
+    if (!MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         assert(0);
     }
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
@@ -1701,7 +1711,7 @@ const mp_obj_type_t mp_type_str = {
     .print = str_print,
     .make_new = str_make_new,
     .binary_op = mp_obj_str_binary_op,
-    .subscr = str_subscr,
+    .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
@@ -1715,7 +1725,7 @@ const mp_obj_type_t mp_type_bytes = {
     .print = str_print,
     .make_new = bytes_make_new,
     .binary_op = mp_obj_str_binary_op,
-    .subscr = str_subscr,
+    .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_t)&str_locals_dict,
@@ -1738,6 +1748,16 @@ mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **da
 
 mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
     mp_obj_str_t *o = o_in;
+    o->hash = qstr_compute_hash(o->data, o->len);
+    byte *p = (byte*)o->data;
+    p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    return o;
+}
+
+mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len) {
+    mp_obj_str_t *o = o_in;
+    o->data = m_renew(byte, (byte*)o->data, o->len + 1, len + 1);
+    o->len = len;
     o->hash = qstr_compute_hash(o->data, o->len);
     byte *p = (byte*)o->data;
     p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
@@ -1856,7 +1876,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
 }
 
 const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
-    if (is_str_or_bytes(self_in)) {
+    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;
         return (const char*)s;
@@ -1907,7 +1927,7 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
-        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT((mp_int_t)str[self->cur]);
+        mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(str[self->cur]);
         self->cur += 1;
         return o_out;
     } else {

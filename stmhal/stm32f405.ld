@@ -34,6 +34,14 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
+        /* This first flash block is 16K annd the isr vectors only take up
+           about 400 bytes. So we pull in a couple of object files to pad it
+           out. */
+
+        . = ALIGN(4);
+        */ff.o(.text*)
+        */stm32f4xx_hal_sd.o(.text*)
+
         . = ALIGN(4);
     } >FLASH_ISR
    
@@ -41,9 +49,7 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
-        *(.text)           /* .text sections (code) */
         *(.text*)          /* .text* sections (code) */
-        *(.rodata)         /* .rodata sections (constants, strings, etc.) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
     /*  *(.glue_7t)  */    /* glue thumb to arm code */
@@ -78,7 +84,6 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         _ram_start = .;    /* create a global symbol at ram start for garbage collector */
-        *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
@@ -90,7 +95,6 @@ SECTIONS
     {
         . = ALIGN(4);
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
-        *(.bss)
         *(.bss*)
         *(COMMON)
 

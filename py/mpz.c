@@ -89,12 +89,12 @@ STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
     mpz_dbl_dig_t d = 0;
     for (uint i = jlen; i > 0; i--, idig--, jdig--) {
         d |= *jdig;
-        *idig = d >> (DIG_SIZE - n_part);
+        *idig = (d >> (DIG_SIZE - n_part)) & DIG_MASK;
         d <<= DIG_SIZE;
     }
 
     // store remaining bits
-    *idig = d >> (DIG_SIZE - n_part);
+    *idig = (d >> (DIG_SIZE - n_part)) & DIG_MASK;
     idig -= n_whole - 1;
     memset(idig, 0, (n_whole - 1) * sizeof(mpz_dig_t));
 
@@ -1132,10 +1132,7 @@ mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2) {
   lcm(0, 0) = 0
   lcm(z, 0) = 0
 */
-mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2)
-{
-    // braces below are required for compilation to succeed with CL, see bug report
-    // https://connect.microsoft.com/VisualStudio/feedback/details/864169/compilation-error-when-braces-are-left-out-of-single-line-if-statement
+mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2) {
     if (z1->len == 0 || z2->len == 0) {
         return mpz_zero();
     }
@@ -1213,49 +1210,57 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 }
 #endif
 
-// TODO check that this correctly handles overflow in all cases
-mp_int_t mpz_as_int(const mpz_t *i) {
+// must return actual int value if it fits in mp_int_t
+mp_int_t mpz_hash(const mpz_t *z) {
     mp_int_t val = 0;
-    mpz_dig_t *d = i->dig + i->len;
+    mpz_dig_t *d = z->dig + z->len;
 
-    while (--d >= i->dig) {
-        mp_int_t oldval = val;
+    while (--d >= z->dig) {
         val = (val << DIG_SIZE) | *d;
-        if (val < oldval) {
-            // overflow, return +/- "infinity"
-            if (i->neg == 0) {
-                // +infinity
-                return ~WORD_MSBIT_HIGH;
-            } else {
-                // -infinity
-                return WORD_MSBIT_HIGH;
-            }
-        }
     }
 
-    if (i->neg != 0) {
+    if (z->neg != 0) {
         val = -val;
     }
 
     return val;
 }
 
-// TODO check that this correctly handles overflow in all cases
 bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mp_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (--d >= i->dig) {
-        mp_int_t oldval = val;
-        val = (val << DIG_SIZE) | *d;
-        if (val < oldval) {
-            // overflow
+        if (val > (~(WORD_MSBIT_HIGH) >> DIG_SIZE)) {
+            // will overflow
             return false;
         }
+        val = (val << DIG_SIZE) | *d;
     }
 
     if (i->neg != 0) {
         val = -val;
+    }
+
+    *value = val;
+    return true;
+}
+
+bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
+    if (i->neg != 0) {
+        // can't represent signed values
+        return false;
+    }
+
+    mp_uint_t val = 0;
+    mpz_dig_t *d = i->dig + i->len;
+
+    while (--d >= i->dig) {
+        if (val > ((~0) >> DIG_SIZE)) {
+            // will overflow
+            return false;
+        }
+        val = (val << DIG_SIZE) | *d;
     }
 
     *value = val;

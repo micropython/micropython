@@ -115,12 +115,24 @@ STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
 #if MICROPY_ENABLE_SOURCE_LINE
 STATIC void emit_write_code_info_bytes_lines(emit_t* emit, uint bytes_to_skip, uint lines_to_skip) {
     assert(bytes_to_skip > 0 || lines_to_skip > 0);
+    //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
     while (bytes_to_skip > 0 || lines_to_skip > 0) {
-        uint b = MIN(bytes_to_skip, 31);
-        uint l = MIN(lines_to_skip, 7);
+        mp_uint_t b, l;
+        if (lines_to_skip <= 6) {
+            // use 0b0LLBBBBB encoding
+            b = MIN(bytes_to_skip, 0x1f);
+            l = MIN(lines_to_skip, 0x3);
+            *emit_get_cur_to_write_code_info(emit, 1) = b | (l << 5);
+        } else {
+            // use 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+            b = MIN(bytes_to_skip, 0xf);
+            l = MIN(lines_to_skip, 0x7ff);
+            byte *ci = emit_get_cur_to_write_code_info(emit, 2);
+            ci[0] = 0x80 | b | ((l >> 4) & 0x70);
+            ci[1] = l;
+        }
         bytes_to_skip -= b;
         lines_to_skip -= l;
-        *emit_get_cur_to_write_code_info(emit, 1) = b | (l << 5);
     }
 }
 #endif
@@ -253,7 +265,7 @@ STATIC void emit_write_bytecode_byte_signed_label(emit_t* emit, byte b1, uint la
     c[2] = bytecode_offset >> 8;
 }
 
-STATIC void emit_bc_set_native_types(emit_t *emit, bool do_native_types) {
+STATIC void emit_bc_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
 }
 
 STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
@@ -363,7 +375,6 @@ STATIC void emit_bc_set_source_line(emit_t *emit, int source_line) {
         uint bytes_to_skip = emit->bytecode_offset - emit->last_source_line_offset;
         uint lines_to_skip = source_line - emit->last_source_line;
         emit_write_code_info_bytes_lines(emit, bytes_to_skip, lines_to_skip);
-        //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
         emit->last_source_line_offset = emit->bytecode_offset;
         emit->last_source_line = source_line;
     }
@@ -861,7 +872,7 @@ STATIC void emit_bc_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t emit_bc_method_table = {
-    emit_bc_set_native_types,
+    emit_bc_set_native_type,
     emit_bc_start_pass,
     emit_bc_end_pass,
     emit_bc_last_emit_was_return_value,

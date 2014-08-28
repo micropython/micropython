@@ -34,9 +34,10 @@
 #include "misc.h"
 #include "obj.h"
 #include MICROPY_HAL_H
-#include "pybstdio.h"
 #include "readline.h"
 #include "usb.h"
+#include "uart.h"
+#include "pybstdio.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -51,7 +52,7 @@ static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, 
 
 enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
-void readline_init(void) {
+void readline_init0(void) {
     memset(readline_hist, 0, READLINE_HIST_SIZE * sizeof(const char*));
 }
 

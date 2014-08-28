@@ -93,7 +93,7 @@ class DocConstant(DocItem):
         self.descr = descr
 
     def dump(self, ctx):
-        return '{}.{} - {}'.format(ctx, self.name, self.descr)
+        return '`{}.{}` - {}'.format(ctx, self.name, self.descr)
 
 class DocFunction(DocItem):
     def __init__(self, name, args):
@@ -175,7 +175,7 @@ class DocClass(DocItem):
             s.append("## Constants")
             for c in sorted(self.constants.values(), key=lambda x:x.name):
                 s.append('')
-                s.append('`{}`'.format(c.dump(self.name)))
+                s.append(c.dump(self.name))
         return '\n'.join(s)
 
 class DocModule(DocItem):
@@ -217,7 +217,16 @@ class DocModule(DocItem):
         self.cur_class.process_method(lex, d)
 
     def process_constant(self, lex, d):
-        self.cur_class.process_constant(lex, d)
+        if self.cur_class is None:
+            # a module-level constant
+            name = d['id']
+            if name in self.constants:
+                lex.error("multiple definition of constant '{}'".format(name))
+            self.constants[name] = DocConstant(name, d['descr'])
+            lex.opt_break()
+        else:
+            # a class-level constant
+            self.cur_class.process_constant(lex, d)
 
     def validate(self):
         if self.descr is None:
@@ -234,6 +243,12 @@ class DocModule(DocItem):
             for f in sorted(self.functions.values(), key=lambda x:x.name):
                 s.append('')
                 s.append(f.dump(self.name))
+        if self.constants:
+            s.append('')
+            s.append("## Constants")
+            for c in sorted(self.constants.values(), key=lambda x:x.name):
+                s.append('')
+                s.append(c.dump(self.name))
         if self.classes:
             s.append('')
             s.append('## Classes')
@@ -310,7 +325,20 @@ class Doc:
         for m in self.modules.values():
             m.validate()
 
+    def dump(self):
+        s = []
+        s.append('# Modules')
+        s.append('')
+        s.append('These are the Python modules that are implemented.')
+        s.append('')
+        for m in sorted(self.modules.values(), key=lambda x:x.name):
+            s.append('')
+            s.append('[`{}`]({}/) - {}'.format(m.name, m.name, m.descr))
+        return '\n'.join(s)
+
     def write(self, dir):
+        with open(os.path.join(dir, 'module', 'index.html'), 'wt') as f:
+            f.write(markdown.markdown(self.dump()))
         for m in self.modules.values():
             mod_dir = os.path.join(dir, 'module', m.name)
             makedirs(mod_dir)
@@ -324,7 +352,7 @@ doc_regexs = (
     (Doc.process_function, re.compile(r'\\function (?P<id>[a-z0-9_]+)(?P<args>\(.*\))$')),
     (Doc.process_classmethod, re.compile(r'\\classmethod (?P<id>\\?[a-z0-9_]+)(?P<args>\(.*\))$')),
     (Doc.process_method, re.compile(r'\\method (?P<id>\\?[a-z0-9_]+)(?P<args>\(.*\))$')),
-    (Doc.process_constant, re.compile(r'\\constant (?P<id>[A-Z0-9_]+) - ' + regex_descr + r'$')),
+    (Doc.process_constant, re.compile(r'\\constant (?P<id>[A-Za-z0-9_]+) - ' + regex_descr + r'$')),
     #(Doc.process_classref, re.compile(r'\\classref (?P<id>[A-Za-z0-9_]+)$')),
     (Doc.process_class, re.compile(r'\\class (?P<id>[A-Za-z0-9_]+) - ' + regex_descr + r'$')),
 )

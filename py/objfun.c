@@ -47,12 +47,9 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-/******************************************************************************/
-/* native functions                                                           */
-
-// mp_obj_fun_native_t defined in obj.h
-
-STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+// This binary_op method is used for all function types, and is also
+// used to determine if an object is of generic function type.
+mp_obj_t mp_obj_fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL:
             // These objects can be equal only if it's the same underlying structure,
@@ -62,9 +59,14 @@ STATIC mp_obj_t fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     return MP_OBJ_NULL; // op not supported
 }
 
-STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_native));
-    mp_obj_fun_native_t *self = self_in;
+/******************************************************************************/
+/* builtin functions                                                          */
+
+// mp_obj_fun_builtin_t defined in obj.h
+
+STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin));
+    mp_obj_fun_builtin_t *self = self_in;
 
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
@@ -107,26 +109,16 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const 
     }
 }
 
-const mp_obj_type_t mp_type_fun_native = {
+const mp_obj_type_t mp_type_fun_builtin = {
     { &mp_type_type },
     .name = MP_QSTR_function,
-    .call = fun_native_call,
-    .binary_op = fun_binary_op,
+    .call = fun_builtin_call,
+    .binary_op = mp_obj_fun_binary_op,
 };
 
-// fun must have the correct signature for n_args fixed arguments
-mp_obj_t mp_make_function_n(int n_args, void *fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
-    o->base.type = &mp_type_fun_native;
-    o->is_kw = false;
-    o->n_args_min = n_args;
-    o->n_args_max = n_args;
-    o->fun = fun;
-    return o;
-}
-
+#if 0 // currently unused, and semi-obsolete
 mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
+    mp_obj_fun_builtin_t *o = m_new_obj(mp_obj_fun_builtin_t);
     o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
@@ -137,7 +129,7 @@ mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun) {
 
 // min and max are inclusive
 mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
+    mp_obj_fun_builtin_t *o = m_new_obj(mp_obj_fun_builtin_t);
     o->base.type = &mp_type_fun_native;
     o->is_kw = false;
     o->n_args_min = n_args_min;
@@ -145,6 +137,7 @@ mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var
     o->fun = fun;
     return o;
 }
+#endif
 
 /******************************************************************************/
 /* byte code functions                                                        */
@@ -179,7 +172,7 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 #define dump_args(...) (void)0
 #endif
 
-STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, uint given) {
+STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expected, mp_uint_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // Generic message, to be reused for other argument issues
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
@@ -204,7 +197,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, uint expected, ui
 
 // code_state should have ->ip filled in (pointing past code info block),
 // as well as ->n_state.
-void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
     mp_obj_fun_bc_t *self = self_in;
@@ -243,7 +236,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_arg
         if (n_kw == 0 && !self->has_def_kw_args) {
             if (n_args >= self->n_pos_args - self->n_def_args) {
                 // given enough arguments, but may need to use some default arguments
-                for (uint i = n_args; i < self->n_pos_args; i++) {
+                for (mp_uint_t i = n_args; i < self->n_pos_args; i++) {
                     code_state->state[n_state - 1 - i] = self->extra_args[i - (self->n_pos_args - self->n_def_args)];
                 }
             } else {
@@ -253,7 +246,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_arg
     }
 
     // copy positional args into state
-    for (uint i = 0; i < n_args; i++) {
+    for (mp_uint_t i = 0; i < n_args; i++) {
         code_state->state[n_state - 1 - i] = args[i];
     }
 
@@ -269,9 +262,9 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, uint n_arg
             *var_pos_kw_args = dict;
         }
 
-        for (uint i = 0; i < n_kw; i++) {
+        for (mp_uint_t i = 0; i < n_kw; i++) {
             qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
-            for (uint j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
+            for (mp_uint_t j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
                 if (arg_name == self->args[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -314,7 +307,7 @@ continue2:;
 
         // Check that all mandatory keyword args are specified
         // Fill in default kw args if we have them
-        for (uint i = 0; i < self->n_kwonly_args; i++) {
+        for (mp_uint_t i = 0; i < self->n_kwonly_args; i++) {
             if (code_state->state[n_state - 1 - self->n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if (self->has_def_kw_args) {
@@ -341,8 +334,8 @@ continue2:;
     }
 
     // bytecode prelude: initialise closed over variables
-    for (uint n_local = *ip++; n_local > 0; n_local--) {
-        uint local_num = *ip++;
+    for (mp_uint_t n_local = *ip++; n_local > 0; n_local--) {
+        mp_uint_t local_num = *ip++;
         code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
@@ -382,7 +375,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
 #endif
 
     // allocate state for locals and stack
-    uint state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state *code_state;
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var(mp_code_state, byte, state_size);
@@ -413,7 +406,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_o
     if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && self->n_pos_args + self->n_kwonly_args == 0)) {
         // Just check to see that we have at least 1 null object left in the state.
         bool overflow = true;
-        for (uint i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
+        for (mp_uint_t i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
             if (code_state->state[i] == MP_OBJ_NULL) {
                 overflow = false;
                 break;
@@ -465,12 +458,12 @@ const mp_obj_type_t mp_type_fun_bc = {
     .print = fun_bc_print,
 #endif
     .call = fun_bc_call,
-    .binary_op = fun_binary_op,
+    .binary_op = mp_obj_fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
-    uint n_def_args = 0;
-    uint n_extra_args = 0;
+mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, qstr *args, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
+    mp_uint_t n_def_args = 0;
+    mp_uint_t n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
     if (def_args != MP_OBJ_NULL) {
         assert(MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
@@ -501,12 +494,134 @@ mp_obj_t mp_obj_new_fun_bc(uint scope_flags, qstr *args, uint n_pos_args, uint n
 }
 
 /******************************************************************************/
+/* native functions                                                           */
+
+#if MICROPY_EMIT_NATIVE
+
+typedef struct _mp_obj_fun_native_t {
+    mp_obj_base_t base;
+    mp_uint_t n_args;
+    void *fun_data; // GC must be able to trace this pointer
+    // TODO add mp_map_t *globals
+} mp_obj_fun_native_t;
+
+typedef mp_obj_t (*native_fun_0_t)();
+typedef mp_obj_t (*native_fun_1_t)(mp_obj_t);
+typedef mp_obj_t (*native_fun_2_t)(mp_obj_t, mp_obj_t);
+typedef mp_obj_t (*native_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
+
+STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    mp_obj_fun_native_t *self = self_in;
+
+    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+
+    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
+
+    switch (n_args) {
+        case 0:
+            return ((native_fun_0_t)fun)();
+
+        case 1:
+            return ((native_fun_1_t)fun)(args[0]);
+
+        case 2:
+            return ((native_fun_2_t)fun)(args[0], args[1]);
+
+        case 3:
+            return ((native_fun_3_t)fun)(args[0], args[1], args[2]);
+
+        default:
+            assert(0);
+            return mp_const_none;
+    }
+}
+
+STATIC const mp_obj_type_t mp_type_fun_native = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_native_call,
+    .binary_op = mp_obj_fun_binary_op,
+};
+
+mp_obj_t mp_obj_new_fun_native(mp_uint_t n_args, void *fun_data) {
+    assert(0 <= n_args && n_args <= 3);
+    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
+    o->base.type = &mp_type_fun_native;
+    o->n_args = n_args;
+    o->fun_data = fun_data;
+    return o;
+}
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
+/* viper functions                                                            */
+
+#if MICROPY_EMIT_NATIVE
+
+typedef struct _mp_obj_fun_viper_t {
+    mp_obj_base_t base;
+    mp_uint_t n_args;
+    void *fun_data; // GC must be able to trace this pointer
+    mp_uint_t type_sig;
+} mp_obj_fun_viper_t;
+
+typedef mp_uint_t (*viper_fun_0_t)();
+typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
+typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
+typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
+
+STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+    mp_obj_fun_viper_t *self = self_in;
+
+    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+
+    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
+
+    mp_uint_t ret;
+    if (n_args == 0) {
+        ret = ((viper_fun_0_t)fun)();
+    } else if (n_args == 1) {
+        ret = ((viper_fun_1_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2));
+    } else if (n_args == 2) {
+        ret = ((viper_fun_2_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4));
+    } else if (n_args == 3) {
+        ret = ((viper_fun_3_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4), mp_convert_obj_to_native(args[2], self->type_sig >> 6));
+    } else {
+        assert(0);
+        ret = 0;
+    }
+
+    return mp_convert_native_to_obj(ret, self->type_sig);
+}
+
+STATIC const mp_obj_type_t mp_type_fun_viper = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_viper_call,
+    .binary_op = mp_obj_fun_binary_op,
+};
+
+mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig) {
+    mp_obj_fun_viper_t *o = m_new_obj(mp_obj_fun_viper_t);
+    o->base.type = &mp_type_fun_viper;
+    o->n_args = n_args;
+    o->fun_data = fun_data;
+    o->type_sig = type_sig;
+    return o;
+}
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
 /* inline assembler functions                                                 */
+
+#if MICROPY_EMIT_INLINE_THUMB
 
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
-    int n_args;
-    void *fun;
+    mp_uint_t n_args;
+    void *fun_data; // GC must be able to trace this pointer
 } mp_obj_fun_asm_t;
 
 typedef mp_uint_t (*inline_asm_fun_0_t)();
@@ -572,15 +687,17 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
+    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
+
     mp_uint_t ret;
     if (n_args == 0) {
-        ret = ((inline_asm_fun_0_t)self->fun)();
+        ret = ((inline_asm_fun_0_t)fun)();
     } else if (n_args == 1) {
-        ret = ((inline_asm_fun_1_t)self->fun)(convert_obj_for_inline_asm(args[0]));
+        ret = ((inline_asm_fun_1_t)fun)(convert_obj_for_inline_asm(args[0]));
     } else if (n_args == 2) {
-        ret = ((inline_asm_fun_2_t)self->fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]));
+        ret = ((inline_asm_fun_2_t)fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]));
     } else if (n_args == 3) {
-        ret = ((inline_asm_fun_3_t)self->fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[2]));
+        ret = ((inline_asm_fun_3_t)fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[2]));
     } else {
         assert(0);
         ret = 0;
@@ -593,13 +710,15 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
-    .binary_op = fun_binary_op,
+    .binary_op = mp_obj_fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_asm(uint n_args, void *fun) {
+mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
     o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;
-    o->fun = fun;
+    o->fun_data = fun_data;
     return o;
 }
+
+#endif // MICROPY_EMIT_INLINE_THUMB

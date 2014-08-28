@@ -55,6 +55,16 @@
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, INT_MAX};
 #endif
 
+mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
+    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(self_in);
+    }
+    mp_obj_int_t *self = self_in;
+    // truncate value to fit in mp_int_t, which gives the same hash as
+    // small int if the value fits without truncation
+    return self->val;
+}
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;

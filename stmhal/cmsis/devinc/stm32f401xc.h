@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f401xc.h
   * @author  MCD Application Team
-  * @version V2.0.0
-  * @date    18-February-2014
+  * @version V2.1.0
+  * @date    19-June-2014
   * @brief   CMSIS STM32F401xCxx Device Peripheral Access Layer Header File.
   *
   *          This file contains:
@@ -536,20 +536,6 @@ typedef struct
   __IO uint32_t CFR;  /*!< WWDG Configuration register, Address offset: 0x04 */
   __IO uint32_t SR;   /*!< WWDG Status register,        Address offset: 0x08 */
 } WWDG_TypeDef;
-
-
-/** 
-  * @brief RNG
-  */
-  
-typedef struct 
-{
-  __IO uint32_t CR;  /*!< RNG control register, Address offset: 0x00 */
-  __IO uint32_t SR;  /*!< RNG status register,  Address offset: 0x04 */
-  __IO uint32_t DR;  /*!< RNG data register,    Address offset: 0x08 */
-} RNG_TypeDef;
-
-
  
 /** 
   * @brief __USB_OTG_Core_register
@@ -689,6 +675,7 @@ USB_OTG_HostChannelTypeDef;
 #define SRAM3_BB_BASE         ((uint32_t)0x22020000) /*!< SRAM3(64 KB) base address in the bit-band region                              */
 #define PERIPH_BB_BASE        ((uint32_t)0x42000000) /*!< Peripheral base address in the bit-band region                                */
 #define BKPSRAM_BB_BASE       ((uint32_t)0x42024000) /*!< Backup SRAM(4 KB) base address in the bit-band region                         */
+#define FLASH_END             ((uint32_t)0x0803FFFF) /*!< FLASH end address */
 
 /* Legacy defines */
 #define SRAM_BASE             SRAM1_BASE
@@ -762,9 +749,6 @@ USB_OTG_HostChannelTypeDef;
 #define DMA2_Stream5_BASE     (DMA2_BASE + 0x088)
 #define DMA2_Stream6_BASE     (DMA2_BASE + 0x0A0)
 #define DMA2_Stream7_BASE     (DMA2_BASE + 0x0B8)
-
-/*!< AHB2 peripherals */
-#define RNG_BASE              (AHB2PERIPH_BASE + 0x60800)
 
 /* Debug MCU registers base address */
 #define DBGMCU_BASE           ((uint32_t )0xE0042000)
@@ -847,8 +831,7 @@ USB_OTG_HostChannelTypeDef;
 #define DMA2_Stream4        ((DMA_Stream_TypeDef *) DMA2_Stream4_BASE)
 #define DMA2_Stream5        ((DMA_Stream_TypeDef *) DMA2_Stream5_BASE)
 #define DMA2_Stream6        ((DMA_Stream_TypeDef *) DMA2_Stream6_BASE)
-#define DMA2_Stream7        ((DMA_Stream_TypeDef *) DMA2_Stream7_BASE)  
-#define RNG                 ((RNG_TypeDef *) RNG_BASE)
+#define DMA2_Stream7        ((DMA_Stream_TypeDef *) DMA2_Stream7_BASE)
 
 #define DBGMCU              ((DBGMCU_TypeDef *) DBGMCU_BASE)
 
@@ -1971,6 +1954,24 @@ USB_OTG_HostChannelTypeDef;
 #define GPIO_BSRR_BR_14                      ((uint32_t)0x40000000)
 #define GPIO_BSRR_BR_15                      ((uint32_t)0x80000000)
 
+/****************** Bit definition for GPIO_LCKR register *********************/
+#define GPIO_LCKR_LCK0                       ((uint32_t)0x00000001)
+#define GPIO_LCKR_LCK1                       ((uint32_t)0x00000002)
+#define GPIO_LCKR_LCK2                       ((uint32_t)0x00000004)
+#define GPIO_LCKR_LCK3                       ((uint32_t)0x00000008)
+#define GPIO_LCKR_LCK4                       ((uint32_t)0x00000010)
+#define GPIO_LCKR_LCK5                       ((uint32_t)0x00000020)
+#define GPIO_LCKR_LCK6                       ((uint32_t)0x00000040)
+#define GPIO_LCKR_LCK7                       ((uint32_t)0x00000080)
+#define GPIO_LCKR_LCK8                       ((uint32_t)0x00000100)
+#define GPIO_LCKR_LCK9                       ((uint32_t)0x00000200)
+#define GPIO_LCKR_LCK10                      ((uint32_t)0x00000400)
+#define GPIO_LCKR_LCK11                      ((uint32_t)0x00000800)
+#define GPIO_LCKR_LCK12                      ((uint32_t)0x00001000)
+#define GPIO_LCKR_LCK13                      ((uint32_t)0x00002000)
+#define GPIO_LCKR_LCK14                      ((uint32_t)0x00004000)
+#define GPIO_LCKR_LCK15                      ((uint32_t)0x00008000)
+#define GPIO_LCKR_LCKK                       ((uint32_t)0x00010000)
 
 /******************************************************************************/
 /*                                                                            */
@@ -2121,6 +2122,9 @@ USB_OTG_HostChannelTypeDef;
 
 #define  PWR_CR_DBP                          ((uint32_t)0x00000100)     /*!< Disable Backup Domain write protection                     */
 #define  PWR_CR_FPDS                         ((uint32_t)0x00000200)     /*!< Flash power down in Stop mode                              */
+#define  PWR_CR_LPLVDS                       ((uint32_t)0x00000400)     /*!< Low Power Regulator Low Voltage in Deep Sleep mode         */
+#define  PWR_CR_MRLVDS                       ((uint32_t)0x00000800)     /*!< Main Regulator Low Voltage in Deep Sleep mode              */
+#define  PWR_CR_ADCDC1                       ((uint32_t)0x00002000)     /*!< Refer to AN4073 on how to use this bit                     */
 #define  PWR_CR_VOS                          ((uint32_t)0x0000C000)     /*!< VOS[1:0] bits (Regulator voltage scaling output selection) */
 #define  PWR_CR_VOS_0                        ((uint32_t)0x00004000)     /*!< Bit 0 */
 #define  PWR_CR_VOS_1                        ((uint32_t)0x00008000)     /*!< Bit 1 */
@@ -2335,7 +2339,6 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_AHB1RSTR_DMA2RST                ((uint32_t)0x00400000)
 
 /********************  Bit definition for RCC_AHB2RSTR register  **************/
-#define  RCC_AHB2RSTR_RNGRST                 ((uint32_t)0x00000040)
 #define  RCC_AHB2RSTR_OTGFSRST               ((uint32_t)0x00000080)
 
 /********************  Bit definition for RCC_AHB3RSTR register  **************/
@@ -2384,7 +2387,6 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_AHB1ENR_DMA2EN                  ((uint32_t)0x00400000)
 
 /********************  Bit definition for RCC_AHB2ENR register  ***************/
-#define  RCC_AHB2ENR_RNGEN                   ((uint32_t)0x00000040)
 #define  RCC_AHB2ENR_OTGFSEN                 ((uint32_t)0x00000080)
 
 /********************  Bit definition for RCC_AHB3ENR register  ***************/
@@ -2433,7 +2435,6 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_AHB1LPENR_DMA2LPEN              ((uint32_t)0x00400000)
 
 /********************  Bit definition for RCC_AHB2LPENR register  *************/
-#define  RCC_AHB2LPENR_RNGLPEN               ((uint32_t)0x00000040)
 #define  RCC_AHB2LPENR_OTGFSLPEN             ((uint32_t)0x00000080)
 
 /********************  Bit definition for RCC_AHB3LPENR register  *************/
@@ -2512,22 +2513,6 @@ USB_OTG_HostChannelTypeDef;
 #define  RCC_PLLI2SCFGR_PLLI2SR_0            ((uint32_t)0x10000000)
 #define  RCC_PLLI2SCFGR_PLLI2SR_1            ((uint32_t)0x20000000)
 #define  RCC_PLLI2SCFGR_PLLI2SR_2            ((uint32_t)0x40000000)
-
-/******************************************************************************/
-/*                                                                            */
-/*                                    RNG                                     */
-/*                                                                            */
-/******************************************************************************/
-/********************  Bits definition for RNG_CR register  *******************/
-#define RNG_CR_RNGEN                         ((uint32_t)0x00000004)
-#define RNG_CR_IE                            ((uint32_t)0x00000008)
-
-/********************  Bits definition for RNG_SR register  *******************/
-#define RNG_SR_DRDY                          ((uint32_t)0x00000001)
-#define RNG_SR_CECS                          ((uint32_t)0x00000002)
-#define RNG_SR_SECS                          ((uint32_t)0x00000004)
-#define RNG_SR_CEIS                          ((uint32_t)0x00000020)
-#define RNG_SR_SEIS                          ((uint32_t)0x00000040)
 
 /******************************************************************************/
 /*                                                                            */
@@ -3166,10 +3151,7 @@ USB_OTG_HostChannelTypeDef;
 #define SYSCFG_MEMRMP_MEM_MODE_2        ((uint32_t)0x00000004)
 
 /******************  Bit definition for SYSCFG_PMC register  ******************/
-#define SYSCFG_PMC_ADCxDC2              ((uint32_t)0x00070000) /*!< Refer to AN4073 on how to use this bit  */
 #define SYSCFG_PMC_ADC1DC2              ((uint32_t)0x00010000) /*!< Refer to AN4073 on how to use this bit  */
-#define SYSCFG_PMC_ADC2DC2              ((uint32_t)0x00020000) /*!< Refer to AN4073 on how to use this bit  */
-#define SYSCFG_PMC_ADC3DC2              ((uint32_t)0x00040000) /*!< Refer to AN4073 on how to use this bit  */
 
 /*****************  Bit definition for SYSCFG_EXTICR1 register  ***************/
 #define SYSCFG_EXTICR1_EXTI0            ((uint32_t)0x000F) /*!<EXTI 0 configuration */
@@ -4537,9 +4519,6 @@ USB_OTG_HostChannelTypeDef;
                                       ((INSTANCE) == SPI3)    || \
                                       ((INSTANCE) == I2S2ext) || \
                                       ((INSTANCE) == I2S3ext))
-
-/******************************* RNG Instances ********************************/
-#define IS_RNG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == RNG)
 
 /****************************** RTC Instances *********************************/
 #define IS_RTC_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == RTC)

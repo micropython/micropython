@@ -15,7 +15,6 @@
 #include "gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
-#include "pybstdio.h"
 #include "readline.h"
 
 #include "Arduino.h"
@@ -24,8 +23,9 @@
 #include "servo.h"
 #include "usb.h"
 #include "led.h"
-
-//#include "pin.h"
+#include "uart.h"
+#include "pin.h"
+#include "pybstdio.h"
 
 
 extern uint32_t _heap_start;
@@ -267,12 +267,12 @@ soft_reset:
     // GC init
     gc_init(&_heap_start, (void*)HEAP_END);
 
-    qstr_init();
+    // Micro Python init
     mp_init();
 
-    readline_init();
+    readline_init0();
 
-    //pin_init();
+    pin_init0();
 
 #if 0
     // add some functions to the python namespace

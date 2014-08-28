@@ -11,7 +11,7 @@ BUILD ?= build-$(BOARD)
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -24,7 +24,7 @@ FATFS_DIR=fatfs
 CC3K_DIR=cc3k
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
-DFU_UTIL=dfu-util
+DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 
 CROSS_COMPILE = arm-none-eabi-
@@ -42,19 +42,20 @@ INC += -I$(CC3K_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
-
 CFLAGS += -Iboards/$(BOARD)
 
-#Debugging/Optimization
+LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
+LIBS =
+
+# Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
 COPT = -O0
 else
+CFLAGS += -fdata-sections -ffunction-sections
 COPT += -Os -DNDEBUG
+LDFLAGS += --gc-sections
 endif
-
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
-LIBS =
 
 # uncomment this if you want libgcc
 #LIBS += $(shell $(CC) -print-libgcc-file-name)
@@ -69,11 +70,13 @@ SRC_C = \
 	usbd_desc_cdc_msc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
+	irq.c \
 	pendsv.c \
 	systick.c  \
 	timer.c \
 	led.c \
 	pin.c \
+	pin_defs_stmhal.c \
 	pin_named_pins.c \
 	bufhelper.c \
 	i2c.c \
@@ -105,6 +108,7 @@ SRC_C = \
 	file.c \
 	sdcard.c \
 	diskio.c \
+	ffconf.c \
 	lcd.c \
 	accel.c \
 	servo.c \
@@ -129,6 +133,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_gpio.c \
 	stm32f4xx_hal_i2c.c \
 	stm32f4xx_hal_pcd.c \
+	stm32f4xx_hal_pcd_ex.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
 	stm32f4xx_hal_rng.c \
@@ -198,6 +203,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
+# We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
+# If we compile these using -O0 then it won't fit. So if you really want these
+# to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
+# and comment out the following 2 lines.
+$(BUILD)/$(FATFS_DIR)/src/ff.o: COPT += -Os
+$(BUILD)/$(HAL_DIR)/src/stm32f4xx_hal_sd.o: COPT += -Os
+
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 .PHONY: deploy
@@ -223,10 +235,13 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv
-AF_FILE = boards/stm32f4xx-af.csv
-PREFIX_FILE = boards/stm32f4xx-prefix.c
+AF_FILE = boards/stm32f4xx_af.csv
+PREFIX_FILE = boards/stm32f4xx_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
@@ -247,9 +262,9 @@ $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)

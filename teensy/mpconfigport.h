@@ -21,9 +21,9 @@
 #define MICROPY_PY_CMATH            (1)
 
 // extra built in names to add to the global namespace
-extern const struct _mp_obj_fun_native_t mp_builtin_help_obj;
-extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_help_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
@@ -50,6 +50,41 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
+
+// We have inlined IRQ functions for efficiency (they are generally
+// 1 machine instruction).
+//
+// Note on IRQ state: you should not need to know the specific
+// value of the state variable, but rather just pass the return
+// value from disable_irq back to enable_irq.  If you really need
+// to know the machine-specific values, see irq.h.
+
+#ifndef __disable_irq
+#define __disable_irq() __asm__ volatile("CPSID i");
+#endif
+
+__attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void) {
+    uint32_t result;
+    __asm volatile ("MRS %0, primask" : "=r" (result));
+    return(result);
+}
+
+__attribute__(( always_inline )) static inline void __set_PRIMASK(uint32_t priMask) {
+    __asm volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
+}
+
+__attribute__(( always_inline )) static inline void enable_irq(mp_uint_t state) {
+    __set_PRIMASK(state);
+}
+
+__attribute__(( always_inline )) static inline mp_uint_t disable_irq(void) {
+    mp_uint_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via

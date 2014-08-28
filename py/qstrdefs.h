@@ -43,6 +43,9 @@ Q(__next__)
 Q(__qualname__)
 Q(__path__)
 Q(__repl_print__)
+#if MICROPY_PY___FILE__
+Q(__file__)
+#endif
 
 Q(__bool__)
 Q(__contains__)
@@ -61,12 +64,20 @@ Q(__getattr__)
 Q(__del__)
 Q(__call__)
 Q(__lt__)
+Q(__gt__)
+Q(__eq__)
+Q(__le__)
+Q(__ge__)
 
 Q(micropython)
 Q(bytecode)
+Q(const)
+
+#if MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB
 Q(native)
 Q(viper)
-Q(const)
+Q(uint)
+#endif
 
 #if MICROPY_EMIT_INLINE_THUMB
 Q(asm_thumb)
@@ -133,7 +144,11 @@ Q(calcsize)
 Q(chr)
 Q(classmethod)
 Q(_collections)
+#if MICROPY_PY_BUILTINS_COMPLEX
 Q(complex)
+Q(real)
+Q(imag)
+#endif
 Q(dict)
 Q(dir)
 Q(divmod)
@@ -141,7 +156,9 @@ Q(enumerate)
 Q(eval)
 Q(exec)
 Q(filter)
+#if MICROPY_PY_BUILTINS_FLOAT
 Q(float)
+#endif
 Q(from_bytes)
 Q(getattr)
 Q(globals)
@@ -172,7 +189,7 @@ Q(print)
 Q(range)
 Q(read)
 Q(repr)
-Q(set)
+Q(reversed)
 Q(sorted)
 Q(staticmethod)
 Q(sum)
@@ -221,20 +238,8 @@ Q(reverse)
 Q(add)
 Q(clear)
 Q(copy)
-Q(discard)
-Q(difference)
-Q(difference_update)
-Q(intersection)
-Q(intersection_update)
-Q(isdisjoint)
-Q(issubset)
-Q(issuperset)
 Q(pop)
 Q(remove)
-Q(symmetric_difference)
-Q(symmetric_difference_update)
-Q(union)
-Q(update)
 Q(find)
 Q(rfind)
 Q(rindex)
@@ -263,6 +268,22 @@ Q(generator)
 Q(iterator)
 Q(module)
 Q(slice)
+
+#if MICROPY_PY_BUILTINS_SET
+Q(discard)
+Q(difference)
+Q(difference_update)
+Q(intersection)
+Q(intersection_update)
+Q(isdisjoint)
+Q(issubset)
+Q(issuperset)
+Q(set)
+Q(symmetric_difference)
+Q(symmetric_difference_update)
+Q(union)
+Q(update)
+#endif
 
 #if MICROPY_PY_BUILTINS_FROZENSET
 Q(frozenset)
@@ -319,9 +340,15 @@ Q(polar)
 Q(rect)
 #endif
 
+#if MICROPY_MEM_STATS
 Q(mem_total)
 Q(mem_current)
 Q(mem_peak)
+#endif
+
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
+Q(alloc_emergency_exception_buf)
+#endif
 
 Q(<module>)
 Q(<lambda>)
@@ -413,6 +440,7 @@ Q(TextIOWrapper)
 Q(StringIO)
 Q(BytesIO)
 Q(getvalue)
+Q(file)
 #endif
 
 #if MICROPY_PY_GC
@@ -429,4 +457,9 @@ Q(property)
 Q(getter)
 Q(setter)
 Q(deleter)
+#endif
+
+#if MICROPY_PY_ZLIBD
+Q(zlibd)
+Q(decompress)
 #endif

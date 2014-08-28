@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dcmi.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   DCMI HAL module driver
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Digital Camera Interface (DCMI) peripheral:
@@ -39,9 +39,9 @@
         window from the received image using HAL_DCMI_ConfigCrop() 
         and HAL_DCMI_EnableCROP() functions
 
-    (#) The capture can be stopped using the following HAL_DCMI_Stop() function.
+    (#) The capture can be stopped using HAL_DCMI_Stop() function.
 
-    (#) To control DCMI state you can use the following function : HAL_DCMI_GetState()
+    (#) To control DCMI state you can use the function HAL_DCMI_GetState().
 
      *** DCMI HAL driver macros list ***
      ============================================= 
@@ -217,7 +217,7 @@ HAL_StatusTypeDef HAL_DCMI_Init(DCMI_HandleTypeDef *hdcmi)
   *         values.
   * @param  hdcmi: pointer to a DCMI_HandleTypeDef structure that contains
   *                the configuration information for DCMI.
-  * @retval None
+  * @retval HAL status
   */
 
 HAL_StatusTypeDef HAL_DCMI_DeInit(DCMI_HandleTypeDef *hdcmi)
@@ -290,7 +290,7 @@ __weak void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* hdcmi)
   * @param  DCMI_Mode: DCMI capture mode snapshot or continuous grab.
   * @param  pData:     The destination memory Buffer address (LCD Frame buffer).
   * @param  Length:    The length of capture to be transferred.
-  * @retval None
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_DCMI_Start_DMA(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mode, uint32_t pData, uint32_t Length)
 {  
@@ -363,10 +363,11 @@ HAL_StatusTypeDef HAL_DCMI_Start_DMA(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mo
   * @brief  Disable DCMI DMA request and Disable DCMI capture  
   * @param  hdcmi: pointer to a DCMI_HandleTypeDef structure that contains
   *                the configuration information for DCMI. 
+  * @retval HAL status     
   */
 HAL_StatusTypeDef HAL_DCMI_Stop(DCMI_HandleTypeDef* hdcmi)
 {
-  uint32_t timeout = 0x00;
+  uint32_t tickstart = 0;
 
   /* Lock the DCMI peripheral state */
   hdcmi->State = HAL_DCMI_STATE_BUSY;
@@ -376,13 +377,13 @@ HAL_StatusTypeDef HAL_DCMI_Stop(DCMI_HandleTypeDef* hdcmi)
   /* Disable Capture */
   DCMI->CR &= ~(DCMI_CR_CAPTURE);
 
-  /* Get timeout */
-  timeout = HAL_GetTick() + HAL_TIMEOUT_DCMI_STOP;
+  /* Get tick */
+  tickstart = HAL_GetTick();
 
   /* Check if the DCMI capture effectively disabled */
   while((hdcmi->Instance->CR & DCMI_CR_CAPTURE) != 0)
   {
-    if(HAL_GetTick() >= timeout)
+    if((HAL_GetTick() - tickstart ) > HAL_TIMEOUT_DCMI_STOP)
     {
       /* Process Unlocked */
       __HAL_UNLOCK(hdcmi);
@@ -417,7 +418,7 @@ HAL_StatusTypeDef HAL_DCMI_Stop(DCMI_HandleTypeDef* hdcmi)
   * @brief  Handles DCMI interrupt request.
   * @param  hdcmi: pointer to a DCMI_HandleTypeDef structure that contains
   *                the configuration information for the DCMI.
-  * @retval HAL status
+  * @retval None
   */
 void HAL_DCMI_IRQHandler(DCMI_HandleTypeDef *hdcmi)
 {  
@@ -593,7 +594,7 @@ __weak void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
  ===============================================================================  
 [..]  This section provides functions allowing to:
       (+) Configure the CROP feature.
-      (+) ENABLE/DISABLE the CROP feature.
+      (+) Enable/Disable the CROP feature.
 
 @endverbatim
   * @{
@@ -640,7 +641,7 @@ HAL_StatusTypeDef HAL_DCMI_ConfigCROP(DCMI_HandleTypeDef *hdcmi, uint32_t X0, ui
   * @brief  Disable the Crop feature.
   * @param  hdcmi: pointer to a DCMI_HandleTypeDef structure that contains
   *                the configuration information for DCMI.
-  * @retval None
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_DCMI_DisableCROP(DCMI_HandleTypeDef *hdcmi)
 {
@@ -666,7 +667,7 @@ HAL_StatusTypeDef HAL_DCMI_DisableCROP(DCMI_HandleTypeDef *hdcmi)
   * @brief  Enable the Crop feature.
   * @param  hdcmi: pointer to a DCMI_HandleTypeDef structure that contains
   *                the configuration information for DCMI.
-  * @retval None
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_DCMI_EnableCROP(DCMI_HandleTypeDef *hdcmi)
 {
@@ -736,7 +737,8 @@ uint32_t HAL_DCMI_GetError(DCMI_HandleTypeDef *hdcmi)
 
   /**
   * @brief  DMA conversion complete callback. 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void DCMI_DMAConvCplt(DMA_HandleTypeDef *hdma)
@@ -789,7 +791,8 @@ static void DCMI_DMAConvCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA error callback 
-  * @param  hdma: pointer to DMA handle.
+  * @param  hdma: pointer to a DMA_HandleTypeDef structure that contains
+  *                the configuration information for the specified DMA module.
   * @retval None
   */
 static void DCMI_DMAError(DMA_HandleTypeDef *hdma)

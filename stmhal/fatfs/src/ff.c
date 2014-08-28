@@ -106,6 +106,8 @@
 /                   Fixed f_open(), f_mkdir() and f_setlabel() can return incorrect error code.
 /---------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
 
@@ -485,7 +487,7 @@ static
 WORD Fsid;				/* File system mount ID */
 
 #if _FS_RPATH && _VOLUMES >= 2
-static
+//static
 BYTE CurrVol;			/* Current drive */
 #endif
 
@@ -1992,6 +1994,8 @@ void get_fileinfo (		/* No return code */
 /* Get logical drive number from path name                               */
 /*-----------------------------------------------------------------------*/
 
+/* now implemented by us for configurability of path names */
+#if 0
 static
 int get_ldnumber (		/* Returns logical drive number (-1:invalid drive) */
 	const TCHAR** path	/* Pointer to pointer to the path name */
@@ -2016,7 +2020,7 @@ int get_ldnumber (		/* Returns logical drive number (-1:invalid drive) */
 
 	return vol;
 }
-
+#endif
 
 
 
@@ -2131,7 +2135,7 @@ FRESULT find_volume (	/* FR_OK(0): successful, !=0: any error occurred */
 
 	/* Get logical drive number from the path name */
 	*rfs = 0;
-	vol = get_ldnumber(path);
+	vol = ff_get_ldnumber(path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 
 	/* Check if the file system object is valid or not */
@@ -2326,7 +2330,7 @@ FRESULT f_mount (
 	FRESULT res;
   const TCHAR *rp = path;
 
-	vol = get_ldnumber(&rp);
+	vol = ff_get_ldnumber(&rp);
 	if (vol < 0) return FR_INVALID_DRIVE;
 	cfs = FatFs[vol];					/* Pointer to fs object */
 
@@ -2813,7 +2817,7 @@ FRESULT f_chdrive (
 	int vol;
 
 
-	vol = get_ldnumber(&path);
+	vol = ff_get_ldnumber(&path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 
 	CurrVol = (BYTE)vol;
@@ -2912,11 +2916,22 @@ FRESULT f_getcwd (
 		tp = buff;
 		if (res == FR_OK) {
 #if _VOLUMES >= 2
+                        #if 0
 			*tp++ = '0' + CurrVol;			/* Put drive number */
 			*tp++ = ':';
+                        #endif
+                        if (CurrVol == 0) {
+                            memcpy(tp, "/flash", 6);
+                            tp += 6;
+                        } else {
+                            memcpy(tp, "/sd", 3);
+                            tp += 3;
+                        }
 #endif
 			if (i == len) {					/* Root-directory */
+                                #if 0
 				*tp++ = '/';
+                                #endif
 			} else {						/* Sub-directroy */
 				do		/* Add stacked path str */
 					*tp++ = buff[i++];
@@ -3937,7 +3952,7 @@ FRESULT f_mkfs (
 
 
 	/* Check mounted drive and clear work area */
-	vol = get_ldnumber(&path);
+	vol = ff_get_ldnumber(&path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 	if (sfd > 1) return FR_INVALID_PARAMETER;
 	if (au & (au - 1)) return FR_INVALID_PARAMETER;

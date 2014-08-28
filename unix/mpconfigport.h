@@ -43,7 +43,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_PLATFORM     "linux"
@@ -54,6 +54,7 @@
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 
 #define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_ZLIBD            (1)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
@@ -64,8 +65,12 @@
 #define MICROPY_GCREGS_SETJMP       (0)
 #endif
 
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (128)
+
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_termios;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 
@@ -79,12 +84,18 @@ extern const struct _mp_obj_module_t mp_module_ffi;
 #else
 #define MICROPY_PY_TIME_DEF
 #endif
+#if MICROPY_PY_TERMIOS
+#define MICROPY_PY_TERMIOS_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_termios), (mp_obj_t)&mp_module_termios },
+#else
+#define MICROPY_PY_TERMIOS_DEF
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
     MICROPY_PY_TIME_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microsocket), (mp_obj_t)&mp_module_socket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
+    MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
 
@@ -103,8 +114,8 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
-extern const struct _mp_obj_fun_native_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_native_t mp_builtin_open_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },

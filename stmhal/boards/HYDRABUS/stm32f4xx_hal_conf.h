@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_conf.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    26-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   HAL configuration file.
   ******************************************************************************
   * @attention
@@ -117,6 +117,21 @@
 #endif /* HSI_VALUE */
 
 /**
+  * @brief Internal Low Speed oscillator (LSI) value.
+  */
+#if !defined  (LSI_VALUE) 
+ #define LSI_VALUE  ((uint32_t)40000)    
+#endif /* LSI_VALUE */                      /*!< Value of the Internal Low Speed oscillator in Hz
+                                             The real value may vary depending on the variations
+                                             in voltage and temperature.  */
+/**
+  * @brief External Low Speed oscillator (LSE) value.
+  */
+#if !defined  (LSE_VALUE)
+ #define LSE_VALUE  ((uint32_t)32768)    /*!< Value of the External Low Speed oscillator in Hz */
+#endif /* LSE_VALUE */
+
+/**
   * @brief External clock source for I2S peripheral
   *        This value is used by the I2S HAL module to compute the I2S clock source 
   *        frequency, this source is inserted directly through I2S_CKIN pad. 
@@ -133,6 +148,7 @@
   * @brief This is the HAL system configuration section
   */     
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */
+#define  TICK_INT_PRIORITY            ((uint32_t)0x00) /*!< tick interrupt priority */
 #define  USE_RTOS                     0
 #define  PREFETCH_ENABLE              1
 #define  INSTRUCTION_CACHE_ENABLE     1
@@ -379,8 +395,7 @@
   void assert_failed(uint8_t* file, uint32_t line);
 #else
   #define assert_param(expr) ((void)0)
-#endif /* USE_FULL_ASSERT */    
-    
+#endif /* USE_FULL_ASSERT */
 
 
 #ifdef __cplusplus

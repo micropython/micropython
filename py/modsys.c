@@ -40,24 +40,32 @@
 
 #if MICROPY_PY_SYS
 
+/// \module sys - system specific functions
+
 // These should be implemented by ports, specific types don't matter,
 // only addresses.
 struct _dummy_t;
 extern struct _dummy_t mp_sys_exit_obj;
-extern struct _dummy_t mp_sys_stdin_obj;
-extern struct _dummy_t mp_sys_stdout_obj;
-extern struct _dummy_t mp_sys_stderr_obj;
 
 extern mp_obj_int_t mp_maxsize_obj;
 
+// TODO document these properly, they aren't constants or functions...
+/// \constant path - a mutable list of directories to search for imported modules
 mp_obj_list_t mp_sys_path_obj;
+/// \constant argv - a mutable list of arguments this program started with
 mp_obj_list_t mp_sys_argv_obj;
+
+/// \constant version - Python language version that this implementation conforms to, as a string
+STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
+
+/// \constant version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
 #undef I
-STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
+
 #ifdef MICROPY_PY_SYS_PLATFORM
+/// \constant platform - the platform that Micro Python is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
 
@@ -71,6 +79,7 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
 #ifdef MICROPY_PY_SYS_PLATFORM
     { MP_OBJ_NEW_QSTR(MP_QSTR_platform), (mp_obj_t)&platform_obj },
 #endif
+    /// \constant byteorder - the byte order of the system ("little" or "big")
 #if MP_ENDIANNESS_LITTLE
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_little) },
 #else
@@ -89,12 +98,13 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     #endif
 #endif
 
-
 #if MICROPY_PY_SYS_EXIT
+    // documented per-port
     { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
 #endif
 
 #if MICROPY_PY_SYS_STDFILES
+    // documented per-port
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdin), (mp_obj_t)&mp_sys_stdin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },

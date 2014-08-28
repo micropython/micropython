@@ -41,52 +41,59 @@ STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, .
     print(env, "<Pin.%s>", qstr_str(self->name));
 }
 
-STATIC void pin_named_pins_obj_load_attr(mp_obj_t self_in, qstr attr_qstr, mp_obj_t *dest) {
-    pin_named_pins_obj_t *self = self_in;
-    const char *attr = qstr_str(attr_qstr);
-    const pin_obj_t *pin = pin_find_named_pin(self->named_pins, attr);
-    if (pin) {
-        dest[0] = (mp_obj_t)pin;
-        dest[1] = MP_OBJ_NULL;
-    }
-}
-
-static const mp_obj_type_t pin_named_pins_obj_type = {
+const mp_obj_type_t pin_cpu_pins_obj_type = {
     { &mp_type_type },
-    .name = MP_QSTR_PinNamed,
-    .print = pin_named_pins_obj_print,
-    .load_attr = pin_named_pins_obj_load_attr,
-};
-
-const pin_named_pins_obj_t pin_board_pins_obj = {
-    { &pin_named_pins_obj_type },
-    .name = MP_QSTR_board,
-    .named_pins = pin_board_pins,
-};
-
-const pin_named_pins_obj_t pin_cpu_pins_obj = {
-    { &pin_named_pins_obj_type },
     .name = MP_QSTR_cpu,
-    .named_pins = pin_cpu_pins,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
 };
 
-const pin_obj_t *pin_find_named_pin(const pin_named_pin_t *named_pins, const char *name) {
-    const pin_named_pin_t *named_pin = named_pins;
-    while (named_pin->name) {
-        if (!strcmp(name, named_pin->name)) {
-            return named_pin->pin;
-        }
-        named_pin++;
+const mp_obj_type_t pin_board_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_board,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_board_pins_locals_dict,
+};
+
+const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return named_elem->value;
     }
     return NULL;
 }
 
+/* unused
 const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit, uint8_t type) {
     const pin_af_obj_t *af = pin->af;
-    for (int i = 0; i < pin->num_af; i++, af++) {
+    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
         if (af->fn == fn && af->unit == unit && af->type == type) {
             return af;
         }
     }
     return NULL;
 }
+*/
+
+const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx) {
+    const pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
+        if (af->idx == af_idx) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
+/* unused
+const pin_af_obj_t *pin_find_af_by_name(const pin_obj_t *pin, const char *name) {
+    const pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
+        if (strcmp(name, qstr_str(af->name)) == 0) {
+            return af;
+        }
+    }
+    return NULL;
+}
+*/

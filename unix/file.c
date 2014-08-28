@@ -39,6 +39,10 @@
 #include "runtime.h"
 #include "stream.h"
 
+#ifdef _WIN32
+#define fsync _commit
+#endif
+
 typedef struct _mp_obj_fdfile_t {
     mp_obj_base_t base;
     int fd;
@@ -62,33 +66,32 @@ STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "<io.%s %d>", mp_obj_get_type_str(self), self->fd);
 }
 
-STATIC mp_int_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     check_fd_is_open(o);
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }
 
-STATIC mp_int_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = o_in;
     check_fd_is_open(o);
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+        return MP_STREAM_ERROR;
     }
     return r;
 }
 
 STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
-#ifndef _WIN32
     mp_obj_fdfile_t *self = self_in;
+    check_fd_is_open(self);
     fsync(self->fd);
-#else
-    //TODO
-#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
@@ -111,7 +114,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___e
 STATIC mp_obj_t fdfile_fileno(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     check_fd_is_open(self);
-    return MP_OBJ_NEW_SMALL_INT((mp_int_t)self->fd);
+    return MP_OBJ_NEW_SMALL_INT(self->fd);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
 
@@ -164,7 +167,7 @@ STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const 
     const char *fname = mp_obj_str_get_str(args[0]);
     int fd = open(fname, mode, 0644);
     if (fd == -1) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT((mp_int_t)errno)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     o->fd = fd;
     return o;
@@ -189,7 +192,6 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
-    .is_bytes = true,
 };
 
 const mp_obj_type_t mp_type_fileio = {
@@ -207,6 +209,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
+    .is_text = true,
 };
 
 const mp_obj_type_t mp_type_textio = {

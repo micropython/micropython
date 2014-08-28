@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_i2c_ex.h
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.1.0
+  * @date    19-June-2014
   * @brief   Header file of I2C HAL Extension module.
   ******************************************************************************
   * @attention
@@ -43,7 +43,8 @@
  extern "C" {
 #endif
 
-#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) || defined(STM32F401xC) || defined(STM32F401xE)
+#if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx)|| defined(STM32F439xx) ||\
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal_def.h"  
 

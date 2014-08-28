@@ -348,9 +348,4 @@ void SystemClock_Config(void)
   {
     __fatal_error("HAL_RCC_ClockConfig");
   }
-
-  // SysTick_Config (called from HL_RCC_ClockConfig) sets the SysTick_IRQn to
-  // be the lowest priority, but we want it to be the highest priority, so fix
-  // things here.
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
