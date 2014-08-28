@@ -73,7 +73,7 @@ Q(micropython)
 Q(bytecode)
 Q(const)
 
-#if MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB
+#if MICROPY_EMIT_X64 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM
 Q(native)
 Q(viper)
 Q(uint)

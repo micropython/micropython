@@ -161,17 +161,20 @@ extern const emit_method_table_t emit_cpython_method_table;
 extern const emit_method_table_t emit_bc_method_table;
 extern const emit_method_table_t emit_native_x64_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
+extern const emit_method_table_t emit_native_arm_method_table;
 
 emit_t *emit_pass1_new(void);
 emit_t *emit_cpython_new(uint max_num_labels);
 emit_t *emit_bc_new(uint max_num_labels);
 emit_t *emit_native_x64_new(uint max_num_labels);
 emit_t *emit_native_thumb_new(uint max_num_labels);
+emit_t *emit_native_arm_new(uint max_num_labels);
 
 void emit_pass1_free(emit_t *emit);
 void emit_bc_free(emit_t *emit);
 void emit_native_x64_free(emit_t *emit);
 void emit_native_thumb_free(emit_t *emit);
+void emit_native_arm_free(emit_t *emit);
 
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 

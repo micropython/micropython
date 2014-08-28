@@ -38,6 +38,8 @@ PY_O_BASENAME = \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
+	asmarm.o \
+	emitnarm.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
@@ -143,6 +145,10 @@ $(PY_BUILD)/emitnx64.o: py/emitnative.c
 
 $(PY_BUILD)/emitnthumb.o: CFLAGS += -DN_THUMB
 $(PY_BUILD)/emitnthumb.o: py/emitnative.c
+	$(call compile_c)
+
+$(PY_BUILD)/emitnarm.o: CFLAGS += -DN_ARM
+$(PY_BUILD)/emitnarm.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
