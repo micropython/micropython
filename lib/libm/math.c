@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <math.h>
+#include "libm.h"
 
 typedef float float_t;
 typedef union {
@@ -117,11 +116,8 @@ float tanhf(float x) { return sinhf(x) / coshf(x); }
 float acoshf(float x) { return 0.0; }
 float asinhf(float x) { return 0.0; }
 float atanhf(float x) { return 0.0; }
-float tanf(float x) { return 0.0; }
 float acosf(float x) { return 0.0; }
 float asinf(float x) { return 0.0; }
-float atanf(float x) { return 0.0; }
-float atan2f(float x, float y) { return 0.0; }
 float fmodf(float x, float y) { return 0.0; }
 float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }
@@ -130,56 +126,6 @@ float erfcf(float x) { return 0.0; }
 float modff(float x, float *y) { return 0.0; }
 float frexpf(float x, int *exp) { return 0.0; }
 float ldexpf(float x, int exp) { return 0.0; }
-
-/*****************************************************************************/
-/*****************************************************************************/
-// from musl-0.9.15 libm.h
-/*****************************************************************************/
-/*****************************************************************************/
-
-/* origin: FreeBSD /usr/src/lib/msun/src/math_private.h */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
-#define FORCE_EVAL(x) do {                        \
-	if (sizeof(x) == sizeof(float)) {         \
-		volatile float __x;               \
-		__x = (x);                        \
-                (void)__x;                        \
-	} else if (sizeof(x) == sizeof(double)) { \
-		volatile double __x;              \
-		__x = (x);                        \
-                (void)__x;                        \
-	} else {                                  \
-		volatile long double __x;         \
-		__x = (x);                        \
-                (void)__x;                        \
-	}                                         \
-} while(0)
-
-/* Get a 32 bit int from a float.  */
-#define GET_FLOAT_WORD(w,d)                       \
-do {                                              \
-  union {float f; uint32_t i;} __u;               \
-  __u.f = (d);                                    \
-  (w) = __u.i;                                    \
-} while (0)
-
-/* Set a float from a 32 bit int.  */
-#define SET_FLOAT_WORD(d,w)                       \
-do {                                              \
-      union {float f; uint32_t i;} __u;           \
-      __u.i = (w);                                \
-      (d) = __u.f;                                \
-} while (0)
 
 /*****************************************************************************/
 /*****************************************************************************/

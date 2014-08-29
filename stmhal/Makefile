@@ -60,6 +60,13 @@ endif
 # uncomment this if you want libgcc
 #LIBS += $(shell $(CC) -print-libgcc-file-name)
 
+SRC_LIB = $(addprefix lib/,\
+	libm/math.c \
+	libm/mathsincos.c \
+	libm/atanf.c \
+	libm/atan2f.c \
+	)
+
 SRC_C = \
 	main.c \
 	string0.c \
@@ -84,8 +91,6 @@ SRC_C = \
 	uart.c \
 	usb.c \
 	printf.c \
-	math.c \
-	mathsincos.c \
 	gccollect.c \
 	pybstdio.c \
 	readline.c \
@@ -193,6 +198,7 @@ SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 
 OBJ =
 OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
