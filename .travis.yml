@@ -20,6 +20,7 @@ script:
   - make -C windows CROSS_COMPILE=i586-mingw32msvc-
 
   - (cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests)
+  - (cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests --emit native)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)

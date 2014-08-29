@@ -33,6 +33,20 @@ def run_tests(pyb, tests, args):
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
 
+    # Some tests are known to fail with native emitter
+    # Remove them from the below when they work
+    if args.emit == 'native':
+        skip_tests.update({'basics/%s.py' % t for t in 'bytes class_store_class class_super class_super_object closure1 closure2 closure_defargs compare_multi containment del_deref del_local del_name fun3 fun_calldblstar fun_callstar fun_callstardblstar fun_defargs fun_defargs2 fun_kwargs fun_kwonly fun_kwonlydef fun_kwvarargs fun_varargs gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send globals_del is_isnot string_format string_join subclass_native2_list subclass_native2_tuple subclass_native3 try2 try_as_var try_finally1 try_finally_loops try_finally_return try_reraise try_reraise2 unary_op unboundlocal with1 with_break with_continue with_return'.split()})
+        skip_tests.add('float/string_format.py')
+        skip_tests.add('import/gen_context.py')
+        skip_tests.add('import/import_pkg1.py')
+        skip_tests.add('io/file_with.py')
+        skip_tests.add('micropython/heapalloc.py')
+        skip_tests.add('micropython/viper.py')
+        skip_tests.add('misc/features.py')
+        skip_tests.add('misc/recursion.py')
+        skip_tests.add('misc/rge_sm.py')
+
     for test_file in tests:
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
@@ -67,7 +81,7 @@ def run_tests(pyb, tests, args):
         if pyb is None:
             # run on PC
             try:
-                output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=bytecode', test_file])
+                output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=' + args.emit, test_file])
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
         else:
@@ -120,6 +134,7 @@ def main():
     cmd_parser.add_argument('--pyboard', action='store_true', help='run the tests on the pyboard')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
+    cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
