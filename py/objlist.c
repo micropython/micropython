@@ -274,7 +274,7 @@ STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
     uint index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
-    memcpy(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
+    memmove(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
     // Clear stale pointer from slot which just got freed to prevent GC issues
     self->items[self->len] = MP_OBJ_NULL;
     if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {

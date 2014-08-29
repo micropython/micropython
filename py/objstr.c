@@ -567,7 +567,7 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
         if (idx != 0) {
             // We split less parts than split limit, now go cleanup surplus
             int used = org_splits + 1 - idx;
-            memcpy(res->items, &res->items[idx], used * sizeof(mp_obj_t));
+            memmove(res->items, &res->items[idx], used * sizeof(mp_obj_t));
             mp_seq_clear(res->items, used, res->alloc, sizeof(*res->items));
             res->len = used;
         }
