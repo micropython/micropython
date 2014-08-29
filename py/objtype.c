@@ -46,14 +46,14 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
 // instance object
 
 #define is_instance_type(type) ((type)->make_new == instance_make_new)
 #define is_native_type(type) ((type)->make_new != instance_make_new)
-mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
 
 STATIC mp_obj_t mp_obj_new_instance(mp_obj_t class, uint subobjs) {
@@ -236,7 +236,7 @@ STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void 
     print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
@@ -327,7 +327,7 @@ STATIC const qstr unary_op_method_name[] = {
     [MP_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
-STATIC mp_obj_t instance_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_instance_t *self = self_in;
     qstr op_name = unary_op_method_name[op];
     /* Still try to lookup native slot
@@ -421,7 +421,7 @@ STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *typ
     }
 }
 
-STATIC mp_obj_t instance_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = lhs_in;
@@ -583,7 +583,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
 }
 
-STATIC mp_obj_t instance_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_instance_t *self = self_in;
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -643,7 +643,7 @@ STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "<class '%s'>", qstr_str(self->name));
 }
 
-STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     switch (n_args) {
@@ -661,7 +661,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     }
 }
 
-STATIC mp_obj_t type_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // instantiate an instance of a class
 
     mp_obj_type_t *self = self_in;
@@ -725,7 +725,7 @@ STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     return false;
 }
 
-STATIC mp_obj_t type_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t type_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL:
             // Types can be equal only if it's the same type structure,
@@ -819,7 +819,7 @@ STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, ">");
 }
 
-STATIC mp_obj_t super_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     if (n_args != 2 || n_kw != 0) {
         // 0 arguments are turned into 2 in the compiler
         // 1 argument is not yet implemented
@@ -968,7 +968,7 @@ mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t 
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)
 
-STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     assert(self_in == &mp_type_staticmethod || self_in == &mp_type_classmethod);
 
     if (n_args != 1 || n_kw != 0) {

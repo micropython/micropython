@@ -171,7 +171,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 // Note: besides flag param, this differs from read() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
 // these would be thrown as exceptions.
-STATIC mp_obj_t socket_recv(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_recv(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
     int flags = 0;
@@ -193,7 +193,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 // Note: besides flag param, this differs from write() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
 // these would be thrown as exceptions.
-STATIC mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_send(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     int flags = 0;
 
@@ -210,7 +210,7 @@ STATIC mp_obj_t socket_send(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
-STATIC mp_obj_t socket_setsockopt(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = args[0];
     int level = MP_OBJ_SMALL_INT_VALUE(args[1]);
     int option = mp_obj_get_int(args[2]);
@@ -249,7 +249,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
-STATIC mp_obj_t socket_makefile(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: CPython explicitly says that closing returned object doesn't close
     // the original socket (Python2 at all says that fd is dup()ed). But we
     // save on the bloat.
@@ -261,7 +261,7 @@ STATIC mp_obj_t socket_makefile(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_obj_t socket_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     int family = AF_INET;
     int type = SOCK_STREAM;
     int proto = 0;
@@ -352,7 +352,7 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethostbyname);
 #endif // MICROPY_SOCKET_EXTRA
 
-STATIC mp_obj_t mod_socket_getaddrinfo(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Implement all args
     assert(n_args == 2);
     assert(MP_OBJ_IS_STR(args[0]));

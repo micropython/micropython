@@ -50,7 +50,7 @@ STATIC void bound_meth_print(void (*print)(void *env, const char *fmt, ...), voi
 }
 #endif
 
-mp_obj_t bound_meth_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_bound_meth_t *self = self_in;
 
     // need to insert self->self before all other args and then call self->meth

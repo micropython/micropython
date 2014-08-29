@@ -140,7 +140,7 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
     }
 }
 
-mp_obj_t stdio_obj___exit__(uint n_args, const mp_obj_t *args) {
+mp_obj_t stdio_obj___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_obj___exit__);

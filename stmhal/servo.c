@@ -189,7 +189,7 @@ STATIC void pyb_servo_print(void (*print)(void *env, const char *fmt, ...), void
 
 /// \classmethod \constructor(id)
 /// Create a servo object.  `id` is 1-4.
-STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -212,7 +212,7 @@ STATIC mp_obj_t pyb_servo_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
 
 /// \method pulse_width([value])
 /// Get or set the pulse width in milliseconds.
-STATIC mp_obj_t pyb_servo_pulse_width(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_pulse_width(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get pulse width, in us
@@ -230,7 +230,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_
 /// \method calibration([pulse_min, pulse_max, pulse_centre, [pulse_angle_90, pulse_speed_100]])
 /// Get or set the calibration of the servo timing.
 // TODO should accept 1 arg, a 5-tuple of values to set
-STATIC mp_obj_t pyb_servo_calibration(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_calibration(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get calibration values
@@ -265,7 +265,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_
 ///
 ///   - `angle` is the angle to move to in degrees.
 ///   - `time` is the number of milliseconds to take to get to the specified angle.
-STATIC mp_obj_t pyb_servo_angle(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_angle(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get angle
@@ -295,7 +295,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_
 ///
 ///   - `speed` is the speed to move to change to, between -100 and 100.
 ///   - `time` is the number of milliseconds to take to get to the specified speed.
-STATIC mp_obj_t pyb_servo_speed(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_speed(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = args[0];
     if (n_args == 1) {
         // get speed

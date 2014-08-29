@@ -188,7 +188,7 @@ STATIC void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_t
 /// second  is 0-59
 /// weekday is 0-6 for Mon-Sun.
 /// yearday is 1-366
-STATIC mp_obj_t time_localtime(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         // get current date and time
         // note: need to call get time then get date to correctly access the registers

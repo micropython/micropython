@@ -73,7 +73,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return self->val >= 0;
 }
 
-mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
@@ -84,7 +84,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     long long lhs_val;
     long long rhs_val;
 

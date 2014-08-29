@@ -95,7 +95,7 @@ STATIC mp_obj_t stringio_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_close_obj, stringio_close);
 
-mp_obj_t stringio___exit__(uint n_args, const mp_obj_t *args) {
+mp_obj_t stringio___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return stringio_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
@@ -108,7 +108,7 @@ STATIC mp_obj_stringio_t *stringio_new(mp_obj_t type_in) {
     return o;
 }
 
-STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {

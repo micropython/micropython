@@ -40,7 +40,7 @@ typedef struct _mp_obj_reversed_t {
     mp_uint_t cur_index;    // current index, plus 1; 0=no more, 1=last one (index 0)
 } mp_obj_reversed_t;
 
-STATIC mp_obj_t reversed_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t reversed_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_obj_reversed_t *o = m_new_obj(mp_obj_reversed_t);

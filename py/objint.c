@@ -47,7 +47,7 @@
 #endif
 
 // This dispatcher function is expected to be independent of the implementation of long int
-STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {
@@ -225,12 +225,12 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
-mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     return MP_OBJ_NULL; // op not supported
 }
 
 // This is called for operations on SMALL_INT that are not handled by mp_binary_op
-mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
 }
 
@@ -282,7 +282,7 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
 
 // This dispatcher function is expected to be independent of the implementation of long int
 // It handles the extra cases for integer-like arithmetic
-mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (rhs_in == mp_const_false) {
         // false acts as 0
         return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(0));
@@ -299,7 +299,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(int op, mp_obj_t lhs_in, mp_obj_t rhs_
 }
 
 // this is a classmethod
-STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t int_from_bytes(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Support long ints
     // TODO: Support byteorder param (assumes 'little' at the moment)
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -320,7 +320,7 @@ STATIC mp_obj_t int_from_bytes(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_from_bytes);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, (const mp_obj_t)&int_from_bytes_fun_obj);
 
-STATIC mp_obj_t int_to_bytes(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t val = mp_obj_int_get_checked(args[0]);
 
     uint len = MP_OBJ_SMALL_INT_VALUE(args[1]);

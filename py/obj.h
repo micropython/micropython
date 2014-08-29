@@ -180,8 +180,8 @@ typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
-typedef mp_obj_t (*mp_fun_var_t)(uint n, const mp_obj_t *);
-typedef mp_obj_t (*mp_fun_kw_t)(uint n, const mp_obj_t *, mp_map_t *);
+typedef mp_obj_t (*mp_fun_var_t)(mp_uint_t n, const mp_obj_t *);
+typedef mp_obj_t (*mp_fun_kw_t)(mp_uint_t n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
     PRINT_STR = 0,
@@ -191,10 +191,10 @@ typedef enum {
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);
-typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
-typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, uint n_args, uint n_kw, const mp_obj_t *args);
-typedef mp_obj_t (*mp_unary_op_fun_t)(int op, mp_obj_t);
-typedef mp_obj_t (*mp_binary_op_fun_t)(int op, mp_obj_t, mp_obj_t);
+typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+typedef mp_obj_t (*mp_unary_op_fun_t)(mp_uint_t op, mp_obj_t);
+typedef mp_obj_t (*mp_binary_op_fun_t)(mp_uint_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
 typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
@@ -458,7 +458,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
-mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
 
@@ -482,11 +482,11 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
-mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
+mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
-mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL if op not supported
+mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL if op not supported
 #endif
 
 // tuple
@@ -501,7 +501,7 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
 void mp_obj_list_set_len(mp_obj_t self_in, uint len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
-mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // dict
 typedef struct _mp_obj_dict_t {
@@ -535,7 +535,7 @@ typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go
     void *fun; // must be a pointer to a callable function in ROM
 } mp_obj_fun_builtin_t;
 
-mp_obj_t mp_obj_fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+mp_obj_t mp_obj_fun_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 const char *mp_obj_fun_get_name(mp_const_obj_t fun);
 const char *mp_obj_code_get_name(const byte *code_info);
 

@@ -56,7 +56,7 @@ void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *en
     print(env, ")");
 }
 
-STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
@@ -96,7 +96,7 @@ STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, uint n_args, uint n_kw, 
 }
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
+STATIC bool tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (self_type->getiter != mp_obj_tuple_getiter) {
         assert(0);
@@ -115,7 +115,7 @@ STATIC bool tuple_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
-mp_obj_t mp_obj_tuple_unary_op(int op, mp_obj_t self_in) {
+mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
@@ -124,7 +124,7 @@ mp_obj_t mp_obj_tuple_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_tuple_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = lhs;
     switch (op) {
         case MP_BINARY_OP_ADD: {
@@ -194,7 +194,7 @@ STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
-STATIC mp_obj_t tuple_index(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t tuple_index(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
     mp_obj_tuple_t *self = args[0];
     return mp_seq_index_obj(self->items, self->len, n_args, args);

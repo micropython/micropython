@@ -253,7 +253,7 @@ STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
 /// \classmethod \constructor()
 /// Create an RTC object.
-STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -287,7 +287,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 /// `weekday` is 1-7 for Monday through Sunday.
 ///
 /// `subseconds` counts down from 255 to 0
-mp_obj_t pyb_rtc_datetime(uint n_args, const mp_obj_t *args) {
+mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // get date and time
         // note: need to call get time then get date to correctly access the registers

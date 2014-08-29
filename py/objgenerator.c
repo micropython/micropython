@@ -52,7 +52,7 @@ typedef struct _mp_obj_gen_instance_t {
     mp_code_state code_state;
 } mp_obj_gen_instance_t;
 
-STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = self_in;
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
@@ -197,7 +197,7 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
-STATIC mp_obj_t gen_instance_throw(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t gen_instance_throw(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
     exc = mp_make_raise_obj(exc);
 

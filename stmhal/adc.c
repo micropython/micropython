@@ -152,7 +152,7 @@ STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env,
 /// \classmethod \constructor(pin)
 /// Create an ADC object associated with the given pin.
 /// This allows you to then read analog values on that pin.
-STATIC mp_obj_t adc_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -372,7 +372,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 /******************************************************************************/
 /* Micro Python bindings : adc_all object                                     */
 
-STATIC mp_obj_t adc_all_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_all_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

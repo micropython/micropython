@@ -119,7 +119,7 @@ STATIC NORETURN void syntax_error() {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "syntax error in uctypes descriptor"));
 }
 
-STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     if (n_args < 2 || n_args > 3) {
         syntax_error();
     }

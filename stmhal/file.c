@@ -109,12 +109,12 @@ mp_obj_t file_obj_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
-mp_obj_t file_obj___exit__(uint n_args, const mp_obj_t *args) {
+mp_obj_t file_obj___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return file_obj_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj___exit__);
 
-mp_obj_t file_obj_seek(uint n_args, const mp_obj_t *args) {
+mp_obj_t file_obj_seek(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_file_obj_t *self = args[0];
     mp_int_t offset = mp_obj_get_int(args[1]);
     mp_int_t whence = 0;
@@ -160,7 +160,7 @@ mp_obj_t file_obj_tell(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_tell_obj, file_obj_tell);
 
-STATIC mp_obj_t file_obj_make_new(mp_obj_t type, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t file_obj_make_new(mp_obj_t type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     const char *fname = mp_obj_str_get_str(args[0]);
@@ -272,7 +272,7 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-STATIC mp_obj_t pyb_io_open(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_io_open(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: analyze mode and buffering args and instantiate appropriate type
     return file_obj_make_new((mp_obj_t)&mp_type_textio, n_args, 0, args);
 }

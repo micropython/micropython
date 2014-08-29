@@ -104,7 +104,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 
 /// \function listdir([dir])
 /// With no argument, list the current directory.  Otherwise list the given directory.
-STATIC mp_obj_t os_listdir(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
     bool is_str_type = true;
     const char *path;
     if (n_args == 1) {

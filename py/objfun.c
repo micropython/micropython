@@ -49,7 +49,7 @@
 
 // This binary_op method is used for all function types, and is also
 // used to determine if an object is of generic function type.
-mp_obj_t mp_obj_fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_fun_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL:
             // These objects can be equal only if it's the same underlying structure,
@@ -64,7 +64,7 @@ mp_obj_t mp_obj_fun_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 // mp_obj_fun_builtin_t defined in obj.h
 
-STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin));
     mp_obj_fun_builtin_t *self = self_in;
 
@@ -348,7 +348,7 @@ continue2:;
 }
 
 
-STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 
     DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
@@ -510,7 +510,7 @@ typedef mp_obj_t (*native_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*native_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*native_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 
-STATIC mp_obj_t fun_native_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_native_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_native_t *self = self_in;
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
@@ -571,7 +571,7 @@ typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
 
-STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_viper_t *self = self_in;
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
@@ -682,7 +682,7 @@ STATIC mp_obj_t convert_val_from_inline_asm(mp_uint_t val) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);

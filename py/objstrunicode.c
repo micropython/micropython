@@ -100,7 +100,7 @@ STATIC void uni_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
 }
 
-STATIC mp_obj_t uni_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -112,7 +112,7 @@ STATIC mp_obj_t uni_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();

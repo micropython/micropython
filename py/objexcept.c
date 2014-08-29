@@ -130,7 +130,7 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
     mp_obj_tuple_print(print, env, o->args, kind);
 }
 
-mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_type_t *type = type_in;
 
     if (n_kw != 0) {
@@ -171,7 +171,7 @@ STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t exc___init__(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t exc___init__(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_exception_t *self = args[0];
     mp_obj_t argst = mp_obj_new_tuple(n_args - 1, args + 1);
     self->args = argst;

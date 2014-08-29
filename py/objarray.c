@@ -104,7 +104,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     return array;
 }
 
-STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t array_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
@@ -120,7 +120,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
-STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     if (n_args == 0) {
@@ -138,7 +138,7 @@ STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     }
 }
 
-STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t array_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_array_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
@@ -147,7 +147,7 @@ STATIC mp_obj_t array_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t array_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL: {
             mp_buffer_info_t lhs_bufinfo;

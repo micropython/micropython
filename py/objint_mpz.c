@@ -112,7 +112,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return !self->mpz.neg;
 }
 
-mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
@@ -123,7 +123,7 @@ mp_obj_t mp_obj_int_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t mp_obj_int_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;

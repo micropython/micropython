@@ -66,7 +66,7 @@ STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *en
 #endif
 }
 
-STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
@@ -90,7 +90,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const m
     }
 }
 
-STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_float_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
@@ -100,7 +100,7 @@ STATIC mp_obj_t float_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t float_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t float_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_float_t *lhs = lhs_in;
 #if MICROPY_PY_BUILTINS_COMPLEX
     if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
@@ -134,7 +134,7 @@ mp_float_t mp_obj_float_get(mp_obj_t self_in) {
     return self->value;
 }
 
-mp_obj_t mp_obj_float_binary_op(int op, mp_float_t lhs_val, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
     mp_float_t rhs_val = mp_obj_get_float(rhs_in); // can be any type, this function will convert to float (if possible)
     switch (op) {
         case MP_BINARY_OP_ADD:

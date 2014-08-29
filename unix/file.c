@@ -106,7 +106,7 @@ STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
-mp_obj_t fdfile___exit__(uint n_args, const mp_obj_t *args) {
+mp_obj_t fdfile___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return fdfile_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);
@@ -118,7 +118,7 @@ STATIC mp_obj_t fdfile_fileno(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_fileno_obj, fdfile_fileno);
 
-STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     mp_const_obj_t type = type_in;
 
@@ -224,7 +224,7 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: analyze mode and buffering args and instantiate appropriate type
     return fdfile_make_new((mp_obj_t)&mp_type_textio, n_args, 0, args);
 }

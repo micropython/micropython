@@ -47,7 +47,7 @@ STATIC const mp_arg_t enumerate_make_new_args[] = {
 };
 #define ENUMERATE_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(enumerate_make_new_args)
 
-STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     // parse args
     mp_arg_val_t vals[ENUMERATE_MAKE_NEW_NUM_ARGS];

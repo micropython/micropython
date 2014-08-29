@@ -221,7 +221,7 @@ void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp
 /// Create an LED object associated with the given LED:
 ///
 ///   - `id` is the LED number, 1-4.
-STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -265,7 +265,7 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
 /// Get or set the LED intensity.  Intensity ranges between 0 (off) and 255 (full on).
 /// If no argument is given, return the LED intensity.
 /// If an argument is given, set the LED intensity and return `None`.
-mp_obj_t led_obj_intensity(uint n_args, const mp_obj_t *args) {
+mp_obj_t led_obj_intensity(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_led_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(led_get_intensity(self->led_id));

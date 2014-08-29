@@ -244,7 +244,7 @@ STATIC const mp_arg_t pyb_spi_init_args[] = {
 };
 #define PYB_SPI_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_init_args)
 
-STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t vals[PYB_SPI_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_SPI_INIT_NUM_ARGS, pyb_spi_init_args, vals);
@@ -309,7 +309,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, uint n_args, cons
 ///
 /// At the moment, the NSS pin is not used by the SPI driver and is free
 /// for other use.
-STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -334,7 +334,7 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     return (mp_obj_t)spi_obj;
 }
 
-STATIC mp_obj_t pyb_spi_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_spi_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_spi_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_init_obj, 1, pyb_spi_init);
@@ -361,7 +361,7 @@ STATIC const mp_arg_t pyb_spi_send_args[] = {
 };
 #define PYB_SPI_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_send_args)
 
-STATIC mp_obj_t pyb_spi_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
 
     pyb_spi_obj_t *self = args[0];
@@ -403,7 +403,7 @@ STATIC const mp_arg_t pyb_spi_recv_args[] = {
 };
 #define PYB_SPI_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_recv_args)
 
-STATIC mp_obj_t pyb_spi_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
 
     pyb_spi_obj_t *self = args[0];
@@ -451,7 +451,7 @@ STATIC const mp_arg_t pyb_spi_send_recv_args[] = {
 };
 #define PYB_SPI_SEND_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_spi_send_recv_args)
 
-STATIC mp_obj_t pyb_spi_send_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // TODO assumes transmission size is 8-bits wide
 
     pyb_spi_obj_t *self = args[0];

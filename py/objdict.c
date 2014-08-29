@@ -60,7 +60,7 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, "}");
 }
 
-STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t dict_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_t dict = mp_obj_new_dict(0);
     if (n_args > 0 || n_kw > 0) {
         mp_obj_t args2[2] = {dict, args[0]}; // args[0] is always valid, even if it's not a positional arg
@@ -71,7 +71,7 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
     return dict;
 }
 
-STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t dict_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
@@ -80,7 +80,7 @@ STATIC mp_obj_t dict_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t dict_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = lhs_in;
     switch (op) {
         case MP_BINARY_OP_IN: {
@@ -472,7 +472,7 @@ STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void
     print(env, "])");
 }
 
-STATIC mp_obj_t dict_view_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t dict_view_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = lhs_in;
     if (o->kind != MP_DICT_VIEW_KEYS) {

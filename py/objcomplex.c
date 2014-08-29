@@ -74,7 +74,7 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
 #endif
 }
 
-STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {
@@ -117,7 +117,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const
     }
 }
 
-STATIC mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
+STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_complex_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->real != 0 || o->imag != 0);
@@ -127,7 +127,7 @@ STATIC mp_obj_t complex_unary_op(int op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t complex_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t complex_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_complex_t *lhs = lhs_in;
     return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
 }
@@ -166,7 +166,7 @@ void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
     *imag = self->imag;
 }
 
-mp_obj_t mp_obj_complex_binary_op(int op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in) {
     mp_float_t rhs_real, rhs_imag;
     mp_obj_get_complex(rhs_in, &rhs_real, &rhs_imag); // can be any type, this function will convert to float (if possible)
     switch (op) {

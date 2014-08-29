@@ -111,7 +111,7 @@ typedef struct _pyb_dac_obj_t {
 /// Construct a new DAC object.
 ///
 /// `id` can be 1 or 2: DAC 1 is on pin X5 and DAC 2 is on pin X6.
-STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -246,7 +246,7 @@ STATIC const mp_arg_t pyb_dac_write_timed_args[] = {
 };
 #define PYB_DAC_WRITE_TIMED_NUM_ARGS MP_ARRAY_SIZE(pyb_dac_write_timed_args)
 
-mp_obj_t pyb_dac_write_timed(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_dac_obj_t *self = args[0];
 
     // parse args

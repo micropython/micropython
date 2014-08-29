@@ -172,7 +172,7 @@ STATIC mp_obj_t ffimod_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
 
-STATIC mp_obj_t ffimod_func(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_ffimod_t *self = args[0];
     const char *rettype = mp_obj_str_get_str(args[1]);
     const char *symname = mp_obj_str_get_str(args[2]);
@@ -264,7 +264,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 }
 MP_DEFINE_CONST_FUN_OBJ_3(ffimod_var_obj, ffimod_var);
 
-STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     const char *fname = mp_obj_str_get_str(args[0]);
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
@@ -300,7 +300,7 @@ STATIC void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *
     print(env, "<ffifunc %p>", self->func);
 }
 
-mp_obj_t ffifunc_call(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_ffifunc_t *self = self_in;
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
@@ -406,7 +406,7 @@ STATIC const mp_obj_type_t opaque_type = {
 };
 */
 
-mp_obj_t mod_ffi_open(uint n_args, const mp_obj_t *args) {
+mp_obj_t mod_ffi_open(mp_uint_t n_args, const mp_obj_t *args) {
     return ffimod_make_new((mp_obj_t)&ffimod_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);

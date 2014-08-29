@@ -33,13 +33,13 @@
 #include "obj.h"
 #include "runtime0.h"
 
-mp_obj_t instance_make_new(mp_obj_t self_in, uint n_args, uint n_kw, const mp_obj_t *args);
+mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 
 typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
 } mp_obj_object_t;
 
-STATIC mp_obj_t object_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t object_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     if (n_args != 0 || n_kw != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object takes no arguments"));
     }

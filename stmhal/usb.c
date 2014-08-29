@@ -159,7 +159,7 @@ STATIC void pyb_usb_vcp_print(void (*print)(void *env, const char *fmt, ...), vo
 
 /// \classmethod \constructor()
 /// Create a new USB_VCP object.
-STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -191,7 +191,7 @@ STATIC const mp_arg_t pyb_usb_vcp_send_args[] = {
 };
 #define PYB_USB_VCP_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_usb_vcp_send_args)
 
-STATIC mp_obj_t pyb_usb_vcp_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_usb_vcp_send(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t vals[PYB_USB_VCP_SEND_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USB_VCP_SEND_NUM_ARGS, pyb_usb_vcp_send_args, vals);
@@ -218,7 +218,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_send_obj, 1, pyb_usb_vcp_send);
 ///
 /// Return value: if `data` is an integer then a new buffer of the bytes received,
 /// otherwise the number of bytes read into `data` is returned.
-STATIC mp_obj_t pyb_usb_vcp_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_usb_vcp_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t vals[PYB_USB_VCP_SEND_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USB_VCP_SEND_NUM_ARGS, pyb_usb_vcp_send_args, vals);
@@ -249,7 +249,7 @@ STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return ret;
 }
 
-mp_obj_t pyb_usb_vcp___exit__(uint n_args, const mp_obj_t *args) {
+mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);

@@ -39,7 +39,7 @@
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, int cur);
 STATIC mp_obj_list_t *list_new(uint n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
-STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args);
+STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args);
 
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
@@ -68,7 +68,7 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
-STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t list_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
@@ -87,7 +87,7 @@ STATIC mp_obj_t list_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp
 }
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-STATIC bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
+STATIC bool list_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     if (!MP_OBJ_IS_TYPE(another_in, &mp_type_list)) {
         return false;
@@ -98,7 +98,7 @@ STATIC bool list_cmp_helper(int op, mp_obj_t self_in, mp_obj_t another_in) {
     return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
 }
 
-STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
+STATIC mp_obj_t list_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_list_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
@@ -107,7 +107,7 @@ STATIC mp_obj_t list_unary_op(int op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t list_binary_op(int op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = lhs;
     switch (op) {
         case MP_BINARY_OP_ADD: {
@@ -264,7 +264,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-STATIC mp_obj_t list_pop(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = args[0];
@@ -307,7 +307,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, bool r
     }
 }
 
-mp_obj_t mp_obj_list_sort(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(n_args >= 1);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     if (n_args > 1) {
@@ -347,7 +347,7 @@ STATIC mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     return mp_seq_count_obj(self->items, self->len, value);
 }
 
-STATIC mp_obj_t list_index(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t list_index(mp_uint_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = args[0];
@@ -358,7 +358,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     mp_obj_list_t *self = self_in;
     // insert has its own strange index logic
-    int index = MP_OBJ_SMALL_INT_VALUE(idx);
+    mp_int_t index = MP_OBJ_SMALL_INT_VALUE(idx);
     if (index < 0) {
          index += self->len;
     }
@@ -371,7 +371,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
 
     mp_obj_list_append(self_in, mp_const_none);
 
-    for (int i = self->len-1; i > index; i--) {
+    for (mp_int_t i = self->len-1; i > index; i--) {
          self->items[i] = self->items[i-1];
     }
     self->items[index] = obj;
@@ -392,8 +392,8 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     mp_obj_list_t *self = self_in;
 
-    int len = self->len;
-    for (int i = 0; i < len/2; i++) {
+    mp_int_t len = self->len;
+    for (mp_int_t i = 0; i < len/2; i++) {
          mp_obj_t *a = self->items[i];
          self->items[i] = self->items[len-i-1];
          self->items[len-i-1] = a;

@@ -41,7 +41,7 @@
 #include "objstr.h"
 #include "objlist.h"
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict);
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 const mp_obj_t mp_const_empty_bytes;
 
 mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
@@ -105,7 +105,7 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
 }
 
-STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
@@ -145,7 +145,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_
     }
 }
 
-STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_const_empty_bytes;
     }
@@ -250,7 +250,7 @@ STATIC const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byt
 // Note: this function is used to check if an object is a str or bytes, which
 // works because both those types use it as their binary_op method.  Revisit
 // MP_OBJ_IS_STR_OR_BYTES if this fact changes.
-mp_obj_t mp_obj_str_binary_op(int op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
     mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
     mp_obj_type_t *rhs_type = mp_obj_get_type(rhs_in);
@@ -440,7 +440,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
 
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
 
-STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_split(mp_uint_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     mp_int_t splits = -1;
     mp_obj_t sep = mp_const_none;
@@ -515,7 +515,7 @@ STATIC mp_obj_t str_split(uint n_args, const mp_obj_t *args) {
     return res;
 }
 
-STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args < 3) {
         // If we don't have split limit, it doesn't matter from which side
         // we split.
@@ -576,7 +576,7 @@ STATIC mp_obj_t str_rsplit(uint n_args, const mp_obj_t *args) {
     return res;
 }
 
-STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
+STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
@@ -613,24 +613,24 @@ STATIC mp_obj_t str_finder(uint n_args, const mp_obj_t *args, mp_int_t direction
     }
 }
 
-STATIC mp_obj_t str_find(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_find(mp_uint_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, false);
 }
 
-STATIC mp_obj_t str_rfind(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rfind(mp_uint_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, false);
 }
 
-STATIC mp_obj_t str_index(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_index(mp_uint_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, true);
 }
 
-STATIC mp_obj_t str_rindex(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rindex(mp_uint_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, true);
 }
 
 // TODO: (Much) more variety in args
-STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_startswith(mp_uint_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], prefix, prefix_len);
@@ -644,7 +644,7 @@ STATIC mp_obj_t str_startswith(uint n_args, const mp_obj_t *args) {
     return MP_BOOL(memcmp(start, prefix, prefix_len) == 0);
 }
 
-STATIC mp_obj_t str_endswith(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_endswith(mp_uint_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], suffix, suffix_len);
     assert(n_args == 2);
@@ -657,7 +657,7 @@ STATIC mp_obj_t str_endswith(uint n_args, const mp_obj_t *args) {
 
 enum { LSTRIP, RSTRIP, STRIP };
 
-STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -725,15 +725,15 @@ STATIC mp_obj_t str_uni_strip(int type, uint n_args, const mp_obj_t *args) {
     return mp_obj_new_str_of_type(self_type, orig_str + first_good_char_pos, stripped_len);
 }
 
-STATIC mp_obj_t str_strip(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_strip(mp_uint_t n_args, const mp_obj_t *args) {
     return str_uni_strip(STRIP, n_args, args);
 }
 
-STATIC mp_obj_t str_lstrip(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_lstrip(mp_uint_t n_args, const mp_obj_t *args) {
     return str_uni_strip(LSTRIP, n_args, args);
 }
 
-STATIC mp_obj_t str_rstrip(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rstrip(mp_uint_t n_args, const mp_obj_t *args) {
     return str_uni_strip(RSTRIP, n_args, args);
 }
 
@@ -785,7 +785,7 @@ static mp_obj_t arg_as_int(mp_obj_t arg) {
     return arg;
 }
 
-mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
@@ -1148,7 +1148,7 @@ mp_obj_t mp_obj_str_format(uint n_args, const mp_obj_t *args) {
     return s;
 }
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, uint n_args, const mp_obj_t *args, mp_obj_t dict) {
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict) {
     assert(MP_OBJ_IS_STR(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
@@ -1336,7 +1336,7 @@ not_enough_args:
     return s;
 }
 
-STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR(args[0]));
 
     mp_int_t max_rep = -1;
@@ -1438,7 +1438,7 @@ STATIC mp_obj_t str_replace(uint n_args, const mp_obj_t *args) {
     return mp_obj_str_builder_end(replaced_str);
 }
 
-STATIC mp_obj_t str_count(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
@@ -1595,7 +1595,7 @@ STATIC mp_obj_t str_islower(mp_obj_t self_in) {
 // These methods are superfluous in the presense of str() and bytes()
 // constructors.
 // TODO: should accept kwargs too
-STATIC mp_obj_t bytes_decode(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_decode(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
     if (n_args == 1) {
         new_args[0] = args[0];
@@ -1607,7 +1607,7 @@ STATIC mp_obj_t bytes_decode(uint n_args, const mp_obj_t *args) {
 }
 
 // TODO: should accept kwargs too
-STATIC mp_obj_t str_encode(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_encode(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
     if (n_args == 1) {
         new_args[0] = args[0];

@@ -249,7 +249,7 @@ STATIC const mp_arg_t pyb_timer_init_args[] = {
 };
 #define PYB_TIMER_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_init_args)
 
-STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t vals[PYB_TIMER_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_TIMER_INIT_NUM_ARGS, pyb_timer_init_args, vals);
@@ -331,7 +331,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
 /// Construct a new timer object of the given id.  If additional
 /// arguments are given, then the timer is initialised by `init(...)`.
 /// `id` can be 1 to 14, excluding 3.
-STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -377,7 +377,7 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     return (mp_obj_t)tim;
 }
 
-STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
@@ -400,7 +400,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
 /// \method counter([value])
 /// Get or set the timer counter.
-mp_obj_t pyb_timer_counter(uint n_args, const mp_obj_t *args) {
+mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -415,7 +415,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_time
 
 /// \method prescaler([value])
 /// Get or set the prescaler for the timer.
-mp_obj_t pyb_timer_prescaler(uint n_args, const mp_obj_t *args) {
+mp_obj_t pyb_timer_prescaler(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -430,7 +430,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_ti
 
 /// \method period([value])
 /// Get or set the period of the timer.
-mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
+mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
