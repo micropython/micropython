@@ -269,6 +269,13 @@ Q(localtime)
 Q(mktime)
 Q(sleep)
 
+// for select module
+Q(select)
+Q(poll)
+Q(register)
+Q(unregister)
+Q(modify)
+
 // for input
 Q(input)
 
