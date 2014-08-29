@@ -503,6 +503,7 @@ STATIC void need_stack_settled(emit_t *emit) {
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_IMM) {
+            si->kind = STACK_VALUE;
             ASM_MOV_IMM_TO_LOCAL_USING(si->u_imm, emit->stack_start + i, REG_TEMP0);
         }
     }
@@ -1131,10 +1132,10 @@ STATIC void emit_native_jump_helper(emit_t *emit, uint label, bool pop) {
         }
     } else if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-        emit_call(emit, MP_F_OBJ_IS_TRUE);
         if (!pop) {
-            emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+            adjust_stack(emit, 1);
         }
+        emit_call(emit, MP_F_OBJ_IS_TRUE);
     } else {
         printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
         assert(0);
