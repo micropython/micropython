@@ -482,7 +482,7 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
 
 #define MIN_ALLOC (2)
 
-static const uint log_base2_floor[] = {
+STATIC const uint8_t log_base2_floor[] = {
     0,
     0, 1, 1, 2,
     2, 2, 2, 3,

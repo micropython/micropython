@@ -105,7 +105,7 @@ typedef mp_longint_impl_t fmt_int_t;
 typedef mp_int_t fmt_int_t;
 #endif
 
-STATIC const uint log_base2_floor[] = {
+STATIC const uint8_t log_base2_floor[] = {
     0,
     0, 1, 1, 2,
     2, 2, 2, 3,
