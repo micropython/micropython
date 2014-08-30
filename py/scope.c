@@ -37,7 +37,7 @@
 #include "emitglue.h"
 #include "scope.h"
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, uint emit_options) {
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;

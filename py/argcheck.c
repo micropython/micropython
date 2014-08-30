@@ -34,7 +34,7 @@
 #include "obj.h"
 #include "runtime.h"
 
-void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, bool takes_kw) {
+void mp_arg_check_num(mp_uint_t n_args, mp_uint_t n_kw, mp_uint_t n_args_min, mp_uint_t n_args_max, bool takes_kw) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
     if (n_kw && !takes_kw) {
@@ -60,9 +60,9 @@ void mp_arg_check_num(uint n_args, uint n_kw, uint n_args_min, uint n_args_max, 
     }
 }
 
-void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
-    uint pos_found = 0, kws_found = 0;
-    for (uint i = 0; i < n_allowed; i++) {
+void mp_arg_parse_all(mp_uint_t n_pos, const mp_obj_t *pos, mp_map_t *kws, mp_uint_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
+    mp_uint_t pos_found = 0, kws_found = 0;
+    for (mp_uint_t i = 0; i < n_allowed; i++) {
         mp_obj_t given_arg;
         if (i < n_pos) {
             if (allowed[i].flags & MP_ARG_KW_ONLY) {
@@ -104,7 +104,7 @@ void mp_arg_parse_all(uint n_pos, const mp_obj_t *pos, mp_map_t *kws, uint n_all
     }
 }
 
-void mp_arg_parse_all_kw_array(uint n_pos, uint n_kw, const mp_obj_t *args, uint n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
+void mp_arg_parse_all_kw_array(mp_uint_t n_pos, mp_uint_t n_kw, const mp_obj_t *args, mp_uint_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_pos);
     mp_arg_parse_all(n_pos, args, &kw_args, n_allowed, allowed, out_vals);

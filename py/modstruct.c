@@ -101,7 +101,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     char fmt_type = get_fmt_type(&fmt);
     mp_uint_t size;
     for (size = 0; *fmt; fmt++) {
-        uint align = 1;
+        mp_uint_t align = 1;
         mp_uint_t cnt = 1;
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);

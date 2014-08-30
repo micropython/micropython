@@ -401,7 +401,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
             #if MICROPY_PY_IO
             mp_stream_write(stream_obj, sep_data, sep_len);
             #else
-            printf("%.*s", sep_len, sep_data);
+            printf("%.*s", (int)sep_len, sep_data);
             #endif
         }
         #if MICROPY_PY_IO
@@ -413,7 +413,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     #if MICROPY_PY_IO
     mp_stream_write(stream_obj, end_data, end_len);
     #else
-    printf("%.*s", end_len, end_data);
+    printf("%.*s", (int)end_len, end_data);
     #endif
     return mp_const_none;
 }

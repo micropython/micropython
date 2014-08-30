@@ -224,7 +224,7 @@ int usage(char **argv) {
 STATIC mp_obj_t mem_info(void) {
     printf("mem: total=%d, current=%d, peak=%d\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
-    printf("stack: %u\n", mp_stack_usage());
+    printf("stack: " UINT_FMT "\n", mp_stack_usage());
 #if MICROPY_ENABLE_GC
     gc_dump_info();
 #endif

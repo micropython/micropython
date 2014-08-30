@@ -42,7 +42,7 @@
 #define alignof(type) offsetof(struct { char c; type t; }, t)
 #endif
 
-int mp_binary_get_size(char struct_type, char val_type, uint *palign) {
+int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     int size = 0;
     int align = 1;
     switch (struct_type) {
@@ -134,7 +134,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 
-mp_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p) {
+mp_int_t mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, byte *p) {
     int delta;
     if (!big_endian) {
         delta = -1;
@@ -159,7 +159,7 @@ mp_int_t mp_binary_get_int(uint size, bool is_signed, bool big_endian, byte *p) 
 #define is_signed(typecode) (typecode > 'Z')
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
-    uint align;
+    mp_uint_t align;
 
     int size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
@@ -186,7 +186,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
 }
 
-void mp_binary_set_int(uint val_sz, bool big_endian, byte *p, byte *val_ptr) {
+void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *p, byte *val_ptr) {
     int in_delta, out_delta;
     if (big_endian) {
         in_delta = -1;
@@ -205,7 +205,7 @@ void mp_binary_set_int(uint val_sz, bool big_endian, byte *p, byte *val_ptr) {
 
 void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr) {
     byte *p = *ptr;
-    uint align;
+    mp_uint_t align;
 
     int size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {

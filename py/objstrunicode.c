@@ -154,7 +154,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
-const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
                              mp_obj_t index, bool is_slice) {
     mp_int_t i;
     // Copied from mp_get_index; I don't want bounds checking, just give me

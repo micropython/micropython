@@ -40,7 +40,7 @@ void mp_stack_ctrl_init() {
     stack_top = (char*)&stack_dummy;
 }
 
-uint mp_stack_usage() {
+mp_uint_t mp_stack_usage() {
     // Assumes descending stack
     volatile int stack_dummy;
     return stack_top - (char*)&stack_dummy;
@@ -48,9 +48,9 @@ uint mp_stack_usage() {
 
 #if MICROPY_STACK_CHECK
 
-static uint stack_limit = 10240;
+static mp_uint_t stack_limit = 10240;
 
-void mp_stack_set_limit(uint limit) {
+void mp_stack_set_limit(mp_uint_t limit) {
     stack_limit = limit;
 }
 

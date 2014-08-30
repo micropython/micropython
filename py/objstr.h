@@ -51,12 +51,12 @@ typedef struct _mp_obj_str_t {
     else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 
 mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args);
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len);
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_uint_t len);
 
 mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
-const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
                              mp_obj_t index, bool is_slice);
 
 MP_DECLARE_CONST_FUN_OBJ(str_encode_obj);

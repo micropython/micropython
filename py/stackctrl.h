@@ -25,11 +25,11 @@
  */
 
 void mp_stack_ctrl_init();
-uint mp_stack_usage();
+mp_uint_t mp_stack_usage();
 
 #if MICROPY_STACK_CHECK
 
-void mp_stack_set_limit(uint limit);
+void mp_stack_set_limit(mp_uint_t limit);
 void mp_stack_check();
 #define MP_STACK_CHECK() mp_stack_check()
 

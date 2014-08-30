@@ -351,7 +351,7 @@ uncomparable:
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 // objstrunicode defines own version
-const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, uint self_len,
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
                              mp_obj_t index, bool is_slice) {
     mp_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
     return self_data + index_val;
@@ -1763,7 +1763,7 @@ mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len) {
     return o;
 }
 
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uint len) {
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_uint_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;

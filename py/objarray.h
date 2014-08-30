@@ -24,4 +24,4 @@
  * THE SOFTWARE.
  */
 
-mp_obj_t mp_obj_new_bytearray(uint n, void *items);
+mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);

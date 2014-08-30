@@ -50,7 +50,7 @@ typedef struct _mp_obj_array_t {
 } mp_obj_array_t;
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
-STATIC mp_obj_array_t *array_new(char typecode, uint n);
+STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
@@ -263,7 +263,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .locals_dict = (mp_obj_t)&array_locals_dict,
 };
 
-STATIC mp_obj_array_t *array_new(char typecode, uint n) {
+STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     if (typecode_size <= 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
@@ -281,7 +281,7 @@ mp_uint_t mp_obj_array_len(mp_obj_t self_in) {
     return ((mp_obj_array_t *)self_in)->len;
 }
 
-mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
+mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
     memcpy(o->items, items, n);
     return o;
