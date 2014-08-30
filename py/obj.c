@@ -111,7 +111,7 @@ void mp_obj_print_exception(mp_obj_t exc) {
     printf("\n");
 }
 
-int mp_obj_is_true(mp_obj_t arg) {
+bool mp_obj_is_true(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
@@ -414,7 +414,7 @@ mp_obj_t mp_identity(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
-bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
+bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_type_t *type = mp_obj_get_type(obj);
     if (type->buffer_p.get_buffer == NULL) {
         return false;
@@ -426,7 +426,7 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
     return true;
 }
 
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags) {
+void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (!mp_get_buffer(obj, bufinfo, flags)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object with buffer protocol required"));
     }

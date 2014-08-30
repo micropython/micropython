@@ -212,8 +212,8 @@ typedef struct _mp_buffer_info_t {
     //int ver; // ?
 
     void *buf;    // can be NULL if len == 0
-    mp_int_t len; // in bytes
-    int typecode; // as per binary.h
+    mp_int_t len; // in bytes; TODO should it be mp_uint_t?
+    int typecode; // as per binary.h; TODO what is the correct type to use?
 
     // Rationale: to load arbitrary-sized sprites directly to LCD
     // Cons: a bit adhoc usecase
@@ -223,10 +223,10 @@ typedef struct _mp_buffer_info_t {
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
 typedef struct _mp_buffer_p_t {
-    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
+    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 } mp_buffer_p_t;
-bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, int flags);
+bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 // Stream protocol
 #define MP_STREAM_ERROR (-1)
@@ -236,7 +236,7 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     // add seek() ?
-    int is_text : 1; // default is bytes, set this for text stream
+    mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
 struct _mp_obj_type_t {
@@ -403,7 +403,7 @@ void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *e
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(mp_obj_t exc);
 
-int mp_obj_is_true(mp_obj_t arg);
+bool mp_obj_is_true(mp_obj_t arg);
 
 // TODO make these all lower case when they have proven themselves
 static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o) { return ((((mp_int_t)(o)) & 3) == 0); }
@@ -575,8 +575,8 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
 #endif
 #define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
 #define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
-bool mp_seq_cmp_bytes(int op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2);
-bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2);
+bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2);
+bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, mp_uint_t len, mp_obj_t value);
 mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes);

@@ -1618,7 +1618,7 @@ STATIC mp_obj_t str_encode(mp_uint_t n_args, const mp_obj_t *args) {
 }
 #endif
 
-mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, int flags) {
+mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (flags == MP_BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
         bufinfo->buf = (void*)str_data;

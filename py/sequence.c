@@ -125,7 +125,7 @@ mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice
 
 // Special-case comparison function for sequences of bytes
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-bool mp_seq_cmp_bytes(int op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2) {
+bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2) {
     if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
         return false;
     }
@@ -169,7 +169,7 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, mp_uint_t len1, const byte *dat
 
 // Special-case comparison function for sequences of mp_obj_t
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2) {
+bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2) {
     if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
         return false;
     }

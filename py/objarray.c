@@ -52,7 +52,7 @@ typedef struct _mp_obj_array_t {
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
 STATIC mp_obj_array_t *array_new(char typecode, uint n);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
-STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags);
+STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 /******************************************************************************/
 /* array                                                                       */
@@ -223,7 +223,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
     }
 }
 
-STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, int flags) {
+STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_array_t *o = o_in;
     bufinfo->buf = o->items;
     bufinfo->len = o->len * mp_binary_get_size('@', o->typecode, NULL);
