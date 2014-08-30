@@ -464,7 +464,7 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **
         *n = 0;
         *values = NULL;
     } else {
-        uint n2;
+        mp_uint_t n2;
         mp_obj_list_get(self->traceback, &n2, (mp_obj_t**)values);
         *n = n2;
     }

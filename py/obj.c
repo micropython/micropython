@@ -308,7 +308,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 #endif
 
-void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
+void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
     } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
@@ -318,9 +318,9 @@ void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items) {
     }
 }
 
-void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
+void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_tuple) || MP_OBJ_IS_TYPE(o, &mp_type_list)) {
-        uint seq_len;
+        mp_uint_t seq_len;
         if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
             mp_obj_tuple_get(o, &seq_len, items);
         } else {
@@ -335,7 +335,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items) {
 }
 
 // is_slice determines whether the index is a slice index
-uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice) {
+mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice) {
     mp_int_t i;
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);

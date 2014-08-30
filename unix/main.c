@@ -293,7 +293,7 @@ int main(int argc, char **argv) {
     if (path == NULL) {
         path = "~/.micropython/lib:/usr/lib/micropython";
     }
-    uint path_num = 1; // [0] is for current dir (or base dir of the script)
+    mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {

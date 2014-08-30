@@ -593,7 +593,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
         // optimise the case of a tuple and list
 
         // get the items
-        uint len;
+        mp_uint_t len;
         mp_obj_t *items;
         mp_obj_get_array(pos_seq, &len, &items);
 
@@ -689,7 +689,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, uint n_args_n_kw, const mp_obj_
 
 // unpacked items are stored in reverse order into the array pointed to by items
 void mp_unpack_sequence(mp_obj_t seq_in, uint num, mp_obj_t *items) {
-    uint seq_len;
+    mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
@@ -732,7 +732,7 @@ void mp_unpack_ex(mp_obj_t seq_in, uint num_in, mp_obj_t *items) {
     uint num_left = num_in & 0xff;
     uint num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex %d %d\n", num_left, num_right);
-    uint seq_len;
+    mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
@@ -773,7 +773,7 @@ void mp_unpack_ex(mp_obj_t seq_in, uint num_in, mp_obj_t *items) {
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             mp_obj_list_append(rest, item);
         }
-        uint rest_len;
+        mp_uint_t rest_len;
         mp_obj_t *rest_items;
         mp_obj_list_get(rest, &rest_len, &rest_items);
         if (rest_len < num_right) {

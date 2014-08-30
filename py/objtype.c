@@ -65,7 +65,7 @@ STATIC mp_obj_t mp_obj_new_instance(mp_obj_t class, uint subobjs) {
 }
 
 STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_type_t **last_native_base) {
-    uint len;
+    mp_uint_t len;
     mp_obj_t *items;
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
 
@@ -166,7 +166,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             return;
         }
 
-        uint len;
+        mp_uint_t len;
         mp_obj_t *items;
         mp_obj_tuple_get(type->bases_tuple, &len, &items);
         if (len == 0) {
@@ -755,7 +755,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    uint len;
+    mp_uint_t len;
     mp_obj_t *items;
     mp_obj_tuple_get(bases_tuple, &len, &items);
     for (uint i = 0; i < len; i++) {
@@ -842,7 +842,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 
-    uint len;
+    mp_uint_t len;
     mp_obj_t *items;
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
     struct class_lookup_data lookup = {
@@ -901,7 +901,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         }
 
         // get the base objects (they should be type objects)
-        uint len;
+        mp_uint_t len;
         mp_obj_t *items;
         mp_obj_tuple_get(self->bases_tuple, &len, &items);
         if (len == 0) {
@@ -921,7 +921,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 }
 
 STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
-    uint len;
+    mp_uint_t len;
     mp_obj_t *items;
     if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
         len = 1;

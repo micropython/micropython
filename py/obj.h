@@ -384,8 +384,8 @@ mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_s
 mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed, const mp_obj_t *closed);
-mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
-mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
+mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items);
+mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(mp_uint_t n_args);
 mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
@@ -425,9 +425,9 @@ mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 //qstr mp_obj_get_qstr(mp_obj_t arg);
-void mp_obj_get_array(mp_obj_t o, uint *len, mp_obj_t **items);
-void mp_obj_get_array_fixed_n(mp_obj_t o, uint len, mp_obj_t **items);
-uint mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
+void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items);
+void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items);
+mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); /* may return MP_OBJ_NULL */
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
@@ -490,16 +490,16 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
 #endif
 
 // tuple
-void mp_obj_tuple_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
+void mp_obj_tuple_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
 struct _mp_obj_list_t;
-void mp_obj_list_init(struct _mp_obj_list_t *o, uint n);
+void mp_obj_list_init(struct _mp_obj_list_t *o, mp_uint_t n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
-void mp_obj_list_get(mp_obj_t self_in, uint *len, mp_obj_t **items);
-void mp_obj_list_set_len(mp_obj_t self_in, uint len);
+void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
+void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
