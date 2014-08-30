@@ -150,9 +150,9 @@ typedef enum _mp_map_lookup_kind_t {
 
 static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, mp_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
-void mp_map_init(mp_map_t *map, int n);
-void mp_map_init_fixed_table(mp_map_t *map, int n, const mp_obj_t *table);
-mp_map_t *mp_map_new(int n);
+void mp_map_init(mp_map_t *map, mp_uint_t n);
+void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table);
+mp_map_t *mp_map_new(mp_uint_t n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -169,7 +169,7 @@ typedef struct _mp_set_t {
 
 static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, mp_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
 
-void mp_set_init(mp_set_t *set, int n);
+void mp_set_init(mp_set_t *set, mp_uint_t n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
@@ -386,8 +386,8 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(uint n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(uint n, mp_obj_t *items);
-mp_obj_t mp_obj_new_dict(int n_args);
-mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items);
+mp_obj_t mp_obj_new_dict(mp_uint_t n_args);
+mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
 mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
@@ -508,8 +508,8 @@ typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
     mp_map_t map;
 } mp_obj_dict_t;
-void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args);
-uint mp_obj_dict_len(mp_obj_t self_in);
+void mp_obj_dict_init(mp_obj_dict_t *dict, mp_uint_t n_args);
+mp_uint_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);

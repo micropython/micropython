@@ -104,7 +104,7 @@ STATIC void set_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
     #endif
     print(env, "{");
-    for (int i = 0; i < self->set.alloc; i++) {
+    for (mp_uint_t i = 0; i < self->set.alloc; i++) {
         if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
             if (!first) {
                 print(env, ", ");
@@ -247,7 +247,7 @@ STATIC mp_obj_t set_diff_int(mp_uint_t n_args, const mp_obj_t *args, bool update
     }
 
 
-    for (int i = 1; i < n_args; i++) {
+    for (mp_uint_t i = 1; i < n_args; i++) {
         mp_obj_t other = args[i];
         if (self == other) {
             set_clear(self);
@@ -456,7 +456,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 STATIC mp_obj_t set_update(mp_uint_t n_args, const mp_obj_t *args) {
     assert(n_args > 0);
 
-    for (int i = 1; i < n_args; i++) {
+    for (mp_uint_t i = 1; i < n_args; i++) {
         set_update_int(args[0], args[i]);
     }
 
@@ -571,11 +571,11 @@ const mp_obj_type_t mp_type_frozenset = {
 };
 #endif
 
-mp_obj_t mp_obj_new_set(int n_args, mp_obj_t *items) {
+mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items) {
     mp_obj_set_t *o = m_new_obj(mp_obj_set_t);
     o->base.type = &mp_type_set;
     mp_set_init(&o->set, n_args);
-    for (int i = 0; i < n_args; i++) {
+    for (mp_uint_t i = 0; i < n_args; i++) {
         mp_set_lookup(&o->set, items[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return o;

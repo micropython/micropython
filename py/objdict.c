@@ -38,9 +38,9 @@
 #include "runtime.h"
 #include "builtin.h"
 
-STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur);
+STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, mp_uint_t cur);
 STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in);
-STATIC mp_obj_t dict_update(uint n_args, const mp_obj_t *args, mp_map_t *kwargs);
+STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
@@ -163,7 +163,7 @@ STATIC mp_map_elem_t *dict_it_iternext_elem(mp_obj_t self_in) {
     mp_uint_t max = self->dict->map.alloc;
     mp_map_t *map = &self->dict->map;
 
-    for (int i = self->cur; i < max; i++) {
+    for (mp_uint_t i = self->cur; i < max; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             self->cur = i + 1;
             return &(map->table[i]);
@@ -190,7 +190,7 @@ STATIC const mp_obj_type_t mp_type_dict_it = {
     .iternext = dict_it_iternext,
 };
 
-STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, int cur) {
+STATIC mp_obj_t mp_obj_new_dict_iterator(mp_obj_dict_t *dict, mp_uint_t cur) {
     mp_obj_dict_it_t *o = m_new_obj(mp_obj_dict_it_t);
     o->base.type = &mp_type_dict_it;
     o->dict = dict;
@@ -228,7 +228,7 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 // this is a classmethod
-STATIC mp_obj_t dict_fromkeys(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t dict_fromkeys(mp_uint_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     mp_obj_t iter = mp_getiter(args[1]);
     mp_obj_t len = mp_obj_len_maybe(iter);
@@ -278,7 +278,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     return value;
 }
 
-STATIC mp_obj_t dict_get(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t dict_get(mp_uint_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
@@ -289,7 +289,7 @@ STATIC mp_obj_t dict_get(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
-STATIC mp_obj_t dict_pop(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t dict_pop(mp_uint_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
@@ -301,7 +301,7 @@ STATIC mp_obj_t dict_pop(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
 
-STATIC mp_obj_t dict_setdefault(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t dict_setdefault(mp_uint_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 3);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
 
@@ -332,7 +332,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
-STATIC mp_obj_t dict_update(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
     mp_obj_dict_t *self = args[0];
 
@@ -555,18 +555,18 @@ const mp_obj_type_t mp_type_dict = {
     .locals_dict = (mp_obj_t)&dict_locals_dict,
 };
 
-void mp_obj_dict_init(mp_obj_dict_t *dict, int n_args) {
+void mp_obj_dict_init(mp_obj_dict_t *dict, mp_uint_t n_args) {
     dict->base.type = &mp_type_dict;
     mp_map_init(&dict->map, n_args);
 }
 
-mp_obj_t mp_obj_new_dict(int n_args) {
+mp_obj_t mp_obj_new_dict(mp_uint_t n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
     mp_obj_dict_init(o, n_args);
     return o;
 }
 
-uint mp_obj_dict_len(mp_obj_t self_in) {
+mp_uint_t mp_obj_dict_len(mp_obj_t self_in) {
     return ((mp_obj_dict_t *)self_in)->map.used;
 }
 
