@@ -34,6 +34,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "objlist.h"
 #include "objmodule.h"
 #include "parsenum.h"
 #include "runtime0.h"
@@ -769,21 +770,18 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
             }
             items[num_left + num_right + 1 - 1 - seq_len] = item;
         }
-        mp_obj_t rest = mp_obj_new_list(0, NULL);
+        mp_obj_list_t *rest = mp_obj_new_list(0, NULL);
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             mp_obj_list_append(rest, item);
         }
-        mp_uint_t rest_len;
-        mp_obj_t *rest_items;
-        mp_obj_list_get(rest, &rest_len, &rest_items);
-        if (rest_len < num_right) {
+        if (rest->len < num_right) {
             goto too_short;
         }
         items[num_right] = rest;
         for (mp_uint_t i = 0; i < num_right; i++) {
-            items[num_right - 1 - i] = rest_items[rest_len - num_right + i];
+            items[num_right - 1 - i] = rest->items[rest->len - num_right + i];
         }
-        mp_obj_list_set_len(rest, rest_len - num_right);
+        mp_obj_list_set_len(rest, rest->len - num_right);
     }
     return;
 

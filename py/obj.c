@@ -319,18 +319,10 @@ void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
 }
 
 void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
-    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple) || MP_OBJ_IS_TYPE(o, &mp_type_list)) {
-        mp_uint_t seq_len;
-        if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
-            mp_obj_tuple_get(o, &seq_len, items);
-        } else {
-            mp_obj_list_get(o, &seq_len, items);
-        }
-        if (seq_len != len) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "requested length %d but object has length %d", len, seq_len));
-        }
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
+    mp_uint_t seq_len;
+    mp_obj_get_array(o, &seq_len, items);
+    if (seq_len != len) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "requested length %d but object has length %d", len, seq_len));
     }
 }
 

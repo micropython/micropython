@@ -241,12 +241,8 @@ mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items) {
 void mp_obj_tuple_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
-    if (len) {
-        *len = self->len;
-    }
-    if (items) {
-        *items = &self->items[0];
-    }
+    *len = self->len;
+    *items = &self->items[0];
 }
 
 void mp_obj_tuple_del(mp_obj_t self_in) {
