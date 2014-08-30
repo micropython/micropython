@@ -89,7 +89,7 @@ const mp_obj_type_t closure_type = {
     .call = closure_call,
 };
 
-mp_obj_t mp_obj_new_closure(mp_obj_t fun, uint n_closed_over, const mp_obj_t *closed) {
+mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_uint_t n_closed_over, const mp_obj_t *closed) {
     mp_obj_closure_t *o = m_new_obj_var(mp_obj_closure_t, mp_obj_t, n_closed_over);
     o->base.type = &closure_type;
     o->fun = fun;

@@ -44,7 +44,7 @@
 
 STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     struct stat sb;
-    uint len;
+    mp_uint_t len;
     const char *path = mp_obj_str_get_data(path_in, &len);
 
     int res = stat(path, &sb);

@@ -108,7 +108,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
-    uint l;
+    mp_uint_t l;
     const char *typecode = mp_obj_str_get_data(args[0], &l);
 
     if (n_args == 1) {
@@ -277,7 +277,7 @@ STATIC mp_obj_array_t *array_new(char typecode, uint n) {
     return o;
 }
 
-uint mp_obj_array_len(mp_obj_t self_in) {
+mp_uint_t mp_obj_array_len(mp_obj_t self_in) {
     return ((mp_obj_array_t *)self_in)->len;
 }
 
@@ -288,7 +288,7 @@ mp_obj_t mp_obj_new_bytearray(uint n, void *items) {
 }
 
 // Create bytearray which references specified memory area
-mp_obj_t mp_obj_new_bytearray_by_ref(uint n, void *items) {
+mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     o->base.type = &mp_type_array;
     o->typecode = BYTEARRAY_TYPECODE;

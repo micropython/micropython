@@ -84,7 +84,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // go through each path looking for a directory or file
         for (int i = 0; i < path_num; i++) {
             vstr_reset(dest);
-            uint p_len;
+            mp_uint_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
@@ -185,8 +185,8 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         }
     }
 
-    uint mod_len;
-    const char *mod_str = (const char*)mp_obj_str_get_data(module_name, &mod_len);
+    mp_uint_t mod_len;
+    const char *mod_str = mp_obj_str_get_data(module_name, &mod_len);
 
     if (level != 0) {
         // What we want to do here is to take name of current module,
@@ -204,8 +204,8 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
         printf("\n");
 #endif
 
-        uint this_name_l;
-        const char *this_name = (const char*)mp_obj_str_get_data(this_name_q, &this_name_l);
+        mp_uint_t this_name_l;
+        const char *this_name = mp_obj_str_get_data(this_name_q, &this_name_l);
 
         uint dots_seen = 0;
         const char *p = this_name + this_name_l - 1;
@@ -353,5 +353,4 @@ mp_obj_t mp_builtin___import__(uint n_args, mp_obj_t *args) {
     // Otherwise, we need to return top-level package
     return top_module_obj;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);

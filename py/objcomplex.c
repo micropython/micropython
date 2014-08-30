@@ -84,7 +84,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
         case 1:
             if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
-                uint l;
+                mp_uint_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, true, true);
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {

@@ -1094,7 +1094,7 @@ import_error:
     }
 
     mp_load_method_maybe(module, MP_QSTR___name__, dest);
-    uint pkg_name_len;
+    mp_uint_t pkg_name_len;
     const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
 
     const uint dot_name_len = pkg_name_len + 1 + qstr_len(name);

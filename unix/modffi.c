@@ -124,7 +124,7 @@ STATIC ffi_type *char2ffi_type(char c)
 STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
 {
     if (MP_OBJ_IS_STR(o_in)) {
-        uint len;
+        mp_uint_t len;
         const char *s = mp_obj_str_get_data(o_in, &len);
         ffi_type *t = char2ffi_type(*s);
         if (t != NULL) {

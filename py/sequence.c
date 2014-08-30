@@ -43,7 +43,7 @@
 
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.
-void mp_seq_multiply(const void *items, uint item_sz, uint len, uint times, void *dest) {
+void mp_seq_multiply(const void *items, mp_uint_t item_sz, mp_uint_t len, mp_uint_t times, void *dest) {
     for (int i = 0; i < times; i++) {
         uint copy_sz = item_sz * len;
         memcpy(dest, items, copy_sz);
@@ -102,7 +102,7 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
 
 #endif
 
-mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
+mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
     mp_int_t start = indexes->start, stop = indexes->stop;
     mp_int_t step = indexes->step;
 
@@ -125,7 +125,7 @@ mp_obj_t mp_seq_extract_slice(uint len, const mp_obj_t *seq, mp_bound_slice_t *i
 
 // Special-case comparison function for sequences of bytes
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, uint len2) {
+bool mp_seq_cmp_bytes(int op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2) {
     if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
         return false;
     }
@@ -169,7 +169,7 @@ bool mp_seq_cmp_bytes(int op, const byte *data1, uint len1, const byte *data2, u
 
 // Special-case comparison function for sequences of mp_obj_t
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
-bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *items2, uint len2) {
+bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2) {
     if (op == MP_BINARY_OP_EQUAL && len1 != len2) {
         return false;
     }
@@ -218,7 +218,7 @@ bool mp_seq_cmp_objs(int op, const mp_obj_t *items1, uint len1, const mp_obj_t *
 }
 
 // Special-case of index() which searches for mp_obj_t
-mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp_obj_t *args) {
+mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_type_t *type = mp_obj_get_type(args[0]);
     mp_obj_t *value = args[1];
     uint start = 0;
@@ -241,7 +241,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, uint len, uint n_args, const mp
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "object not in sequence"));
 }
 
-mp_obj_t mp_seq_count_obj(const mp_obj_t *items, uint len, mp_obj_t value) {
+mp_obj_t mp_seq_count_obj(const mp_obj_t *items, mp_uint_t len, mp_obj_t value) {
     mp_uint_t count = 0;
     for (uint i = 0; i < len; i++) {
          if (mp_obj_equal(items[i], value)) {

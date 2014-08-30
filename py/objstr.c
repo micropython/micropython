@@ -53,7 +53,7 @@ STATIC NORETURN void arg_type_mixup();
 /* str                                                                        */
 
 void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env,
-                         const byte *str_data, uint str_len, bool is_bytes) {
+                         const byte *str_data, mp_uint_t str_len, bool is_bytes) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -483,7 +483,7 @@ STATIC mp_obj_t str_split(mp_uint_t n_args, const mp_obj_t *args) {
             arg_type_mixup();
         }
 
-        uint sep_len;
+        mp_uint_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
@@ -535,7 +535,7 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
     if (sep == mp_const_none) {
         assert(!"TODO: rsplit(None,n) not implemented");
     } else {
-        uint sep_len;
+        mp_uint_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
@@ -1121,9 +1121,8 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                     mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, arg, PRINT_STR);
                     break;
 
-                case 's':
-                {
-                    uint len;
+                case 's': {
+                    mp_uint_t len;
                     const char *s = mp_obj_str_get_data(arg, &len);
                     if (precision < 0) {
                         precision = len;
@@ -1249,7 +1248,7 @@ not_enough_args:
         switch (*str) {
             case 'c':
                 if (MP_OBJ_IS_STR(arg)) {
-                    uint len;
+                    mp_uint_t len;
                     const char *s = mp_obj_str_get_data(arg, &len);
                     if (len != 1) {
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "%%c requires int or char"));
@@ -1735,7 +1734,7 @@ const mp_obj_type_t mp_type_bytes = {
 STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
 
-mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, uint len, byte **data) {
+mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, mp_uint_t len, byte **data) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
@@ -1778,7 +1777,7 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, uin
     return o;
 }
 
-mp_obj_t mp_obj_new_str(const char* data, uint len, bool make_qstr_if_not_already) {
+mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already) {
     if (make_qstr_if_not_already) {
         // use existing, or make a new qstr
         return MP_OBJ_NEW_QSTR(qstr_from_strn(data, len));
@@ -1799,7 +1798,7 @@ mp_obj_t mp_obj_str_intern(mp_obj_t str) {
     return MP_OBJ_NEW_QSTR(qstr_from_strn((const char*)data, len));
 }
 
-mp_obj_t mp_obj_new_bytes(const byte* data, uint len) {
+mp_obj_t mp_obj_new_bytes(const byte* data, mp_uint_t len) {
     return mp_obj_new_str_of_type(&mp_type_bytes, data, len);
 }
 
@@ -1830,7 +1829,7 @@ STATIC void arg_type_mixup() {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Can't mix str and bytes arguments"));
 }
 
-uint mp_obj_str_get_hash(mp_obj_t self_in) {
+mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in) {
     // TODO: This has too big overhead for hash accessor
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
         GET_STR_HASH(self_in, h);
@@ -1840,7 +1839,7 @@ uint mp_obj_str_get_hash(mp_obj_t self_in) {
     }
 }
 
-uint mp_obj_str_get_len(mp_obj_t self_in) {
+mp_uint_t mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
         GET_STR_LEN(self_in, l);
@@ -1875,7 +1874,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
     }
 }
 
-const char *mp_obj_str_get_data(mp_obj_t self_in, uint *len) {
+const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len) {
     if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;

@@ -290,9 +290,9 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     return mp_obj_new_int_from_ll(value);
 }
 
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    uint n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
+    mp_uint_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
     *str += n;
     return o;
 }
