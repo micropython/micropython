@@ -1315,7 +1315,9 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @param (uint16_t)intlevel Value to set @ref INTLEVEL register.
  * @sa getINTLEVEL()
  */
-#if 0 // dpgeorge
+// dpgeorge: not yet implemented
+#define setINTLEVEL(intlevel) (void)intlevel
+#if 0
 #define setINTLEVEL(intlevel)  {\
 		WIZCHIP_WRITE(INTLEVEL,   (uint8_t)(intlevel >> 8)); \
 		WIZCHIP_WRITE(WIZCHIP_OFFSET_INC(INTLEVEL,1), (uint8_t) intlevel); \
@@ -1329,7 +1331,9 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @return uint16_t. Value of @ref INTLEVEL register.
  * @sa setINTLEVEL()
  */
-#if 0 // dpgeorge
+// dpgeorge: not yet implemented
+#define getINTLEVEL() (0)
+#if 0
 #define getINTLEVEL() \
 		((WIZCHIP_READ(INTLEVEL) << 8) + WIZCHIP_READ(WIZCHIP_OFFSET_INC(INTLEVEL,1)))
 #endif
@@ -1376,9 +1380,12 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @param (uint8_t)sir Value to set @ref SIR register.
  * @sa getSIR()
  */
+// dpgeorge: not yet implemented
+#define setSIR(sir) ((void)sir)
 #if 0
 #define setSIR(sir) \
 		WIZCHIP_WRITE(SIR, sir)
+#endif
 
 /**
  * @ingroup Common_register_access_function
@@ -1386,16 +1393,25 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @return uint8_t. Value of @ref SIR register.
  * @sa setSIR()
  */
+// dpgeorge: not yet implemented
+#define getSIR() (0)
+#if 0
 #define getSIR() \
 		WIZCHIP_READ(SIR)
+#endif
+
 /**
  * @ingroup Common_register_access_function
  * @brief Set @ref SIMR register
  * @param (uint8_t)simr Value to set @ref SIMR register.
  * @sa getSIMR()
  */
+// dpgeorge: not yet implemented
+#define setSIMR(simr) ((void)simr)
+#if 0
 #define setSIMR(simr) \
 		WIZCHIP_WRITE(SIMR, simr)
+#endif
 
 /**
  * @ingroup Common_register_access_function
@@ -1403,6 +1419,9 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @return uint8_t. Value of @ref SIMR register.
  * @sa setSIMR()
  */
+// dpgeorge: not yet implemented
+#define getSIMR() (0)
+#if 0
 #define getSIMR() \
 		WIZCHIP_READ(SIMR)
 #endif
@@ -1652,7 +1671,6 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
 #define getSn_IR(sn) \
 		(WIZCHIP_READ(Sn_IR(sn)) & 0x1F)
 
-#if 0 // dpgeorge
 /**
  * @ingroup Socket_register_access_function
  * @brief Set @ref Sn_IMR register
@@ -1660,8 +1678,12 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @param (uint8_t)imr Value to set @ref Sn_IMR
  * @sa getSn_IMR()
  */
+// dpgeorge: not yet implemented
+#define setSn_IMR(sn, imr) (void)sn; (void)imr
+#if 0
 #define setSn_IMR(sn, imr) \
 		WIZCHIP_WRITE(Sn_IMR(sn), (imr & 0x1F))
+#endif
 
 /**
  * @ingroup Socket_register_access_function
@@ -1670,6 +1692,9 @@ void     WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
  * @return uint8_t. Value of @ref Sn_IMR.
  * @sa setSn_IMR()
  */
+// dpgeorge: not yet implemented
+#define getSn_IMR(sn) (0)
+#if 0
 #define getSn_IMR(sn) \
 		(WIZCHIP_READ(Sn_IMR(sn)) & 0x1F)
 #endif

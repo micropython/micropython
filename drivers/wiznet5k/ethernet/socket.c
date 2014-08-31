@@ -204,13 +204,19 @@ int8_t connect(uint8_t sn, uint8_t * addr, uint16_t port)
 	setSn_DIPR(sn,addr);
 	setSn_DPORT(sn,port);
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
-      setSUBR(0);
+    setSUBR(wizchip_getsubn());
    #endif
 	setSn_CR(sn,Sn_CR_CONNECT);
    while(getSn_CR(sn));
    if(sock_io_mode & (1<<sn)) return SOCK_BUSY;
    while(getSn_SR(sn) != SOCK_ESTABLISHED)
    {   
+        if (getSn_SR(sn) == SOCK_CLOSED) {
+            #if _WIZCHIP_ == 5200   // for W5200 ARP errata
+            setSUBR((uint8_t*)"\x00\x00\x00\x00");
+            #endif
+            return SOCKERR_SOCKCLOSED;
+        }
 		if (getSn_IR(sn) & Sn_IR_TIMEOUT)
 		{
 			setSn_IR(sn, Sn_IR_TIMEOUT);
@@ -390,15 +396,12 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
 	wiz_send_data(sn, buf, len);
 
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
-      setSUBR(0);
+      setSUBR(wizchip_getsubn());
    #endif
 
 	setSn_CR(sn,Sn_CR_SEND);
 	/* wait to process the command... */
 	while(getSn_CR(sn));
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
-      setSUBR((uint8_t*)"\x00\x00\x00\x00");
-   #endif
    while(1)
    {
       tmp = getSn_IR(sn);
@@ -412,10 +415,16 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
       else if(tmp & Sn_IR_TIMEOUT)
       {
          setSn_IR(sn, Sn_IR_TIMEOUT);
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+      setSUBR((uint8_t*)"\x00\x00\x00\x00");
+   #endif
          return SOCKERR_TIMEOUT;
       }
       ////////////
    }
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+      setSUBR((uint8_t*)"\x00\x00\x00\x00");
+   #endif
 	return len;
 }
 
