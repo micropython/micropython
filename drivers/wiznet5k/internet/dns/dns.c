@@ -121,7 +121,8 @@ uint8_t* pDNSMSG;       // DNS message buffer
 uint8_t  DNS_SOCKET;    // SOCKET number for DNS
 uint16_t DNS_MSGID;     // DNS message ID
 
-uint32_t dns_1s_tick;   // SecTick counter for DNS process timeout
+extern uint32_t HAL_GetTick(void);
+uint32_t hal_sys_tick;
 
 /* converts uint16_t from network buffer to a host byte order integer. */
 uint16_t get16(uint8_t * s)
@@ -341,7 +342,7 @@ int8_t parseDNSMSG(struct dhdr * pdhdr, uint8_t * pbuf, uint8_t * ip_from_dns)
 	uint8_t * cp;
 
 	msg = pbuf;
-	memset(pdhdr, 0, sizeof(pdhdr));
+	memset(pdhdr, 0, sizeof(*pdhdr));
 
 	pdhdr->id = get16(&msg[0]);
 	tmp = get16(&msg[2]);
@@ -453,7 +454,7 @@ int16_t dns_makequery(uint16_t op, char * name, uint8_t * buf, uint16_t len)
 		if (len == 0) break;
 
 		/* Copy component up to (but not including) dot */
-		strncpy((char *)cp, dname, len);
+		memcpy(cp, dname, len);
 		cp += len;
 		if (cp1 == NULL)
 		{
@@ -483,9 +484,10 @@ int8_t check_DNS_timeout(void)
 {
 	static uint8_t retry_count;
 
-	if(dns_1s_tick >= DNS_WAIT_TIME)
+    uint32_t tick = HAL_GetTick();
+	if(tick - hal_sys_tick >= DNS_WAIT_TIME * 1000)
 	{
-		dns_1s_tick = 0;
+		hal_sys_tick = tick;
 		if(retry_count >= MAX_DNS_RETRY) {
 			retry_count = 0;
 			return -1; // timeout occurred
@@ -515,6 +517,8 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
 	uint8_t ip[4];
 	uint16_t len, port;
 	int8_t ret_check_timeout;
+
+        hal_sys_tick = HAL_GetTick();
    
    // Socket open
    socket(DNS_SOCKET, Sn_MR_UDP, 0, 0);
@@ -560,13 +564,3 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
 	// 0 > :  failed / 1 - success
 	return ret;
 }
-
-
-/* DNS TIMER HANDLER */
-void DNS_time_handler(void)
-{
-	dns_1s_tick++;
-}
-
-
-
