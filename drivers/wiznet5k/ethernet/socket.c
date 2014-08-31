@@ -195,8 +195,8 @@ int8_t connect(uint8_t sn, uint8_t * addr, uint16_t port)
       taddr = ((uint32_t)addr[0] & 0x000000FF);
       taddr = (taddr << 8) + ((uint32_t)addr[1] & 0x000000FF);
       taddr = (taddr << 8) + ((uint32_t)addr[2] & 0x000000FF);
-      taddr = (taddr << 8) + ((uint32_t)addr[0] & 0x000000FF);
-      if( taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
+      taddr = (taddr << 8) + ((uint32_t)addr[3] & 0x000000FF);
+      if (taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
    }
    //
 	
@@ -369,9 +369,9 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
       taddr = (taddr << 8) + ((uint32_t)addr[1] & 0x000000FF);
       taddr = (taddr << 8) + ((uint32_t)addr[2] & 0x000000FF);
       taddr = (taddr << 8) + ((uint32_t)addr[3] & 0x000000FF);
+      if (taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
    }
    //
-   if(*((uint32_t*)addr) == 0) return SOCKERR_IPINVALID;
    if(port == 0)               return SOCKERR_PORTZERO;
    tmp = getSn_SR(sn);
    if(tmp != SOCK_MACRAW && tmp != SOCK_UDP) return SOCKERR_SOCKSTATUS;
