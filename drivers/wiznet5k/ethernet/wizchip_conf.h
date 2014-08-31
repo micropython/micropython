@@ -92,7 +92,7 @@
  */
 // #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_INDIR_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_
-   #include "W5200/w5200.h"
+   #include "w5200/w5200.h"
 #elif (_WIZCHIP_ == 5500)
   #define _WIZCHIP_ID_                 "W5500\0"
   
@@ -111,7 +111,7 @@
  */
    //#define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_FDM_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_VDM_
-   #include "W5500/w5500.h"
+   #include "w5500/w5500.h"
 #else 
    #error "Unknown defined _WIZCHIP_. You should define one of 5100, 5200, and 5500 !!!"
 #endif
@@ -186,8 +186,8 @@ typedef struct __WIZCHIP
        */
       struct
       {
-         uint8_t (*_read_byte)   (void);
-         void    (*_write_byte)  (uint8_t wb);
+         void (*_read_bytes)  (uint8_t *buf, uint32_t len);
+         void (*_write_bytes) (const uint8_t *buf, uint32_t len);
       }SPI;
       // To be added
       //
@@ -393,7 +393,7 @@ void reg_wizchip_bus_cbfunc(uint8_t (*bus_rb)(uint32_t addr), void (*bus_wb)(uin
  *or register your functions.
  *@note If you do not describe or register, null function is called.
  */
-void reg_wizchip_spi_cbfunc(uint8_t (*spi_rb)(void), void (*spi_wb)(uint8_t wb));
+void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t));
 
 /**
  * @ingroup extra_functions

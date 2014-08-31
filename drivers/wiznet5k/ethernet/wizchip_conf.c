@@ -96,13 +96,13 @@ void 	wizchip_bus_writebyte(uint32_t AddrSel, uint8_t wb)  { *((volatile uint8_t
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
  * null function is called.
  */
-uint8_t wizchip_spi_readbyte(void)        {return 0;};
+void wizchip_spi_readbytes(uint8_t *buf, uint32_t len) {}
 /**
  * @brief Default function to write in SPI interface.
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
  * null function is called.
  */
-void 	wizchip_spi_writebyte(uint8_t wb) {};
+void wizchip_spi_writebytes(const uint8_t *buf, uint32_t len) {}
 
 /**
  * @\ref _WIZCHIP instance
@@ -168,19 +168,19 @@ void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint
    }
 }
 
-void reg_wizchip_spi_cbfunc(uint8_t (*spi_rb)(void), void (*spi_wb)(uint8_t wb))
+void reg_wizchip_spi_cbfunc((void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t))
 {
    while(!(WIZCHIP.if_mode & _WIZCHIP_IO_MODE_SPI_));
    
    if(!spi_rb || !spi_wb)
    {
-      WIZCHIP.IF.SPI._read_byte   = wizchip_spi_readbyte;
-      WIZCHIP.IF.SPI._write_byte  = wizchip_spi_writebyte;
+      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbytes;
+      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebytes;
    }
    else
    {
-      WIZCHIP.IF.SPI._read_byte   = spi_rb;
-      WIZCHIP.IF.SPI._write_byte  = spi_wb;
+      WIZCHIP.IF.SPI._read_bytes   = spi_rb;
+      WIZCHIP.IF.SPI._write_bytes  = spi_wb;
    }
 }
 
