@@ -51,6 +51,8 @@
 //*****************************************************************************
 #include "socket.h"
 
+extern void HAL_Delay(uint32_t);
+
 #define SOCK_ANY_PORT_NUM  0xC000;
 
 static uint16_t sock_any_port = SOCK_ANY_PORT_NUM;
@@ -225,6 +227,7 @@ int8_t connect(uint8_t sn, uint8_t * addr, uint16_t port)
          #endif
          return SOCKERR_TIMEOUT;
 		}
+        HAL_Delay(1);
 	}
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
@@ -345,6 +348,7 @@ int32_t recv(uint8_t sn, uint8_t * buf, uint16_t len)
       }
       if((sock_io_mode & (1<<sn)) && (recvsize == 0)) return SOCK_BUSY;
       if(recvsize != 0) break;
+      HAL_Delay(1);
    };
    if(recvsize < len) len = recvsize;
    wiz_recv_data(sn, buf, len);
@@ -392,6 +396,7 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
       if(getSn_SR(sn) == SOCK_CLOSED) return SOCKERR_SOCKCLOSED;
       if( (sock_io_mode & (1<<sn)) && (len > freesize) ) return SOCK_BUSY;
       if(len <= freesize) break;
+      HAL_Delay(1);
    };
 	wiz_send_data(sn, buf, len);
 
@@ -421,6 +426,7 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
          return SOCKERR_TIMEOUT;
       }
       ////////////
+      HAL_Delay(1);
    }
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
