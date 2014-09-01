@@ -606,6 +606,12 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
    getGAR(pnetinfo->gw);
    getSUBR(pnetinfo->sn);
    getSIPR(pnetinfo->ip);
+#if _WIZCHIP_ == 5200   // for W5200 ARP errata
+   pnetinfo->sn[0] = _SUBN_[0];
+   pnetinfo->sn[1] = _SUBN_[1];
+   pnetinfo->sn[2] = _SUBN_[2];
+   pnetinfo->sn[3] = _SUBN_[3];
+#endif
    pnetinfo->dns[0]= _DNS_[0];
    pnetinfo->dns[1]= _DNS_[1];
    pnetinfo->dns[2]= _DNS_[2];

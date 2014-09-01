@@ -9,6 +9,7 @@ endif
 BUILD ?= build-$(BOARD)
 
 include ../py/mkenv.mk
+-include mpconfigport.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
@@ -41,7 +42,7 @@ INC += -I$(FATFS_DIR)/src
 INC += -I$(CC3K_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M4) $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 
 LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
@@ -196,6 +197,19 @@ SRC_CC3K = $(addprefix $(CC3K_DIR)/,\
 	pybcc3k.c \
 	)
 
+ifeq ($(MICROPY_PY_WIZNET5K),1)
+WIZNET5K_DIR=drivers/wiznet5k
+INC += -I$(TOP)/$(WIZNET5K_DIR)
+CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=1
+SRC_MOD += modwiznet5k.c
+SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
+	ethernet/w5200/w5200.c \
+	ethernet/wizchip_conf.c \
+	ethernet/socket.c \
+	internet/dns/dns.c \
+	)
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
@@ -205,6 +219,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CC3K:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 # We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.

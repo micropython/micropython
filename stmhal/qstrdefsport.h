@@ -283,6 +283,32 @@ Q(pixel)
 Q(text)
 Q(show)
 
+// for WIZnet5k class
+#if MICROPY_HW_ENABLE_WIZNET5K
+Q(wiznet5k)
+Q(WIZnet5k)
+Q(regs)
+Q(ipaddr)
+Q(socket)
+Q(family)
+Q(type)
+Q(fileno)
+Q(close)
+Q(bind)
+Q(listen)
+Q(accept)
+Q(connect)
+Q(disconnect)
+Q(send)
+Q(recv)
+Q(sendto)
+Q(recvfrom)
+Q(gethostbyname)
+Q(AF_INET)
+Q(SOCK_STREAM)
+Q(SOCK_DGRAM)
+#endif
+
 // for stm module
 Q(stm)
 Q(mem)

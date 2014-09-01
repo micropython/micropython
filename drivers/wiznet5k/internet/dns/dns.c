@@ -54,7 +54,7 @@
 
 //#include "Ethernet/socket.h"
 //#include "Internet/DNS/dns.h"
-#include "../../Ethernet/socket.h"
+#include "../../ethernet/socket.h"
 #include "dns.h"
 
 #ifdef _DNS_DEBUG_
