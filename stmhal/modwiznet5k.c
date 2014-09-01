@@ -46,6 +46,22 @@
 #include "ethernet/socket.h"
 #include "internet/dns/dns.h"
 
+/// \module wiznet5k - control WIZnet5x00 Ethernet adaptors
+///
+/// This module allows you to control WIZnet5x00 Ethernet adaptors based on
+/// the W5200 and W5500 chipsets (only W5200 tested).
+///
+/// Example usage:
+///
+///     import wiznet5k
+///     w = wiznet5k.WIZnet5k()
+///     print(w.ipaddr())
+///     w.gethostbyname('micropython.org')
+///     s = w.socket()
+///     s.connect(('192.168.0.2', 8080))
+///     s.send('hello')
+///     print(s.recv(10))
+
 #define IPADDR_BUF_SIZE (4)
 
 STATIC const mp_obj_type_t wiznet5k_type;
@@ -157,7 +173,7 @@ STATIC void wiznet5k_print(void (*print)(void *env, const char *fmt, ...), void 
 }
 
 /// \classmethod \constructor()
-/// Create and return a wiznet5k object.
+/// Create and return a WIZnet5k object.
 STATIC mp_obj_t wiznet5k_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -277,6 +293,8 @@ STATIC mp_obj_t wiznet5k_ipaddr(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ipaddr_obj, 1, 2, wiznet5k_ipaddr);
 
+/// \method socket(family=AF_INET, type=SOCK_STREAM, fileno=-1)
+/// Create a socket.
 STATIC const mp_arg_t wiznet5k_socket_args[] = {
     { MP_QSTR_family, MP_ARG_INT,                  {.u_int = 0} }, // ignored, only AF_INET supported
     { MP_QSTR_type,   MP_ARG_INT,                  {.u_int = Sn_MR_TCP} }, // SOCK_STREAM or SOCK_DGRAM
@@ -307,6 +325,8 @@ STATIC mp_obj_t wiznet5k_socket(mp_uint_t n_args, const mp_obj_t *args, mp_map_t
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_socket_obj, 1, wiznet5k_socket);
 
+/// \method gethostbyname(name)
+/// Use DNS to lookup a host name.  Returns an IP address.
 STATIC mp_obj_t wiznet5k_gethostbyname(mp_obj_t self_in, mp_obj_t name_in) {
     uint8_t dns_ip[IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     const char *name = mp_obj_str_get_str(name_in);
