@@ -9,6 +9,12 @@ QSTR_DEFS = qstrdefsport.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+# detect platform
+ifeq "$(ARCH)" ""
+	override ARCH := $(UNAME_M)
+endif
 
 # include py core make definitions
 include ../py/py.mk
@@ -16,6 +22,17 @@ include ../py/py.mk
 INC =  -I.
 INC += -I$(PY_SRC)
 INC += -I$(BUILD)
+
+# platform specific flags
+ifneq ($(ARCH),x86_64)
+	override CFLAGS_EXTRA += -DMICROPY_EMIT_X64=0
+endif
+ifeq ($(ARCH),mips)
+	override CFLAGS_EXTRA += -DMICROPY_GCREGS_SETJMP=1
+endif
+ifeq ($(ARCH),mipsel)
+	override CFLAGS_EXTRA += -DMICROPY_GCREGS_SETJMP=1
+endif
 
 # compiler settings
 CWARN = -Wall -Werror -Wno-error=cpp
@@ -91,7 +108,7 @@ seg_helpers.c: $(BUILD)/order.def
 $(BUILD)/order.def:
 	$(Q)echo "seg_helpers.o: ___bss_start" > $@
 endif
-	
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk
