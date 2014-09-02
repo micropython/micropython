@@ -64,7 +64,7 @@ STATIC mp_obj_t mod_zlibd_decompress(uint n_args, mp_obj_t *args) {
         size_t in_buf_sz = bufinfo.len - in_buf_ofs;
         DEBUG_printf("tinfl in: in_ofs=%d in_sz=%d dst_ofs=%d, dst_sz=%d\n", in_buf_ofs, in_buf_sz, dst_buf_ofs, dst_buf_sz);
         tinfl_status st = tinfl_decompress(decomp,
-            bufinfo.buf + in_buf_ofs, &in_buf_sz,
+            (mz_uint8*) bufinfo.buf + in_buf_ofs, &in_buf_sz,
             out, out + dst_buf_ofs, &dst_buf_sz,
             TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF | TINFL_FLAG_PARSE_ZLIB_HEADER);
         DEBUG_printf("tinfl out: st=%d, in_sz=%d, out_sz=%d\n", st, in_buf_sz, dst_buf_sz);
