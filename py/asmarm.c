@@ -40,8 +40,8 @@
 
 struct _asm_arm_t {
     uint pass;
-    uint code_offset;
-    uint code_size;
+    mp_uint_t code_offset;
+    mp_uint_t code_size;
     byte *code_base;
     byte dummy_data[4];
 
@@ -64,7 +64,7 @@ asm_arm_t *asm_arm_new(uint max_num_labels) {
 
 void asm_arm_free(asm_arm_t *as, bool free_code) {
     if (free_code) {
-        m_del(byte, as->code_base, as->code_size);
+        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
     }
 
     m_del_obj(asm_arm_t, as);
@@ -80,9 +80,22 @@ void asm_arm_start_pass(asm_arm_t *as, uint pass) {
 
 void asm_arm_end_pass(asm_arm_t *as) {
     if (as->pass == ASM_ARM_PASS_COMPUTE) {
-        // calculate size of code in bytes
-        as->code_size = as->code_offset;
-        as->code_base = m_new(byte, as->code_size);
+        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
+        if(as->code_base == NULL) {
+            assert(0);
+        }
+    }
+    else if(as->pass == ASM_ARM_PASS_EMIT) {
+#ifdef __arm__
+        // flush I- and D-cache
+	asm volatile(
+                "0:"
+                "mrc p15, 0, r15, c7, c10, 3\n"
+                "bne 0b\n"
+                "mov r0, #0\n"
+	        "mcr p15, 0, r0, c7, c7, 0\n"
+                : : : "r0", "cc");
+#endif
     }
 }
 
