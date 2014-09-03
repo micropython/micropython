@@ -18,6 +18,7 @@
 #include "tinytest.h"
 #include "tinytest_macros.h"
 
+void do_str(const char *src);
 inline void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
