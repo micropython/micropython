@@ -27,8 +27,8 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
-#ifndef MICROPY_EMIT_X64
-#define MICROPY_EMIT_X64            (1)
+#if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
+    #define MICROPY_EMIT_X64        (1)
 #endif
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -62,7 +62,11 @@
 // Define to 1 to use untested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
 #ifndef MICROPY_GCREGS_SETJMP
-#define MICROPY_GCREGS_SETJMP       (0)
+    #ifdef __mips__
+        #define MICROPY_GCREGS_SETJMP (1)
+    #else
+        #define MICROPY_GCREGS_SETJMP (0)
+    #endif
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
