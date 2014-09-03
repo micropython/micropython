@@ -440,6 +440,14 @@ typedef double mp_float_t;
 #define MICROPY_MAKE_POINTER_CALLABLE(p) (p)
 #endif
 
+#ifndef MP_PLAT_ALLOC_EXEC
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) do { *ptr = m_new(byte, min_size); *size = min_size; } while(0)
+#endif
+
+#ifndef MP_PLAT_FREE_EXEC
+#define MP_PLAT_FREE_EXEC(ptr, size) m_del(byte, ptr, size)
+#endif
+
 // printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__

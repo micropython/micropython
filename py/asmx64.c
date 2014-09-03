@@ -113,8 +113,8 @@
 
 struct _asm_x64_t {
     uint pass;
-    uint code_offset;
-    uint code_size;
+    mp_uint_t code_offset;
+    mp_uint_t code_size;
     byte *code_base;
     byte dummy_data[8];
 
@@ -122,18 +122,6 @@ struct _asm_x64_t {
     int *label_offsets;
     int num_locals;
 };
-
-// for allocating memory, see src/v8/src/platform-linux.cc
-void *alloc_mem(uint req_size, uint *alloc_size, bool is_exec) {
-    req_size = (req_size + 0xfff) & (~0xfff);
-    int prot = PROT_READ | PROT_WRITE | (is_exec ? PROT_EXEC : 0);
-    void *ptr = mmap(NULL, req_size, prot, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (ptr == MAP_FAILED) {
-        assert(0);
-    }
-    *alloc_size = req_size;
-    return ptr;
-}
 
 asm_x64_t *asm_x64_new(uint max_num_labels) {
     asm_x64_t *as;
@@ -147,8 +135,7 @@ asm_x64_t *asm_x64_new(uint max_num_labels) {
 
 void asm_x64_free(asm_x64_t *as, bool free_code) {
     if (free_code) {
-        // need to un-mmap
-        //m_free(as->code_base);
+        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
     }
     /*
     if (as->label != NULL) {
@@ -176,11 +163,10 @@ void asm_x64_start_pass(asm_x64_t *as, uint pass) {
 
 void asm_x64_end_pass(asm_x64_t *as) {
     if (as->pass == ASM_X64_PASS_COMPUTE) {
-        // calculate size of code in bytes
-        as->code_size = as->code_offset;
-        //as->code_base = m_new(byte, as->code_size); need to allocale executable memory
-        uint actual_alloc;
-        as->code_base = alloc_mem(as->code_size, &actual_alloc, true);
+        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
+	if(as->code_base == NULL) {
+            assert(0);
+        }
         //printf("code_size: %u\n", as->code_size);
     }
 

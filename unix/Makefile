@@ -75,6 +75,7 @@ SRC_C = \
 	file.c \
 	modsocket.c \
 	modos.c \
+        alloc.c \
 	$(SRC_MOD)
 
 ifeq ($(UNAME_S),Darwin)

@@ -114,6 +114,11 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
+void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
+void mp_unix_free_exec(void *ptr, mp_uint_t size);
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
+#define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
+
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
