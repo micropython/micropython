@@ -84,16 +84,15 @@ void asm_arm_end_pass(asm_arm_t *as) {
         if(as->code_base == NULL) {
             assert(0);
         }
-    }
-    else if(as->pass == ASM_ARM_PASS_EMIT) {
+    } else if(as->pass == ASM_ARM_PASS_EMIT) {
 #ifdef __arm__
         // flush I- and D-cache
-	asm volatile(
+        asm volatile(
                 "0:"
                 "mrc p15, 0, r15, c7, c10, 3\n"
                 "bne 0b\n"
                 "mov r0, #0\n"
-	        "mcr p15, 0, r0, c7, c7, 0\n"
+                "mcr p15, 0, r0, c7, c7, 0\n"
                 : : : "r0", "cc");
 #endif
     }

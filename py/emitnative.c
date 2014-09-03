@@ -394,7 +394,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         void *f = asm_thumb_get_code(emit->as);
         mp_uint_t f_len = asm_thumb_get_code_size(emit->as);
 #elif N_ARM
-	void *f = asm_arm_get_code(emit->as);
+        void *f = asm_arm_get_code(emit->as);
         mp_uint_t f_len = asm_arm_get_code_size(emit->as);
 #endif
 

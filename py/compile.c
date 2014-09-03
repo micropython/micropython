@@ -3692,7 +3692,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #elif MICROPY_EMIT_THUMB
         emit_native_thumb_free(emit_native);
 #elif MICROPY_EMIT_ARM
-	emit_native_arm_free(emit_native);
+        emit_native_arm_free(emit_native);
 #endif
     }
 #endif

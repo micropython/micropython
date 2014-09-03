@@ -35,14 +35,7 @@
 // wrapper around everything in this file
 #if MICROPY_EMIT_X64
 
-#include <sys/types.h>
-#include <sys/mman.h>
-
 #include "asmx64.h"
-
-#if defined(__OpenBSD__) || defined(__MACH__)
-#define MAP_ANONYMOUS MAP_ANON
-#endif
 
 /* all offsets are measured in multiples of 8 bytes */
 #define WORD_SIZE                (8)
@@ -164,7 +157,7 @@ void asm_x64_start_pass(asm_x64_t *as, uint pass) {
 void asm_x64_end_pass(asm_x64_t *as) {
     if (as->pass == ASM_X64_PASS_COMPUTE) {
         MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
-	if(as->code_base == NULL) {
+        if(as->code_base == NULL) {
             assert(0);
         }
         //printf("code_size: %u\n", as->code_size);
