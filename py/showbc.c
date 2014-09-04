@@ -30,7 +30,10 @@
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"
+#include "obj.h"
+#include "runtime.h"
 #include "bc0.h"
+#include "bc.h"
 
 #if MICROPY_DEBUG_PRINTERS
 
@@ -60,20 +63,19 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
     const byte *ip_start = ip;
 
     // get code info size
-    mp_uint_t code_info_size = ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
     const byte *code_info = ip;
+    mp_uint_t code_info_size = mp_decode_uint(&code_info);
     ip += code_info_size;
 
-    qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
-    qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
+    qstr block_name = mp_decode_uint(&code_info);
+    qstr source_file = mp_decode_uint(&code_info);
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p %d bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, code_info, len);
 
     // bytecode prelude: state size and exception stack size; 16 bit uints
     {
-        uint n_state = ip[0] | (ip[1] << 8);
-        uint n_exc_stack = ip[2] | (ip[3] << 8);
-        ip += 4;
+        uint n_state = mp_decode_uint(&ip);
+        uint n_exc_stack = mp_decode_uint(&ip);
         printf("(N_STATE %u)\n", n_state);
         printf("(N_EXC_STACK %u)\n", n_exc_stack);
     }

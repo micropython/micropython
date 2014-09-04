@@ -921,26 +921,25 @@ exception_handler:
             // But consider how to handle nested exceptions.
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (mp_obj_is_exception_instance(nlr.ret_val) && nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
-                const byte *code_info = code_state->code_info;
-                mp_uint_t code_info_size = code_info[0] | (code_info[1] << 8) | (code_info[2] << 16) | (code_info[3] << 24);
-                qstr source_file = code_info[4] | (code_info[5] << 8) | (code_info[6] << 16) | (code_info[7] << 24);
-                qstr block_name = code_info[8] | (code_info[9] << 8) | (code_info[10] << 16) | (code_info[11] << 24);
-                mp_uint_t bc = code_state->ip - code_info - code_info_size;
-                //printf("find %lu %d %d\n", bc, code_info[12], code_info[13]);
+                const byte *ip = code_state->code_info;
+                mp_uint_t code_info_size = mp_decode_uint(&ip);
+                qstr block_name = mp_decode_uint(&ip);
+                qstr source_file = mp_decode_uint(&ip);
+                mp_uint_t bc = code_state->ip - code_state->code_info - code_info_size;
                 mp_uint_t source_line = 1;
                 mp_uint_t c;
-                for (const byte *ci = code_info + 12; (c = *ci);) {
+                while ((c = *ip)) {
                     mp_uint_t b, l;
                     if ((c & 0x80) == 0) {
                         // 0b0LLBBBBB encoding
                         b = c & 0x1f;
                         l = c >> 5;
-                        ci += 1;
+                        ip += 1;
                     } else {
                         // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
                         b = c & 0xf;
-                        l = ((c << 4) & 0x700) | ci[1];
-                        ci += 2;
+                        l = ((c << 4) & 0x700) | ip[1];
+                        ip += 2;
                     }
                     if (bc >= b) {
                         bc -= b;

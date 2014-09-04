@@ -85,6 +85,22 @@ void emit_bc_free(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
+STATIC void emit_write_uint(emit_t* emit, byte*(*allocator)(emit_t*, int), mp_uint_t val) {
+    // We store each 7 bits in a separate byte, and that's how many bytes needed
+    byte buf[BYTES_FOR_INT];
+    byte *p = buf + sizeof(buf);
+    // We encode in little-ending order, but store in big-endian, to help decoding
+    do {
+        *--p = val & 0x7f;
+        val >>= 7;
+    } while (val != 0);
+    byte* c = allocator(emit, buf + sizeof(buf) - p);
+    while (p != buf + sizeof(buf) - 1) {
+        *c++ = *p++ | 0x80;
+    }
+    *c = *p;
+}
+
 // all functions must go through this one to emit code info
 STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
@@ -103,13 +119,12 @@ STATIC void emit_align_code_info_to_machine_word(emit_t* emit) {
     emit->code_info_offset = (emit->code_info_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
-STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qstr) {
-    byte* c = emit_get_cur_to_write_code_info(emit, 4);
-    // TODO variable length encoding for qstr
-    c[0] = qstr & 0xff;
-    c[1] = (qstr >> 8) & 0xff;
-    c[2] = (qstr >> 16) & 0xff;
-    c[3] = (qstr >> 24) & 0xff;
+STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
+    emit_write_uint(emit, emit_get_cur_to_write_code_info, val);
+}
+
+STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qst) {
+    emit_write_uint(emit, emit_get_cur_to_write_code_info, qst);
 }
 
 #if MICROPY_ENABLE_SOURCE_LINE
@@ -160,27 +175,15 @@ STATIC void emit_write_bytecode_byte(emit_t* emit, byte b1) {
     c[0] = b1;
 }
 
+STATIC void emit_write_bytecode_uint(emit_t* emit, mp_uint_t val) {
+    emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
+}
+
 STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, uint b2) {
     assert((b2 & (~0xff)) == 0);
     byte* c = emit_get_cur_to_write_bytecode(emit, 2);
     c[0] = b1;
     c[1] = b2;
-}
-
-STATIC void emit_write_bytecode_uint(emit_t* emit, uint num) {
-    // We store each 7 bits in a separate byte, and that's how many bytes needed
-    byte buf[BYTES_FOR_INT];
-    byte *p = buf + sizeof(buf);
-    // We encode in little-ending order, but store in big-endian, to help decoding
-    do {
-        *--p = num & 0x7f;
-        num >>= 7;
-    } while (num != 0);
-    byte* c = emit_get_cur_to_write_bytecode(emit, buf + sizeof(buf) - p);
-    while (p != buf + sizeof(buf) - 1) {
-        *c++ = *p++ | 0x80;
-    }
-    *c = *p;
 }
 
 // Similar to emit_write_bytecode_uint(), just some extra handling to encode sign
@@ -210,9 +213,9 @@ STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, mp_int_t num) {
     *c = *p;
 }
 
-STATIC void emit_write_bytecode_byte_uint(emit_t* emit, byte b, uint num) {
+STATIC void emit_write_bytecode_byte_uint(emit_t* emit, byte b, mp_uint_t val) {
     emit_write_bytecode_byte(emit, b);
-    emit_write_bytecode_uint(emit, num);
+    emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
 // aligns the pointer so it is friendly to GC
@@ -281,23 +284,18 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
 
-    // write code info size; use maximum space (4 bytes) to write it; TODO possible optimise this
-    {
-        byte* c = emit_get_cur_to_write_code_info(emit, 4);
-        mp_uint_t s = emit->code_info_size;
-        c[0] = s & 0xff;
-        c[1] = (s >> 8) & 0xff;
-        c[2] = (s >> 16) & 0xff;
-        c[3] = (s >> 24) & 0xff;
+    // Write code info size as compressed uint.  If we are not in the final pass
+    // then space for this uint is reserved in emit_bc_end_pass.
+    if (pass == MP_PASS_EMIT) {
+        emit_write_code_info_uint(emit, emit->code_info_size);
     }
 
-    // code info
-    emit_write_code_info_qstr(emit, scope->source_file);
+    // write the name and source file of this function
     emit_write_code_info_qstr(emit, scope->simple_name);
+    emit_write_code_info_qstr(emit, scope->source_file);
 
     // bytecode prelude: local state size and exception stack size; 16 bit uints for now
     {
-        byte* c = emit_get_cur_to_write_bytecode(emit, 4);
         uint n_state = scope->num_locals + scope->stack_size;
         if (n_state == 0) {
             // Need at least 1 entry in the state, in the case an exception is
@@ -305,10 +303,8 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
             // the highest slot in the state (fastn[0], see vm.c).
             n_state = 1;
         }
-        c[0] = n_state & 0xff;
-        c[1] = (n_state >> 8) & 0xff;
-        c[2] = scope->exc_stack_size & 0xff;
-        c[3] = (scope->exc_stack_size >> 8) & 0xff;
+        emit_write_bytecode_uint(emit, n_state);
+        emit_write_bytecode_uint(emit, scope->exc_stack_size);
     }
 
     // bytecode prelude: initialise closed over variables
@@ -336,10 +332,27 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
     }
 
     *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
-    emit_align_code_info_to_machine_word(emit); // align so that following bytecode is aligned
 
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        // calculate size of code in bytes
+        // Need to make sure we have enough room in the code-info block to write
+        // the size of the code-info block.  Since the size is written as a
+        // compressed uint, we don't know its size until we write it!  Thus, we
+        // take the biggest possible value it could be and write that here.
+        // Then there will be enough room to write the value, and any leftover
+        // space will be absorbed in the alignment at the end of the code-info
+        // block.
+        mp_uint_t max_code_info_size =
+            emit->code_info_offset  // current code-info size
+            + BYTES_FOR_INT         // maximum space for compressed uint
+            + BYTES_PER_WORD - 1;   // maximum space for alignment padding
+        emit_write_code_info_uint(emit, max_code_info_size);
+
+        // Align code-info so that following bytecode is aligned on a machine word.
+        // We don't need to write anything here, it's just dead space between the
+        // code-info block and the bytecode block that follows it.
+        emit_align_code_info_to_machine_word(emit);
+
+        // calculate size of total code-info + bytecode, in bytes
         emit->code_info_size = emit->code_info_offset;
         emit->bytecode_size = emit->bytecode_offset;
         emit->code_base = m_new0(byte, emit->code_info_size + emit->bytecode_size);
