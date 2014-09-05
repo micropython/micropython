@@ -58,7 +58,7 @@ def do_work(infiles):
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qhash = compute_hash(qstr)
         qlen = len(qstr)
-        print('Q({}, (const byte*)"\\x{:02x}\\x{:02x}\\x{:02x}\\x{:02x}" "{}")'.format(ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qstr))
+        print('Q(%s, (const byte*)"\\x%02x\\x%02x\\x%02x\\x%02x" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qstr))
 
     return True
 
