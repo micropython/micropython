@@ -56,12 +56,12 @@
    returns sign(i - j)
    assumes i, j are normalised
 */
-STATIC int mpn_cmp(const mpz_dig_t *idig, uint ilen, const mpz_dig_t *jdig, uint jlen) {
+STATIC mp_int_t mpn_cmp(const mpz_dig_t *idig, mp_uint_t ilen, const mpz_dig_t *jdig, mp_uint_t jlen) {
     if (ilen < jlen) { return -1; }
     if (ilen > jlen) { return 1; }
 
     for (idig += ilen, jdig += ilen; ilen > 0; --ilen) {
-        int cmp = *(--idig) - *(--jdig);
+        mp_int_t cmp = *(--idig) - *(--jdig);
         if (cmp < 0) { return -1; }
         if (cmp > 0) { return 1; }
     }
@@ -74,9 +74,9 @@ STATIC int mpn_cmp(const mpz_dig_t *idig, uint ilen, const mpz_dig_t *jdig, uint
    assumes enough memory in i; assumes normalised j; assumes n > 0
    can have i, j pointing to same memory
 */
-STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
-    uint n_whole = (n + DIG_SIZE - 1) / DIG_SIZE;
-    uint n_part = n % DIG_SIZE;
+STATIC mp_uint_t mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, mp_uint_t jlen, mp_uint_t n) {
+    mp_uint_t n_whole = (n + DIG_SIZE - 1) / DIG_SIZE;
+    mp_uint_t n_part = n % DIG_SIZE;
     if (n_part == 0) {
         n_part = DIG_SIZE;
     }
@@ -87,7 +87,7 @@ STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
 
     // shift the digits
     mpz_dbl_dig_t d = 0;
-    for (uint i = jlen; i > 0; i--, idig--, jdig--) {
+    for (mp_uint_t i = jlen; i > 0; i--, idig--, jdig--) {
         d |= *jdig;
         *idig = (d >> (DIG_SIZE - n_part)) & DIG_MASK;
         d <<= DIG_SIZE;
@@ -113,9 +113,9 @@ STATIC uint mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
    assumes enough memory in i; assumes normalised j; assumes n > 0
    can have i, j pointing to same memory
 */
-STATIC uint mpn_shr(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
-    uint n_whole = n / DIG_SIZE;
-    uint n_part = n % DIG_SIZE;
+STATIC mp_uint_t mpn_shr(mpz_dig_t *idig, mpz_dig_t *jdig, mp_uint_t jlen, mp_uint_t n) {
+    mp_uint_t n_whole = n / DIG_SIZE;
+    mp_uint_t n_part = n % DIG_SIZE;
 
     if (n_whole >= jlen) {
         return 0;
@@ -124,7 +124,7 @@ STATIC uint mpn_shr(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
     jdig += n_whole;
     jlen -= n_whole;
 
-    for (uint i = jlen; i > 0; i--, idig++, jdig++) {
+    for (mp_uint_t i = jlen; i > 0; i--, idig++, jdig++) {
         mpz_dbl_dig_t d = *jdig;
         if (i > 1) {
             d |= jdig[1] << DIG_SIZE;
@@ -145,7 +145,7 @@ STATIC uint mpn_shr(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, uint n) {
    assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_add(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_add(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
     mpz_dbl_dig_t carry = 0;
 
@@ -175,7 +175,7 @@ STATIC uint mpn_add(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
    assumes enough memory in i; assumes normalised j, k; assumes j >= k
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
     mpz_dbl_dig_signed_t borrow = 0;
 
@@ -204,7 +204,7 @@ STATIC uint mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
    assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
 
     for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
@@ -223,7 +223,7 @@ STATIC uint mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
    assumes enough memory in i; assumes normalised j, k
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
     mpz_dbl_dig_t carry = 1;
 
@@ -255,7 +255,7 @@ STATIC uint mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const
    assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
 
     jlen -= klen;
@@ -276,7 +276,7 @@ STATIC uint mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_
    assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
    can have i, j, k pointing to same memory
 */
-STATIC uint mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
 
     jlen -= klen;
@@ -296,7 +296,7 @@ STATIC uint mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, uint jlen, const mpz
    returns number of digits in i
    assumes enough memory in i; assumes normalised i; assumes dmul != 0
 */
-STATIC uint mpn_mul_dig_add_dig(mpz_dig_t *idig, uint ilen, mpz_dig_t dmul, mpz_dig_t dadd) {
+STATIC mp_uint_t mpn_mul_dig_add_dig(mpz_dig_t *idig, mp_uint_t ilen, mpz_dig_t dmul, mpz_dig_t dadd) {
     mpz_dig_t *oidig = idig;
     mpz_dbl_dig_t carry = dadd;
 
@@ -318,15 +318,15 @@ STATIC uint mpn_mul_dig_add_dig(mpz_dig_t *idig, uint ilen, mpz_dig_t dmul, mpz_
    assumes enough memory in i; assumes i is zeroed; assumes normalised j, k
    can have j, k point to same memory
 */
-STATIC uint mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, uint jlen, mpz_dig_t *kdig, uint klen) {
+STATIC mp_uint_t mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, mp_uint_t jlen, mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
-    uint ilen = 0;
+    mp_uint_t ilen = 0;
 
     for (; klen > 0; --klen, ++idig, ++kdig) {
         mpz_dig_t *id = idig;
         mpz_dbl_dig_t carry = 0;
 
-        uint jl = jlen;
+        mp_uint_t jl = jlen;
         for (mpz_dig_t *jd = jdig; jl > 0; --jl, ++jd, ++id) {
             carry += *id + *jd * *kdig; // will never overflow so long as DIG_SIZE <= WORD_SIZE / 2
             *id = carry & DIG_MASK;
@@ -359,7 +359,7 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
 
     // handle simple cases
     {
-        int cmp = mpn_cmp(num_dig, *num_len, den_dig, den_len);
+        mp_int_t cmp = mpn_cmp(num_dig, *num_len, den_dig, den_len);
         if (cmp == 0) {
             *num_len = 0;
             quo_dig[0] = 1;
@@ -507,7 +507,7 @@ void mpz_init_from_int(mpz_t *z, mp_int_t val) {
     mpz_set_from_int(z, val);
 }
 
-void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, uint alloc, mp_int_t val) {
+void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, mp_uint_t alloc, mp_int_t val) {
     z->neg = 0;
     z->fixed_dig = 1;
     z->alloc = alloc;
@@ -540,7 +540,7 @@ mpz_t *mpz_from_ll(long long val) {
     return z;
 }
 
-mpz_t *mpz_from_str(const char *str, uint len, bool neg, uint base) {
+mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
     mpz_t *z = mpz_zero();
     mpz_set_from_str(z, str, len, neg, base);
     return z;
@@ -553,7 +553,7 @@ void mpz_free(mpz_t *z) {
     }
 }
 
-STATIC void mpz_need_dig(mpz_t *z, uint need) {
+STATIC void mpz_need_dig(mpz_t *z, mp_uint_t need) {
     if (need < MIN_ALLOC) {
         need = MIN_ALLOC;
     }
@@ -633,7 +633,7 @@ void mpz_set_from_ll(mpz_t *z, long long val) {
 }
 
 // returns number of bytes from str that were processed
-uint mpz_set_from_str(mpz_t *z, const char *str, uint len, bool neg, uint base) {
+mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
     assert(base < 36);
 
     const char *cur = str;
@@ -649,8 +649,8 @@ uint mpz_set_from_str(mpz_t *z, const char *str, uint len, bool neg, uint base) 
 
     z->len = 0;
     for (; cur < top; ++cur) { // XXX UTF8 next char
-        //uint v = char_to_numeric(cur#); // XXX UTF8 get char
-        uint v = *cur;
+        //mp_uint_t v = char_to_numeric(cur#); // XXX UTF8 get char
+        mp_uint_t v = *cur;
         if ('0' <= v && v <= '9') {
             v -= '0';
         } else if ('A' <= v && v <= 'Z') {
@@ -689,8 +689,8 @@ bool mpz_is_even(const mpz_t *z) {
     return z->len == 0 || (z->dig[0] & 1) == 0;
 }
 
-int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
-    int cmp = z2->neg - z1->neg;
+mp_int_t mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
+    mp_int_t cmp = z2->neg - z1->neg;
     if (cmp != 0) {
         return cmp;
     }
@@ -704,8 +704,8 @@ int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
 #if 0
 // obsolete
 // compares mpz with an integer that fits within DIG_SIZE bits
-int mpz_cmp_sml_int(const mpz_t *z, mp_int_t sml_int) {
-    int cmp;
+mp_int_t mpz_cmp_sml_int(const mpz_t *z, mp_int_t sml_int) {
+    mp_int_t cmp;
     if (z->neg == 0) {
         if (sml_int < 0) return 1;
         if (sml_int == 0) {
@@ -856,10 +856,10 @@ void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
         dest->neg = lhs->neg;
         if (dest->neg) {
             // arithmetic shift right, rounding to negative infinity
-            uint n_whole = rhs / DIG_SIZE;
-            uint n_part = rhs % DIG_SIZE;
+            mp_uint_t n_whole = rhs / DIG_SIZE;
+            mp_uint_t n_part = rhs % DIG_SIZE;
             mpz_dig_t round_up = 0;
-            for (uint i = 0; i < lhs->len && i < n_whole; i++) {
+            for (mp_uint_t i = 0; i < lhs->len && i < n_whole; i++) {
                 if (lhs->dig[i] != 0) {
                     round_up = 1;
                     break;
@@ -1284,41 +1284,36 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 }
 #endif
 
-uint mpz_as_str_size(const mpz_t *i, uint base) {
+mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma) {
     if (base < 2 || base > 32) {
         return 0;
     }
 
-    return i->len * DIG_SIZE / log_base2_floor[base] + 2 + 1; // +1 for null byte termination
-}
-
-uint mpz_as_str_size_formatted(const mpz_t *i, uint base, const char *prefix, char comma) {
-    if (base < 2 || base > 32) {
-        return 0;
-    }
-
-    uint num_digits = i->len * DIG_SIZE / log_base2_floor[base] + 1;
-    uint num_commas = comma ? num_digits / 3: 0;
-    uint prefix_len = prefix ? strlen(prefix) : 0;
+    mp_uint_t num_digits = i->len * DIG_SIZE / log_base2_floor[base] + 1;
+    mp_uint_t num_commas = comma ? num_digits / 3: 0;
+    mp_uint_t prefix_len = prefix ? strlen(prefix) : 0;
 
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
 }
 
-char *mpz_as_str(const mpz_t *i, uint base) {
-    char *s = m_new(char, mpz_as_str_size(i, base));
-    mpz_as_str_inpl(i, base, "", 'a', 0, s);
+#if 0
+this function is unused
+char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
+    char *s = m_new(char, mpz_as_str_size(i, base, NULL, '\0'));
+    mpz_as_str_inpl(i, base, NULL, 'a', '\0', s);
     return s;
 }
+#endif
 
 // assumes enough space as calculated by mpz_as_str_size
 // returns length of string, not including null byte
-uint mpz_as_str_inpl(const mpz_t *i, uint base, const char *prefix, char base_char, char comma, char *str) {
+mp_uint_t mpz_as_str_inpl(const mpz_t *i, mp_uint_t base, const char *prefix, char base_char, char comma, char *str) {
     if (str == NULL || base < 2 || base > 32) {
         str[0] = 0;
         return 0;
     }
 
-    uint ilen = i->len;
+    mp_uint_t ilen = i->len;
 
     char *s = str;
     if (ilen == 0) {

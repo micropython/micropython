@@ -45,13 +45,13 @@ typedef struct _mpz_t {
 
 void mpz_init_zero(mpz_t *z);
 void mpz_init_from_int(mpz_t *z, mp_int_t val);
-void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, uint dig_alloc, mp_int_t val);
+void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, mp_uint_t dig_alloc, mp_int_t val);
 void mpz_deinit(mpz_t *z);
 
 mpz_t *mpz_zero();
 mpz_t *mpz_from_int(mp_int_t i);
 mpz_t *mpz_from_ll(long long i);
-mpz_t *mpz_from_str(const char *str, uint len, bool neg, uint base);
+mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base);
 void mpz_free(mpz_t *z);
 
 mpz_t *mpz_clone(const mpz_t *src);
@@ -59,7 +59,7 @@ mpz_t *mpz_clone(const mpz_t *src);
 void mpz_set(mpz_t *dest, const mpz_t *src);
 void mpz_set_from_int(mpz_t *z, mp_int_t src);
 void mpz_set_from_ll(mpz_t *z, long long i);
-uint mpz_set_from_str(mpz_t *z, const char *str, uint len, bool neg, uint base);
+mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base);
 
 bool mpz_is_zero(const mpz_t *z);
 bool mpz_is_pos(const mpz_t *z);
@@ -67,7 +67,7 @@ bool mpz_is_neg(const mpz_t *z);
 bool mpz_is_odd(const mpz_t *z);
 bool mpz_is_even(const mpz_t *z);
 
-int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
+mp_int_t mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 
 mpz_t *mpz_abs(const mpz_t *z);
 mpz_t *mpz_neg(const mpz_t *z);
@@ -102,7 +102,5 @@ bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
-uint mpz_as_str_size(const mpz_t *z, uint base);
-uint mpz_as_str_size_formatted(const mpz_t *i, uint base, const char *prefix, char comma);
-char *mpz_as_str(const mpz_t *z, uint base);
-uint mpz_as_str_inpl(const mpz_t *z, uint base, const char *prefix, char base_char, char comma, char *str);
+mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma);
+mp_uint_t mpz_as_str_inpl(const mpz_t *z, mp_uint_t base, const char *prefix, char base_char, char comma, char *str);

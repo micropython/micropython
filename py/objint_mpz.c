@@ -84,7 +84,7 @@ char *mp_obj_int_formatted_impl(char **buf, int *buf_size, int *fmt_size, mp_con
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     const mp_obj_int_t *self = self_in;
 
-    uint needed_size = mpz_as_str_size_formatted(&self->mpz, base, prefix, comma);
+    uint needed_size = mpz_as_str_size(&self->mpz, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
