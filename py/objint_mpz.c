@@ -47,14 +47,14 @@
 // Export value for sys.maxsize
 #define DIG_MASK ((1L << MPZ_DIG_SIZE) - 1)
 STATIC const mpz_dig_t maxsize_dig[MPZ_NUM_DIG_FOR_INT] = {
-    (INT_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
-    #if (INT_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
-    (INT_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
-    #if (INT_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
-    (INT_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
-    (INT_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
-    (INT_MAX >> MPZ_DIG_SIZE * 4) & DIG_MASK,
-//    (INT_MAX >> MPZ_DIG_SIZE * 5) & DIG_MASK,
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 4) & DIG_MASK,
+//    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 5) & DIG_MASK,
     #endif
     #endif
 };
