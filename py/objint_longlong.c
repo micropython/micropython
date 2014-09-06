@@ -52,7 +52,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
-const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, INT_MAX};
+const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
 mp_int_t mp_obj_int_hash(mp_obj_t self_in) {

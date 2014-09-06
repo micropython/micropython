@@ -448,6 +448,10 @@ typedef double mp_float_t;
 #define MP_PLAT_FREE_EXEC(ptr, size) m_del(byte, ptr, size)
 #endif
 
+#ifndef MP_SSIZE_MAX
+#define MP_SSIZE_MAX SSIZE_MAX
+#endif
+
 // printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
 #ifdef __LP64__
