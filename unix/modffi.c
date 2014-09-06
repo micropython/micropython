@@ -334,9 +334,19 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const 
         valueptrs[i] = &values[i];
     }
 
-    ffi_arg retval;
-    ffi_call(&self->cif, self->func, &retval, valueptrs);
-    return return_ffi_value(retval, self->rettype);
+    // If ffi_arg is not big enough to hold a double, then we must pass along a
+    // pointer to a memory location of the correct size.
+    // TODO check if this needs to be done for other types which don't fit into
+    // ffi_arg.
+    if (sizeof(ffi_arg) == 4 && self->rettype == 'd') {
+        double retval;
+        ffi_call(&self->cif, self->func, &retval, valueptrs);
+        return mp_obj_new_float(retval);
+    } else {
+        ffi_arg retval;
+        ffi_call(&self->cif, self->func, &retval, valueptrs);
+        return return_ffi_value(retval, self->rettype);
+    }
 
 error:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Don't know how to pass object to native function"));
