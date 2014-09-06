@@ -35,6 +35,8 @@ PY_O_BASENAME = \
 	emitbc.o \
 	asmx64.o \
 	emitnx64.o \
+	asmx86.o \
+	emitnx86.o \
 	asmthumb.o \
 	emitnthumb.o \
 	emitinlinethumb.o \
@@ -143,6 +145,10 @@ $(PY_O): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/py-version.h
 
 $(PY_BUILD)/emitnx64.o: CFLAGS += -DN_X64
 $(PY_BUILD)/emitnx64.o: py/emitnative.c
+	$(call compile_c)
+
+$(PY_BUILD)/emitnx86.o: CFLAGS += -DN_X86
+$(PY_BUILD)/emitnx86.o: py/emitnative.c
 	$(call compile_c)
 
 $(PY_BUILD)/emitnthumb.o: CFLAGS += -DN_THUMB

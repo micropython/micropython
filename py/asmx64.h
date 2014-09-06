@@ -37,12 +37,12 @@
 #define REG_RDI (7)
 
 // condition codes, used for jcc and setcc (despite their j-name!)
-#define JCC_JB  (0x2) // below, unsigned
-#define JCC_JZ  (0x4)
-#define JCC_JE  (0x4)
-#define JCC_JNZ (0x5)
-#define JCC_JNE (0x5)
-#define JCC_JL  (0xc) // less, signed
+#define ASM_X64_CC_JB  (0x2) // below, unsigned
+#define ASM_X64_CC_JZ  (0x4)
+#define ASM_X64_CC_JE  (0x4)
+#define ASM_X64_CC_JNZ (0x5)
+#define ASM_X64_CC_JNE (0x5)
+#define ASM_X64_CC_JL  (0xc) // less, signed
 
 #define REG_RET REG_RAX
 #define REG_ARG_1 REG_RDI

@@ -3638,6 +3638,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                         emit_native = emit_native_x64_new(max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_x64_method_table;
+#elif MICROPY_EMIT_X86
+                    if (emit_native == NULL) {
+                        emit_native = emit_native_x86_new(max_num_labels);
+                    }
+                    comp->emit_method_table = &emit_native_x86_method_table;
 #elif MICROPY_EMIT_THUMB
                     if (emit_native == NULL) {
                         emit_native = emit_native_thumb_new(max_num_labels);
@@ -3689,6 +3694,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     if (emit_native != NULL) {
 #if MICROPY_EMIT_X64
         emit_native_x64_free(emit_native);
+#elif MICROPY_EMIT_X86
+        emit_native_x86_free(emit_native);
 #elif MICROPY_EMIT_THUMB
         emit_native_thumb_free(emit_native);
 #elif MICROPY_EMIT_ARM
