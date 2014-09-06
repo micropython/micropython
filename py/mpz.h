@@ -24,9 +24,34 @@
  * THE SOFTWARE.
  */
 
+// This mpz module implements arbitrary precision integers.
+//
+// The storage for each digit is defined by mpz_dig_t.  The actual number of
+// bits in mpz_dig_t that are used is defined by MPZ_DIG_SIZE.  The machine must
+// also provide a type that is twice as wide as mpz_dig_t, in both signed and
+// unsigned versions.
+//
+// MPZ_DIG_SIZE can be between 4 and 8*sizeof(mpz_dig_t), but it makes most
+// sense to have it as large as possible.  Below, the type is auto-detected
+// depending on the machine, but it (and MPZ_DIG_SIZE) can be freely changed so
+// long as the constraints mentioned above are met.
+
+#if defined(__x86_64__)
+// 64-bit machine, using 32-bit storage for digits
+typedef uint32_t mpz_dig_t;
+typedef uint64_t mpz_dbl_dig_t;
+typedef int64_t mpz_dbl_dig_signed_t;
+#define MPZ_DIG_SIZE (32)
+#else
+// 32-bit machine, using 16-bit storage for digits
 typedef uint16_t mpz_dig_t;
 typedef uint32_t mpz_dbl_dig_t;
 typedef int32_t mpz_dbl_dig_signed_t;
+#define MPZ_DIG_SIZE (16)
+#endif
+
+#define MPZ_NUM_DIG_FOR_INT (sizeof(mp_int_t) * 8 / MPZ_DIG_SIZE + 1)
+#define MPZ_NUM_DIG_FOR_LL (sizeof(long long) * 8 / MPZ_DIG_SIZE + 1)
 
 typedef struct _mpz_t {
     mp_uint_t neg : 1;
@@ -35,10 +60,6 @@ typedef struct _mpz_t {
     mp_uint_t len;
     mpz_dig_t *dig;
 } mpz_t;
-
-#define MPZ_DIG_SIZE (15) // see mpn_div for why this needs to be at most 15
-#define MPZ_NUM_DIG_FOR_INT (sizeof(mp_int_t) * 8 / MPZ_DIG_SIZE + 1)
-#define MPZ_NUM_DIG_FOR_LL (sizeof(long long) * 8 / MPZ_DIG_SIZE + 1)
 
 // convenience macro to declare an mpz with a digit array from the stack, initialised by an integer
 #define MPZ_CONST_INT(z, val) mpz_t z; mpz_dig_t z ## _digits[MPZ_NUM_DIG_FOR_INT]; mpz_init_fixed_from_int(&z, z_digits, MPZ_NUM_DIG_FOR_INT, val);
