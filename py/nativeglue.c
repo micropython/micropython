@@ -125,6 +125,8 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
 #endif
     mp_unpack_sequence,
     mp_unpack_ex,
+    mp_delete_name,
+    mp_delete_global,
 };
 
 /*

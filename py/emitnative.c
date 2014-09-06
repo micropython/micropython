@@ -531,7 +531,7 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
     }
 }
 
-STATIC void emit_pre_pop_discard(emit_t *emit, vtype_kind_t *vtype) {
+STATIC void emit_pre_pop_discard(emit_t *emit) {
     emit->last_emit_was_return_value = false;
     adjust_stack(emit, -1);
 }
@@ -1040,34 +1040,32 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     emit_call(emit, MP_F_OBJ_SUBSCR);
 }
 
-STATIC void emit_native_delete_fast(emit_t *emit, qstr qstr, int local_num) {
-    // not implemented
+STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, int local_num) {
+    // TODO implement me!
     // could support for Python types, just set to None (so GC can reclaim it)
-    assert(0);
 }
 
-STATIC void emit_native_delete_deref(emit_t *emit, qstr qstr, int local_num) {
-    // not supported
-    assert(0);
+STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, int local_num) {
+    // TODO implement me!
 }
 
-STATIC void emit_native_delete_name(emit_t *emit, qstr qstr) {
-    // not implemented
-    // use mp_delete_name
-    assert(0);
+STATIC void emit_native_delete_name(emit_t *emit, qstr qst) {
+    emit_native_pre(emit);
+    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME, qst, REG_ARG_1);
+    emit_post(emit);
 }
 
-STATIC void emit_native_delete_global(emit_t *emit, qstr qstr) {
-    // not implemented
-    // use mp_delete_global
-    assert(0);
+STATIC void emit_native_delete_global(emit_t *emit, qstr qst) {
+    emit_native_pre(emit);
+    emit_call_with_imm_arg(emit, MP_F_DELETE_GLOBAL, qst, REG_ARG_1);
+    emit_post(emit);
 }
 
-STATIC void emit_native_delete_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_native_delete_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_2_imm_args(emit, MP_F_STORE_ATTR, qstr, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg2 = attribute name, arg3 = value (null for delete)
+    emit_call_with_2_imm_args(emit, MP_F_STORE_ATTR, qst, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg2 = attribute name, arg3 = value (null for delete)
     emit_post(emit);
 }
 
@@ -1092,8 +1090,7 @@ STATIC void emit_native_dup_top_two(emit_t *emit) {
 }
 
 STATIC void emit_native_pop_top(emit_t *emit) {
-    vtype_kind_t vtype;
-    emit_pre_pop_discard(emit, &vtype);
+    emit_pre_pop_discard(emit);
     emit_post(emit);
 }
 
@@ -1243,11 +1240,12 @@ STATIC void emit_native_setup_except(emit_t *emit, uint label) {
 }
 
 STATIC void emit_native_setup_finally(emit_t *emit, uint label) {
-    assert(0);
+    emit_native_setup_except(emit, label);
 }
 
 STATIC void emit_native_end_finally(emit_t *emit) {
-    //assert(0);
+    emit_pre_pop_discard(emit);
+    emit_post(emit);
 }
 
 STATIC void emit_native_get_iter(emit_t *emit) {
@@ -1608,12 +1606,12 @@ STATIC void emit_native_start_except_handler(emit_t *emit) {
     adjust_stack(emit, 2);
     vtype_kind_t vtype_nlr;
     emit_pre_pop_reg(emit, &vtype_nlr, REG_ARG_1); // get the thrown value
-    emit_pre_pop_discard(emit, &vtype_nlr); // discard the linked-list pointer in the nlr_buf
+    emit_pre_pop_discard(emit); // discard the linked-list pointer in the nlr_buf
     emit_post_push_reg_reg_reg(emit, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1); // push the 3 exception items
 }
 
 STATIC void emit_native_end_except_handler(emit_t *emit) {
-    adjust_stack(emit, -3); // stack adjust (not sure why it's this much...)
+    adjust_stack(emit, -2);
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
