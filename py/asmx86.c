@@ -54,8 +54,8 @@
 #define OPCODE_LEA_MEM_TO_R32    (0x8d) /* /r */
 #define OPCODE_XOR_R32_TO_RM32   (0x31) /* /r */
 #define OPCODE_ADD_R32_TO_RM32   (0x01)
-//#define OPCODE_ADD_I32_TO_RM32   (0x81) /* /0 */
-//#define OPCODE_ADD_I8_TO_RM32    (0x83) /* /0 */
+#define OPCODE_ADD_I32_TO_RM32   (0x81) /* /0 */
+#define OPCODE_ADD_I8_TO_RM32    (0x83) /* /0 */
 //#define OPCODE_SUB_R32_FROM_RM32 (0x29)
 #define OPCODE_SUB_I32_FROM_RM32 (0x81) /* /5 */
 #define OPCODE_SUB_I8_FROM_RM32  (0x83) /* /5 */
@@ -275,21 +275,17 @@ void asm_x86_add_r32_to_r32(asm_x86_t *as, int src_r32, int dest_r32) {
     asm_x86_write_byte_2(as, OPCODE_ADD_R32_TO_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
 }
 
-#if 0
-void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32)
-{
-    if (SIGNED_FIT8(src_i32))
-    {
+void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32) {
+    if (SIGNED_FIT8(src_i32)) {
         asm_x86_write_byte_2(as, OPCODE_ADD_I8_TO_RM32, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
         asm_x86_write_byte_1(as, src_i32 & 0xff);
-    }
-    else
-    {
+    } else {
         asm_x86_write_byte_2(as, OPCODE_ADD_I32_TO_RM32, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
         asm_x86_write_word32(as, src_i32);
     }
 }
 
+#if 0
 void asm_x86_sub_r32_from_r32(asm_x86_t *as, int src_r32, int dest_r32) {
     asm_x86_write_byte_2(as, OPCODE_SUB_R32_FROM_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
 }
@@ -419,10 +415,15 @@ void asm_x86_entry(asm_x86_t *as, mp_uint_t num_locals) {
     asm_x86_mov_r32_to_r32(as, REG_ESP, REG_EBP);
     asm_x86_sub_i32_from_r32(as, num_locals * WORD_SIZE, REG_ESP);
     asm_x86_push_r32(as, REG_EBX);
+    asm_x86_push_r32(as, REG_ESI);
+    asm_x86_push_r32(as, REG_EDI);
+    // TODO align stack on 16-byte boundary
     as->num_locals = num_locals;
 }
 
 void asm_x86_exit(asm_x86_t *as) {
+    asm_x86_pop_r32(as, REG_EDI);
+    asm_x86_pop_r32(as, REG_ESI);
     asm_x86_pop_r32(as, REG_EBX);
     asm_x86_write_byte_1(as, OPCODE_LEAVE);
     asm_x86_ret(as);
@@ -430,18 +431,17 @@ void asm_x86_exit(asm_x86_t *as) {
 
 #if 0
 void asm_x86_push_arg(asm_x86_t *as, int src_arg_num) {
-    assert(0);
-    asm_x86_push_disp(as, REG_EBP, 8 + src_arg_num * WORD_SIZE);
+    asm_x86_push_disp(as, REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE);
 }
+#endif
 
 void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32) {
-    assert(0);
-    //asm_x86_mov_disp_to_r32(as, REG_EBP, 8 + src_arg_num * WORD_SIZE, dest_r32);
+    asm_x86_mov_disp_to_r32(as, REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE, dest_r32);
 }
 
+#if 0
 void asm_x86_mov_r32_to_arg(asm_x86_t *as, int src_r32, int dest_arg_num) {
-    assert(0);
-    //asm_x86_mov_r32_to_disp(as, src_r32, REG_EBP, 8 + dest_arg_num * WORD_SIZE);
+    asm_x86_mov_r32_to_disp(as, src_r32, REG_EBP, 2 * WORD_SIZE + dest_arg_num * WORD_SIZE);
 }
 #endif
 
@@ -491,6 +491,7 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 #endif
 
 void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) {
+    // TODO align stack on 16-byte boundary before the call
     assert(n_args <= 3);
     if (n_args > 2) {
         asm_x86_push_r32(as, REG_ARG_3);
@@ -515,6 +516,11 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) 
     asm_x86_write_byte_1(as, OPCODE_CALL_REL32);
     asm_x86_write_word32(as, ptr - (void*)(as->code_base + as->code_offset + 4));
     */
+
+    // the caller must clean up the stack
+    if (n_args > 0) {
+        asm_x86_add_i32_to_r32(as, WORD_SIZE * n_args, REG_ESP);
+    }
 }
 
 #endif // MICROPY_EMIT_X86

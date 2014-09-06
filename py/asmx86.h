@@ -24,6 +24,14 @@
  * THE SOFTWARE.
  */
 
+// x86 cdecl calling convention is:
+//  - args passed on the stack in reverse order
+//  - return value in EAX
+//  - caller cleans up the stack after a call
+//  - stack must be aligned to 16-byte boundary before all calls
+//  - EAX, ECX, EDX are caller-save
+//  - EBX, ESI, EDI, EBP, ESP, EIP are callee-save
+
 #define ASM_X86_PASS_COMPUTE (1)
 #define ASM_X86_PASS_EMIT    (2)
 
@@ -45,8 +53,8 @@
 #define ASM_X86_CC_JL  (0xc) // less, signed
 
 #define REG_RET REG_EAX
-#define REG_ARG_1 REG_EDI
-#define REG_ARG_2 REG_ESI
+#define REG_ARG_1 REG_EBX
+#define REG_ARG_2 REG_ECX
 #define REG_ARG_3 REG_EDX
 
 typedef struct _asm_x86_t asm_x86_t;
@@ -71,6 +79,7 @@ void asm_x86_jmp_label(asm_x86_t* as, mp_uint_t label);
 void asm_x86_jcc_label(asm_x86_t* as, mp_uint_t jcc_type, mp_uint_t label);
 void asm_x86_entry(asm_x86_t* as, mp_uint_t num_locals);
 void asm_x86_exit(asm_x86_t* as);
+void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
 void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);
 void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
