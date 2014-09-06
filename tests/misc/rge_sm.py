@@ -106,7 +106,7 @@ def singleTraj(system, trajStart, h=0.02, tend=1.0):
 
     for i in range(len(rk.Trajectory)):
         tr = rk.Trajectory[i]
-        print(' '.join(["{:.5f}".format(t) for t in tr]))
+        print(' '.join(["{:.4f}".format(t) for t in tr]))
 
 #phaseDiagram(sysSM, (lambda i, j: [0.354, 0.654, 1.278, 0.8 + 0.2 * i, 0.1 + 0.1 * j]), (lambda a: (a[4], a[5])), h=0.1, tend=math.log(10**17))
 
