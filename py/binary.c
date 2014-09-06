@@ -58,6 +58,8 @@ int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
                     size = 4; break;
                 case 'q': case 'Q':
                     size = 8; break;
+                case 'P': case 'O': case 'S':
+                    size = sizeof(void*); break;
             }
             break;
         case '@': {
