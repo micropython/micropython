@@ -413,7 +413,9 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
 void asm_x86_entry(asm_x86_t *as, mp_uint_t num_locals) {
     asm_x86_push_r32(as, REG_EBP);
     asm_x86_mov_r32_to_r32(as, REG_ESP, REG_EBP);
-    asm_x86_sub_i32_from_r32(as, num_locals * WORD_SIZE, REG_ESP);
+    if (num_locals > 0) {
+        asm_x86_sub_i32_from_r32(as, num_locals * WORD_SIZE, REG_ESP);
+    }
     asm_x86_push_r32(as, REG_EBX);
     asm_x86_push_r32(as, REG_ESI);
     asm_x86_push_r32(as, REG_EDI);

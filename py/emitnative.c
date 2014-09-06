@@ -189,13 +189,16 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_x86_##name
 
+// caller-save, so can be used as temporaries
 #define REG_TEMP0 (REG_EAX)
-#define REG_TEMP1 (REG_EBX)
-#define REG_TEMP2 (REG_ECX)
+#define REG_TEMP1 (REG_ECX)
+#define REG_TEMP2 (REG_EDX)
 
-#define REG_LOCAL_1 (REG_ESI)
-#define REG_LOCAL_2 (REG_EDI)
-#define REG_LOCAL_NUM (2)
+// callee-save, so can be used as locals
+#define REG_LOCAL_1 (REG_EBX)
+#define REG_LOCAL_2 (REG_ESI)
+#define REG_LOCAL_3 (REG_EDI)
+#define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_X86_PASS_COMPUTE
 #define ASM_PASS_EMIT       ASM_X86_PASS_EMIT
@@ -528,6 +531,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_1);
         } else if (i == 1) {
             asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_2);
+        } else if (i == 2) {
+            asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_3);
         } else {
             asm_x86_mov_arg_to_r32(emit->as, i, REG_TEMP0);
             asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, i - REG_LOCAL_NUM);
@@ -1022,6 +1027,8 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
         need_reg_single(emit, REG_EAX, 0);
         asm_x86_mov_local_to_r32(emit->as, local_num - REG_LOCAL_NUM, REG_EAX);
@@ -1125,6 +1132,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_EAX);
         asm_x86_mov_r32_to_local(emit->as, REG_EAX, local_num - REG_LOCAL_NUM);
