@@ -371,7 +371,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
         hints.ai_flags = AI_NUMERICSERV;
 #ifdef __UCLIBC_MAJOR__
 #if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
-#warning Working around uClibc bug with numeric service name
+// "warning" requires -Wno-cpp which is a relatively new gcc option, so we choose not to use it.
+//#warning Working around uClibc bug with numeric service name
         // Older versions og uClibc have bugs when numeric ports in service
         // arg require also hints.ai_socktype (or hints.ai_protocol) != 0
         // This actually was fixed in 0.9.32.1, but uClibc doesn't allow to

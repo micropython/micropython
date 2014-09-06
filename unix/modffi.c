@@ -146,8 +146,8 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
         case 'v':
             return mp_const_none;
         case 'f': {
-            float *p = (float*)&val;
-            return mp_obj_new_float(*p);
+            union { ffi_arg ffi; float flt; } val_union = { .ffi = val };
+            return mp_obj_new_float(val_union.flt);
         }
         case 'd': {
             double *p = (double*)&val;
