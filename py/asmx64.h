@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+// AMD64 calling convention is:
+//  - args pass in: RDI, RSI, RDX, RCX, R08, R09
+//  - return value in RAX
+//  - stack must be aligned on a 16-byte boundary before all calls
+//  - RAX, RCX, RDX, RSI, RDI, R08, R09, R10, R11 are caller-save
+//  - RBX, RBP, R12, R13, R14, R15 are callee-save
+
 #define ASM_X64_PASS_COMPUTE (1)
 #define ASM_X64_PASS_EMIT    (2)
 
@@ -35,6 +42,14 @@
 #define REG_RBP (5)
 #define REG_RSI (6)
 #define REG_RDI (7)
+#define REG_R08 (8)
+#define REG_R09 (9)
+#define REG_R10 (10)
+#define REG_R11 (11)
+#define REG_R12 (12)
+#define REG_R13 (13)
+#define REG_R14 (14)
+#define REG_R15 (15)
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X64_CC_JB  (0x2) // below, unsigned
@@ -43,11 +58,6 @@
 #define ASM_X64_CC_JNZ (0x5)
 #define ASM_X64_CC_JNE (0x5)
 #define ASM_X64_CC_JL  (0xc) // less, signed
-
-#define REG_RET REG_RAX
-#define REG_ARG_1 REG_RDI
-#define REG_ARG_2 REG_RSI
-#define REG_ARG_3 REG_RDX
 
 typedef struct _asm_x64_t asm_x64_t;
 
@@ -60,29 +70,14 @@ void* asm_x64_get_code(asm_x64_t* as);
 
 void asm_x64_nop(asm_x64_t* as);
 void asm_x64_push_r64(asm_x64_t* as, int src_r64);
-void asm_x64_push_i32(asm_x64_t* as, int src_i32); // will be sign extended to 64 bits
-void asm_x64_push_disp(asm_x64_t* as, int src_r32, int src_offset);
 void asm_x64_pop_r64(asm_x64_t* as, int dest_r64);
 void asm_x64_mov_r64_to_r64(asm_x64_t* as, int src_r64, int dest_r64);
-void asm_x64_mov_r32_to_disp(asm_x64_t* as, int src_r32, int dest_r32, int dest_disp);
-void asm_x64_mov_disp_to_r32(asm_x64_t* as, int src_r32, int src_disp, int dest_r32);
-void asm_x64_mov_i32_to_r64(asm_x64_t* as, int src_i32, int dest_r64);
 void asm_x64_mov_i64_to_r64(asm_x64_t* as, int64_t src_i64, int dest_r64);
-void asm_x64_mov_i32_to_disp(asm_x64_t* as, int src_i32, int dest_r32, int dest_disp);
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_xor_r64_to_r64(asm_x64_t *as, int src_r64, int dest_r64);
 void asm_x64_add_r64_to_r64(asm_x64_t* as, int src_r64, int dest_r64);
-void asm_x64_add_i32_to_r32(asm_x64_t* as, int src_i32, int dest_r32);
-void asm_x64_sub_r32_from_r32(asm_x64_t* as, int src_r32, int dest_r32);
-void asm_x64_sub_i32_from_r32(asm_x64_t* as, int src_i32, int dest_r32);
-void asm_x64_shl_r32_by_imm(asm_x64_t* as, int r32, int imm);
-void asm_x64_shr_r32_by_imm(asm_x64_t* as, int r32, int imm);
-void asm_x64_sar_r32_by_imm(asm_x64_t* as, int r32, int imm);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
-void asm_x64_cmp_r32_with_disp(asm_x64_t* as, int src_r32_a, int src_r32_b, int src_disp_b);
-void asm_x64_cmp_disp_with_r32(asm_x64_t* as, int src_r32_a, int src_disp_a, int src_r32_b);
-void asm_x64_cmp_i32_with_r32(asm_x64_t* as, int src_i32, int src_r32);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
 void asm_x64_label_assign(asm_x64_t* as, int label);
@@ -90,12 +85,7 @@ void asm_x64_jmp_label(asm_x64_t* as, int label);
 void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, int label);
 void asm_x64_entry(asm_x64_t* as, int num_locals);
 void asm_x64_exit(asm_x64_t* as);
-void asm_x64_push_arg(asm_x64_t* as, int src_arg_num);
-void asm_x64_mov_arg_to_r32(asm_x64_t* as, int src_arg_num, int dest_r32);
-void asm_x64_mov_r32_to_arg(asm_x64_t* as, int src_r32, int dest_arg_num);
 void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
-void asm_x64_push_local(asm_x64_t* as, int local_num);
-void asm_x64_push_local_addr(asm_x64_t* as, int local_num, int temp_r32);
 void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);

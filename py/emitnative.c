@@ -82,12 +82,22 @@
 
 #define EXPORT_FUN(name) emit_native_x64_##name
 
-#define REG_TEMP0 (REG_RAX)
-#define REG_TEMP1 (REG_RDI)
-#define REG_TEMP2 (REG_RSI)
+#define REG_RET REG_RAX
+#define REG_ARG_1 REG_RDI
+#define REG_ARG_2 REG_RSI
+#define REG_ARG_3 REG_RDX
+#define REG_ARG_4 REG_RCX
 
-#define REG_LOCAL_1 (REG_RBX)
-#define REG_LOCAL_NUM (1)
+// caller-save
+#define REG_TEMP0 REG_RAX
+#define REG_TEMP1 REG_RDI
+#define REG_TEMP2 REG_RSI
+
+// callee-save
+#define REG_LOCAL_1 REG_RBX
+#define REG_LOCAL_2 REG_R12
+#define REG_LOCAL_3 REG_R13
+#define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_X64_PASS_COMPUTE
 #define ASM_PASS_EMIT       ASM_X64_PASS_EMIT
@@ -189,15 +199,20 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_x86_##name
 
+#define REG_RET REG_EAX
+#define REG_ARG_1 REG_EAX
+#define REG_ARG_2 REG_ECX
+#define REG_ARG_3 REG_EDX
+
 // caller-save, so can be used as temporaries
-#define REG_TEMP0 (REG_EAX)
-#define REG_TEMP1 (REG_ECX)
-#define REG_TEMP2 (REG_EDX)
+#define REG_TEMP0 REG_EAX
+#define REG_TEMP1 REG_ECX
+#define REG_TEMP2 REG_EDX
 
 // callee-save, so can be used as locals
-#define REG_LOCAL_1 (REG_EBX)
-#define REG_LOCAL_2 (REG_ESI)
-#define REG_LOCAL_3 (REG_EDI)
+#define REG_LOCAL_1 REG_EBX
+#define REG_LOCAL_2 REG_ESI
+#define REG_LOCAL_3 REG_EDI
 #define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_X86_PASS_COMPUTE
@@ -251,6 +266,12 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #include "asmthumb.h"
 
 #define EXPORT_FUN(name) emit_native_thumb_##name
+
+#define REG_RET REG_R0
+#define REG_ARG_1 REG_R0
+#define REG_ARG_2 REG_R1
+#define REG_ARG_3 REG_R2
+#define REG_ARG_4 REG_R3
 
 #define REG_TEMP0 (REG_R0)
 #define REG_TEMP1 (REG_R1)
@@ -312,6 +333,12 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #include "asmarm.h"
 
 #define EXPORT_FUN(name) emit_native_arm_##name
+
+#define REG_RET REG_R0
+#define REG_ARG_1 REG_R0
+#define REG_ARG_2 REG_R1
+#define REG_ARG_3 REG_R2
+#define REG_ARG_4 REG_R3
 
 #define REG_TEMP0 (REG_R0)
 #define REG_TEMP1 (REG_R1)
@@ -517,9 +544,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         if (i == 0) {
             asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
         } else if (i == 1) {
-            asm_x64_mov_r64_to_local(emit->as, REG_ARG_2, i - REG_LOCAL_NUM);
+            asm_x64_mov_r64_to_r64(emit->as, REG_ARG_2, REG_LOCAL_2);
         } else if (i == 2) {
-            asm_x64_mov_r64_to_local(emit->as, REG_ARG_3, i - REG_LOCAL_NUM);
+            asm_x64_mov_r64_to_r64(emit->as, REG_ARG_3, REG_LOCAL_3);
+        } else if (i == 3) {
+            asm_x64_mov_r64_to_local(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
         } else {
             // TODO not implemented
             assert(0);
@@ -1017,6 +1046,10 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qstr, uint id_flags, int lo
 #if N_X64
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
         need_reg_single(emit, REG_RAX, 0);
         asm_x64_mov_local_to_r64(emit->as, local_num - REG_LOCAL_NUM, REG_RAX);
@@ -1123,6 +1156,10 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qstr, int local_num) {
 #if N_X64
     if (local_num == 0) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_RAX);
         asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - REG_LOCAL_NUM);

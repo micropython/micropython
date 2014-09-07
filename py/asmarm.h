@@ -48,12 +48,6 @@
 #define REG_LR  (REG_R14)
 #define REG_PC  (REG_R15)
 
-#define REG_RET REG_R0
-#define REG_ARG_1 REG_R0
-#define REG_ARG_2 REG_R1
-#define REG_ARG_3 REG_R2
-#define REG_ARG_4 REG_R3
-
 #define ARM_CC_EQ (0x0 << 28)
 #define ARM_CC_NE (0x1 << 28)
 #define ARM_CC_CS (0x2 << 28)

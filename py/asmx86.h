@@ -52,11 +52,6 @@
 #define ASM_X86_CC_JNE (0x5)
 #define ASM_X86_CC_JL  (0xc) // less, signed
 
-#define REG_RET REG_EAX
-#define REG_ARG_1 REG_EAX
-#define REG_ARG_2 REG_ECX
-#define REG_ARG_3 REG_EDX
-
 typedef struct _asm_x86_t asm_x86_t;
 
 asm_x86_t* asm_x86_new(mp_uint_t max_num_labels);
