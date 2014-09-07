@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 
 #include "stm32f4xx_hal.h"
 
@@ -488,12 +489,11 @@ mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
         if ((flags & MP_IOCTL_POLL_RD) && uart_rx_any(self)) {
             ret |= MP_IOCTL_POLL_RD;
         }
-        if (flags & MP_IOCTL_POLL_WR) {
-            // TODO can we always write?
+        if ((flags & MP_IOCTL_POLL_WR) && __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_TXE)) {
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = 1; // EPERM, operation not permitted
+        *errcode = EINVAL;
         ret = -1;
     }
     va_end(vargs);
