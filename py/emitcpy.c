@@ -52,14 +52,14 @@ struct _emit_t {
 
     scope_t *scope;
 
-    uint max_num_labels;
-    int *label_offsets;
+    mp_uint_t max_num_labels;
+    mp_uint_t *label_offsets;
 };
 
-emit_t *emit_cpython_new(uint max_num_labels) {
+emit_t *emit_cpython_new(mp_uint_t max_num_labels) {
     emit_t *emit = m_new(emit_t, 1);
     emit->max_num_labels = max_num_labels;
-    emit->label_offsets = m_new(int, max_num_labels);
+    emit->label_offsets = m_new(mp_uint_t, max_num_labels);
     return emit;
 }
 
@@ -73,7 +73,7 @@ STATIC void emit_cpy_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) 
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
     if (pass < MP_PASS_EMIT) {
-        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(int));
+        memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(mp_uint_t));
     }
 }
 
@@ -88,23 +88,23 @@ STATIC bool emit_cpy_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC void emit_cpy_adjust_stack_size(emit_t *emit, int delta) {
+STATIC void emit_cpy_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     emit->stack_size += delta;
 }
 
-STATIC void emit_cpy_set_source_line(emit_t *emit, int source_line) {
+STATIC void emit_cpy_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
-STATIC void emit_cpy_load_id(emit_t *emit, qstr qstr) {
-    emit_common_load_id(emit, &emit_cpython_method_table, emit->scope, qstr);
+STATIC void emit_cpy_load_id(emit_t *emit, qstr qst) {
+    emit_common_load_id(emit, &emit_cpython_method_table, emit->scope, qst);
 }
 
-STATIC void emit_cpy_store_id(emit_t *emit, qstr qstr) {
-    emit_common_store_id(emit, &emit_cpython_method_table, emit->scope, qstr);
+STATIC void emit_cpy_store_id(emit_t *emit, qstr qst) {
+    emit_common_store_id(emit, &emit_cpython_method_table, emit->scope, qst);
 }
 
-STATIC void emit_cpy_delete_id(emit_t *emit, qstr qstr) {
-    emit_common_delete_id(emit, &emit_cpython_method_table, emit->scope, qstr);
+STATIC void emit_cpy_delete_id(emit_t *emit, qstr qst) {
+    emit_common_delete_id(emit, &emit_cpython_method_table, emit->scope, qst);
 }
 
 // TODO: module-polymorphic function (read: name clash if made global)
@@ -124,7 +124,7 @@ static void emit_pre(emit_t *emit, int stack_size_delta, int bytecode_size) {
     emit->bytecode_offset += bytecode_size;
 }
 
-STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
+STATIC void emit_cpy_label_assign(emit_t *emit, mp_uint_t l) {
     emit_pre(emit, 0, 0);
     assert(l < emit->max_num_labels);
     if (emit->pass < MP_PASS_EMIT) {
@@ -138,17 +138,17 @@ STATIC void emit_cpy_label_assign(emit_t *emit, uint l) {
     }
 }
 
-STATIC void emit_cpy_import_name(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_import_name(emit_t *emit, qstr qst) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("IMPORT_NAME %s\n", qstr_str(qstr));
+        printf("IMPORT_NAME %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_import_from(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_import_from(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("IMPORT_FROM %s\n", qstr_str(qstr));
+        printf("IMPORT_FROM %s\n", qstr_str(qst));
     }
 }
 
@@ -180,22 +180,22 @@ STATIC void emit_cpy_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void emit_cpy_load_const_int(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_load_const_int(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST %s\n", qstr_str(qstr));
+        printf("LOAD_CONST %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_const_dec(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_load_const_dec(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST %s\n", qstr_str(qstr));
+        printf("LOAD_CONST %s\n", qstr_str(qst));
     }
 }
 
-STATIC void print_quoted_str(qstr qstr, bool bytes) {
-    const char *str = qstr_str(qstr);
+STATIC void print_quoted_str(qstr qst, bool bytes) {
+    const char *str = qstr_str(qst);
     int len = strlen(str);
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -231,11 +231,11 @@ STATIC void print_quoted_str(qstr qstr, bool bytes) {
     printf("%c", quote_char);
 }
 
-STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qstr, bool bytes) {
+STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
         printf("LOAD_CONST ");
-        print_quoted_str(qstr, bytes);
+        print_quoted_str(qst, bytes);
         printf("\n");
     }
 }
@@ -245,43 +245,43 @@ STATIC void emit_cpy_load_null(emit_t *emit) {
     assert(0);
 }
 
-STATIC void emit_cpy_load_fast(emit_t *emit, qstr qstr, uint id_flags, int local_num) {
+STATIC void emit_cpy_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_FAST %d %s\n", local_num, qstr_str(qstr));
+        printf("LOAD_FAST " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_DEREF %d %s\n", local_num, qstr_str(qstr));
+        printf("LOAD_DEREF " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_name(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_load_name(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_NAME %s\n", qstr_str(qstr));
+        printf("LOAD_NAME %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_global(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_load_global(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_GLOBAL %s\n", qstr_str(qstr));
+        printf("LOAD_GLOBAL %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_load_attr(emit_t *emit, qstr qst) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_ATTR %s\n", qstr_str(qstr));
+        printf("LOAD_ATTR %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_load_method(emit_t *emit, qstr qstr) {
-    emit_cpy_load_attr(emit, qstr);
+STATIC void emit_cpy_load_method(emit_t *emit, qstr qst) {
+    emit_cpy_load_attr(emit, qst);
 }
 
 STATIC void emit_cpy_load_build_class(emit_t *emit) {
@@ -298,38 +298,38 @@ STATIC void emit_cpy_load_subscr(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_store_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("STORE_FAST %d %s\n", local_num, qstr_str(qstr));
+        printf("STORE_FAST " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_store_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("STORE_DEREF %d %s\n", local_num, qstr_str(qstr));
+        printf("STORE_DEREF " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_store_name(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_store_name(emit_t *emit, qstr qst) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("STORE_NAME %s\n", qstr_str(qstr));
+        printf("STORE_NAME %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_store_global(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_store_global(emit_t *emit, qstr qst) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("STORE_GLOBAL %s\n", qstr_str(qstr));
+        printf("STORE_GLOBAL %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_store_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_store_attr(emit_t *emit, qstr qst) {
     emit_pre(emit, -2, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("STORE_ATTR %s\n", qstr_str(qstr));
+        printf("STORE_ATTR %s\n", qstr_str(qst));
     }
 }
 
@@ -340,38 +340,38 @@ STATIC void emit_cpy_store_subscr(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_delete_fast(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("DELETE_FAST %d %s\n", local_num, qstr_str(qstr));
+        printf("DELETE_FAST " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_delete_deref(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("DELETE_DEREF %d %s\n", local_num, qstr_str(qstr));
+        printf("DELETE_DEREF " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_delete_name(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_delete_name(emit_t *emit, qstr qst) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("DELETE_NAME %s\n", qstr_str(qstr));
+        printf("DELETE_NAME %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_delete_global(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_delete_global(emit_t *emit, qstr qst) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("DELETE_GLOBAL %s\n", qstr_str(qstr));
+        printf("DELETE_GLOBAL %s\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_delete_attr(emit_t *emit, qstr qstr) {
+STATIC void emit_cpy_delete_attr(emit_t *emit, qstr qst) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("DELETE_ATTR %s\n", qstr_str(qstr));
+        printf("DELETE_ATTR %s\n", qstr_str(qst));
     }
 }
 
@@ -417,68 +417,68 @@ STATIC void emit_cpy_rot_three(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_jump(emit_t *emit, uint label) {
+STATIC void emit_cpy_jump(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
         int dest = emit->label_offsets[label];
         if (dest < emit->bytecode_offset) {
-            printf("JUMP_ABSOLUTE %d\n", emit->label_offsets[label]);
+            printf("JUMP_ABSOLUTE " UINT_FMT "\n", emit->label_offsets[label]);
         } else {
-            printf("JUMP_FORWARD %d\n", emit->label_offsets[label]);
+            printf("JUMP_FORWARD " UINT_FMT "\n", emit->label_offsets[label]);
         }
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_true(emit_t *emit, uint label) {
+STATIC void emit_cpy_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("POP_JUMP_IF_TRUE %d\n", emit->label_offsets[label]);
+        printf("POP_JUMP_IF_TRUE " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_false(emit_t *emit, uint label) {
+STATIC void emit_cpy_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("POP_JUMP_IF_FALSE %d\n", emit->label_offsets[label]);
+        printf("POP_JUMP_IF_FALSE " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_jump_if_true_or_pop(emit_t *emit, uint label) {
+STATIC void emit_cpy_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("JUMP_IF_TRUE_OR_POP %d\n", emit->label_offsets[label]);
+        printf("JUMP_IF_TRUE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, uint label) {
+STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("JUMP_IF_FALSE_OR_POP %d\n", emit->label_offsets[label]);
+        printf("JUMP_IF_FALSE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_break_loop(emit_t *emit, uint label, int except_depth) {
+STATIC void emit_cpy_break_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
     emit_pre(emit, 0, 1);
     if (emit->pass == MP_PASS_EMIT) {
         printf("BREAK_LOOP\n");
     }
 }
 
-STATIC void emit_cpy_continue_loop(emit_t *emit, uint label, int except_depth) {
+STATIC void emit_cpy_continue_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
     if (except_depth == 0) {
         emit_cpy_jump(emit, label);
     } else {
         emit_pre(emit, 0, 3);
         if (emit->pass == MP_PASS_EMIT) {
-            printf("CONTINUE_LOOP %d\n", emit->label_offsets[label]);
+            printf("CONTINUE_LOOP " UINT_FMT "\n", emit->label_offsets[label]);
         }
     }
 }
 
-STATIC void emit_cpy_setup_with(emit_t *emit, uint label) {
+STATIC void emit_cpy_setup_with(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 7, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("SETUP_WITH %d\n", emit->label_offsets[label]);
+        printf("SETUP_WITH " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
@@ -489,17 +489,17 @@ STATIC void emit_cpy_with_cleanup(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_setup_except(emit_t *emit, uint label) {
+STATIC void emit_cpy_setup_except(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("SETUP_EXCEPT %d\n", emit->label_offsets[label]);
+        printf("SETUP_EXCEPT " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
-STATIC void emit_cpy_setup_finally(emit_t *emit, uint label) {
+STATIC void emit_cpy_setup_finally(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("SETUP_FINALLY %d\n", emit->label_offsets[label]);
+        printf("SETUP_FINALLY " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
@@ -517,10 +517,10 @@ STATIC void emit_cpy_get_iter(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_for_iter(emit_t *emit, uint label) {
+STATIC void emit_cpy_for_iter(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("FOR_ITER %d\n", emit->label_offsets[label]);
+        printf("FOR_ITER " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 
@@ -605,31 +605,31 @@ STATIC void emit_cpy_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
-STATIC void emit_cpy_build_tuple(emit_t *emit, int n_args) {
+STATIC void emit_cpy_build_tuple(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, 1 - n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("BUILD_TUPLE %d\n", n_args);
+        printf("BUILD_TUPLE " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void emit_cpy_build_list(emit_t *emit, int n_args) {
+STATIC void emit_cpy_build_list(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, 1 - n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("BUILD_LIST %d\n", n_args);
+        printf("BUILD_LIST " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void emit_cpy_list_append(emit_t *emit, int list_index) {
+STATIC void emit_cpy_list_append(emit_t *emit, mp_uint_t list_index) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LIST_APPEND %d\n", list_index);
+        printf("LIST_APPEND " UINT_FMT "\n", list_index);
     }
 }
 
-STATIC void emit_cpy_build_map(emit_t *emit, int n_args) {
+STATIC void emit_cpy_build_map(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("BUILD_MAP %d\n", n_args);
+        printf("BUILD_MAP " UINT_FMT "\n", n_args);
     }
 }
 
@@ -640,57 +640,57 @@ STATIC void emit_cpy_store_map(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_map_add(emit_t *emit, int map_index) {
+STATIC void emit_cpy_map_add(emit_t *emit, mp_uint_t map_index) {
     emit_pre(emit, -2, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("MAP_ADD %d\n", map_index);
+        printf("MAP_ADD " UINT_FMT "\n", map_index);
     }
 }
 
-STATIC void emit_cpy_build_set(emit_t *emit, int n_args) {
+STATIC void emit_cpy_build_set(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, 1 - n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("BUILD_SET %d\n", n_args);
+        printf("BUILD_SET " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void emit_cpy_set_add(emit_t *emit, int set_index) {
+STATIC void emit_cpy_set_add(emit_t *emit, mp_uint_t set_index) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("SET_ADD %d\n", set_index);
+        printf("SET_ADD " UINT_FMT "\n", set_index);
     }
 }
 
-STATIC void emit_cpy_build_slice(emit_t *emit, int n_args) {
+STATIC void emit_cpy_build_slice(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, 1 - n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("BUILD_SLICE %d\n", n_args);
+        printf("BUILD_SLICE " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void emit_cpy_unpack_sequence(emit_t *emit, int n_args) {
+STATIC void emit_cpy_unpack_sequence(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, -1 + n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("UNPACK_SEQUENCE %d\n", n_args);
+        printf("UNPACK_SEQUENCE " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void emit_cpy_unpack_ex(emit_t *emit, int n_left, int n_right) {
+STATIC void emit_cpy_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right) {
     emit_pre(emit, -1 + n_left + n_right + 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("UNPACK_EX %d\n", n_left | (n_right << 8));
+        printf("UNPACK_EX " UINT_FMT "\n", n_left | (n_right << 8));
     }
 }
 
-STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
-    int s = 0;
+STATIC void emit_cpy_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
+    mp_int_t s = 0;
     if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
         s += 1;
     }
     if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
         s += 1;
     }
-    emit_pre(emit, -n_positional - 2 * n_keyword - s, 3);
+    emit_pre(emit, -(mp_int_t)n_positional - 2 * (mp_int_t)n_keyword - s, 3);
     if (emit->pass == MP_PASS_EMIT) {
         if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
             if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
@@ -705,11 +705,11 @@ STATIC void emit_cpy_call_function(emit_t *emit, int n_positional, int n_keyword
                 printf("CALL_FUNCTION");
             }
         }
-        printf(" %d, %d\n", n_positional, n_keyword);
+        printf(" " UINT_FMT ", " UINT_FMT "\n", n_positional, n_keyword);
     }
 }
 
-STATIC void emit_cpy_call_method(emit_t *emit, int n_positional, int n_keyword, uint star_flags) {
+STATIC void emit_cpy_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
     emit_cpy_call_function(emit, n_positional, n_keyword, star_flags);
 }
 
@@ -721,17 +721,17 @@ STATIC void emit_cpy_return_value(emit_t *emit) {
     }
 }
 
-STATIC void emit_cpy_raise_varargs(emit_t *emit, int n_args) {
+STATIC void emit_cpy_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     emit_pre(emit, -n_args, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("RAISE_VARARGS %d\n", n_args);
+        printf("RAISE_VARARGS " UINT_FMT "\n", n_args);
     }
 }
 
-STATIC void load_cpy_const_code_and_name(emit_t *emit, qstr qstr) {
+STATIC void load_cpy_const_code_and_name(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST code %s\n", qstr_str(qstr));
+        printf("LOAD_CONST code %s\n", qstr_str(qst));
     }
     // load qualified name
     emit_pre(emit, 1, 3);
@@ -755,24 +755,24 @@ STATIC void load_cpy_const_code_and_name(emit_t *emit, qstr qstr) {
                 }
             }
         }
-        printf("%s'\n", qstr_str(qstr));
+        printf("%s'\n", qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, uint n_pos_defaults, uint n_kw_defaults) {
+STATIC void emit_cpy_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
     load_cpy_const_code_and_name(emit, scope->simple_name);
     emit_pre(emit, -1 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("MAKE_FUNCTION %d\n", (n_kw_defaults << 8) | n_pos_defaults);
+        printf("MAKE_FUNCTION " UINT_FMT "\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
-STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, uint n_closed_over, uint n_pos_defaults, uint n_kw_defaults) {
+STATIC void emit_cpy_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_over, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
     emit_cpy_build_tuple(emit, n_closed_over);
     load_cpy_const_code_and_name(emit, scope->simple_name);
     emit_pre(emit, -2 - n_pos_defaults - 2 * n_kw_defaults, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("MAKE_CLOSURE %d\n", (n_kw_defaults << 8) | n_pos_defaults);
+        printf("MAKE_CLOSURE " UINT_FMT "\n", (n_kw_defaults << 8) | n_pos_defaults);
     }
 }
 
@@ -807,17 +807,17 @@ STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
     }
 }
 
-STATIC void emit_cpy_load_closure(emit_t *emit, qstr qstr, int local_num) {
+STATIC void emit_cpy_load_closure(emit_t *emit, qstr qst, mp_uint_t local_num) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CLOSURE %d %s\n", local_num, qstr_str(qstr));
+        printf("LOAD_CLOSURE " UINT_FMT " %s\n", local_num, qstr_str(qst));
     }
 }
 
-STATIC void emit_cpy_setup_loop(emit_t *emit, uint label) {
+STATIC void emit_cpy_setup_loop(emit_t *emit, mp_uint_t label) {
     emit_pre(emit, 0, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("SETUP_LOOP %d\n", emit->label_offsets[label]);
+        printf("SETUP_LOOP " UINT_FMT "\n", emit->label_offsets[label]);
     }
 }
 

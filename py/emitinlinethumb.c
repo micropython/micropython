@@ -56,7 +56,7 @@ struct _emit_inline_asm_t {
     uint16_t pass;
     uint16_t success;
     scope_t *scope;
-    uint max_num_labels;
+    mp_uint_t max_num_labels;
     qstr *label_lookup;
     asm_thumb_t *as;
 };
@@ -70,7 +70,7 @@ void emit_inline_thumb_error(emit_inline_asm_t *emit, const char *fmt, ...) {
     va_end(ap);
 }
 
-emit_inline_asm_t *emit_inline_thumb_new(uint max_num_labels) {
+emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);
@@ -105,12 +105,12 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     return emit->success;
 }
 
-STATIC int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params, mp_parse_node_t *pn_params) {
+STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
         emit_inline_thumb_error(emit, "can only have up to 4 parameters to inline thumb assembly\n");
         return 0;
     }
-    for (int i = 0; i < n_params; i++) {
+    for (mp_uint_t i = 0; i < n_params; i++) {
         if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
             emit_inline_thumb_error(emit, "parameter to inline assembler must be an identifier\n");
             return 0;
@@ -124,17 +124,17 @@ STATIC int emit_inline_thumb_count_params(emit_inline_asm_t *emit, int n_params,
     return n_params;
 }
 
-STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, uint label_num, qstr label_id) {
+STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     emit->label_lookup[label_num] = label_id;
     asm_thumb_label_assign(emit->as, label_num);
 }
 
-STATIC void emit_inline_thumb_align(emit_inline_asm_t *emit, uint align) {
+STATIC void emit_inline_thumb_align(emit_inline_asm_t *emit, mp_uint_t align) {
     asm_thumb_align(emit->as, align);
 }
 
-STATIC void emit_inline_thumb_data(emit_inline_asm_t *emit, uint bytesize, uint val) {
+STATIC void emit_inline_thumb_data(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val) {
     asm_thumb_data(emit->as, bytesize, val);
 }
 
@@ -163,11 +163,11 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
-STATIC uint get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint max_reg) {
+STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
         const char *reg_str = qstr_str(reg_qstr);
-        for (uint i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
+        for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
             const reg_name_t *r = &reg_name_table[i];
             if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
                 if (r->reg > max_reg) {
@@ -254,7 +254,7 @@ STATIC const cc_name_t cc_name_table[] = {
     {THUMB_CC_LE, "le"},
 };
 
-STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, mp_parse_node_t *pn_args) {
+STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
     // "b", LAB, asm_thumb_b_n,
@@ -266,7 +266,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
     // "subs", RLO, RLO, I3, asm_thumb_subs_reg_reg_i3
 
     const char *op_str = qstr_str(op);
-    uint op_len = strlen(op_str);
+    mp_uint_t op_len = strlen(op_str);
 
     if (n_args == 0) {
         if (strcmp(op_str, "nop") == 0) {
@@ -285,8 +285,8 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_b_n(emit->as, label_num);
         } else if (op_str[0] == 'b' && op_len == 3) {
-            uint cc = -1;
-            for (uint i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
+            mp_uint_t cc = -1;
+            for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
                 if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
                     cc = cc_name_table[i].cc;
                 }
@@ -310,14 +310,14 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
     } else if (n_args == 2) {
         if (MP_PARSE_NODE_IS_ID(pn_args[1])) {
             // second arg is a register (or should be)
-            uint op_code;
+            mp_uint_t op_code;
             if (strcmp(op_str, "mov") == 0) {
-                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
-                uint reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                mp_uint_t reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
                 asm_thumb_mov_reg_reg(emit->as, reg_dest, reg_src);
             } else if (strcmp(op_str, "and_") == 0) {
                 op_code = ASM_THUMB_FORMAT_4_AND;
-                uint reg_dest, reg_src;
+                mp_uint_t reg_dest, reg_src;
                 op_format_4:
                 reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
                 reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
@@ -343,10 +343,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
             }
         } else {
             // second arg is not a register
-            uint op_code;
+            mp_uint_t op_code;
             if (strcmp(op_str, "mov") == 0) {
                 op_code = ASM_THUMB_FORMAT_3_MOV;
-                uint rlo_dest, i8_src;
+                mp_uint_t rlo_dest, i8_src;
                 op_format_3:
                 rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
                 i8_src = get_arg_i(emit, op_str, pn_args[1], 0xff);
@@ -361,23 +361,23 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
             } else if (strcmp(op_str, "movw") == 0) {
-                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src);
             } else if (strcmp(op_str, "movt") == 0) {
-                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_movt_reg_i16(emit->as, reg_dest, i_src);
             } else if (strcmp(op_str, "movwt") == 0) {
                 // this is a convenience instruction
                 // we clear the MSB since it might be set from extracting the small int value
-                uint reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src & 0xffff);
                 asm_thumb_movt_reg_i16(emit->as, reg_dest, (i_src >> 16) & 0x7fff);
             } else if (strcmp(op_str, "ldr") == 0) {
                 op_code = ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER;
-                uint rlo_dest, rlo_base, i5;
+                mp_uint_t rlo_dest, rlo_base, i5;
                 mp_parse_node_t pn_base, pn_offset;
                 op_format_9_10:
                 rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
@@ -413,10 +413,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, int n_args, m
         }
 
     } else if (n_args == 3) {
-        uint op_code;
+        mp_uint_t op_code;
         if (strcmp(op_str, "add") == 0) {
             op_code = ASM_THUMB_FORMAT_2_ADD;
-            uint rlo_dest, rlo_src;
+            mp_uint_t rlo_dest, rlo_src;
             op_format_2:
             rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
             rlo_src = get_arg_reg(emit, op_str, pn_args[1], 7);

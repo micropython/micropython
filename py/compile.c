@@ -975,12 +975,12 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
             if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
                 for (int j = 0; j < this_scope->id_info_len; j++) {
                     id_info_t *id2 = &this_scope->id_info[j];
-                    if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
+                    if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
 #if MICROPY_EMIT_CPYTHON
-                        EMIT_ARG(load_closure, id->qstr, id->local_num);
+                        EMIT_ARG(load_closure, id->qst, id->local_num);
 #else
                         // in Micro Python we load closures using LOAD_FAST
-                        EMIT_ARG(load_fast, id->qstr, id->flags, id->local_num);
+                        EMIT_ARG(load_fast, id->qst, id->flags, id->local_num);
 #endif
                         nfree += 1;
                     }
@@ -3446,7 +3446,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     scope->num_locals = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
-        if (scope->kind == SCOPE_CLASS && id->qstr == MP_QSTR___class__) {
+        if (scope->kind == SCOPE_CLASS && id->qst == MP_QSTR___class__) {
             // __class__ is not counted as a local; if it's used then it becomes a ID_INFO_KIND_CELL
             continue;
         }
@@ -3491,7 +3491,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
             if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
                 for (int j = 0; j < scope->id_info_len; j++) {
                     id_info_t *id2 = &scope->id_info[j];
-                    if (id2->kind == ID_INFO_KIND_FREE && id->qstr == id2->qstr) {
+                    if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
                         assert(!(id2->flags & ID_FLAG_IS_PARAM)); // free vars should not be params
 #if MICROPY_EMIT_CPYTHON
                         // in CPython the frees are numbered after the cells

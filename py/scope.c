@@ -82,8 +82,8 @@ void scope_free(scope_t *scope) {
     m_del(scope_t, scope, 1);
 }
 
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
-    id_info_t *id_info = scope_find(scope, qstr);
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, bool *added) {
+    id_info_t *id_info = scope_find(scope, qst);
     if (id_info != NULL) {
         *added = false;
         return id_info;
@@ -103,33 +103,33 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added) {
     id_info->kind = 0;
     id_info->flags = 0;
     id_info->local_num = 0;
-    id_info->qstr = qstr;
+    id_info->qst = qst;
     *added = true;
     return id_info;
 }
 
-id_info_t *scope_find(scope_t *scope, qstr qstr) {
+id_info_t *scope_find(scope_t *scope, qstr qst) {
     for (mp_uint_t i = 0; i < scope->id_info_len; i++) {
-        if (scope->id_info[i].qstr == qstr) {
+        if (scope->id_info[i].qst == qst) {
             return &scope->id_info[i];
         }
     }
     return NULL;
 }
 
-id_info_t *scope_find_global(scope_t *scope, qstr qstr) {
+id_info_t *scope_find_global(scope_t *scope, qstr qst) {
     while (scope->parent != NULL) {
         scope = scope->parent;
     }
-    return scope_find(scope, qstr);
+    return scope_find(scope, qst);
 }
 
-id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr) {
+id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qst) {
     if (scope->parent == NULL) {
         return NULL;
     }
     for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
-        id_info_t *id = scope_find(s, qstr);
+        id_info_t *id = scope_find(s, qst);
         if (id != NULL) {
             return id;
         }
@@ -137,11 +137,11 @@ id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr) {
     return NULL;
 }
 
-void scope_close_over_in_parents(scope_t *scope, qstr qstr) {
+void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     assert(scope->parent != NULL); // we should have at least 1 parent
     for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
         bool added;
-        id_info_t *id = scope_find_or_add_id(s, qstr, &added);
+        id_info_t *id = scope_find_or_add_id(s, qst, &added);
         if (added) {
             // variable not previously declared in this scope, so declare it as free and keep searching parents
             id->kind = ID_INFO_KIND_FREE;
@@ -159,13 +159,13 @@ void scope_close_over_in_parents(scope_t *scope, qstr qstr) {
     assert(0); // we should have found the variable in one of the parents
 }
 
-void scope_declare_global(scope_t *scope, qstr qstr) {
+void scope_declare_global(scope_t *scope, qstr qst) {
     if (scope->kind == SCOPE_MODULE) {
         printf("SyntaxError?: can't declare global in outer code\n");
         return;
     }
     bool added;
-    id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
+    id_info_t *id_info = scope_find_or_add_id(scope, qst, &added);
     if (!added) {
         printf("SyntaxError?: identifier already declared something\n");
         return;
@@ -173,30 +173,30 @@ void scope_declare_global(scope_t *scope, qstr qstr) {
     id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
 
     // if the id exists in the global scope, set its kind to EXPLICIT_GLOBAL
-    id_info = scope_find_global(scope, qstr);
+    id_info = scope_find_global(scope, qst);
     if (id_info != NULL) {
         id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
     }
 }
 
-void scope_declare_nonlocal(scope_t *scope, qstr qstr) {
+void scope_declare_nonlocal(scope_t *scope, qstr qst) {
     if (scope->kind == SCOPE_MODULE) {
         printf("SyntaxError?: can't declare nonlocal in outer code\n");
         return;
     }
     bool added;
-    id_info_t *id_info = scope_find_or_add_id(scope, qstr, &added);
+    id_info_t *id_info = scope_find_or_add_id(scope, qst, &added);
     if (!added) {
         printf("SyntaxError?: identifier already declared something\n");
         return;
     }
-    id_info_t *id_info2 = scope_find_local_in_parent(scope, qstr);
+    id_info_t *id_info2 = scope_find_local_in_parent(scope, qst);
     if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
-        printf("SyntaxError: no binding for nonlocal '%s' found\n", qstr_str(qstr));
+        printf("SyntaxError: no binding for nonlocal '%s' found\n", qstr_str(qst));
         return;
     }
     id_info->kind = ID_INFO_KIND_FREE;
-    scope_close_over_in_parents(scope, qstr);
+    scope_close_over_in_parents(scope, qst);
 }
 
 #if MICROPY_EMIT_CPYTHON
@@ -220,28 +220,28 @@ void scope_print_info(scope_t *s) {
     printf("var global:");
     for (int i = 0; i < s->id_info_len; i++) {
         if (s->id_info[i].kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
-            printf(" %s", qstr_str(s->id_info[i].qstr));
+            printf(" %s", qstr_str(s->id_info[i].qst));
         }
     }
     printf("\n");
     printf("var name:");
     for (int i = 0; i < s->id_info_len; i++) {
         if (s->id_info[i].kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-            printf(" %s", qstr_str(s->id_info[i].qstr));
+            printf(" %s", qstr_str(s->id_info[i].qst));
         }
     }
     printf("\n");
     printf("var local:");
     for (int i = 0; i < s->id_info_len; i++) {
         if (s->id_info[i].kind == ID_INFO_KIND_LOCAL) {
-            printf(" %s", qstr_str(s->id_info[i].qstr));
+            printf(" %s", qstr_str(s->id_info[i].qst));
         }
     }
     printf("\n");
     printf("var free:");
     for (int i = 0; i < s->id_info_len; i++) {
         if (s->id_info[i].kind == ID_INFO_KIND_FREE) {
-            printf(" %s", qstr_str(s->id_info[i].qstr));
+            printf(" %s", qstr_str(s->id_info[i].qst));
         }
     }
     printf("\n");
