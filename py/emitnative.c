@@ -200,9 +200,9 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define EXPORT_FUN(name) emit_native_x86_##name
 
 #define REG_RET REG_EAX
-#define REG_ARG_1 REG_EAX
-#define REG_ARG_2 REG_ECX
-#define REG_ARG_3 REG_EDX
+#define REG_ARG_1 ASM_X86_REG_ARG_1
+#define REG_ARG_2 ASM_X86_REG_ARG_2
+#define REG_ARG_3 ASM_X86_REG_ARG_3
 
 // caller-save, so can be used as temporaries
 #define REG_TEMP0 REG_EAX

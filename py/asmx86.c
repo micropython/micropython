@@ -496,13 +496,13 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) 
     // TODO align stack on 16-byte boundary before the call
     assert(n_args <= 3);
     if (n_args > 2) {
-        asm_x86_push_r32(as, REG_ARG_3);
+        asm_x86_push_r32(as, ASM_X86_REG_ARG_3);
     }
     if (n_args > 1) {
-        asm_x86_push_r32(as, REG_ARG_2);
+        asm_x86_push_r32(as, ASM_X86_REG_ARG_2);
     }
     if (n_args > 0) {
-        asm_x86_push_r32(as, REG_ARG_1);
+        asm_x86_push_r32(as, ASM_X86_REG_ARG_1);
     }
 #ifdef __LP64__
     // We wouldn't run x86 code on an x64 machine.  This is here to enable

@@ -44,6 +44,14 @@
 #define REG_ESI (6)
 #define REG_EDI (7)
 
+// x86 passes values on the stack, but the emitter is register based, so we need
+// to define registers that can temporarily hold the function arguments.  They
+// need to be defined here so that asm_x86_call_ind can push them onto the stack
+// before the call.
+#define ASM_X86_REG_ARG_1 REG_EAX
+#define ASM_X86_REG_ARG_2 REG_ECX
+#define ASM_X86_REG_ARG_3 REG_EDX
+
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned
 #define ASM_X86_CC_JZ  (0x4)
