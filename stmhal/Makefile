@@ -68,6 +68,12 @@ SRC_LIB = $(addprefix lib/,\
 	libm/atan2f.c \
 	)
 
+SRC_LIB_S = $(addprefix lib/,\
+	libm/uldivmod.S\
+	libm/uidivmod.S\
+	libm/crt.S\
+	)
+
 SRC_C = \
 	main.c \
 	string0.c \
@@ -214,6 +220,7 @@ endif
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
