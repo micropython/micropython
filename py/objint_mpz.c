@@ -279,7 +279,13 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_ll(&o->mpz, val);
+    mpz_set_from_ll(&o->mpz, val, true);
+    return o;
+}
+
+mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_ll(&o->mpz, val, false);
     return o;
 }
 

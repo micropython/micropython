@@ -589,9 +589,9 @@ mpz_t *mpz_from_int(mp_int_t val) {
     return z;
 }
 
-mpz_t *mpz_from_ll(long long val) {
+mpz_t *mpz_from_ll(long long val, bool is_signed) {
     mpz_t *z = mpz_zero();
-    mpz_set_from_ll(z, val);
+    mpz_set_from_ll(z, val, is_signed);
     return z;
 }
 
@@ -668,11 +668,11 @@ void mpz_set_from_int(mpz_t *z, mp_int_t val) {
     }
 }
 
-void mpz_set_from_ll(mpz_t *z, long long val) {
+void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
     mpz_need_dig(z, MPZ_NUM_DIG_FOR_LL);
 
     unsigned long long uval;
-    if (val < 0) {
+    if (is_signed && val < 0) {
         z->neg = 1;
         uval = -val;
     } else {

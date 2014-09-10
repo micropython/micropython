@@ -178,7 +178,16 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
     return o;
 }
 
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, uint len, bool neg, uint base) {
+mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
+    // TODO raise an exception if the unsigned long long won't fit
+    assert(val >> (sizeof(unsigned long long) * 8 - 1) == 0);
+    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
+    o->base.type = &mp_type_int;
+    o->val = val;
+    return o;
+}
+
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);

@@ -71,7 +71,7 @@ void mpz_deinit(mpz_t *z);
 
 mpz_t *mpz_zero();
 mpz_t *mpz_from_int(mp_int_t i);
-mpz_t *mpz_from_ll(long long i);
+mpz_t *mpz_from_ll(long long i, bool is_signed);
 mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base);
 void mpz_free(mpz_t *z);
 
@@ -79,7 +79,7 @@ mpz_t *mpz_clone(const mpz_t *src);
 
 void mpz_set(mpz_t *dest, const mpz_t *src);
 void mpz_set_from_int(mpz_t *z, mp_int_t src);
-void mpz_set_from_ll(mpz_t *z, long long i);
+void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);
 mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base);
 
 bool mpz_is_zero(const mpz_t *z);

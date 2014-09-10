@@ -369,6 +369,7 @@ mp_obj_t mp_obj_new_int(mp_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
+mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, mp_uint_t len);
 #if MICROPY_PY_BUILTINS_FLOAT

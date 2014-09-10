@@ -34,5 +34,5 @@ void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in)
 void mp_binary_set_val_array_from_int(char typecode, void *p, int index, mp_int_t val);
 mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr);
 void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr);
-mp_int_t mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, byte *p);
+long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, byte *p);
 void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *p, byte *val_ptr);
