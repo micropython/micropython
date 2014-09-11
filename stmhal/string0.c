@@ -30,14 +30,36 @@
 #define likely(x) __builtin_expect((x), 1)
 
 void *memcpy(void *dst, const void *src, size_t n) {
-    if (likely(!(n&3) && !((long)dst&3) && !((long)src&3))) {
-        //aligned access, copy words
+    if (likely(!((long)dst&3) && !((long)src&3))) {
+        //copy words from aligned pointers first
         long *d = dst;
         const long *s = src;
 
-        for (n=(n>>2); n; n--) {
+        for (int i=(n>>2); i; i--) {
             *d++ = *s++;
         }
+
+        //copy remaining bytes
+        if (n&3) {
+            char *d8 = (char*)d;
+            const char *s8 =(char*) s;
+
+            switch (n&3) {
+                case 1:
+                    *d8=*s8;
+                    break;
+                case 2:
+                    *d8++=*s8++;
+                    *d8=*s8;
+                    break;
+                case 3:
+                    *d8++=*s8++;
+                    *d8++=*s8++;
+                    *d8=*s8;
+                    break;
+            }
+        }
+
     } else {
         //unaligned access, copy bytes
         char *d = dst;
