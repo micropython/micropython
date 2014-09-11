@@ -64,6 +64,7 @@ endif
 SRC_LIB = $(addprefix lib/,\
 	libm/math.c \
 	libm/mathsincos.c \
+	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
 	)

@@ -117,8 +117,6 @@ float acoshf(float x) { return 0.0; }
 float asinhf(float x) { return 0.0; }
 float atanhf(float x) { return 0.0; }
 float tanf(float x) { return 0.0; }
-float acosf(float x) { return 0.0; }
-float asinf(float x) { return 0.0; }
 float fmodf(float x, float y) { return 0.0; }
 float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }

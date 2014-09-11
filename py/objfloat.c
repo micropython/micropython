@@ -48,18 +48,18 @@
 STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_float_t *o = o_in;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    char buf[32];
-    format_float(o->value, buf, sizeof(buf), 'g', 6, '\0');
+    char buf[16];
+    format_float(o->value, buf, sizeof(buf), 'g', 7, '\0');
     print(env, "%s", buf);
-    if (strchr(buf, '.') == NULL) {
+    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL) {
         // Python floats always have decimal point
         print(env, ".0");
     }
 #else
     char buf[32];
-    sprintf(buf, "%.17g", (double) o->value);
+    sprintf(buf, "%.16g", (double) o->value);
     print(env, buf);
-    if (strchr(buf, '.') == NULL) {
+    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL) {
         // Python floats always have decimal point
         print(env, ".0");
     }
