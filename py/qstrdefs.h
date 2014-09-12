@@ -473,3 +473,12 @@ Q(ujson)
 Q(dumps)
 Q(loads)
 #endif
+
+#if MICROPY_PY_URE
+Q(ure)
+Q(compile)
+Q(match)
+Q(search)
+Q(group)
+Q(DEBUG)
+#endif

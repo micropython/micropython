@@ -113,6 +113,10 @@ PY_O_BASENAME = \
 	../extmod/moductypes.o \
 	../extmod/modzlibd.o \
 	../extmod/modujson.o \
+	../extmod/modure.o \
+	../extmod/re1.5/compilecode.o \
+	../extmod/re1.5/dumpcode.o \
+	../extmod/re1.5/recursiveloop.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
@@ -166,3 +170,6 @@ $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 
+# Additional options for 3rd-party libs
+
+$(PY_BUILD)/../extmod/re1.5/recursiveloop.o: CFLAGS += "-Dre1_5_fatal(x)=assert(!x)"
