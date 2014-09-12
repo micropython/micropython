@@ -1017,12 +1017,17 @@ STATIC void emit_native_load_const_dec(emit_t *emit, qstr qst) {
 
 STATIC void emit_native_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     emit_native_pre(emit);
+    // TODO: Eventually we want to be able to work with raw pointers in viper to
+    // do native array access.  For now we just load them as any other object.
+    /*
     if (emit->do_viper_types) {
         // not implemented properly
         // load a pointer to the asciiz string?
         assert(0);
         emit_post_push_imm(emit, VTYPE_PTR, (mp_uint_t)qstr_str(qst));
-    } else {
+    } else
+    */
+    {
         if (bytes) {
             emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_BYTES, qst, REG_ARG_1);
         } else {
