@@ -27,14 +27,50 @@
 #include <stdint.h>
 #include "std.h"
 
-void *memcpy(void *dest, const void *src, size_t n) {
-    // TODO align and copy 32 bits at a time
-    uint8_t *d = dest;
-    const uint8_t *s = src;
-    for (; n > 0; n--) {
-        *d++ = *s++;
+#define likely(x) __builtin_expect((x), 1)
+
+void *memcpy(void *dst, const void *src, size_t n) {
+    if (likely(!((long)dst&3) && !((long)src&3))) {
+        //copy words from aligned pointers first
+        long *d = dst;
+        const long *s = src;
+
+        for (int i=(n>>2); i; i--) {
+            *d++ = *s++;
+        }
+
+        //copy remaining bytes
+        if (n&3) {
+            char *d8 = (char*)d;
+            const char *s8 =(char*) s;
+
+            switch (n&3) {
+                case 1:
+                    *d8=*s8;
+                    break;
+                case 2:
+                    *d8++=*s8++;
+                    *d8=*s8;
+                    break;
+                case 3:
+                    *d8++=*s8++;
+                    *d8++=*s8++;
+                    *d8=*s8;
+                    break;
+            }
+        }
+
+    } else {
+        //unaligned access, copy bytes
+        char *d = dst;
+        const char *s = src;
+
+        for (; n; n--) {
+            *d++ = *s++;
+        }
     }
-    return dest;
+
+    return dst;
 }
 
 void *memmove(void *dest, const void *src, size_t n) {
