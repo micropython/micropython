@@ -30,40 +30,31 @@
 #define likely(x) __builtin_expect((x), 1)
 
 void *memcpy(void *dst, const void *src, size_t n) {
-    if (likely(!((long)dst&3) && !((long)src&3))) {
-        //copy words from aligned pointers first
-        long *d = dst;
-        const long *s = src;
+    if (likely(!(((uint32_t)dst) & 3) && !(((uint32_t)src) & 3))) {
+        // pointers aligned
+        uint32_t *d = dst;
+        const uint32_t *s = src;
 
-        for (int i=(n>>2); i; i--) {
+        // copy words first
+        for (size_t i = (n >> 2); i; i--) {
             *d++ = *s++;
         }
 
-        //copy remaining bytes
-        if (n&3) {
-            char *d8 = (char*)d;
-            const char *s8 =(char*) s;
-
-            switch (n&3) {
-                case 1:
-                    *d8=*s8;
-                    break;
-                case 2:
-                    *d8++=*s8++;
-                    *d8=*s8;
-                    break;
-                case 3:
-                    *d8++=*s8++;
-                    *d8++=*s8++;
-                    *d8=*s8;
-                    break;
-            }
+        if (n & 2) {
+            // copy half-word
+            *(uint16_t*)d = *(const uint16_t*)s;
+            d = (uint32_t*)((uint16_t*)d + 1);
+            s = (const uint32_t*)((const uint16_t*)s + 1);
         }
 
+        if (n & 1) {
+            // copy byte
+            *((uint8_t*)d) = *((const uint8_t*)s);
+        }
     } else {
-        //unaligned access, copy bytes
-        char *d = dst;
-        const char *s = src;
+        // unaligned access, copy bytes
+        uint8_t *d = dst;
+        const uint8_t *s = src;
 
         for (; n; n--) {
             *d++ = *s++;
@@ -89,9 +80,24 @@ void *memmove(void *dest, const void *src, size_t n) {
 }
 
 void *memset(void *s, int c, size_t n) {
-    uint8_t *s2 = s;
-    for (; n > 0; n--) {
-        *s2++ = c;
+    if (c == 0 && ((uint32_t)s & 3) == 0) {
+        // aligned store of 0
+        uint32_t *s32 = s;
+        for (size_t i = n >> 2; i > 0; i--) {
+            *s32++ = 0;
+        }
+        if (n & 2) {
+            *((uint16_t*)s32) = 0;
+            s32 = (uint32_t*)((uint16_t*)s32 + 1);
+        }
+        if (n & 1) {
+            *((uint8_t*)s32) = 0;
+        }
+    } else {
+        uint8_t *s2 = s;
+        for (; n > 0; n--) {
+            *s2++ = c;
+        }
     }
     return s;
 }
