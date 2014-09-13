@@ -33,6 +33,10 @@ def run_tests(pyb, tests, args):
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
 
+    # Some tests shouldn't be run on pyboard
+    if pyb is not None:
+        skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
+
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':

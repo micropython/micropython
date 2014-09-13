@@ -143,14 +143,16 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
         case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
-        // TODO: verify that C floor matches Python semantics
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
                 zero_division_error:
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "float division by zero"));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
             }
-            lhs_val = MICROPY_FLOAT_C_FUN(floor)(lhs_val / rhs_val);
+            // Python specs require that x == (x//y)*y + (x%y) so we must
+            // call divmod to compute the correct floor division, which
+            // returns the floor divide in lhs_val.
+            mp_obj_float_divmod(&lhs_val, &rhs_val);
             break;
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
@@ -158,6 +160,21 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
                 goto zero_division_error;
             }
             lhs_val /= rhs_val;
+            break;
+        case MP_BINARY_OP_MODULO:
+        case MP_BINARY_OP_INPLACE_MODULO:
+            if (rhs_val == 0) {
+                goto zero_division_error;
+            }
+            lhs_val = MICROPY_FLOAT_C_FUN(fmod)(lhs_val, rhs_val);
+            // Python specs require that mod has same sign as second operand
+            if (lhs_val == 0.0) {
+                lhs_val = MICROPY_FLOAT_C_FUN(copysign)(0.0, rhs_val);
+            } else {
+                if ((lhs_val < 0.0) != (rhs_val < 0.0)) {
+                    lhs_val += rhs_val;
+                }
+            }
             break;
         case MP_BINARY_OP_POWER:
         case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
@@ -171,6 +188,41 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             return MP_OBJ_NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);
+}
+
+void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
+    // logic here follows that of CPython
+    // https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations
+    // x == (x//y)*y + (x%y)
+    // divmod(x, y) == (x//y, x%y)
+    mp_float_t mod = MICROPY_FLOAT_C_FUN(fmod)(*x, *y);
+    mp_float_t div = (*x - mod) / *y;
+
+    // Python specs require that mod has same sign as second operand
+    if (mod == 0.0) {
+        mod = MICROPY_FLOAT_C_FUN(copysign)(0.0, *y);
+    } else {
+        if ((mod < 0.0) != (*y < 0.0)) {
+            mod += *y;
+            div -= 1.0;
+        }
+    }
+
+    mp_float_t floordiv;
+    if (div == 0.0) {
+        // if division is zero, take the correct sign of zero
+        floordiv = MICROPY_FLOAT_C_FUN(copysign)(0.0, *x / *y);
+    } else {
+        // Python specs require that x == (x//y)*y + (x%y)
+        floordiv = MICROPY_FLOAT_C_FUN(floor)(div);
+        if (div - floordiv > 0.5) {
+            floordiv += 1.0;
+        }
+    }
+
+    // return results
+    *x = floordiv;
+    *y = mod;
 }
 
 #endif // MICROPY_PY_BUILTINS_FLOAT
