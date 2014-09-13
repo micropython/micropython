@@ -247,14 +247,16 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         mp_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
         mp_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
         if (i2 == 0) {
+            #if MICROPY_PY_BUILTINS_FLOAT
             zero_division_error:
+            #endif
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
         }
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
         args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
         return mp_obj_new_tuple(2, args);
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(o1_in, &mp_type_float) || MP_OBJ_IS_TYPE(o2_in, &mp_type_float)) {
         mp_float_t f1 = mp_obj_get_float(o1_in);
         mp_float_t f2 = mp_obj_get_float(o2_in);
@@ -267,7 +269,7 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
             mp_obj_new_float(f2),
         };
         return mp_obj_new_tuple(2, tuple);
-#endif
+    #endif
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
     }
