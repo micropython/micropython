@@ -58,6 +58,10 @@ bool compile_only = false;
 uint emit_opt = MP_EMIT_OPT_NONE;
 uint mp_verbose_flag;
 
+// Set by execute_from_lexer on SystemExit exception
+bool should_exit_g = false;
+mp_int_t exit_val_g = 0;
+
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
@@ -135,7 +139,9 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
             if (!mp_obj_get_int_maybe(exit_val, &val)) {
                 val = 0;
             }
-            exit(val);
+            exit_val_g = val;
+            should_exit_g = true;
+            return 1;
         }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return 1;
@@ -159,7 +165,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 STATIC void do_repl(void) {
     printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
-    for (;;) {
+    while(!should_exit_g) {
         char *line = prompt(">>> ");
         if (line == NULL) {
             // EOF
@@ -402,7 +408,16 @@ int main(int argc, char **argv) {
 
     mp_deinit();
 
+#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    free(heap);
+#endif
+
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
+
+    if(should_exit_g) {
+        return exit_val_g;
+    }
+
     return ret;
 }
 
