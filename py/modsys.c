@@ -25,8 +25,9 @@
  */
 
 #include <stdint.h>
-#include <limits.h>
+
 #include "mpconfig.h"
+#include "nlr.h"
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
@@ -42,13 +43,7 @@
 
 /// \module sys - system specific functions
 
-// These should be implemented by ports, specific types don't matter,
-// only addresses.
-struct _dummy_t;
-extern struct _dummy_t mp_sys_exit_obj;
-
-extern mp_obj_int_t mp_maxsize_obj;
-
+// These two lists must be initialised per port (after the call to mp_init).
 // TODO document these properly, they aren't constants or functions...
 /// \constant path - a mutable list of directories to search for imported modules
 mp_obj_list_t mp_sys_path_obj;
@@ -68,6 +63,20 @@ STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3
 /// \constant platform - the platform that Micro Python is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
+
+/// \function exit([retval])
+/// Raise a `SystemExit` exception.  If an argument is given, it is the
+/// value given to `SystemExit`.
+STATIC mp_obj_t mp_sys_exit(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_obj_t exc;
+    if (n_args == 0) {
+        exc = mp_obj_new_exception(&mp_type_SystemExit);
+    } else {
+        exc = mp_obj_new_exception_arg1(&mp_type_SystemExit, args[0]);
+    }
+    nlr_raise(exc);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },

@@ -33,6 +33,8 @@ typedef struct _mp_obj_int_t {
 #endif
 } mp_obj_int_t;
 
+extern const mp_obj_int_t mp_maxsize_obj;
+
 void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind);
 char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma);
