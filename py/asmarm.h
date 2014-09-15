@@ -88,7 +88,7 @@ void asm_arm_mov_reg_local(asm_arm_t *as, uint rd, int local_num);
 
 void asm_arm_cmp_reg_i8(asm_arm_t *as, uint rd, int imm);
 void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn);
-void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn);
+void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_add_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num);
 

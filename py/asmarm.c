@@ -287,10 +287,10 @@ void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn) {
     emit_al(as, 0x1500000 | (rd << 16) | rn);
 }
 
-void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn) {
-    asm_arm_cmp_reg_reg(as, rd, rn); // cmp rd, rn
-    emit(as, asm_arm_op_mov_imm(REG_RET, 1) | ARM_CC_LT); // movlt REG_RET, #1
-    emit(as, asm_arm_op_mov_imm(REG_RET, 0) | ARM_CC_GE); // movge REG_RET, #0
+void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm) {
+    asm_arm_cmp_reg_reg(as, rn, rm); // cmp rn, rm
+    emit(as, asm_arm_op_mov_imm(rd, 1) | ARM_CC_LT); // movlt rd, #1
+    emit(as, asm_arm_op_mov_imm(rd, 0) | ARM_CC_GE); // movge rd, #0
 }
 
 void asm_arm_add_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {

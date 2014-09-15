@@ -1514,7 +1514,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
 #elif N_ARM
-            asm_arm_less_op(emit->as, REG_ARG_2, REG_ARG_3);
+            asm_arm_less_op(emit->as, REG_RET, REG_ARG_2, REG_ARG_3);
 #else
     #error not implemented
 #endif
