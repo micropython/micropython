@@ -510,7 +510,7 @@ static int8_t SCSI_Read10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *para
       return -1;
     } 
     
-    hmsc->scsi_blk_addr = (params[2] << 24) | \
+    hmsc->scsi_blk_addr_in_blks = (params[2] << 24) | \
       (params[3] << 16) | \
         (params[4] <<  8) | \
           params[5];
@@ -520,13 +520,12 @@ static int8_t SCSI_Read10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *para
     
     
     
-    if( SCSI_CheckAddressRange(pdev, lun, hmsc->scsi_blk_addr, hmsc->scsi_blk_len) < 0)
+    if( SCSI_CheckAddressRange(pdev, lun, hmsc->scsi_blk_addr_in_blks, hmsc->scsi_blk_len) < 0)
     {
       return -1; /* error */
     }
     
     hmsc->bot_state = USBD_BOT_DATA_IN;
-    hmsc->scsi_blk_addr *= hmsc->scsi_blk_size;
     hmsc->scsi_blk_len  *= hmsc->scsi_blk_size;
     
     /* cases 4,5 : Hi <> Dn */
@@ -591,7 +590,7 @@ static int8_t SCSI_Write10 (USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *pa
     } 
     
     
-    hmsc->scsi_blk_addr = (params[2] << 24) | \
+    hmsc->scsi_blk_addr_in_blks = (params[2] << 24) | \
       (params[3] << 16) | \
         (params[4] <<  8) | \
           params[5];
@@ -601,13 +600,12 @@ static int8_t SCSI_Write10 (USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *pa
     /* check if LBA address is in the right range */
     if(SCSI_CheckAddressRange(pdev,
                               lun,
-                              hmsc->scsi_blk_addr,
+                              hmsc->scsi_blk_addr_in_blks,
                               hmsc->scsi_blk_len) < 0)
     {
       return -1; /* error */      
     }
     
-    hmsc->scsi_blk_addr *= hmsc->scsi_blk_size;
     hmsc->scsi_blk_len  *= hmsc->scsi_blk_size;
     
     /* cases 3,11,13 : Hn,Ho <> D0 */
@@ -656,9 +654,12 @@ static int8_t SCSI_Verify10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *pa
     return -1; /* Error, Verify Mode Not supported*/
   }
   
+  hmsc->scsi_blk_addr_in_blks = (params[2] << 24) | (params[3] << 16) | (params[4] << 8) | params[5];
+  hmsc->scsi_blk_len = (params[7] << 8) | params[8];
+
   if(SCSI_CheckAddressRange(pdev,
                             lun, 
-                            hmsc->scsi_blk_addr, 
+                            hmsc->scsi_blk_addr_in_blks,
                             hmsc->scsi_blk_len) < 0)
   {
     return -1; /* error */      
@@ -705,7 +706,7 @@ static int8_t SCSI_ProcessRead (USBD_HandleTypeDef  *pdev, uint8_t lun)
   
   if( ((USBD_StorageTypeDef *)pdev->pUserData)->Read(lun ,
                               hmsc->bot_data, 
-                              hmsc->scsi_blk_addr / hmsc->scsi_blk_size, 
+                              hmsc->scsi_blk_addr_in_blks,
                               len / hmsc->scsi_blk_size) < 0)
   {
     
@@ -723,7 +724,7 @@ static int8_t SCSI_ProcessRead (USBD_HandleTypeDef  *pdev, uint8_t lun)
              len);
   
   
-  hmsc->scsi_blk_addr   += len; 
+  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size;
   hmsc->scsi_blk_len    -= len;  
   
   /* case 6 : Hi = Di */
@@ -752,7 +753,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
   
   if(((USBD_StorageTypeDef *)pdev->pUserData)->Write(lun ,
                               hmsc->bot_data, 
-                              hmsc->scsi_blk_addr / hmsc->scsi_blk_size, 
+                              hmsc->scsi_blk_addr_in_blks,
                               len / hmsc->scsi_blk_size) < 0)
   {
     SCSI_SenseCode(pdev,
@@ -763,7 +764,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
   }
   
   
-  hmsc->scsi_blk_addr  += len; 
+  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size;
   hmsc->scsi_blk_len   -= len; 
   
   /* case 12 : Ho = Do */

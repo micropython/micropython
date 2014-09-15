@@ -83,7 +83,7 @@ typedef struct {
   uint16_t                 scsi_blk_size;
   uint32_t                 scsi_blk_nbr;
   
-  uint32_t                 scsi_blk_addr;
+  uint32_t                 scsi_blk_addr_in_blks;
   uint32_t                 scsi_blk_len;
 } USBD_MSC_BOT_HandleTypeDef;
 

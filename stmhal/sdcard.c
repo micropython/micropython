@@ -141,54 +141,46 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
     return cardinfo.CardCapacity;
 }
 
-bool sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     // check that dest pointer is aligned on a 4-byte boundary
     if (((uint32_t)dest & 3) != 0) {
-        return false;
+        return SD_ERROR;
     }
 
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
-        return false;
+        return SD_ERROR;
     }
 
     // We must disable IRQs because the SDIO peripheral has a small FIFO
     // buffer and we can't let it fill up in the middle of a read.
     // This will not be needed when SD uses DMA for transfer.
-    __disable_irq();
-    HAL_SD_ErrorTypedef err = HAL_SD_ReadBlocks(&sd_handle, (uint32_t*)dest, (uint64_t)block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
-    __enable_irq();
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    HAL_SD_ErrorTypedef err = HAL_SD_ReadBlocks_BlockNumber(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 
-    if (err != SD_OK) {
-        return false;
-    }
-
-    return true;
+    return err;
 }
 
-bool sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     // check that src pointer is aligned on a 4-byte boundary
     if (((uint32_t)src & 3) != 0) {
-        return false;
+        return SD_ERROR;
     }
 
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
-        return false;
+        return SD_ERROR;
     }
 
     // We must disable IRQs because the SDIO peripheral has a small FIFO
     // buffer and we can't let it drain to empty in the middle of a write.
     // This will not be needed when SD uses DMA for transfer.
-    __disable_irq();
-    HAL_SD_ErrorTypedef err = HAL_SD_WriteBlocks(&sd_handle, (uint32_t*)src, (uint64_t)block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
-    __enable_irq();
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    HAL_SD_ErrorTypedef err = HAL_SD_WriteBlocks_BlockNumber(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 
-    if (err != SD_OK) {
-        return false;
-    }
-
-    return true;
+    return err;
 }
 
 #if 0
@@ -205,7 +197,7 @@ bool sdcard_read_blocks_dma(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
     }
 
     // do the read
-    if (HAL_SD_ReadBlocks_DMA(&sd_handle, (uint32_t*)dest, (uint64_t)block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE) != SD_OK) {
+    if (HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE) != SD_OK) {
         return false;
     }
 
@@ -230,7 +222,7 @@ bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t nu
 
     SD_Error status;
 
-    status = HAL_SD_WriteBlock_DMA(&sd_handle, (uint32_t*)src, (uint64_t)block_num * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE, num_blocks);
+    status = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
     if (status != SD_OK) {
         return false;
     }
@@ -247,14 +239,17 @@ bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t nu
 
 /******************************************************************************/
 // Micro Python bindings
+//
+// Note: these function are a bit ad-hoc at the moment and are mainly intended
+// for testing purposes.  In the future SD should be a proper class with a
+// consistent interface and methods to mount/unmount it.
 
-static mp_obj_t sd_present(mp_obj_t self) {
+STATIC mp_obj_t sd_present(mp_obj_t self) {
     return MP_BOOL(sdcard_is_present());
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_present_obj, sd_present);
 
-static MP_DEFINE_CONST_FUN_OBJ_1(sd_present_obj, sd_present);
-
-static mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
+STATIC mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
     bool result;
     if (mp_obj_is_true(state)) {
         result = sdcard_power_on();
@@ -264,40 +259,59 @@ static mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
     }
     return MP_BOOL(result);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(sd_power_obj, sd_power);
 
-static MP_DEFINE_CONST_FUN_OBJ_2(sd_power_obj, sd_power);
-
-static mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
-    uint8_t *dest = m_new(uint8_t, SDCARD_BLOCK_SIZE);
-    if (!sdcard_read_blocks(dest, mp_obj_get_int(block_num), 1)) {
-        m_free(dest, SDCARD_BLOCK_SIZE);
+STATIC mp_obj_t sd_info(mp_obj_t self) {
+    HAL_SD_ErrorTypedef HAL_SD_Init(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypedef *SDCardInfo);
+    if (sd_handle.Instance == NULL) {
         return mp_const_none;
     }
+    HAL_SD_CardInfoTypedef cardinfo;
+    HAL_SD_Get_CardInfo(&sd_handle, &cardinfo);
+    // cardinfo.SD_csd and cardinfo.SD_cid have lots of info but we don't use them
+    mp_obj_t tuple[3] = {
+        mp_obj_new_int_from_ull(cardinfo.CardCapacity),
+        mp_obj_new_int_from_uint(cardinfo.CardBlockSize),
+        mp_obj_new_int(cardinfo.CardType),
+    };
+    return mp_obj_new_tuple(3, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
+
+STATIC mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
+    uint8_t *dest = m_new(uint8_t, SDCARD_BLOCK_SIZE);
+    mp_uint_t ret = sdcard_read_blocks(dest, mp_obj_get_int(block_num), 1);
+
+    if (ret != 0) {
+        m_free(dest, SDCARD_BLOCK_SIZE);
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "sdcard_read_blocks failed [%u]", ret));
+    }
+
     return mp_obj_new_bytearray_by_ref(SDCARD_BLOCK_SIZE, dest);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(sd_read_obj, sd_read);
 
-static MP_DEFINE_CONST_FUN_OBJ_2(sd_read_obj, sd_read);
-
-static mp_obj_t sd_write(mp_obj_t self, mp_obj_t block_num, mp_obj_t source) {
+STATIC mp_obj_t sd_write(mp_obj_t self, mp_obj_t block_num, mp_obj_t data) {
     mp_buffer_info_t bufinfo;
-    uint8_t tmp[1];
-
-    pyb_buf_get_for_send(source, &bufinfo, tmp);
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len % SDCARD_BLOCK_SIZE != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "writes must be aligned to SDCARD_BLOCK_SIZE (%d) bytes", SDCARD_BLOCK_SIZE));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "writes must be a multiple of %d bytes", SDCARD_BLOCK_SIZE));
     }
 
-    if (!sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "sdcard_write_blocks failed"));
+    mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
+
+    if (ret != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "sdcard_write_blocks failed [%u]", ret));
     }
+
     return mp_const_none;
 }
-
-static MP_DEFINE_CONST_FUN_OBJ_3(sd_write_obj, sd_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(sd_write_obj, sd_write);
 
 STATIC const mp_map_elem_t sdcard_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_present), (mp_obj_t)&sd_present_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_power), (mp_obj_t)&sd_power_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&sd_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&sd_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&sd_write_obj },
 };

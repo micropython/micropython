@@ -127,7 +127,7 @@ DRESULT disk_read (
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
-            if (!sdcard_read_blocks(buff, sector, count)) {
+            if (sdcard_read_blocks(buff, sector, count) != 0) {
                 return RES_ERROR;
             }
             return RES_OK;
@@ -160,7 +160,7 @@ DRESULT disk_write (
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
-            if (!sdcard_write_blocks(buff, sector, count)) {
+            if (sdcard_write_blocks(buff, sector, count) != 0) {
                 return RES_ERROR;
             }
             return RES_OK;
