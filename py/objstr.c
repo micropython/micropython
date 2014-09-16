@@ -92,9 +92,41 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
     print(env, "%c", quote_char);
 }
 
+#if MICROPY_PY__JSON && !MICROPY_PY_BUILTINS_STR_UNICODE
+STATIC void str_print_json(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, mp_uint_t str_len) {
+    print(env, "\"");
+    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+        if (*s == '"' || *s == '\\' || *s == '/') {
+            print(env, "\\%c", *s);
+        } else if (32 <= *s && *s <= 126) {
+            print(env, "%c", *s);
+        } else if (*s == '\b') {
+            print(env, "\\b");
+        } else if (*s == '\f') {
+            print(env, "\\f");
+        } else if (*s == '\n') {
+            print(env, "\\n");
+        } else if (*s == '\r') {
+            print(env, "\\r");
+        } else if (*s == '\t') {
+            print(env, "\\t");
+        } else {
+            print(env, "\\u%04x", *s);
+        }
+    }
+    print(env, "\"");
+}
+#endif
+
 STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
+    #if MICROPY_PY__JSON && !MICROPY_PY_BUILTINS_STR_UNICODE
+    if (kind == PRINT_JSON && !is_bytes) {
+        str_print_json(print, env, str_data, str_len);
+        return;
+    }
+    #endif
     if (kind == PRINT_STR && !is_bytes) {
         print(env, "%.*s", str_len, str_data);
     } else {

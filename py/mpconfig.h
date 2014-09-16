@@ -390,6 +390,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_ZLIBD (0)
 #endif
 
+#ifndef MICROPY_PY__JSON
+#define MICROPY_PY__JSON (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 

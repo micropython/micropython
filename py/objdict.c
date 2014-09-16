@@ -44,6 +44,9 @@ STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw
 
 STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
+    if (!(MICROPY_PY__JSON && kind == PRINT_JSON)) {
+        kind = PRINT_REPR;
+    }
     bool first = true;
     print(env, "{");
     mp_obj_t *dict_iter = mp_obj_new_dict_iterator(self, 0);
@@ -53,9 +56,9 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
             print(env, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next->key, PRINT_REPR);
+        mp_obj_print_helper(print, env, next->key, kind);
         print(env, ": ");
-        mp_obj_print_helper(print, env, next->value, PRINT_REPR);
+        mp_obj_print_helper(print, env, next->value, kind);
     }
     print(env, "}");
 }

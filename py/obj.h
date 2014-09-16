@@ -187,7 +187,8 @@ typedef enum {
     PRINT_STR = 0,
     PRINT_REPR = 1,
     PRINT_EXC = 2, // Special format for printing exception in unhandled exception message
-    PRINT_EXC_SUBCLASS = 4, // Internal flag for printing exception subclasses
+    PRINT_JSON = 3,
+    PRINT_EXC_SUBCLASS = 0x80, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o, mp_print_kind_t kind);

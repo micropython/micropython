@@ -463,3 +463,8 @@ Q(deleter)
 Q(zlibd)
 Q(decompress)
 #endif
+
+#if MICROPY_PY__JSON
+Q(_json)
+Q(dumps)
+#endif
