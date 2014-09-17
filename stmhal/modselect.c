@@ -174,7 +174,7 @@ STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 
-/// \class Poll
+/// \class Poll - poll class
 
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;

@@ -168,6 +168,8 @@ STATIC mp_obj_t format_net_addr(uint8_t *ip, mp_uint_t port) {
 /******************************************************************************/
 // Micro Python bindings
 
+/// \class WIZnet5k - driver for WIZnet5x00 Ethernet modules
+
 STATIC void wiznet5k_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "WIZnet5k()");
 }

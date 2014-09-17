@@ -33,6 +33,8 @@
 
 #include MICROPY_HAL_H
 
+/// \moduleref pyb
+
 /// \function wfi()
 /// Wait for an interrupt.
 /// This executies a `wfi` instruction which reduces power consumption

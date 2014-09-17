@@ -347,7 +347,7 @@ class Doc:
 regex_descr = r'(?P<descr>.*)'
 
 doc_regexs = (
-    (Doc.process_module, re.compile(r'\\module (?P<id>[a-z]+) - ' + regex_descr + r'$')),
+    (Doc.process_module, re.compile(r'\\module (?P<id>[a-z][a-z0-9]*) - ' + regex_descr + r'$')),
     (Doc.process_moduleref, re.compile(r'\\moduleref (?P<id>[a-z]+)$')),
     (Doc.process_function, re.compile(r'\\function (?P<id>[a-z0-9_]+)(?P<args>\(.*\))$')),
     (Doc.process_classmethod, re.compile(r'\\classmethod (?P<id>\\?[a-z0-9_]+)(?P<args>\(.*\))$')),
