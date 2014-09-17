@@ -41,10 +41,18 @@ typedef struct _mp_obj_bool_t {
 
 STATIC void bool_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_bool_t *self = self_in;
-    if (self->value) {
-        print(env, "True");
+    if (MICROPY_PY__JSON && kind == PRINT_JSON) {
+        if (self->value) {
+            print(env, "true");
+        } else {
+            print(env, "false");
+        }
     } else {
-        print(env, "False");
+        if (self->value) {
+            print(env, "True");
+        } else {
+            print(env, "False");
+        }
     }
 }
 
