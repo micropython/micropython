@@ -89,3 +89,4 @@ extern struct _dummy_t mp_sys_stderr_obj;
 // extmod modules
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_zlibd;
+extern const mp_obj_module_t mp_module_ujson;

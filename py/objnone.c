@@ -38,7 +38,11 @@ typedef struct _mp_obj_none_t {
 } mp_obj_none_t;
 
 STATIC void none_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    print(env, "None");
+    if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
+        print(env, "null");
+    } else {
+        print(env, "None");
+    }
 }
 
 STATIC mp_obj_t none_unary_op(mp_uint_t op, mp_obj_t o_in) {

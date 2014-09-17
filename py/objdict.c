@@ -60,6 +60,9 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, mp_uint_t *cur) {
 STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = self_in;
     bool first = true;
+    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+        kind = PRINT_REPR;
+    }
     print(env, "{");
     mp_uint_t cur = 0;
     mp_map_elem_t *next = NULL;
@@ -68,9 +71,9 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
             print(env, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next->key, PRINT_REPR);
+        mp_obj_print_helper(print, env, next->key, kind);
         print(env, ": ");
-        mp_obj_print_helper(print, env, next->value, PRINT_REPR);
+        mp_obj_print_helper(print, env, next->value, kind);
     }
     print(env, "}");
 }

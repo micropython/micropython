@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import platform
 import argparse
 from glob import glob
 
@@ -36,6 +37,11 @@ def run_tests(pyb, tests, args):
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
+
+    # Some tests are known to fail on 64-bit machines
+    if pyb is None and platform.architecture()[0] == '64bit':
+        skip_tests.add('extmod/uctypes_ptr_le.py')
+        skip_tests.add('extmod/uctypes_ptr_native_le.py')
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
@@ -153,10 +159,10 @@ def main():
         if args.test_dirs is None:
             if pyb is None:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'unix')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'extmod', 'unix')
             else:
                 # run pyboard tests
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
