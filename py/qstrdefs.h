@@ -86,6 +86,8 @@ Q(align)
 Q(data)
 #endif
 
+Q(builtins)
+
 Q(Ellipsis)
 Q(StopIteration)
 

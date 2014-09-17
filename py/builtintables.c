@@ -160,8 +160,15 @@ const mp_obj_dict_t mp_builtin_object_dict_obj = {
     },
 };
 
+STATIC const mp_obj_module_t mp_module_builtins = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_builtins,
+    .globals = (mp_obj_dict_t*)&mp_builtin_object_dict_obj,
+};
+
 STATIC const mp_map_elem_t mp_builtin_module_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___main__), (mp_obj_t)&mp_module___main__ },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_builtins), (mp_obj_t)&mp_module_builtins },
     { MP_OBJ_NEW_QSTR(MP_QSTR_micropython), (mp_obj_t)&mp_module_micropython },
 
 #if MICROPY_PY_ARRAY
