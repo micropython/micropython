@@ -247,6 +247,11 @@ Q(calibration)
 Q(angle)
 Q(speed)
 
+// for fatfs module
+Q(fatfs)
+Q(label)
+Q(serial)
+
 // for os module
 Q(os)
 Q(/)
