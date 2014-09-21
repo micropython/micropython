@@ -100,7 +100,7 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                 break;
             case '"':
                 vstr_reset(&vstr);
-                for (s++; s < top && *s != '"'; s++) {
+                for (s++; s < top && *s != '"';) {
                     byte c = *s;
                     if (c == '\\') {
                         s++;
@@ -111,10 +111,24 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                             case 'n': c = 0x0a; break;
                             case 'r': c = 0x0d; break;
                             case 't': c = 0x09; break;
-                            case 'u': if (s + 4 >= top) { goto fail; } else { assert(0); } //vstr_add_char(&vstr, s[0] 
+                            case 'u': {
+                                if (s + 4 >= top) { goto fail; }
+                                mp_uint_t num = 0;
+                                for (int i = 0; i < 4; i++) {
+                                    c = (*++s | 0x20) - '0';
+                                    if (c > 9) {
+                                        c -= ('a' - ('9' + 1));
+                                    }
+                                    num = (num << 4) | c;
+                                }
+                                vstr_add_char(&vstr, num);
+                                goto str_cont;
+                            }
                         }
                     }
                     vstr_add_byte(&vstr, c);
+                str_cont:
+                    s++;
                 }
                 if (s == top) {
                     goto fail;
