@@ -104,7 +104,7 @@ typedef enum {
 STATIC const struct {
     qstr        name;
     uint32_t    oc_mode;
-} gChannelMode[] = {
+} channel_mode_info[] = {
     { MP_QSTR_PWM,                TIM_OCMODE_PWM1 },
     { MP_QSTR_PWM_INVERTED,       TIM_OCMODE_PWM2 },
     { MP_QSTR_OC_TIMING,          TIM_OCMODE_TIMING },
@@ -147,7 +147,7 @@ TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
 // Used to divide down TIM3 and periodically call the flash storage IRQ
-static uint32_t tim3_counter = 0;
+STATIC uint32_t tim3_counter = 0;
 
 // Used to do callbacks to Python code on interrupt
 STATIC pyb_timer_obj_t *pyb_timer_obj_all[14];
@@ -265,6 +265,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 /******************************************************************************/
 /* Micro Python bindings                                                      */
+
+STATIC const mp_obj_type_t pyb_timer_channel_type;
 
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
@@ -507,8 +509,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
 /// \method channel(channel, mode, ...)
 ///
-/// If only a channel nunber is passed, then a previously initialized channel
-/// object is returned.
+/// If only a channel number is passed, then a previously initialized channel
+/// object is returned (or `None` if there is no previous channel).
 ///
 /// Othwerwise, a TimerChannel object is initialized and returned.
 ///
@@ -540,7 +542,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///
 /// Keyword arguments for Timer.PWM modes:
 ///
-///   - 'pulse_width' - determines the initial pulse width to use.
+///   - `pulse_width` - determines the initial pulse width value to use.
+///   - `pulse_width_ratio` - determines the initial pulse width ratio to use.
 ///
 /// Keyword arguments for Timer.OC modes:
 ///
@@ -563,17 +566,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     ch2 = timer.channel(2, pyb.Timer.PWM, pin=pyb.Pin.board.X2, pulse_width=210000)
 ///     ch3 = timer.channel(3, pyb.Timer.PWM, pin=pyb.Pin.board.X3, pulse_width=420000)
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
-    { MP_QSTR_callback,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pin,              MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_compare,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_polarity,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_callback,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pin,               MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pulse_width,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_pulse_width_ratio, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_compare,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_polarity,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 };
 #define PYB_TIMER_CHANNEL_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_channel_args)
 
 STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, n_args - 3, 3, MP_OBJ_FUN_ARGS_MAX, true);
-
     pyb_timer_obj_t *self = args[0];
     mp_int_t channel = mp_obj_get_int(args[1]);
 
@@ -591,8 +593,10 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         prev_chan = chan;
         chan = chan->next;
     }
-    if (kw_args->used == 0) {
-        // Return the previously allocated channel
+
+    // If only the channel number is given return the previously allocated
+    // channel (or None if no previous channel).
+    if (n_args == 2) {
         if (chan) {
             return chan;
         }
@@ -658,8 +662,24 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_PWM_NORMAL:
         case CHANNEL_MODE_PWM_INVERTED: {
             TIM_OC_InitTypeDef oc_config;
-            oc_config.OCMode       = gChannelMode[chan->mode].oc_mode;
-            oc_config.Pulse        = vals[2].u_int;
+            oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
+            if (vals[2].u_int != 0xffffffff) {
+                // absolute pulse width value given
+                oc_config.Pulse = vals[2].u_int;
+            } else if (vals[3].u_obj != mp_const_none) {
+                // pulse width ratio given
+                uint32_t period = (__HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self)) + 1;
+                uint32_t cmp = mp_obj_get_float(vals[3].u_obj) * period;
+                if (cmp < 0) {
+                    cmp = 0;
+                } else if (cmp > period) {
+                    cmp = period;
+                }
+                oc_config.Pulse = cmp;
+            } else {
+                // nothing given, default to pulse width of 0
+                oc_config.Pulse = 0;
+            }
             oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
             oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
             oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
@@ -682,9 +702,9 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_OC_FORCED_ACTIVE:
         case CHANNEL_MODE_OC_FORCED_INACTIVE: {
             TIM_OC_InitTypeDef oc_config;
-            oc_config.OCMode       = gChannelMode[chan->mode].oc_mode;
-            oc_config.Pulse        = vals[3].u_int;
-            oc_config.OCPolarity   = vals[4].u_int;
+            oc_config.OCMode       = channel_mode_info[chan->mode].oc_mode;
+            oc_config.Pulse        = vals[4].u_int;
+            oc_config.OCPolarity   = vals[5].u_int;
             if (oc_config.OCPolarity == 0xffffffff) {
                 oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
             }
@@ -708,7 +728,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_IC: {
             TIM_IC_InitTypeDef ic_config;
 
-            ic_config.ICPolarity  = vals[4].u_int;
+            ic_config.ICPolarity  = vals[5].u_int;
             if (ic_config.ICPolarity == 0xffffffff) {
                 ic_config.ICPolarity = TIM_ICPOLARITY_RISING;
             }
@@ -734,11 +754,11 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
 
     return chan;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 3, pyb_timer_channel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 
 /// \method counter([value])
 /// Get or set the timer counter.
-mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -753,7 +773,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_time
 
 /// \method prescaler([value])
 /// Get or set the prescaler for the timer.
-mp_obj_t pyb_timer_prescaler(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_prescaler(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -768,7 +788,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_ti
 
 /// \method period([value])
 /// Get or set the period of the timer.
-mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -852,7 +872,7 @@ STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ..
     print(env, "TimerChannel(timer=%u, channel=%u, mode=%s)",
           self->timer->tim_id,
           self->channel,
-          qstr_str(gChannelMode[self->mode].name));
+          qstr_str(channel_mode_info[self->mode].name));
 }
 
 /// \method capture([value])
@@ -869,7 +889,7 @@ STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ..
 /// Get or set the pulse width value associated with a channel.
 /// capture, compare, and pulse_width are all aliases for the same function.
 /// pulse_width is the logical name to use when the channel is in PWM mode.
-STATIC mp_obj_t pyb_timer_channel_capture_compare(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     if (self->channel == 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d no channel specified", self->timer->tim_id));
@@ -884,6 +904,35 @@ STATIC mp_obj_t pyb_timer_channel_capture_compare(uint n_args, const mp_obj_t *a
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj, 1, 2, pyb_timer_channel_capture_compare);
+
+/// \method pulse_width_ratio([value])
+/// Get or set the pulse width ratio associated with a channel.  The value is
+/// a floating-point number between 0.0 and 1.0, and is relative to the period
+/// of the timer associated with this channel.  For example, a ratio of 0.5
+/// would be a 50% duty cycle.
+STATIC mp_obj_t pyb_timer_channel_pulse_width_ratio(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_channel_obj_t *self = args[0];
+    if (self->channel == 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d no channel specified", self->timer->tim_id));
+    }
+    uint32_t period = (__HAL_TIM_GetAutoreload(&self->timer->tim) & TIMER_CNT_MASK(self->timer)) + 1;
+    if (n_args == 1) {
+        // get
+        uint32_t cmp = __HAL_TIM_GetCompare(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer);
+        return mp_obj_new_float((float)cmp / (float)period);
+    } else {
+        // set
+        uint32_t cmp = mp_obj_get_float(args[1]) * period;
+        if (cmp < 0) {
+            cmp = 0;
+        } else if (cmp > period) {
+            cmp = period;
+        }
+        __HAL_TIM_SetCompare(&self->timer->tim, TIMER_CHANNEL(self), cmp & TIMER_CNT_MASK(self->timer));
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_ratio_obj, 1, 2, pyb_timer_channel_pulse_width_ratio);
 
 /// \method callback(fun)
 /// Set the function to be called when the timer channel triggers.
@@ -927,19 +976,20 @@ STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_channel_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width_ratio), (mp_obj_t)&pyb_timer_channel_pulse_width_ratio_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_capture), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compare), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 
-const mp_obj_type_t pyb_timer_channel_type = {
+STATIC const mp_obj_type_t pyb_timer_channel_type = {
     { &mp_type_type },
     .name = MP_QSTR_TimerChannel,
     .print = pyb_timer_channel_print,
     .locals_dict = (mp_obj_t)&pyb_timer_channel_locals_dict,
 };
 
-void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_obj_t callback) {
+STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_obj_t callback) {
     uint32_t irq_mask = TIMER_IRQ_MASK(channel);
 
     if (__HAL_TIM_GET_FLAG(&tim->tim, irq_mask) != RESET) {
@@ -981,8 +1031,9 @@ void timer_irq_handler(uint tim_id) {
         pyb_timer_obj_t *tim = pyb_timer_obj_all[tim_id - 1];
 
         if (tim == NULL) {
-            // timer object has not been set, so we can't do anything
-            printf("No timer object for id=%d\n", tim_id);
+            // Timer object has not been set, so we can't do anything.
+            // This can happen under normal circumstances for timers like
+            // 1 & 10 which use the same IRQ.
             return;
         }
 

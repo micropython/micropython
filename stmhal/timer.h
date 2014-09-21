@@ -34,7 +34,6 @@ extern TIM_HandleTypeDef TIM5_Handle;
 extern TIM_HandleTypeDef TIM6_Handle;
 
 extern const mp_obj_type_t pyb_timer_type;
-extern const mp_obj_type_t pyb_timer_channel_type;
 
 void timer_init0(void);
 void timer_tim3_init(void);

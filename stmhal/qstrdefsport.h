@@ -175,6 +175,7 @@ Q(BOTH)
 // for TimerChannel class
 Q(TimerChannel)
 Q(pulse_width)
+Q(pulse_width_ratio)
 Q(compare)
 Q(capture)
 Q(polarity)
