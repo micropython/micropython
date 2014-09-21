@@ -20,6 +20,12 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_CMATH            (1)
 
+#define MICROPY_TIMER_REG           (0)
+#define MICROPY_REG                 (MICROPY_TIMER_REG)
+
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
+
 // extra built in names to add to the global namespace
 extern const struct _mp_obj_fun_builtin_t mp_builtin_help_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;

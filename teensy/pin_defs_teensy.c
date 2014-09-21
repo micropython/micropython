@@ -14,10 +14,13 @@
 // GPIO_MODE_AF_PP, GPIO_MODE_AF_OD, or GPIO_MODE_ANALOG.
 
 uint32_t pin_get_mode(const pin_obj_t *pin) {
+    if (pin->gpio == NULL) {
+        // Analog only pin
+        return GPIO_MODE_ANALOG;
+    }
     volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin);
     uint32_t pcr = *port_pcr;
-    uint32_t af = (*port_pcr & PORT_PCR_MUX_MASK) >> 8;;
-
+    uint32_t af = (pcr & PORT_PCR_MUX_MASK) >> 8;
     if (af == 0) {
         return GPIO_MODE_ANALOG;
     }
@@ -41,10 +44,18 @@ uint32_t pin_get_mode(const pin_obj_t *pin) {
 // be one of GPIO_NOPULL, GPIO_PULLUP, or GPIO_PULLDOWN.
 
 uint32_t pin_get_pull(const pin_obj_t *pin) {
-    volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin);
+    if (pin->gpio == NULL) {
+        // Analog only pin
+        return GPIO_NOPULL;
+    }
+    volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin); 
 
     uint32_t pcr = *port_pcr;
-    if (pcr & PORT_PCR_PE) {
+    uint32_t af = (pcr & PORT_PCR_MUX_MASK) >> 8;
+
+    // pull is only valid for digital modes (hence the af > 0 test)
+
+    if (af > 0 && (pcr & PORT_PCR_PE) != 0) {
         if (pcr & PORT_PCR_PS) {
             return GPIO_PULLUP;
         }
@@ -56,6 +67,10 @@ uint32_t pin_get_pull(const pin_obj_t *pin) {
 // Returns the af (alternate function) index currently set for a pin.
 
 uint32_t pin_get_af(const pin_obj_t *pin) {
+    if (pin->gpio == NULL) {
+        // Analog only pin
+        return 0;
+    }
     volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin);
     return (*port_pcr & PORT_PCR_MUX_MASK) >> 8;
 }

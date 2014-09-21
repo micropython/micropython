@@ -42,8 +42,11 @@ CFLAGS += -Og -ggdb
 else
 CFLAGS += -Os #-DNDEBUG
 endif
+CFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS += -Wl,--gc-sections
 
 SRC_C = \
+	hal_ftm.c \
 	hal_gpio.c \
 	help.c \
 	import.c \
@@ -54,7 +57,9 @@ SRC_C = \
 	memzip.c \
 	modpyb.c \
 	pin_defs_teensy.c \
+	reg.c \
 	teensy_hal.c \
+	timer.c \
 	uart.c \
 	usb.c \
 
@@ -141,6 +146,7 @@ GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -153,7 +159,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 # both pins_$(BOARD).c and pins.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: teensy_%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)
