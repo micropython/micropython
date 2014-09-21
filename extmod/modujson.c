@@ -49,13 +49,26 @@ STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
 
+// This function implements a simple non-recursive JSON parser.
+//
+// The JSON specification is at http://www.ietf.org/rfc/rfc4627.txt
+// The parser here will parse any valid JSON and return the correct
+// corresponding Python object.  It allows through a superset of JSON, since
+// it treats commas and colons as "whitespace", and doesn't care if
+// brackets/braces are correctly paired.  It will raise a ValueError if the
+// input is outside it's specs.
+//
+// Most of the work is parsing the primitives (null, false, true, numbers,
+// strings).  It does 1 pass over the input string and so is easily extended to
+// being able to parse from a non-seekable stream.  It tries to be fast and
+// small in code size, while not using more RAM than necessary.
 STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
     mp_uint_t len;
     const char *s = mp_obj_str_get_data(obj, &len);
     const char *top = s + len;
     vstr_t vstr;
     vstr_init(&vstr, 8);
-    mp_obj_list_t stack;
+    mp_obj_list_t stack; // we use a list as a simple stack for nested JSON
     stack.len = 0;
     stack.items = NULL;
     mp_obj_t stack_top = MP_OBJ_NULL;
