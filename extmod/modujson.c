@@ -55,9 +55,11 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
     const char *top = s + len;
     vstr_t vstr;
     vstr_init(&vstr, 8);
-    mp_obj_list_t *stack = NULL;
+    mp_obj_list_t stack;
+    stack.len = 0;
+    stack.items = NULL;
     mp_obj_t stack_top = MP_OBJ_NULL;
-    mp_obj_type_t *stack_top_type= NULL;
+    mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
     for (;;) {
         cont:
@@ -104,11 +106,11 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                         s++;
                         c = *s;
                         switch (c) {
-                            case 'b': c = '\b'; break;
-                            case 'f': c = '\f'; break;
-                            case 'n': c = '\n'; break;
-                            case 'r': c = '\r'; break;
-                            case 't': c = '\t'; break;
+                            case 'b': c = 0x08; break;
+                            case 'f': c = 0x0c; break;
+                            case 'n': c = 0x0a; break;
+                            case 'r': c = 0x0d; break;
+                            case 't': c = 0x09; break;
                             case 'u': if (s + 4 >= top) { goto fail; } else { assert(0); } //vstr_add_char(&vstr, s[0] 
                         }
                     }
@@ -158,12 +160,12 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                     // no object at all
                     goto fail;
                 }
-                if (stack == NULL || stack->len == 0) {
+                if (stack.len == 0) {
                     // finished; compound object
                     goto success;
                 }
-                stack->len -= 1;
-                stack_top = stack->items[stack->len];
+                stack.len -= 1;
+                stack_top = stack.items[stack.len];
                 stack_top_type = mp_obj_get_type(stack_top);
                 goto cont;
             }
@@ -193,10 +195,11 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                 }
             }
             if (enter) {
-                if (stack == NULL) {
-                    stack = mp_obj_new_list(1, &stack_top);
+                if (stack.items == NULL) {
+                    mp_obj_list_init(&stack, 1);
+                    stack.items[0] = stack_top;
                 } else {
-                    mp_obj_list_append(stack, stack_top);
+                    mp_obj_list_append(&stack, stack_top);
                 }
                 stack_top = next;
                 stack_top_type = mp_obj_get_type(stack_top);
@@ -212,7 +215,7 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
         // unexpected chars
         goto fail;
     }
-    if (stack != NULL && stack->len != 0) {
+    if (stack.len != 0) {
         goto fail;
     }
     vstr_clear(&vstr);
