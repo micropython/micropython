@@ -469,4 +469,5 @@ Q(decompress)
 #if MICROPY_PY_UJSON
 Q(ujson)
 Q(dumps)
+Q(loads)
 #endif

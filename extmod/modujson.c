@@ -30,8 +30,11 @@
 
 #include "mpconfig.h"
 #include "misc.h"
+#include "nlr.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objlist.h"
+#include "parsenum.h"
 #include "runtime.h"
 
 #if MICROPY_PY_UJSON
@@ -46,9 +49,184 @@ STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
 
+STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
+    mp_uint_t len;
+    const char *s = mp_obj_str_get_data(obj, &len);
+    const char *top = s + len;
+    vstr_t vstr;
+    vstr_init(&vstr, 8);
+    mp_obj_list_t *stack = NULL;
+    mp_obj_t stack_top = MP_OBJ_NULL;
+    mp_obj_type_t *stack_top_type= NULL;
+    mp_obj_t stack_key = MP_OBJ_NULL;
+    for (;;) {
+        cont:
+        if (s == top) {
+            break;
+        }
+        mp_obj_t next = MP_OBJ_NULL;
+        bool enter = false;
+        switch (*s) {
+            case ',':
+            case ':':
+            case ' ':
+                s += 1;
+                goto cont;
+            case 'n':
+                if (s + 3 < top && s[1] == 'u' && s[2] == 'l' && s[3] == 'l') {
+                    s += 4;
+                    next = mp_const_none;
+                } else {
+                    goto fail;
+                }
+                break;
+            case 'f':
+                if (s + 4 < top && s[1] == 'a' && s[2] == 'l' && s[3] == 's' && s[4] == 'e') {
+                    s += 5;
+                    next = mp_const_false;
+                } else {
+                    goto fail;
+                }
+                break;
+            case 't':
+                if (s + 3 < top && s[1] == 'r' && s[2] == 'u' && s[3] == 'e') {
+                    s += 4;
+                    next = mp_const_true;
+                } else {
+                    goto fail;
+                }
+                break;
+            case '"':
+                vstr_reset(&vstr);
+                for (s++; s < top && *s != '"'; s++) {
+                    byte c = *s;
+                    if (c == '\\') {
+                        s++;
+                        c = *s;
+                        switch (c) {
+                            case 'b': c = '\b'; break;
+                            case 'f': c = '\f'; break;
+                            case 'n': c = '\n'; break;
+                            case 'r': c = '\r'; break;
+                            case 't': c = '\t'; break;
+                            case 'u': if (s + 4 >= top) { goto fail; } else { assert(0); } //vstr_add_char(&vstr, s[0] 
+                        }
+                    }
+                    vstr_add_byte(&vstr, c);
+                }
+                if (s == top) {
+                    goto fail;
+                }
+                s++;
+                next = mp_obj_new_str(vstr.buf, vstr.len, false);
+                break;
+            case '-':
+            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+                bool flt = false;
+                vstr_reset(&vstr);
+                for (; s < top; s++) {
+                    if (*s == '.' || *s == 'E' || *s == 'e') {
+                        flt = true;
+                    } else if (*s == '-' || unichar_isdigit(*s)) {
+                        // pass
+                    } else {
+                        break;
+                    }
+                    vstr_add_byte(&vstr, *s);
+                }
+                if (flt) {
+                    next = mp_parse_num_decimal(vstr.buf, vstr.len, false, false);
+                } else {
+                    next = mp_parse_num_integer(vstr.buf, vstr.len, 10);
+                }
+                break;
+            }
+            case '[':
+                next = mp_obj_new_list(0, NULL);
+                enter = true;
+                s += 1;
+                break;
+            case '{':
+                next = mp_obj_new_dict(0);
+                enter = true;
+                s += 1;
+                break;
+            case '}':
+            case ']': {
+                s += 1;
+                if (stack_top == MP_OBJ_NULL) {
+                    // no object at all
+                    goto fail;
+                }
+                if (stack == NULL || stack->len == 0) {
+                    // finished; compound object
+                    goto success;
+                }
+                stack->len -= 1;
+                stack_top = stack->items[stack->len];
+                stack_top_type = mp_obj_get_type(stack_top);
+                goto cont;
+            }
+            default:
+                goto fail;
+        }
+        if (stack_top == MP_OBJ_NULL) {
+            stack_top = next;
+            stack_top_type = mp_obj_get_type(stack_top);
+            if (!enter) {
+                // finished; single primitive only
+                goto success;
+            }
+        } else {
+            // append to list or dict
+            if (stack_top_type == &mp_type_list) {
+                mp_obj_list_append(stack_top, next);
+            } else {
+                if (stack_key == MP_OBJ_NULL) {
+                    stack_key = next;
+                    if (enter) {
+                        goto fail;
+                    }
+                } else {
+                    mp_obj_dict_store(stack_top, stack_key, next);
+                    stack_key = MP_OBJ_NULL;
+                }
+            }
+            if (enter) {
+                if (stack == NULL) {
+                    stack = mp_obj_new_list(1, &stack_top);
+                } else {
+                    mp_obj_list_append(stack, stack_top);
+                }
+                stack_top = next;
+                stack_top_type = mp_obj_get_type(stack_top);
+            }
+        }
+    }
+    success:
+    // eat trailing whitespace
+    while (s < top && unichar_isspace(*s)) {
+        s++;
+    }
+    if (s < top) {
+        // unexpected chars
+        goto fail;
+    }
+    if (stack != NULL && stack->len != 0) {
+        goto fail;
+    }
+    vstr_clear(&vstr);
+    return stack_top;
+
+    fail:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "syntax error in JSON"));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);
+
 STATIC const mp_map_elem_t mp_module_ujson_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ujson) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_dumps), (mp_obj_t)&mod_ujson_dumps_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_loads), (mp_obj_t)&mod_ujson_loads_obj },
 };
 
 STATIC const mp_obj_dict_t mp_module_ujson_globals = {
