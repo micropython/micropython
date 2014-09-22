@@ -34,6 +34,7 @@ SRC_C = \
 	unix/main.c \
 	unix/file.c \
 	unix/input.c \
+	unix/modos.c \
 	unix/modtime.c \
 	unix/gccollect.c \
 	realpath.c \

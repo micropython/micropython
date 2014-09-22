@@ -6,7 +6,7 @@
   <ItemGroup>
     <ClCompile Include="$(PyBaseDir)py\*.c" />
     <ClCompile Include="$(PyBaseDir)extmod\*.c" />
-    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\modtermios.c;$(PyBaseDir)unix\seg_helpers.c" />
+    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\alloc.c;$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\modtermios.c;$(PyBaseDir)unix\seg_helpers.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
   </ItemGroup>
