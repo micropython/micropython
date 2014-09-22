@@ -46,6 +46,9 @@ PYTHON = python
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
+ifeq ($(UNAME_S),Darwin)
+CC = $(CROSS_COMPILE)clang
+endif
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
