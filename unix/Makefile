@@ -30,6 +30,13 @@ COPT = -Os #-DNDEBUG
 endif
 
 LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref $(LDFLAGS_EXTRA)
+ifeq ($(UNAME_S),Darwin)
+# Force OSX to use clang even if gcc is present, value set in mkenv.mk
+# must be ovewritten here to avoid breaking stmhal build on OSX
+CC = clang
+# Use clang syntax for LDFLAGS
+LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map $(LDFLAGS_EXTRA)
+endif
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
@@ -80,7 +87,7 @@ SRC_C = \
 
 ifeq ($(UNAME_S),Darwin)
 
-LDFLAGS+ = -Wl,-order_file,$(BUILD)/order.def
+LDFLAGS += -Wl,-order_file,$(BUILD)/order.def
 
 # Must be the last file in list of sources
 SRC_C += seg_helpers.c
@@ -92,7 +99,7 @@ seg_helpers.c: $(BUILD)/order.def
 $(BUILD)/order.def:
 	$(Q)echo "seg_helpers.o: ___bss_start" > $@
 endif
-	
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk
