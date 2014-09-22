@@ -6,10 +6,28 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+# If you set USE_ARDUINO_TOOLCHAIN=1 then this makefile will attempt to use
+# the toolchain that comes with Teensyduino
+ifeq ($(USE_ARDUINO_TOOLCHAIN),)
+USE_ARDUINO_TOOLCHAIN = 0
+endif
+
+ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
+ifeq ($(ARDUINO),)
+$(error USE_ARDUINO_TOOLCHAIN requires that ARDUINO be set)
+endif
+endif
+
+ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
+$(info Using ARDUINO toolchain)
+CROSS_COMPILE = $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
+else
+$(info Using toolchain from PATH)
 CROSS_COMPILE = arm-none-eabi-
+endif
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
+CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
 INC =  -I.
 INC += -I$(PY_SRC)
@@ -18,11 +36,21 @@ INC += -I$(BUILD)
 INC += -Icore
 
 CFLAGS = $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
-LDFLAGS = -nostdlib -T mk20dx256.ld
+LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
-LIBGCC_FILE_NAME = $(shell $(CC) -print-libgcc-file-name)
-LIBM_FILE_NAME   = $(shell $(CC) -print-file-name=libm.a)
-LIBC_FILE_NAME   = $(shell $(CC) -print-file-name=libc.a)
+ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
+
+LIBGCC_FILE_NAME = $(ARDUINO)/hardware/tools/arm-none-eabi/lib/gcc/arm-none-eabi/4.7.2/thumb2/libgcc.a
+LIBM_FILE_NAME   = $(ARDUINO)/hardware/tools/arm-none-eabi/arm-none-eabi/lib/thumb2/libm.a
+LIBC_FILE_NAME   = $(ARDUINO)/hardware/tools/arm-none-eabi/arm-none-eabi/lib/thumb2/libc.a
+
+else
+
+LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
+LIBC_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
+
+endif
 
 #$(info %%%%% LIBGCC_FILE_NAME = $(LIBGCC_FILE_NAME))
 #$(info %%%%% LIBM_FILE_NAME = $(LIBM_FILE_NAME))

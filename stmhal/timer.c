@@ -276,8 +276,8 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
     } else {
         print(env, "Timer(%u, prescaler=%u, period=%u, mode=%s, div=%u)",
             self->tim_id,
-            self->tim.Init.Prescaler,
-            self->tim.Init.Period,
+            self->tim.Instance->PSC & 0xffff,
+            __HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self),
             self->tim.Init.CounterMode == TIM_COUNTERMODE_UP     ? "UP" :
             self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN   ? "DOWN" : "CENTER",
             self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV4 ? 4 :
@@ -543,7 +543,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 /// Keyword arguments for Timer.PWM modes:
 ///
 ///   - `pulse_width` - determines the initial pulse width value to use.
-///   - `pulse_width_ratio` - determines the initial pulse width ratio to use.
+///   - `pulse_width_percent` - determines the initial pulse width percentage to use.
 ///
 /// Keyword arguments for Timer.OC modes:
 ///
@@ -566,12 +566,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     ch2 = timer.channel(2, pyb.Timer.PWM, pin=pyb.Pin.board.X2, pulse_width=210000)
 ///     ch3 = timer.channel(3, pyb.Timer.PWM, pin=pyb.Pin.board.X3, pulse_width=420000)
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
-    { MP_QSTR_callback,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pin,               MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_pulse_width_ratio, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_compare,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_polarity,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 };
 #define PYB_TIMER_CHANNEL_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_channel_args)
 
@@ -667,9 +667,17 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
                 // absolute pulse width value given
                 oc_config.Pulse = vals[2].u_int;
             } else if (vals[3].u_obj != mp_const_none) {
-                // pulse width ratio given
+                // pulse width percent given
                 uint32_t period = (__HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self)) + 1;
-                uint32_t cmp = mp_obj_get_float(vals[3].u_obj) * period;
+                uint32_t cmp;
+#if MICROPY_PY_BUILTINS_FLOAT
+                if (MP_OBJ_IS_TYPE(vals[3].u_obj, &mp_type_float)) {
+                    cmp = mp_obj_get_float(vals[3].u_obj) * period / 100.0;
+                } else
+#endif
+                {
+                    cmp = mp_obj_get_int(vals[3].u_obj) * period / 100;
+                }
                 if (cmp < 0) {
                     cmp = 0;
                 } else if (cmp > period) {
@@ -891,9 +899,6 @@ STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ..
 /// pulse_width is the logical name to use when the channel is in PWM mode.
 STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
-    if (self->channel == 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d no channel specified", self->timer->tim_id));
-    }
     if (n_args == 1) {
         // get
         return mp_obj_new_int(__HAL_TIM_GetCompare(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer));
@@ -910,19 +915,28 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj
 /// a floating-point number between 0.0 and 1.0, and is relative to the period
 /// of the timer associated with this channel.  For example, a ratio of 0.5
 /// would be a 50% duty cycle.
-STATIC mp_obj_t pyb_timer_channel_pulse_width_ratio(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
-    if (self->channel == 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d no channel specified", self->timer->tim_id));
-    }
     uint32_t period = (__HAL_TIM_GetAutoreload(&self->timer->tim) & TIMER_CNT_MASK(self->timer)) + 1;
     if (n_args == 1) {
         // get
         uint32_t cmp = __HAL_TIM_GetCompare(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer);
-        return mp_obj_new_float((float)cmp / (float)period);
+#if MICROPY_PY_BUILTINS_FLOAT
+        return mp_obj_new_float((float)cmp * 100.0 / (float)period);
+#else
+        return mp_obj_new_int(cmp * 100 / period);
+#endif
     } else {
         // set
-        uint32_t cmp = mp_obj_get_float(args[1]) * period;
+        uint32_t cmp;
+#if MICROPY_PY_BUILTINS_FLOAT
+        if (MP_OBJ_IS_TYPE(args[1], &mp_type_float)) {
+            cmp = mp_obj_get_float(args[1]) * period / 100.0;
+        } else
+#endif
+        {
+            cmp = mp_obj_get_int(args[1]) * period / 100;
+        }
         if (cmp < 0) {
             cmp = 0;
         } else if (cmp > period) {
@@ -932,7 +946,7 @@ STATIC mp_obj_t pyb_timer_channel_pulse_width_ratio(mp_uint_t n_args, const mp_o
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_ratio_obj, 1, 2, pyb_timer_channel_pulse_width_ratio);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_percent_obj, 1, 2, pyb_timer_channel_pulse_width_percent);
 
 /// \method callback(fun)
 /// Set the function to be called when the timer channel triggers.
@@ -976,7 +990,7 @@ STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_channel_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width_ratio), (mp_obj_t)&pyb_timer_channel_pulse_width_ratio_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width_percent), (mp_obj_t)&pyb_timer_channel_pulse_width_percent_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_capture), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compare), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
 };
