@@ -30,6 +30,9 @@ COPT = -Os #-DNDEBUG
 endif
 
 LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref $(LDFLAGS_EXTRA)
+ifeq ($(UNAME_S),Darwin)
+LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
+endif
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
