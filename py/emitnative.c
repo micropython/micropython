@@ -488,6 +488,8 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
 }
 
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
+    DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
+
     emit->pass = pass;
     emit->stack_start = 0;
     emit->stack_size = 0;
@@ -636,20 +638,30 @@ STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
-STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
-    emit->stack_size += delta;
-}
-
-STATIC void emit_native_set_source_line(emit_t *emit, mp_uint_t source_line) {
-}
-
-STATIC void adjust_stack(emit_t *emit, int stack_size_delta) {
-    DEBUG_printf("adjust stack: stack:%d + delta:%d\n", emit->stack_size, stack_size_delta);
-    assert((int)emit->stack_size + stack_size_delta >= 0);
+STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
+    DEBUG_printf("  adjust_stack; stack_size=%d, delta=%d\n", emit->stack_size, stack_size_delta);
+    assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
+}
+
+STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
+    // If we are adjusting the stack in a positive direction (pushing) then we
+    // need to fill in values for the stack kind and vtype of the newly-pushed
+    // entries.  These should be set to "value" (ie not reg or imm) because we
+    // should only need to adjust the stack due to a jump to this part in the
+    // code (and hence we have settled the stack before the jump).
+    for (mp_int_t i = 0; i < delta; i++) {
+        stack_info_t *si = &emit->stack_info[emit->stack_size + i];
+        si->kind = STACK_VALUE;
+        si->vtype = VTYPE_PYOBJ; // XXX we don't know the vtype...
+    }
+    adjust_stack(emit, delta);
+}
+
+STATIC void emit_native_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
 /*
@@ -716,9 +728,11 @@ STATIC void need_reg_all(emit_t *emit) {
 }
 
 STATIC void need_stack_settled(emit_t *emit) {
+    DEBUG_printf("  need_stack_settled; stack_size=%d\n", emit->stack_size);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_REG) {
+            DEBUG_printf("    reg(%u) to local(%u)\n", si->u_reg, emit->stack_start + i);
             si->kind = STACK_VALUE;
             ASM_MOV_REG_TO_LOCAL(emit->as, si->u_reg, emit->stack_start + i);
         }
@@ -726,6 +740,7 @@ STATIC void need_stack_settled(emit_t *emit) {
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_IMM) {
+            DEBUG_printf("    imm(" INT_FMT ") to local(%u)\n", si->u_imm, emit->stack_start + i);
             si->kind = STACK_VALUE;
             ASM_MOV_IMM_TO_LOCAL_USING(emit->as, si->u_imm, emit->stack_start + i, REG_TEMP0);
         }
@@ -929,6 +944,7 @@ STATIC void emit_native_delete_id(emit_t *emit, qstr qst) {
 }
 
 STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
+    DEBUG_printf("label_assign(" UINT_FMT ")\n", l);
     emit_native_pre(emit);
     // need to commit stack because we can jump here from elsewhere
     need_stack_settled(emit);
@@ -967,7 +983,7 @@ STATIC void emit_native_import_star(emit_t *emit) {
 }
 
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
-    DEBUG_printf("load_const_tok %d\n", tok);
+    DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     emit_native_pre(emit);
     int vtype;
     mp_uint_t val;
@@ -991,7 +1007,7 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 }
 
 STATIC void emit_native_load_const_small_int(emit_t *emit, mp_int_t arg) {
-    DEBUG_printf("load_const_small_int %d\n", arg);
+    DEBUG_printf("load_const_small_int(int=" INT_FMT ")\n", arg);
     emit_native_pre(emit);
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);
@@ -1001,7 +1017,7 @@ STATIC void emit_native_load_const_small_int(emit_t *emit, mp_int_t arg) {
 }
 
 STATIC void emit_native_load_const_int(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_const_int %s\n", qstr_str(st));
+    DEBUG_printf("load_const_int %s\n", qstr_str(qst));
     // for viper: load integer, check fits in 32 bits
     emit_native_pre(emit);
     emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, qst, REG_ARG_1);
@@ -1108,6 +1124,7 @@ STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) 
 }
 
 STATIC void emit_native_load_name(emit_t *emit, qstr qst) {
+    DEBUG_printf("load_name(%s)\n", qstr_str(qst));
     emit_native_pre(emit);
     emit_call_with_imm_arg(emit, MP_F_LOAD_NAME, qst, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
@@ -1305,6 +1322,7 @@ STATIC void emit_native_delete_subscr(emit_t *emit) {
 }
 
 STATIC void emit_native_dup_top(emit_t *emit) {
+    DEBUG_printf("dup_top\n");
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
     emit_post_push_reg_reg(emit, vtype, REG_TEMP0, vtype, REG_TEMP0);
@@ -1317,23 +1335,27 @@ STATIC void emit_native_dup_top_two(emit_t *emit) {
 }
 
 STATIC void emit_native_pop_top(emit_t *emit) {
+    DEBUG_printf("pop_top\n");
     emit_pre_pop_discard(emit);
     emit_post(emit);
 }
 
 STATIC void emit_native_rot_two(emit_t *emit) {
+    DEBUG_printf("rot_two\n");
     vtype_kind_t vtype0, vtype1;
     emit_pre_pop_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1);
     emit_post_push_reg_reg(emit, vtype0, REG_TEMP0, vtype1, REG_TEMP1);
 }
 
 STATIC void emit_native_rot_three(emit_t *emit) {
+    DEBUG_printf("rot_three\n");
     vtype_kind_t vtype0, vtype1, vtype2;
     emit_pre_pop_reg_reg_reg(emit, &vtype0, REG_TEMP0, &vtype1, REG_TEMP1, &vtype2, REG_TEMP2);
     emit_post_push_reg_reg_reg(emit, vtype0, REG_TEMP0, vtype2, REG_TEMP2, vtype1, REG_TEMP1);
 }
 
 STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
+    DEBUG_printf("jump(label=" UINT_FMT ")\n", label);
     emit_native_pre(emit);
     // need to commit stack because we are jumping elsewhere
     need_stack_settled(emit);
@@ -1363,18 +1385,21 @@ STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
 }
 
 STATIC void emit_native_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
+    DEBUG_printf("pop_jump_if_true(label=" UINT_FMT ")\n", label);
     emit_native_jump_helper(emit, label, true);
     ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
     emit_post(emit);
 }
 
 STATIC void emit_native_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
+    DEBUG_printf("pop_jump_if_false(label=" UINT_FMT ")\n", label);
     emit_native_jump_helper(emit, label, true);
     ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
     emit_post(emit);
 }
 
 STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
+    DEBUG_printf("jump_if_true_or_pop(label=" UINT_FMT ")\n", label);
     emit_native_jump_helper(emit, label, false);
     ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
     adjust_stack(emit, -1);
@@ -1382,6 +1407,7 @@ STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
 }
 
 STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
+    DEBUG_printf("jump_if_false_or_pop(label=" UINT_FMT ")\n", label);
     emit_native_jump_helper(emit, label, false);
     ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
     adjust_stack(emit, -1);
@@ -1470,19 +1496,20 @@ STATIC void emit_native_pop_except(emit_t *emit) {
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
+    vtype_kind_t vtype;
+    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+    assert(vtype == VTYPE_PYOBJ);
     if (op == MP_UNARY_OP_NOT) {
-        // we need to synthesise this operation
-        assert(0);
-    } else {
-        vtype_kind_t vtype;
-        emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
-        assert(vtype == VTYPE_PYOBJ);
-        emit_call_with_imm_arg(emit, MP_F_UNARY_OP, op, REG_ARG_1);
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+        // we need to synthesise this operation by converting to bool first
+        emit_call_with_imm_arg(emit, MP_F_UNARY_OP, MP_UNARY_OP_BOOL, REG_ARG_1);
+        ASM_MOV_REG_TO_REG(emit->as, REG_RET, REG_ARG_2);
     }
+    emit_call_with_imm_arg(emit, MP_F_UNARY_OP, op, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
+    DEBUG_printf("binary_op(" UINT_FMT ")\n", op);
     vtype_kind_t vtype_lhs, vtype_rhs;
     emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
@@ -1524,7 +1551,19 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             assert(0);
         }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        bool invert = false;
+        if (op == MP_BINARY_OP_NOT_IN) {
+            invert = true;
+            op = MP_BINARY_OP_IN;
+        } else if (op == MP_BINARY_OP_IS_NOT) {
+            invert = true;
+            op = MP_BINARY_OP_IS;
+        }
         emit_call_with_imm_arg(emit, MP_F_BINARY_OP, op, REG_ARG_1);
+        if (invert) {
+            ASM_MOV_REG_TO_REG(emit->as, REG_RET, REG_ARG_2);
+            emit_call_with_imm_arg(emit, MP_F_UNARY_OP, MP_UNARY_OP_NOT, REG_ARG_1);
+        }
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
         printf("ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
@@ -1664,6 +1703,8 @@ STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_c
 }
 
 STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
+    DEBUG_printf("call_function(n_pos=" UINT_FMT ", n_kw=" UINT_FMT ", star_flags=" UINT_FMT ")\n", n_positional, n_keyword, star_flags);
+
     // call special viper runtime routine with type info for args, and wanted type info for return
     assert(!star_flags);
 

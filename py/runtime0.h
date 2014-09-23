@@ -51,7 +51,8 @@ typedef enum {
     MP_UNARY_OP_POSITIVE,
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,
-    // these are not supported by the runtime and must be synthesised by the emitter
+    // The NOT op is only implemented by bool.  The emitter must synthesise NOT
+    // for other types by calling BOOL then inverting (eg by then calling NOT).
     MP_UNARY_OP_NOT,
 } mp_unary_op_t;
 
