@@ -29,17 +29,19 @@ else
 COPT = -Os #-DNDEBUG
 endif
 
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl$(LDFLAGS_MAP_EXTRA) $(LDFLAGS_EXTRA)
+# On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
+# The unix port of micropython on OSX must be compiled with clang,
+# while cross-compile ports require gcc, so we test here for OSX and 
+# if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
-# Force OSX to use clang even if gcc is present, value set in mkenv.mk
-# must be ovewritten here to avoid breaking stmhal build on OSX
 CC = clang
-# Use clang syntax for LDFLAGS
-LDFLAGS_MAP_EXTRA = ,-map,$@.map
+# Use clang syntax for map file and set osx specific flags
+LDFLAGS_ARCH = -Wl,-order_file,$(BUILD)/order.def -Wl,-map,$@.map
 else
-# Use gcc syntax
-LDFLAGS_MAP_EXTRA = ,-Map=$@.map,--cref
+# Use gcc syntax for map file
+LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
 endif
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
@@ -89,9 +91,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 ifeq ($(UNAME_S),Darwin)
-
-LDFLAGS += -Wl,-order_file,$(BUILD)/order.def
-
 # Must be the last file in list of sources
 SRC_C += seg_helpers.c
 
