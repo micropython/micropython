@@ -40,6 +40,17 @@ Header files:
 Type names and declarations:
 - When defining a type, put '_t' after it.
 
+Integer types: Micro Python runs on 32 and 64 bit machines (and one day
+maybe 16 bit), so it's important to use the correctly-sized (and signed)
+integer types.  The general guidelines are:
+- For most cases use mp_int_t for signed and mp_uint_t for unsigned
+  integer values.  These are guaranteed to be machine-word sized and
+  therefore big enough to hold the value from a Micro Python small-int
+  object.
+- Use size_t for things that count bytes / sizes of objects.
+- You can use int/uint, but remember that they may be 16-bits wide.
+- If in doubt, use mp_int_t/mp_uint_t.
+
 Examples
 --------
 
