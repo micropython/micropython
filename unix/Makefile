@@ -29,13 +29,16 @@ else
 COPT = -Os #-DNDEBUG
 endif
 
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) -lm -Wl$(LDFLAGS_MAP_EXTRA) $(LDFLAGS_EXTRA)
 ifeq ($(UNAME_S),Darwin)
 # Force OSX to use clang even if gcc is present, value set in mkenv.mk
 # must be ovewritten here to avoid breaking stmhal build on OSX
 CC = clang
 # Use clang syntax for LDFLAGS
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-map,$@.map $(LDFLAGS_EXTRA)
+LDFLAGS_MAP_EXTRA = ,-map,$@.map
+else
+# Use gcc syntax
+LDFLAGS_MAP_EXTRA = ,-Map=$@.map,--cref
 endif
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
