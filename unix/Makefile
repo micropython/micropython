@@ -29,7 +29,19 @@ else
 COPT = -Os #-DNDEBUG
 endif
 
-LDFLAGS = $(LDFLAGS_MOD) -lm -Wl,-Map=$@.map,--cref $(LDFLAGS_EXTRA)
+# On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
+# The unix port of micropython on OSX must be compiled with clang,
+# while cross-compile ports require gcc, so we test here for OSX and 
+# if necessary override the value of 'CC' set in py/mkenv.mk
+ifeq ($(UNAME_S),Darwin)
+CC = clang
+# Use clang syntax for map file and set osx specific flags
+LDFLAGS_ARCH = -Wl,-order_file,$(BUILD)/order.def -Wl,-map,$@.map
+else
+# Use gcc syntax for map file
+LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
+endif
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CFLAGS += -m32
@@ -79,9 +91,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 ifeq ($(UNAME_S),Darwin)
-
-LDFLAGS+ = -Wl,-order_file,$(BUILD)/order.def
-
 # Must be the last file in list of sources
 SRC_C += seg_helpers.c
 
@@ -92,7 +101,7 @@ seg_helpers.c: $(BUILD)/order.def
 $(BUILD)/order.def:
 	$(Q)echo "seg_helpers.o: ___bss_start" > $@
 endif
-	
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include ../py/mkrules.mk
