@@ -38,7 +38,6 @@ inline void do_str(const char *src) {
     qstr source_name = mp_lexer_source_name(lex);
     mp_lexer_free(lex);
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
-    mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
         tt_abort_msg("Computer error");

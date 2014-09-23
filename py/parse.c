@@ -179,6 +179,7 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
         if (rule_id == RULE_string) {
+            m_del(char, (char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]);
             return;
         }
         bool adjust = ADD_BLANK_NODE(rule_id);
@@ -562,8 +563,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
                     mp_parse_node_t p = peek_result(&parser, 1);
                     if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_string)) {
-                        pop_result(&parser);
-                        pop_result(&parser);
+                        pop_result(&parser); // MP_PARSE_NODE_NULL
+                        mp_parse_node_free(pop_result(&parser)); // RULE_string
                         push_result_rule(&parser, rule_src_line, rules[RULE_pass_stmt], 0);
                         break;
                     }

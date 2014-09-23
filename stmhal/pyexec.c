@@ -71,7 +71,6 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
     mp_lexer_free(lex);
 
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
-    mp_parse_node_free(pn);
 
     if (module_fun == mp_const_none) {
         return false;

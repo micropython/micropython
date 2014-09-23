@@ -3710,6 +3710,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif
 #endif // !MICROPY_EMIT_CPYTHON
 
+    // free the parse tree
+    mp_parse_node_free(pn);
+
     // free the scopes
     mp_raw_code_t *outer_raw_code = module_scope->raw_code;
     for (scope_t *s = module_scope; s;) {
