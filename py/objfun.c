@@ -183,7 +183,7 @@ STATIC void dump_args(const mp_obj_t *a, int sz) {
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 
-    DEBUG_printf("Input n_args: %d, n_kw: %d\n", n_args, n_kw);
+    DEBUG_printf("Input n_args: " UINT_FMT ", n_kw: " UINT_FMT "\n", n_args, n_kw);
     DEBUG_printf("Input pos args: ");
     dump_args(args, n_args);
     DEBUG_printf("Input kw args: ");

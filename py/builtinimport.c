@@ -167,11 +167,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
 #if DEBUG_PRINT
-    printf("__import__:\n");
+    DEBUG_printf("__import__:\n");
     for (int i = 0; i < n_args; i++) {
-        printf("  ");
+        DEBUG_printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
-        printf("\n");
+        DEBUG_printf("\n");
     }
 #endif
 
@@ -199,9 +199,9 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
         mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
         assert(this_name_q != MP_OBJ_NULL);
 #if DEBUG_PRINT
-        printf("Current module: ");
+        DEBUG_printf("Current module: ");
         mp_obj_print(this_name_q, PRINT_REPR);
-        printf("\n");
+        DEBUG_printf("\n");
 #endif
 
         mp_uint_t this_name_l;

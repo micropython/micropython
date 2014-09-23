@@ -174,9 +174,9 @@ static const char fresh_readme_txt[] =
 int main(void) {
     // TODO disable JTAG
 
-    // Stack limit should be less than real stack size, so we
-    // had chance to recover from limit hit.
-    mp_stack_set_limit(&_ram_end - &_heap_end - 512);
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
 
     /* STM32F4xx HAL library initialization:
          - Configure the Flash prefetch, instruction and Data caches
