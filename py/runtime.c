@@ -1146,8 +1146,8 @@ void mp_globals_set(mp_obj_dict_t *d) {
     dict_globals = d;
 }
 
-void *m_malloc_fail(int num_bytes) {
-    DEBUG_printf("memory allocation failed, allocating %d bytes\n", num_bytes);
+void *m_malloc_fail(size_t num_bytes) {
+    DEBUG_printf("memory allocation failed, allocating " UINT_FMT " bytes\n", num_bytes);
     nlr_raise((mp_obj_t)&mp_const_MemoryError_obj);
 }
 

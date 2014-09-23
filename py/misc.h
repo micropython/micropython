@@ -66,18 +66,20 @@ typedef unsigned int uint;
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 #define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
 
-void *m_malloc(int num_bytes);
-void *m_malloc_maybe(int num_bytes);
-void *m_malloc_with_finaliser(int num_bytes);
-void *m_malloc0(int num_bytes);
-void *m_realloc(void *ptr, int old_num_bytes, int new_num_bytes);
-void *m_realloc_maybe(void *ptr, int old_num_bytes, int new_num_bytes);
-void m_free(void *ptr, int num_bytes);
-void *m_malloc_fail(int num_bytes);
+void *m_malloc(size_t num_bytes);
+void *m_malloc_maybe(size_t num_bytes);
+void *m_malloc_with_finaliser(size_t num_bytes);
+void *m_malloc0(size_t num_bytes);
+void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
+void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
+void m_free(void *ptr, size_t num_bytes);
+void *m_malloc_fail(size_t num_bytes);
 
-int m_get_total_bytes_allocated(void);
-int m_get_current_bytes_allocated(void);
-int m_get_peak_bytes_allocated(void);
+#if MICROPY_MEM_STATS
+size_t m_get_total_bytes_allocated(void);
+size_t m_get_current_bytes_allocated(void);
+size_t m_get_peak_bytes_allocated(void);
+#endif
 
 /** array helpers ***********************************************/
 
@@ -110,8 +112,8 @@ mp_uint_t unichar_charlen(const char *str, mp_uint_t len);
 /** variable string *********************************************/
 
 typedef struct _vstr_t {
-    uint alloc;
-    uint len;
+    size_t alloc;
+    size_t len;
     char *buf;
     bool had_error : 1;
     bool fixed_buf : 1;
@@ -120,40 +122,38 @@ typedef struct _vstr_t {
 // convenience macro to declare a vstr with a fixed size buffer on the stack
 #define VSTR_FIXED(vstr, alloc) vstr_t vstr; char vstr##_buf[(alloc)]; vstr_init_fixed_buf(&vstr, (alloc), vstr##_buf);
 
-void vstr_init(vstr_t *vstr, int alloc);
-void vstr_init_fixed_buf(vstr_t *vstr, int alloc, char *buf);
+void vstr_init(vstr_t *vstr, size_t alloc);
+void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf);
 void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(void);
-vstr_t *vstr_new_size(int alloc);
+vstr_t *vstr_new_size(size_t alloc);
 void vstr_free(vstr_t *vstr);
 void vstr_reset(vstr_t *vstr);
 bool vstr_had_error(vstr_t *vstr);
 char *vstr_str(vstr_t *vstr);
-int vstr_len(vstr_t *vstr);
-void vstr_hint_size(vstr_t *vstr, int size);
-char *vstr_extend(vstr_t *vstr, int size);
-bool vstr_set_size(vstr_t *vstr, int size);
+size_t vstr_len(vstr_t *vstr);
+void vstr_hint_size(vstr_t *vstr, size_t size);
+char *vstr_extend(vstr_t *vstr, size_t size);
+bool vstr_set_size(vstr_t *vstr, size_t size);
 bool vstr_shrink(vstr_t *vstr);
-char *vstr_add_len(vstr_t *vstr, int len);
+char *vstr_add_len(vstr_t *vstr, size_t len);
 void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);
-void vstr_add_strn(vstr_t *vstr, const char *str, int len);
-//void vstr_add_le16(vstr_t *vstr, unsigned short v);
-//void vstr_add_le32(vstr_t *vstr, unsigned int v);
-void vstr_ins_byte(vstr_t *vstr, uint byte_pos, byte b);
-void vstr_ins_char(vstr_t *vstr, uint char_pos, unichar chr);
-void vstr_cut_head_bytes(vstr_t *vstr, uint bytes_to_cut);
-void vstr_cut_tail_bytes(vstr_t *vstr, uint bytes_to_cut);
-void vstr_cut_out_bytes(vstr_t *vstr, uint byte_pos, uint bytes_to_cut);
+void vstr_add_strn(vstr_t *vstr, const char *str, size_t len);
+void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b);
+void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr);
+void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut);
+void vstr_cut_tail_bytes(vstr_t *vstr, size_t bytes_to_cut);
+void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut);
 void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 
 /** non-dynamic size-bounded variable buffer/string *************/
 
-#define CHECKBUF(buf, max_size) char buf[max_size + 1]; uint buf##_len = max_size; char *buf##_p = buf;
+#define CHECKBUF(buf, max_size) char buf[max_size + 1]; size_t buf##_len = max_size; char *buf##_p = buf;
 #define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
 #define CHECKBUF_APPEND(buf, src, src_len) \
-        { int l = MIN(src_len, buf##_len); \
+        { size_t l = MIN(src_len, buf##_len); \
         memcpy(buf##_p, src, l); \
         buf##_len -= l; \
         buf##_p += l; }
@@ -167,15 +167,15 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap);
 // Debugging helpers
 int DEBUG_printf(const char *fmt, ...);
 
-extern uint mp_verbose_flag;
+extern mp_uint_t mp_verbose_flag;
 
 // This is useful for unicode handling. Some CPU archs has
 // special instructions for efficient implentation of this
 // function (e.g. CLZ on ARM).
 // NOTE: this function is unused at the moment
 #ifndef count_lead_ones
-static inline uint count_lead_ones(byte val) {
-    uint c = 0;
+static inline mp_uint_t count_lead_ones(byte val) {
+    mp_uint_t c = 0;
     for (byte mask = 0x80; val & mask; mask >>= 1) {
         c++;
     }

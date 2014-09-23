@@ -35,7 +35,7 @@
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
 
-void vstr_init(vstr_t *vstr, int alloc) {
+void vstr_init(vstr_t *vstr, size_t alloc) {
     if (alloc < 2) {
         // need at least 1 byte for the null byte at the end
         alloc = 2;
@@ -52,7 +52,7 @@ void vstr_init(vstr_t *vstr, int alloc) {
     vstr->fixed_buf = false;
 }
 
-void vstr_init_fixed_buf(vstr_t *vstr, int alloc, char *buf) {
+void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf) {
     assert(alloc > 0); // need at least room for the null byte
     vstr->alloc = alloc;
     vstr->len = 0;
@@ -78,7 +78,7 @@ vstr_t *vstr_new(void) {
     return vstr;
 }
 
-vstr_t *vstr_new_size(int alloc) {
+vstr_t *vstr_new_size(size_t alloc) {
     vstr_t *vstr = m_new(vstr_t, 1);
     if (vstr == NULL) {
         return NULL;
@@ -113,15 +113,15 @@ char *vstr_str(vstr_t *vstr) {
     return vstr->buf;
 }
 
-int vstr_len(vstr_t *vstr) {
+size_t vstr_len(vstr_t *vstr) {
     if (vstr->had_error) {
         return 0;
     }
     return vstr->len;
 }
 
-// Extend vstr strictly to by requested size, return pointer to newly added chunk
-char *vstr_extend(vstr_t *vstr, int size) {
+// Extend vstr strictly by requested size, return pointer to newly added chunk
+char *vstr_extend(vstr_t *vstr, size_t size) {
     if (vstr->fixed_buf) {
         return NULL;
     }
@@ -137,7 +137,7 @@ char *vstr_extend(vstr_t *vstr, int size) {
 }
 
 // Shrink vstr to be given size
-bool vstr_set_size(vstr_t *vstr, int size) {
+bool vstr_set_size(vstr_t *vstr, size_t size) {
     if (vstr->fixed_buf) {
         return false;
     }
@@ -156,12 +156,12 @@ bool vstr_shrink(vstr_t *vstr) {
     return vstr_set_size(vstr, vstr->len);
 }
 
-STATIC bool vstr_ensure_extra(vstr_t *vstr, int size) {
+STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
     if (vstr->len + size + 1 > vstr->alloc) {
         if (vstr->fixed_buf) {
             return false;
         }
-        int new_alloc = ROUND_ALLOC((vstr->len + size + 1) * 2);
+        size_t new_alloc = ROUND_ALLOC((vstr->len + size + 1) * 2);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         if (new_buf == NULL) {
             vstr->had_error = true;
@@ -173,14 +173,14 @@ STATIC bool vstr_ensure_extra(vstr_t *vstr, int size) {
     return true;
 }
 
-void vstr_hint_size(vstr_t *vstr, int size) {
+void vstr_hint_size(vstr_t *vstr, size_t size) {
     // it's not an error if we fail to allocate for the size hint
     bool er = vstr->had_error;
     vstr_ensure_extra(vstr, size);
     vstr->had_error = er;
 }
 
-char *vstr_add_len(vstr_t *vstr, int len) {
+char *vstr_add_len(vstr_t *vstr, size_t len) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
         return NULL;
     }
@@ -247,7 +247,7 @@ void vstr_add_str(vstr_t *vstr, const char *str) {
     vstr_add_strn(vstr, str, strlen(str));
 }
 
-void vstr_add_strn(vstr_t *vstr, const char *str, int len) {
+void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
         // if buf is fixed, we got here because there isn't enough room left
         // so just try to copy as much as we can, with room for null byte
@@ -281,11 +281,11 @@ void vstr_add_le32(vstr_t *vstr, unsigned int v) {
 }
 */
 
-char *vstr_ins_blank_bytes(vstr_t *vstr, uint byte_pos, uint byte_len) {
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     if (vstr->had_error) {
         return NULL;
     }
-    uint l = vstr->len;
+    size_t l = vstr->len;
     if (byte_pos > l) {
         byte_pos = l;
     }
@@ -302,14 +302,14 @@ char *vstr_ins_blank_bytes(vstr_t *vstr, uint byte_pos, uint byte_len) {
     return vstr->buf + byte_pos;
 }
 
-void vstr_ins_byte(vstr_t *vstr, uint byte_pos, byte b) {
+void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
     char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
     if (s != NULL) {
         *s = b;
     }
 }
 
-void vstr_ins_char(vstr_t *vstr, uint char_pos, unichar chr) {
+void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
     // TODO UNICODE
     char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
     if (s != NULL) {
@@ -317,11 +317,11 @@ void vstr_ins_char(vstr_t *vstr, uint char_pos, unichar chr) {
     }
 }
 
-void vstr_cut_head_bytes(vstr_t *vstr, uint bytes_to_cut) {
+void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {
     vstr_cut_out_bytes(vstr, 0, bytes_to_cut);
 }
 
-void vstr_cut_tail_bytes(vstr_t *vstr, uint len) {
+void vstr_cut_tail_bytes(vstr_t *vstr, size_t len) {
     if (vstr->had_error) {
         return;
     }
@@ -333,7 +333,7 @@ void vstr_cut_tail_bytes(vstr_t *vstr, uint len) {
     vstr->buf[vstr->len] = 0;
 }
 
-void vstr_cut_out_bytes(vstr_t *vstr, uint byte_pos, uint bytes_to_cut) {
+void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut) {
     if (vstr->had_error || byte_pos >= vstr->len) {
         return;
     } else if (byte_pos + bytes_to_cut >= vstr->len) {
@@ -361,7 +361,7 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
     while (1) {
         // try to print in the allocated space
         // need to make a copy of the va_list because we may call vsnprintf multiple times
-        int size = vstr->alloc - vstr->len;
+        size_t size = vstr->alloc - vstr->len;
         va_list ap2;
         va_copy(ap2, ap);
         int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap2);
@@ -387,18 +387,3 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
         }
     }
 }
-
-/** testing *****************************************************/
-
-/*
-int main(void) {
-    vstr_t *vstr = vstr_new();
-    int i;
-    for (i = 0; i < 10; i++) {
-        vstr_printf(vstr, "%d) this is a test %d %s\n", i, 1234, "'a string'");
-        vstr_add_str(vstr, "-----");
-        vstr_printf(vstr, "this is another test %d %s\n", 1234, "'a second string'");
-        printf("%s", vstr->buf);
-    }
-}
-*/
