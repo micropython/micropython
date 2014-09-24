@@ -263,18 +263,25 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     if (op == MP_BINARY_OP_EXCEPTION_MATCH) {
         // rhs must be issubclass(rhs, BaseException)
         if (mp_obj_is_exception_type(rhs)) {
-            // if lhs is an instance of an exception, then extract and use its type
-            if (mp_obj_is_exception_instance(lhs)) {
-                lhs = mp_obj_get_type(lhs);
-            }
-            if (mp_obj_is_subclass_fast(lhs, rhs)) {
+            if (mp_obj_exception_match(lhs, rhs)) {
                 return mp_const_true;
             } else {
                 return mp_const_false;
             }
+        } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_tuple)) {
+            mp_obj_tuple_t *tuple = rhs;
+            for (mp_uint_t i = 0; i < tuple->len; i++) {
+                rhs = tuple->items[i];
+                if (!mp_obj_is_exception_type(rhs)) {
+                    goto unsupported_op;
+                }
+                if (mp_obj_exception_match(lhs, rhs)) {
+                    return mp_const_true;
+                }
+            }
+            return mp_const_false;
         }
-        assert(0);
-        return mp_const_false;
+        goto unsupported_op;
     }
 
     if (MP_OBJ_IS_SMALL_INT(lhs)) {

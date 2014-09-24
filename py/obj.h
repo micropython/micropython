@@ -458,7 +458,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in);
 #define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
 bool mp_obj_is_exception_type(mp_obj_t self_in);
 bool mp_obj_is_exception_instance(mp_obj_t self_in);
-bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type);
+bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values);

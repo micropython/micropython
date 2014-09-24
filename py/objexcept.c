@@ -403,11 +403,15 @@ bool mp_obj_is_exception_instance(mp_obj_t self_in) {
     return mp_obj_is_exception_type(mp_obj_get_type(self_in));
 }
 
-// return true if exception (type or instance) is a subclass of given
-// exception type.
-bool mp_obj_exception_match(mp_obj_t exc, const mp_obj_type_t *exc_type) {
-    // TODO: move implementation from RT_BINARY_OP_EXCEPTION_MATCH here.
-    return mp_binary_op(MP_BINARY_OP_EXCEPTION_MATCH, exc, (mp_obj_t)exc_type) == mp_const_true;
+// Return true if exception (type or instance) is a subclass of given
+// exception type.  Assumes exc_type is a subclass of BaseException, as
+// defined by mp_obj_is_exception_type(exc_type).
+bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
+    // if exc is an instance of an exception, then extract and use its type
+    if (mp_obj_is_exception_instance(exc)) {
+        exc = mp_obj_get_type(exc);
+    }
+    return mp_obj_is_subclass_fast(exc, exc_type);
 }
 
 // traceback handling functions
