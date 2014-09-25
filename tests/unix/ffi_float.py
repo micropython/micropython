@@ -12,7 +12,7 @@ def ffi_open(names):
             err = e
     raise err
 
-libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
+libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6'))
 
 strtof = libc.func("f", "strtof", "sp")
 print('%.6f' % strtof('1.23', None))
