@@ -128,6 +128,37 @@ mp_uint_t get_prescaler_shift(mp_int_t prescaler) {
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
 
+// Helper function to compute PWM value from timer period and percent value.
+// 'val' can be an int or a float between 0 and 100 (out of range values are
+// clamped).
+STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t val) {
+    uint32_t cmp;
+    if (0) {
+    #if MICROPY_PY_BUILTINS_FLOAT
+    } else if (MP_OBJ_IS_TYPE(val, &mp_type_float)) {
+        cmp = mp_obj_get_float(val) / 100.0 * period;
+    #endif
+    } else {
+        // For integer arithmetic, if period is large and 100*period will
+        // overflow, then divide period before multiplying by cmp.  Otherwise
+        // do it the other way round to retain precision.
+        // TODO we really need an mp_obj_get_uint_clamped function here so
+        // that we can get long-int values as large as 0xffffffff.
+        cmp = mp_obj_get_int(val);
+        if (period > (1 << 31) / 100) {
+            cmp = cmp * (period / 100);
+        } else {
+            cmp = (cmp * period) / 100;
+        }
+    }
+    if (cmp < 0) {
+        cmp = 0;
+    } else if (cmp > period) {
+        cmp = period;
+    }
+    return cmp;
+}
+
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
@@ -373,7 +404,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
     { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -468,30 +499,13 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_PWM_INVERTED: {
             FTM_OC_InitTypeDef oc_config;
             oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
-            if (vals[2].u_int != 0xffffffff) {
-                // absolute pulse width value given
-                oc_config.Pulse = vals[2].u_int;
-            } else if (vals[3].u_obj != mp_const_none) {
+            if (vals[3].u_obj != mp_const_none) {
                 // pulse width ratio given
                 uint32_t period = (self->ftm.Instance->MOD & 0xffff) + 1;
-                uint32_t cmp;
-#if MICROPY_PY_BUILTINS_FLOAT
-                if (MP_OBJ_IS_TYPE(vals[3].u_obj, &mp_type_float)) {
-                    cmp = mp_obj_get_float(vals[3].u_obj) * period / 100.0;
-                } else
-#endif
-                {
-                    cmp = mp_obj_get_int(vals[3].u_obj) * period / 100;
-                }
-                if (cmp < 0) {
-                    cmp = 0;
-                } else if (cmp > period) {
-                    cmp = period;
-                }
-                oc_config.Pulse = cmp;
+                oc_config.Pulse = compute_pwm_value_from_percent(period, vals[3].u_obj);
             } else {
-                // nothing given, default to pulse width of 0
-                oc_config.Pulse = 0;
+                // use absolute pulse width value (defaults to 0 if nothing given)
+                oc_config.Pulse = vals[2].u_int;
             }
             oc_config.OCPolarity    = FTM_OCPOLARITY_HIGH;
 
@@ -748,10 +762,11 @@ STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj, 1, 2, pyb_timer_channel_capture_compare);
 
 /// \method pulse_width_percent([value])
-/// Get or set the pulse width ratio associated with a channel.  The value is
-/// a floating-point number between 0.0 and 1.0, and is relative to the period
-/// of the timer associated with this channel.  For example, a ratio of 0.5
-/// would be a 50% duty cycle.
+/// Get or set the pulse width percentage associated with a channel.  The value
+/// is a number between 0 and 100 and sets the percentage of the timer period
+/// for which the pulse is active.  The value can be an integer or
+/// floating-point number for more accuracy.  For example, a value of 25 gives
+/// a duty cycle of 25%.
 STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     FTM_TypeDef *FTMx = self->timer->ftm.Instance;
@@ -759,27 +774,14 @@ STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp
     if (n_args == 1) {
         // get
         uint32_t cmp = FTMx->channel[self->channel].CV & 0xffff;
-#if MICROPY_PY_BUILTINS_FLOAT
-        return mp_obj_new_float((float)cmp * 100.0 / (float)period);
-#else
+        #if MICROPY_PY_BUILTINS_FLOAT
+        return mp_obj_new_float((float)cmp / (float)period * 100.0);
+        #else
         return mp_obj_new_int(cmp * 100 / period);
-#endif
+        #endif
     } else {
         // set
-        uint32_t cmp;
-#if MICROPY_PY_BUILTINS_FLOAT
-        if (MP_OBJ_IS_TYPE(args[1], &mp_type_float)) {
-            cmp = mp_obj_get_float(args[1]) * period / 100.0;
-        } else
-#endif
-        {
-            cmp = mp_obj_get_int(args[1]) * period / 100;
-        }
-        if (cmp < 0) {
-            cmp = 0;
-        } else if (cmp > period) {
-            cmp = period;
-        }
+        uint32_t cmp = compute_pwm_value_from_percent(period, args[1]);
         FTMx->channel[self->channel].CV = cmp & 0xffff;
         return mp_const_none;
     }

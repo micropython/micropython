@@ -139,7 +139,7 @@ typedef struct _pyb_timer_obj_t {
 // The following yields TIM_IT_UPDATE when channel is zero and
 // TIM_IT_CC1..TIM_IT_CC4 when channel is 1..4
 #define TIMER_IRQ_MASK(channel) (1 << (channel))
-#define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0x3fffffff : 0xffff)
+#define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0xffffffff : 0xffff)
 #define TIMER_CHANNEL(self)     ((((self)->channel) - 1) << 2)
 
 TIM_HandleTypeDef TIM3_Handle;
@@ -267,6 +267,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 /* Micro Python bindings                                                      */
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
+
+// Helper function to compute PWM value from timer period and percent value.
+// 'val' can be an int or a float between 0 and 100 (out of range values are
+// clamped).
+STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t val) {
+    uint32_t cmp;
+    if (0) {
+    #if MICROPY_PY_BUILTINS_FLOAT
+    } else if (MP_OBJ_IS_TYPE(val, &mp_type_float)) {
+        cmp = mp_obj_get_float(val) / 100.0 * period;
+    #endif
+    } else {
+        // For integer arithmetic, if period is large and 100*period will
+        // overflow, then divide period before multiplying by cmp.  Otherwise
+        // do it the other way round to retain precision.
+        // TODO we really need an mp_obj_get_uint_clamped function here so
+        // that we can get long-int values as large as 0xffffffff.
+        cmp = mp_obj_get_int(val);
+        if (period > (1 << 31) / 100) {
+            cmp = cmp * (period / 100);
+        } else {
+            cmp = (cmp * period) / 100;
+        }
+    }
+    if (cmp < 0) {
+        cmp = 0;
+    } else if (cmp > period) {
+        cmp = period;
+    }
+    return cmp;
+}
 
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
@@ -568,7 +599,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
     { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -663,30 +694,19 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_PWM_INVERTED: {
             TIM_OC_InitTypeDef oc_config;
             oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
-            if (vals[2].u_int != 0xffffffff) {
-                // absolute pulse width value given
-                oc_config.Pulse = vals[2].u_int;
-            } else if (vals[3].u_obj != mp_const_none) {
+            if (vals[3].u_obj != mp_const_none) {
                 // pulse width percent given
                 uint32_t period = (__HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self)) + 1;
-                uint32_t cmp;
-#if MICROPY_PY_BUILTINS_FLOAT
-                if (MP_OBJ_IS_TYPE(vals[3].u_obj, &mp_type_float)) {
-                    cmp = mp_obj_get_float(vals[3].u_obj) * period / 100.0;
-                } else
-#endif
-                {
-                    cmp = mp_obj_get_int(vals[3].u_obj) * period / 100;
+                // For 32-bit timer, maximum period + 1 will overflow.  In that
+                // case we set the period back to 0xffffffff which will give very
+                // close to the correct result for the percentage calculation.
+                if (period == 0) {
+                    period = 0xffffffff;
                 }
-                if (cmp < 0) {
-                    cmp = 0;
-                } else if (cmp > period) {
-                    cmp = period;
-                }
-                oc_config.Pulse = cmp;
+                oc_config.Pulse = compute_pwm_value_from_percent(period, vals[3].u_obj);
             } else {
-                // nothing given, default to pulse width of 0
-                oc_config.Pulse = 0;
+                // use absolute pulse width value (defaults to 0 if nothing given)
+                oc_config.Pulse = vals[2].u_int;
             }
             oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
             oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
@@ -910,38 +930,33 @@ STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj, 1, 2, pyb_timer_channel_capture_compare);
 
-/// \method pulse_width_ratio([value])
-/// Get or set the pulse width ratio associated with a channel.  The value is
-/// a floating-point number between 0.0 and 1.0, and is relative to the period
-/// of the timer associated with this channel.  For example, a ratio of 0.5
-/// would be a 50% duty cycle.
+/// \method pulse_width_percent([value])
+/// Get or set the pulse width percentage associated with a channel.  The value
+/// is a number between 0 and 100 and sets the percentage of the timer period
+/// for which the pulse is active.  The value can be an integer or
+/// floating-point number for more accuracy.  For example, a value of 25 gives
+/// a duty cycle of 25%.
 STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     uint32_t period = (__HAL_TIM_GetAutoreload(&self->timer->tim) & TIMER_CNT_MASK(self->timer)) + 1;
+    // For 32-bit timer, maximum period + 1 will overflow.  In that case we set
+    // the period back to 0xffffffff which will give very close to the correct
+    // result for the percentage calculation.
+    if (period == 0) {
+        period = 0xffffffff;
+    }
     if (n_args == 1) {
         // get
         uint32_t cmp = __HAL_TIM_GetCompare(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer);
-#if MICROPY_PY_BUILTINS_FLOAT
-        return mp_obj_new_float((float)cmp * 100.0 / (float)period);
-#else
+        #if MICROPY_PY_BUILTINS_FLOAT
+        return mp_obj_new_float((float)cmp / (float)period * 100.0);
+        #else
+        // TODO handle overflow of multiplication for 32-bit timer
         return mp_obj_new_int(cmp * 100 / period);
-#endif
+        #endif
     } else {
         // set
-        uint32_t cmp;
-#if MICROPY_PY_BUILTINS_FLOAT
-        if (MP_OBJ_IS_TYPE(args[1], &mp_type_float)) {
-            cmp = mp_obj_get_float(args[1]) * period / 100.0;
-        } else
-#endif
-        {
-            cmp = mp_obj_get_int(args[1]) * period / 100;
-        }
-        if (cmp < 0) {
-            cmp = 0;
-        } else if (cmp > period) {
-            cmp = period;
-        }
+        uint32_t cmp = compute_pwm_value_from_percent(period, args[1]);
         __HAL_TIM_SetCompare(&self->timer->tim, TIMER_CHANNEL(self), cmp & TIMER_CNT_MASK(self->timer));
         return mp_const_none;
     }
