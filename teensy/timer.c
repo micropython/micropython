@@ -42,7 +42,6 @@
 
 #include "timer.h"
 
-
 typedef enum {
     CHANNEL_MODE_PWM_NORMAL,
     CHANNEL_MODE_PWM_INVERTED,
@@ -58,7 +57,7 @@ typedef enum {
 STATIC const struct {
     qstr        name;
     uint32_t    oc_mode;
-} gChannelMode[] = {
+} channel_mode_info[] = {
     { MP_QSTR_PWM,                FTM_OCMODE_PWM1 },
     { MP_QSTR_PWM_INVERTED,       FTM_OCMODE_PWM2 },
     { MP_QSTR_OC_TIMING,          FTM_OCMODE_TIMING },
@@ -127,6 +126,8 @@ mp_uint_t get_prescaler_shift(mp_int_t prescaler) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
+STATIC const mp_obj_type_t pyb_timer_channel_type;
+
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
@@ -135,8 +136,8 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
     } else {
         print(env, "Timer(%u, prescaler=%u, period=%u, mode=%s)",
             self->tim_id,
-            1 << self->ftm.Init.PrescalerShift,
-            self->ftm.Init.Period,
+            1 << (self->ftm.Instance->SC & 7),
+            self->ftm.Instance->MOD & 0xffff,
             self->ftm.Init.CounterMode == FTM_COUNTERMODE_UP ? "tUP" : "CENTER");
     }
 }
@@ -243,7 +244,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
 /// Construct a new timer object of the given id.  If additional
 /// arguments are given, then the timer is initialised by `init(...)`.
 /// `id` can be 1 to 14, excluding 3.
-STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -280,7 +281,7 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, uint n_args, uint n_kw, con
     return (mp_obj_t)tim;
 }
 
-STATIC mp_obj_t pyb_timer_init(uint n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
@@ -289,11 +290,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 /// Deinitialises the timer.
 ///
 /// Disables the callback (and the associated irq).
+/// Disables any channel callbacks (and the associated irq).
 /// Stops the timer, and disables the timer peripheral.
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
     pyb_timer_obj_t *self = self_in;
 
-    // Disable the interrupt
+    // Disable the base interrupt
     pyb_timer_callback(self_in, mp_const_none);
 
     pyb_timer_channel_obj_t *chan = self->channel;
@@ -312,10 +314,10 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
-/// \method channel(channel, ...)
+/// \method channel(channel, mode, ...)
 ///
-/// If only a channel nunber is passed, then a previously initialized channel
-/// object is returned.
+/// If only a channel number is passed, then a previously initialized channel
+/// object is returned (or `None` if there is no previous channel).
 ///
 /// Othwerwise, a TimerChannel object is initialized and returned.
 ///
@@ -345,7 +347,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///
 /// Keyword arguments for Timer.PWM modes:
 ///
-///   - 'pulse_width' - determines the initial pulse width to use.
+///   - `pulse_width` - determines the initial pulse width value to use.
+///   - `pulse_width_percent` - determines the initial pulse width percentage to use.
 ///
 /// Keyword arguments for Timer.OC modes:
 ///
@@ -368,17 +371,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     ch0 = t0.channel(0, pyb.Timer.PWM, pin=pyb.Pin.board.D22, pulse_width=(t0.period() + 1) // 4)
 ///     ch1 = t0.channel(1, pyb.Timer.PWM, pin=pyb.Pin.board.D23, pulse_width=(t0.period() + 1) // 2)
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
-    { MP_QSTR_callback,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pin,              MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_compare,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_polarity,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 };
 #define PYB_TIMER_CHANNEL_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_channel_args)
 
 STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, n_args - 2, 2, MP_OBJ_FUN_ARGS_MAX, true);
-
     pyb_timer_obj_t *self = args[0];
     mp_int_t channel = mp_obj_get_int(args[1]);
 
@@ -396,8 +398,10 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         prev_chan = chan;
         chan = chan->next;
     }
-    if (kw_args->used == 0) {
-        // Return the previously allocated channel
+
+    // If only the channel number is given return the previously allocated
+    // channel (or None if no previous channel).
+    if (n_args == 2) {
         if (chan) {
             return chan;
         }
@@ -463,8 +467,32 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_PWM_NORMAL:
         case CHANNEL_MODE_PWM_INVERTED: {
             FTM_OC_InitTypeDef oc_config;
-            oc_config.OCMode        = gChannelMode[chan->mode].oc_mode;
-            oc_config.Pulse         = vals[2].u_int;
+            oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
+            if (vals[2].u_int != 0xffffffff) {
+                // absolute pulse width value given
+                oc_config.Pulse = vals[2].u_int;
+            } else if (vals[3].u_obj != mp_const_none) {
+                // pulse width ratio given
+                uint32_t period = (self->ftm.Instance->MOD & 0xffff) + 1;
+                uint32_t cmp;
+#if MICROPY_PY_BUILTINS_FLOAT
+                if (MP_OBJ_IS_TYPE(vals[3].u_obj, &mp_type_float)) {
+                    cmp = mp_obj_get_float(vals[3].u_obj) * period / 100.0;
+                } else
+#endif
+                {
+                    cmp = mp_obj_get_int(vals[3].u_obj) * period / 100;
+                }
+                if (cmp < 0) {
+                    cmp = 0;
+                } else if (cmp > period) {
+                    cmp = period;
+                }
+                oc_config.Pulse = cmp;
+            } else {
+                // nothing given, default to pulse width of 0
+                oc_config.Pulse = 0;
+            }
             oc_config.OCPolarity    = FTM_OCPOLARITY_HIGH;
 
             HAL_FTM_PWM_ConfigChannel(&self->ftm, &oc_config, channel);
@@ -481,9 +509,9 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_OC_INACTIVE:
         case CHANNEL_MODE_OC_TOGGLE: {
             FTM_OC_InitTypeDef oc_config;
-            oc_config.OCMode       = gChannelMode[chan->mode].oc_mode;
-            oc_config.Pulse        = vals[3].u_int;
-            oc_config.OCPolarity   = vals[4].u_int;
+            oc_config.OCMode       = channel_mode_info[chan->mode].oc_mode;
+            oc_config.Pulse        = vals[4].u_int;
+            oc_config.OCPolarity   = vals[5].u_int;
             if (oc_config.OCPolarity == 0xffffffff) {
                 oc_config.OCPolarity = FTM_OCPOLARITY_HIGH;
             }
@@ -503,7 +531,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_IC: {
             FTM_IC_InitTypeDef ic_config;
 
-            ic_config.ICPolarity  = vals[4].u_int;
+            ic_config.ICPolarity  = vals[5].u_int;
             if (ic_config.ICPolarity == 0xffffffff) {
                 ic_config.ICPolarity = FTM_ICPOLARITY_RISING;
             }
@@ -523,13 +551,14 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid mode (%d)", chan->mode));
     }
+
     return chan;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 3, pyb_timer_channel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 
 /// \method counter([value])
 /// Get or set the timer counter.
-mp_obj_t pyb_timer_counter(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -544,7 +573,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_time
 
 /// \method prescaler([value])
 /// Get or set the prescaler for the timer.
-mp_obj_t pyb_timer_prescaler(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_prescaler(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -565,7 +594,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_ti
 
 /// \method period([value])
 /// Get or set the period of the timer.
-mp_obj_t pyb_timer_period(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = args[0];
     if (n_args == 1) {
         // get
@@ -663,7 +692,6 @@ STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_FALLING),         MP_OBJ_NEW_SMALL_INT(FTM_ICPOLARITY_FALLING) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BOTH),            MP_OBJ_NEW_SMALL_INT(FTM_ICPOLARITY_BOTH) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
 const mp_obj_type_t pyb_timer_type = {
@@ -683,10 +711,10 @@ const mp_obj_type_t pyb_timer_type = {
 STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_channel_obj_t *self = self_in;
 
-    print(env, "TimerChannel(timer=%u, channel=%u mode=%s)",
+    print(env, "TimerChannel(timer=%u, channel=%u, mode=%s)",
           self->timer->tim_id,
           self->channel,
-          qstr_str(gChannelMode[self->mode].name));
+          qstr_str(channel_mode_info[self->mode].name));
 }
 
 /// \method capture([value])
@@ -703,24 +731,60 @@ STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ..
 /// Get or set the pulse width value associated with a channel.
 /// capture, compare, and pulse_width are all aliases for the same function.
 /// pulse_width is the logical name to use when the channel is in PWM mode.
-STATIC mp_obj_t pyb_timer_channel_capture_compare(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
-    if (self->channel == 0xffffffff) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d no channel specified", self->timer->tim_id));
-    }
     FTM_TypeDef *FTMx = self->timer->ftm.Instance;
     if (n_args == 1) {
         // get
-        return mp_obj_new_int(FTMx->channel[self->channel].CV);
+        return mp_obj_new_int(FTMx->channel[self->channel].CV & 0xffff);
     }
 
     mp_int_t pw = mp_obj_get_int(args[1]);
 
     // set
-    FTMx->channel[self->channel].CV = pw;
+    FTMx->channel[self->channel].CV = pw & 0xffff;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj, 1, 2, pyb_timer_channel_capture_compare);
+
+/// \method pulse_width_percent([value])
+/// Get or set the pulse width ratio associated with a channel.  The value is
+/// a floating-point number between 0.0 and 1.0, and is relative to the period
+/// of the timer associated with this channel.  For example, a ratio of 0.5
+/// would be a 50% duty cycle.
+STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_channel_obj_t *self = args[0];
+    FTM_TypeDef *FTMx = self->timer->ftm.Instance;
+    uint32_t period = (FTMx->MOD & 0xffff) + 1;
+    if (n_args == 1) {
+        // get
+        uint32_t cmp = FTMx->channel[self->channel].CV & 0xffff;
+#if MICROPY_PY_BUILTINS_FLOAT
+        return mp_obj_new_float((float)cmp * 100.0 / (float)period);
+#else
+        return mp_obj_new_int(cmp * 100 / period);
+#endif
+    } else {
+        // set
+        uint32_t cmp;
+#if MICROPY_PY_BUILTINS_FLOAT
+        if (MP_OBJ_IS_TYPE(args[1], &mp_type_float)) {
+            cmp = mp_obj_get_float(args[1]) * period / 100.0;
+        } else
+#endif
+        {
+            cmp = mp_obj_get_int(args[1]) * period / 100;
+        }
+        if (cmp < 0) {
+            cmp = 0;
+        } else if (cmp > period) {
+            cmp = period;
+        }
+        FTMx->channel[self->channel].CV = cmp & 0xffff;
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_percent_obj, 1, 2, pyb_timer_channel_pulse_width_percent);
 
 /// \method callback(fun)
 /// Set the function to be called when the timer channel triggers.
@@ -777,6 +841,7 @@ STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_channel_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width_percent), (mp_obj_t)&pyb_timer_channel_pulse_width_percent_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_capture), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compare), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
 #if MICROPY_TIMER_REG
@@ -785,7 +850,7 @@ STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 
-const mp_obj_type_t pyb_timer_channel_type = {
+STATIC const mp_obj_type_t pyb_timer_channel_type = {
     { &mp_type_type },
     .name = MP_QSTR_TimerChannel,
     .print = pyb_timer_channel_print,

@@ -25,7 +25,6 @@
  */
 
 extern const mp_obj_type_t pyb_timer_type;
-extern const mp_obj_type_t pyb_timer_channel_type;
 
 void timer_init0(void);
 void timer_deinit(void);
