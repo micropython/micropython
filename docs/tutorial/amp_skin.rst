@@ -3,19 +3,26 @@ The AMP audio skin
 
 Soldering and using the AMP audio skin.
 
-[<img src="/static/doc/skin-amp-1.jpg" alt="AMP skin" style="width:250px; border:1px solid black; display:inline-block;"/>](/static/doc/skin-amp-1.jpg)
-[<img src="/static/doc/skin-amp-3.jpg" alt="AMP skin" style="width:250px; border:1px solid black; display:inline-block;"/>](/static/doc/skin-amp-3.jpg)
+.. image:: http://micropython.org/static/doc/skin-amp-1.jpg
+    :alt: AMP skin
+    :width: 250px
+
+.. image:: http://micropython.org/static/doc/skin-amp-3.jpg
+    :alt: AMP skin
+    :width: 250px
 
 The following video shows how to solder the headers, microphone and speaker onto the AMP skin.
 
-<iframe style="margin-left:3em;" width="560" height="315" src="//www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
+.. raw:: html
+
+    <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
 
 Example code
 ------------
 
-The AMP skin has a speaker which is connected to DAC(1) via a small
+The AMP skin has a speaker which is connected to ``DAC(1)`` via a small
 power amplifier.  The volume of the amplifier is controlled by a digital
-potentiometer, which is an I2C device with address 46 on the IC2(1) bus.
+potentiometer, which is an I2C device with address 46 on the ``IC2(1)`` bus.
 
 To set the volume, define the following function::
 

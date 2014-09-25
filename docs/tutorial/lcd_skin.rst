@@ -3,13 +3,20 @@ The LCD and touch-sensor skin
 
 Soldering and using the LCD and touch-sensor skin.
 
-[<img src="/static/doc/skin-lcd-3.jpg" alt="pyboard with LCD skin" style="width:250px; border:1px solid black; display:inline-block;"/>](/static/doc/skin-lcd-3.jpg)
-[<img src="/static/doc/skin-lcd-1.jpg" alt="pyboard with LCD skin" style="width:250px; border:1px solid black; display:inline-block;"/>](/static/doc/skin-lcd-1.jpg)
+.. image:: http://micropython.org/static/doc/skin-lcd-3.jpg
+    :alt: pyboard with LCD skin
+    :width: 250px
+
+.. image:: http://micropython.org/static/doc/skin-lcd-1.jpg
+    :alt: pyboard with LCD skin
+    :width: 250px
 
 The following video shows how to solder the headers onto the LCD skin.
 At the end of the video, it shows you how to correctly connect the LCD skin to the pyboard.
 
-<iframe style="margin-left:3em;" width="560" height="315" src="//www.youtube.com/embed/PowCzdLYbFM?rel=0" frameborder="0" allowfullscreen></iframe>
+.. raw:: html
+
+    <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/PowCzdLYbFM?rel=0" frameborder="0" allowfullscreen></iframe>
 
 Using the LCD
 -------------
