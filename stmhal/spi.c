@@ -190,6 +190,14 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 };
 #define PYB_NUM_SPI MP_ARRAY_SIZE(pyb_spi_obj)
 
+SPI_HandleTypeDef *spi_get_handle(mp_obj_t o) {
+    if (!MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "expecting an SPI object"));
+    }
+    pyb_spi_obj_t *self = o;
+    return self->spi;
+}
+
 STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
 

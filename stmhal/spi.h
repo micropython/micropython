@@ -31,3 +31,4 @@ extern const mp_obj_type_t pyb_spi_type;
 
 void spi_init0(void);
 void spi_init(SPI_HandleTypeDef *spi);
+SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);

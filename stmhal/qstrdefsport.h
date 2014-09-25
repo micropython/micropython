@@ -319,7 +319,7 @@ Q(text)
 Q(show)
 
 // for WIZnet5k class
-#if MICROPY_HW_ENABLE_WIZNET5K
+#if MICROPY_PY_WIZNET5K
 Q(wiznet5k)
 Q(WIZnet5k)
 Q(regs)
@@ -342,6 +342,47 @@ Q(gethostbyname)
 Q(AF_INET)
 Q(SOCK_STREAM)
 Q(SOCK_DGRAM)
+#endif
+
+// for CC3k class
+#if MICROPY_PY_CC3K
+Q(cc3k)
+Q(CC3k)
+Q(connect)
+Q(disconnect)
+Q(is_connected)
+Q(ifconfig)
+Q(patch_version)
+Q(patch_program)
+Q(socket)
+Q(family)
+Q(type)
+Q(gethostbyname)
+Q(WEP)
+Q(WPA)
+Q(WPA2)
+Q(AF_INET)
+Q(AF_INET6)
+Q(SOCK_STREAM)
+Q(SOCK_DGRAM)
+Q(SOCK_RAW)
+Q(IPPROTO_IP)
+Q(IPPROTO_ICMP)
+Q(IPPROTO_IPV4)
+Q(IPPROTO_TCP)
+Q(IPPROTO_UDP)
+Q(IPPROTO_IPV6)
+Q(IPPROTO_RAW)
+Q(send)
+Q(recv)
+Q(bind)
+Q(listen)
+Q(accept)
+Q(connect)
+Q(settimeout)
+Q(setblocking)
+Q(close)
+Q(__del__)
 #endif
 
 // for stm module

@@ -85,6 +85,13 @@ extern const struct _mp_obj_module_t mp_module_wiznet5k;
 #define MICROPY_PY_WIZNET5K_DEF
 #endif
 
+#if MICROPY_PY_CC3K
+extern const struct _mp_obj_module_t mp_module_cc3k;
+#define MICROPY_PY_CC3K_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_cc3k), (mp_obj_t)&mp_module_cc3k },
+#else
+#define MICROPY_PY_CC3K_DEF
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
@@ -92,6 +99,7 @@ extern const struct _mp_obj_module_t mp_module_wiznet5k;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_select }, \
     MICROPY_PY_WIZNET5K_DEF \
+    MICROPY_PY_CC3K_DEF \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
