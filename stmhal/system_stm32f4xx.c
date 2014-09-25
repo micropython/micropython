@@ -199,6 +199,9 @@ void SystemInit(void)
 #else
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
+
+  /* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
+  SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 }
 
 /**
