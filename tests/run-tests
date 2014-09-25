@@ -17,11 +17,6 @@ else:
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
     MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
 
-# Unicode tests fail to run on CPython unless locale variable LC_CTYPE specifies UTF-8 encoding
-# Set encoding tag to 'UTF-8' while keeping language/territory tag the same
-[language, encoding] = os.environ['LC_CTYPE'].split('.')
-os.environ['LC_CTYPE'] = '.'.join([language,'UTF-8'])
-
 def rm_f(fname):
     if os.path.exists(fname):
         os.remove(fname)
