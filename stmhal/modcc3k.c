@@ -27,11 +27,15 @@
 // We can't include stdio.h because it defines _types_fd_set, but we
 // need to use the CC3000 version of this type.
 
-// We can't include errno.h because CC3000 defines its own errnos.
-// (And they are different to the standard ones!)
-
 #include <std.h>
 #include <string.h>
+#include <stdarg.h>
+#include <errno.h>
+
+// CC3000 defines its own ENOBUFS (different to standard one!)
+// CC3000 uses global variable called errno
+#undef ENOBUFS
+#undef errno
 
 #include "stm32f4xx_hal.h"
 #include "mpconfig.h"
@@ -45,6 +49,7 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
+#include "pybioctl.h"
 
 #include "hci.h"
 #include "socket.h"
@@ -61,17 +66,20 @@ STATIC const mp_obj_type_t cc3k_socket_type;
 
 STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol);
 
-STATIC volatile uint32_t fd_state = 0;
+STATIC volatile uint32_t fd_closed_state = 0;
 STATIC volatile bool wlan_connected = false;
 STATIC volatile bool ip_obtained = false;
 
-STATIC int cc3k_get_fd_state(int fd) {
-    return (fd_state & (1<<fd));
+STATIC int cc3k_get_fd_closed_state(int fd) {
+    return fd_closed_state & (1 << fd);
 }
 
-STATIC void cc3k_clear_fd_state(int fd) {
-    // reset socket state
-    fd_state &= ~(1<<fd);
+STATIC void cc3k_set_fd_closed_state(int fd) {
+    fd_closed_state |= 1 << fd;
+}
+
+STATIC void cc3k_reset_fd_closed_state(int fd) {
+    fd_closed_state &= ~(1 << fd);
 }
 
 STATIC void cc3k_callback(long event_type, char *data, unsigned char length) {
@@ -89,7 +97,7 @@ STATIC void cc3k_callback(long event_type, char *data, unsigned char length) {
             break;
         case HCI_EVNT_BSD_TCP_CLOSE_WAIT:
             // mark socket for closure
-            fd_state |= (1<<((uint8_t)data[0]));
+            cc3k_set_fd_closed_state(data[0]);
             break;
     }
 }
@@ -338,8 +346,6 @@ STATIC const mp_obj_type_t cc3k_type = {
 /******************************************************************************/
 // Micro Python bindings; CC3k socket class
 
-#define EPIPE               (32)
-//#define MAX_FD              (8)
 #define MAX_ADDRSTRLEN      (128)
 #define MAX_RX_PACKET       (CC3000_RX_BUFFER_SIZE-CC3000_MINIMAL_RX_SIZE-1)
 #define MAX_TX_PACKET       (CC3000_TX_BUFFER_SIZE-CC3000_MINIMAL_TX_SIZE-1)
@@ -362,7 +368,7 @@ STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t prot
     }
 
     // clear socket state
-    cc3k_clear_fd_state(s->fd);
+    cc3k_reset_fd_closed_state(s->fd);
 
     return s;
 }
@@ -375,7 +381,7 @@ STATIC void cc3k_socket_print(void (*print)(void *env, const char *fmt, ...), vo
 STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     cc3k_socket_obj_t *self = self_in;
 
-    if (cc3k_get_fd_state(self->fd)) {
+    if (cc3k_get_fd_closed_state(self->fd)) {
         closesocket(self->fd);
         *errcode = EPIPE;
         return 0;
@@ -401,7 +407,7 @@ STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t s
 STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     cc3k_socket_obj_t *self = self_in;
 
-    if (cc3k_get_fd_state(self->fd)) {
+    if (cc3k_get_fd_closed_state(self->fd)) {
         closesocket(self->fd);
         return 0;
     }
@@ -475,7 +481,7 @@ STATIC mp_obj_t cc3k_socket_accept(mp_obj_t self_in) {
     }
 
     // clear socket state
-    cc3k_clear_fd_state(fd);
+    cc3k_reset_fd_closed_state(fd);
 
     // create new socket object
     cc3k_socket_obj_t *socket_obj = m_new_obj_with_finaliser(cc3k_socket_obj_t);
@@ -587,9 +593,74 @@ STATIC const mp_map_elem_t cc3k_socket_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_socket_locals_dict, cc3k_socket_locals_dict_table);
 
+mp_uint_t cc3k_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+    cc3k_socket_obj_t *self = self_in;
+    va_list vargs;
+    va_start(vargs, errcode);
+    mp_uint_t ret;
+    if (request == MP_IOCTL_POLL) {
+        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        ret = 0;
+        int fd = self->fd;
+
+        // init fds
+        fd_set rfds, wfds, xfds;
+        FD_ZERO(&rfds);
+        FD_ZERO(&wfds);
+        FD_ZERO(&xfds);
+
+        // set fds if needed
+        if (flags & MP_IOCTL_POLL_RD) {
+            FD_SET(fd, &rfds);
+
+            // A socked that just closed is available for reading.  A call to
+            // recv() returns 0 which is consistent with BSD.
+            if (cc3k_get_fd_closed_state(fd)) {
+                ret |= MP_IOCTL_POLL_RD;
+            }
+        }
+        if (flags & MP_IOCTL_POLL_WR) {
+            FD_SET(fd, &wfds);
+        }
+        if (flags & MP_IOCTL_POLL_HUP) {
+            FD_SET(fd, &xfds);
+        }
+
+        // call cc3000 select with minimum timeout
+        timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 1;
+        int nfds = select(fd + 1, &rfds, &wfds, &xfds, &tv);
+
+        // check for error
+        if (nfds == -1) {
+            *errcode = errno; // return cc3000's errno
+            return -1;
+        }
+
+        // check return of select
+        if (FD_ISSET(fd, &rfds)) {
+            ret |= MP_IOCTL_POLL_RD;
+        }
+        if (FD_ISSET(fd, &wfds)) {
+            ret |= MP_IOCTL_POLL_WR;
+        }
+        if (FD_ISSET(fd, &xfds)) {
+            ret |= MP_IOCTL_POLL_HUP;
+        }
+    } else {
+        *errcode = EINVAL;
+        ret = -1;
+    }
+    va_end(vargs);
+    return ret;
+}
+
 STATIC const mp_stream_p_t cc3k_socket_stream_p = {
     .read = cc3k_socket_recv,
     .write = cc3k_socket_send,
+    .ioctl = cc3k_ioctl,
+    .is_text = false,
 };
 
 STATIC const mp_obj_type_t cc3k_socket_type = {
@@ -601,114 +672,6 @@ STATIC const mp_obj_type_t cc3k_socket_type = {
     .stream_p = &cc3k_socket_stream_p,
     .locals_dict = (mp_obj_t)&cc3k_socket_locals_dict,
 };
-
-// the following code is for select, which is yet to be implemented
-#if 0
-#define MP_ASSERT_TYPE(obj, type)                       \
-    do {                                                \
-        __typeof__ (obj) _a = (obj);                    \
-        __typeof__ (type) _b = (type);                  \
-        if (!MP_OBJ_IS_TYPE(_a, _b)) {                  \
-            nlr_jump(mp_obj_new_exception_msg_varg(     \
-                        &mp_type_TypeError,             \
-                        "can't convert %s to %s",       \
-                        mp_obj_get_type_str(_a),        \
-                        _b->name));                     \
-        }                                               \
-    } while(0)
-
-// select helper functions
-STATIC void set_fds(int *nfds, mp_obj_t *fdlist, mp_uint_t fdlist_len, fd_set *fdset) {
-
-    // clear fd set
-    FD_ZERO(fdset);
-
-    // add sockets to fd set
-    for (int i=0; i<fdlist_len; i++) {
-        socket_t *s = fdlist[i];
-
-        // check arg type
-        MP_ASSERT_TYPE(s, &cc3k_socket_type);
-
-        // add to fd set
-        FD_SET(s->fd, fdset);
-
-        if (s->fd > (*nfds)) {
-            *nfds = s->fd;
-        }
-    }
-}
-
-STATIC void get_fds(mp_obj_t *fdlist, mp_uint_t fdlist_len, mp_obj_t *fdlist_out, fd_set *fdset) {
-    for (int i=0; i<fdlist_len; i++) {
-        socket_t *s = fdlist[i];
-        if (FD_ISSET(s->fd, fdset)) {
-            socket_t *socket_obj = m_new_obj_with_finaliser(socket_t);
-            socket_obj->base.type = (mp_obj_t)&socket_type;
-            socket_obj->fd  = s->fd;
-            mp_obj_list_append(fdlist_out, socket_obj);
-        }
-    }
-}
-
-STATIC mp_obj_t cc3k_select(mp_uint_t n_args, const mp_obj_t *args) {
-    int nfds=0; //highest-numbered fd plus 1
-    timeval tv={0};
-    fd_set rfds, wfds, xfds;
-
-    mp_obj_t *rlist, *wlist, *xlist;
-    mp_uint_t rlist_len, wlist_len, xlist_len;
-
-    // read args
-    mp_obj_get_array(args[0], &rlist_len, &rlist);
-    mp_obj_get_array(args[1], &wlist_len, &wlist);
-    mp_obj_get_array(args[2], &xlist_len, &xlist);
-
-    if (n_args == 4) {
-        float timeout = mp_obj_get_float(args[3]);
-        tv.tv_sec = (int)timeout;
-        tv.tv_usec = (timeout-(int)timeout)*1000*1000;
-    }
-
-    // add fds to their respective sets
-    set_fds(&nfds, rlist, rlist_len, &rfds);
-    set_fds(&nfds, wlist, wlist_len, &wfds);
-    set_fds(&nfds, xlist, xlist_len, &xfds);
-
-    // call select
-    nfds = select(nfds+1, &rfds, &wfds, &xfds, &tv);
-
-    // if any of the read sockets is closed, we add it to the read fd set,
-    // a subsequent call to recv() returns 0. This behavior is consistent with BSD.
-    for (int i=0; i<rlist_len; i++) {
-        socket_t *s = rlist[i];
-        if (cc3k_get_fd_state(s->fd)) {
-            FD_SET(s->fd, &rfds);
-            nfds = (nfds > s->fd)? nfds:s->fd;
-        }
-    }
-
-    // return value; a tuple of 3 lists
-    mp_obj_t fds[3] = {
-        mp_obj_new_list(0, NULL),
-        mp_obj_new_list(0, NULL),
-        mp_obj_new_list(0, NULL)
-    };
-
-    // On success, select() returns the number of file descriptors contained
-    // in the three returned descriptor sets which may be zero if the timeout
-    // expires before anything interesting happens, -1 is returned on error.
-    if (nfds == -1) {   // select failed
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "select failed"));
-    } else if (nfds) {  // an fd is ready
-        get_fds(rlist, rlist_len, fds[0], &rfds);
-        get_fds(wlist, wlist_len, fds[1], &wfds);
-        get_fds(xlist, xlist_len, fds[2], &xfds);
-    } // select timedout
-
-    return mp_obj_new_tuple(3, fds);
-}
-#endif
 
 /******************************************************************************/
 // Micro Python bindings; CC3k module
