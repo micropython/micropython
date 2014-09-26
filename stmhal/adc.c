@@ -349,6 +349,7 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
 
@@ -368,6 +369,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 
     return raw_value * VBAT_DIV / 4096.0f * 3.3f;
 }
+#endif
 
 /******************************************************************************/
 /* Micro Python bindings : adc_all object                                     */
@@ -399,6 +401,7 @@ STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
 
+#if MICROPY_PY_BUILTINS_FLOAT
 STATIC mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = self_in;
     float data = adc_read_core_vbat(&self->handle);
@@ -412,12 +415,15 @@ STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
     return mp_obj_new_float(data);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
+#endif
 
 STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_channel),   (mp_obj_t)&adc_all_read_channel_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_temp), (mp_obj_t)&adc_all_read_core_temp_obj},
+#if MICROPY_PY_BUILTINS_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);

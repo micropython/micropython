@@ -128,35 +128,68 @@ mp_uint_t get_prescaler_shift(mp_int_t prescaler) {
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
 
+// Helper function for determining the period used for calculating percent
+STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
+    // In center mode,  compare == period corresponds to 100%
+    // In edge mode, compare == (period + 1) corresponds to 100%
+    FTM_TypeDef *FTMx = self->ftm.Instance;
+    uint32_t period = (FTMx->MOD & 0xffff);
+    if ((FTMx->SC & FTM_SC_CPWMS) == 0) {
+        // Edge mode
+        period++;
+    }
+    return period;
+}
+
 // Helper function to compute PWM value from timer period and percent value.
 // 'val' can be an int or a float between 0 and 100 (out of range values are
 // clamped).
-STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t val) {
+STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent_in) {
     uint32_t cmp;
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(val, &mp_type_float)) {
-        cmp = mp_obj_get_float(val) / 100.0 * period;
+    } else if (MP_OBJ_IS_TYPE(percent_in, &mp_type_float)) {
+        float percent = mp_obj_get_float(percent_in);
+        if (percent <= 0.0) {
+            cmp = 0;
+        } else if (percent >= 100.0) {
+            cmp = period;
+        } else {
+            cmp = percent / 100.0 * ((float)period);
+        }
     #endif
     } else {
-        // For integer arithmetic, if period is large and 100*period will
-        // overflow, then divide period before multiplying by cmp.  Otherwise
-        // do it the other way round to retain precision.
-        // TODO we really need an mp_obj_get_uint_clamped function here so
-        // that we can get long-int values as large as 0xffffffff.
-        cmp = mp_obj_get_int(val);
-        if (period > (1 << 31) / 100) {
-            cmp = cmp * (period / 100);
+        mp_int_t percent = mp_obj_get_int(percent_in);
+        if (percent <= 0) {
+            cmp = 0;
+        } else if (percent >= 100) {
+            cmp = period;
         } else {
-            cmp = (cmp * period) / 100;
+            cmp = ((uint32_t)percent * period) / 100;
         }
     }
-    if (cmp < 0) {
-        cmp = 0;
-    } else if (cmp > period) {
-        cmp = period;
-    }
     return cmp;
+}
+
+// Helper function to compute percentage from timer perion and PWM value.
+STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
+    #if MICROPY_PY_BUILTINS_FLOAT
+    float percent = (float)cmp * 100.0 / (float)period;
+    if (cmp > period) {
+        percent = 100.0;
+    } else {
+        percent = (float)cmp * 100.0 / (float)period;
+    }
+    return mp_obj_new_float(percent);
+    #else
+    mp_int_t percent;
+    if (cmp > period) {
+        percent = 100;
+    } else {
+        percent = cmp * 100 / period;
+    }
+    return mp_obj_new_int(percent);
+    #endif
 }
 
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -169,7 +202,7 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
             self->tim_id,
             1 << (self->ftm.Instance->SC & 7),
             self->ftm.Instance->MOD & 0xffff,
-            self->ftm.Init.CounterMode == FTM_COUNTERMODE_UP ? "tUP" : "CENTER");
+            self->ftm.Init.CounterMode == FTM_COUNTERMODE_UP ? "UP" : "CENTER");
     }
 }
 
@@ -193,7 +226,8 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
 ///   - `period` [0-0xffff] - Specifies the value to be loaded into the timer's
 ///     Modulo Register (MOD). This determines the period of the timer (i.e.
 ///     when the counter cycles). The timer counter will roll-over after
-///     `period + 1` timer clock cycles.
+///     `period` timer clock cycles. In center mode, a compare register > 0x7fff
+///     doesn't seem to work properly, so keep this in mind.
 ///
 ///   - `mode` can be one of:
 ///     - `Timer.UP` - configures the timer to count from 0 to MOD (default)
@@ -231,15 +265,15 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
 
         uint32_t period = MAX(1, F_BUS / vals[0].u_int);
         uint32_t prescaler_shift = 0;
-        while (period > 0x10000 && prescaler_shift < 7) {
+        while (period > 0xffff && prescaler_shift < 7) {
             period >>= 1;
             prescaler_shift++;
         }
-        if (period > 0x10000) {
-            period = 0x10000;
+        if (period > 0xffff) {
+            period = 0xffff;
         }
         init->PrescalerShift = prescaler_shift;
-        init->Period = period - 1;
+        init->Period = period;
     } else if (vals[1].u_int != 0xffffffff && vals[2].u_int != 0xffffffff) {
         // set prescaler and period directly
         init->PrescalerShift = get_prescaler_shift(vals[1].u_int);
@@ -501,13 +535,13 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
             oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
             if (vals[3].u_obj != mp_const_none) {
                 // pulse width ratio given
-                uint32_t period = (self->ftm.Instance->MOD & 0xffff) + 1;
+                uint32_t period = compute_period(self);
                 oc_config.Pulse = compute_pwm_value_from_percent(period, vals[3].u_obj);
             } else {
                 // use absolute pulse width value (defaults to 0 if nothing given)
                 oc_config.Pulse = vals[2].u_int;
             }
-            oc_config.OCPolarity    = FTM_OCPOLARITY_HIGH;
+            oc_config.OCPolarity = FTM_OCPOLARITY_HIGH;
 
             HAL_FTM_PWM_ConfigChannel(&self->ftm, &oc_config, channel);
             if (chan->callback == mp_const_none) {
@@ -745,6 +779,9 @@ STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ..
 /// Get or set the pulse width value associated with a channel.
 /// capture, compare, and pulse_width are all aliases for the same function.
 /// pulse_width is the logical name to use when the channel is in PWM mode.
+/// 
+/// In edge aligned mode, a pulse_width of `period + 1` corresponds to a duty cycle of 100%
+/// In center aligned mode, a pulse width of `period` corresponds to a duty cycle of 100%
 STATIC mp_obj_t pyb_timer_channel_capture_compare(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     FTM_TypeDef *FTMx = self->timer->ftm.Instance;
@@ -770,15 +807,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj
 STATIC mp_obj_t pyb_timer_channel_pulse_width_percent(mp_uint_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     FTM_TypeDef *FTMx = self->timer->ftm.Instance;
-    uint32_t period = (FTMx->MOD & 0xffff) + 1;
+    uint32_t period = compute_period(self->timer);
     if (n_args == 1) {
         // get
         uint32_t cmp = FTMx->channel[self->channel].CV & 0xffff;
-        #if MICROPY_PY_BUILTINS_FLOAT
-        return mp_obj_new_float((float)cmp / (float)period * 100.0);
-        #else
-        return mp_obj_new_int(cmp * 100 / period);
-        #endif
+        return compute_percent_from_pwm_value(period, cmp);
     } else {
         // set
         uint32_t cmp = compute_pwm_value_from_percent(period, args[1]);

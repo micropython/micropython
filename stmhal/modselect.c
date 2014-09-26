@@ -124,10 +124,14 @@ STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
     mp_uint_t timeout = -1;
     if (n_args == 4) {
         if (args[3] != mp_const_none) {
+            #if MICROPY_PY_BUILTINS_FLOAT
             float timeout_f = mp_obj_get_float(args[3]);
             if (timeout_f >= 0) {
                 timeout = (mp_uint_t)(timeout_f * 1000);
             }
+            #else
+            timeout = mp_obj_get_int(args[3]) * 1000;
+            #endif
         }
     }
 
