@@ -25,7 +25,12 @@
  */
 
 #if !MICROPY_NLR_SETJMP && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
-/* arm callee save: bx, bp, sp, r12, r14, r14, r15 */
+
+// We only need the functions here if we are on arm/thumb, and we are not
+// using setjmp/longjmp.
+//
+// For reference, arm/thumb callee save regs are:
+//      r4-r11, r13=sp
 
     .syntax unified
     /*.cpu cortex-m4*/
@@ -33,7 +38,9 @@
     .text
     .align  2
 
-/* uint nlr_push(r0=nlr_buf_t *nlr) */
+/**************************************/
+// mp_uint_t nlr_push(r0=nlr_buf_t *nlr)
+
     .global nlr_push
 #if defined(__thumb2__)
     .thumb
@@ -64,7 +71,9 @@ nlr_push:
     .word   .LANCHOR0
     .size   nlr_push, .-nlr_push
 
-@ void nlr_pop()
+/**************************************/
+// void nlr_pop()
+
     .global nlr_pop
 #if defined(__thumb2__)
     .thumb
@@ -82,7 +91,9 @@ nlr_pop:
     .word    .LANCHOR0
     .size   nlr_pop, .-nlr_pop
 
-/* void nlr_jump(r0=uint val) */
+/**************************************/
+// void nlr_jump(r0=mp_uint_t val)
+
     .global nlr_jump
 #if defined(__thumb2__)
     .thumb
@@ -116,7 +127,9 @@ nlr_jump:
     .word    .LANCHOR0
     .size   nlr_jump, .-nlr_jump
 
-/* local variable nlr_top */
+/**************************************/
+// local variable nlr_top
+
     .bss
     .align  2
     .set    .LANCHOR0,. + 0
@@ -124,4 +137,5 @@ nlr_jump:
     .size   nlr_top, 4
 nlr_top:
     .space  4
-#endif
+
+#endif // !MICROPY_NLR_SETJMP && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))

@@ -25,12 +25,19 @@
  */
 
 #if defined(__i386__) && !MICROPY_NLR_SETJMP
-/* x86 callee save: bx, di, si, bp, sp */
+
+// We only need the functions here if we are on x86, and we are not
+// using setjmp/longjmp.
+//
+// For reference, x86 callee save regs are:
+//      ebx, esi, edi, ebp, esp, eip
 
     .file   "nlr.s"
     .text
 
-/* uint nlr_push(4(%esp)=nlr_buf_t *nlr) */
+/**************************************/
+// mp_uint_t nlr_push(4(%esp)=nlr_buf_t *nlr)
+
 #ifdef _WIN32
     .globl  _nlr_push
     .def    _nlr_push; .scl 2; .type 32; .endef
@@ -57,7 +64,9 @@ nlr_push:
     .size   nlr_push, .-nlr_push
 #endif
 
-/* void nlr_pop() */
+/**************************************/
+// void nlr_pop()
+
 #ifdef _WIN32
     .globl  _nlr_pop
     .def    _nlr_pop; .scl 2; .type 32; .endef
@@ -75,7 +84,9 @@ nlr_pop:
     .size   nlr_pop, .-nlr_pop
 #endif
 
-/* void nlr_jump(4(%esp)=uint val) */
+/**************************************/
+// void nlr_jump(4(%esp)=mp_uint_t val)
+
 #ifdef _WIN32
     .globl  _nlr_jump
     .def    _nlr_jump; .scl 2; .type 32; .endef
@@ -110,10 +121,13 @@ nlr_jump:
     .size   nlr_jump, .-nlr_jump
 #endif
 
+/**************************************/
+// local variable nlr_top
+
     .bss
 #ifndef _WIN32
     .local  nlr_top
 #endif
     .comm   nlr_top,4,4
 
-#endif /* __i386__ */
+#endif // defined(__i386__) && !MICROPY_NLR_SETJMP

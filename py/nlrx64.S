@@ -25,18 +25,28 @@
  */
 
 #if defined(__x86_64__) && !MICROPY_NLR_SETJMP
-/* x64 callee save: bx, bp, sp, r12, r13, r14, r15 */
+
+// We only need the functions here if we are on x86-64, and we are not
+// using setjmp/longjmp.
+//
+// For reference, x86-64 callee save regs are:
+//      rbx, rbp, rsp, r12, r13, r14, r15
 
     .file   "nlr.s"
     .text
 
 #if !defined(__CYGWIN__)
 
-#if (defined(__APPLE__) && defined(__MACH__))
-#define nlr_jump_fail _nlr_jump_fail
-#endif // (defined(__APPLE__) && defined(__MACH__))
+/******************************************************************************/
+//
+// Functions for *nix and OSX.
+// OSX needs _ prefix for binding to C, and doesn't support some directives.
+//
+/******************************************************************************/
 
-/* uint nlr_push(rdi=nlr_buf_t *nlr) */
+/**************************************/
+// mp_uint_t nlr_push(rdi=nlr_buf_t *nlr)
+
 #if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_push
     .type   nlr_push, @function
@@ -63,7 +73,9 @@ _nlr_push:
     .size   nlr_push, .-nlr_push
 #endif
 
-/* void nlr_pop() */
+/**************************************/
+// void nlr_pop()
+
 #if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_pop
     .type   nlr_pop, @function
@@ -80,7 +92,9 @@ _nlr_pop:
     .size   nlr_pop, .-nlr_pop
 #endif
 
-/* void nlr_jump(rdi=uint val) */
+/**************************************/
+// void nlr_jump(rdi=mp_uint_t val)
+
 #if !(defined(__APPLE__) && defined(__MACH__))
     .globl  nlr_jump
     .type   nlr_jump, @function
@@ -110,20 +124,33 @@ nlr_jump:
     ret                             # return
 .fail:
     movq    %rax, %rdi              # put argument back in first-arg register
-    je      nlr_jump_fail           # transfer control to nlr_jump_fail
 #if !(defined(__APPLE__) && defined(__MACH__))
+    je      nlr_jump_fail           # transfer control to nlr_jump_fail
     .size   nlr_jump, .-nlr_jump
+#else
+    je      _nlr_jump_fail          # transfer control to nlr_jump_fail
 #endif
 
-    .bss
+/**************************************/
+// local variable nlr_top
+
 #if !(defined(__APPLE__) && defined(__MACH__))
+    .bss
     .local  nlr_top
 #endif
     .comm   nlr_top,8,8
 
 #else // !defined(__CYGWIN__)
 
-/* uint nlr_push(rcx=nlr_buf_t *nlr) */
+/******************************************************************************/
+//
+// Functions for Cygwin
+//
+/******************************************************************************/
+
+/**************************************/
+// mp_uint_t nlr_push(rcx=nlr_buf_t *nlr)
+
     .globl  nlr_push
 nlr_push:
     movq    (%rsp), %rax            # load return %rip
@@ -143,7 +170,9 @@ nlr_push:
     xorq    %rax, %rax              # return 0, normal return
     ret                             # return
 
-/* void nlr_pop() */
+/**************************************/
+// void nlr_pop()
+
     .globl  nlr_pop
 nlr_pop:
     movq    nlr_top(%rip), %rax     # get nlr_top into %rax
@@ -151,7 +180,9 @@ nlr_pop:
     movq    %rax, nlr_top(%rip)     # store prev nlr_buf (to unlink list)
     ret                             # return
 
-/* void nlr_jump(rcx=uint val) */
+/**************************************/
+// void nlr_jump(rcx=mp_uint_t val)
+
     .globl  nlr_jump
 nlr_jump:
     movq    %rcx, %rax              # put return value in %rax
@@ -179,9 +210,12 @@ nlr_jump:
     movq    %rax, %rcx              # put argument back in first-arg register
     je      nlr_jump_fail           # transfer control to nlr_jump_fail
 
+/**************************************/
+// local variable nlr_top
+
     .bss
     .comm   nlr_top,8,8
 
 #endif // !defined(__CYGWIN__)
 
-#endif // __x86_64__
+#endif // defined(__x86_64__) && !MICROPY_NLR_SETJMP
