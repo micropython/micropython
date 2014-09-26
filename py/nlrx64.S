@@ -113,10 +113,7 @@ nlr_jump:
     je      nlr_jump_fail           # transfer control to nlr_jump_fail
 #if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_jump, .-nlr_jump
-#endif
-
     .bss
-#if !(defined(__APPLE__) && defined(__MACH__))
     .local  nlr_top
 #endif
     .comm   nlr_top,8,8
