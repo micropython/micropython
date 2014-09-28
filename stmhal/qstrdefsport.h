@@ -68,6 +68,8 @@ Q(/sd)
 Q(/sd/lib)
 Q(millis)
 Q(micros)
+Q(elapsed_millis)
+Q(elapsed_micros)
 
 // for file class
 Q(seek)

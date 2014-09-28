@@ -8,7 +8,7 @@
 #include MICROPY_HAL_H
 
 uint32_t HAL_GetTick(void) {
-  return micros();
+  return millis();
 }
 
 void HAL_Delay(uint32_t Delay) {
