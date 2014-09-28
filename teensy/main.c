@@ -253,9 +253,13 @@ char *strdup(const char *str) {
 #endif
 
 int main(void) {
-    pinMode(LED_BUILTIN, OUTPUT);
-    delay(1000);
+    // TODO: Put this in a more common initialization function.
+    // Turn on STKALIGN which keeps the stack 8-byte aligned for interrupts
+    // (per EABI)
+    #define SCB_CCR_STKALIGN (1 << 9)
+    SCB_CCR |= SCB_CCR_STKALIGN;
 
+    pinMode(LED_BUILTIN, OUTPUT);
     led_init();
 
 //    int first_soft_reset = true;
