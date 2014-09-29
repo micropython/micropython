@@ -1365,20 +1365,25 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
 
 STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit);
-    if (vtype == VTYPE_BOOL) {
-        emit_pre_pop_reg(emit, &vtype, REG_RET);
-        if (!pop) {
-            adjust_stack(emit, 1);
-        }
-    } else if (vtype == VTYPE_PYOBJ) {
-        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-        if (!pop) {
-            adjust_stack(emit, 1);
-        }
-        emit_call(emit, MP_F_OBJ_IS_TRUE);
-    } else {
-        printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
-        assert(0);
+    switch (vtype) {
+        case VTYPE_PYOBJ:
+            emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+            if (!pop) {
+                adjust_stack(emit, 1);
+            }
+            emit_call(emit, MP_F_OBJ_IS_TRUE);
+            break;
+        case VTYPE_BOOL:
+        case VTYPE_INT:
+        case VTYPE_UINT:
+            emit_pre_pop_reg(emit, &vtype, REG_RET);
+            if (!pop) {
+                adjust_stack(emit, 1);
+            }
+            break;
+        default:
+            printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
+            assert(0);
     }
     // need to commit stack because we may jump elsewhere
     need_stack_settled(emit);
