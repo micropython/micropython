@@ -540,15 +540,15 @@ const BYTE ExCvt[] = _EXCVT;	/* Upper conversion table for extended characters *
    Module Private Functions
 
 ---------------------------------------------------------------------------*/
-DWORD clust2sect (FATFS* fs, DWORD clst);
-DWORD get_fat (FATFS* fs,	DWORD clst);
+static DWORD clust2sect (FATFS* fs, DWORD clst);
+static DWORD get_fat (FATFS* fs,	DWORD clst);
 
 #if !_FS_READONLY
-FRESULT put_fat (FATFS* fs,	DWORD clst,	DWORD val);
+static FRESULT put_fat (FATFS* fs,	DWORD clst,	DWORD val);
 #endif /* !_FS_READONLY */
 
 #if _USE_LFN
-void gen_numname (BYTE* dst, const BYTE* src, const WCHAR* lfn, WORD seq);
+static void gen_numname (BYTE* dst, const BYTE* src, const WCHAR* lfn, WORD seq);
 #endif /* !_USE_LFN */
 
 /*-----------------------------------------------------------------------*/
@@ -556,6 +556,11 @@ void gen_numname (BYTE* dst, const BYTE* src, const WCHAR* lfn, WORD seq);
 /*-----------------------------------------------------------------------*/
 
 /* Copy memory to memory */
+#if 1
+// We use the original custom version of mem_cpy so that gcc doesn't
+// recognise the builtin function and then inline it.  Allowing gcc
+// to use the builtin memcpy increases code size by 64 bytes.
+// TODO need a better (less ad-hoc) way to control this.
 static
 void mem_cpy (void* dst, const void* src, UINT cnt) {
 	BYTE *d = (BYTE*)dst;
@@ -571,8 +576,13 @@ void mem_cpy (void* dst, const void* src, UINT cnt) {
 	while (cnt--)
 		*d++ = *s++;
 }
+#else
+// use stdlib
+#define mem_cpy memcpy
+#endif
 
 /* Fill memory */
+#if 0
 static
 void mem_set (void* dst, int val, UINT cnt) {
 	BYTE *d = (BYTE*)dst;
@@ -580,8 +590,13 @@ void mem_set (void* dst, int val, UINT cnt) {
 	while (cnt--)
 		*d++ = (BYTE)val;
 }
+#else
+// use stdlib
+#define mem_set memset
+#endif
 
 /* Compare memory to memory */
+#if 0
 static
 int mem_cmp (const void* dst, const void* src, UINT cnt) {
 	const BYTE *d = (const BYTE *)dst, *s = (const BYTE *)src;
@@ -590,6 +605,10 @@ int mem_cmp (const void* dst, const void* src, UINT cnt) {
 	while (cnt-- && (r = *d++ - *s++) == 0) ;
 	return r;
 }
+#else
+// use stdlib
+#define mem_cmp memcmp
+#endif
 
 /* Check if chr is contained in the string */
 static
@@ -842,6 +861,7 @@ FRESULT sync_fs (	/* FR_OK: successful, FR_DISK_ERR: failed */
 /*-----------------------------------------------------------------------*/
 
 
+static
 DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 	FATFS* fs,		/* File system object */
 	DWORD clst		/* Cluster# to be converted */
@@ -860,6 +880,7 @@ DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 /*-----------------------------------------------------------------------*/
 
 
+static
 DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster status */
 	FATFS* fs,	/* File system object */
 	DWORD clst	/* Cluster# to get the link information */
@@ -903,6 +924,7 @@ DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster status 
 /*-----------------------------------------------------------------------*/
 #if !_FS_READONLY
 
+static
 FRESULT put_fat (
 	FATFS* fs,	/* File system object */
 	DWORD clst,	/* Cluster# to be changed in range of 2 to fs->n_fatent - 1 */
@@ -1401,6 +1423,7 @@ void fit_lfn (
 /* Create numbered name                                                  */
 /*-----------------------------------------------------------------------*/
 #if _USE_LFN
+static
 void gen_numname (
 	BYTE* dst,			/* Pointer to generated SFN */
 	const BYTE* src,	/* Pointer to source SFN to be modified */
