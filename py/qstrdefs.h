@@ -77,6 +77,9 @@ Q(const)
 Q(native)
 Q(viper)
 Q(uint)
+Q(ptr)
+Q(ptr8)
+Q(ptr16)
 #endif
 
 #if MICROPY_EMIT_INLINE_THUMB

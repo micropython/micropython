@@ -51,8 +51,16 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
     switch (type & 3) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
         case MP_NATIVE_TYPE_BOOL:
-        case MP_NATIVE_TYPE_INT:
-        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int(obj);
+        case MP_NATIVE_TYPE_INT: return mp_obj_get_int(obj);
+        case MP_NATIVE_TYPE_UINT: {
+            mp_buffer_info_t bufinfo;
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_RW)) {
+                return (mp_uint_t)bufinfo.buf;
+            } else {
+                // TODO should be mp_obj_get_uint_truncated or something
+                return mp_obj_get_int(obj);
+            }
+        }
         default: assert(0); return 0;
     }
 }
