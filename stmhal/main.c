@@ -350,6 +350,9 @@ soft_reset:
                 __fatal_error("could not create LFS");
             }
 
+            // set label
+            f_setlabel("/flash/pybflash");
+
             // create empty main.py
             FIL fp;
             f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);

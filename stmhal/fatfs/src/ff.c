@@ -3793,6 +3793,7 @@ FRESULT f_setlabel (
 
 	/* Create a volume label in directory form */
 	vn[0] = 0;
+        if (label[0] == '/') label++;
 	for (sl = 0; label[sl]; sl++) ;				/* Get name length */
 	for ( ; sl && label[sl-1] == ' '; sl--) ;	/* Remove trailing spaces */
 	if (sl) {	/* Create volume label in directory form */
