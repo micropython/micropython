@@ -32,6 +32,7 @@
 /** types *******************************************************/
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
