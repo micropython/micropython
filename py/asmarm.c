@@ -45,9 +45,8 @@ struct _asm_arm_t {
     byte *code_base;
     byte dummy_data[4];
 
-    uint max_num_labels;
-    int *label_offsets;
-    int num_locals;
+    mp_uint_t max_num_labels;
+    mp_uint_t *label_offsets;
     uint push_reglist;
     uint stack_adjust;
 };
@@ -57,7 +56,7 @@ asm_arm_t *asm_arm_new(uint max_num_labels) {
 
     as = m_new0(asm_arm_t, 1);
     as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(int, max_num_labels);
+    as->label_offsets = m_new(mp_uint_t, max_num_labels);
 
     return as;
 }
@@ -66,7 +65,7 @@ void asm_arm_free(asm_arm_t *as, bool free_code) {
     if (free_code) {
         MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
     }
-
+    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
     m_del_obj(asm_arm_t, as);
 }
 
@@ -74,7 +73,7 @@ void asm_arm_start_pass(asm_arm_t *as, uint pass) {
     as->pass = pass;
     as->code_offset = 0;
     if (pass == ASM_ARM_PASS_COMPUTE) {
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
+        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
     }
 }
 
@@ -127,7 +126,7 @@ STATIC void emit(asm_arm_t *as, uint op) {
 
 // Insert word into instruction flow, add "ALWAYS" condition code
 STATIC void emit_al(asm_arm_t *as, uint op) {
-    emit(as, op | ARM_CC_AL);
+    emit(as, op | ASM_ARM_CC_AL);
 }
 
 // Basic instructions without condition code
@@ -178,7 +177,7 @@ void asm_arm_bkpt(asm_arm_t *as) {
 
 // locals:
 //  - stored on the stack in ascending order
-//  - numbered 0 through as->num_locals-1
+//  - numbered 0 through num_locals-1
 //  - SP points to first local
 //
 //  | SP
@@ -194,30 +193,36 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
     }
 
     as->stack_adjust = 0;
-    as->num_locals = num_locals;
-    as->push_reglist = 1 << REG_R1 | 1 << REG_R2 | 1 << REG_R3 | 1 << REG_R4
-            | 1 << REG_R5 | 1 << REG_R6 | 1 << REG_R7 | 1 << REG_R8;
+    as->push_reglist = 1 << ASM_ARM_REG_R1
+        | 1 << ASM_ARM_REG_R2
+        | 1 << ASM_ARM_REG_R3
+        | 1 << ASM_ARM_REG_R4
+        | 1 << ASM_ARM_REG_R5
+        | 1 << ASM_ARM_REG_R6
+        | 1 << ASM_ARM_REG_R7
+        | 1 << ASM_ARM_REG_R8;
 
     // Only adjust the stack if there are more locals than usable registers
     if(num_locals > 3) {
         as->stack_adjust = num_locals * 4;
         // Align stack to 8 bytes
-        if(as->num_locals & 1)
+        if (num_locals & 1) {
             as->stack_adjust += 4;
+        }
     }
 
-    emit_al(as, asm_arm_op_push(as->push_reglist | 1 << REG_LR));
+    emit_al(as, asm_arm_op_push(as->push_reglist | 1 << ASM_ARM_REG_LR));
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_sub_imm(REG_SP, REG_SP, as->stack_adjust));
+        emit_al(as, asm_arm_op_sub_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
     }
 }
 
 void asm_arm_exit(asm_arm_t *as) {
     if (as->stack_adjust > 0) {
-        emit_al(as, asm_arm_op_add_imm(REG_SP, REG_SP, as->stack_adjust));
+        emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_SP, ASM_ARM_REG_SP, as->stack_adjust));
     }
 
-    emit_al(as, asm_arm_op_pop(as->push_reglist | (1 << REG_PC)));
+    emit_al(as, asm_arm_op_pop(as->push_reglist | (1 << ASM_ARM_REG_PC)));
 }
 
 void asm_arm_label_assign(asm_arm_t *as, uint label) {
@@ -289,8 +294,8 @@ void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn) {
 
 void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm) {
     asm_arm_cmp_reg_reg(as, rn, rm); // cmp rn, rm
-    emit(as, asm_arm_op_mov_imm(rd, 1) | ARM_CC_LT); // movlt rd, #1
-    emit(as, asm_arm_op_mov_imm(rd, 0) | ARM_CC_GE); // movge rd, #0
+    emit(as, asm_arm_op_mov_imm(rd, 1) | ASM_ARM_CC_LT); // movlt rd, #1
+    emit(as, asm_arm_op_mov_imm(rd, 0) | ASM_ARM_CC_GE); // movge rd, #0
 }
 
 void asm_arm_add_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
@@ -300,13 +305,13 @@ void asm_arm_add_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
     // add rd, sp, #local_num*4
-    emit_al(as, asm_arm_op_add_imm(rd, REG_SP, local_num << 2));
+    emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
 }
 
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
     assert(label < as->max_num_labels);
-    int dest = as->label_offsets[label];
-    int rel = dest - as->code_offset;
+    mp_uint_t dest = as->label_offsets[label];
+    mp_int_t rel = dest - as->code_offset;
     rel -= 8; // account for instruction prefetch, PC is 8 bytes ahead of this instruction
     rel >>= 2; // in ARM mode the branch target is 32-bit aligned, so the 2 LSB are omitted
 
@@ -318,21 +323,21 @@ void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
 }
 
 void asm_arm_b_label(asm_arm_t *as, uint label) {
-    asm_arm_bcc_label(as, ARM_CC_AL, label);
+    asm_arm_bcc_label(as, ASM_ARM_CC_AL, label);
 }
 
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
     // If the table offset fits into the ldr instruction
     if(fun_id < (0x1000 / 4)) {
-        emit_al(as, asm_arm_op_mov_reg(REG_LR, REG_PC)); // mov lr, pc
+        emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_LR, ASM_ARM_REG_PC)); // mov lr, pc
         emit_al(as, 0x597f000 | (fun_id << 2)); // ldr pc, [r7, #fun_id*4]
         return;
     }
     
     emit_al(as, 0x59f0004 | (reg_temp << 12)); // ldr rd, [pc, #4]
     // Set lr after fun_ptr
-    emit_al(as, asm_arm_op_add_imm(REG_LR, REG_PC, 4)); // add lr, pc, #4
-    emit_al(as, asm_arm_op_mov_reg(REG_PC, reg_temp)); // mov pc, reg_temp
+    emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_LR, ASM_ARM_REG_PC, 4)); // add lr, pc, #4
+    emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_PC, reg_temp)); // mov pc, reg_temp
     emit(as, (uint) fun_ptr);
 }
 

@@ -34,22 +34,22 @@
 #define ASM_X64_PASS_COMPUTE (1)
 #define ASM_X64_PASS_EMIT    (2)
 
-#define REG_RAX (0)
-#define REG_RCX (1)
-#define REG_RDX (2)
-#define REG_RBX (3)
-#define REG_RSP (4)
-#define REG_RBP (5)
-#define REG_RSI (6)
-#define REG_RDI (7)
-#define REG_R08 (8)
-#define REG_R09 (9)
-#define REG_R10 (10)
-#define REG_R11 (11)
-#define REG_R12 (12)
-#define REG_R13 (13)
-#define REG_R14 (14)
-#define REG_R15 (15)
+#define ASM_X64_REG_RAX (0)
+#define ASM_X64_REG_RCX (1)
+#define ASM_X64_REG_RDX (2)
+#define ASM_X64_REG_RBX (3)
+#define ASM_X64_REG_RSP (4)
+#define ASM_X64_REG_RBP (5)
+#define ASM_X64_REG_RSI (6)
+#define ASM_X64_REG_RDI (7)
+#define ASM_X64_REG_R08 (8)
+#define ASM_X64_REG_R09 (9)
+#define ASM_X64_REG_R10 (10)
+#define ASM_X64_REG_R11 (11)
+#define ASM_X64_REG_R12 (12)
+#define ASM_X64_REG_R13 (13)
+#define ASM_X64_REG_R14 (14)
+#define ASM_X64_REG_R15 (15)
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X64_CC_JB  (0x2) // below, unsigned
@@ -62,11 +62,11 @@
 
 typedef struct _asm_x64_t asm_x64_t;
 
-asm_x64_t* asm_x64_new(uint max_num_labels);
+asm_x64_t* asm_x64_new(mp_uint_t max_num_labels);
 void asm_x64_free(asm_x64_t* as, bool free_code);
 void asm_x64_start_pass(asm_x64_t *as, uint pass);
 void asm_x64_end_pass(asm_x64_t *as);
-uint asm_x64_get_code_size(asm_x64_t* as);
+mp_uint_t asm_x64_get_code_size(asm_x64_t* as);
 void* asm_x64_get_code(asm_x64_t* as);
 
 void asm_x64_nop(asm_x64_t* as);

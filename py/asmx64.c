@@ -114,17 +114,17 @@ struct _asm_x64_t {
     byte *code_base;
     byte dummy_data[8];
 
-    uint max_num_labels;
-    int *label_offsets;
+    mp_uint_t max_num_labels;
+    mp_uint_t *label_offsets;
     int num_locals;
 };
 
-asm_x64_t *asm_x64_new(uint max_num_labels) {
+asm_x64_t *asm_x64_new(mp_uint_t max_num_labels) {
     asm_x64_t *as;
 
     as = m_new0(asm_x64_t, 1);
     as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(int, max_num_labels);
+    as->label_offsets = m_new(mp_uint_t, max_num_labels);
 
     return as;
 }
@@ -133,18 +133,7 @@ void asm_x64_free(asm_x64_t *as, bool free_code) {
     if (free_code) {
         MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
     }
-    /*
-    if (as->label != NULL) {
-        int i;
-        for (i = 0; i < as->label->len; ++i)
-        {
-            Label* lab = &g_array_index(as->label, Label, i);
-            if (lab->unresolved != NULL)
-                g_array_free(lab->unresolved, true);
-        }
-        g_array_free(as->label, true);
-    }
-    */
+    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
     m_del_obj(asm_x64_t, as);
 }
 
@@ -153,7 +142,7 @@ void asm_x64_start_pass(asm_x64_t *as, uint pass) {
     as->code_offset = 0;
     if (pass == ASM_X64_PASS_COMPUTE) {
         // reset all labels
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
+        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
     }
 }
 
@@ -192,7 +181,7 @@ STATIC byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_writ
     }
 }
 
-uint asm_x64_get_code_size(asm_x64_t *as) {
+mp_uint_t asm_x64_get_code_size(asm_x64_t *as) {
     return as->code_size;
 }
 
@@ -252,9 +241,9 @@ STATIC void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
 
 STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int disp_offset) {
     assert(disp_r64 < 8);
-    assert(disp_r64 != REG_RSP);
+    assert(disp_r64 != ASM_X64_REG_RSP);
 
-    if (disp_offset == 0 && disp_r64 != REG_RBP) {
+    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP) {
         asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP0 | MODRM_RM_R64(disp_r64));
     } else if (SIGNED_FIT8(disp_offset)) {
         asm_x64_write_byte_2(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), IMM32_L0(disp_offset));
@@ -401,23 +390,6 @@ void asm_x64_add_r64_to_r64(asm_x64_t *as, int src_r64, int dest_r64) {
 }
 
 /*
-void asm_x64_add_i32_to_r32(asm_x64_t *as, int src_i32, int dest_r32)
-{
-    assert(dest_r32 != REG_RSP); // in this case i think src_i32 must be 64 bits
-    if (SIGNED_FIT8(src_i32))
-    {
-        asm_x64_write_byte_2(as, OPCODE_ADD_I8_TO_RM32, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r32));
-        asm_x64_write_byte_1(as, src_i32 & 0xff);
-    }
-    else
-    {
-        asm_x64_write_byte_2(as, OPCODE_ADD_I32_TO_RM32, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r32));
-        asm_x64_write_word32(as, src_i32);
-    }
-}
-*/
-
-/*
 void asm_x64_sub_r32_from_r32(asm_x64_t *as, int src_r32, int dest_r32) {
     // defaults to 32 bit operation
     asm_x64_write_byte_2(as, OPCODE_SUB_R64_FROM_RM64, MODRM_R64(src_r32) | MODRM_RM_REG | MODRM_RM_R64(dest_r32));
@@ -495,8 +467,8 @@ void asm_x64_cmp_i32_with_r32(asm_x64_t *as, int src_i32, int src_r32) {
 
 void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b) {
     // TODO implement for other registers
-    assert(src_r64_a == REG_RAX);
-    assert(src_r64_b == REG_RAX);
+    assert(src_r64_a == ASM_X64_REG_RAX);
+    assert(src_r64_b == ASM_X64_REG_RAX);
     asm_x64_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R64(src_r64_a) | MODRM_RM_REG | MODRM_RM_R64(src_r64_b));
 }
 
@@ -513,20 +485,20 @@ void asm_x64_label_assign(asm_x64_t *as, int label) {
         as->label_offsets[label] = as->code_offset;
     } else {
         // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
+        //printf("l%d: (at %ld=%ld)\n", label, as->label_offsets[label], as->code_offset);
         assert(as->label_offsets[label] == as->code_offset);
     }
 }
 
-STATIC int get_label_dest(asm_x64_t *as, int label) {
+STATIC mp_uint_t get_label_dest(asm_x64_t *as, int label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
 
 void asm_x64_jmp_label(asm_x64_t *as, int label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
-    if (dest >= 0 && rel < 0) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    if (dest != -1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
         rel -= 2;
@@ -546,9 +518,9 @@ void asm_x64_jmp_label(asm_x64_t *as, int label) {
 }
 
 void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, int label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
-    if (dest >= 0 && rel < 0) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    if (dest != -1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
         rel -= 2;
@@ -568,23 +540,23 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, int label) {
 }
 
 void asm_x64_entry(asm_x64_t *as, int num_locals) {
-    asm_x64_push_r64(as, REG_RBP);
-    asm_x64_mov_r64_to_r64(as, REG_RSP, REG_RBP);
+    asm_x64_push_r64(as, ASM_X64_REG_RBP);
+    asm_x64_mov_r64_to_r64(as, ASM_X64_REG_RSP, ASM_X64_REG_RBP);
     if (num_locals < 0) {
         num_locals = 0;
     }
     num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
-    asm_x64_sub_i32_from_r64(as, num_locals * WORD_SIZE, REG_RSP);
-    asm_x64_push_r64(as, REG_RBX);
-    asm_x64_push_r64(as, REG_R12);
-    asm_x64_push_r64(as, REG_R13);
+    asm_x64_sub_i32_from_r64(as, num_locals * WORD_SIZE, ASM_X64_REG_RSP);
+    asm_x64_push_r64(as, ASM_X64_REG_RBX);
+    asm_x64_push_r64(as, ASM_X64_REG_R12);
+    asm_x64_push_r64(as, ASM_X64_REG_R13);
     as->num_locals = num_locals;
 }
 
 void asm_x64_exit(asm_x64_t *as) {
-    asm_x64_pop_r64(as, REG_R13);
-    asm_x64_pop_r64(as, REG_R12);
-    asm_x64_pop_r64(as, REG_RBX);
+    asm_x64_pop_r64(as, ASM_X64_REG_R13);
+    asm_x64_pop_r64(as, ASM_X64_REG_R12);
+    asm_x64_pop_r64(as, ASM_X64_REG_RBX);
     asm_x64_write_byte_1(as, OPCODE_LEAVE);
     asm_x64_ret(as);
 }
@@ -605,30 +577,30 @@ STATIC int asm_x64_local_offset_from_ebp(asm_x64_t *as, int local_num) {
 }
 
 void asm_x64_mov_local_to_r64(asm_x64_t *as, int src_local_num, int dest_r64) {
-    asm_x64_mov_disp_to_r64(as, REG_RBP, asm_x64_local_offset_from_ebp(as, src_local_num), dest_r64);
+    asm_x64_mov_disp_to_r64(as, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, src_local_num), dest_r64);
 }
 
 void asm_x64_mov_r64_to_local(asm_x64_t *as, int src_r64, int dest_local_num) {
-    asm_x64_mov_r64_to_disp(as, src_r64, REG_RBP, asm_x64_local_offset_from_ebp(as, dest_local_num));
+    asm_x64_mov_r64_to_disp(as, src_r64, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, dest_local_num));
 }
 
 void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64) {
     int offset = asm_x64_local_offset_from_ebp(as, local_num);
     if (offset == 0) {
-        asm_x64_mov_r64_to_r64(as, REG_RBP, dest_r64);
+        asm_x64_mov_r64_to_r64(as, ASM_X64_REG_RBP, dest_r64);
     } else {
-        asm_x64_lea_disp_to_r64(as, REG_RBP, offset, dest_r64);
+        asm_x64_lea_disp_to_r64(as, ASM_X64_REG_RBP, offset, dest_r64);
     }
 }
 
 /*
 void asm_x64_push_local(asm_x64_t *as, int local_num) {
-    asm_x64_push_disp(as, REG_RBP, asm_x64_local_offset_from_ebp(as, local_num));
+    asm_x64_push_disp(as, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, local_num));
 }
 
 void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64)
 {
-    asm_x64_mov_r64_to_r64(as, REG_RBP, temp_r64);
+    asm_x64_mov_r64_to_r64(as, ASM_X64_REG_RBP, temp_r64);
     asm_x64_add_i32_to_r32(as, asm_x64_local_offset_from_ebp(as, local_num), temp_r64);
     asm_x64_push_r64(as, temp_r64);
 }
@@ -639,21 +611,21 @@ void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64)
 
 void asm_x64_call(asm_x64_t *as, void* func)
 {
-    asm_x64_sub_i32_from_r32(as, 8, REG_RSP);
+    asm_x64_sub_i32_from_r32(as, 8, ASM_X64_REG_RSP);
     asm_x64_write_byte_1(as, OPCODE_CALL_REL32);
     asm_x64_write_word32(as, func - (void*)(as->code_cur + 4));
-    asm_x64_mov_r64_to_r64(as, REG_RBP, REG_RSP);
+    asm_x64_mov_r64_to_r64(as, ASM_X64_REG_RBP, ASM_X64_REG_RSP);
 }
 
 void asm_x64_call_i1(asm_x64_t *as, void* func, int i1)
 {
-    asm_x64_sub_i32_from_r32(as, 8, REG_RSP);
-    asm_x64_sub_i32_from_r32(as, 12, REG_RSP);
+    asm_x64_sub_i32_from_r32(as, 8, ASM_X64_REG_RSP);
+    asm_x64_sub_i32_from_r32(as, 12, ASM_X64_REG_RSP);
     asm_x64_push_i32(as, i1);
     asm_x64_write_byte_1(as, OPCODE_CALL_REL32);
     asm_x64_write_word32(as, func - (void*)(as->code_cur + 4));
-    asm_x64_add_i32_to_r32(as, 16, REG_RSP);
-    asm_x64_mov_r64_to_r64(as, REG_RBP, REG_RSP);
+    asm_x64_add_i32_to_r32(as, 16, ASM_X64_REG_RSP);
+    asm_x64_mov_r64_to_r64(as, ASM_X64_REG_RBP, ASM_X64_REG_RSP);
 }
 */
 

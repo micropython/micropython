@@ -82,21 +82,21 @@
 
 #define EXPORT_FUN(name) emit_native_x64_##name
 
-#define REG_RET REG_RAX
-#define REG_ARG_1 REG_RDI
-#define REG_ARG_2 REG_RSI
-#define REG_ARG_3 REG_RDX
-#define REG_ARG_4 REG_RCX
+#define REG_RET ASM_X64_REG_RAX
+#define REG_ARG_1 ASM_X64_REG_RDI
+#define REG_ARG_2 ASM_X64_REG_RSI
+#define REG_ARG_3 ASM_X64_REG_RDX
+#define REG_ARG_4 ASM_X64_REG_RCX
 
 // caller-save
-#define REG_TEMP0 REG_RAX
-#define REG_TEMP1 REG_RDI
-#define REG_TEMP2 REG_RSI
+#define REG_TEMP0 ASM_X64_REG_RAX
+#define REG_TEMP1 ASM_X64_REG_RDI
+#define REG_TEMP2 ASM_X64_REG_RSI
 
 // callee-save
-#define REG_LOCAL_1 REG_RBX
-#define REG_LOCAL_2 REG_R12
-#define REG_LOCAL_3 REG_R13
+#define REG_LOCAL_1 ASM_X64_REG_RBX
+#define REG_LOCAL_2 ASM_X64_REG_R12
+#define REG_LOCAL_3 ASM_X64_REG_R13
 #define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_X64_PASS_COMPUTE
@@ -129,7 +129,7 @@
         asm_x64_cmp_r64_with_r64(as, reg1, reg2); \
         asm_x64_jcc_label(as, ASM_X64_CC_JE, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, REG_RAX)
+#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, ASM_X64_REG_RAX)
 
 #define ASM_MOV_REG_TO_LOCAL        asm_x64_mov_r64_to_local
 #define ASM_MOV_IMM_TO_REG          asm_x64_mov_i64_to_r64_optimised
@@ -199,20 +199,20 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_x86_##name
 
-#define REG_RET REG_EAX
+#define REG_RET ASM_X86_REG_EAX
 #define REG_ARG_1 ASM_X86_REG_ARG_1
 #define REG_ARG_2 ASM_X86_REG_ARG_2
 #define REG_ARG_3 ASM_X86_REG_ARG_3
 
 // caller-save, so can be used as temporaries
-#define REG_TEMP0 REG_EAX
-#define REG_TEMP1 REG_ECX
-#define REG_TEMP2 REG_EDX
+#define REG_TEMP0 ASM_X86_REG_EAX
+#define REG_TEMP1 ASM_X86_REG_ECX
+#define REG_TEMP2 ASM_X86_REG_EDX
 
 // callee-save, so can be used as locals
-#define REG_LOCAL_1 REG_EBX
-#define REG_LOCAL_2 REG_ESI
-#define REG_LOCAL_3 REG_EDI
+#define REG_LOCAL_1 ASM_X86_REG_EBX
+#define REG_LOCAL_2 ASM_X86_REG_ESI
+#define REG_LOCAL_3 ASM_X86_REG_EDI
 #define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_X86_PASS_COMPUTE
@@ -245,7 +245,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
         asm_x86_cmp_r32_with_r32(as, reg1, reg2); \
         asm_x86_jcc_label(as, ASM_X86_CC_JE, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], REG_EAX)
+#define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], ASM_X86_REG_EAX)
 
 #define ASM_MOV_REG_TO_LOCAL        asm_x86_mov_r32_to_local
 #define ASM_MOV_IMM_TO_REG          asm_x86_mov_i32_to_r32
@@ -267,19 +267,19 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_thumb_##name
 
-#define REG_RET REG_R0
-#define REG_ARG_1 REG_R0
-#define REG_ARG_2 REG_R1
-#define REG_ARG_3 REG_R2
-#define REG_ARG_4 REG_R3
+#define REG_RET ASM_THUMB_REG_R0
+#define REG_ARG_1 ASM_THUMB_REG_R0
+#define REG_ARG_2 ASM_THUMB_REG_R1
+#define REG_ARG_3 ASM_THUMB_REG_R2
+#define REG_ARG_4 ASM_THUMB_REG_R3
 
-#define REG_TEMP0 (REG_R0)
-#define REG_TEMP1 (REG_R1)
-#define REG_TEMP2 (REG_R2)
+#define REG_TEMP0 ASM_THUMB_REG_R0
+#define REG_TEMP1 ASM_THUMB_REG_R1
+#define REG_TEMP2 ASM_THUMB_REG_R2
 
-#define REG_LOCAL_1 (REG_R4)
-#define REG_LOCAL_2 (REG_R5)
-#define REG_LOCAL_3 (REG_R6)
+#define REG_LOCAL_1 ASM_THUMB_REG_R4
+#define REG_LOCAL_2 ASM_THUMB_REG_R5
+#define REG_LOCAL_3 ASM_THUMB_REG_R6
 #define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_THUMB_PASS_COMPUTE
@@ -300,19 +300,19 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
     do { \
         asm_thumb_cmp_rlo_i8(as, reg, 0); \
-        asm_thumb_bcc_label(as, THUMB_CC_EQ, label); \
+        asm_thumb_bcc_label(as, ASM_THUMB_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
     do { \
         asm_thumb_cmp_rlo_i8(as, reg, 0); \
-        asm_thumb_bcc_label(as, THUMB_CC_NE, label); \
+        asm_thumb_bcc_label(as, ASM_THUMB_CC_NE, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     do { \
         asm_thumb_cmp_rlo_rlo(as, reg1, reg2); \
-        asm_thumb_bcc_label(as, THUMB_CC_EQ, label); \
+        asm_thumb_bcc_label(as, ASM_THUMB_CC_EQ, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_thumb_bl_ind(as, ptr, idx, REG_R3)
+#define ASM_CALL_IND(as, ptr, idx) asm_thumb_bl_ind(as, ptr, idx, ASM_THUMB_REG_R3)
 
 #define ASM_MOV_REG_TO_LOCAL(as, reg, local_num) asm_thumb_mov_local_reg(as, (local_num), (reg))
 #define ASM_MOV_IMM_TO_REG(as, imm, reg) asm_thumb_mov_reg_i32_optimised(as, (reg), (imm))
@@ -334,19 +334,19 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_arm_##name
 
-#define REG_RET REG_R0
-#define REG_ARG_1 REG_R0
-#define REG_ARG_2 REG_R1
-#define REG_ARG_3 REG_R2
-#define REG_ARG_4 REG_R3
+#define REG_RET ASM_ARM_REG_R0
+#define REG_ARG_1 ASM_ARM_REG_R0
+#define REG_ARG_2 ASM_ARM_REG_R1
+#define REG_ARG_3 ASM_ARM_REG_R2
+#define REG_ARG_4 ASM_ARM_REG_R3
 
-#define REG_TEMP0 (REG_R0)
-#define REG_TEMP1 (REG_R1)
-#define REG_TEMP2 (REG_R2)
+#define REG_TEMP0 ASM_ARM_REG_R0
+#define REG_TEMP1 ASM_ARM_REG_R1
+#define REG_TEMP2 ASM_ARM_REG_R2
 
-#define REG_LOCAL_1 (REG_R4)
-#define REG_LOCAL_2 (REG_R5)
-#define REG_LOCAL_3 (REG_R6)
+#define REG_LOCAL_1 ASM_ARM_REG_R4
+#define REG_LOCAL_2 ASM_ARM_REG_R5
+#define REG_LOCAL_3 ASM_ARM_REG_R6
 #define REG_LOCAL_NUM (3)
 
 #define ASM_PASS_COMPUTE    ASM_ARM_PASS_COMPUTE
@@ -367,19 +367,19 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
     do { \
         asm_arm_cmp_reg_i8(as, reg, 0); \
-        asm_arm_bcc_label(as, ARM_CC_EQ, label); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
     do { \
         asm_arm_cmp_reg_i8(as, reg, 0); \
-        asm_arm_bcc_label(as, ARM_CC_NE, label); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_NE, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     do { \
         asm_arm_cmp_reg_reg(as, reg1, reg2); \
-        asm_arm_bcc_label(as, ARM_CC_EQ, label); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, ptr, idx, REG_R3)
+#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, ptr, idx, ASM_ARM_REG_R3)
 
 #define ASM_MOV_REG_TO_LOCAL(as, reg, local_num) asm_arm_mov_local_reg(as, (local_num), (reg))
 #define ASM_MOV_IMM_TO_REG(as, imm, reg) asm_arm_mov_reg_i32(as, (reg), (imm))
@@ -585,7 +585,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 
-    asm_thumb_mov_reg_i32(emit->as, REG_R7, (mp_uint_t)mp_fun_table);
+    asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
 #elif N_ARM
     for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
@@ -602,7 +602,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 
-    asm_arm_mov_reg_i32(emit->as, REG_R7, (mp_uint_t)mp_fun_table);
+    asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
 #else
     #error not implemented
 #endif
@@ -1072,9 +1072,9 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
-        need_reg_single(emit, REG_RAX, 0);
-        asm_x64_mov_local_to_r64(emit->as, local_num - REG_LOCAL_NUM, REG_RAX);
-        emit_post_push_reg(emit, vtype, REG_RAX);
+        need_reg_single(emit, REG_TEMP0, 0);
+        asm_x64_mov_local_to_r64(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
+        emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
 #elif N_X86
     if (local_num == 0) {
@@ -1084,9 +1084,9 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
-        need_reg_single(emit, REG_EAX, 0);
-        asm_x86_mov_local_to_r32(emit->as, local_num - REG_LOCAL_NUM, REG_EAX);
-        emit_post_push_reg(emit, vtype, REG_EAX);
+        need_reg_single(emit, REG_TEMP0, 0);
+        asm_x86_mov_local_to_r32(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
+        emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
 #elif N_THUMB
     if (local_num == 0) {
@@ -1096,9 +1096,9 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
-        need_reg_single(emit, REG_R0, 0);
-        asm_thumb_mov_reg_local(emit->as, REG_R0, local_num - REG_LOCAL_NUM);
-        emit_post_push_reg(emit, vtype, REG_R0);
+        need_reg_single(emit, REG_TEMP0, 0);
+        asm_thumb_mov_reg_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
+        emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
 #elif N_ARM
     if (local_num == 0) {
@@ -1108,9 +1108,9 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp
     } else if (local_num == 2) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
-        need_reg_single(emit, REG_R0, 0);
-        asm_arm_mov_reg_local(emit->as, REG_R0, local_num - REG_LOCAL_NUM);
-        emit_post_push_reg(emit, vtype, REG_R0);
+        need_reg_single(emit, REG_TEMP0, 0);
+        asm_arm_mov_reg_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
+        emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
 #else
     #error not implemented
@@ -1183,8 +1183,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (local_num == 2) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_RAX);
-        asm_x64_mov_r64_to_local(emit->as, REG_RAX, local_num - REG_LOCAL_NUM);
+        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+        asm_x64_mov_r64_to_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
     }
 #elif N_X86
     if (local_num == 0) {
@@ -1194,8 +1194,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (local_num == 2) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_EAX);
-        asm_x86_mov_r32_to_local(emit->as, REG_EAX, local_num - REG_LOCAL_NUM);
+        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+        asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
     }
 #elif N_THUMB
     if (local_num == 0) {
@@ -1205,8 +1205,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (local_num == 2) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_R0);
-        asm_thumb_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_R0);
+        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+        asm_thumb_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
     }
 #elif N_ARM
     if (local_num == 0) {
@@ -1216,8 +1216,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (local_num == 2) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_R0);
-        asm_arm_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_R0);
+        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+        asm_arm_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
     }
 #else
     #error not implemented

@@ -35,22 +35,22 @@
 #define ASM_X86_PASS_COMPUTE (1)
 #define ASM_X86_PASS_EMIT    (2)
 
-#define REG_EAX (0)
-#define REG_ECX (1)
-#define REG_EDX (2)
-#define REG_EBX (3)
-#define REG_ESP (4)
-#define REG_EBP (5)
-#define REG_ESI (6)
-#define REG_EDI (7)
+#define ASM_X86_REG_EAX (0)
+#define ASM_X86_REG_ECX (1)
+#define ASM_X86_REG_EDX (2)
+#define ASM_X86_REG_EBX (3)
+#define ASM_X86_REG_ESP (4)
+#define ASM_X86_REG_EBP (5)
+#define ASM_X86_REG_ESI (6)
+#define ASM_X86_REG_EDI (7)
 
 // x86 passes values on the stack, but the emitter is register based, so we need
 // to define registers that can temporarily hold the function arguments.  They
 // need to be defined here so that asm_x86_call_ind can push them onto the stack
 // before the call.
-#define ASM_X86_REG_ARG_1 REG_EAX
-#define ASM_X86_REG_ARG_2 REG_ECX
-#define ASM_X86_REG_ARG_3 REG_EDX
+#define ASM_X86_REG_ARG_1 ASM_X86_REG_EAX
+#define ASM_X86_REG_ARG_2 ASM_X86_REG_ECX
+#define ASM_X86_REG_ARG_3 ASM_X86_REG_EDX
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned

@@ -238,20 +238,20 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
 
 typedef struct _cc_name_t { byte cc; byte name[2]; } cc_name_t;
 STATIC const cc_name_t cc_name_table[] = {
-    {THUMB_CC_EQ, "eq"},
-    {THUMB_CC_NE, "ne"},
-    {THUMB_CC_CS, "cs"},
-    {THUMB_CC_CC, "cc"},
-    {THUMB_CC_MI, "mi"},
-    {THUMB_CC_PL, "pl"},
-    {THUMB_CC_VS, "vs"},
-    {THUMB_CC_VC, "vc"},
-    {THUMB_CC_HI, "hi"},
-    {THUMB_CC_LS, "ls"},
-    {THUMB_CC_GE, "ge"},
-    {THUMB_CC_LT, "lt"},
-    {THUMB_CC_GT, "gt"},
-    {THUMB_CC_LE, "le"},
+    { ASM_THUMB_CC_EQ, "eq" },
+    { ASM_THUMB_CC_NE, "ne" },
+    { ASM_THUMB_CC_CS, "cs" },
+    { ASM_THUMB_CC_CC, "cc" },
+    { ASM_THUMB_CC_MI, "mi" },
+    { ASM_THUMB_CC_PL, "pl" },
+    { ASM_THUMB_CC_VS, "vs" },
+    { ASM_THUMB_CC_VC, "vc" },
+    { ASM_THUMB_CC_HI, "hi" },
+    { ASM_THUMB_CC_LS, "ls" },
+    { ASM_THUMB_CC_GE, "ge" },
+    { ASM_THUMB_CC_LT, "lt" },
+    { ASM_THUMB_CC_GT, "gt" },
+    { ASM_THUMB_CC_LE, "le" },
 };
 
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {

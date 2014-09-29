@@ -68,18 +68,7 @@ void asm_thumb_free(asm_thumb_t *as, bool free_code) {
     if (free_code) {
         MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
     }
-    /*
-    if (as->label != NULL) {
-        int i;
-        for (i = 0; i < as->label->len; ++i)
-        {
-            Label *lab = &g_array_index(as->label, Label, i);
-            if (lab->unresolved != NULL)
-                g_array_free(lab->unresolved, true);
-        }
-        g_array_free(as->label, true);
-    }
-    */
+    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
     m_del_obj(asm_thumb_t, as);
 }
 
@@ -284,23 +273,23 @@ void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2) {
 #define OP_FORMAT_2(op, rlo_dest, rlo_src, src_b) ((op) | ((src_b) << 6) | ((rlo_src) << 3) | (rlo_dest))
 
 void asm_thumb_format_2(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src, int src_b) {
-    assert(rlo_dest < REG_R8);
-    assert(rlo_src < REG_R8);
+    assert(rlo_dest < ASM_THUMB_REG_R8);
+    assert(rlo_src < ASM_THUMB_REG_R8);
     asm_thumb_op16(as, OP_FORMAT_2(op, rlo_dest, rlo_src, src_b));
 }
 
 #define OP_FORMAT_3(op, rlo, i8) ((op) | ((rlo) << 8) | (i8))
 
 void asm_thumb_format_3(asm_thumb_t *as, uint op, uint rlo, int i8) {
-    assert(rlo < REG_R8);
+    assert(rlo < ASM_THUMB_REG_R8);
     asm_thumb_op16(as, OP_FORMAT_3(op, rlo, i8));
 }
 
 #define OP_FORMAT_4(op, rlo_dest, rlo_src) ((op) | ((rlo_src) << 3) | (rlo_dest))
 
 void asm_thumb_format_4(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src) {
-    assert(rlo_dest < REG_R8);
-    assert(rlo_src < REG_R8);
+    assert(rlo_dest < ASM_THUMB_REG_R8);
+    assert(rlo_src < ASM_THUMB_REG_R8);
     asm_thumb_op16(as, OP_FORMAT_4(op, rlo_dest, rlo_src));
 }
 
@@ -331,7 +320,7 @@ void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src) {
 
 // if loading lo half with movw, the i16 value will be zero extended into the r32 register!
 STATIC void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src) {
-    assert(reg_dest < REG_R15);
+    assert(reg_dest < ASM_THUMB_REG_R15);
     // mov[wt] reg_dest, #i16_src
     asm_thumb_op32(as, mov_op | ((i16_src >> 1) & 0x0400) | ((i16_src >> 12) & 0xf), ((i16_src << 4) & 0x7000) | (reg_dest << 8) | (i16_src & 0xff));
 }
@@ -409,14 +398,14 @@ void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
 #define OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset) (0x9800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num, uint rlo_src) {
-    assert(rlo_src < REG_R8);
+    assert(rlo_src < ASM_THUMB_REG_R8);
     int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_STR_TO_SP_OFFSET(rlo_src, word_offset));
 }
 
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
-    assert(rlo_dest < REG_R8);
+    assert(rlo_dest < ASM_THUMB_REG_R8);
     int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
@@ -425,7 +414,7 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
 #define OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset) (0xa800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
-    assert(rlo_dest < REG_R8);
+    assert(rlo_dest < ASM_THUMB_REG_R8);
     int word_offset = local_num;
     assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
@@ -439,7 +428,7 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (dest >= 0 && rel <= -4) {
+    if (dest != -1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 12 bit relative jump
         if (SIGNED_FIT12(rel)) {
@@ -462,7 +451,7 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (dest >= 0 && rel <= -4) {
+    if (dest != -1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 9 bit relative jump
         if (SIGNED_FIT9(rel)) {
@@ -482,17 +471,17 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
     /* TODO make this use less bytes
-    uint rlo_base = REG_R3;
-    uint rlo_dest = REG_R7;
+    uint rlo_base = ASM_THUMB_REG_R3;
+    uint rlo_dest = ASM_THUMB_REG_R7;
     uint word_offset = 4;
     asm_thumb_op16(as, 0x0000);
     asm_thumb_op16(as, 0x6800 | (word_offset << 6) | (rlo_base << 3) | rlo_dest); // ldr rlo_dest, [rlo_base, #offset]
-    asm_thumb_op16(as, 0x4780 | (REG_R9 << 3)); // blx reg
+    asm_thumb_op16(as, 0x4780 | (ASM_THUMB_REG_R9 << 3)); // blx reg
     */
 
     if (fun_id < 32) {
         // load ptr to function from table, indexed by fun_id (must be in range 0-31); 4 bytes
-        asm_thumb_op16(as, OP_FORMAT_9_10(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, REG_R7, fun_id));
+        asm_thumb_op16(as, OP_FORMAT_9_10(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, ASM_THUMB_REG_R7, fun_id));
         asm_thumb_op16(as, OP_BLX(reg_temp));
     } else {
         // load ptr to function into register using immediate; 6 bytes
