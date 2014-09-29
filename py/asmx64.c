@@ -311,9 +311,12 @@ void asm_x64_mov_r8_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_d
 }
 
 void asm_x64_mov_r16_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
-    assert(src_r64 < 8);
     assert(dest_r64 < 8);
-    asm_x64_write_byte_2(as, OP_SIZE_PREFIX, OPCODE_MOV_R64_TO_RM64);
+    if (src_r64 < 8) {
+        asm_x64_write_byte_2(as, OP_SIZE_PREFIX, OPCODE_MOV_R64_TO_RM64);
+    } else {
+        asm_x64_write_byte_3(as, OP_SIZE_PREFIX, REX_PREFIX | REX_R, OPCODE_MOV_R64_TO_RM64);
+    }
     asm_x64_write_r64_disp(as, src_r64, dest_r64, dest_disp);
 }
 
