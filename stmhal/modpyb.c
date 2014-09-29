@@ -188,15 +188,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
 ///
-/// Note that this may return a negative number. This allows you to always
-/// do:
-///     start = pyb.millis()
-///     ...do some operation...
-///     elapsed = pyb.millis() - start
-///
-/// and as long as the time of your operation is less than 24 days, you'll
-/// always get the right answer and not have to worry about whether pyb.millis()
-/// wraps around.
+/// The result is always a micropython smallint (31-bit signed number), so
+/// after 2^30 milliseconds (about 12.4 days) this will start to return
+/// negative numbers.
 STATIC mp_obj_t pyb_millis(void) {
     // We want to "cast" the 32 bit unsigned into a small-int.  This means
     // copying the MSB down 1 bit (extending the sign down), which is
@@ -205,18 +199,29 @@ STATIC mp_obj_t pyb_millis(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
+/// \function elapsed_millis(start)
+/// Returns the number of milliseconds which have elapsed since `start`.
+///
+/// This function takes care of counter wrap, and always returns a positive
+/// number. This means it can be used to measure periods upto about 12.4 days.
+///
+/// Example:
+///     start = pyb.millis()
+///     while pyb.elapsed_millis(start) < 1000:
+///         # Perform some operation
+STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
+    uint32_t startMillis = mp_obj_get_int(start);
+    uint32_t currMillis = HAL_GetTick();
+    return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x3fffffff);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
+
 /// \function micros()
 /// Returns the number of microseconds since the board was last reset.
 ///
-/// Note that this may return a negative number. This allows you to always
-/// do:
-///     start = pyb.micros()
-///     ...do some operation...
-///     elapsed = pyb.micros() - start
-///
-/// and as long as the time of your operation is less than 35 minutes, you'll
-/// always get the right answer and not have to worry about whether pyb.micros()
-/// wraps around.
+/// The result is always a micropython smallint (31-bit signed number), so
+/// after 2^30 microseconds (about 17.8 minutes) this will start to return
+/// negative numbers.
 STATIC mp_obj_t pyb_micros(void) {
     // We want to "cast" the 32 bit unsigned into a small-int.  This means
     // copying the MSB down 1 bit (extending the sign down), which is
@@ -224,6 +229,23 @@ STATIC mp_obj_t pyb_micros(void) {
     return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
+
+/// \function elapsed_micros(start)
+/// Returns the number of microseconds which have elapsed since `start`.
+///
+/// This function takes care of counter wrap, and always returns a positive
+/// number. This means it can be used to measure periods upto about 17.8 minutes.
+///
+/// Example:
+///     start = pyb.micros()
+///     while pyb.elapsed_micros(start) < 1000:
+///         # Perform some operation
+STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
+    uint32_t startMicros = mp_obj_get_int(start);
+    uint32_t currMicros = sys_tick_get_microseconds();
+    return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 
 /// \function delay(ms)
 /// Delay for the given number of milliseconds.
@@ -376,7 +398,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_USB_VCP), (mp_obj_t)&pyb_usb_vcp_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros), (mp_obj_t)&pyb_elapsed_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
