@@ -1391,7 +1391,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
         assert(vtype_value == VTYPE_PYOBJ);
         emit_call(emit, MP_F_OBJ_SUBSCR);
     } else {
-        // viper call
+        // viper store
+        // TODO The different machine architectures have very different
+        // capabilities and requirements for stores, so probably best to
+        // write a completely separate store-optimiser for each one.
         stack_info_t *top = peek_stack(emit, 0);
         if (top->vtype == VTYPE_INT && top->kind == STACK_IMM) {
             // index is an immediate
@@ -1402,7 +1405,12 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             int reg_index = REG_ARG_2;
             int reg_value = REG_ARG_3;
             emit_pre_pop_reg_flexible(emit, &vtype_base, &reg_base, reg_index, reg_value);
+            #if N_X86
+            // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
+            emit_pre_pop_reg(emit, &vtype_value, reg_value);
+            #else
             emit_pre_pop_reg_flexible(emit, &vtype_value, &reg_value, reg_base, reg_index);
+            #endif
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
@@ -1449,7 +1457,12 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             int reg_value = REG_ARG_3;
             emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, reg_value);
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            #if N_X86
+            // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
+            emit_pre_pop_reg(emit, &vtype_value, reg_value);
+            #else
             emit_pre_pop_reg_flexible(emit, &vtype_value, &reg_value, REG_ARG_1, reg_index);
+            #endif
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
