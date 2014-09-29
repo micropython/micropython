@@ -472,7 +472,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 1;
     } else if (MP_OBJ_IS_STR(obj)) {
         // pointer to the string (it's probably constant though!)
-        uint l;
+        mp_uint_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
@@ -484,13 +484,13 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 #endif
         } else if (type == &mp_type_tuple) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
-            uint len;
+            mp_uint_t len;
             mp_obj_t *items;
             mp_obj_tuple_get(obj, &len, &items);
             return (mp_uint_t)items;
         } else if (type == &mp_type_list) {
             // pointer to start of list (could pass length, but then could use len(x) for that)
-            uint len;
+            mp_uint_t len;
             mp_obj_t *items;
             mp_obj_list_get(obj, &len, &items);
             return (mp_uint_t)items;
