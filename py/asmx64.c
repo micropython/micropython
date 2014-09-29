@@ -49,6 +49,7 @@
 #define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
 #define OPCODE_MOV_I64_TO_R64    (0xb8) /* +rq */
 #define OPCODE_MOV_I32_TO_RM32   (0xc7)
+#define OPCODE_MOV_R8_TO_RM8     (0x88) /* /r */
 #define OPCODE_MOV_R64_TO_RM64   (0x89) /* /r */
 #define OPCODE_MOV_RM64_TO_R64   (0x8b)
 #define OPCODE_LEA_MEM_TO_R64    (0x8d) /* /r */
@@ -84,6 +85,8 @@
 #define MODRM_RM_DISP32 (0x80)
 #define MODRM_RM_REG    (0xc0)
 #define MODRM_RM_R64(x) ((x) & 0x7)
+
+#define OP_SIZE_PREFIX (0x66)
 
 #define REX_PREFIX  (0x40)
 #define REX_W       (0x08)  // width
@@ -298,16 +301,26 @@ STATIC void asm_x64_ret(asm_x64_t *as) {
     asm_x64_write_byte_1(as, OPCODE_RET);
 }
 
-void asm_x64_mov_r32_to_r32(asm_x64_t *as, int src_r32, int dest_r32) {
-    // defaults to 32 bit operation
-    assert(src_r32 < 8);
-    assert(dest_r32 < 8);
-    asm_x64_write_byte_2(as, OPCODE_MOV_R64_TO_RM64, MODRM_R64(src_r32) | MODRM_RM_REG | MODRM_RM_R64(dest_r32));
-}
-
 void asm_x64_mov_r64_to_r64(asm_x64_t *as, int src_r64, int dest_r64) {
     // use REX prefix for 64 bit operation
     asm_x64_write_byte_3(as, REX_PREFIX | REX_W | (src_r64 < 8 ? 0 : REX_R) | (dest_r64 < 8 ? 0 : REX_B), OPCODE_MOV_R64_TO_RM64, MODRM_R64(src_r64) | MODRM_RM_REG | MODRM_RM_R64(dest_r64));
+}
+
+void asm_x64_mov_r8_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
+    assert(dest_r64 < 8);
+    if (src_r64 < 8) {
+        asm_x64_write_byte_1(as, OPCODE_MOV_R8_TO_RM8);
+    } else {
+        asm_x64_write_byte_2(as, REX_PREFIX | REX_R, OPCODE_MOV_R8_TO_RM8);
+    }
+    asm_x64_write_r64_disp(as, src_r64, dest_r64, dest_disp);
+}
+
+void asm_x64_mov_r16_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
+    assert(src_r64 < 8);
+    assert(dest_r64 < 8);
+    asm_x64_write_byte_2(as, OP_SIZE_PREFIX, OPCODE_MOV_R64_TO_RM64);
+    asm_x64_write_r64_disp(as, src_r64, dest_r64, dest_disp);
 }
 
 void asm_x64_mov_r64_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
@@ -356,6 +369,7 @@ void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64) {
 }
 
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64) {
+    // TODO use movzx, movsx if possible
     if (UNSIGNED_FIT32(src_i64)) {
         // 5 bytes
         asm_x64_mov_i32_to_r64(as, src_i64 & 0xffffffff, dest_r64);

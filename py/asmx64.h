@@ -58,6 +58,7 @@
 #define ASM_X64_CC_JNZ (0x5)
 #define ASM_X64_CC_JNE (0x5)
 #define ASM_X64_CC_JL  (0xc) // less, signed
+#define ASM_X64_CC_JG  (0xf) // greater, signed
 
 typedef struct _asm_x64_t asm_x64_t;
 
@@ -75,6 +76,9 @@ void asm_x64_mov_r64_to_r64(asm_x64_t* as, int src_r64, int dest_r64);
 void asm_x64_mov_i64_to_r64(asm_x64_t* as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64);
+void asm_x64_mov_r8_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
+void asm_x64_mov_r16_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
+void asm_x64_mov_r64_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_xor_r64_to_r64(asm_x64_t *as, int src_r64, int dest_r64);
 void asm_x64_add_r64_to_r64(asm_x64_t* as, int src_r64, int dest_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
