@@ -326,7 +326,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
 STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
     #if MICROPY_PY_BUILTINS_FLOAT
     float percent;
-    if (cmp > period) {
+    if (cmp >= period) {
         percent = 100.0;
     } else {
         percent = (float)cmp * 100.0 / ((float)period);
@@ -334,11 +334,10 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
     return mp_obj_new_float(percent);
     #else
     mp_int_t percent;
-    if (cmp > period) {
+    if (cmp >= period) {
         percent = 100;
-    } else if (period > MAX_PERIOD_DIV_100) {
-        // We divide the top and bottom by 128, and then do the math.
-        percent = (cmp / 128) * 100 / (period / 128);
+    } else if (cmp > MAX_PERIOD_DIV_100) {
+        percent = cmp / (period / 100);
     } else {
         percent = cmp * 100 / period;
     }
