@@ -140,8 +140,13 @@
         asm_x64_mov_r64_to_local(as, (reg_temp), (local_num)); \
     } while (false)
 #define ASM_MOV_LOCAL_TO_REG        asm_x64_mov_local_to_r64
-#define ASM_MOV_REG_TO_REG          asm_x64_mov_r64_to_r64
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x64_mov_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x64_mov_local_addr_to_r64
+
+#define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
+#define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x64_add_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x64_sub_r64_r64((as), (reg_dest), (reg_src))
 
 #elif N_X86
 
@@ -256,8 +261,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
         asm_x86_mov_r32_to_local(as, (reg_temp), (local_num)); \
     } while (false)
 #define ASM_MOV_LOCAL_TO_REG        asm_x86_mov_local_to_r32
-#define ASM_MOV_REG_TO_REG          asm_x86_mov_r32_to_r32
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x86_mov_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x86_mov_local_addr_to_r32
+
+#define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
+#define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x86_add_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x86_sub_r32_r32((as), (reg_dest), (reg_src))
 
 #elif N_THUMB
 
@@ -323,8 +333,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
         asm_thumb_mov_local_reg(as, (local_num), (reg_temp)); \
     } while (false)
 #define ASM_MOV_LOCAL_TO_REG(as, local_num, reg) asm_thumb_mov_reg_local(as, (reg), (local_num))
-#define ASM_MOV_REG_TO_REG(as, reg_src, reg_dest) asm_thumb_mov_reg_reg(as, (reg_dest), (reg_src))
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_thumb_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(as, local_num, reg) asm_thumb_mov_reg_local_addr(as, (reg), (local_num))
+
+#define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_LSL, (reg_dest), (reg_shift))
+#define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_ASR, (reg_dest), (reg_shift))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_thumb_add_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_thumb_sub_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
 
 #elif N_ARM
 
@@ -390,8 +405,14 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
         asm_arm_mov_local_reg(as, (local_num), (reg_temp)); \
     } while (false)
 #define ASM_MOV_LOCAL_TO_REG(as, local_num, reg) asm_arm_mov_reg_local(as, (reg), (local_num))
-#define ASM_MOV_REG_TO_REG(as, reg_src, reg_dest) asm_arm_mov_reg_reg(as, (reg_dest), (reg_src))
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_arm_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(as, local_num, reg) asm_arm_mov_reg_local_addr(as, (reg), (local_num))
+
+// TODO someone please implement lsl and asr
+#define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_arm_lsl_((as), (reg_dest), (reg_shift))
+#define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_arm_asr_((as), (reg_dest), (reg_shift))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 
 #else
 
@@ -544,11 +565,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 #if N_X64
     for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
-            asm_x64_mov_r64_to_r64(emit->as, REG_ARG_1, REG_LOCAL_1);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
         } else if (i == 1) {
-            asm_x64_mov_r64_to_r64(emit->as, REG_ARG_2, REG_LOCAL_2);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
         } else if (i == 2) {
-            asm_x64_mov_r64_to_r64(emit->as, REG_ARG_3, REG_LOCAL_3);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
         } else if (i == 3) {
             asm_x64_mov_r64_to_local(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
         } else {
@@ -572,11 +593,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 #elif N_THUMB
     for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
-            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
         } else if (i == 1) {
-            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_2, REG_ARG_2);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
         } else if (i == 2) {
-            asm_thumb_mov_reg_reg(emit->as, REG_LOCAL_3, REG_ARG_3);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
         } else if (i == 3) {
             asm_thumb_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
         } else {
@@ -589,11 +610,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 #elif N_ARM
     for (int i = 0; i < scope->num_pos_args; i++) {
         if (i == 0) {
-            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_1, REG_ARG_1);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
         } else if (i == 1) {
-            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_2, REG_ARG_2);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
         } else if (i == 2) {
-            asm_arm_mov_reg_reg(emit->as, REG_LOCAL_3, REG_ARG_3);
+            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
         } else if (i == 3) {
             asm_arm_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
         } else {
@@ -698,8 +719,14 @@ STATIC void emit_native_pre(emit_t *emit) {
     */
 }
 
-STATIC vtype_kind_t peek_vtype(emit_t *emit) {
-    return emit->stack_info[emit->stack_size - 1].vtype;
+// depth==0 is top, depth==1 is before top, etc
+STATIC stack_info_t *peek_stack(emit_t *emit, mp_uint_t depth) {
+    return &emit->stack_info[emit->stack_size - 1 - depth];
+}
+
+// depth==0 is top, depth==1 is before top, etc
+STATIC vtype_kind_t peek_vtype(emit_t *emit, mp_uint_t depth) {
+    return peek_stack(emit, depth)->vtype;
 }
 
 // pos=1 is TOS, pos=2 is next, etc
@@ -759,7 +786,7 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
 
         case STACK_REG:
             if (si->u_reg != reg_dest) {
-                ASM_MOV_REG_TO_REG(emit->as, si->u_reg, reg_dest);
+                ASM_MOV_REG_REG(emit->as, reg_dest, si->u_reg);
             }
             break;
 
@@ -767,6 +794,21 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
             ASM_MOV_IMM_TO_REG(emit->as, si->u_imm, reg_dest);
             break;
     }
+}
+
+// If stacked value is in a register, then *reg_dest is set to that register.
+// Otherwise, the value is put in *reg_dest.
+STATIC void emit_pre_pop_reg_flexible(emit_t *emit, vtype_kind_t *vtype, int *reg_dest) {
+    emit->last_emit_was_return_value = false;
+    stack_info_t *si = peek_stack(emit, 0);
+    if (si->kind == STACK_REG) {
+        *vtype = si->vtype;
+        *reg_dest = si->u_reg;
+        need_reg_single(emit, *reg_dest, 1);
+    } else {
+        emit_access_stack(emit, 1, vtype, *reg_dest);
+    }
+    adjust_stack(emit, -1);
 }
 
 STATIC void emit_pre_pop_discard(emit_t *emit) {
@@ -1250,13 +1292,13 @@ STATIC void emit_native_store_name(emit_t *emit, qstr qst) {
 }
 
 STATIC void emit_native_store_global(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype = peek_vtype(emit);
+    vtype_kind_t vtype = peek_vtype(emit, 0);
     if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
         emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype, REG_ARG_2); // arg2 = type
-        ASM_MOV_REG_TO_REG(emit->as, REG_RET, REG_ARG_2);
+        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
     }
     emit_call_with_imm_arg(emit, MP_F_STORE_GLOBAL, qst, REG_ARG_1); // arg1 = name
     emit_post(emit);
@@ -1364,7 +1406,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
 }
 
 STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
-    vtype_kind_t vtype = peek_vtype(emit);
+    vtype_kind_t vtype = peek_vtype(emit, 0);
     switch (vtype) {
         case VTYPE_PYOBJ:
             emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
@@ -1507,7 +1549,7 @@ STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
     if (op == MP_UNARY_OP_NOT) {
         // we need to synthesise this operation by converting to bool first
         emit_call_with_imm_arg(emit, MP_F_UNARY_OP, MP_UNARY_OP_BOOL, REG_ARG_1);
-        ASM_MOV_REG_TO_REG(emit->as, REG_RET, REG_ARG_2);
+        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
     }
     emit_call_with_imm_arg(emit, MP_F_UNARY_OP, op, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
@@ -1515,47 +1557,108 @@ STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
 
 STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     DEBUG_printf("binary_op(" UINT_FMT ")\n", op);
-    vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
+    vtype_kind_t vtype_lhs = peek_vtype(emit, 1);
+    vtype_kind_t vtype_rhs = peek_vtype(emit, 0);
     if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
-        if (op == MP_BINARY_OP_ADD || op == MP_BINARY_OP_INPLACE_ADD) {
-#if N_X64
-            asm_x64_add_r64_to_r64(emit->as, REG_ARG_3, REG_ARG_2);
-#elif N_X86
-            asm_x86_add_r32_to_r32(emit->as, REG_ARG_3, REG_ARG_2);
-#elif N_THUMB
-            asm_thumb_add_rlo_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
-#elif N_ARM
-            asm_arm_add_reg(emit->as, REG_ARG_2, REG_ARG_2, REG_ARG_3);
-#else
-    #error not implemented
-#endif
+        #if N_X64 || N_X86
+        // special cases for x86 and shifting
+        if (op == MP_BINARY_OP_LSHIFT
+            || op == MP_BINARY_OP_INPLACE_LSHIFT
+            || op == MP_BINARY_OP_RSHIFT
+            || op == MP_BINARY_OP_INPLACE_RSHIFT) {
+            #if N_X64
+            emit_pre_pop_reg_reg(emit, &vtype_rhs, ASM_X64_REG_RCX, &vtype_lhs, REG_RET);
+            #else
+            emit_pre_pop_reg_reg(emit, &vtype_rhs, ASM_X86_REG_ECX, &vtype_lhs, REG_RET);
+            #endif
+            if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
+                ASM_LSL_REG(emit->as, REG_RET);
+            } else {
+                ASM_ASR_REG(emit->as, REG_RET);
+            }
+            emit_post_push_reg(emit, VTYPE_INT, REG_RET);
+            return;
+        }
+        #endif
+        int reg_rhs = REG_ARG_3;
+        emit_pre_pop_reg_flexible(emit, &vtype_rhs, &reg_rhs);
+        emit_pre_pop_reg(emit, &vtype_lhs, REG_ARG_2);
+        if (0) {
+            // dummy
+        #if !(N_X64 || N_X86)
+        } else if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
+            ASM_LSL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_LESS) {
-#if N_X64
-            asm_x64_xor_r64_to_r64(emit->as, REG_RET, REG_RET);
-            asm_x64_cmp_r64_with_r64(emit->as, REG_ARG_3, REG_ARG_2);
-            asm_x64_setcc_r8(emit->as, ASM_X64_CC_JL, REG_RET);
-#elif N_X86
-            asm_x86_xor_r32_to_r32(emit->as, REG_RET, REG_RET);
-            asm_x86_cmp_r32_with_r32(emit->as, REG_ARG_3, REG_ARG_2);
-            asm_x86_setcc_r8(emit->as, ASM_X86_CC_JL, REG_RET);
-#elif N_THUMB
-            asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_3);
-            asm_thumb_op16(emit->as, ASM_THUMB_OP_ITE_GE);
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
-#elif N_ARM
-            asm_arm_less_op(emit->as, REG_RET, REG_ARG_2, REG_ARG_3);
-#else
-    #error not implemented
-#endif
+        } else if (op == MP_BINARY_OP_RSHIFT || op == MP_BINARY_OP_INPLACE_RSHIFT) {
+            ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        #endif
+        } else if (op == MP_BINARY_OP_ADD || op == MP_BINARY_OP_INPLACE_ADD) {
+            ASM_ADD_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else if (op == MP_BINARY_OP_SUBTRACT || op == MP_BINARY_OP_INPLACE_SUBTRACT) {
+            ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
+            // comparison ops are (in enum order):
+            //  MP_BINARY_OP_LESS
+            //  MP_BINARY_OP_MORE
+            //  MP_BINARY_OP_EQUAL
+            //  MP_BINARY_OP_LESS_EQUAL
+            //  MP_BINARY_OP_MORE_EQUAL
+            //  MP_BINARY_OP_NOT_EQUAL
+            #if N_X64
+            asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
+            asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
+            static byte ops[6] = {
+                ASM_X64_CC_JL,
+                ASM_X64_CC_JG,
+                ASM_X64_CC_JE,
+                ASM_X64_CC_JLE,
+                ASM_X64_CC_JGE,
+                ASM_X64_CC_JNE,
+            };
+            asm_x64_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+            #elif N_X86
+            asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
+            asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
+            static byte ops[6] = {
+                ASM_X86_CC_JL,
+                ASM_X86_CC_JG,
+                ASM_X86_CC_JE,
+                ASM_X86_CC_JLE,
+                ASM_X86_CC_JGE,
+                ASM_X86_CC_JNE,
+            };
+            asm_x86_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+            #elif N_THUMB
+            asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
+            static uint16_t ops[6] = {
+                ASM_THUMB_OP_ITE_GE,
+                ASM_THUMB_OP_ITE_GT,
+                ASM_THUMB_OP_ITE_EQ,
+                ASM_THUMB_OP_ITE_GT,
+                ASM_THUMB_OP_ITE_GE,
+                ASM_THUMB_OP_ITE_EQ,
+            };
+            static byte ret[6] = { 0, 1, 1, 0, 1, 0, };
+            asm_thumb_op16(emit->as, ops[op - MP_BINARY_OP_LESS]);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);
+            #elif N_ARM
+                #error generic comparisons for ARM needs implementing
+            //asm_arm_less_op(emit->as, REG_RET, REG_ARG_2, reg_rhs);
+            //asm_arm_more_op(emit->as, REG_RET, REG_ARG_2, reg_rhs);
+            #else
+                #error not implemented
+            #endif
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {
             // TODO other ops not yet implemented
             assert(0);
         }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+        emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
         bool invert = false;
         if (op == MP_BINARY_OP_NOT_IN) {
             invert = true;
@@ -1566,7 +1669,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         }
         emit_call_with_imm_arg(emit, MP_F_BINARY_OP, op, REG_ARG_1);
         if (invert) {
-            ASM_MOV_REG_TO_REG(emit->as, REG_RET, REG_ARG_2);
+            ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
             emit_call_with_imm_arg(emit, MP_F_UNARY_OP, MP_UNARY_OP_NOT, REG_ARG_1);
         }
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);

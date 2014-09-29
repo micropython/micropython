@@ -170,6 +170,11 @@ STATIC uint asm_arm_op_sub_imm(uint rd, uint rn, uint imm) {
     return 0x2400000 | (rn << 16) | (rd << 12) | (imm & 0xFF);
 }
 
+STATIC uint asm_arm_op_sub_reg(uint rd, uint rn, uint rm) {
+    // sub rd, rn, rm
+    return 0x0400000 | (rn << 16) | (rd << 12) | rm;
+}
+
 void asm_arm_bkpt(asm_arm_t *as) {
     // bkpt #0
     emit_al(as, 0x1200070); 
@@ -298,9 +303,14 @@ void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm) {
     emit(as, asm_arm_op_mov_imm(rd, 0) | ASM_ARM_CC_GE); // movge rd, #0
 }
 
-void asm_arm_add_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
+void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
     // add rd, rn, rm
     emit_al(as, asm_arm_op_add_reg(rd, rn, rm));
+}
+
+void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
+    // sub rd, rn, rm
+    emit_al(as, asm_arm_op_sub_reg(rd, rn, rm));
 }
 
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {

@@ -57,12 +57,14 @@
 #define OPCODE_ADD_R32_TO_RM32   (0x01)
 #define OPCODE_ADD_I32_TO_RM32   (0x81) /* /0 */
 #define OPCODE_ADD_I8_TO_RM32    (0x83) /* /0 */
-//#define OPCODE_SUB_R32_FROM_RM32 (0x29)
+#define OPCODE_SUB_R32_FROM_RM32 (0x29)
 #define OPCODE_SUB_I32_FROM_RM32 (0x81) /* /5 */
 #define OPCODE_SUB_I8_FROM_RM32  (0x83) /* /5 */
 //#define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
 //#define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
 //#define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
+#define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
+#define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
 //#define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
 //#define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
 #define OPCODE_CMP_R32_WITH_RM32 (0x39)
@@ -204,6 +206,10 @@ STATIC void asm_x86_write_r32_disp(asm_x86_t *as, int r32, int disp_r32, int dis
     }
 }
 
+STATIC void asm_x86_generic_r32_r32(asm_x86_t *as, int dest_r32, int src_r32, int op) {
+    asm_x86_write_byte_2(as, op, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+}
+
 STATIC void asm_x86_nop(asm_x86_t *as) {
     asm_x86_write_byte_1(as, OPCODE_NOP);
 }
@@ -232,8 +238,8 @@ STATIC void asm_x86_ret(asm_x86_t *as) {
     asm_x86_write_byte_1(as, OPCODE_RET);
 }
 
-void asm_x86_mov_r32_to_r32(asm_x86_t *as, int src_r32, int dest_r32) {
-    asm_x86_write_byte_2(as, OPCODE_MOV_R32_TO_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+void asm_x86_mov_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_MOV_R32_TO_RM32);
 }
 
 void asm_x86_mov_r8_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
@@ -281,12 +287,20 @@ void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32
     asm_x86_mov_i32_to_r32(as, src_i32, dest_r32);
 }
 
-void asm_x86_xor_r32_to_r32(asm_x86_t *as, int src_r32, int dest_r32) {
-    asm_x86_write_byte_2(as, OPCODE_XOR_R32_TO_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_XOR_R32_TO_RM32);
 }
 
-void asm_x86_add_r32_to_r32(asm_x86_t *as, int src_r32, int dest_r32) {
-    asm_x86_write_byte_2(as, OPCODE_ADD_R32_TO_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
+}
+
+void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 7, OPCODE_SAR_RM32_CL);
+}
+
+void asm_x86_add_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_ADD_R32_TO_RM32);
 }
 
 void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32) {
@@ -299,13 +313,11 @@ void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32) {
     }
 }
 
-#if 0
-void asm_x86_sub_r32_from_r32(asm_x86_t *as, int src_r32, int dest_r32) {
-    asm_x86_write_byte_2(as, OPCODE_SUB_R32_FROM_RM32, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+void asm_x86_sub_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_SUB_R32_FROM_RM32);
 }
-#endif
 
-void asm_x86_sub_i32_from_r32(asm_x86_t *as, int src_i32, int dest_r32) {
+STATIC void asm_x86_sub_r32_i32(asm_x86_t *as, int dest_r32, int src_i32) {
     if (SIGNED_FIT8(src_i32)) {
         // defaults to 32 bit operation
         asm_x86_write_byte_2(as, OPCODE_SUB_I8_FROM_RM32, MODRM_R32(5) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
@@ -426,9 +438,9 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
 
 void asm_x86_entry(asm_x86_t *as, mp_uint_t num_locals) {
     asm_x86_push_r32(as, ASM_X86_REG_EBP);
-    asm_x86_mov_r32_to_r32(as, ASM_X86_REG_ESP, ASM_X86_REG_EBP);
+    asm_x86_mov_r32_r32(as, ASM_X86_REG_EBP, ASM_X86_REG_ESP);
     if (num_locals > 0) {
-        asm_x86_sub_i32_from_r32(as, num_locals * WORD_SIZE, ASM_X86_REG_ESP);
+        asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, num_locals * WORD_SIZE);
     }
     asm_x86_push_r32(as, ASM_X86_REG_EBX);
     asm_x86_push_r32(as, ASM_X86_REG_ESI);
@@ -487,7 +499,7 @@ void asm_x86_mov_r32_to_local(asm_x86_t *as, int src_r32, int dest_local_num) {
 void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32) {
     int offset = asm_x86_local_offset_from_ebp(as, local_num);
     if (offset == 0) {
-        asm_x86_mov_r32_to_r32(as, ASM_X86_REG_EBP, dest_r32);
+        asm_x86_mov_r32_r32(as, dest_r32, ASM_X86_REG_EBP);
     } else {
         asm_x86_lea_disp_to_r32(as, ASM_X86_REG_EBP, offset, dest_r32);
     }
@@ -500,7 +512,7 @@ void asm_x86_push_local(asm_x86_t *as, int local_num) {
 
 void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 {
-    asm_x86_mov_r32_to_r32(as, ASM_X86_REG_EBP, temp_r32);
+    asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_EBP);
     asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_ebp(as, local_num), temp_r32);
     asm_x86_push_r32(as, temp_r32);
 }

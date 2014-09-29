@@ -32,6 +32,11 @@
 //  - EAX, ECX, EDX are caller-save
 //  - EBX, ESI, EDI, EBP, ESP, EIP are callee-save
 
+// In the functions below, argument order follows x86 docs and generally
+// the destination is the first argument.
+// NOTE: this is a change from the old convention used in this file and
+// some functions still use the old (reverse) convention.
+
 #define ASM_X86_PASS_COMPUTE (1)
 #define ASM_X86_PASS_EMIT    (2)
 
@@ -59,6 +64,8 @@
 #define ASM_X86_CC_JNZ (0x5)
 #define ASM_X86_CC_JNE (0x5)
 #define ASM_X86_CC_JL  (0xc) // less, signed
+#define ASM_X86_CC_JGE (0xd) // greater or equal, signed
+#define ASM_X86_CC_JLE (0xe) // less or equal, signed
 #define ASM_X86_CC_JG  (0xf) // greater, signed
 
 typedef struct _asm_x86_t asm_x86_t;
@@ -70,14 +77,17 @@ void asm_x86_end_pass(asm_x86_t *as);
 mp_uint_t asm_x86_get_code_size(asm_x86_t* as);
 void* asm_x86_get_code(asm_x86_t* as);
 
-void asm_x86_mov_r32_to_r32(asm_x86_t* as, int src_r32, int dest_r32);
+void asm_x86_mov_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);
 void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32);
 void asm_x86_mov_r8_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r16_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r32_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
-void asm_x86_xor_r32_to_r32(asm_x86_t *as, int src_r32, int dest_r32);
-void asm_x86_add_r32_to_r32(asm_x86_t* as, int src_r32, int dest_r32);
+void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
+void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32);
+void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32);
+void asm_x86_add_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
+void asm_x86_sub_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_cmp_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
