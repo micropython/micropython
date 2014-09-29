@@ -274,7 +274,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else if (strcmp(op_str, "wfi") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
         } else if (strcmp(op_str, "ite.ge") == 0) { // TODO correct name for this op?
-            asm_thumb_ite_ge(emit->as);
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_ITE_GE);
         } else {
             goto unknown_op;
         }

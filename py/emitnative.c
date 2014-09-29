@@ -1537,7 +1537,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_x86_setcc_r8(emit->as, ASM_X86_CC_JL, REG_RET);
 #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, REG_ARG_3);
-            asm_thumb_ite_ge(emit->as);
+            asm_thumb_op16(emit->as, ASM_THUMB_OP_ITE_GE);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0); // if r0 >= r1
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1); // if r0 < r1
 #elif N_ARM

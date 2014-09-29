@@ -42,17 +42,16 @@
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
 
 struct _asm_thumb_t {
-    uint pass;
-    uint code_offset;
-    uint code_size;
+    mp_uint_t pass;
+    mp_uint_t code_offset;
+    mp_uint_t code_size;
     byte *code_base;
     byte dummy_data[4];
 
-    uint max_num_labels;
-    int *label_offsets;
-    int num_locals;
-    uint push_reglist;
-    uint stack_adjust;
+    mp_uint_t max_num_labels;
+    mp_uint_t *label_offsets;
+    mp_uint_t push_reglist;
+    mp_uint_t stack_adjust;
 };
 
 asm_thumb_t *asm_thumb_new(uint max_num_labels) {
@@ -60,7 +59,7 @@ asm_thumb_t *asm_thumb_new(uint max_num_labels) {
 
     as = m_new0(asm_thumb_t, 1);
     as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(int, max_num_labels);
+    as->label_offsets = m_new(mp_uint_t, max_num_labels);
 
     return as;
 }
@@ -88,7 +87,7 @@ void asm_thumb_start_pass(asm_thumb_t *as, uint pass) {
     as->pass = pass;
     as->code_offset = 0;
     if (pass == ASM_THUMB_PASS_COMPUTE) {
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(int));
+        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
     }
 }
 
@@ -169,7 +168,7 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 
 // locals:
 //  - stored on the stack in ascending order
-//  - numbered 0 through as->num_locals-1
+//  - numbered 0 through num_locals-1
 //  - SP points to first local
 //
 //  | SP
@@ -222,7 +221,6 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
     }
     as->push_reglist = reglist;
     as->stack_adjust = stack_adjust;
-    as->num_locals = num_locals;
 }
 
 void asm_thumb_exit(asm_thumb_t *as) {
@@ -262,7 +260,7 @@ void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val) {
     }
 }
 
-STATIC int get_label_dest(asm_thumb_t *as, uint label) {
+STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
@@ -348,15 +346,11 @@ void asm_thumb_movt_reg_i16(asm_thumb_t *as, uint reg_dest, int i16_src) {
     asm_thumb_mov_reg_i16(as, OP_MOVT, reg_dest, i16_src);
 }
 
-void asm_thumb_ite_ge(asm_thumb_t *as) {
-    asm_thumb_op16(as, 0xbfac);
-}
-
 #define OP_B_N(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
 
 void asm_thumb_b_n(asm_thumb_t *as, uint label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (SIGNED_FIT12(rel)) {
         asm_thumb_op16(as, OP_B_N(rel));
@@ -368,8 +362,8 @@ void asm_thumb_b_n(asm_thumb_t *as, uint label) {
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
 void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (SIGNED_FIT9(rel)) {
         asm_thumb_op16(as, OP_BCC_N(cond, rel));
@@ -442,8 +436,8 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (dest >= 0 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
@@ -465,8 +459,8 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
 #define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
 
 void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
-    int dest = get_label_dest(as, label);
-    int rel = dest - as->code_offset;
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (dest >= 0 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
