@@ -99,6 +99,7 @@ SRC_C = \
 	help.c \
 	input.c \
 	modos.c \
+	modfatfs.c \
 	modpyb.c \
 	modstm.c \
 	modtime.c \
