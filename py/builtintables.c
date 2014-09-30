@@ -123,7 +123,6 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_EOFError), (mp_obj_t)&mp_type_EOFError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Exception), (mp_obj_t)&mp_type_Exception },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GeneratorExit), (mp_obj_t)&mp_type_GeneratorExit },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IOError), (mp_obj_t)&mp_type_IOError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ImportError), (mp_obj_t)&mp_type_ImportError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IndentationError), (mp_obj_t)&mp_type_IndentationError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IndexError), (mp_obj_t)&mp_type_IndexError },

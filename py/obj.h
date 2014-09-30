@@ -326,7 +326,6 @@ extern const mp_obj_type_t mp_type_AttributeError;
 extern const mp_obj_type_t mp_type_EOFError;
 extern const mp_obj_type_t mp_type_Exception;
 extern const mp_obj_type_t mp_type_GeneratorExit;
-extern const mp_obj_type_t mp_type_IOError;
 extern const mp_obj_type_t mp_type_ImportError;
 extern const mp_obj_type_t mp_type_IndentationError;
 extern const mp_obj_type_t mp_type_IndexError;
