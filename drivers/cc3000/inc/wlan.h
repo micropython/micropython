@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __WLAN_H__
-#define	__WLAN_H__
+#ifndef __CC3000_WLAN_H__
+#define	__CC3000_WLAN_H__
 
 #include "cc3000_common.h"
 
@@ -515,4 +515,4 @@ extern INT32 wlan_smart_config_process(void);
 }
 #endif // __cplusplus
 
-#endif	// __WLAN_H__
+#endif	// __CC3000_WLAN_H__

@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __DATA_TYPES__
-#define __DATA_TYPES__
+#ifndef __CC3000_DATA_TYPES__
+#define __CC3000_DATA_TYPES__
 
 //*****************************************************************************
 //
@@ -104,4 +104,4 @@ typedef char            	CHAR;
 }
 #endif /* __cplusplus */
 
-#endif /* __DATA_TYPE__ */
+#endif /* __CC3000_DATA_TYPES__ */

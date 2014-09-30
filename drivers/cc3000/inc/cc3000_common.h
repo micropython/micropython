@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __CC3000_COMMON_H__
+#define __CC3000_COMMON_H__
 
 #include "data_types.h"
 
@@ -42,6 +42,11 @@
 //******************************************************************************
 #include <stdlib.h>
 #include <stdint.h>
+
+//*****************************************************************************
+// Prefix exported names to avoid name clash
+//*****************************************************************************
+#define CC3000_EXPORT(name) cc3000_ ## name
 
 //*****************************************************************************
 //
@@ -53,7 +58,7 @@
 extern "C" {
 #endif
 
-extern int errno;
+extern int CC3000_EXPORT(errno);
 
 //*****************************************************************************
 //                  ERROR CODES
@@ -357,4 +362,4 @@ extern UINT32 STREAM_TO_UINT32_f(CHAR* p, UINT16 offset);
 }
 #endif // __cplusplus
 
-#endif // __COMMON_H__
+#endif // __CC3000_COMMON_H__

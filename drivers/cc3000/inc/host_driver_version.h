@@ -32,24 +32,9 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __HOST_DRIVER_VERSION_H__
-#define __HOST_DRIVER_VERSION_H__
+#ifndef __CC3000_HOST_DRIVER_VERSION_H__
+#define __CC3000_HOST_DRIVER_VERSION_H__
 
 #define DRIVER_VERSION_NUMBER   15
 
-
-
-#endif // __VERSION_H__
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif // __CC3000_HOST_DRIVER_VERSION_H__

@@ -33,9 +33,7 @@
 #include <errno.h>
 
 // CC3000 defines its own ENOBUFS (different to standard one!)
-// CC3000 uses global variable called errno
 #undef ENOBUFS
-#undef errno
 
 #include "stm32f4xx_hal.h"
 #include "mpconfig.h"
@@ -63,7 +61,7 @@
 #include "netapp.h"
 #include "patch_prog.h"
 
-int errno; // for cc3000 driver
+int CC3000_EXPORT(errno); // for cc3000 driver
 
 STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol, int *_errno);
 
@@ -122,8 +120,8 @@ STATIC mp_obj_t cc3k_socket(mp_obj_t nic, int domain, int type, int fileno, int 
 
 STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     uint32_t ip;
-    if (gethostbyname((char*)name, len, &ip) < 0) {
-        return errno;
+    if (CC3000_EXPORT(gethostbyname)((char*)name, len, &ip) < 0) {
+        return CC3000_EXPORT(errno);
     }
 
     if (ip == 0) {
@@ -344,10 +342,10 @@ STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t prot
     s->base.type = (mp_obj_t)&cc3k_socket_type;
 
     // open socket
-    s->fd = socket(family, type, protocol);
+    s->fd = CC3000_EXPORT(socket)(family, type, protocol);
     if (s->fd < 0) {
         m_del_obj(cc3k_socket_obj_t, s);
-        *_errno = errno;
+        *_errno = CC3000_EXPORT(errno);
         return MP_OBJ_NULL;
     }
 
@@ -366,7 +364,7 @@ STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t s
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
-        closesocket(self->fd);
+        CC3000_EXPORT(closesocket)(self->fd);
         *errcode = EPIPE;
         return 0;
     }
@@ -376,10 +374,10 @@ STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t s
     int bytes = 0;
     while (bytes < size) {
         int n = MIN((size-bytes), MAX_TX_PACKET);
-        n = send(self->fd, buf+bytes, n, 0);
+        n = CC3000_EXPORT(send)(self->fd, buf+bytes, n, 0);
         if (n <= 0) {
             bytes = n;
-            *errcode = errno;
+            *errcode = CC3000_EXPORT(errno);
             break;
         }
         bytes += n;
@@ -392,7 +390,7 @@ STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, i
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
-        closesocket(self->fd);
+        CC3000_EXPORT(closesocket)(self->fd);
         return 0;
     }
 
@@ -400,12 +398,12 @@ STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, i
     int bytes = 0;
     while (bytes < size) {
         int n = MIN((size-bytes), MAX_RX_PACKET);
-        n = recv(self->fd, buf+bytes, n, 0);
+        n = CC3000_EXPORT(recv)(self->fd, buf+bytes, n, 0);
         if (n == 0) {
             break;
         } else if (n < 0) {
             bytes = n;
-            *errcode = errno;
+            *errcode = CC3000_EXPORT(errno);
             break;
         }
         bytes += n;
@@ -435,7 +433,7 @@ STATIC mp_obj_t cc3k_socket_bind(mp_obj_t self_in, mp_obj_t addr_obj) {
     }
 
     // bind socket
-    if (bind(self->fd, (sockaddr*) &addr_in, sizeof(sockaddr_in)) < 0) {
+    if (CC3000_EXPORT(bind)(self->fd, (sockaddr*) &addr_in, sizeof(sockaddr_in)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "bind failed"));
     }
     return mp_const_true;
@@ -444,7 +442,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_bind_obj, cc3k_socket_bind);
 
 STATIC mp_obj_t cc3k_socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     cc3k_socket_obj_t *self = self_in;
-    if (listen(self->fd, mp_obj_get_int(backlog)) < 0) {
+    if (CC3000_EXPORT(listen)(self->fd, mp_obj_get_int(backlog)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "listen failed"));
     }
 
@@ -460,7 +458,7 @@ STATIC mp_obj_t cc3k_socket_accept(mp_obj_t self_in) {
     socklen_t addr_len = sizeof(sockaddr);
 
     // accept incoming connection
-    if ((fd = accept(self->fd, &addr, &addr_len)) < 0) {
+    if ((fd = CC3000_EXPORT(accept)(self->fd, &addr, &addr_len)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "accept failed"));
     }
 
@@ -512,7 +510,7 @@ STATIC mp_obj_t cc3k_socket_connect(mp_obj_t self_in, mp_obj_t addr_obj) {
 
     //printf("doing connect: fd=%d, sockaddr=(%d, %d, %lu)\n", self->fd, addr_in.sin_family, addr_in.sin_port, addr_in.sin_addr.s_addr);
 
-    int ret = connect(self->fd, (sockaddr*)&addr_in, sizeof(sockaddr_in));
+    int ret = CC3000_EXPORT(connect)(self->fd, (sockaddr*)&addr_in, sizeof(sockaddr_in));
     if (ret != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d] connect failed", ret));
     }
@@ -526,7 +524,7 @@ STATIC mp_obj_t cc3k_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout) {
     int optval = mp_obj_get_int(timeout);
     socklen_t optlen = sizeof(optval);
 
-    if (setsockopt(self->fd, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &optval, optlen) != 0) {
+    if (CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &optval, optlen) != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "setsockopt failed"));
     }
 
@@ -545,8 +543,8 @@ STATIC mp_obj_t cc3k_socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
         optval = SOCK_ON;
     }
 
-    if (setsockopt(self->fd, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen) != 0 ||
-        setsockopt(self->fd, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen) != 0 ) {
+    if (CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen) != 0 ||
+        CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen) != 0 ) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "setsockopt failed"));
     }
 
@@ -556,7 +554,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_setblocking_obj, cc3k_socket_setblo
 
 STATIC mp_obj_t cc3k_socket_close(mp_obj_t self_in) {
     cc3k_socket_obj_t *self = self_in;
-    closesocket(self->fd);
+    CC3000_EXPORT(closesocket)(self->fd);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_socket_close_obj, cc3k_socket_close);
@@ -614,11 +612,11 @@ mp_uint_t cc3k_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
         timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
-        int nfds = select(fd + 1, &rfds, &wfds, &xfds, &tv);
+        int nfds = CC3000_EXPORT(select)(fd + 1, &rfds, &wfds, &xfds, &tv);
 
         // check for error
         if (nfds == -1) {
-            *errcode = errno; // return cc3000's errno
+            *errcode = CC3000_EXPORT(errno);
             return -1;
         }
 

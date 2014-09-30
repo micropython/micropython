@@ -27,7 +27,7 @@
 
 #define ENOSPC          (28)
 #define EAFNOSUPPORT    (106)
-#define SET_ERRNO(err)  (errno=-err)
+#define SET_ERRNO(err)  (CC3000_EXPORT(errno)=-err)
 
 /*
  * Format an IPv4 address, more or less like inet_ntoa().

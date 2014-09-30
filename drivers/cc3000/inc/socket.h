@@ -32,9 +32,10 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __SOCKET_H__
-#define __SOCKET_H__
+#ifndef __CC3000_SOCKET_H__
+#define __CC3000_SOCKET_H__
 
+#include "cc3000_common.h"
 
 //*****************************************************************************
 //
@@ -215,7 +216,7 @@ typedef struct
 //!          application layer to obtain a socket handle.
 //
 //*****************************************************************************
-extern INT16 socket(INT32 domain, INT32 type, INT32 protocol);
+extern INT16 CC3000_EXPORT(socket)(INT32 domain, INT32 type, INT32 protocol);
 
 //*****************************************************************************
 //
@@ -228,7 +229,7 @@ extern INT16 socket(INT32 domain, INT32 type, INT32 protocol);
 //!  @brief  The socket function closes a created socket.
 //
 //*****************************************************************************
-extern INT32 closesocket(INT32 sd);
+extern INT32 CC3000_EXPORT(closesocket)(INT32 sd);
 
 //*****************************************************************************
 //
@@ -274,7 +275,7 @@ extern INT32 closesocket(INT32 sd);
 //! @sa     socket ; bind ; listen
 //
 //*****************************************************************************
-extern INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen);
+extern INT32 CC3000_EXPORT(accept)(INT32 sd, sockaddr *addr, socklen_t *addrlen);
 
 //*****************************************************************************
 //
@@ -298,7 +299,7 @@ extern INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen);
 //! @sa     socket ; accept ; listen
 //
 //*****************************************************************************
-extern INT32 bind(INT32 sd, const sockaddr *addr, INT32 addrlen);
+extern INT32 CC3000_EXPORT(bind)(INT32 sd, const sockaddr *addr, INT32 addrlen);
 
 //*****************************************************************************
 //
@@ -322,7 +323,7 @@ extern INT32 bind(INT32 sd, const sockaddr *addr, INT32 addrlen);
 //! @note   On this version, backlog is not supported
 //
 //*****************************************************************************
-extern INT32 listen(INT32 sd, INT32 backlog);
+extern INT32 CC3000_EXPORT(listen)(INT32 sd, INT32 backlog);
 
 //*****************************************************************************
 //
@@ -343,7 +344,7 @@ extern INT32 listen(INT32 sd, INT32 backlog);
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER 
-extern INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen, UINT32* out_ip_addr);
+extern INT16 CC3000_EXPORT(gethostbyname)(CHAR * hostname, UINT16 usNameLen, UINT32* out_ip_addr);
 #endif
 
 
@@ -375,7 +376,7 @@ extern INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen, UINT32* out_ip_add
 //!  @sa socket
 //
 //*****************************************************************************
-extern INT32 connect(INT32 sd, const sockaddr *addr, INT32 addrlen);
+extern INT32 CC3000_EXPORT(connect)(INT32 sd, const sockaddr *addr, INT32 addrlen);
 
 //*****************************************************************************
 //
@@ -414,7 +415,7 @@ extern INT32 connect(INT32 sd, const sockaddr *addr, INT32 addrlen);
 //!  @sa socket
 //
 //*****************************************************************************
-extern INT16 select(INT32 nfds, fd_set *readsds, fd_set *writesds,
+extern INT16 CC3000_EXPORT(select)(INT32 nfds, fd_set *readsds, fd_set *writesds,
                   fd_set *exceptsds, struct timeval *timeout);
 
 //*****************************************************************************
@@ -464,7 +465,7 @@ extern INT16 select(INT32 nfds, fd_set *readsds, fd_set *writesds,
 //
 //*****************************************************************************
 #ifndef CC3000_TINY_DRIVER 
-extern INT16 setsockopt(INT32 sd, INT32 level, INT32 optname, const void *optval,
+extern INT16 CC3000_EXPORT(setsockopt)(INT32 sd, INT32 level, INT32 optname, const void *optval,
                       socklen_t optlen);
 #endif
 //*****************************************************************************
@@ -513,7 +514,7 @@ extern INT16 setsockopt(INT32 sd, INT32 level, INT32 optname, const void *optval
 //!  @sa setsockopt
 //
 //*****************************************************************************
-extern INT16 getsockopt(INT32 sd, INT32 level, INT32 optname, void *optval,
+extern INT16 CC3000_EXPORT(getsockopt)(INT32 sd, INT32 level, INT32 optname, void *optval,
                       socklen_t *optlen);
 
 //*****************************************************************************
@@ -537,7 +538,7 @@ extern INT16 getsockopt(INT32 sd, INT32 level, INT32 optname, void *optval,
 //!  @Note On this version, only blocking mode is supported.
 //
 //*****************************************************************************
-extern INT16 recv(INT32 sd, void *buf, INT32 len, INT32 flags);
+extern INT16 CC3000_EXPORT(recv)(INT32 sd, void *buf, INT32 len, INT32 flags);
 
 //*****************************************************************************
 //
@@ -567,7 +568,7 @@ extern INT16 recv(INT32 sd, void *buf, INT32 len, INT32 flags);
 //!  @Note On this version, only blocking mode is supported.
 //
 //*****************************************************************************
-extern INT16 recvfrom(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from, 
+extern INT16 CC3000_EXPORT(recvfrom)(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from, 
                     socklen_t *fromlen);
 
 //*****************************************************************************
@@ -592,7 +593,7 @@ extern INT16 recvfrom(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *fro
 //
 //*****************************************************************************
 
-extern INT16 send(INT32 sd, const void *buf, INT32 len, INT32 flags);
+extern INT16 CC3000_EXPORT(send)(INT32 sd, const void *buf, INT32 len, INT32 flags);
 
 //*****************************************************************************
 //
@@ -620,7 +621,7 @@ extern INT16 send(INT32 sd, const void *buf, INT32 len, INT32 flags);
 //
 //*****************************************************************************
 
-extern INT16 sendto(INT32 sd, const void *buf, INT32 len, INT32 flags, 
+extern INT16 CC3000_EXPORT(sendto)(INT32 sd, const void *buf, INT32 len, INT32 flags, 
                   const sockaddr *to, socklen_t tolen);
 
 //*****************************************************************************
@@ -639,7 +640,7 @@ extern INT16 sendto(INT32 sd, const void *buf, INT32 len, INT32 flags,
 //!  @brief    Set CC3000 in mDNS advertiser mode in order to advertise itself.
 //
 //*****************************************************************************
-extern INT16 mdnsAdvertiser(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16 deviceServiceNameLength);
+extern INT16 CC3000_EXPORT(mdnsAdvertiser)(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16 deviceServiceNameLength);
 
 
 //*****************************************************************************
@@ -653,7 +654,7 @@ extern INT16 mdnsAdvertiser(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16
 //!  @brief    Returns the MSS value of a TCP connection according to the socket descriptor
 //
 //*****************************************************************************
-extern UINT16 getmssvalue (INT32 sd);
+extern UINT16 CC3000_EXPORT(getmssvalue) (INT32 sd);
 
 //*****************************************************************************
 //

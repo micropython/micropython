@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __NVRAM_H__
-#define __NVRAM_H__
+#ifndef __CC3000_NVRAM_H__
+#define __CC3000_NVRAM_H__
 
 #include "cc3000_common.h"
 
@@ -245,4 +245,4 @@ extern INT32 nvmem_create_entry(UINT32 file_id, UINT32 newlen);
 }
 #endif // __cplusplus
 
-#endif // __NVRAM_H__
+#endif // __CC3000_NVRAM_H__

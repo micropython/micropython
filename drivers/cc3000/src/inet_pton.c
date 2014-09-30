@@ -31,7 +31,7 @@ static int      inet_pton6(const char *src, unsigned char *dst);
 #endif
 
 #define EAFNOSUPPORT (106)
-#define SET_ERRNO(err) (errno=-err)
+#define SET_ERRNO(err) (CC3000_EXPORT(errno)=-err)
 
 /* int
  * inet_pton(af, src, dst)

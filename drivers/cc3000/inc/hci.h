@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __HCI_H__
-#define __HCI_H__
+#ifndef __CC3000_HCI_H__
+#define __CC3000_HCI_H__
 
 #include "cc3000_common.h"
 
@@ -327,4 +327,4 @@ extern void hci_patch_send(UINT8 ucOpcode, UINT8 *pucBuff, CHAR *patch, UINT16 u
 }
 #endif // __cplusplus
 
-#endif // __HCI_H__
+#endif // __CC3000_HCI_H__
