@@ -30,5 +30,5 @@ extern SPI_HandleTypeDef SPIHandle3;
 extern const mp_obj_type_t pyb_spi_type;
 
 void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi);
+void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
 SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);

@@ -263,7 +263,7 @@ STATIC mp_obj_t pyb_lcd_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     init->CRCPolynomial = 0;
 
     // init the SPI bus
-    spi_init(lcd->spi);
+    spi_init(lcd->spi, false);
 
     // set the pins to default values
     lcd->pin_cs1->gpio->BSRRL = lcd->pin_cs1->pin_mask;

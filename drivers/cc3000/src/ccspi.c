@@ -153,7 +153,7 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
     SPI_HANDLE->Init.TIMode            = SPI_TIMODE_DISABLED;
     SPI_HANDLE->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
     SPI_HANDLE->Init.CRCPolynomial     = 7;
-    spi_init(SPI_HANDLE);
+    spi_init(SPI_HANDLE, false);
 
     // configure wlan CS and EN pins
     GPIO_InitTypeDef GPIO_InitStructure;
