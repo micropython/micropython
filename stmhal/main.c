@@ -64,10 +64,9 @@
 #include "dac.h"
 #include "pybwlan.h"
 #include "pybstdio.h"
+#include "modnetwork.h"
 
 void SystemClock_Config(void);
-
-int errno;
 
 static FATFS fatfs0;
 #if MICROPY_HW_HAS_SDCARD
@@ -509,6 +508,8 @@ soft_reset:
     pyb_wlan_init();
     pyb_wlan_start();
 #endif
+
+    mod_network_init();
 
     // At this point everything is fully configured and initialised.
 

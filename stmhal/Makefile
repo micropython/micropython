@@ -103,6 +103,8 @@ SRC_C = \
 	modstm.c \
 	modtime.c \
 	modselect.c \
+	modusocket.c \
+	modnetwork.c \
 	import.c \
 	lexerfatfs.c \
 	extint.c \
