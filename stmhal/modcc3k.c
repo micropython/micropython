@@ -288,11 +288,16 @@ STATIC mp_obj_t cc3k_patch_version(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_patch_version_obj, cc3k_patch_version);
 
-STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in) {
-    //patch_prog_start();
+STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
+    const char *key = mp_obj_str_get_str(key_in);
+    if (key[0] == 'p' && key[1] == 'g' && key[2] == 'm' && key[3] == '\0') {
+        patch_prog_start();
+    } else {
+        printf("please pass 'pgm' as argument in order to program\n");
+    }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_patch_program_obj, cc3k_patch_program);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_patch_program_obj, cc3k_patch_program);
 
 STATIC const mp_map_elem_t cc3k_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&cc3k_connect_obj },

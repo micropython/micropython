@@ -218,9 +218,8 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	ccspi.c \
 	inet_ntop.c \
 	inet_pton.c \
-	)
-#	patch.c \
-#	patch_prog.c \
+	patch.c \
+	patch_prog.c \
 	)
 endif
 
