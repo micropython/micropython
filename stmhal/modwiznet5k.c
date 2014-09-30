@@ -184,17 +184,17 @@ STATIC mp_obj_t wiznet5k_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     wiznet5k_obj.socket_used = 0;
 
     /*!< SPI configuration */
-    SPIHandle2.Init.Mode = SPI_MODE_MASTER;
-    SPIHandle2.Init.Direction = SPI_DIRECTION_2LINES;
-    SPIHandle2.Init.DataSize = SPI_DATASIZE_8BIT;
-    SPIHandle2.Init.CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
-    SPIHandle2.Init.CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
-    SPIHandle2.Init.NSS = SPI_NSS_SOFT;
-    SPIHandle2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
-    SPIHandle2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    SPIHandle2.Init.TIMode = SPI_TIMODE_DISABLED;
-    SPIHandle2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-    SPIHandle2.Init.CRCPolynomial = 7; // unused
+    wiznet5k_obj.spi->Init.Mode = SPI_MODE_MASTER;
+    wiznet5k_obj.spi->Init.Direction = SPI_DIRECTION_2LINES;
+    wiznet5k_obj.spi->Init.DataSize = SPI_DATASIZE_8BIT;
+    wiznet5k_obj.spi->Init.CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
+    wiznet5k_obj.spi->Init.CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
+    wiznet5k_obj.spi->Init.NSS = SPI_NSS_SOFT;
+    wiznet5k_obj.spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
+    wiznet5k_obj.spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    wiznet5k_obj.spi->Init.TIMode = SPI_TIMODE_DISABLED;
+    wiznet5k_obj.spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+    wiznet5k_obj.spi->Init.CRCPolynomial = 7; // unused
     spi_init(wiznet5k_obj.spi, false);
 
     GPIO_InitTypeDef GPIO_InitStructure;
