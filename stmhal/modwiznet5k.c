@@ -339,7 +339,7 @@ STATIC void wiznet5k_socket_print(void (*print)(void *env, const char *fmt, ...)
 STATIC mp_obj_t wiznet5k_socket_close(mp_obj_t self_in) {
     wiznet5k_socket_obj_t *self = self_in;
     wiznet5k_obj.socket_used &= ~(1 << self->sn);
-    mp_int_t ret = close(self->sn);
+    mp_int_t ret = WIZCHIP_EXPORT(close)(self->sn);
     check_sock_return_value(ret);
     return mp_const_none;
 }
@@ -352,7 +352,7 @@ STATIC mp_obj_t wiznet5k_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
 
     // open the socket in server mode
-    mp_int_t ret = socket(self->sn, self->type, port, 0);
+    mp_int_t ret = WIZCHIP_EXPORT(socket)(self->sn, self->type, port, 0);
     check_sock_return_value(ret);
 
     return mp_const_none;
@@ -361,7 +361,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(wiznet5k_socket_bind_obj, wiznet5k_socket_bind)
 
 STATIC mp_obj_t wiznet5k_socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     wiznet5k_socket_obj_t *self = self_in;
-    mp_int_t ret = listen(self->sn);
+    mp_int_t ret = WIZCHIP_EXPORT(listen)(self->sn);
     check_sock_return_value(ret);
     return mp_const_none;
 }
@@ -381,13 +381,13 @@ STATIC mp_obj_t wiznet5k_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     wiznet5k_socket_obj_t *self = self_in;
 
     // first open the socket in client mode
-    mp_int_t ret = socket(self->sn, self->type, 0, 0);
+    mp_int_t ret = WIZCHIP_EXPORT(socket)(self->sn, self->type, 0, 0);
     check_sock_return_value(ret);
 
     // now connect
     uint8_t ip[IPADDR_BUF_SIZE];
     mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
-    ret = connect(self->sn, ip, port);
+    ret = WIZCHIP_EXPORT(connect)(self->sn, ip, port);
     check_sock_return_value(ret);
 
     return mp_const_none;
@@ -396,7 +396,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(wiznet5k_socket_connect_obj, wiznet5k_socket_co
 
 STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
     wiznet5k_socket_obj_t *self = self_in;
-    mp_int_t ret = disconnect(self->sn);
+    mp_int_t ret = WIZCHIP_EXPORT(disconnect)(self->sn);
     check_sock_return_value(ret);
     return mp_const_none;
 }
@@ -406,7 +406,7 @@ STATIC mp_obj_t wiznet5k_socket_send(mp_obj_t self_in, mp_obj_t data_in) {
     wiznet5k_socket_obj_t *self = self_in;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
-    mp_int_t ret = send(self->sn, bufinfo.buf, bufinfo.len);
+    mp_int_t ret = WIZCHIP_EXPORT(send)(self->sn, bufinfo.buf, bufinfo.len);
     check_sock_return_value(ret);
     return mp_obj_new_int(ret);
 }
@@ -416,7 +416,7 @@ STATIC mp_obj_t wiznet5k_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     wiznet5k_socket_obj_t *self = self_in;
     mp_int_t len = mp_obj_get_int(len_in);
     uint8_t *buf = m_new(uint8_t, len);
-    mp_int_t ret = recv(self->sn, buf, len);
+    mp_int_t ret = WIZCHIP_EXPORT(recv)(self->sn, buf, len);
     check_sock_return_value(ret);
     mp_obj_t ret_buf = mp_obj_new_bytes(buf, ret);
     m_del(uint8_t, buf, len);
@@ -430,7 +430,7 @@ STATIC mp_obj_t wiznet5k_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_ob
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
     uint8_t ip[IPADDR_BUF_SIZE];
     mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
-    mp_int_t ret = sendto(self->sn, bufinfo.buf, bufinfo.len, ip, port);
+    mp_int_t ret = WIZCHIP_EXPORT(sendto)(self->sn, bufinfo.buf, bufinfo.len, ip, port);
     check_sock_return_value(ret);
     return mp_obj_new_int(ret);
 }
@@ -442,7 +442,7 @@ STATIC mp_obj_t wiznet5k_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     uint8_t *buf = m_new(uint8_t, len);
     uint8_t ip[4];
     uint16_t port;
-    mp_int_t ret = recvfrom(self->sn, buf, len, ip, &port);
+    mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(self->sn, buf, len, ip, &port);
     check_sock_return_value(ret);
     mp_obj_t tuple[2] = {
         mp_obj_new_bytes(buf, ret),

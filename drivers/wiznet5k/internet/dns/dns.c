@@ -521,21 +521,21 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
         hal_sys_tick = HAL_GetTick();
    
    // Socket open
-   socket(DNS_SOCKET, Sn_MR_UDP, 0, 0);
+   WIZCHIP_EXPORT(socket)(DNS_SOCKET, Sn_MR_UDP, 0, 0);
 
 #ifdef _DNS_DEBUG_
 	printf("> DNS Query to DNS Server : %d.%d.%d.%d\r\n", dns_ip[0], dns_ip[1], dns_ip[2], dns_ip[3]);
 #endif
 
 	len = dns_makequery(0, (char *)name, pDNSMSG, MAX_DNS_BUF_SIZE);
-	sendto(DNS_SOCKET, pDNSMSG, len, dns_ip, IPPORT_DOMAIN);
+	WIZCHIP_EXPORT(sendto)(DNS_SOCKET, pDNSMSG, len, dns_ip, IPPORT_DOMAIN);
 
 	while (1)
 	{
 		if ((len = getSn_RX_RSR(DNS_SOCKET)) > 0)
 		{
 			if (len > MAX_DNS_BUF_SIZE) len = MAX_DNS_BUF_SIZE;
-			len = recvfrom(DNS_SOCKET, pDNSMSG, len, ip, &port);
+			len = WIZCHIP_EXPORT(recvfrom)(DNS_SOCKET, pDNSMSG, len, ip, &port);
       #ifdef _DNS_DEBUG_
 	      printf("> Receive DNS message from %d.%d.%d.%d(%d). len = %d\r\n", ip[0], ip[1], ip[2], ip[3],port,len);
       #endif
@@ -556,10 +556,10 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
 #ifdef _DNS_DEBUG_
 			printf("> DNS Timeout\r\n");
 #endif
-			sendto(DNS_SOCKET, pDNSMSG, len, dns_ip, IPPORT_DOMAIN);
+			WIZCHIP_EXPORT(sendto)(DNS_SOCKET, pDNSMSG, len, dns_ip, IPPORT_DOMAIN);
 		}
 	}
-	close(DNS_SOCKET);
+	WIZCHIP_EXPORT(close)(DNS_SOCKET);
 	// Return value
 	// 0 > :  failed / 1 - success
 	return ret;
