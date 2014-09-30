@@ -41,10 +41,10 @@
 
 // These are needed to support removal of the medium, so that the USB drive
 // can be unmounted, and won't be remounted automatically.
-static uint8_t flash_removed = 0;
+static uint8_t flash_started = 0;
 
 #if MICROPY_HW_HAS_SDCARD
-static uint8_t sdcard_removed = 0;
+static uint8_t sdcard_started = 0;
 #endif
 
 /******************************************************************************/
@@ -73,6 +73,7 @@ static const int8_t FLASH_STORAGE_Inquirydata[] = { // 36 bytes
   */
 int8_t FLASH_STORAGE_Init(uint8_t lun) {
     storage_init();
+    flash_started = 1;
     return 0;
 }
 
@@ -95,10 +96,10 @@ int8_t FLASH_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *blo
   * @retval Status
   */
 int8_t FLASH_STORAGE_IsReady(uint8_t lun) {
-    if (flash_removed) {
-        return -1;
+    if (flash_started) {
+        return 0;
     }
-    return 0;
+    return -1;
 }
 
 /**
@@ -111,8 +112,8 @@ int8_t FLASH_STORAGE_IsWriteProtected(uint8_t lun) {
 }
 
 // Remove the lun
-int8_t FLASH_STORAGE_StopUnit(uint8_t lun) {
-    flash_removed = 1;
+int8_t FLASH_STORAGE_StartStopUnit(uint8_t lun, uint8_t started) {
+    flash_started = started;
     return 0;
 }
 
@@ -176,7 +177,7 @@ const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops = {
     FLASH_STORAGE_GetCapacity,
     FLASH_STORAGE_IsReady,
     FLASH_STORAGE_IsWriteProtected,
-    FLASH_STORAGE_StopUnit,
+    FLASH_STORAGE_StartStopUnit,
     FLASH_STORAGE_PreventAllowMediumRemoval,
     FLASH_STORAGE_Read,
     FLASH_STORAGE_Write,
@@ -228,7 +229,7 @@ int8_t SDCARD_STORAGE_Init(uint8_t lun) {
     if (!sdcard_power_on()) {
         return -1;
     }
-
+    sdcard_started = 1;
     return 0;
 
 }
@@ -264,33 +265,10 @@ int8_t SDCARD_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *bl
   * @retval Status
   */
 int8_t SDCARD_STORAGE_IsReady(uint8_t lun) {
-    if (sdcard_removed) {
-        return -1;
+    if (sdcard_started) {
+        return 0;
     }
-    /*
-#ifndef USE_STM3210C_EVAL  
-  
-  static int8_t last_status = 0;
-
-  if(last_status  < 0)
-  {
-    SD_Init();
-    last_status = 0;
-  }
-  
-  if(SD_GetStatus() != 0)
-  {
-    last_status = -1;
-    return (-1); 
-  }  
-#else
-  if( SD_Init() != 0)
-  {
-    return (-1);
-  }  
-#endif
-*/
-    return 0;
+    return -1;
 }
 
 /**
@@ -303,8 +281,8 @@ int8_t SDCARD_STORAGE_IsWriteProtected(uint8_t lun) {
 }
 
 // Remove the lun
-int8_t SDCARD_STORAGE_StopUnit(uint8_t lun) {
-    sdcard_removed = 1;
+int8_t SDCARD_STORAGE_StartStopUnit(uint8_t lun, uint8_t started) {
+    sdcard_started = started;
     return 0;
 }
 
@@ -356,7 +334,7 @@ const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops = {
     SDCARD_STORAGE_GetCapacity,
     SDCARD_STORAGE_IsReady,
     SDCARD_STORAGE_IsWriteProtected,
-    SDCARD_STORAGE_StopUnit,
+    SDCARD_STORAGE_StartStopUnit,
     SDCARD_STORAGE_PreventAllowMediumRemoval,
     SDCARD_STORAGE_Read,
     SDCARD_STORAGE_Write,
