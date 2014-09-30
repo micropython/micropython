@@ -450,13 +450,10 @@ static int8_t SCSI_StartStopUnit(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t
   hmsc->bot_data_length = 0;
 
   // On Mac OS X, when the device is ejected a SCSI_START_STOP_UNIT command is sent.
-  // params[1]==0 means stop, param[1]==1 seems to be something else (happens after the
-  // device is plugged in and mounted for some time, probably a keep alive).
+  // Bit 0 of params[4] is the START bit.
   // If we get a stop, we must really stop the device so that the Mac does not
   // automatically remount it.
-  if (params[1] == 0) {
-      ((USBD_StorageTypeDef *)pdev->pUserData)->StopUnit(lun);
-  }
+  ((USBD_StorageTypeDef *)pdev->pUserData)->StartStopUnit(lun, params[4] & 1);
 
   return 0;
 }
