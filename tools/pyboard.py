@@ -112,7 +112,7 @@ def run_test(device):
 
     pyb.exec('import pyb')  # module pyb no longer imported by default, required for pyboard tests
     print('seconds since boot:', pyb.get_time())
-    
+
     pyb.exec('def apply(l, f):\r\n for item in l:\r\n  f(item)\r\n')
 
     pyb.exec('leds=[pyb.LED(l) for l in range(1, 5)]')
