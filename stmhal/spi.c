@@ -86,7 +86,7 @@ void spi_init0(void) {
 }
 
 // TODO allow to take a list of pins to use
-void spi_init(SPI_HandleTypeDef *spi) {
+void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     // init the GPIO lines
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
@@ -130,7 +130,7 @@ void spi_init(SPI_HandleTypeDef *spi) {
         return;
     }
 
-    for (uint i = 0; i < 4; i++) {
+    for (uint i = (enable_nss_pin ? 0 : 1); i < 4; i++) {
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
     }
@@ -297,7 +297,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
     }
 
     // init the SPI bus
-    spi_init(self->spi);
+    spi_init(self->spi, init->NSS != SPI_NSS_SOFT);
 
     return mp_const_none;
 }

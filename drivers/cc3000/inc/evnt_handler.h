@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __EVENT_HANDLER_H__
-#define __EVENT_HANDLER_H__
+#ifndef __CC3000_EVENT_HANDLER_H__
+#define __CC3000_EVENT_HANDLER_H__
 #include "hci.h"
 #include "socket.h"
 
@@ -162,5 +162,5 @@ typedef struct _bsd_gethostbyname_return_t
 }
 #endif // __cplusplus
 
-#endif // __EVENT_HANDLER_H__
+#endif // __CC3000_EVENT_HANDLER_H__
 

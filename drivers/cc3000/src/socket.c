@@ -108,7 +108,7 @@
 //!          regarding the buffers available.
 //
 //*****************************************************************************
-INT16 HostFlowControlConsumeBuff(INT16 sd)
+static INT16 HostFlowControlConsumeBuff(INT16 sd)
 {
 #ifndef SEND_NON_BLOCKING
 	/* wait in busy loop */
@@ -119,9 +119,9 @@ INT16 HostFlowControlConsumeBuff(INT16 sd)
 		// Note that the buffer will not be allocated in this case
 		if (tSLInformation.slTransmitDataError != 0)
 		{
-			errno = tSLInformation.slTransmitDataError;
+			CC3000_EXPORT(errno) = tSLInformation.slTransmitDataError;
 			tSLInformation.slTransmitDataError = 0;
-			return errno;
+			return CC3000_EXPORT(errno);
 		}
 
 		if(SOCKET_STATUS_ACTIVE != get_socket_active_status(sd))
@@ -138,9 +138,9 @@ INT16 HostFlowControlConsumeBuff(INT16 sd)
 	// Note that the buffer will not be allocated in this case
 	if (tSLInformation.slTransmitDataError != 0)
 	{
-		errno = tSLInformation.slTransmitDataError;
+		CC3000_EXPORT(errno) = tSLInformation.slTransmitDataError;
 		tSLInformation.slTransmitDataError = 0;
-		return errno;
+		return CC3000_EXPORT(errno);
 	}
 	if(SOCKET_STATUS_ACTIVE != get_socket_active_status(sd))
 		return -1;
@@ -182,7 +182,7 @@ INT16 HostFlowControlConsumeBuff(INT16 sd)
 //
 //*****************************************************************************
 
-INT16 socket(INT32 domain, INT32 type, INT32 protocol)
+INT16 CC3000_EXPORT(socket)(INT32 domain, INT32 type, INT32 protocol)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -203,7 +203,7 @@ INT16 socket(INT32 domain, INT32 type, INT32 protocol)
 	SimpleLinkWaitEvent(HCI_CMND_SOCKET, &ret);
 
 	// Process the event 
-	errno = ret;
+	CC3000_EXPORT(errno) = ret;
 
 	set_socket_active_status(ret, SOCKET_STATUS_ACTIVE);
 
@@ -222,7 +222,7 @@ INT16 socket(INT32 domain, INT32 type, INT32 protocol)
 //
 //*****************************************************************************
 
-INT32 closesocket(INT32 sd)
+INT32 CC3000_EXPORT(closesocket)(INT32 sd)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -240,7 +240,7 @@ INT32 closesocket(INT32 sd)
 
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(HCI_CMND_CLOSE_SOCKET, &ret);
-	errno = ret;
+	CC3000_EXPORT(errno) = ret;
 
 	// since 'close' call may result in either OK (and then it closed) or error 
 	// mark this socket as invalid 
@@ -294,7 +294,7 @@ INT32 closesocket(INT32 sd)
 //
 //*****************************************************************************
 
-INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen)
+INT32 CC3000_EXPORT(accept)(INT32 sd, sockaddr *addr, socklen_t *addrlen)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -318,8 +318,8 @@ INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen)
 	// need specify return parameters!!!
 	memcpy(addr, &tAcceptReturnArguments.tSocketAddress, ASIC_ADDR_LEN);
 	*addrlen = ASIC_ADDR_LEN;
-	errno = tAcceptReturnArguments.iStatus; 
-	ret = errno;
+	CC3000_EXPORT(errno) = tAcceptReturnArguments.iStatus; 
+	ret = CC3000_EXPORT(errno);
 
 	// if succeeded, iStatus = new socket descriptor. otherwise - error number 
 	if(M_IS_VALID_SD(ret))
@@ -357,7 +357,7 @@ INT32 accept(INT32 sd, sockaddr *addr, socklen_t *addrlen)
 //
 //*****************************************************************************
 
-INT32 bind(INT32 sd, const sockaddr *addr, INT32 addrlen)
+INT32 CC3000_EXPORT(bind)(INT32 sd, const sockaddr *addr, INT32 addrlen)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -381,7 +381,7 @@ INT32 bind(INT32 sd, const sockaddr *addr, INT32 addrlen)
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(HCI_CMND_BIND, &ret);
 
-	errno = ret;
+	CC3000_EXPORT(errno) = ret;
 
 	return(ret);
 }
@@ -409,7 +409,7 @@ INT32 bind(INT32 sd, const sockaddr *addr, INT32 addrlen)
 //
 //*****************************************************************************
 
-INT32 listen(INT32 sd, INT32 backlog)
+INT32 CC3000_EXPORT(listen)(INT32 sd, INT32 backlog)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -428,7 +428,7 @@ INT32 listen(INT32 sd, INT32 backlog)
 
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(HCI_CMND_LISTEN, &ret);
-	errno = ret;
+	CC3000_EXPORT(errno) = ret;
 
 	return(ret);
 }
@@ -453,17 +453,17 @@ INT32 listen(INT32 sd, INT32 backlog)
 //*****************************************************************************
 
 #ifndef CC3000_TINY_DRIVER
-INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen, 
+INT16 CC3000_EXPORT(gethostbyname)(CHAR * hostname, UINT16 usNameLen, 
 	UINT32* out_ip_addr)
 {
 	tBsdGethostbynameParams ret;
 	UINT8 *ptr, *args;
 
-	errno = EFAIL;
+	CC3000_EXPORT(errno) = EFAIL;
 
 	if (usNameLen > HOSTNAME_MAX_LENGTH)
 	{
-		return errno;
+		return CC3000_EXPORT(errno);
 	}
 
 	ptr = tSLInformation.pucTxCommandBuffer;
@@ -481,11 +481,11 @@ INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen,
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(HCI_EVNT_BSD_GETHOSTBYNAME, &ret);
 
-	errno = ret.retVal;
+	CC3000_EXPORT(errno) = ret.retVal;
 
 	(*((INT32*)out_ip_addr)) = ret.outputAddress;
 
-	return (errno);
+	return CC3000_EXPORT(errno);
 
 }
 #endif
@@ -519,7 +519,7 @@ INT16 gethostbyname(CHAR * hostname, UINT16 usNameLen,
 //
 //*****************************************************************************
 
-INT32 connect(INT32 sd, const sockaddr *addr, INT32 addrlen)
+INT32 CC3000_EXPORT(connect)(INT32 sd, const sockaddr *addr, INT32 addrlen)
 {
 	INT32 ret;
 	UINT8 *ptr, *args;
@@ -542,7 +542,7 @@ INT32 connect(INT32 sd, const sockaddr *addr, INT32 addrlen)
 	// Since we are in blocking state - wait for event complete
 	SimpleLinkWaitEvent(HCI_CMND_CONNECT, &ret);
 
-	errno = ret;
+	CC3000_EXPORT(errno) = ret;
 
 	return((INT32)ret);
 }
@@ -586,7 +586,7 @@ INT32 connect(INT32 sd, const sockaddr *addr, INT32 addrlen)
 //
 //*****************************************************************************
 
-INT16 select(INT32 nfds, fd_set *readsds, fd_set *writesds, fd_set *exceptsds, 
+INT16 CC3000_EXPORT(select)(INT32 nfds, fd_set *readsds, fd_set *writesds, fd_set *exceptsds, 
 struct timeval *timeout)
 {
 	UINT8 *ptr, *args;
@@ -657,7 +657,7 @@ struct timeval *timeout)
 	}
 	else
 	{
-		errno = tParams.iStatus;
+		CC3000_EXPORT(errno) = tParams.iStatus;
 		return(-1);
 	}
 }
@@ -710,7 +710,7 @@ struct timeval *timeout)
 //*****************************************************************************
 
 #ifndef CC3000_TINY_DRIVER
-INT16 setsockopt(INT32 sd, INT32 level, INT32 optname, const void *optval,
+INT16 CC3000_EXPORT(setsockopt)(INT32 sd, INT32 level, INT32 optname, const void *optval,
 	socklen_t optlen)
 {
 	INT32 ret;
@@ -740,7 +740,7 @@ INT16 setsockopt(INT32 sd, INT32 level, INT32 optname, const void *optval,
 	}
 	else
 	{
-		errno = ret;
+		CC3000_EXPORT(errno) = ret;
 		return ret;
 	}
 }
@@ -793,7 +793,7 @@ INT16 setsockopt(INT32 sd, INT32 level, INT32 optname, const void *optval,
 //
 //*****************************************************************************
 
-INT16 getsockopt (INT32 sd, INT32 level, INT32 optname, void *optval, socklen_t *optlen)
+INT16 CC3000_EXPORT(getsockopt) (INT32 sd, INT32 level, INT32 optname, void *optval, socklen_t *optlen)
 {
 	UINT8 *ptr, *args;
 	tBsdGetSockOptReturnParams  tRetParams;
@@ -821,8 +821,8 @@ INT16 getsockopt (INT32 sd, INT32 level, INT32 optname, void *optval, socklen_t 
 	}
 	else
 	{
-		errno = tRetParams.iStatus;
-		return errno;
+		CC3000_EXPORT(errno) = tRetParams.iStatus;
+		return CC3000_EXPORT(errno);
 	}
 }
 
@@ -847,7 +847,7 @@ INT16 getsockopt (INT32 sd, INT32 level, INT32 optname, void *optval, socklen_t 
 //!                  socket the message is received from
 //
 //*****************************************************************************
-INT16 simple_link_recv(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from,
+static INT16 simple_link_recv(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from,
 	socklen_t *fromlen, INT32 opcode)
 {
 	UINT8 *ptr, *args;
@@ -875,7 +875,7 @@ INT16 simple_link_recv(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *fr
 		SimpleLinkWaitData(buf, (UINT8 *)from, (UINT8 *)fromlen);
 	}
 
-	errno = tSocketReadEvent.iNumberOfBytes;
+	CC3000_EXPORT(errno) = tSocketReadEvent.iNumberOfBytes;
 
 	return(tSocketReadEvent.iNumberOfBytes);
 }
@@ -902,7 +902,7 @@ INT16 simple_link_recv(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *fr
 //
 //*****************************************************************************
 
-INT16 recv(INT32 sd, void *buf, INT32 len, INT32 flags)
+INT16 CC3000_EXPORT(recv)(INT32 sd, void *buf, INT32 len, INT32 flags)
 {
 	return(simple_link_recv(sd, buf, len, flags, NULL, NULL, HCI_CMND_RECV));
 }
@@ -935,7 +935,7 @@ INT16 recv(INT32 sd, void *buf, INT32 len, INT32 flags)
 //!  @Note On this version, only blocking mode is supported.
 //
 //*****************************************************************************
-INT16 recvfrom(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from,
+INT16 CC3000_EXPORT(recvfrom)(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from,
 	socklen_t *fromlen)
 {
 	return(simple_link_recv(sd, buf, len, flags, from, fromlen,
@@ -962,7 +962,7 @@ INT16 recvfrom(INT32 sd, void *buf, INT32 len, INT32 flags, sockaddr *from,
 //!                  socket
 //
 //*****************************************************************************
-INT16 simple_link_send(INT32 sd, const void *buf, INT32 len, INT32 flags,
+static INT16 simple_link_send(INT32 sd, const void *buf, INT32 len, INT32 flags,
 	const sockaddr *to, INT32 tolen, INT32 opcode)
 {    
 	UINT8 uArgSize=0,  addrlen;
@@ -1066,7 +1066,7 @@ INT16 simple_link_send(INT32 sd, const void *buf, INT32 len, INT32 flags,
 //
 //*****************************************************************************
 
-INT16 send(INT32 sd, const void *buf, INT32 len, INT32 flags)
+INT16 CC3000_EXPORT(send)(INT32 sd, const void *buf, INT32 len, INT32 flags)
 {
 	return(simple_link_send(sd, buf, len, flags, NULL, 0, HCI_CMND_SEND));
 }
@@ -1097,7 +1097,7 @@ INT16 send(INT32 sd, const void *buf, INT32 len, INT32 flags)
 //
 //*****************************************************************************
 
-INT16 sendto(INT32 sd, const void *buf, INT32 len, INT32 flags, const sockaddr *to,
+INT16 CC3000_EXPORT(sendto)(INT32 sd, const void *buf, INT32 len, INT32 flags, const sockaddr *to,
 	socklen_t tolen)
 {
 	return(simple_link_send(sd, buf, len, flags, to, tolen, HCI_CMND_SENDTO));
@@ -1120,7 +1120,7 @@ INT16 sendto(INT32 sd, const void *buf, INT32 len, INT32 flags, const sockaddr *
 //
 //*****************************************************************************
 
-INT16 mdnsAdvertiser(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16 deviceServiceNameLength)
+INT16 CC3000_EXPORT(mdnsAdvertiser)(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16 deviceServiceNameLength)
 {
 	INT8 ret;
 	UINT8 *pTxBuffer, *pArgs;
@@ -1161,7 +1161,7 @@ INT16 mdnsAdvertiser(UINT16 mdnsEnabled, CHAR * deviceServiceName, UINT16 device
 //!  @brief    Returns the MSS value of a TCP connection according to the socket descriptor
 //
 //*****************************************************************************
-UINT16 getmssvalue (INT32 sd)
+UINT16 CC3000_EXPORT(getmssvalue) (INT32 sd)
 {
 	UINT8 *ptr, *args;
 	UINT16 ret;

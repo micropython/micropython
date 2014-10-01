@@ -77,20 +77,8 @@ extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t mp_module_select;
-
-#if MICROPY_PY_WIZNET5K
-extern const struct _mp_obj_module_t mp_module_wiznet5k;
-#define MICROPY_PY_WIZNET5K_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet5k), (mp_obj_t)&mp_module_wiznet5k },
-#else
-#define MICROPY_PY_WIZNET5K_DEF
-#endif
-
-#if MICROPY_PY_CC3K
-extern const struct _mp_obj_module_t mp_module_cc3k;
-#define MICROPY_PY_CC3K_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_cc3k), (mp_obj_t)&mp_module_cc3k },
-#else
-#define MICROPY_PY_CC3K_DEF
-#endif
+extern const struct _mp_obj_module_t mp_module_usocket;
+extern const struct _mp_obj_module_t mp_module_network;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
@@ -98,8 +86,9 @@ extern const struct _mp_obj_module_t mp_module_cc3k;
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_select }, \
-    MICROPY_PY_WIZNET5K_DEF \
-    MICROPY_PY_CC3K_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \

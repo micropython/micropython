@@ -108,15 +108,15 @@ except Exception:
 #except FutureWarning:
 #    print("Caught FutureWarning")
 
-try:
-    raise IOError
-except Exception:
-    print("Caught IOError via Exception")
+#try:
+#    raise IOError
+#except Exception:
+#    print("Caught IOError via Exception")
 
-try:
-    raise IOError
-except IOError:
-    print("Caught IOError")
+#try:
+#    raise IOError
+#except IOError:
+#    print("Caught IOError")
 
 try:
     raise ImportError

@@ -33,9 +33,7 @@
 #include <errno.h>
 
 // CC3000 defines its own ENOBUFS (different to standard one!)
-// CC3000 uses global variable called errno
 #undef ENOBUFS
-#undef errno
 
 #include "stm32f4xx_hal.h"
 #include "mpconfig.h"
@@ -44,8 +42,10 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "objlist.h"
 #include "stream.h"
 #include "runtime.h"
+#include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
@@ -61,10 +61,9 @@
 #include "netapp.h"
 #include "patch_prog.h"
 
-STATIC const mp_obj_type_t cc3k_type;
-STATIC const mp_obj_type_t cc3k_socket_type;
+int CC3000_EXPORT(errno); // for cc3000 driver
 
-STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol);
+STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol, int *_errno);
 
 STATIC volatile uint32_t fd_closed_state = 0;
 STATIC volatile bool wlan_connected = false;
@@ -100,6 +99,42 @@ STATIC void cc3k_callback(long event_type, char *data, unsigned char length) {
             cc3k_set_fd_closed_state(data[0]);
             break;
     }
+}
+
+STATIC mp_obj_t cc3k_socket(mp_obj_t nic, int domain, int type, int fileno, int *_errno) {
+    switch (domain) {
+        case MOD_NETWORK_AF_INET: domain = AF_INET; break;
+        case MOD_NETWORK_AF_INET6: domain = AF_INET6; break;
+        default: *_errno = EAFNOSUPPORT; return MP_OBJ_NULL;
+    }
+
+    switch (type) {
+        case MOD_NETWORK_SOCK_STREAM: type = SOCK_STREAM; break;
+        case MOD_NETWORK_SOCK_DGRAM: type = SOCK_DGRAM; break;
+        case MOD_NETWORK_SOCK_RAW: type = SOCK_RAW; break;
+        default: *_errno = EINVAL; return MP_OBJ_NULL;
+    }
+
+    return cc3k_socket_new(domain, type, 0, _errno);
+}
+
+STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
+    uint32_t ip;
+    if (CC3000_EXPORT(gethostbyname)((char*)name, len, &ip) < 0) {
+        return CC3000_EXPORT(errno);
+    }
+
+    if (ip == 0) {
+        // unknown host
+        return ENOENT;
+    }
+
+    out_ip[0] = ip >> 24;
+    out_ip[1] = ip >> 16;
+    out_ip[2] = ip >> 8;
+    out_ip[3] = ip;
+
+    return 0;
 }
 
 /******************************************************************************/
@@ -148,54 +183,54 @@ STATIC mp_obj_t cc3k_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
                         HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
 
     cc3k_obj_t *cc3k = m_new_obj(cc3k_obj_t);
-    cc3k->base.type = &cc3k_type;
+    cc3k->base.type = (mp_obj_type_t*)&mod_network_nic_type_cc3k;
+
+    // register with network module
+    mod_network_register_nic(cc3k);
 
     return cc3k;
 }
 
-STATIC mp_obj_t cc3k_connect(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    int ssid_len =0;
-    const char *ssid = NULL;
-    const char *bssid = NULL;
+/// \method connect(ssid, key=None, *, security=WPA2, bssid=None)
+STATIC mp_obj_t cc3k_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WLAN_SEC_WPA2} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
 
-    int key_len =0;
-    int sec = WLAN_SEC_UNSEC;
-    const char *key = NULL;
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_map_elem_t *kw_key, *kw_sec, *kw_bssid;
-
-    ssid = mp_obj_str_get_str(args[1]);
-    ssid_len = strlen(ssid);
-
-    // get KW args
-    kw_key = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(qstr_from_str("key")), MP_MAP_LOOKUP);
-    kw_sec = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(qstr_from_str("sec")), MP_MAP_LOOKUP);
-    kw_bssid = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(qstr_from_str("bssid")), MP_MAP_LOOKUP);
+    // get ssid
+    mp_uint_t ssid_len;
+    const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
 
     // get key and sec
-    if (kw_key && kw_sec) {
-        key = mp_obj_str_get_str(kw_key->value);
-        key_len = strlen(key);
-
-        sec = mp_obj_get_int(kw_sec->value);
-        if (!(WLAN_SEC_UNSEC < sec && sec <= WLAN_SEC_WPA2)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid security mode"));
-        }
+    mp_uint_t key_len = 0;
+    const char *key = NULL;
+    mp_uint_t sec = WLAN_SEC_UNSEC;
+    if (args[1].u_obj != mp_const_none) {
+        key = mp_obj_str_get_data(args[1].u_obj, &key_len);
+        sec = args[2].u_int;
     }
 
     // get bssid
-    if (kw_bssid != NULL) {
-        bssid = mp_obj_str_get_str(kw_bssid->value);
+    const char *bssid = NULL;
+    if (args[3].u_obj != mp_const_none) {
+        bssid = mp_obj_str_get_str(args[3].u_obj);
     }
 
     // connect to AP
-    if (wlan_connect(sec, (char*) ssid, ssid_len, (uint8_t*)bssid, (uint8_t*)key, key_len) != 0) {
+    if (wlan_connect(sec, (char*)ssid, ssid_len, (uint8_t*)bssid, (uint8_t*)key, key_len) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
     }
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3k_connect_obj, 2, cc3k_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3k_connect_obj, 1, cc3k_connect);
 
 STATIC mp_obj_t cc3k_disconnect(mp_obj_t self_in) {
     int ret = wlan_disconnect();
@@ -253,54 +288,16 @@ STATIC mp_obj_t cc3k_patch_version(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_patch_version_obj, cc3k_patch_version);
 
-STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in) {
-    //patch_prog_start();
+STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
+    const char *key = mp_obj_str_get_str(key_in);
+    if (key[0] == 'p' && key[1] == 'g' && key[2] == 'm' && key[3] == '\0') {
+        patch_prog_start();
+    } else {
+        printf("please pass 'pgm' as argument in order to program\n");
+    }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_patch_program_obj, cc3k_patch_program);
-
-/// \method socket(family=AF_INET, type=SOCK_STREAM, fileno=-1)
-/// Create a socket.
-STATIC const mp_arg_t cc3k_socket_args[] = {
-    { MP_QSTR_family, MP_ARG_INT, {.u_int = AF_INET} },
-    { MP_QSTR_type,   MP_ARG_INT, {.u_int = SOCK_STREAM} },
-};
-#define PYB_CC3K_SOCKET_NUM_ARGS MP_ARRAY_SIZE(cc3k_socket_args)
-STATIC mp_obj_t cc3k_socket(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    // parse args
-    mp_arg_val_t vals[PYB_CC3K_SOCKET_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_CC3K_SOCKET_NUM_ARGS, cc3k_socket_args, vals);
-
-    return cc3k_socket_new(vals[0].u_int, vals[1].u_int, 0);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3k_socket_obj, 1, cc3k_socket);
-
-STATIC mp_obj_t cc3k_gethostbyname(mp_obj_t self_in, mp_obj_t hostname) {
-    mp_uint_t len;
-    const char *host = mp_obj_str_get_data(hostname, &len);
-    uint32_t ip;
-
-    if (gethostbyname((char*)host, len, &ip) < 0) {
-        // TODO raise appropriate exception
-        printf("gethostbyname failed\n");
-        return mp_const_none;
-    }
-
-    if (ip == 0) {
-        // unknown host
-        // TODO CPython raises: socket.gaierror: [Errno -2] Name or service not known
-        printf("Name or service not known\n");
-        return mp_const_none;
-    }
-
-    // turn the ip address into a string (could use inet_ntop, but this here is much more efficient)
-    VSTR_FIXED(ip_str, 16);
-    vstr_printf(&ip_str, "%u.%u.%u.%u", (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
-    mp_obj_t ret = mp_obj_new_str(ip_str.buf, ip_str.len, false);
-
-    return ret;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_gethostbyname_obj, cc3k_gethostbyname);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_patch_program_obj, cc3k_patch_program);
 
 STATIC const mp_map_elem_t cc3k_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&cc3k_connect_obj },
@@ -310,37 +307,24 @@ STATIC const mp_map_elem_t cc3k_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_patch_version), (mp_obj_t)&cc3k_patch_version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_patch_program), (mp_obj_t)&cc3k_patch_program_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&cc3k_socket_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gethostbyname), (mp_obj_t)&cc3k_gethostbyname_obj },
-
     // class constants
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA2) },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET), MP_OBJ_NEW_SMALL_INT(AF_INET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET6), MP_OBJ_NEW_SMALL_INT(AF_INET6) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM), MP_OBJ_NEW_SMALL_INT(SOCK_STREAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(SOCK_DGRAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(SOCK_RAW) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_ICMP), MP_OBJ_NEW_SMALL_INT(IPPROTO_ICMP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IPV4), MP_OBJ_NEW_SMALL_INT(IPPROTO_IPV4) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP), MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP), MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IPV6), MP_OBJ_NEW_SMALL_INT(IPPROTO_IPV6) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_RAW), MP_OBJ_NEW_SMALL_INT(IPPROTO_RAW) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_locals_dict, cc3k_locals_dict_table);
 
-STATIC const mp_obj_type_t cc3k_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CC3k,
-    //.print = cc3k_print,
-    .make_new = cc3k_make_new,
-    .locals_dict = (mp_obj_t)&cc3k_locals_dict,
+const mod_network_nic_type_t mod_network_nic_type_cc3k = {
+    .base = {
+        { &mp_type_type },
+        .name = MP_QSTR_CC3k,
+        //.print = cc3k_print,
+        .make_new = cc3k_make_new,
+        .locals_dict = (mp_obj_t)&cc3k_locals_dict,
+    },
+    .socket = cc3k_socket,
+    .gethostbyname = cc3k_gethostbyname,
 };
 
 /******************************************************************************/
@@ -355,16 +339,19 @@ typedef struct _cc3k_socket_obj_t {
     int fd;
 } cc3k_socket_obj_t;
 
-STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol) {
+STATIC const mp_obj_type_t cc3k_socket_type;
+
+STATIC mp_obj_t cc3k_socket_new(mp_uint_t family, mp_uint_t type, mp_uint_t protocol, int *_errno) {
     // create socket object
     cc3k_socket_obj_t *s = m_new_obj_with_finaliser(cc3k_socket_obj_t);
     s->base.type = (mp_obj_t)&cc3k_socket_type;
 
     // open socket
-    s->fd = socket(family, type, protocol);
+    s->fd = CC3000_EXPORT(socket)(family, type, protocol);
     if (s->fd < 0) {
         m_del_obj(cc3k_socket_obj_t, s);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "socket failed"));
+        *_errno = CC3000_EXPORT(errno);
+        return MP_OBJ_NULL;
     }
 
     // clear socket state
@@ -382,7 +369,7 @@ STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t s
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
-        closesocket(self->fd);
+        CC3000_EXPORT(closesocket)(self->fd);
         *errcode = EPIPE;
         return 0;
     }
@@ -392,10 +379,10 @@ STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t s
     int bytes = 0;
     while (bytes < size) {
         int n = MIN((size-bytes), MAX_TX_PACKET);
-        n = send(self->fd, buf+bytes, n, 0);
+        n = CC3000_EXPORT(send)(self->fd, buf+bytes, n, 0);
         if (n <= 0) {
             bytes = n;
-            *errcode = errno;
+            *errcode = CC3000_EXPORT(errno);
             break;
         }
         bytes += n;
@@ -408,7 +395,7 @@ STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, i
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
-        closesocket(self->fd);
+        CC3000_EXPORT(closesocket)(self->fd);
         return 0;
     }
 
@@ -416,12 +403,12 @@ STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, i
     int bytes = 0;
     while (bytes < size) {
         int n = MIN((size-bytes), MAX_RX_PACKET);
-        n = recv(self->fd, buf+bytes, n, 0);
+        n = CC3000_EXPORT(recv)(self->fd, buf+bytes, n, 0);
         if (n == 0) {
             break;
         } else if (n < 0) {
             bytes = n;
-            *errcode = errno;
+            *errcode = CC3000_EXPORT(errno);
             break;
         }
         bytes += n;
@@ -451,7 +438,7 @@ STATIC mp_obj_t cc3k_socket_bind(mp_obj_t self_in, mp_obj_t addr_obj) {
     }
 
     // bind socket
-    if (bind(self->fd, (sockaddr*) &addr_in, sizeof(sockaddr_in)) < 0) {
+    if (CC3000_EXPORT(bind)(self->fd, (sockaddr*) &addr_in, sizeof(sockaddr_in)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "bind failed"));
     }
     return mp_const_true;
@@ -460,7 +447,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_bind_obj, cc3k_socket_bind);
 
 STATIC mp_obj_t cc3k_socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     cc3k_socket_obj_t *self = self_in;
-    if (listen(self->fd, mp_obj_get_int(backlog)) < 0) {
+    if (CC3000_EXPORT(listen)(self->fd, mp_obj_get_int(backlog)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "listen failed"));
     }
 
@@ -476,7 +463,7 @@ STATIC mp_obj_t cc3k_socket_accept(mp_obj_t self_in) {
     socklen_t addr_len = sizeof(sockaddr);
 
     // accept incoming connection
-    if ((fd = accept(self->fd, &addr, &addr_len)) < 0) {
+    if ((fd = CC3000_EXPORT(accept)(self->fd, &addr, &addr_len)) < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "accept failed"));
     }
 
@@ -528,7 +515,7 @@ STATIC mp_obj_t cc3k_socket_connect(mp_obj_t self_in, mp_obj_t addr_obj) {
 
     //printf("doing connect: fd=%d, sockaddr=(%d, %d, %lu)\n", self->fd, addr_in.sin_family, addr_in.sin_port, addr_in.sin_addr.s_addr);
 
-    int ret = connect(self->fd, (sockaddr*)&addr_in, sizeof(sockaddr_in));
+    int ret = CC3000_EXPORT(connect)(self->fd, (sockaddr*)&addr_in, sizeof(sockaddr_in));
     if (ret != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d] connect failed", ret));
     }
@@ -542,7 +529,7 @@ STATIC mp_obj_t cc3k_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout) {
     int optval = mp_obj_get_int(timeout);
     socklen_t optlen = sizeof(optval);
 
-    if (setsockopt(self->fd, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &optval, optlen) != 0) {
+    if (CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &optval, optlen) != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "setsockopt failed"));
     }
 
@@ -561,8 +548,8 @@ STATIC mp_obj_t cc3k_socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
         optval = SOCK_ON;
     }
 
-    if (setsockopt(self->fd, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen) != 0 ||
-        setsockopt(self->fd, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen) != 0 ) {
+    if (CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen) != 0 ||
+        CC3000_EXPORT(setsockopt)(self->fd, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen) != 0 ) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "setsockopt failed"));
     }
 
@@ -572,7 +559,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_setblocking_obj, cc3k_socket_setblo
 
 STATIC mp_obj_t cc3k_socket_close(mp_obj_t self_in) {
     cc3k_socket_obj_t *self = self_in;
-    closesocket(self->fd);
+    CC3000_EXPORT(closesocket)(self->fd);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_socket_close_obj, cc3k_socket_close);
@@ -630,11 +617,11 @@ mp_uint_t cc3k_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
         timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
-        int nfds = select(fd + 1, &rfds, &wfds, &xfds, &tv);
+        int nfds = CC3000_EXPORT(select)(fd + 1, &rfds, &wfds, &xfds, &tv);
 
         // check for error
         if (nfds == -1) {
-            *errcode = errno; // return cc3000's errno
+            *errcode = CC3000_EXPORT(errno);
             return -1;
         }
 
@@ -667,33 +654,6 @@ STATIC const mp_obj_type_t cc3k_socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
     .print = cc3k_socket_print,
-    .getiter = NULL,
-    .iternext = NULL,
     .stream_p = &cc3k_socket_stream_p,
     .locals_dict = (mp_obj_t)&cc3k_socket_locals_dict,
-};
-
-/******************************************************************************/
-// Micro Python bindings; CC3k module
-
-STATIC const mp_map_elem_t mp_module_cc3k_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_cc3k) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CC3k), (mp_obj_t)&cc3k_type },
-};
-
-STATIC const mp_obj_dict_t mp_module_cc3k_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_cc3k_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_cc3k_globals_table),
-        .table = (mp_map_elem_t*)mp_module_cc3k_globals_table,
-    },
-};
-
-const mp_obj_module_t mp_module_cc3k = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_cc3k,
-    .globals = (mp_obj_dict_t*)&mp_module_cc3k_globals,
 };

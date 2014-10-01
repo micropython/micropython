@@ -24,11 +24,31 @@
  * THE SOFTWARE.
  */
 
-extern SPI_HandleTypeDef SPIHandle1;
-extern SPI_HandleTypeDef SPIHandle2;
-extern SPI_HandleTypeDef SPIHandle3;
-extern const mp_obj_type_t pyb_spi_type;
+#define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
-void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+#define MOD_NETWORK_AF_INET (2)
+#define MOD_NETWORK_AF_INET6 (10)
+
+#define MOD_NETWORK_SOCK_STREAM (1)
+#define MOD_NETWORK_SOCK_DGRAM (2)
+#define MOD_NETWORK_SOCK_RAW (3)
+
+typedef struct _mod_network_nic_type_t {
+    mp_obj_type_t base;
+
+    // API for a generic NIC
+    mp_obj_t (*socket)(mp_obj_t nic, int domain, int type, int fileno, int *_errno);
+    int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+} mod_network_nic_type_t;
+
+extern struct _mp_obj_list_t mod_network_nic_list;
+extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
+extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
+
+void mod_network_init(void);
+void mod_network_register_nic(mp_obj_t nic);
+
+void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip);
+mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip);
+mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
+mp_obj_t mod_network_format_inet_addr(uint8_t *ip, mp_uint_t port);

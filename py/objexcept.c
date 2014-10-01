@@ -224,10 +224,10 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
   MP_DEFINE_EXCEPTION(AssertionError, Exception)
   MP_DEFINE_EXCEPTION(AttributeError, Exception)
   //MP_DEFINE_EXCEPTION(BufferError, Exception)
-  //MP_DEFINE_EXCEPTION(EnvironmentError, Exception)
+  //MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
   MP_DEFINE_EXCEPTION(EOFError, Exception)
   MP_DEFINE_EXCEPTION(ImportError, Exception)
-  MP_DEFINE_EXCEPTION(IOError, Exception)
+  //MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
   MP_DEFINE_EXCEPTION(LookupError, Exception)
     MP_DEFINE_EXCEPTION_BASE(LookupError)
     MP_DEFINE_EXCEPTION(IndexError, LookupError)

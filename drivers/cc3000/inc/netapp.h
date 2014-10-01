@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __NETAPP_H__
-#define	__NETAPP_H__
+#ifndef __CC3000_NETAPP_H__
+#define	__CC3000_NETAPP_H__
 
 #include "data_types.h"
 
@@ -339,5 +339,5 @@ INT32 netapp_set_debug_level(UINT32 ulLevel);
 }
 #endif // __cplusplus
 
-#endif	// __NETAPP_H__
+#endif	// __CC3000_NETAPP_H__
 

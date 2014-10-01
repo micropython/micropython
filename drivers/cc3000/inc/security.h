@@ -32,8 +32,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *****************************************************************************/
-#ifndef __SECURITY__
-#define __SECURITY__
+#ifndef __CC3000_SECURITY__
+#define __CC3000_SECURITY__
 
 #include "nvmem.h"
 
