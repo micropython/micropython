@@ -41,8 +41,7 @@
 #include "bc.h"
 #include "stackctrl.h"
 
-#if 0 // print debugging info
-#define DEBUG_PRINT (1)
+#if DEBUG_PRINT
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif

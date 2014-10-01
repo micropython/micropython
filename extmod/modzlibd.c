@@ -41,7 +41,7 @@
 
 #include "miniz/tinfl.c"
 
-#if 0 // print debugging info
+#if DEBUG_PRINT
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0

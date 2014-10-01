@@ -54,8 +54,12 @@
 
 #define ADD_BLANK_NODE(rule_id) ((rule_id) == RULE_funcdef || (rule_id) == RULE_classdef || (rule_id) == RULE_comp_for || (rule_id) == RULE_lambdef || (rule_id) == RULE_lambdef_nocond)
 
-// (un)comment to use rule names; for debugging
-//#define USE_RULE_NAME (1)
+// use rule names for debugging
+#if MICROPY_DEBUG_PRINTERS
+#define USE_RULE_NAME (1)
+#else
+#define USE_RULE_NAME (0)
+#endif
 
 typedef struct _rule_t {
     byte rule_id;
@@ -244,7 +248,7 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
 }
 #endif // MICROPY_DEBUG_PRINTERS
 
-/*
+#if MICROPY_DEBUG_PRINTERS
 STATIC void result_stack_show(parser_t *parser) {
     mp_int_t i;
     printf("result stack, most recent first\n");
@@ -252,7 +256,7 @@ STATIC void result_stack_show(parser_t *parser) {
         mp_parse_node_print(parser->result_stack[i], 0);
     }
 }
-*/
+#endif // MICROPY_DEBUG_PRINTERS
 
 STATIC mp_parse_node_t pop_result(parser_t *parser) {
     if (parser->had_memory_error) {
@@ -437,9 +441,10 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
         }
 
         pop_rule(&parser, &rule, &i, &rule_src_line);
+        assert(rule);
         n = rule->act & RULE_ACT_ARG_MASK;
 
-        /*
+#if MICROPY_DEBUG_PRINTERS
         // debugging
         printf("depth=%d ", (int)parser.rule_stack_top);
         int j;
@@ -447,7 +452,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
             printf(" ");
         }
         printf("%s n=%d i=%d bt=%d\n", rule->rule_name, (int)n, (int)i, (int)backtrack);
-        */
+#endif
 
         switch (rule->act & RULE_ACT_KIND_MASK) {
             case RULE_ACT_OR:
@@ -602,12 +607,16 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                         num_not_nil += 1;
                     }
                 }
-                //printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, (int)n, (int)i, (int)num_not_nil);
+#if MICROPY_DEBUG_PRINTERS
+                printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, (int)n, (int)i, (int)num_not_nil);
+#endif
                 if (emit_rule) {
                     push_result_rule(&parser, rule_src_line, rule, i);
                 } else if (num_not_nil == 0) {
                     push_result_rule(&parser, rule_src_line, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
-                    //result_stack_show(&parser);
+#if MICROPY_DEBUG_PRINTERS
+                    result_stack_show(&parser);
+#endif
                     //assert(0);
                 } else if (num_not_nil == 1) {
                     // single result, leave it on stack
@@ -706,7 +715,9 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
-                    //printf("done list %s %d %d\n", rule->rule_name, (int)n, (int)i);
+#if MICROPY_DEBUG_PRINTERS
+                    printf("done list %s %d %d\n", rule->rule_name, (int)n, (int)i);
+#endif
                     push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
@@ -732,11 +743,12 @@ memory_error:
     if (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
         goto syntax_error;
     }
-
-    //printf("--------------\n");
-    //result_stack_show(&parser);
-    //printf("rule stack alloc: %d\n", (int)parser.rule_stack_alloc);
-    //printf("result stack alloc: %d\n", (int)parser.result_stack_alloc);
+#if MICROPY_DEBUG_PRINTERS
+    printf("--------------\n");
+    result_stack_show(&parser);
+    printf("rule stack alloc: %d\n", (int)parser.rule_stack_alloc);
+    printf("result stack alloc: %d\n", (int)parser.result_stack_alloc);
+#endif
 
     // get the root parse node that we created
     assert(parser.result_stack_top == 1);
@@ -761,6 +773,7 @@ syntax_error:
         // debugging: print the rule name that failed and the token
         printf("rule: %s\n", rule->rule_name);
 #if MICROPY_DEBUG_PRINTERS
+        result_stack_show(&parser);
         mp_token_show(mp_lexer_cur(lex));
 #endif
 #endif

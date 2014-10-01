@@ -40,8 +40,7 @@
 
 #if MICROPY_ENABLE_GC
 
-#if 0 // print debugging info
-#define DEBUG_PRINT (1)
+#if DEBUG_PRINT
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
