@@ -68,7 +68,10 @@ void microsocket_init();
 void time_init();
 void ffi_init();
 
+#define FORCED_EXIT (0x100)
 // returns standard error codes: 0 for success, 1 for all other errors
+// if FORCED_EXIT bit is set then script raised SystemExit and the
+// value of the exit is in the lower 8 bits of the return value
 STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
         return 1;
@@ -136,7 +139,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
             if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
                 val = 1;
             }
-            exit(val);
+            return FORCED_EXIT | (val & 255);
         }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
         return 1;
@@ -157,14 +160,14 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-STATIC void do_repl(void) {
+STATIC int do_repl(void) {
     printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     for (;;) {
         char *line = prompt(">>> ");
         if (line == NULL) {
             // EOF
-            return;
+            return 0;
         }
         while (mp_repl_continue_with_input(line)) {
             char *line2 = prompt("... ");
@@ -178,7 +181,10 @@ STATIC void do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        int ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        if (ret & FORCED_EXIT) {
+            return ret;
+        }
         free(line);
     }
 }
@@ -361,6 +367,9 @@ int main(int argc, char **argv) {
                     return usage(argv);
                 }
                 ret = do_str(argv[a + 1]);
+                if (ret & FORCED_EXIT) {
+                    break;
+                }
                 a += 1;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
@@ -401,11 +410,16 @@ int main(int argc, char **argv) {
     }
 
     if (ret == NOTHING_EXECUTED) {
-        do_repl();
-        ret = 0;
+        ret = do_repl();
     }
 
     mp_deinit();
+
+#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    // We don't really need to free memory since we are about to exit the
+    // process, but doing so helps to find memory leaks.
+    free(heap);
+#endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret;
