@@ -105,14 +105,14 @@ def execfile(filename, device='/dev/ttyACM0'):
     pyb.exit_raw_repl()
     pyb.close()
 
-def run_test():
-    device = '/dev/ttyACM0'
+def run_test(device):
     pyb = Pyboard(device)
     pyb.enter_raw_repl()
     print('opened device {}'.format(device))
 
+    pyb.exec('import pyb')  # module pyb no longer imported by default, required for pyboard tests
     print('seconds since boot:', pyb.get_time())
-
+    
     pyb.exec('def apply(l, f):\r\n for item in l:\r\n  f(item)\r\n')
 
     pyb.exec('leds=[pyb.LED(l) for l in range(1, 5)]')
@@ -170,7 +170,7 @@ def main():
     args = cmd_parser.parse_args()
 
     if args.test:
-        run_test()
+        run_test(device=args.device)
 
     for file in args.files:
         execfile(file, device=args.device)

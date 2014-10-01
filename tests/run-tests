@@ -139,6 +139,7 @@ def run_tests(pyb, tests, args):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
     cmd_parser.add_argument('--pyboard', action='store_true', help='run the tests on the pyboard')
+    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
@@ -147,7 +148,7 @@ def main():
 
     if args.pyboard:
         import pyboard
-        pyb = pyboard.Pyboard('/dev/ttyACM0')
+        pyb = pyboard.Pyboard(args.device)
         pyb.enter_raw_repl()
     else:
         pyb = None
