@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -39,7 +40,8 @@
 STATIC uint32_t doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
 
 STATIC mp_uint_t get_doubling_prime_greater_or_equal_to(mp_uint_t x) {
-    for (int i = 0; i < MP_ARRAY_SIZE(doubling_primes); i++) {
+    int i;
+    for (i = 0; i < MP_ARRAY_SIZE(doubling_primes); i++) {
         if (doubling_primes[i] >= x) {
             return doubling_primes[i];
         }
@@ -104,13 +106,14 @@ void mp_map_clear(mp_map_t *map) {
 }
 
 STATIC void mp_map_rehash(mp_map_t *map) {
+    mp_uint_t i;
     mp_uint_t old_alloc = map->alloc;
     mp_map_elem_t *old_table = map->table;
     map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
     map->used = 0;
     map->all_keys_are_qstrs = 1;
     map->table = m_new0(mp_map_elem_t, map->alloc);
-    for (mp_uint_t i = 0; i < old_alloc; i++) {
+    for (i = 0; i < old_alloc; i++) {
         if (old_table[i].key != MP_OBJ_NULL && old_table[i].key != MP_OBJ_SENTINEL) {
             mp_map_lookup(map, old_table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = old_table[i].value;
         }
@@ -147,10 +150,11 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
     // if the map is a fixed array then we must do a brute force linear search
     if (map->table_is_fixed_array) {
+        mp_map_elem_t *elem, *top;
         if (lookup_kind != MP_MAP_LOOKUP) {
             return NULL;
         }
-        for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
+        for (elem = &map->table[0], top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 return elem;
             }
@@ -250,12 +254,13 @@ void mp_set_init(mp_set_t *set, mp_uint_t n) {
 }
 
 STATIC void mp_set_rehash(mp_set_t *set) {
+    mp_uint_t i;
     mp_uint_t old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
     set->alloc = get_doubling_prime_greater_or_equal_to(set->alloc + 1);
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
-    for (mp_uint_t i = 0; i < old_alloc; i++) {
+    for (i = 0; i < old_alloc; i++) {
         if (old_table[i] != MP_OBJ_NULL && old_table[i] != MP_OBJ_SENTINEL) {
             mp_set_lookup(set, old_table[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         }
@@ -334,7 +339,8 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
 }
 
 mp_obj_t mp_set_remove_first(mp_set_t *set) {
-    for (mp_uint_t pos = 0; pos < set->alloc; pos++) {
+    mp_uint_t pos;
+    for (pos = 0; pos < set->alloc; pos++) {
         if (MP_SET_SLOT_IS_FILLED(set, pos)) {
             mp_obj_t elem = set->table[pos];
             // delete element
@@ -360,7 +366,8 @@ void mp_set_clear(mp_set_t *set) {
 
 #if DEBUG_PRINT
 void mp_map_dump(mp_map_t *map) {
-    for (mp_uint_t i = 0; i < map->alloc; i++) {
+    mp_uint_t i;
+    for (i = 0; i < map->alloc; i++) {
         if (map->table[i].key != NULL) {
             mp_obj_print(map->table[i].key, PRINT_REPR);
         } else {

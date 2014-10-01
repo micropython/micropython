@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args);
 mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args);
 

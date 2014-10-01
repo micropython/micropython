@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include "obj.h"
+#include "parse.h"
+#include "misc.h"
+
 // These must fit in 8 bits; see scope.h
 enum {
     MP_EMIT_OPT_NONE,

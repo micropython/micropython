@@ -33,6 +33,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <mpconfigport.h>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -177,7 +178,8 @@ extern mp_uint_t mp_verbose_flag;
 #ifndef count_lead_ones
 static inline mp_uint_t count_lead_ones(byte val) {
     mp_uint_t c = 0;
-    for (byte mask = 0x80; val & mask; mask >>= 1) {
+    byte mask;
+    for (mask = 0x80; val & mask; mask >>= 1) {
         c++;
     }
     return c;

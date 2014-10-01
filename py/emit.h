@@ -34,6 +34,15 @@
  * stack size to compile the entry to the function, and this affects code size.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "qstr.h"
+#include "scope.h"
+#include "lexer.h"
+#include "runtime0.h"
+
 typedef enum {
     MP_PASS_SCOPE = 1,      // work out id's and their kind, and number of labels
     MP_PASS_STACK_SIZE = 2, // work out maximum stack size

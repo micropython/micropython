@@ -46,8 +46,8 @@ STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw
 STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, mp_uint_t *cur) {
     mp_uint_t max = dict->map.alloc;
     mp_map_t *map = &dict->map;
-
-    for (mp_uint_t i = *cur; i < max; i++) {
+    mp_uint_t i;
+    for (i = *cur; i < max; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
@@ -334,6 +334,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_dict));
     mp_obj_dict_t *self = args[0];
+    mp_uint_t i;
 
     mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
 
@@ -372,7 +373,7 @@ STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw
     }
 
     // update the dict with any keyword args
-    for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
+    for (i = 0; i < kwargs->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
             mp_map_lookup(&self->map, kwargs->table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = kwargs->table[i].value;
         }

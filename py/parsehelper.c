@@ -43,7 +43,7 @@
 #define STR_INVALID_SYNTAX "invalid syntax"
 
 void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind) {
-    printf("  File \"%s\", line " UINT_FMT ", column " UINT_FMT "\n", qstr_str(mp_lexer_source_name(lex)), mp_lexer_cur(lex)->src_line, mp_lexer_cur(lex)->src_column);
+    printf("  File \"%s\", line " UINT_FMT ", column " UINT_FMT "\n", qstr_str(mp_lexer_source_name(lex)), (unsigned int)mp_lexer_cur(lex)->src_line, (unsigned int)mp_lexer_cur(lex)->src_column);
     switch (parse_error_kind) {
         case MP_PARSE_ERROR_MEMORY:
             printf("MemoryError: %s\n", STR_MEMORY);

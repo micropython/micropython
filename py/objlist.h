@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+
 typedef struct _mp_obj_list_t {
     mp_obj_base_t base;
     mp_uint_t alloc;

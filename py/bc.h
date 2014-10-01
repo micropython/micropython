@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "misc.h"
+#include "obj.h"
+#include "runtime.h"
+
 // Exception stack entry
 typedef struct _mp_exc_stack {
     const byte *handler;

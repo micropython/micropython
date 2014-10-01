@@ -24,6 +24,15 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "qstr.h"
+#include "parse.h"
+#include "emitglue.h"
+
 enum {
     ID_INFO_KIND_GLOBAL_IMPLICIT,
     ID_INFO_KIND_GLOBAL_EXPLICIT,

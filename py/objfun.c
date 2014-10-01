@@ -162,8 +162,9 @@ STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *e
 
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, int sz) {
+    int i;
     DEBUG_printf("%p: ", a);
-    for (int i = 0; i < sz; i++) {
+    for (i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");

@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+/* SPECIAL HEADER - Used to generate qstrdefs.generated.h */
+
 #include "mpconfig.h"
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.

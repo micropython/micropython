@@ -42,6 +42,7 @@ typedef struct _mp_obj_map_t {
 } mp_obj_map_t;
 
 STATIC mp_obj_t map_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_uint_t i;
     if (n_args < 2 || n_kw != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "map must have at least 2 arguments and no keyword arguments"));
     }
@@ -50,18 +51,19 @@ STATIC mp_obj_t map_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     o->base.type = &mp_type_map;
     o->n_iters = n_args - 1;
     o->fun = args[0];
-    for (mp_uint_t i = 0; i < n_args - 1; i++) {
+    for (i = 0; i < n_args - 1; i++) {
         o->iters[i] = mp_getiter(args[i + 1]);
     }
     return o;
 }
 
 STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
+    mp_uint_t i;
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
     mp_obj_map_t *self = self_in;
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);
 
-    for (mp_uint_t i = 0; i < self->n_iters; i++) {
+    for (i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
             m_del(mp_obj_t, nextses, self->n_iters);

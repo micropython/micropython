@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -156,7 +157,8 @@ void gc_init(void *start, void *end) {
     // allocate first block because gc_pool_start points there and it will never
     // be freed, so allocating 1 block with null pointers will minimise memory loss
     ATB_FREE_TO_HEAD(0);
-    for (int i = 0; i < WORDS_PER_BLOCK; i++) {
+    int i;
+    for (i = 0; i < WORDS_PER_BLOCK; i++) {
         gc_pool_start[i] = 0;
     }
 
@@ -210,6 +212,7 @@ bool gc_is_locked(void) {
 
 STATIC void gc_drain_stack(void) {
     while (gc_sp > gc_stack) {
+        mp_uint_t i;
         // pop the next block off the stack
         mp_uint_t block = *--gc_sp;
 
@@ -221,7 +224,7 @@ STATIC void gc_drain_stack(void) {
 
         // check this block's children
         mp_uint_t *scan = (mp_uint_t*)PTR_FROM_BLOCK(block);
-        for (mp_uint_t i = n_blocks * WORDS_PER_BLOCK; i > 0; i--, scan++) {
+        for (i = n_blocks * WORDS_PER_BLOCK; i > 0; i--, scan++) {
             mp_uint_t ptr2 = *scan;
             VERIFY_MARK_AND_PUSH(ptr2);
         }
@@ -230,11 +233,12 @@ STATIC void gc_drain_stack(void) {
 
 STATIC void gc_deal_with_stack_overflow(void) {
     while (gc_stack_overflow) {
+        mp_uint_t block;
         gc_stack_overflow = 0;
         gc_sp = gc_stack;
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (mp_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+        for (block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
                 *gc_sp++ = block;
@@ -249,12 +253,13 @@ uint gc_collected;
 #endif
 
 STATIC void gc_sweep(void) {
+    mp_uint_t block;
     #if MICROPY_PY_GC_COLLECT_RETVAL
     gc_collected = 0;
     #endif
     // free unmarked heads and their tails
     int free_tail = 0;
-    for (mp_uint_t block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+    for (block = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
@@ -278,6 +283,7 @@ STATIC void gc_sweep(void) {
                 gc_collected++;
                 #endif
                 // fall through to free the head
+                // no break - disable eclipse static analyzer warning - intentional fall through
 
             case AT_TAIL:
                 if (free_tail) {
@@ -301,7 +307,8 @@ void gc_collect_start(void) {
 }
 
 void gc_collect_root(void **ptrs, mp_uint_t len) {
-    for (mp_uint_t i = 0; i < len; i++) {
+    mp_uint_t i;
+    for (i = 0; i < len; i++) {
         mp_uint_t ptr = (mp_uint_t)ptrs[i];
         VERIFY_MARK_AND_PUSH(ptr);
         gc_drain_stack();
@@ -316,13 +323,14 @@ void gc_collect_end(void) {
 }
 
 void gc_info(gc_info_t *info) {
+    mp_uint_t block, len;
     info->total = (gc_pool_end - gc_pool_start) * sizeof(mp_uint_t);
     info->used = 0;
     info->free = 0;
     info->num_1block = 0;
     info->num_2block = 0;
     info->max_block = 0;
-    for (mp_uint_t block = 0, len = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+    for (block = 0, len = 0; block < gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
         mp_uint_t kind = ATB_GET_KIND(block);
         if (kind == AT_FREE || kind == AT_HEAD) {
             if (len == 1) {
@@ -419,7 +427,8 @@ found:
 
     // mark rest of blocks as used tail
     // TODO for a run of many blocks can make this more efficient
-    for (mp_uint_t bl = start_block + 1; bl <= end_block; bl++) {
+    mp_uint_t bl;
+    for (bl = start_block + 1; bl <= end_block; bl++) {
         ATB_FREE_TO_TAIL(bl);
     }
 
@@ -582,7 +591,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
         switch (block_type) {
             case AT_FREE: n_free++; continue;
             case AT_TAIL: n_blocks++; continue;
-            case AT_MARK: assert(0);
+            case AT_MARK: assert(0); break;
         }
         break;
     }
@@ -594,8 +603,9 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 
     // check if we can shrink the allocated area
     if (new_blocks < n_blocks) {
+        mp_uint_t bl;
         // free unneeded tail blocks
-        for (mp_uint_t bl = block + new_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
+        for (bl = block + new_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
             ATB_ANY_TO_FREE(bl);
         }
 
@@ -613,8 +623,9 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 
     // check if we can expand in place
     if (new_blocks <= n_blocks + n_free) {
+        mp_uint_t bl;
         // mark few more blocks as used tail
-        for (mp_uint_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
+        for (bl = block + n_blocks; bl < block + new_blocks; bl++) {
             assert(ATB_GET_KIND(bl) == AT_FREE);
             ATB_FREE_TO_TAIL(bl);
         }
@@ -653,19 +664,20 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 void gc_dump_info() {
     gc_info_t info;
     gc_info(&info);
-    printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", info.total, info.used, info.free);
+    printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", (unsigned int)info.total, (unsigned int)info.used, (unsigned int)info.free);
     printf(" No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
-           info.num_1block, info.num_2block, info.max_block);
+            (unsigned int)info.num_1block, (unsigned int)info.num_2block, (unsigned int)info.max_block);
 }
 
 void gc_dump_alloc_table(void) {
+    mp_uint_t bl;
     static const mp_uint_t DUMP_BYTES_PER_LINE = 64;
     #if !EXTENSIVE_HEAP_PROFILING
     // When comparing heap output we don't want to print the starting
     // pointer of the heap because it changes from run to run.
     printf("GC memory layout; from %p:", gc_pool_start);
     #endif
-    for (mp_uint_t bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
+    for (bl = 0; bl < gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
         if (bl % DUMP_BYTES_PER_LINE == 0) {
             // a new line of blocks
             #if EXTENSIVE_HEAP_PROFILING
@@ -717,6 +729,7 @@ void gc_dump_alloc_table(void) {
 void gc_test(void) {
     mp_uint_t len = 500;
     mp_uint_t *heap = malloc(len);
+    int i;
     gc_init(heap, heap + len / sizeof(mp_uint_t));
     void *ptrs[100];
     {
@@ -730,7 +743,7 @@ void gc_test(void) {
         p2[1] = p;
         ptrs[0] = p2;
     }
-    for (int i = 0; i < 25; i+=2) {
+    for (i = 0; i < 25; i+=2) {
         mp_uint_t *p = gc_alloc(i, false);
         printf("p=%p\n", p);
         if (i & 3) {

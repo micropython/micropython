@@ -30,6 +30,12 @@
  * Tokens are the same - UTF-8 with (byte) length.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "qstr.h"
+
 typedef enum _mp_token_kind_t {
     MP_TOKEN_END,                   // 0
 

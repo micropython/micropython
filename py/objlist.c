@@ -49,11 +49,12 @@ STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args);
 
 STATIC void list_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_list_t *o = o_in;
+    mp_uint_t i;
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     }
     print(env, "[");
-    for (mp_uint_t i = 0; i < o->len; i++) {
+    for (i = 0; i < o->len; i++) {
         if (i > 0) {
             print(env, ", ");
         }
@@ -362,6 +363,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     mp_obj_list_t *self = self_in;
     // insert has its own strange index logic
     mp_int_t index = MP_OBJ_SMALL_INT_VALUE(idx);
+    mp_int_t i;
     if (index < 0) {
          index += self->len;
     }
@@ -374,7 +376,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
 
     mp_obj_list_append(self_in, mp_const_none);
 
-    for (mp_int_t i = self->len-1; i > index; i--) {
+    for (i = self->len-1; i > index; i--) {
          self->items[i] = self->items[i-1];
     }
     self->items[index] = obj;
@@ -396,7 +398,8 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
     mp_obj_list_t *self = self_in;
 
     mp_int_t len = self->len;
-    for (mp_int_t i = 0; i < len/2; i++) {
+    mp_int_t i;
+    for (i = 0; i < len/2; i++) {
          mp_obj_t *a = self->items[i];
          self->items[i] = self->items[len-i-1];
          self->items[len-i-1] = a;
@@ -462,7 +465,8 @@ STATIC mp_obj_list_t *list_new(mp_uint_t n) {
 mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items) {
     mp_obj_list_t *o = list_new(n);
     if (items != NULL) {
-        for (mp_uint_t i = 0; i < n; i++) {
+        mp_uint_t i;
+        for (i = 0; i < n; i++) {
             o->items[i] = items[i];
         }
     }

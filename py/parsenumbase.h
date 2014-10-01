@@ -24,4 +24,8 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+
 mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base);

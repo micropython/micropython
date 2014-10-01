@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+
 void gc_init(void *start, void *end);
 
 // These lock/unlock functions can be nested.

@@ -48,10 +48,11 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 /* str                                                                        */
 
 STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, uint str_len) {
+    const byte *s, *top;
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
-    for (const byte *s = str_data, *top = str_data + str_len; !has_double_quote && s < top; s++) {
+    for (s = str_data, top = str_data + str_len; !has_double_quote && s < top; s++) {
         if (*s == '\'') {
             has_single_quote = true;
         } else if (*s == '"') {
@@ -63,7 +64,8 @@ STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), voi
         quote_char = '"';
     }
     print(env, "%c", quote_char);
-    const byte *s = str_data, *top = str_data + str_len;
+    s = str_data;
+    top = str_data + str_len;
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
@@ -268,8 +270,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
+            char mask;
             // Count the number of 1 bits (after the first)
-            for (char mask = 0x40; *s & mask; mask >>= 1) {
+            for (mask = 0x40; *s & mask; mask >>= 1) {
                 ++len;
             }
         }

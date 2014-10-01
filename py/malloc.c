@@ -94,6 +94,10 @@ void *m_malloc_maybe(size_t num_bytes) {
 }
 
 #if MICROPY_ENABLE_FINALISER
+#if !MICROPY_ENABLE_GC
+#error FINALISER requires GC
+#endif
+
 void *m_malloc_with_finaliser(size_t num_bytes) {
     if (num_bytes == 0) {
         return NULL;

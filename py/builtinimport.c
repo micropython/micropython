@@ -71,7 +71,7 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
     // extract the list of paths
     mp_uint_t path_num = 0;
-    mp_obj_t *path_items;
+    mp_obj_t *path_items = NULL;
 #if MICROPY_PY_SYS
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 #endif
@@ -81,8 +81,9 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         vstr_add_strn(dest, file_str, file_len);
         return stat_dir_or_file(dest);
     } else {
+        int i;
         // go through each path looking for a directory or file
-        for (int i = 0; i < path_num; i++) {
+        for (i = 0; i < path_num; i++) {
             vstr_reset(dest);
             mp_uint_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
@@ -166,10 +167,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
 #if DEBUG_PRINT
+    int j;
     DEBUG_printf("__import__:\n");
-    for (int i = 0; i < n_args; i++) {
+    for (j = 0; j < n_args; j++) {
         DEBUG_printf("  ");
-        mp_obj_print(args[i], PRINT_REPR);
+        mp_obj_print(args[j], PRINT_REPR);
         DEBUG_printf("\n");
     }
 #endif

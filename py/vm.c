@@ -793,9 +793,10 @@ unwind_return:
                     mp_obj_t obj;
                     assert(unum <= 1);
                     if (unum == 0) {
+                        mp_exc_stack_t *e;
                         // search for the inner-most previous exception, to reraise it
                         obj = MP_OBJ_NULL;
-                        for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; e--) {
+                        for (e = exc_sp; e >= exc_stack; e--) {
                             if (e->prev_exc != MP_OBJ_NULL) {
                                 obj = e->prev_exc;
                                 break;

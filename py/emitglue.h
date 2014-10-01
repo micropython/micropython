@@ -26,6 +26,13 @@
 
 // These variables and functions glue the code emitters to the runtime.
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
+
 typedef enum {
     MP_CODE_UNUSED,
     MP_CODE_RESERVED,

@@ -76,8 +76,9 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, int sz) {
+    int i;
     DEBUG_printf("%p: ", a);
-    for (int i = 0; i < sz; i++) {
+    for (i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
@@ -94,6 +95,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     mp_obj_fun_bc_t *self = self_in;
     mp_uint_t n_state = code_state->n_state;
     const byte *ip = code_state->ip;
+    mp_uint_t i;
 
     code_state->code_info = self->bytecode;
     code_state->sp = &code_state->state[0] - 1;
@@ -127,7 +129,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
         if (n_kw == 0 && !self->has_def_kw_args) {
             if (n_args >= self->n_pos_args - self->n_def_args) {
                 // given enough arguments, but may need to use some default arguments
-                for (mp_uint_t i = n_args; i < self->n_pos_args; i++) {
+                for (i = n_args; i < self->n_pos_args; i++) {
                     code_state->state[n_state - 1 - i] = self->extra_args[i - (self->n_pos_args - self->n_def_args)];
                 }
             } else {
@@ -137,7 +139,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     }
 
     // copy positional args into state
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (i = 0; i < n_args; i++) {
         code_state->state[n_state - 1 - i] = args[i];
     }
 
@@ -153,9 +155,10 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
             *var_pos_kw_args = dict;
         }
 
-        for (mp_uint_t i = 0; i < n_kw; i++) {
+        for (i = 0; i < n_kw; i++) {
+            mp_uint_t j;
             qstr arg_name = MP_OBJ_QSTR_VALUE(kwargs[2 * i]);
-            for (mp_uint_t j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
+            for (j = 0; j < self->n_pos_args + self->n_kwonly_args; j++) {
                 if (arg_name == self->args[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -179,7 +182,8 @@ continue2:;
         // fill in defaults for positional args
         mp_obj_t *d = &code_state->state[n_state - self->n_pos_args];
         mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
-        for (int i = self->n_def_args; i > 0; i--, d++, s--) {
+        int k;
+        for (k = self->n_def_args; k > 0; k--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
                 *d = *s;
             }
@@ -198,7 +202,7 @@ continue2:;
 
         // Check that all mandatory keyword args are specified
         // Fill in default kw args if we have them
-        for (mp_uint_t i = 0; i < self->n_kwonly_args; i++) {
+        for (i = 0; i < self->n_kwonly_args; i++) {
             if (code_state->state[n_state - 1 - self->n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if (self->has_def_kw_args) {
@@ -225,7 +229,8 @@ continue2:;
     }
 
     // bytecode prelude: initialise closed over variables
-    for (mp_uint_t n_local = *ip++; n_local > 0; n_local--) {
+    mp_uint_t n_local;
+    for (n_local = *ip++; n_local > 0; n_local--) {
         mp_uint_t local_num = *ip++;
         code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }

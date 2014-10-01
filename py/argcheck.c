@@ -62,7 +62,8 @@ void mp_arg_check_num(mp_uint_t n_args, mp_uint_t n_kw, mp_uint_t n_args_min, mp
 
 void mp_arg_parse_all(mp_uint_t n_pos, const mp_obj_t *pos, mp_map_t *kws, mp_uint_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
     mp_uint_t pos_found = 0, kws_found = 0;
-    for (mp_uint_t i = 0; i < n_allowed; i++) {
+    mp_uint_t i;
+    for (i = 0; i < n_allowed; i++) {
         mp_obj_t given_arg;
         if (i < n_pos) {
             if (allowed[i].flags & MP_ARG_KW_ONLY) {

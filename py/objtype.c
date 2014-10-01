@@ -70,7 +70,8 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
 
     int count = 0;
-    for (uint i = 0; i < len; i++) {
+    uint i;
+    for (i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         const mp_obj_type_t *bt = (const mp_obj_type_t *)items[i];
         if (bt == &mp_type_object) {
@@ -172,7 +173,8 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         if (len == 0) {
             return;
         }
-        for (uint i = 0; i < len - 1; i++) {
+        uint i;
+        for (i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
             mp_obj_type_t *bt = (mp_obj_type_t*)items[i];
             if (bt == &mp_type_object) {
@@ -658,6 +660,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
 
         default:
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "type takes 1 or 3 arguments"));
+            break;
     }
 }
 
@@ -757,8 +760,9 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // Basic validation of base classes
     mp_uint_t len;
     mp_obj_t *items;
+    uint i;
     mp_obj_tuple_get(bases_tuple, &len, &items);
-    for (uint i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_type_t *t = items[i];
         // TODO: Verify with CPy, tested on function type
@@ -844,6 +848,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     mp_uint_t len;
     mp_obj_t *items;
+    uint i;
     mp_obj_tuple_get(type->bases_tuple, &len, &items);
     struct class_lookup_data lookup = {
         .obj = self->obj,
@@ -851,7 +856,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .meth_offset = 0,
         .dest = dest,
     };
-    for (uint i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_class_lookup(&lookup, (mp_obj_type_t*)items[i]);
         if (dest[0] != MP_OBJ_NULL) {
@@ -903,13 +908,14 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         // get the base objects (they should be type objects)
         mp_uint_t len;
         mp_obj_t *items;
+        uint i;
         mp_obj_tuple_get(self->bases_tuple, &len, &items);
         if (len == 0) {
             return false;
         }
 
         // iterate through the base objects
-        for (uint i = 0; i < len - 1; i++) {
+        for (i = 0; i < len - 1; i++) {
             if (mp_obj_is_subclass_fast(items[i], classinfo)) {
                 return true;
             }
@@ -923,6 +929,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     mp_uint_t len;
     mp_obj_t *items;
+    uint i;
     if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
         len = 1;
         items = &classinfo;
@@ -932,7 +939,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));
     }
 
-    for (uint i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         // We explicitly check for 'object' here since no-one explicitly derives from it
         if (items[i] == &mp_type_object || mp_obj_is_subclass_fast(object, items[i])) {
             return mp_const_true;

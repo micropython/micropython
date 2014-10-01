@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include "obj.h"
+
 // instance object
 // creating an instance of a class makes one of these objects
 typedef struct _mp_obj_instance_t {

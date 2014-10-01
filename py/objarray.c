@@ -65,8 +65,9 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
     } else {
         print(env, "array('%c'", o->typecode);
         if (o->len > 0) {
+            int i;
             print(env, ", [");
-            for (int i = 0; i < o->len; i++) {
+            for (i = 0; i < o->len; i++) {
                 if (i > 0) {
                     print(env, ", ");
                 }

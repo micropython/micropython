@@ -41,9 +41,9 @@
 #include <math.h>
 #endif
 
-mp_obj_t mp_parse_num_integer(const char *restrict str_, mp_uint_t len, mp_uint_t base) {
-    const byte *restrict str = (const byte *)str_;
-    const byte *restrict top = str + len;
+mp_obj_t mp_parse_num_integer(const char *__restrict str_, mp_uint_t len, mp_uint_t base) {
+    const byte *__restrict str = (const byte *)str_;
+    const byte *__restrict top = str + len;
     bool neg = false;
     mp_obj_t ret_val;
 
@@ -71,7 +71,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, mp_uint_t len, mp_uint_
 
     // string should be an integer number
     mp_int_t int_val = 0;
-    const byte *restrict str_val_start = str;
+    const byte *__restrict str_val_start = str;
     for (; str < top; str++) {
         // get next digit as a value
         mp_uint_t dig = *str;

@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);

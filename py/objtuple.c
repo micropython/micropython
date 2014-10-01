@@ -42,6 +42,7 @@ STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur);
 /* tuple                                                                      */
 
 void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_uint_t i;
     mp_obj_tuple_t *o = o_in;
     if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
         print(env, "[");
@@ -49,7 +50,7 @@ void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *en
         print(env, "(");
         kind = PRINT_REPR;
     }
-    for (mp_uint_t i = 0; i < o->len; i++) {
+    for (i = 0; i < o->len; i++) {
         if (i > 0) {
             print(env, ", ");
         }
@@ -240,7 +241,8 @@ mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items) {
     o->base.type = &mp_type_tuple;
     o->len = n;
     if (items) {
-        for (mp_uint_t i = 0; i < n; i++) {
+        mp_uint_t i;
+        for (i = 0; i < n; i++) {
             o->items[i] = items[i];
         }
     }
@@ -265,7 +267,8 @@ mp_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     // start hash with pointer to empty tuple, to make it fairly unique
     mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
-    for (mp_uint_t i = 0; i < self->len; i++) {
+    mp_uint_t i;
+    for (i = 0; i < self->len; i++) {
         hash += mp_obj_hash(self->items[i]);
     }
     return hash;

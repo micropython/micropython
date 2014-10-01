@@ -91,6 +91,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
         mp_uint_t more_bytes = sz;
         mp_uint_t last_buf_offset = 0;
         while (more_bytes > 0) {
+            mp_uint_t off;
             char *p = vstr_add_len(&vstr, more_bytes);
             if (p == NULL) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
@@ -123,7 +124,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
             }
 
             // count chars from bytes just read
-            for (mp_uint_t off = last_buf_offset;;) {
+            for (off = last_buf_offset;;) {
                 byte b = vstr.buf[off];
                 int n;
                 if (!UTF8_IS_NONASCII(b)) {

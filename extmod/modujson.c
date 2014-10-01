@@ -127,7 +127,8 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                             case 'u': {
                                 if (s + 4 >= top) { goto fail; }
                                 mp_uint_t num = 0;
-                                for (int i = 0; i < 4; i++) {
+                                int i;
+                                for (i = 0; i < 4; i++) {
                                     c = (*++s | 0x20) - '0';
                                     if (c > 9) {
                                         c -= ('a' - ('9' + 1));

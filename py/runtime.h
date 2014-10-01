@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include "mpconfig.h"
+#include <mpconfigport.h>
+#include "obj.h"
+#include "qstr.h"
+
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,

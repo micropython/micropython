@@ -24,6 +24,12 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "mpconfig.h"
+#include "obj.h"
+
 #define PF_FLAG_LEFT_ADJUST       (0x001)
 #define PF_FLAG_SHOW_SIGN         (0x002)
 #define PF_FLAG_SPACE_SIGN        (0x004)

@@ -24,4 +24,10 @@
  * THE SOFTWARE.
  */
 
+
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+
 mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);

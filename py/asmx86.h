@@ -37,6 +37,11 @@
 // NOTE: this is a change from the old convention used in this file and
 // some functions still use the old (reverse) convention.
 
+#pragma once
+
+#include <stdbool.h>
+#include "misc.h"
+
 #define ASM_X86_PASS_COMPUTE (1)
 #define ASM_X86_PASS_EMIT    (2)
 

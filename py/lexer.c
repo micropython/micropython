@@ -81,7 +81,7 @@ bool str_strn_equal(const char *str, const char *strn, mp_uint_t len) {
 
 #ifdef MICROPY_DEBUG_PRINTERS
 void mp_token_show(const mp_token_t *tok) {
-    printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:" UINT_FMT, tok->src_line, tok->src_column, tok->kind, tok->str, tok->len);
+    printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:" UINT_FMT, (unsigned int)(tok->src_line), (unsigned int)(tok->src_column), (unsigned int)(tok->kind), tok->str, (unsigned int)(tok->len));
     if (tok->str != NULL && tok->len > 0) {
         const byte *i = (const byte *)tok->str;
         const byte *j = (const byte *)i + tok->len;
@@ -511,6 +511,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
                                     break;
                                 }
                                 // Otherwise fall through.
+                                //no break - disable eclipse static analysis warning
                             case 'x':
                             {
                                 mp_uint_t num = 0;
@@ -716,7 +717,8 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
         // need to check for this special token in many places in the compiler.
         // TODO improve speed of these string comparisons
         //for (mp_int_t i = 0; tok_kw[i] != NULL; i++) {
-        for (mp_int_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
+        mp_int_t i;
+        for (i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
             if (str_strn_equal(tok_kw[i], tok->str, tok->len)) {
                 if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
                     // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"

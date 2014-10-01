@@ -58,7 +58,8 @@
 mp_uint_t qstr_compute_hash(const byte *data, uint len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
     mp_uint_t hash = 5381;
-    for (const byte *top = data + len; data < top; data++) {
+    const byte *top;
+    for (top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
     hash &= 0xffff;
@@ -99,7 +100,8 @@ void qstr_init(void) {
 
 STATIC const byte *find_qstr(qstr q) {
     // search pool for this qstr
-    for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
+    qstr_pool_t *pool;
+    for (pool = last_pool; pool != NULL; pool = pool->prev) {
         if (q >= pool->total_prev_len) {
             return pool->qstrs[q - pool->total_prev_len];
         }
@@ -135,8 +137,10 @@ qstr qstr_find_strn(const char *str, uint str_len) {
     mp_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
     // search pools for the data
-    for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
-        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+    qstr_pool_t *pool;
+    for (pool = last_pool; pool != NULL; pool = pool->prev) {
+        const byte **q, **q_top;
+        for (q = pool->qstrs, q_top = pool->qstrs + pool->len; q < q_top; q++) {
             if (Q_GET_HASH(*q) == str_hash && Q_GET_LENGTH(*q) == str_len && memcmp(Q_GET_DATA(*q), str, str_len) == 0) {
                 return pool->total_prev_len + (q - pool->qstrs);
             }
@@ -212,14 +216,16 @@ const byte *qstr_data(qstr q, uint *len) {
 }
 
 void qstr_pool_info(uint *n_pool, uint *n_qstr, uint *n_str_data_bytes, uint *n_total_bytes) {
+    qstr_pool_t *pool;
     *n_pool = 0;
     *n_qstr = 0;
     *n_str_data_bytes = 0;
     *n_total_bytes = 0;
-    for (qstr_pool_t *pool = last_pool; pool != NULL && pool != &const_pool; pool = pool->prev) {
+    for (pool = last_pool; pool != NULL && pool != &const_pool; pool = pool->prev) {
+        const byte **q, **q_top;
         *n_pool += 1;
         *n_qstr += pool->len;
-        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+        for (q = pool->qstrs, q_top = pool->qstrs + pool->len; q < q_top; q++) {
             *n_str_data_bytes += Q_GET_ALLOC(*q);
         }
         *n_total_bytes += sizeof(qstr_pool_t) + sizeof(qstr) * pool->alloc;

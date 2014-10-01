@@ -69,9 +69,10 @@ STATIC const uint8_t attr[] = {
 unichar utf8_get_char(const byte *s) {
 #if MICROPY_PY_BUILTINS_STR_UNICODE
     unichar ord = *s++;
+    unichar mask;
     if (!UTF8_IS_NONASCII(ord)) return ord;
     ord &= 0x7F;
-    for (unichar mask = 0x40; ord & mask; mask >>= 1) {
+    for (mask = 0x40; ord & mask; mask >>= 1) {
         ord &= ~mask;
     }
     while (UTF8_IS_CONT(*s)) {
@@ -112,7 +113,8 @@ mp_uint_t unichar_charlen(const char *str, mp_uint_t len)
 {
 #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t charlen = 0;
-    for (const char *top = str + len; str < top; ++str) {
+    const char *top;
+    for (top = str + len; str < top; ++str) {
         if (!UTF8_IS_CONT(*str)) {
             ++charlen;
         }

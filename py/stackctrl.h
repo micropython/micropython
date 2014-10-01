@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+
 void mp_stack_ctrl_init();
 mp_uint_t mp_stack_usage();
 

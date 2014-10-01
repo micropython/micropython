@@ -270,7 +270,8 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             }
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_tuple)) {
             mp_obj_tuple_t *tuple = rhs;
-            for (mp_uint_t i = 0; i < tuple->len; i++) {
+            mp_uint_t i;
+            for (i = 0; i < tuple->len; i++) {
                 rhs = tuple->items[i];
                 if (!mp_obj_is_exception_type(rhs)) {
                     goto unsupported_op;
@@ -659,8 +660,9 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp
     } else if (MP_OBJ_IS_TYPE(kw_dict, &mp_type_dict)) {
         // dictionary
         mp_map_t *map = mp_obj_dict_get_map(kw_dict);
+        uint i;
         assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (uint i = 0; i < map->alloc; i++) {
+        for (i = 0; i < map->alloc; i++) {
             if (map->table[i].key != MP_OBJ_NULL) {
                 args2[args2_len++] = map->table[i].key;
                 args2[args2_len++] = map->table[i].value;
@@ -700,6 +702,7 @@ void mp_unpack_sequence(mp_obj_t seq_in, mp_uint_t num, mp_obj_t *items) {
     mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
+        mp_uint_t i;
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
             mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
         } else {
@@ -710,7 +713,7 @@ void mp_unpack_sequence(mp_obj_t seq_in, mp_uint_t num, mp_obj_t *items) {
         } else if (seq_len > num) {
             goto too_long;
         }
-        for (mp_uint_t i = 0; i < num; i++) {
+        for (i = 0; i < num; i++) {
             items[i] = seq_items[num - 1 - i];
         }
     } else {
@@ -741,6 +744,7 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
     mp_uint_t num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
     mp_uint_t seq_len;
+    mp_uint_t i;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
@@ -756,11 +760,11 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
         if (seq_len < num_left + num_right) {
             goto too_short;
         }
-        for (mp_uint_t i = 0; i < num_right; i++) {
+        for (i = 0; i < num_right; i++) {
             items[i] = seq_items[seq_len - 1 - i];
         }
         items[num_right] = mp_obj_new_list(seq_len - num_left - num_right, seq_items + num_left);
-        for (mp_uint_t i = 0; i < num_left; i++) {
+        for (i = 0; i < num_left; i++) {
             items[num_right + 1 + i] = seq_items[num_left - 1 - i];
         }
     } else {
@@ -785,7 +789,7 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
             goto too_short;
         }
         items[num_right] = rest;
-        for (mp_uint_t i = 0; i < num_right; i++) {
+        for (i = 0; i < num_right; i++) {
             items[num_right - 1 - i] = rest->items[rest->len - num_right + i];
         }
         mp_obj_list_set_len(rest, rest->len - num_right);
@@ -1125,7 +1129,8 @@ void mp_import_all(mp_obj_t module) {
 
     // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
-    for (uint i = 0; i < map->alloc; i++) {
+    uint i;
+    for (i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
             if (*qstr_str(name) != '_') {

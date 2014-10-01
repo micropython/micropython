@@ -316,7 +316,8 @@ STATIC mp_obj_t int_from_bytes(mp_uint_t n_args, const mp_obj_t *args) {
 
     // convert the bytes to an integer
     mp_uint_t value = 0;
-    for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+    const byte* buf;
+    for (buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
         value = (value << 8) | *buf;
     }
 

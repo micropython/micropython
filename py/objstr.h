@@ -24,6 +24,12 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+#include "qstr.h"
+
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
     mp_uint_t hash;

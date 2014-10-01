@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
 // taken from python source, Include/code.h
 // These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_OPTIMISED    0x01

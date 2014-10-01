@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+
 // Functions for small integer arithmetic
 
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range

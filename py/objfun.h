@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+
+#pragma once
+
+#include <mpconfigport.h>
+#include "obj.h"
+#include "misc.h"
+
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;         // the context within which this function was defined

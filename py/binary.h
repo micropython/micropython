@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "misc.h"
+#include "obj.h"
+
 // Use special typecode to differentiate repr() of bytearray vs array.array('B')
 // (underlyingly they're same).
 #define BYTEARRAY_TYPECODE 0

@@ -98,10 +98,11 @@ STATIC int namedtuple_find_field(const char *name, const char *namedef) {
 
 STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_namedtuple_t *o = o_in;
+    int i;
     print(env, "%s(", qstr_str(o->tuple.base.type->name));
     const char *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
 
-    for (int i = 0; i < o->tuple.len; i++) {
+    for (i = 0; i < o->tuple.len; i++) {
         if (i > 0) {
                 print(env, ", ");
         }

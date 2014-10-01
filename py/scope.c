@@ -109,7 +109,8 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, bool *added) {
 }
 
 id_info_t *scope_find(scope_t *scope, qstr qst) {
-    for (mp_uint_t i = 0; i < scope->id_info_len; i++) {
+    mp_uint_t i;
+    for (i = 0; i < scope->id_info_len; i++) {
         if (scope->id_info[i].qst == qst) {
             return &scope->id_info[i];
         }
@@ -125,10 +126,11 @@ id_info_t *scope_find_global(scope_t *scope, qstr qst) {
 }
 
 id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qst) {
+    scope_t *s;
     if (scope->parent == NULL) {
         return NULL;
     }
-    for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
+    for (s = scope->parent; s->parent != NULL; s = s->parent) {
         id_info_t *id = scope_find(s, qst);
         if (id != NULL) {
             return id;
@@ -138,8 +140,9 @@ id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qst) {
 }
 
 void scope_close_over_in_parents(scope_t *scope, qstr qst) {
+    scope_t *s;
     assert(scope->parent != NULL); // we should have at least 1 parent
-    for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
+    for (s = scope->parent; s->parent != NULL; s = s->parent) {
         bool added;
         id_info_t *id = scope_find_or_add_id(s, qst, &added);
         if (added) {

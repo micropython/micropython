@@ -57,7 +57,8 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
-    for (const byte *s = str_data, *top = str_data + str_len; !has_double_quote && s < top; s++) {
+    const byte *s, *top;
+    for (s = str_data, top = str_data + str_len; !has_double_quote && s < top; s++) {
         if (*s == '\'') {
             has_single_quote = true;
         } else if (*s == '"') {
@@ -69,7 +70,7 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
         quote_char = '"';
     }
     print(env, "%c", quote_char);
-    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+    for (s = str_data, top = str_data + str_len; s < top; s++) {
         if (*s == quote_char) {
             print(env, "\\%c", quote_char);
         } else if (*s == '\\') {
@@ -94,10 +95,11 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
 
 #if MICROPY_PY_UJSON
 void mp_str_print_json(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, mp_uint_t str_len) {
+    const byte *s, *top;
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
     print(env, "\"");
-    for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
+    for (s = str_data, top = str_data + str_len; s < top; s++) {
         if (*s == '"' || *s == '\\') {
             print(env, "\\%c", *s);
         } else if (*s >= 32) {
@@ -136,7 +138,7 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
         mp_str_print_quoted(print, env, str_data, str_len, is_bytes);
     }
 }
-
+#if (!MICROPY_PY_BUILTINS_STR_UNICODE) || (MICROPY_CPYTHON_COMPAT)
 STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
@@ -174,8 +176,10 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 
         default:
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "str takes at most 3 arguments"));
+            break;
     }
 }
+#endif /* if (!MICROPY_PY_BUILTINS_STR_UNICODE) || (MICROPY_CPYTHON_COMPAT) */
 
 STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -376,6 +380,7 @@ uncomparable:
             if (op == MP_BINARY_OP_EQUAL) {
                 return mp_const_false;
             }
+            break;
     }
 
     return MP_OBJ_NULL; // op not supported
@@ -419,6 +424,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
+    int i;
     assert(MP_OBJ_IS_STR_OR_BYTES(self_in));
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
 
@@ -441,7 +447,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
 
     // count required length
     int required_len = 0;
-    for (int i = 0; i < seq_len; i++) {
+    for (i = 0; i < seq_len; i++) {
         if (mp_obj_get_type(seq_items[i]) != self_type) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                 "join expects a list of str/bytes objects consistent with self object"));
@@ -456,7 +462,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // make joined string
     byte *data;
     mp_obj_t joined_str = mp_obj_str_builder_start(self_type, required_len, &data);
-    for (int i = 0; i < seq_len; i++) {
+    for (i = 0; i < seq_len; i++) {
         if (i > 0) {
             memcpy(data, sep_str, sep_len);
             data += sep_len;
@@ -721,7 +727,8 @@ STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) 
         i = orig_str_len - 1;
         delta = -1;
     }
-    for (mp_uint_t len = orig_str_len; len > 0; len--) {
+    mp_uint_t len;
+    for (len = orig_str_len; len > 0; len--) {
         if (find_subbytes(chars_to_del, chars_to_del_len, &orig_str[i], 1, 1) == NULL) {
             if (!first_good_char_pos_set) {
                 first_good_char_pos_set = true;
@@ -818,6 +825,7 @@ static mp_obj_t arg_as_int(mp_obj_t arg) {
 }
 
 mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
+    const byte *top;
     assert(MP_OBJ_IS_STR(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
@@ -827,7 +835,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
     pfenv_vstr.data = vstr;
     pfenv_vstr.print_strn = pfenv_vstr_add_strn;
 
-    for (const byte *top = str + len; str < top; str++) {
+    for (top = str + len; str < top; str++) {
         if (*str == '}') {
             str++;
             if (str < top && *str == '}') {
@@ -1077,6 +1085,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                 default:
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
+                    break;
             }
         }
 
@@ -1140,6 +1149,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "unknown format code '%c' for object of type 'float'",
                         type, mp_obj_get_type_str(arg)));
+                    break;
             }
         } else {
             // arg doesn't look like a number
@@ -1170,6 +1180,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                         "unknown format code '%c' for object of type 'str'",
                         type, mp_obj_get_type_str(arg)));
+                    break;
             }
         }
     }
@@ -1180,6 +1191,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict) {
+    const byte *top;
     assert(MP_OBJ_IS_STR(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
@@ -1190,7 +1202,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
     pfenv_vstr.data = vstr;
     pfenv_vstr.print_strn = pfenv_vstr_add_strn;
 
-    for (const byte *top = str + len; str < top; str++) {
+    for (top = str + len; str < top; str++) {
         mp_obj_t arg = MP_OBJ_NULL;
         if (*str != '%') {
             vstr_add_char(vstr, *str);
@@ -1355,6 +1367,7 @@ not_enough_args:
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                     "unsupported format character '%c' (0x%x) at index %d",
                     *str, *str, str - start_str));
+                break;
         }
     }
 
@@ -1494,7 +1507,8 @@ STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
 
     // count the occurrences
     mp_int_t num_occurrences = 0;
-    for (const byte *haystack_ptr = start; haystack_ptr + needle_len <= end;) {
+    const byte *haystack_ptr;
+    for (haystack_ptr = start; haystack_ptr + needle_len <= end;) {
         if (memcmp(haystack_ptr, needle, needle_len) == 0) {
             num_occurrences++;
             haystack_ptr += needle_len;
@@ -1553,8 +1567,9 @@ STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
 STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     byte *data;
+    int i;
     mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(self_in), self_len, &data);
-    for (int i = 0; i < self_len; i++) {
+    for (i = 0; i < self_len; i++) {
         *data++ = op(*self_data++);
     }
     *data = 0;
@@ -1570,6 +1585,7 @@ STATIC mp_obj_t str_upper(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
+    int i;
     GET_STR_DATA_LEN(self_in, self_data, self_len);
 
     if (self_len == 0) {
@@ -1577,7 +1593,7 @@ STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     }
 
     if (f != unichar_isupper && f != unichar_islower) {
-        for (int i = 0; i < self_len; i++) {
+        for (i = 0; i < self_len; i++) {
             if (!f(*self_data++)) {
                 return mp_const_false;
             }
@@ -1585,7 +1601,7 @@ STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     } else {
         bool contains_alpha = false;
 
-        for (int i = 0; i < self_len; i++) { // only check alphanumeric characters
+        for (i = 0; i < self_len; i++) { // only check alphanumeric characters
             if (unichar_isalpha(*self_data++)) {
                 contains_alpha = true;
                 if (!f(*(self_data - 1))) { // -1 because we already incremented above

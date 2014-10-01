@@ -175,6 +175,7 @@ mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg) {
 
 void mp_parse_node_free(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+        mp_uint_t i;
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
@@ -186,7 +187,7 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         if (adjust) {
             n--;
         }
-        for (mp_uint_t i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
             mp_parse_node_free(pns->nodes[i]);
         }
         if (adjust) {
@@ -198,19 +199,20 @@ void mp_parse_node_free(mp_parse_node_t pn) {
 
 #if MICROPY_DEBUG_PRINTERS
 void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
+    mp_uint_t i;
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         printf("[% 4d] ", (int)((mp_parse_node_struct_t*)pn)->source_line);
     } else {
         printf("       ");
     }
-    for (mp_uint_t i = 0; i < indent; i++) {
+    for (i = 0; i < indent; i++) {
         printf(" ");
     }
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         printf("NULL\n");
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
-        printf("int(" INT_FMT ")\n", arg);
+        printf("int(" INT_FMT ")\n", (int)arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
@@ -219,7 +221,7 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
             case MP_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_TOKEN: printf("tok(" INT_FMT ")\n", arg); break;
+            case MP_PARSE_NODE_TOKEN: printf("tok(" INT_FMT ")\n", (int)arg); break;
             default: assert(0);
         }
     } else {
@@ -230,11 +232,11 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
         } else {
             mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
-            printf("%s(" UINT_FMT ") (n=" UINT_FMT ")\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, (mp_uint_t)MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("%s(" UINT_FMT ") (n=" UINT_FMT ")\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, (unsigned int)MP_PARSE_NODE_STRUCT_KIND(pns), (unsigned int)n);
 #else
-            printf("rule(" UINT_FMT ") (n=" UINT_FMT ")\n", (mp_uint_t)MP_PARSE_NODE_STRUCT_KIND(pns), n);
+            printf("rule(" UINT_FMT ") (n=" UINT_FMT ")\n", (unsigned int)MP_PARSE_NODE_STRUCT_KIND(pns), (unsigned int)n);
 #endif
-            for (mp_uint_t i = 0; i < n; i++) {
+            for (i = 0; i < n; i++) {
                 mp_parse_node_print(pns->nodes[i], indent + 2);
             }
         }
@@ -244,8 +246,9 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
 
 /*
 STATIC void result_stack_show(parser_t *parser) {
+    mp_int_t i;
     printf("result stack, most recent first\n");
-    for (mp_int_t i = parser->result_stack_top - 1; i >= 0; i--) {
+    for (i = parser->result_stack_top - 1; i >= 0; i--) {
         mp_parse_node_print(parser->result_stack[i], 0);
     }
 }
@@ -371,6 +374,7 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
 }
 
 STATIC void push_result_rule(parser_t *parser, mp_uint_t src_line, const rule_t *rule, mp_uint_t num_args) {
+    mp_uint_t i;
     mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, num_args);
     if (pn == NULL) {
         memory_error(parser);
@@ -378,7 +382,7 @@ STATIC void push_result_rule(parser_t *parser, mp_uint_t src_line, const rule_t 
     }
     pn->source_line = src_line;
     pn->kind_num_nodes = (rule->rule_id & 0xff) | (num_args << 8);
-    for (mp_uint_t i = num_args; i > 0; i--) {
+    for (i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
     push_result_node(parser, (mp_parse_node_t)pn);
@@ -412,7 +416,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
     switch (input_kind) {
         case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
-        default: top_level_rule = RULE_file_input;
+        default: top_level_rule = RULE_file_input; break;
     }
     push_rule(&parser, mp_lexer_cur(lex)->src_line, rules[top_level_rule], 0);
 
@@ -437,11 +441,12 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
         /*
         // debugging
-        printf("depth=%d ", parser.rule_stack_top);
-        for (int j = 0; j < parser.rule_stack_top; ++j) {
+        printf("depth=%d ", (int)parser.rule_stack_top);
+        int j;
+        for (j = 0; j < parser.rule_stack_top; ++j) {
             printf(" ");
         }
-        printf("%s n=%d i=%d bt=%d\n", rule->rule_name, n, i, backtrack);
+        printf("%s n=%d i=%d bt=%d\n", rule->rule_name, (int)n, (int)i, (int)backtrack);
         */
 
         switch (rule->act & RULE_ACT_KIND_MASK) {
@@ -542,7 +547,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 // count number of arguments for the parse_node
                 i = 0;
                 emit_rule = false;
-                for (mp_uint_t x = 0; x < n; ++x) {
+                mp_uint_t x;
+                for (x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
@@ -591,22 +597,22 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 }
 
                 mp_uint_t num_not_nil = 0;
-                for (mp_uint_t x = 0; x < i; ++x) {
+                for (x = 0; x < i; ++x) {
                     if (peek_result(&parser, x) != MP_PARSE_NODE_NULL) {
                         num_not_nil += 1;
                     }
                 }
-                //printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, n, i, num_not_nil);
+                //printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, (int)n, (int)i, (int)num_not_nil);
                 if (emit_rule) {
                     push_result_rule(&parser, rule_src_line, rule, i);
                 } else if (num_not_nil == 0) {
                     push_result_rule(&parser, rule_src_line, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
-                    //result_stack_show(parser);
+                    //result_stack_show(&parser);
                     //assert(0);
                 } else if (num_not_nil == 1) {
                     // single result, leave it on stack
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
-                    for (mp_uint_t x = 0; x < i; ++x) {
+                    for (x = 0; x < i; ++x) {
                         mp_parse_node_t pn2 = pop_result(&parser);
                         if (pn2 != MP_PARSE_NODE_NULL) {
                             pn = pn2;
@@ -700,13 +706,14 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
-                    //printf("done list %s %d %d\n", rule->rule_name, n, i);
+                    //printf("done list %s %d %d\n", rule->rule_name, (int)n, (int)i);
                     push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
 
             default:
                 assert(0);
+                break;
         }
     }
 
@@ -727,10 +734,9 @@ memory_error:
     }
 
     //printf("--------------\n");
-    //result_stack_show(parser);
-    //printf("rule stack alloc: %d\n", parser.rule_stack_alloc);
-    //printf("result stack alloc: %d\n", parser.result_stack_alloc);
-    //printf("number of parse nodes allocated: %d\n", num_parse_nodes_allocated);
+    //result_stack_show(&parser);
+    //printf("rule stack alloc: %d\n", (int)parser.rule_stack_alloc);
+    //printf("result stack alloc: %d\n", (int)parser.result_stack_alloc);
 
     // get the root parse node that we created
     assert(parser.result_stack_top == 1);

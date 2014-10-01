@@ -93,7 +93,7 @@ typedef struct _compiler_t {
 STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
     // TODO store the error message to a variable in compiler_t instead of printing it
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        printf("  File \"%s\", line " UINT_FMT "\n", qstr_str(comp->source_file), (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line);
+        printf("  File \"%s\", line " UINT_FMT "\n", qstr_str(comp->source_file), (unsigned int)((mp_parse_node_struct_t*)pn)->source_line);
     } else {
         printf("  File \"%s\"\n", qstr_str(comp->source_file));
     }
@@ -185,7 +185,8 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 
         // fold arguments
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-        for (int i = 0; i < n; i++) {
+        int i;
+        for (i = 0; i < n; i++) {
             pns->nodes[i] = fold_constants(comp, pns->nodes[i], consts);
         }
 
@@ -391,7 +392,8 @@ STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn
     if (MP_PARSE_NODE_IS_STRUCT(pn) && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn) == pn_list_kind) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-        for (int i = 0; i < num_nodes; i++) {
+        int i;
+        for (i = 0; i < num_nodes; i++) {
             f(comp, pns->nodes[i]);
         }
     } else if (!MP_PARSE_NODE_IS_NULL(pn)) {
@@ -423,7 +425,8 @@ void compile_do_nothing(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < num_nodes; i++) {
+    int i;
+    for (i = 0; i < num_nodes; i++) {
         compile_node(comp, pns->nodes[i]);
     }
 }
@@ -582,7 +585,8 @@ STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t
     }
     if (pns_list != NULL) {
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
-        for (int i = 0; i < n; i++) {
+        int i;
+        for (i = 0; i < n; i++) {
             compile_node(comp, pns_list->nodes[i]);
         }
         total += n;
@@ -685,25 +689,29 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
             if (jump_if == false) {
                 uint label2 = comp_next_label(comp);
-                for (int i = 0; i < n - 1; i++) {
+                int i;
+                for (i = 0; i < n - 1; i++) {
                     c_if_cond(comp, pns->nodes[i], true, label2);
                 }
                 c_if_cond(comp, pns->nodes[n - 1], false, label);
                 EMIT_ARG(label_assign, label2);
             } else {
-                for (int i = 0; i < n; i++) {
+                int i;
+                for (i = 0; i < n; i++) {
                     c_if_cond(comp, pns->nodes[i], true, label);
                 }
             }
             return;
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_and_test) {
             if (jump_if == false) {
-                for (int i = 0; i < n; i++) {
+                int i;
+                for (i = 0; i < n; i++) {
                     c_if_cond(comp, pns->nodes[i], false, label);
                 }
             } else {
                 uint label2 = comp_next_label(comp);
-                for (int i = 0; i < n - 1; i++) {
+                int i;
+                for (i = 0; i < n - 1; i++) {
                     c_if_cond(comp, pns->nodes[i], false, label2);
                 }
                 c_if_cond(comp, pns->nodes[n - 1], true, label);
@@ -756,7 +764,8 @@ STATIC void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign
         if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_power_trailers) {
             int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns1);
             if (assign_kind != ASSIGN_AUG_STORE) {
-                for (int i = 0; i < n - 1; i++) {
+                int i;
+                for (i = 0; i < n - 1; i++) {
                     compile_node(comp, pns1->nodes[i]);
                 }
             }
@@ -809,6 +818,7 @@ cannot_assign:
 // we need to allow for a caller passing in 1 initial node (node_head) followed by an array of nodes (nodes_tail)
 STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, mp_parse_node_t *nodes_tail) {
     uint num_head = (node_head == MP_PARSE_NODE_NULL) ? 0 : 1;
+    int i;
 
     // look for star expression
     int have_star_index = -1;
@@ -816,7 +826,7 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
         EMIT_ARG(unpack_ex, 0, num_tail);
         have_star_index = 0;
     }
-    for (int i = 0; i < num_tail; i++) {
+    for (i = 0; i < num_tail; i++) {
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes_tail[i], PN_star_expr)) {
             if (have_star_index < 0) {
                 EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
@@ -837,7 +847,7 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
             c_assign(comp, node_head, ASSIGN_STORE);
         }
     }
-    for (int i = 0; i < num_tail; i++) {
+    for (i = 0; i < num_tail; i++) {
         if (num_head + i == have_star_index) {
             c_assign(comp, ((mp_parse_node_struct_t*)nodes_tail[i])->nodes[0], ASSIGN_STORE);
         } else {
@@ -970,10 +980,12 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
     if (comp->scope_cur->kind != SCOPE_MODULE) {
-        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
+        int i;
+        for (i = 0; i < comp->scope_cur->id_info_len; i++) {
             id_info_t *id = &comp->scope_cur->id_info[i];
             if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-                for (int j = 0; j < this_scope->id_info_len; j++) {
+                int j;
+                for (j = 0; j < this_scope->id_info_len; j++) {
                     id_info_t *id2 = &this_scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
 #if MICROPY_EMIT_CPYTHON
@@ -1210,7 +1222,8 @@ void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // compile each decorator
     int num_built_in_decorators = 0;
-    for (int i = 0; i < n; i++) {
+    int i;
+    for (i = 0; i < n; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(nodes[i], PN_decorator)); // should be
         mp_parse_node_struct_t *pns_decorator = (mp_parse_node_struct_t*)nodes[i];
 
@@ -1228,9 +1241,10 @@ void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
             // compile the decorator function
             compile_node(comp, name_nodes[0]);
-            for (int i = 1; i < name_len; i++) {
-                assert(MP_PARSE_NODE_IS_ID(name_nodes[i])); // should be
-                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[i]));
+            int j;
+            for (j = 1; j < name_len; j++) {
+                assert(MP_PARSE_NODE_IS_ID(name_nodes[j])); // should be
+                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[j]));
             }
 
             // nodes[1] contains arguments to the decorator function, if any
@@ -1255,7 +1269,7 @@ void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 
     // call each decorator
-    for (int i = 0; i < n - num_built_in_decorators; i++) {
+    for (i = 0; i < n - num_built_in_decorators; i++) {
         EMIT_ARG(call_function, 1, 0, 0);
     }
 
@@ -1281,7 +1295,8 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
             mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
             if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_power_trailers) {
                 int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns1);
-                for (int i = 0; i < n - 1; i++) {
+                int i;
+                for (i = 0; i < n - 1; i++) {
                     compile_node(comp, pns1->nodes[i]);
                 }
                 assert(MP_PARSE_NODE_IS_STRUCT(pns1->nodes[n - 1]));
@@ -1321,8 +1336,9 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                 } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_testlist_comp_3c) {
                     // sequence of many items
                     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns1);
+                    int i;
                     c_del_stmt(comp, pns->nodes[0]);
-                    for (int i = 0; i < n; i++) {
+                    for (i = 0; i < n; i++) {
                         c_del_stmt(comp, pns1->nodes[i]);
                     }
                 } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
@@ -1450,12 +1466,13 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             }
             int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
             int len = n - 1;
-            for (int i = 0; i < n; i++) {
+            int i;
+            for (i = 0; i < n; i++) {
                 len += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
             byte *q_ptr;
             byte *str_dest = qstr_build_start(len, &q_ptr);
-            for (int i = 0; i < n; i++) {
+            for (i = 0; i < n; i++) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
@@ -1467,7 +1484,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             qstr q_full = qstr_build_end(q_ptr);
             EMIT_ARG(import_name, q_full);
             if (is_as) {
-                for (int i = 1; i < n; i++) {
+                for (i = 1; i < n; i++) {
                     EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
                 }
             }
@@ -1520,7 +1537,8 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         int n = list_get(&pn_rel, PN_one_or_more_period_or_ellipsis, &nodes);
 
         // count the total number of .'s
-        for (int i = 0; i < n; i++) {
+        int i;
+        for (i = 0; i < n; i++) {
             if (MP_PARSE_NODE_IS_TOKEN_KIND(nodes[i], MP_TOKEN_DEL_PERIOD)) {
                 import_level++;
             } else {
@@ -1552,6 +1570,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // build the "fromlist" tuple
         mp_parse_node_t *pn_nodes;
         int n = list_get(&pns->nodes[1], PN_import_as_names, &pn_nodes);
+        int i;
 #if MICROPY_EMIT_CPYTHON
         {
             vstr_t *vstr = vstr_new();
@@ -1577,7 +1596,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
             vstr_free(vstr);
         }
 #else
-        for (int i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
             qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
@@ -1589,7 +1608,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // do the import
         qstr dummy_q;
         do_import_name(comp, pn_import_source, &dummy_q);
-        for (int i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
             qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
@@ -1611,7 +1630,8 @@ void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             pns = (mp_parse_node_struct_t*)pns->nodes[0];
             int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            for (int i = 0; i < num_nodes; i++) {
+            int i;
+            for (i = 0; i < num_nodes; i++) {
                 scope_declare_global(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
         }
@@ -1625,7 +1645,8 @@ void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             pns = (mp_parse_node_struct_t*)pns->nodes[0];
             int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            for (int i = 0; i < num_nodes; i++) {
+            int i;
+            for (i = 0; i < num_nodes; i++) {
                 scope_declare_nonlocal(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
         }
@@ -1678,7 +1699,8 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             // multiple elif blocks
 
             int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_elif);
-            for (int i = 0; i < n; i++) {
+            int i;
+            for (i = 0; i < n; i++) {
                 mp_parse_node_struct_t *pns_elif2 = (mp_parse_node_struct_t*)pns_elif->nodes[i];
                 l_fail = comp_next_label(comp);
                 c_if_cond(comp, pns_elif2->nodes[0], false, l_fail); // elif condition
@@ -1917,8 +1939,8 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     EMIT(start_except_handler);
 
     uint l2 = comp_next_label(comp);
-
-    for (int i = 0; i < n_except; i++) {
+    int i;
+    for (i = 0; i < n_except; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_excepts[i], PN_try_stmt_except)); // should be
         mp_parse_node_struct_t *pns_except = (mp_parse_node_struct_t*)pn_excepts[i];
 
@@ -2138,7 +2160,8 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 EMIT(dup_top);
             }
             c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
-            for (int i = 0; i < rhs; i++) {
+            int i;
+            for (i = 0; i < rhs; i++) {
                 if (i + 1 < rhs) {
                     EMIT(dup_top);
                 }
@@ -2198,7 +2221,8 @@ void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, mp_binary_op_t binary_op) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i < num_nodes; i += 1) {
+    int i;
+    for (i = 1; i < num_nodes; i += 1) {
         compile_node(comp, pns->nodes[i]);
         EMIT_ARG(binary_op, binary_op);
     }
@@ -2241,7 +2265,8 @@ void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint l_end = comp_next_label(comp);
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < n; i += 1) {
+    int i;
+    for (i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
         if (i + 1 < n) {
             EMIT_ARG(jump_if_true_or_pop, l_end);
@@ -2253,7 +2278,8 @@ void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint l_end = comp_next_label(comp);
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < n; i += 1) {
+    int i;
+    for (i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
         if (i + 1 < n) {
             EMIT_ARG(jump_if_false_or_pop, l_end);
@@ -2275,7 +2301,8 @@ void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (multi) {
         l_fail = comp_next_label(comp);
     }
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
+    int i;
+    for (i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (i + 2 < num_nodes) {
             EMIT(dup_top);
@@ -2347,7 +2374,8 @@ void compile_and_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
+    int i;
+    for (i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_LESS)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_LSHIFT);
@@ -2363,7 +2391,8 @@ void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_arith_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
+    int i;
+    for (i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PLUS)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_ADD);
@@ -2379,7 +2408,8 @@ void compile_arith_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
+    int i;
+    for (i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_STAR)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_MULTIPLY);
@@ -2426,7 +2456,8 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         EMIT_ARG(load_id, MP_QSTR___class__);
         // get first argument to function
         bool found = false;
-        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
+        int i;
+        for (i = 0; i < comp->scope_cur->id_info_len; i++) {
             if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
                 EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].flags, comp->scope_cur->id_info[i].local_num);
                 found = true;
@@ -2453,7 +2484,8 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     int n_positional = n_positional_extra;
     uint n_keyword = 0;
     uint star_flags = 0;
-    for (int i = 0; i < n_args; i++) {
+    int i;
+    for (i = 0; i < n_args; i++) {
         if (MP_PARSE_NODE_IS_STRUCT(args[i])) {
             mp_parse_node_struct_t *pns_arg = (mp_parse_node_struct_t*)args[i];
             if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_star) {
@@ -2510,7 +2542,8 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
 
 void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < num_nodes; i++) {
+    int i;
+    for (i = 0; i < num_nodes; i++) {
         if (i + 1 < num_nodes && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_trailer_period) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i + 1], PN_trailer_paren)) {
             // optimisation for method calls a.f(...), following PyPy
             mp_parse_node_struct_t *pns_period = (mp_parse_node_struct_t*)pns->nodes[i];
@@ -2537,7 +2570,8 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     int n_bytes = 0;
     int string_kind = MP_PARSE_NODE_NULL;
-    for (int i = 0; i < n; i++) {
+    int i;
+    for (i = 0; i < n; i++) {
         int pn_kind;
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
             pn_kind = MP_PARSE_NODE_LEAF_KIND(pns->nodes[i]);
@@ -2561,7 +2595,7 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // concatenate string/bytes
     byte *q_ptr;
     byte *s_dest = qstr_build_start(n_bytes, &q_ptr);
-    for (int i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
             uint s_len;
             const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
@@ -2692,6 +2726,7 @@ void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
             mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
             if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_dictorsetmaker_list) {
                 // dict/set with multiple elements
+                int i;
 
                 // get tail elements (2nd, 3rd, ...)
                 mp_parse_node_t *nodes;
@@ -2712,7 +2747,7 @@ void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 }
 
                 // process rest of elements
-                for (int i = 0; i < n; i++) {
+                for (i = 0; i < n; i++) {
                     mp_parse_node_t pn = nodes[i];
                     bool is_key_value = MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dictorsetmaker_item);
                     compile_node(comp, pn);
@@ -3424,9 +3459,10 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 #if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the *x parameter after all other parameters (except **y)
+    int i;
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         id_info_t *id_param = NULL;
-        for (int i = scope->id_info_len - 1; i >= 0; i--) {
+        for (i = scope->id_info_len - 1; i >= 0; i--) {
             id_info_t *id = &scope->id_info[i];
             if (id->flags & ID_FLAG_IS_STAR_PARAM) {
                 if (id_param != NULL) {
@@ -3444,7 +3480,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // in functions, turn implicit globals into explicit globals
     // compute the index of each local
     scope->num_locals = 0;
-    for (int i = 0; i < scope->id_info_len; i++) {
+    for (i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (scope->kind == SCOPE_CLASS && id->qst == MP_QSTR___class__) {
             // __class__ is not counted as a local; if it's used then it becomes a ID_INFO_KIND_CELL
@@ -3463,7 +3499,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 #if MICROPY_EMIT_CPYTHON
     int num_cell = 0;
 #endif
-    for (int i = 0; i < scope->id_info_len; i++) {
+    for (i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
 #if MICROPY_EMIT_CPYTHON
         // in CPython the cells are numbered starting from 0
@@ -3486,10 +3522,11 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
     // make sure they are in the order of the parent scope
     if (scope->parent != NULL) {
         int num_free = 0;
-        for (int i = 0; i < scope->parent->id_info_len; i++) {
+        for (i = 0; i < scope->parent->id_info_len; i++) {
             id_info_t *id = &scope->parent->id_info[i];
             if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-                for (int j = 0; j < scope->id_info_len; j++) {
+                int j;
+                for (j = 0; j < scope->id_info_len; j++) {
                     id_info_t *id2 = &scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
                         assert(!(id2->flags & ID_FLAG_IS_PARAM)); // free vars should not be params
@@ -3508,7 +3545,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 #if !MICROPY_EMIT_CPYTHON
         // in Micro Python shift all other locals after the free locals
         if (num_free > 0) {
-            for (int i = 0; i < scope->id_info_len; i++) {
+            for (i = 0; i < scope->id_info_len; i++) {
                 id_info_t *id = &scope->id_info[i];
                 if (id->kind != ID_INFO_KIND_FREE || (id->flags & ID_FLAG_IS_PARAM)) {
                     id->local_num += num_free;
@@ -3535,7 +3572,7 @@ STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
 #endif
 
     int num_free = 0;
-    for (int i = 0; i < scope->id_info_len; i++) {
+    for (i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
             num_free += 1;
@@ -3566,7 +3603,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
     uint max_num_labels = 0;
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    scope_t *s;
+    for (s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
 #if MICROPY_EMIT_INLINE_THUMB
         } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
@@ -3583,7 +3621,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     }
 
     // compute some things related to scope and identifiers
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    for (s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         compile_scope_compute_things(comp, s);
     }
 
@@ -3600,7 +3638,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
 #endif // !MICROPY_EMIT_CPYTHON
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    for (s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
         if (false) {
             // dummy
 
@@ -3715,7 +3753,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
     // free the scopes
     mp_raw_code_t *outer_raw_code = module_scope->raw_code;
-    for (scope_t *s = module_scope; s;) {
+    for (s = module_scope; s;) {
         scope_t *next = s->next;
         scope_free(s);
         s = next;

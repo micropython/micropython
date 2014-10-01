@@ -309,7 +309,8 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
 
     // bytecode prelude: initialise closed over variables
     int num_cell = 0;
-    for (int i = 0; i < scope->id_info_len; i++) {
+    int i;
+    for (i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (id->kind == ID_INFO_KIND_CELL) {
             num_cell += 1;
@@ -317,7 +318,7 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     }
     assert(num_cell <= 255);
     emit_write_bytecode_byte(emit, num_cell); // write number of locals that are cells
-    for (int i = 0; i < scope->id_info_len; i++) {
+    for (i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (id->kind == ID_INFO_KIND_CELL) {
             emit_write_bytecode_byte(emit, id->local_num); // write the local which should be converted to a cell
@@ -359,7 +360,8 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
 
     } else if (emit->pass == MP_PASS_EMIT) {
         qstr *arg_names = m_new(qstr, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
-        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
+        int i;
+        for (i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             arg_names[i] = emit->scope->id_info[i].qst;
         }
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,

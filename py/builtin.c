@@ -230,7 +230,8 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (dict != NULL) {
-        for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+        mp_uint_t i;
+        for (i = 0; i < dict->map.alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
@@ -316,7 +317,8 @@ STATIC mp_obj_t mp_builtin_min_max(mp_uint_t n_args, const mp_obj_t *args, mp_ma
         // given many args
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
-        for (mp_uint_t i = 0; i < n_args; i++) {
+        mp_uint_t i;
+        for (i = 0; i < n_args; i++) {
             mp_obj_t key = key_fn == MP_OBJ_NULL ? args[i] : mp_call_function_1(key_fn, args[i]);
             if (best_obj == MP_OBJ_NULL || (mp_binary_op(op, key, best_key) == mp_const_true)) {
                 best_key = key;
@@ -360,7 +362,8 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (charlen == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
             mp_int_t ord = *str++ & 0x7F;
-            for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
+            mp_int_t mask;
+            for (mask = 0x40; ord & mask; mask >>= 1) {
                 ord &= ~mask;
             }
             while (UTF8_IS_CONT(*str)) {
@@ -400,6 +403,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     mp_uint_t sep_len = 1;
     const char *end_data = "\n";
     mp_uint_t end_len = 1;
+    int i;
     if (sep_elem != NULL && sep_elem->value != mp_const_none) {
         sep_data = mp_obj_str_get_data(sep_elem->value, &sep_len);
     }
@@ -417,7 +421,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     pfenv.data = stream_obj;
     pfenv.print_strn = (void (*)(void *, const char *, unsigned int))mp_stream_write;
     #endif
-    for (int i = 0; i < n_args; i++) {
+    for (i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO
             mp_stream_write(stream_obj, sep_data, sep_len);

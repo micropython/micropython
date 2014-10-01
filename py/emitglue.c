@@ -67,14 +67,16 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " n_kwonly_args=" UINT_FMT " flags=%x\n", code, len, n_pos_args, n_kwonly_args, (uint)scope_flags);
     DEBUG_printf("  arg names:");
-    for (int i = 0; i < n_pos_args + n_kwonly_args; i++) {
-        DEBUG_printf(" %s", qstr_str(arg_names[i]));
+    int j;
+    for (j = 0; j < n_pos_args + n_kwonly_args; j++) {
+        DEBUG_printf(" %s", qstr_str(arg_names[j]));
     }
     DEBUG_printf("\n");
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        for (mp_uint_t i = 0; i < len; i++) {
+        mp_uint_t i;
+        for (i = 0; i < len; i++) {
             if (i > 0 && i % 16 == 0) {
                 printf("\n");
             }

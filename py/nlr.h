@@ -27,9 +27,13 @@
 // non-local return
 // exception handling, basically a stack of setjmp/longjmp buffers
 
+
+#pragma once
+
 #include <limits.h>
 #include <setjmp.h>
 #include <assert.h>
+#include "mpconfig.h"
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {

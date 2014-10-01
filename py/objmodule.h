@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include "obj.h"
+#include "qstr.h"
+
 void mp_module_init(void);
 void mp_module_deinit(void);
 mp_obj_t mp_module_get(qstr module_name);

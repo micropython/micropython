@@ -142,6 +142,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
 // and fit it into a long long.
 long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, byte *p) {
     int delta;
+    uint i;
     if (!big_endian) {
         delta = -1;
         p += size - 1;
@@ -153,7 +154,7 @@ long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, byt
     if (is_signed && *p & 0x80) {
         val = -1;
     }
-    for (uint i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         val <<= 8;
         val |= *p;
         p += delta;
@@ -203,6 +204,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
 
 void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *p, byte *val_ptr) {
     int in_delta, out_delta;
+    uint i;
     if (big_endian) {
         in_delta = -1;
         out_delta = 1;
@@ -211,7 +213,7 @@ void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *p, byte *val_ptr
         in_delta = out_delta = 1;
     }
 
-    for (uint i = val_sz; i > 0; i--) {
+    for (i = val_sz; i > 0; i--) {
         *p = *val_ptr;
         p += out_delta;
         val_ptr += in_delta;
@@ -245,6 +247,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             break;
         default:
             val = mp_obj_get_int(val_in);
+            break;
     }
 
     mp_binary_set_int(MIN(size, sizeof(val)), struct_type == '>', p, in);
@@ -262,6 +265,7 @@ void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in)
 #endif
         default:
             mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
+            break;
     }
 }
 

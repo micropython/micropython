@@ -36,6 +36,12 @@
 // depending on the machine, but it (and MPZ_DIG_SIZE) can be freely changed so
 // long as the constraints mentioned above are met.
 
+#pragma once
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <mpconfigport.h>
+
 #if defined(__x86_64__)
 // 64-bit machine, using 32-bit storage for digits
 typedef uint32_t mpz_dig_t;

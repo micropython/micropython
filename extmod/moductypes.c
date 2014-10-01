@@ -164,12 +164,13 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size) {
     mp_obj_dict_t *d = desc_in;
     mp_uint_t total_size = 0;
+    mp_uint_t i;
 
     if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)) {
         syntax_error();
     }
 
-    for (mp_uint_t i = 0; i < d->map.alloc; i++) {
+    for (i = 0; i < d->map.alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(&d->map, i)) {
             mp_obj_t v = d->map.table[i].value;
             if (MP_OBJ_IS_SMALL_INT(v)) {

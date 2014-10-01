@@ -25,6 +25,11 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include "misc.h"
+
 #define ASM_ARM_PASS_COMPUTE (1)
 #define ASM_ARM_PASS_EMIT    (2)
 

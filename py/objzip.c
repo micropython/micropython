@@ -41,18 +41,20 @@ typedef struct _mp_obj_zip_t {
 } mp_obj_zip_t;
 
 STATIC mp_obj_t zip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_uint_t i;
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
 
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
     o->base.type = &mp_type_zip;
     o->n_iters = n_args;
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (i = 0; i < n_args; i++) {
         o->iters[i] = mp_getiter(args[i]);
     }
     return o;
 }
 
 STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
+    mp_uint_t i;
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_zip));
     mp_obj_zip_t *self = self_in;
     if (self->n_iters == 0) {
@@ -60,7 +62,7 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     }
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(self->n_iters, NULL);
 
-    for (mp_uint_t i = 0; i < self->n_iters; i++) {
+    for (i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
             mp_obj_tuple_del(tuple);

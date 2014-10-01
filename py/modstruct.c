@@ -129,6 +129,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 
 STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     // TODO: "The buffer must contain exactly the amount of data required by the format (len(bytes) must equal calcsize(fmt))."
+    uint i;
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
     uint size = calcsize_items(fmt);
@@ -137,7 +138,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
     byte *p = bufinfo.buf;
 
-    for (uint i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
@@ -166,10 +167,11 @@ STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
     char fmt_type = get_fmt_type(&fmt);
     int size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     byte *p;
+    uint i;
     mp_obj_t res = mp_obj_str_builder_start(&mp_type_bytes, size, &p);
     memset(p, 0, size);
 
-    for (uint i = 1; i < n_args; i++) {
+    for (i = 1; i < n_args; i++) {
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);

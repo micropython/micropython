@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+/* SPECIAL HEADER - Gets included inside table code */
+/* DO NOT USE INCLUDES */
+
 #if __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"

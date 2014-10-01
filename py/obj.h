@@ -32,6 +32,12 @@
 // All Micro Python objects are at least this type
 // It must be of pointer size
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "qstr.h"
+
 typedef machine_ptr_t mp_obj_t;
 typedef machine_const_ptr_t mp_const_obj_t;
 

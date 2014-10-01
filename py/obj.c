@@ -89,9 +89,10 @@ void mp_obj_print_exception(mp_obj_t exc) {
         mp_uint_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
+            int i;
             assert(n % 3 == 0);
             printf("Traceback (most recent call last):\n");
-            for (int i = n - 3; i >= 0; i -= 3) {
+            for (i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
                 printf("  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
 #else

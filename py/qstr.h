@@ -30,6 +30,10 @@
 // Note: it would be possible to define MP_QSTR_xxx as qstr_from_str_static("xxx")
 // for qstrs that are referenced this way, but you don't want to have them in ROM.
 
+#pragma once
+
+#include "misc.h"
+
 enum {
     MP_QSTR_NULL = 0, // indicates invalid/no qstr
     MP_QSTR_ = 1, // the empty qstr

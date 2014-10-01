@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include <stdbool.h>
+#include <mpconfigport.h>
+#include "mpconfig.h"
+#include "obj.h"
+
 typedef struct _mp_obj_int_t {
     mp_obj_base_t base;
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
