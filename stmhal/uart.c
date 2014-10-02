@@ -239,9 +239,9 @@ void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
 STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (!self->is_enabled) {
-        print(env, "UART(%lu)", self->uart_id);
+        print(env, "UART(%u)", self->uart_id);
     } else {
-        print(env, "UART(%lu, baudrate=%u, bits=%u, stop=%u",
+        print(env, "UART(%u, baudrate=%u, bits=%u, stop=%u",
             self->uart_id, self->uart.Init.BaudRate,
             self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9,
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2);
@@ -255,7 +255,7 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
 
 /// \method init(baudrate, *, bits=8, stop=1, parity=None)
 ///
-/// Initialise the SPI bus with the given parameters:
+/// Initialise the UART bus with the given parameters:
 ///
 ///   - `baudrate` is the clock rate.
 ///   - `bits` is the number of bits per byte, 8 or 9.
@@ -323,6 +323,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     // create object
     pyb_uart_obj_t *o = m_new_obj(pyb_uart_obj_t);
     o->base.type = &pyb_uart_type;
+    o->is_enabled = false;
 
     // work out port
     o->uart_id = 0;
@@ -494,7 +495,7 @@ mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
         }
     } else {
         *errcode = EINVAL;
-        ret = -1;
+        ret = MP_STREAM_ERROR;
     }
     va_end(vargs);
     return ret;
