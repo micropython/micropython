@@ -90,6 +90,7 @@ SRC_C = \
 	i2c.c \
 	spi.c \
 	uart.c \
+	can.c \
 	usb.c \
 	printf.c \
 	gccollect.c \
@@ -132,6 +133,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal.c \
 	stm32f4xx_hal_adc.c \
 	stm32f4xx_hal_adc_ex.c \
+	stm32f4xx_hal_can.c \
 	stm32f4xx_hal_cortex.c \
 	stm32f4xx_hal_dac.c \
 	stm32f4xx_hal_dac_ex.c \

@@ -144,6 +144,22 @@ Q(all)
 Q(send)
 Q(recv)
 
+// for CAN class
+Q(CAN)
+Q(prescaler)
+Q(init)
+Q(deinit)
+Q(all)
+Q(send)
+Q(recv)
+Q(addr)
+Q(fifo)
+Q(timeout)
+Q(NORMAL)
+Q(LOOPBACK)
+Q(SILENT)
+Q(SILENT_LOOPBACK)
+
 // for Timer class
 Q(Timer)
 Q(init)
