@@ -81,7 +81,7 @@ STATIC uint namedtuple_count_fields(const char *namedef) {
 
 STATIC int namedtuple_find_field(const char *name, const char *namedef) {
     int id = 0;
-    int len = strlen(name);
+    size_t len = strlen(name);
     while (namedef) {
         if (memcmp(name, namedef, len) == 0) {
             namedef += len;
@@ -101,9 +101,9 @@ STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), voi
     print(env, "%s(", qstr_str(o->tuple.base.type->name));
     const char *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
 
-    for (int i = 0; i < o->tuple.len; i++) {
+    for (mp_uint_t i = 0; i < o->tuple.len; i++) {
         if (i > 0) {
-                print(env, ", ");
+            print(env, ", ");
         }
         const char *next = fields;
 

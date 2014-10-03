@@ -44,7 +44,7 @@
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.
 void mp_seq_multiply(const void *items, mp_uint_t item_sz, mp_uint_t len, mp_uint_t times, void *dest) {
-    for (int i = 0; i < times; i++) {
+    for (mp_uint_t i = 0; i < times; i++) {
         uint copy_sz = item_sz * len;
         memcpy(dest, items, copy_sz);
         dest = (char*)dest + copy_sz;
@@ -185,8 +185,8 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, mp_uint_t len1, const
         }
     }
 
-    int len = len1 < len2 ? len1 : len2;
-    for (int i = 0; i < len; i++) {
+    mp_uint_t len = len1 < len2 ? len1 : len2;
+    for (mp_uint_t i = 0; i < len; i++) {
         // If current elements equal, can't decide anything - go on
         if (mp_obj_equal(items1[i], items2[i])) {
             continue;

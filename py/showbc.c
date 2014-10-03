@@ -57,9 +57,7 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
-void mp_bytecode_print2(const byte *ip, int len);
-
-void mp_bytecode_print(const void *descr, const byte *ip, int len) {
+void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
     const byte *ip_start = ip;
 
     // get code info size
@@ -115,14 +113,13 @@ void mp_bytecode_print(const void *descr, const byte *ip, int len) {
     mp_bytecode_print2(ip, len - 0);
 }
 
-void mp_bytecode_print2(const byte *ip, int len) {
+void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
     const byte *ip_start = ip;
     mp_uint_t unum;
     qstr qstr;
     while (ip - ip_start < len) {
         printf("%02u ", (uint)(ip - ip_start));
-        int op = *ip++;
-        switch (op) {
+        switch (*ip++) {
             case MP_BC_LOAD_CONST_FALSE:
                 printf("LOAD_CONST_FALSE");
                 break;
@@ -520,7 +517,7 @@ void mp_bytecode_print2(const byte *ip, int len) {
                 break;
 
             default:
-                printf("code %p, byte code 0x%02x not implemented\n", ip, op);
+                printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
                 assert(0);
                 return;
         }

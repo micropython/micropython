@@ -82,7 +82,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         return stat_dir_or_file(dest);
     } else {
         // go through each path looking for a directory or file
-        for (int i = 0; i < path_num; i++) {
+        for (mp_uint_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
             mp_uint_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
@@ -167,7 +167,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
 #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
-    for (int i = 0; i < n_args; i++) {
+    for (mp_uint_t i = 0; i < n_args; i++) {
         DEBUG_printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
         DEBUG_printf("\n");
@@ -176,7 +176,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
 
     mp_obj_t module_name = args[0];
     mp_obj_t fromtuple = mp_const_none;
-    int level = 0;
+    mp_int_t level = 0;
     if (n_args >= 4) {
         fromtuple = args[3];
         if (n_args >= 5) {

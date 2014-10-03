@@ -88,7 +88,7 @@ bool mpz_is_neg(const mpz_t *z);
 bool mpz_is_odd(const mpz_t *z);
 bool mpz_is_even(const mpz_t *z);
 
-mp_int_t mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
+int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 
 mpz_t *mpz_abs(const mpz_t *z);
 mpz_t *mpz_neg(const mpz_t *z);

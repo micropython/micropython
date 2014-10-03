@@ -75,9 +75,9 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 }
 
 #if DEBUG_PRINT
-STATIC void dump_args(const mp_obj_t *a, int sz) {
+STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
     DEBUG_printf("%p: ", a);
-    for (int i = 0; i < sz; i++) {
+    for (mp_uint_t i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
@@ -179,7 +179,7 @@ continue2:;
         // fill in defaults for positional args
         mp_obj_t *d = &code_state->state[n_state - self->n_pos_args];
         mp_obj_t *s = &self->extra_args[self->n_def_args - 1];
-        for (int i = self->n_def_args; i > 0; i--, d++, s--) {
+        for (mp_uint_t i = self->n_def_args; i > 0; i--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
                 *d = *s;
             }

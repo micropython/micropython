@@ -99,7 +99,7 @@ int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     return size;
 }
 
-mp_obj_t mp_binary_get_val_array(char typecode, void *p, int index) {
+mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
     mp_int_t val = 0;
     switch (typecode) {
         case 'b':
@@ -250,7 +250,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
     mp_binary_set_int(MIN(size, sizeof(val)), struct_type == '>', p, in);
 }
 
-void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in) {
+void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t val_in) {
     switch (typecode) {
 #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
@@ -265,7 +265,7 @@ void mp_binary_set_val_array(char typecode, void *p, int index, mp_obj_t val_in)
     }
 }
 
-void mp_binary_set_val_array_from_int(char typecode, void *p, int index, mp_int_t val) {
+void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, mp_int_t val) {
     switch (typecode) {
         case 'b':
             ((int8_t*)p)[index] = val;

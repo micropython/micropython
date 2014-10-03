@@ -68,7 +68,6 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_IS_TOKEN_KIND(pn, k) ((pn) == (MP_PARSE_NODE_TOKEN | ((k) << 5)))
 
 #define MP_PARSE_NODE_LEAF_KIND(pn) ((pn) & 0x1f)
-// TODO should probably have int and uint versions of this macro
 #define MP_PARSE_NODE_LEAF_ARG(pn) (((mp_uint_t)(pn)) >> 5)
 #define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((mp_int_t)(pn)) >> 1)
 #define MP_PARSE_NODE_STRUCT_KIND(pns) ((pns)->kind_num_nodes & 0xff)

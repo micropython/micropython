@@ -212,9 +212,9 @@ typedef struct _mp_buffer_info_t {
     // them with ver = sizeof(struct). Cons: overkill for *micro*?
     //int ver; // ?
 
-    void *buf;    // can be NULL if len == 0
-    mp_int_t len; // in bytes; TODO should it be mp_uint_t?
-    int typecode; // as per binary.h; TODO what is the correct type to use?
+    void *buf;      // can be NULL if len == 0
+    mp_uint_t len;  // in bytes
+    int typecode;   // as per binary.h
 
     // Rationale: to load arbitrary-sized sprites directly to LCD
     // Cons: a bit adhoc usecase

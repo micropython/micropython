@@ -88,8 +88,8 @@ void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env,
     // enough, a dynamic one will be allocated.
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
-    int buf_size = sizeof(stack_buf);
-    int fmt_size;
+    mp_uint_t buf_size = sizeof(stack_buf);
+    mp_uint_t fmt_size;
 
     char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
     print(env, "%s", str);
@@ -135,7 +135,7 @@ STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma)
 //
 // The resulting formatted string will be returned from this function and the
 // formatted size will be in *fmt_size.
-char *mp_obj_int_formatted(char **buf, int *buf_size, int *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
     fmt_int_t num;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {

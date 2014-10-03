@@ -38,12 +38,12 @@
 
 typedef struct _pfenv_t {
     void *data;
-    void (*print_strn)(void *, const char *str, unsigned int len);
+    void (*print_strn)(void *, const char *str, mp_uint_t len);
 } pfenv_t;
 
-void pfenv_vstr_add_strn(void *data, const char *str, unsigned int len);
+void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len);
 
-int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, int flags, char fill, int width);
+int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int flags, char fill, int width);
 int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width);
 int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width, int prec);
 #if MICROPY_PY_BUILTINS_FLOAT

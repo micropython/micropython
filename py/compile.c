@@ -493,7 +493,7 @@ STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
         return;
     }
 
-    int arg = MP_PARSE_NODE_LEAF_ARG(pn);
+    mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
     switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
         case MP_PARSE_NODE_ID: assert(0);
         case MP_PARSE_NODE_INTEGER: vstr_printf(vstr, "%s", qstr_str(arg)); break;
@@ -853,7 +853,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
         assert(0);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         if (MP_PARSE_NODE_IS_ID(pn)) {
-            int arg = MP_PARSE_NODE_LEAF_ARG(pn);
+            qstr arg = MP_PARSE_NODE_LEAF_ARG(pn);
             switch (assign_kind) {
                 case ASSIGN_STORE:
                 case ASSIGN_AUG_STORE:

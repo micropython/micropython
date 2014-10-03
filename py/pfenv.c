@@ -46,11 +46,11 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
-void pfenv_vstr_add_strn(void *data, const char *str, unsigned int len){
+void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len){
     vstr_add_strn(data, str, len);
 }
 
-int pfenv_print_strn(const pfenv_t *pfenv, const char *str, unsigned int len, int flags, char fill, int width) {
+int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
@@ -234,8 +234,8 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
     // enough, a dynamic one will be allocated.
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
-    int buf_size = sizeof(stack_buf);
-    int fmt_size = 0;
+    mp_uint_t buf_size = sizeof(stack_buf);
+    mp_uint_t fmt_size = 0;
     char *str;
 
     if (prec > 1) {

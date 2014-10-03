@@ -415,9 +415,9 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
 
     pfenv_t pfenv;
     pfenv.data = stream_obj;
-    pfenv.print_strn = (void (*)(void *, const char *, unsigned int))mp_stream_write;
+    pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
     #endif
-    for (int i = 0; i < n_args; i++) {
+    for (mp_uint_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO
             mp_stream_write(stream_obj, sep_data, sep_len);

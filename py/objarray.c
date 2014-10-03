@@ -66,7 +66,7 @@ STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *en
         print(env, "array('%c'", o->typecode);
         if (o->len > 0) {
             print(env, ", [");
-            for (int i = 0; i < o->len; i++) {
+            for (mp_uint_t i = 0; i < o->len; i++) {
                 if (i > 0) {
                     print(env, ", ");
                 }
@@ -92,7 +92,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
     mp_obj_t iterable = mp_getiter(initializer);
     mp_obj_t item;
-    int i = 0;
+    mp_uint_t i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (len == 0) {
             array_append(array, item);
@@ -210,7 +210,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             return res;
 #endif
         } else {
-            uint index = mp_get_index(o->base.type, o->len, index_in, false);
+            mp_uint_t index = mp_get_index(o->base.type, o->len, index_in, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return mp_binary_get_val_array(o->typecode, o->items, index);

@@ -58,7 +58,7 @@
    returns sign(i - j)
    assumes i, j are normalised
 */
-STATIC mp_int_t mpn_cmp(const mpz_dig_t *idig, mp_uint_t ilen, const mpz_dig_t *jdig, mp_uint_t jlen) {
+STATIC int mpn_cmp(const mpz_dig_t *idig, mp_uint_t ilen, const mpz_dig_t *jdig, mp_uint_t jlen) {
     if (ilen < jlen) { return -1; }
     if (ilen > jlen) { return 1; }
 
@@ -361,7 +361,7 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
 
     // handle simple cases
     {
-        mp_int_t cmp = mpn_cmp(num_dig, *num_len, den_dig, den_len);
+        int cmp = mpn_cmp(num_dig, *num_len, den_dig, den_len);
         if (cmp == 0) {
             *num_len = 0;
             quo_dig[0] = 1;
@@ -744,8 +744,8 @@ bool mpz_is_even(const mpz_t *z) {
     return z->len == 0 || (z->dig[0] & 1) == 0;
 }
 
-mp_int_t mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
-    mp_int_t cmp = z2->neg - z1->neg;
+int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
+    int cmp = (int)z2->neg - (int)z1->neg;
     if (cmp != 0) {
         return cmp;
     }

@@ -263,24 +263,6 @@ copy:
     vstr->buf[vstr->len] = 0;
 }
 
-/*
-void vstr_add_le16(vstr_t *vstr, unsigned short v) {
-    byte *buf = (byte*)vstr_add_len(vstr, 2);
-    if (buf == NULL) {
-        return;
-    }
-    encode_le16(buf, v);
-}
-
-void vstr_add_le32(vstr_t *vstr, unsigned int v) {
-    byte *buf = (byte*)vstr_add_len(vstr, 4);
-    if (buf == NULL) {
-        return;
-    }
-    encode_le32(buf, v);
-}
-*/
-
 char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     if (vstr->had_error) {
         return NULL;

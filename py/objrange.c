@@ -63,7 +63,7 @@ STATIC const mp_obj_type_t range_it_type = {
     .iternext = range_it_iternext,
 };
 
-mp_obj_t mp_obj_new_range_iterator(int cur, int stop, int step) {
+STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step) {
     mp_obj_range_it_t *o = m_new_obj(mp_obj_range_it_t);
     o->base.type = &range_it_type;
     o->cur = cur;

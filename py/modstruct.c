@@ -164,7 +164,7 @@ STATIC mp_obj_t struct_pack(uint n_args, mp_obj_t *args) {
     // TODO: "The arguments must match the values required by the format exactly."
     const char *fmt = mp_obj_str_get_str(args[0]);
     char fmt_type = get_fmt_type(&fmt);
-    int size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
+    mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     byte *p;
     mp_obj_t res = mp_obj_str_builder_start(&mp_type_bytes, size, &p);
     memset(p, 0, size);
