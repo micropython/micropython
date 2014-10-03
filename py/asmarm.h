@@ -81,18 +81,35 @@ void asm_arm_align(asm_arm_t* as, uint align);
 void asm_arm_data(asm_arm_t* as, uint bytesize, uint val);
 
 void asm_arm_bkpt(asm_arm_t *as);
+
+// mov
 void asm_arm_mov_reg_reg(asm_arm_t *as, uint reg_dest, uint reg_src);
 void asm_arm_mov_reg_i32(asm_arm_t *as, uint rd, int imm);
 void asm_arm_mov_local_reg(asm_arm_t *as, int local_num, uint rd);
 void asm_arm_mov_reg_local(asm_arm_t *as, uint rd, int local_num);
+void asm_arm_setcc_reg(asm_arm_t *as, uint rd, uint cond);
 
+// compare
 void asm_arm_cmp_reg_i8(asm_arm_t *as, uint rd, int imm);
 void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn);
-void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm);
+
+// arithmetic
 void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num);
+void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs);
+void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 
+// memory
+void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm);
+void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm);
+void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm);
+// store to array
+void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+void asm_arm_strb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+
+// control flow
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);

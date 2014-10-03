@@ -297,10 +297,9 @@ void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn) {
     emit_al(as, 0x1500000 | (rd << 16) | rn);
 }
 
-void asm_arm_less_op(asm_arm_t *as, uint rd, uint rn, uint rm) {
-    asm_arm_cmp_reg_reg(as, rn, rm); // cmp rn, rm
-    emit(as, asm_arm_op_mov_imm(rd, 1) | ASM_ARM_CC_LT); // movlt rd, #1
-    emit(as, asm_arm_op_mov_imm(rd, 0) | ASM_ARM_CC_GE); // movge rd, #0
+void asm_arm_setcc_reg(asm_arm_t *as, uint rd, uint cond) {
+    emit(as, asm_arm_op_mov_imm(rd, 1) | cond); // movCOND rd, #1
+    emit(as, asm_arm_op_mov_imm(rd, 0) | (cond ^ (1 << 28))); // mov!COND rd, #0
 }
 
 void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
@@ -316,6 +315,47 @@ void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
     // add rd, sp, #local_num*4
     emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
+}
+
+void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs) {
+    // mov rd, rd, lsl rs
+    emit_al(as, 0x1a00010 | (rd << 12) | (rs << 8) | rd);
+}
+
+void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
+    // mov rd, rd, asr rs
+    emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);
+}
+
+void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm) {
+    // str rd, [rm]
+    emit_al(as, 0x5800000 | (rm << 16) | (rd << 12));
+}
+
+void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm) {
+    // strh rd, [rm]
+    emit_al(as, 0x1c000b0 | (rm << 16) | (rd << 12));
+}
+
+void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm) {
+    // strb rd, [rm]
+    emit_al(as, 0x5c00000 | (rm << 16) | (rd << 12));
+}
+
+void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // str rd, [rm, rn, lsl #2]
+    emit_al(as, 0x7800100 | (rm << 16) | (rd << 12) | rn);
+}
+
+void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // strh doesn't support scaled register index
+    emit_al(as, 0x1a00080 | (ASM_ARM_REG_R8 << 12) | rn); // mov r8, rn, lsl #1
+    emit_al(as, 0x18000b0 | (rm << 16) | (rd << 12) | ASM_ARM_REG_R8); // strh rd, [rm, r8]
+}
+
+void asm_arm_strb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
+    // strb rd, [rm, rn]
+    emit_al(as, 0x7c00000 | (rm << 16) | (rd << 12) | rn);
 }
 
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
