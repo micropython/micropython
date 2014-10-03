@@ -67,7 +67,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
 
     qstr block_name = mp_decode_uint(&code_info);
     qstr source_file = mp_decode_uint(&code_info);
-    printf("File %s, code block '%s' (descriptor: %p, bytecode @%p %d bytes)\n",
+    printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, code_info, len);
 
     // bytecode prelude: state size and exception stack size; 16 bit uints
