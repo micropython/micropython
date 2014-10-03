@@ -420,16 +420,14 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_arm_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_LOCAL_ADDR_TO_REG(as, local_num, reg) asm_arm_mov_reg_local_addr(as, (reg), (local_num))
 
-// TODO someone please implement lsl and asr
-#define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_arm_lsl_((as), (reg_dest), (reg_shift))
-#define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_arm_asr_((as), (reg_dest), (reg_shift))
+#define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_arm_lsl_reg_reg((as), (reg_dest), (reg_shift))
+#define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_arm_asr_reg_reg((as), (reg_dest), (reg_shift))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 
-// TODO someone please implement str
-#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_arm_str_reg_reg_i5((as), (reg_src), (reg_base), 0)
-#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_arm_strb_reg_reg_i5((as), (reg_src), (reg_base), 0)
-#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_arm_strh_reg_reg_i5((as), (reg_src), (reg_base), 0)
+#define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
 
 #else
 
@@ -1424,6 +1422,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                         }
                         #endif
                         ASM_MOV_IMM_TO_REG(emit->as, index_value, reg_index);
+                        #if N_ARM
+                        asm_arm_strb_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
+                        return;
+                        #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
                     }
@@ -1441,6 +1443,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                         }
                         #endif
                         ASM_MOV_IMM_TO_REG(emit->as, index_value << 1, reg_index);
+                        #if N_ARM
+                        asm_arm_strh_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
+                        return;
+                        #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
@@ -1468,6 +1474,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                     // pointer to 8-bit memory
                     // TODO optimise to use thumb strb r1, [r2, r3]
                     assert(vtype_index == VTYPE_INT);
+                    #if N_ARM
+                    asm_arm_strb_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE8_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+index)
                     break;
@@ -1475,6 +1485,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
                     assert(vtype_index == VTYPE_INT);
+                    #if N_ARM
+                    asm_arm_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE16_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+2*index)
@@ -1808,9 +1822,16 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);
             #elif N_ARM
-                #error generic comparisons for ARM needs implementing
-            //asm_arm_less_op(emit->as, REG_RET, REG_ARG_2, reg_rhs);
-            //asm_arm_more_op(emit->as, REG_RET, REG_ARG_2, reg_rhs);
+            asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
+            static uint ccs[6] = {
+                ASM_ARM_CC_LT,
+                ASM_ARM_CC_GT,
+                ASM_ARM_CC_EQ,
+                ASM_ARM_CC_LE,
+                ASM_ARM_CC_GE,
+                ASM_ARM_CC_NE,
+            };
+            asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
             #else
                 #error not implemented
             #endif
