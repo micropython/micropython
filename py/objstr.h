@@ -36,17 +36,17 @@ typedef struct _mp_obj_str_t {
 
 // use this macro to extract the string hash
 #define GET_STR_HASH(str_obj_in, str_hash) \
-    uint str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    mp_uint_t str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)str_obj_in)->hash; }
 
 // use this macro to extract the string length
 #define GET_STR_LEN(str_obj_in, str_len) \
-    uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    mp_uint_t str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
 
 // use this macro to extract the string data and length
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
-    const byte *str_data; uint str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
+    const byte *str_data; mp_uint_t str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } \
     else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
 

@@ -1459,7 +1459,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
-                uint str_src_len;
+                mp_uint_t str_src_len;
                 const byte *str_src = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &str_src_len);
                 memcpy(str_dest, str_src, str_src_len);
                 str_dest += str_src_len;
@@ -2563,7 +2563,7 @@ void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     byte *s_dest = qstr_build_start(n_bytes, &q_ptr);
     for (int i = 0; i < n; i++) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
-            uint s_len;
+            mp_uint_t s_len;
             const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
             memcpy(s_dest, s, s_len);
             s_dest += s_len;

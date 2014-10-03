@@ -242,9 +242,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mem_info_obj, mem_info);
 #endif
 
 STATIC mp_obj_t qstr_info(void) {
-    uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+    mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-    printf("qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+    printf("qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(qstr_info_obj, qstr_info);

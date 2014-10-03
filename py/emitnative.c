@@ -1075,7 +1075,7 @@ STATIC void emit_native_import_star(emit_t *emit) {
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     emit_native_pre(emit);
-    int vtype;
+    vtype_kind_t vtype;
     mp_uint_t val;
     if (emit->do_viper_types) {
         switch (tok) {

@@ -42,7 +42,7 @@ typedef struct _mp_code_state {
     mp_obj_t *sp;
     // bit 0 is saved currently_in_except_block value
     mp_exc_stack_t *exc_sp;
-    uint n_state;
+    mp_uint_t n_state;
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)

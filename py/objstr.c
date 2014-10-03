@@ -213,7 +213,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         return mp_obj_str_builder_end(o);
     }
 
-    int len;
+    mp_int_t len;
     byte *data;
     vstr_t *vstr = NULL;
     mp_obj_t o = NULL;
@@ -293,7 +293,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 // add 2 strings or bytes
 
                 GET_STR_DATA_LEN(rhs_in, rhs_data, rhs_len);
-                int alloc_len = lhs_len + rhs_len;
+                mp_uint_t alloc_len = lhs_len + rhs_len;
 
                 /* code for making qstr
                 byte *q_ptr;
@@ -440,8 +440,8 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     // count required length
-    int required_len = 0;
-    for (int i = 0; i < seq_len; i++) {
+    mp_uint_t required_len = 0;
+    for (mp_uint_t i = 0; i < seq_len; i++) {
         if (mp_obj_get_type(seq_items[i]) != self_type) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                 "join expects a list of str/bytes objects consistent with self object"));
@@ -456,7 +456,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // make joined string
     byte *data;
     mp_obj_t joined_str = mp_obj_str_builder_start(self_type, required_len, &data);
-    for (int i = 0; i < seq_len; i++) {
+    for (mp_uint_t i = 0; i < seq_len; i++) {
         if (i > 0) {
             memcpy(data, sep_str, sep_len);
             data += sep_len;
@@ -562,7 +562,7 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
     // Preallocate list to the max expected # of elements, as we
     // will fill it from the end.
     mp_obj_list_t *res = mp_obj_new_list(splits + 1, NULL);
-    int idx = splits;
+    mp_int_t idx = splits;
 
     if (sep == mp_const_none) {
         assert(!"TODO: rsplit(None,n) not implemented");
@@ -598,7 +598,7 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
         }
         if (idx != 0) {
             // We split less parts than split limit, now go cleanup surplus
-            int used = org_splits + 1 - idx;
+            mp_int_t used = org_splits + 1 - idx;
             memmove(res->items, &res->items[idx], used * sizeof(mp_obj_t));
             mp_seq_clear(res->items, used, res->alloc, sizeof(*res->items));
             res->len = used;
@@ -1554,7 +1554,7 @@ STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     byte *data;
     mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(self_in), self_len, &data);
-    for (int i = 0; i < self_len; i++) {
+    for (mp_uint_t i = 0; i < self_len; i++) {
         *data++ = op(*self_data++);
     }
     *data = 0;
@@ -1577,7 +1577,7 @@ STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     }
 
     if (f != unichar_isupper && f != unichar_islower) {
-        for (int i = 0; i < self_len; i++) {
+        for (mp_uint_t i = 0; i < self_len; i++) {
             if (!f(*self_data++)) {
                 return mp_const_false;
             }
@@ -1585,7 +1585,7 @@ STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     } else {
         bool contains_alpha = false;
 
-        for (int i = 0; i < self_len; i++) { // only check alphanumeric characters
+        for (mp_uint_t i = 0; i < self_len; i++) { // only check alphanumeric characters
             if (unichar_isalpha(*self_data++)) {
                 contains_alpha = true;
                 if (!f(*(self_data - 1))) { // -1 because we already incremented above

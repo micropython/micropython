@@ -45,20 +45,18 @@ typedef mp_uint_t qstr;
 
 void qstr_init(void);
 
-mp_uint_t qstr_compute_hash(const byte *data, uint len);
-qstr qstr_find_strn(const char *str, uint str_len); // returns MP_QSTR_NULL if not found
+mp_uint_t qstr_compute_hash(const byte *data, mp_uint_t len);
+qstr qstr_find_strn(const char *str, mp_uint_t str_len); // returns MP_QSTR_NULL if not found
 
 qstr qstr_from_str(const char *str);
-qstr qstr_from_strn(const char *str, uint len);
-//qstr qstr_from_str_static(const char *str);
-//qstr qstr_from_strn_copy(const char *str, int len);
+qstr qstr_from_strn(const char *str, mp_uint_t len);
 
-byte* qstr_build_start(uint len, byte **q_ptr);
+byte* qstr_build_start(mp_uint_t len, byte **q_ptr);
 qstr qstr_build_end(byte *q_ptr);
 
 mp_uint_t qstr_hash(qstr q);
 const char* qstr_str(qstr q);
-uint qstr_len(qstr q);
-const byte* qstr_data(qstr q, uint *len);
+mp_uint_t qstr_len(qstr q);
+const byte* qstr_data(qstr q, mp_uint_t *len);
 
-void qstr_pool_info(uint *n_pool, uint *n_qstr, uint *n_str_data_bytes, uint *n_total_bytes);
+void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes);

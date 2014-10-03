@@ -55,7 +55,7 @@ mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
 
     // need to insert self->self before all other args and then call self->meth
 
-    int n_total = n_args + 2 * n_kw;
+    mp_uint_t n_total = n_args + 2 * n_kw;
     if (n_total <= 4) {
         // use stack to allocate temporary args array
         mp_obj_t args2[5];

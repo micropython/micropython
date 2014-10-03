@@ -116,29 +116,6 @@ const mp_obj_type_t mp_type_fun_builtin = {
     .binary_op = mp_obj_fun_binary_op,
 };
 
-#if 0 // currently unused, and semi-obsolete
-mp_obj_t mp_make_function_var(int n_args_min, mp_fun_var_t fun) {
-    mp_obj_fun_builtin_t *o = m_new_obj(mp_obj_fun_builtin_t);
-    o->base.type = &mp_type_fun_native;
-    o->is_kw = false;
-    o->n_args_min = n_args_min;
-    o->n_args_max = MP_OBJ_FUN_ARGS_MAX;
-    o->fun = fun;
-    return o;
-}
-
-// min and max are inclusive
-mp_obj_t mp_make_function_var_between(int n_args_min, int n_args_max, mp_fun_var_t fun) {
-    mp_obj_fun_builtin_t *o = m_new_obj(mp_obj_fun_builtin_t);
-    o->base.type = &mp_type_fun_native;
-    o->is_kw = false;
-    o->n_args_min = n_args_min;
-    o->n_args_max = n_args_max;
-    o->fun = fun;
-    return o;
-}
-#endif
-
 /******************************************************************************/
 /* byte code functions                                                        */
 
@@ -161,9 +138,9 @@ STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *e
 #endif
 
 #if DEBUG_PRINT
-STATIC void dump_args(const mp_obj_t *a, int sz) {
+STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
     DEBUG_printf("%p: ", a);
-    for (int i = 0; i < sz; i++) {
+    for (mp_uint_t i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
