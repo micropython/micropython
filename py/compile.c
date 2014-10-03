@@ -500,7 +500,7 @@ STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
         case MP_PARSE_NODE_DECIMAL: vstr_printf(vstr, "%s", qstr_str(arg)); break;
         case MP_PARSE_NODE_STRING:
         case MP_PARSE_NODE_BYTES: {
-            uint len;
+            mp_uint_t len;
             const byte *str = qstr_data(arg, &len);
             cpython_c_print_quoted_str(vstr, (const char*)str, len, MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_BYTES);
             break;
@@ -1564,7 +1564,7 @@ void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     vstr_printf(vstr, ", ");
                 }
                 vstr_printf(vstr, "'");
-                uint len;
+                mp_uint_t len;
                 const byte *str = qstr_data(id2, &len);
                 vstr_add_strn(vstr, (const char*)str, len);
                 vstr_printf(vstr, "'");
