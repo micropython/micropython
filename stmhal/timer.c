@@ -690,22 +690,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     timer = pyb.Timer(2, freq=1000)
 ///     ch2 = timer.channel(2, pyb.Timer.PWM, pin=pyb.Pin.board.X2, pulse_width=210000)
 ///     ch3 = timer.channel(3, pyb.Timer.PWM, pin=pyb.Pin.board.X3, pulse_width=420000)
-STATIC const mp_arg_t pyb_timer_channel_args[] = {
-    { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-};
-#define PYB_TIMER_CHANNEL_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_channel_args)
+STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mode,                MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    };
 
-STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    pyb_timer_obj_t *self = args[0];
-    mp_int_t channel = mp_obj_get_int(args[1]);
+    pyb_timer_obj_t *self = pos_args[0];
+    mp_int_t channel = mp_obj_get_int(pos_args[1]);
 
     if (channel < 1 || channel > 4) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid channel (%d)", channel));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid channel (%d)", channel));
     }
 
     pyb_timer_channel_obj_t *chan = self->channel;
@@ -721,7 +721,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
 
     // If only the channel number is given return the previously allocated
     // channel (or None if no previous channel).
-    if (n_args == 2) {
+    if (n_args == 2 && kw_args->used == 0) {
         if (chan) {
             return chan;
         }
@@ -744,18 +744,18 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
     }
 
     // Allocate and initialize a new channel
-    mp_arg_val_t vals[PYB_TIMER_CHANNEL_NUM_ARGS];
-    mp_arg_parse_all(n_args - 3, args + 3, kw_args, PYB_TIMER_CHANNEL_NUM_ARGS, pyb_timer_channel_args, vals);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     chan = m_new_obj(pyb_timer_channel_obj_t);
     memset(chan, 0, sizeof(*chan));
     chan->base.type = &pyb_timer_channel_type;
     chan->timer = self;
     chan->channel = channel;
-    chan->mode = mp_obj_get_int(args[2]);
-    chan->callback = vals[0].u_obj;
+    chan->mode = args[0].u_int;
+    chan->callback = args[1].u_obj;
 
-    mp_obj_t pin_obj = vals[1].u_obj;
+    mp_obj_t pin_obj = args[2].u_obj;
     if (pin_obj != mp_const_none) {
         if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
@@ -766,13 +766,13 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s doesn't have an af for TIM%d", qstr_str(pin->name), self->tim_id));
         }
         // pin.init(mode=AF_PP, af=idx)
-        const mp_obj_t args[6] = {
+        const mp_obj_t args2[6] = {
             (mp_obj_t)&pin_init_obj,
             pin_obj,
             MP_OBJ_NEW_QSTR(MP_QSTR_mode),  MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
             MP_OBJ_NEW_QSTR(MP_QSTR_af),    MP_OBJ_NEW_SMALL_INT(af->idx)
         };
-        mp_call_method_n_kw(0, 2, args);
+        mp_call_method_n_kw(0, 2, args2);
     }
 
     // Link the channel to the timer before we turn the channel on.
@@ -788,13 +788,13 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_PWM_INVERTED: {
             TIM_OC_InitTypeDef oc_config;
             oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
-            if (vals[3].u_obj != mp_const_none) {
+            if (args[4].u_obj != mp_const_none) {
                 // pulse width percent given
                 uint32_t period = compute_period(self);
-                oc_config.Pulse = compute_pwm_value_from_percent(period, vals[3].u_obj);
+                oc_config.Pulse = compute_pwm_value_from_percent(period, args[4].u_obj);
             } else {
                 // use absolute pulse width value (defaults to 0 if nothing given)
-                oc_config.Pulse = vals[2].u_int;
+                oc_config.Pulse = args[3].u_int;
             }
             oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
             oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
@@ -819,8 +819,8 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_OC_FORCED_INACTIVE: {
             TIM_OC_InitTypeDef oc_config;
             oc_config.OCMode       = channel_mode_info[chan->mode].oc_mode;
-            oc_config.Pulse        = vals[4].u_int;
-            oc_config.OCPolarity   = vals[5].u_int;
+            oc_config.Pulse        = args[5].u_int;
+            oc_config.OCPolarity   = args[6].u_int;
             if (oc_config.OCPolarity == 0xffffffff) {
                 oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
             }
@@ -830,7 +830,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
             oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
 
             if (!IS_TIM_OC_POLARITY(oc_config.OCPolarity)) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid polarity (%d)", oc_config.OCPolarity));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", oc_config.OCPolarity));
             }
             HAL_TIM_OC_ConfigChannel(&self->tim, &oc_config, TIMER_CHANNEL(chan));
             if (chan->callback == mp_const_none) {
@@ -844,7 +844,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         case CHANNEL_MODE_IC: {
             TIM_IC_InitTypeDef ic_config;
 
-            ic_config.ICPolarity  = vals[5].u_int;
+            ic_config.ICPolarity  = args[6].u_int;
             if (ic_config.ICPolarity == 0xffffffff) {
                 ic_config.ICPolarity = TIM_ICPOLARITY_RISING;
             }
@@ -853,7 +853,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
             ic_config.ICFilter    = 0;
 
             if (!IS_TIM_IC_POLARITY(ic_config.ICPolarity)) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid polarity (%d)", ic_config.ICPolarity));
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", ic_config.ICPolarity));
             }
             HAL_TIM_IC_ConfigChannel(&self->tim, &ic_config, TIMER_CHANNEL(chan));
             if (chan->callback == mp_const_none) {
@@ -865,7 +865,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
         }
 
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid mode (%d)", chan->mode));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode (%d)", chan->mode));
     }
 
     return chan;
