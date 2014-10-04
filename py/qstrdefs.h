@@ -445,6 +445,9 @@ Q(StringIO)
 Q(BytesIO)
 Q(getvalue)
 Q(file)
+Q(mode)
+Q(r)
+Q(encoding)
 #endif
 
 #if MICROPY_PY_GC
