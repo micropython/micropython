@@ -160,49 +160,51 @@ mp_obj_t file_obj_tell(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_tell_obj, file_obj_tell);
 
-STATIC mp_obj_t file_obj_make_new(mp_obj_t type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+// Note: encoding is ignored for now; it's also not a valid kwarg for CPython's FileIO,
+// but by adding it here we can use one single mp_arg_t array for open() and FileIO's constructor
+STATIC const mp_arg_t file_open_args[] = {
+    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none} },
+    { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
+    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+};
+#define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
-    const char *fname = mp_obj_str_get_str(args[0]);
-
+STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
     int mode = 0;
-    if (n_args == 1) {
-        mode = FA_READ;
-    } else {
-        const char *mode_s = mp_obj_str_get_str(args[1]);
-        // TODO make sure only one of r, w, x, a, and b, t are specified
-        while (*mode_s) {
-            switch (*mode_s++) {
-                case 'r':
-                    mode |= FA_READ;
-                    break;
-                case 'w':
-                    mode |= FA_WRITE | FA_CREATE_ALWAYS;
-                    break;
-                case 'x':
-                    mode |= FA_WRITE | FA_CREATE_NEW;
-                    break;
-                case 'a':
-                    mode |= FA_WRITE | FA_OPEN_ALWAYS;
-                    break;
-                case '+':
-                    mode |= FA_READ | FA_WRITE;
-                    break;
-                #if MICROPY_PY_IO_FILEIO
-                case 'b':
-                    type = (mp_obj_t)&mp_type_fileio;
-                    break;
-                #endif
-                case 't':
-                    type = (mp_obj_t)&mp_type_textio;
-                    break;
-            }
+    const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
+    // TODO make sure only one of r, w, x, a, and b, t are specified
+    while (*mode_s) {
+        switch (*mode_s++) {
+            case 'r':
+                mode |= FA_READ;
+                break;
+            case 'w':
+                mode |= FA_WRITE | FA_CREATE_ALWAYS;
+                break;
+            case 'x':
+                mode |= FA_WRITE | FA_CREATE_NEW;
+                break;
+            case 'a':
+                mode |= FA_WRITE | FA_OPEN_ALWAYS;
+                break;
+            case '+':
+                mode |= FA_READ | FA_WRITE;
+                break;
+            #if MICROPY_PY_IO_FILEIO
+            case 'b':
+                type = (mp_obj_t)&mp_type_fileio;
+                break;
+            #endif
+            case 't':
+                type = (mp_obj_t)&mp_type_textio;
+                break;
         }
     }
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
 
+    const char *fname = mp_obj_str_get_str(args[0].u_obj);
     FRESULT res = f_open(&o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
@@ -215,6 +217,12 @@ STATIC mp_obj_t file_obj_make_new(mp_obj_t type, mp_uint_t n_args, mp_uint_t n_k
     }
 
     return o;
+}
+
+STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    return file_open(type_in, arg_vals);
 }
 
 // TODO gc hook to close the file if not already closed
@@ -273,9 +281,10 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-STATIC mp_obj_t pyb_io_open(mp_uint_t n_args, const mp_obj_t *args) {
-    // TODO: analyze mode and buffering args and instantiate appropriate type
-    return file_obj_make_new((mp_obj_t)&mp_type_textio, n_args, 0, args);
+mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    // TODO: analyze buffering args and instantiate appropriate type
+    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    return file_open((mp_obj_t)&mp_type_textio, arg_vals);
 }
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_open_obj, 1, 2, pyb_io_open);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
