@@ -972,7 +972,12 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
       if (__RCC_PLLSRC() != 0)
       {
         /* HSE used as PLL clock source */
-        pllvco = ((HSE_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> POSITION_VAL(RCC_PLLCFGR_PLLN)));
+        //pllvco = ((HSE_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> POSITION_VAL(RCC_PLLCFGR_PLLN)));
+        // dpgeorge: Adjust the way the arithmetic is done so it retains
+        // precision for the case that pllm doesn't evenly divide HSE_VALUE.
+        // Must be sure not to overflow, so divide by 4 first.  HSE_VALUE
+        // should be a multiple of 4 (being a multiple of 100 is enough).
+        pllvco = ((HSE_VALUE / 4) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> POSITION_VAL(RCC_PLLCFGR_PLLN))) / pllm * 4;
       }
       else
       {
