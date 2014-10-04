@@ -307,7 +307,11 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
         if (freq <= 0) {
             goto bad_freq;
         }
-        period = MAX(1, source_freq / freq);
+        while (freq < 1 && prescaler < 6553) {
+            prescaler *= 10;
+            freq *= 10;
+        }
+        period = (float)source_freq / freq;
     #endif
     } else {
         mp_int_t freq = mp_obj_get_int(freq_in);
@@ -316,11 +320,22 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
             bad_freq:
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "must have positive freq"));
         }
-        period = MAX(1, source_freq / freq);
+        period = source_freq / freq;
     }
+    period = MAX(1, period);
     while (period > TIMER_CNT_MASK(self)) {
-        prescaler <<= 1;
-        period >>= 1;
+        // if we can divide exactly, do that first
+        if (period % 5 == 0) {
+            prescaler *= 5;
+            period /= 5;
+        } else if (period % 3 == 0) {
+            prescaler *= 3;
+            period /= 3;
+        } else {
+            // may not divide exactly, but loses minimal precision
+            prescaler <<= 1;
+            period >>= 1;
+        }
     }
     *period_out = (period - 1) & TIMER_CNT_MASK(self);
     return (prescaler - 1) & 0xffff;
