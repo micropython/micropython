@@ -181,7 +181,7 @@ void timer_tim3_init(void) {
 
     TIM3_Handle.Instance = TIM3;
     TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
-    TIM3_Handle.Init.Prescaler = 84-1; // for System clock at 168MHz, TIM3 runs at 1MHz
+    TIM3_Handle.Init.Prescaler = 2 * HAL_RCC_GetPCLK1Freq() / 1000000 - 1; // TIM3 runs at 1MHz
     TIM3_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_Base_Init(&TIM3_Handle);

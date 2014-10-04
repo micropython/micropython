@@ -312,6 +312,40 @@ void SystemCoreClockUpdate(void)
   *            Flash Latency(WS)              = 5
   * @param  None
   * @retval None
+  *
+  * PLL is configured as follows:
+  *
+  *     VCO_IN  = HSE / M
+  *     VCO_OUT = HSE / M * N
+  *     PLLCLK  = HSE / M * N / P
+  *     PLL48CK = HSE / M * N / Q
+  *
+  *     SYSCLK = PLLCLK
+  *     HCLK   = SYSCLK / AHB_PRESC
+  *     PCLKx  = HCLK / APBx_PRESC
+  *
+  * Constraints on parameters:
+  *
+  *     VCO_IN between 1MHz and 2MHz (2MHz recommended)
+  *     VCO_OUT between 192MHz and 432MHz
+  *     HSE = 8MHz
+  *     M = 2 .. 63 (inclusive)
+  *     N = 192 ... 432 (inclusive)
+  *     P = 2, 4, 6, 8
+  *     Q = 2 .. 15 (inclusive)
+  *
+  *     AHB_PRESC=1,2,4,8,16,64,128,256,512
+  *     APBx_PRESC=1,2,4,8,16
+  *
+  * Output clocks:
+  *
+  * CPU             SYSCLK      max 168MHz
+  * USB,RNG,SDIO    PLL48CK     must be 48MHz for USB
+  * AHB             HCLK        max 168MHz
+  * APB1            PCLK1       max 42MHz
+  * APB2            PCLK2       max 84MHz
+  *
+  * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
 void SystemClock_Config(void)
 {

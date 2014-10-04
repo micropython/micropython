@@ -90,7 +90,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
 
 /// \function info([dump_alloc_table])
 /// Print out lots of information about the board.
-STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
         byte *id = (byte*)0x1fff7a10;
@@ -124,7 +124,7 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 
     // qstr info
     {
-        uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+        mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
         qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
         printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     }
@@ -164,19 +164,105 @@ STATIC mp_obj_t pyb_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 
-/// \function freq()
-/// Return a tuple of clock frequencies: (SYSCLK, HCLK, PCLK1, PCLK2).
-// TODO should also be able to set frequency via this function
-STATIC mp_obj_t pyb_freq(void) {
-    mp_obj_t tuple[4] = {
-       mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
-       mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
-       mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-       mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
-    };
-    return mp_obj_new_tuple(4, tuple);
+/// \function freq([sys_freq])
+///
+/// If given no arguments, returns a tuple of clock frequencies:
+/// (SYSCLK, HCLK, PCLK1, PCLK2).
+///
+/// If given an argument, sets the system frequency to that value in Hz.
+/// Eg freq(120000000) gives 120MHz.  Note that not all values are
+/// supported and the largest supported frequency not greater than
+/// the given sys_freq will be selected.
+STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        // get
+        mp_obj_t tuple[4] = {
+           mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
+           mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
+           mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+           mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
+        };
+        return mp_obj_new_tuple(4, tuple);
+    } else {
+        // set
+        mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
+        // search for a valid PLL configuration that keeps USB at 48MHz
+        for (; wanted_sysclk > 0; wanted_sysclk--) {
+            for (mp_uint_t p = 2; p <= 8; p += 2) {
+                if (wanted_sysclk * p % 48 != 0) {
+                    continue;
+                }
+                mp_uint_t q = wanted_sysclk * p / 48;
+                if (q < 2 || q > 15) {
+                    continue;
+                }
+                if (wanted_sysclk * p % (HSE_VALUE / 1000000) != 0) {
+                    continue;
+                }
+                mp_uint_t n_by_m = wanted_sysclk * p / (HSE_VALUE / 1000000);
+                mp_uint_t m = 192 / n_by_m;
+                while (m < (HSE_VALUE / 2000000) || n_by_m * m < 192) {
+                    m += 1;
+                }
+                if (m > (HSE_VALUE / 1000000)) {
+                    continue;
+                }
+                mp_uint_t n = n_by_m * m;
+                if (n < 192 || n > 432) {
+                    continue;
+                }
+
+                // found values!
+
+                // let the USB CDC have a chance to process before we change the clock
+                HAL_Delay(USBD_CDC_POLLING_INTERVAL + 2);
+
+                // set HSE as system clock source to allow modification of the PLL configuration
+                RCC_ClkInitTypeDef RCC_ClkInitStruct;
+                RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
+                RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+                if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+                    goto fail;
+                }
+
+                // re-configure PLL
+                RCC_OscInitTypeDef RCC_OscInitStruct;
+                RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+                RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+                RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+                RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+                RCC_OscInitStruct.PLL.PLLM = m;
+                RCC_OscInitStruct.PLL.PLLN = n;
+                RCC_OscInitStruct.PLL.PLLP = p;
+                RCC_OscInitStruct.PLL.PLLQ = q;
+                if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+                    goto fail;
+                }
+
+                // set PLL as system clock source
+                RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+                RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+                RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+                RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+                RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+                if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
+                    goto fail;
+                }
+
+                // re-init TIM3 for USB CDC rate
+                timer_tim3_init();
+
+                return mp_const_none;
+
+                void __fatal_error(const char *msg);
+                fail:
+                __fatal_error("can't change freq");
+            }
+        }
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't make valid freq"));
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 1, pyb_freq);
 
 /// \function sync()
 /// Sync all file systems.
@@ -336,7 +422,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 
 /// \function repl_uart(uart)
 /// Get or set the UART object that the REPL is repeated on.
-STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         if (pyb_stdio_uart == NULL) {
             return mp_const_none;
