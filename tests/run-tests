@@ -21,6 +21,24 @@ def rm_f(fname):
     if os.path.exists(fname):
         os.remove(fname)
 
+def run_micropython(pyb, args, test_file):
+    if pyb is None:
+        # run on PC
+        try:
+            output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=' + args.emit, test_file])
+        except subprocess.CalledProcessError:
+            output_mupy = b'CRASH'
+    else:
+        # run on pyboard
+        import pyboard
+        pyb.enter_raw_repl()
+        try:
+            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+        except pyboard.PyboardError:
+            output_mupy = b'CRASH'
+
+    return output_mupy
+
 def run_tests(pyb, tests, args):
     test_count = 0
     testcase_count = 0
@@ -29,6 +47,12 @@ def run_tests(pyb, tests, args):
     skipped_tests = []
 
     skip_tests = set()
+
+    # Check if micropython.native is supported, and skip such tests if it's not
+    native = run_micropython(pyb, args, 'micropython/native_check.py')
+    if native == b'CRASH':
+        skip_tests.update({'micropython/native_%s.py' % t for t in 'check misc'.split()})
+        skip_tests.update({'micropython/viper_%s.py' % t for t in 'binop_arith binop_comp cond ptr16_store ptr8_store misc'.split()})
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
@@ -44,7 +68,6 @@ def run_tests(pyb, tests, args):
 
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
-        skip_tests.add('extmod\\ujson_loads.py') #works but -2e-3 is printed as -0.002000000000000001 except for mingw-w64
         skip_tests.add('import\\import_file.py') #works but CPython prints forward slashes
         skip_tests.add('unix\\ffi_float.py')
 
@@ -91,19 +114,7 @@ def run_tests(pyb, tests, args):
             continue
 
         # run Micro Python
-        if pyb is None:
-            # run on PC
-            try:
-                output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=' + args.emit, test_file])
-            except subprocess.CalledProcessError:
-                output_mupy = b'CRASH'
-        else:
-            # run on pyboard
-            pyb.enter_raw_repl()
-            try:
-                output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
-            except pyboard.PyboardError:
-                output_mupy = b'CRASH'
+        output_mupy = run_micropython(pyb, args, test_file)
 
         if output_mupy == b'SKIP\n':
             print("skip ", test_file)
