@@ -39,8 +39,9 @@ inline void do_str(const char *src) {
     mp_lexer_free(lex);
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
 
-    if (module_fun == mp_const_none) {
-        tt_abort_msg("Computer error");
+    if (mp_obj_is_exception_instance(module_fun)) {
+        mp_obj_print_exception(module_fun);
+        tt_abort_msg("Compile error");
     }
 
     nlr_buf_t nlr;

@@ -142,11 +142,10 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // compile the imported script
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
 
-    if (module_fun == mp_const_none) {
-        // TODO handle compile error correctly
+    if (mp_obj_is_exception_instance(module_fun)) {
         mp_locals_set(old_locals);
         mp_globals_set(old_globals);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_SyntaxError, "Syntax error in imported module"));
+        nlr_raise(module_fun);
     }
 
     // complied successfully, execute it

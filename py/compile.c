@@ -62,23 +62,28 @@ typedef enum {
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
 #define EMIT_INLINE_ASM_ARG(fun, ...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, __VA_ARGS__))
 
+// elements in this struct are ordered to make it compact
 typedef struct _compiler_t {
     qstr source_file;
+
     uint8_t is_repl;
     uint8_t pass; // holds enum type pass_kind_t
-    uint8_t had_error; // try to keep compiler clean from nlr
     uint8_t func_arg_is_super; // used to compile special case of super() function call
+    uint8_t have_star;
+
+    // try to keep compiler clean from nlr
+    // this is set to an exception object if we have a compile error
+    mp_obj_t compile_error;
 
     uint next_label;
 
-    uint16_t break_label; // highest bit set indicates we are breaking out of a for loop
-    uint16_t continue_label;
-    int break_continue_except_level;
-    uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
-
-    uint8_t have_star;
     uint16_t num_dict_params;
     uint16_t num_default_params;
+
+    uint16_t break_label; // highest bit set indicates we are breaking out of a for loop
+    uint16_t continue_label;
+    uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
+    int break_continue_except_level;
 
     scope_t *scope_head;
     scope_t *scope_cur;
@@ -91,14 +96,15 @@ typedef struct _compiler_t {
 } compiler_t;
 
 STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
-    // TODO store the error message to a variable in compiler_t instead of printing it
+    mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
+    // we don't have a 'block' name, so just pass the NULL qstr to indicate this
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        printf("  File \"%s\", line " UINT_FMT "\n", qstr_str(comp->source_file), (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line);
+        mp_obj_exception_add_traceback(exc, comp->source_file, (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line, MP_QSTR_NULL);
     } else {
-        printf("  File \"%s\"\n", qstr_str(comp->source_file));
+        // we don't have a line number, so just pass 0
+        mp_obj_exception_add_traceback(exc, comp->source_file, 0, MP_QSTR_NULL);
     }
-    printf("SyntaxError: %s\n", msg);
-    comp->had_error = true;
+    comp->compile_error = exc;
 }
 
 STATIC const mp_map_elem_t mp_constants_table[] = {
@@ -1107,7 +1113,7 @@ qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns, uint 
     comp->num_default_params = 0;
     apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_funcdef_param);
 
-    if (comp->had_error) {
+    if (comp->compile_error != MP_OBJ_NULL) {
         return MP_QSTR_NULL;
     }
 
@@ -3415,7 +3421,8 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     if (comp->pass > MP_PASS_SCOPE) {
         bool success = EMIT_INLINE_ASM(end_pass);
         if (!success) {
-            comp->had_error = true;
+            // TODO get proper exception from inline assembler
+            compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler error");
         }
     }
 }
@@ -3550,6 +3557,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     compiler_t *comp = m_new0(compiler_t, 1);
     comp->source_file = source_file;
     comp->is_repl = is_repl;
+    comp->compile_error = MP_OBJ_NULL;
 
     // optimise constants
     mp_map_t consts;
@@ -3566,7 +3574,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
     uint max_num_labels = 0;
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
         if (false) {
 #if MICROPY_EMIT_INLINE_THUMB
         } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
@@ -3583,7 +3591,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     }
 
     // compute some things related to scope and identifiers
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
         compile_scope_compute_things(comp, s);
     }
 
@@ -3600,7 +3608,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
 #endif // !MICROPY_EMIT_CPYTHON
-    for (scope_t *s = comp->scope_head; s != NULL && !comp->had_error; s = s->next) {
+    for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
         if (false) {
             // dummy
 
@@ -3615,7 +3623,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
             comp->emit_inline_asm = emit_inline_thumb;
             comp->emit_inline_asm_method_table = &emit_inline_thumb_method_table;
             compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
-            if (!comp->had_error) {
+            if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope_inline_asm(comp, s, MP_PASS_EMIT);
             }
 #endif
@@ -3674,12 +3682,12 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif // !MICROPY_EMIT_CPYTHON
 
             // second last pass: compute code size
-            if (!comp->had_error) {
+            if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_CODE_SIZE);
             }
 
             // final pass: emit code
-            if (!comp->had_error) {
+            if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_EMIT);
             }
         }
@@ -3722,12 +3730,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     }
 
     // free the compiler
-    bool had_error = comp->had_error;
+    mp_obj_t compile_error = comp->compile_error;
     m_del_obj(compiler_t, comp);
 
-    if (had_error) {
-        // TODO return a proper error message
-        return mp_const_none;
+    if (compile_error != MP_OBJ_NULL) {
+        return compile_error;
     } else {
 #if MICROPY_EMIT_CPYTHON
         // can't create code, so just return true

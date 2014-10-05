@@ -72,7 +72,8 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
 
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
 
-    if (module_fun == mp_const_none) {
+    if (mp_obj_is_exception_instance(module_fun)) {
+        mp_obj_print_exception(module_fun);
         return false;
     }
 

@@ -79,8 +79,8 @@ void do_file(const char *file) {
 
             //printf("----------------\n");
 
-            if (module_fun == mp_const_none) {
-                printf("compile error\n");
+            if (mp_obj_is_exception_instance(module_fun)) {
+                mp_obj_print_exception(module_fun);
             }
         }
     }
