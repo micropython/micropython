@@ -40,66 +40,34 @@
 #include "runtime.h"
 #include "builtin.h"
 
-STATIC mp_obj_t parse_compile_execute(mp_obj_t o_in, mp_parse_input_kind_t parse_input_kind) {
+STATIC mp_obj_t eval_exec_helper(mp_uint_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
     mp_uint_t str_len;
-    const char *str = mp_obj_str_get_data(o_in, &str_len);
+    const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // create the lexer
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);
-    qstr source_name = mp_lexer_source_name(lex);
 
-    // parse the string
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_error_kind);
-
-    if (pn == MP_PARSE_NODE_NULL) {
-        // parse error; raise exception
-        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        nlr_raise(exc);
-    }
-
-    mp_lexer_free(lex);
-
-    // compile the string
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
-
-    // check if there was a compile error
-    if (mp_obj_is_exception_instance(module_fun)) {
-        nlr_raise(module_fun);
-    }
-
-    // complied successfully, execute it
-    return mp_call_function_0(module_fun);
-}
-
-STATIC mp_obj_t mp_builtin_eval(mp_obj_t o_in) {
-    return parse_compile_execute(o_in, MP_PARSE_EVAL_INPUT);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_eval_obj, mp_builtin_eval);
-
-STATIC mp_obj_t mp_builtin_exec(uint n_args, const mp_obj_t *args) {
-    // Unconditional getting/setting assumes that these operations
-    // are cheap, which is the case when this comment was written.
-    mp_obj_dict_t *old_globals = mp_globals_get();
-    mp_obj_dict_t *old_locals = mp_locals_get();
+    // work out the context
+    mp_obj_dict_t *globals = mp_globals_get();
+    mp_obj_dict_t *locals = mp_locals_get();
     if (n_args > 1) {
-        mp_obj_t globals = args[1];
-        mp_obj_t locals;
+        globals = args[1];
         if (n_args > 2) {
             locals = args[2];
         } else {
             locals = globals;
         }
-        mp_globals_set(globals);
-        mp_locals_set(locals);
     }
-    mp_obj_t res = parse_compile_execute(args[0], MP_PARSE_FILE_INPUT);
-    // TODO if the above call throws an exception, then we never get to reset the globals/locals
-    mp_globals_set(old_globals);
-    mp_locals_set(old_locals);
-    return res;
+
+    return mp_parse_compile_execute(lex, parse_input_kind, globals, locals);
 }
 
+STATIC mp_obj_t mp_builtin_eval(mp_uint_t n_args, const mp_obj_t *args) {
+    return eval_exec_helper(n_args, args, MP_PARSE_EVAL_INPUT);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_eval_obj, 1, 3, mp_builtin_eval);
+
+STATIC mp_obj_t mp_builtin_exec(mp_uint_t n_args, const mp_obj_t *args) {
+    return eval_exec_helper(n_args, args, MP_PARSE_FILE_INPUT);
+}
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);

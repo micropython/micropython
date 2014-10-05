@@ -111,56 +111,14 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", vstr_str(file)));
     }
 
-    qstr source_name = mp_lexer_source_name(lex);
-
-    // save the old context
-    mp_obj_dict_t *old_locals = mp_locals_get();
-    mp_obj_dict_t *old_globals = mp_globals_get();
-
-    // set the new context
-    mp_locals_set(mp_obj_module_get_globals(module_obj));
-    mp_globals_set(mp_obj_module_get_globals(module_obj));
     #if MICROPY_PY___FILE__
-    mp_store_attr(module_obj, MP_QSTR___file__, mp_obj_new_str(vstr_str(file), vstr_len(file), false));
+    qstr source_name = mp_lexer_source_name(lex);
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
     #endif
 
-    // parse the imported script
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
-
-    if (pn == MP_PARSE_NODE_NULL) {
-        // parse error; clean up and raise exception
-        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        mp_locals_set(old_locals);
-        mp_globals_set(old_globals);
-        nlr_raise(exc);
-    }
-
-    mp_lexer_free(lex);
-
-    // compile the imported script
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
-
-    if (mp_obj_is_exception_instance(module_fun)) {
-        mp_locals_set(old_locals);
-        mp_globals_set(old_globals);
-        nlr_raise(module_fun);
-    }
-
-    // complied successfully, execute it
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // exception; restore context and re-raise same exception
-        mp_locals_set(old_locals);
-        mp_globals_set(old_globals);
-        nlr_raise(nlr.ret_val);
-    }
-    mp_locals_set(old_locals);
-    mp_globals_set(old_globals);
+    // parse, compile and execute the module in its context
+    mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
+    mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
 
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {

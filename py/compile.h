@@ -35,3 +35,6 @@ enum {
 
 // the compiler will free the parse tree (pn) before it returns
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl);
+
+// this is implemented in runtime.c
+mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals);

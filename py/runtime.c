@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -46,6 +47,9 @@
 #include "smallint.h"
 #include "objgenerator.h"
 #include "lexer.h"
+#include "parse.h"
+#include "parsehelper.h"
+#include "compile.h"
 #include "stackctrl.h"
 
 #if 0 // print debugging info
@@ -1151,6 +1155,54 @@ mp_obj_dict_t *mp_globals_get(void) {
 void mp_globals_set(mp_obj_dict_t *d) {
     DEBUG_OP_printf("mp_globals_set(%p)\n", d);
     dict_globals = d;
+}
+
+// this is implemented in this file so it can optimise access to locals/globals
+mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
+    // parse the string
+    mp_parse_error_kind_t parse_error_kind;
+    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_error_kind);
+
+    if (pn == MP_PARSE_NODE_NULL) {
+        // parse error; raise exception
+        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
+        mp_lexer_free(lex);
+        nlr_raise(exc);
+    }
+
+    qstr source_name = mp_lexer_source_name(lex);
+    mp_lexer_free(lex);
+
+    // save context and set new context
+    mp_obj_dict_t *old_globals = mp_globals_get();
+    mp_obj_dict_t *old_locals = mp_locals_get();
+    mp_globals_set(globals);
+    mp_locals_set(locals);
+
+    // compile the string
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
+
+    // check if there was a compile error
+    if (mp_obj_is_exception_instance(module_fun)) {
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        nlr_raise(module_fun);
+    }
+
+    // complied successfully, execute it
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t ret = mp_call_function_0(module_fun);
+        nlr_pop();
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        return ret;
+    } else {
+        // exception; restore context and re-raise same exception
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        nlr_raise(nlr.ret_val);
+    }
 }
 
 void *m_malloc_fail(size_t num_bytes) {
