@@ -42,6 +42,12 @@ def run_tests(pyb, tests, args):
     if pyb is None and platform.architecture()[0] == '64bit':
         pass
 
+    # Some tests use unsupported features on Windows
+    if os.name == 'nt':
+        skip_tests.add('extmod\\ujson_loads.py') #works but -2e-3 is printed as -0.002000000000000001 except for mingw-w64
+        skip_tests.add('import\\import_file.py') #works but CPython prints forward slashes
+        skip_tests.add('unix\\ffi_float.py')
+
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
