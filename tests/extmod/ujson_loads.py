@@ -6,6 +6,8 @@ except:
 def my_print(o):
     if isinstance(o, dict):
         print('sorted dict', sorted(o.items()))
+    elif isinstance(o, float):
+        print('%.3f' % o)
     else:
         print(o)
 
