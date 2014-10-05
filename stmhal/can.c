@@ -42,6 +42,8 @@
 #include "can.h"
 #include "pybioctl.h"
 
+#if MICROPY_HW_ENABLE_CAN
+
 /// \moduleref pyb
 /// \class CAN - controller area network communication bus
 ///
@@ -451,3 +453,5 @@ const mp_obj_type_t pyb_can_type = {
     .stream_p = &can_stream_p,
     .locals_dict = (mp_obj_t)&pyb_can_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_CAN
