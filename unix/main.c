@@ -113,8 +113,9 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
     mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
 
-    if (module_fun == mp_const_none) {
+    if (mp_obj_is_exception_instance(module_fun)) {
         // compile error
+        mp_obj_print_exception(module_fun);
         return 1;
     }
 
