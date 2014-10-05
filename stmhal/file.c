@@ -286,4 +286,4 @@ mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_ARGS, file_open_args, arg_vals);
     return file_open((mp_obj_t)&mp_type_textio, arg_vals);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj,1,mp_builtin_open);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
