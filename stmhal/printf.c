@@ -48,7 +48,7 @@
 
 int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
 
-STATIC void stdout_print_strn(void *dummy_env, const char *str, unsigned int len) {
+STATIC void stdout_print_strn(void *dummy_env, const char *str, mp_uint_t len) {
     stdout_tx_strn_cooked(str, len);
 }
 
@@ -97,7 +97,7 @@ typedef struct _strn_pfenv_t {
     size_t remain;
 } strn_pfenv_t;
 
-void strn_print_strn(void *data, const char *str, unsigned int len) {
+STATIC void strn_print_strn(void *data, const char *str, mp_uint_t len) {
     strn_pfenv_t *strn_pfenv = data;
     if (len > strn_pfenv->remain) {
         len = strn_pfenv->remain;

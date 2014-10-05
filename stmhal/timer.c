@@ -1157,11 +1157,9 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     tim->callback = mp_const_none;
                     __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
                     if (channel == 0) {
-                        printf("Uncaught exception in Timer(" UINT_FMT
-                               ") interrupt handler\n", tim->tim_id);
+                        printf("uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
                     } else {
-                        printf("Uncaught exception in Timer(" UINT_FMT ") channel "
-                               UINT_FMT " interrupt handler\n", tim->tim_id, channel);
+                        printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
                     }
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
