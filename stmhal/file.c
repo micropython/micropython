@@ -167,7 +167,7 @@ STATIC const mp_arg_t file_open_args[] = {
     { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
     { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
 };
-#define FILE_OPEN_ARGS MP_ARRAY_SIZE(file_open_args)
+#define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
 STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
     int mode = 0;
@@ -220,8 +220,8 @@ STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
 }
 
 STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_val_t arg_vals[FILE_OPEN_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_ARGS, file_open_args, arg_vals);
+    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open(type_in, arg_vals);
 }
 
@@ -282,8 +282,8 @@ const mp_obj_type_t mp_type_textio = {
 // Factory function for I/O stream classes
 mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     // TODO: analyze buffering args and instantiate appropriate type
-    mp_arg_val_t arg_vals[FILE_OPEN_ARGS];
-    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_ARGS, file_open_args, arg_vals);
+    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open((mp_obj_t)&mp_type_textio, arg_vals);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
