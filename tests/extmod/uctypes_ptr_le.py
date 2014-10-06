@@ -1,3 +1,4 @@
+import sys
 import uctypes
 
 if sys.byteorder != "little":
