@@ -448,6 +448,8 @@ typedef double mp_float_t;
     #else
       #define MP_ENDIANNESS_LITTLE (0)
     #endif
+  #elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) || defined (_LITTLE_ENDIAN)
+    #define MP_ENDIANNESS_LITTLE (1)
   #elif defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) || defined (_BIG_ENDIAN)
     #define MP_ENDIANNESS_LITTLE (0)
   #else
