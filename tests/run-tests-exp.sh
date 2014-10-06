@@ -32,8 +32,9 @@ do
     $MP_PY $infile > $outfile
     numtestcases=$(expr $numtestcases + $(cat $expfile | wc -l))
 
-    if grep -q "SyntaxError: invalid micropython decorator" $outfile
+    if grep -q "SKIP\|SyntaxError: invalid micropython decorator" $outfile
     then
+        # we don't count tests that explicitly ask to be skipped
         # we don't count tests that fail due to unsupported decorator
         echo "skip  $infile"
         $RM $outfile
