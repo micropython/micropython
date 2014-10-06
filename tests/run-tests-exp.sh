@@ -11,12 +11,14 @@ MP_PY=micropython
 numtests=0
 numtestcases=0
 numpassed=0
+numskipped=0
 numfailed=0
+nameskipped=
 namefailed=
 
 if [ $# -eq 0 ]
 then
-    tests="basics/*.py micropython/*.py float/*.py import/*.py io/*.py misc/*.py"
+    tests="basics/*.py micropython/*.py float/*.py import/*.py io/*.py misc/*.py unicode/*.py extmod/*.py unix/*.py"
 else
     tests="$@"
 fi
@@ -24,23 +26,32 @@ fi
 for infile in $tests
 do
     basename=`basename $infile .py`
-    outfile=${basename}.out
+    outfile=${basename}.py.out
     expfile=$infile.exp
 
     $MP_PY $infile > $outfile
     numtestcases=$(expr $numtestcases + $(cat $expfile | wc -l))
 
-    diff --brief $expfile $outfile > /dev/null
-
-    if [ $? -eq 0 ]
+    if grep -q "SyntaxError: invalid micropython decorator" $outfile
     then
-        echo "pass  $infile"
+        # we don't count tests that fail due to unsupported decorator
+        echo "skip  $infile"
         $RM $outfile
-        numpassed=$(expr $numpassed + 1)
+        numskipped=$(expr $numskipped + 1)
+        nameskipped="$nameskipped $basename"
     else
-        echo "FAIL  $infile"
-        numfailed=$(expr $numfailed + 1)
-        namefailed="$namefailed $basename"
+        diff --brief $expfile $outfile > /dev/null
+
+        if [ $? -eq 0 ]
+        then
+            echo "pass  $infile"
+            $RM $outfile
+            numpassed=$(expr $numpassed + 1)
+        else
+            echo "FAIL  $infile"
+            numfailed=$(expr $numfailed + 1)
+            namefailed="$namefailed $basename"
+        fi
     fi
 
     numtests=$(expr $numtests + 1)
@@ -48,6 +59,10 @@ done
 
 echo "$numtests tests performed ($numtestcases individual testcases)"
 echo "$numpassed tests passed"
+if [ $numskipped != 0 ]
+then
+    echo "$numskipped tests skipped -$nameskipped"
+fi
 if [ $numfailed != 0 ]
 then
     echo "$numfailed tests failed -$namefailed"
