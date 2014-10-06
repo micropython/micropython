@@ -1,6 +1,11 @@
 # test ffi float support
+import sys
+try:
+    import ffi
+except ImportError:
+    print("SKIP")
+    sys.exit()
 
-import ffi
 
 def ffi_open(names):
     err = None
