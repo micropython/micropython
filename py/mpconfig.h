@@ -434,13 +434,26 @@ typedef double mp_float_t;
 // mp_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
 
-#if !defined(MP_ENDIANNESS_LITTLE) && !defined(MP_ENDIANNESS_BIG)
-// Just because most archs are such?
-#define MP_ENDIANNESS_LITTLE (1)
-#endif
-// Ensure we don't accidentally set both endiannesses
-#if MP_ENDIANNESS_BIG
-#define MP_ENDIANNESS_LITTLE (0)
+// Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
+// defined and that they are the opposite of each other.
+#if defined(MP_ENDIANNESS_LITTLE)
+#define MP_ENDIANNESS_BIG (!MP_ENDIANNESS_LITTLE)
+#elif defined(MP_ENDIANNESS_BIG)
+#define MP_ENDIANNESS_LITTLE (!MP_ENDIANNESS_BIG)
+#else
+  // Endiannes not defined by port so try to autodetect it.
+  #if defined(__BYTE_ORDER__)
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      #define MP_ENDIANNESS_LITTLE (1)
+    #else
+      #define MP_ENDIANNESS_LITTLE (0)
+    #endif
+  #elif defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) || defined (_BIG_ENDIAN)
+    #define MP_ENDIANNESS_LITTLE (0)
+  #else
+    #error endianness not defined and cannot detect it
+  #endif
+  #define MP_ENDIANNESS_BIG (!MP_ENDIANNESS_LITTLE)
 #endif
 
 // Make a pointer to RAM callable (eg set lower bit for Thumb code)
