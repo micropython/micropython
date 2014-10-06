@@ -62,7 +62,6 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "pybwlan.h"
 #include "pybstdio.h"
 #include "modnetwork.h"
 
@@ -501,12 +500,6 @@ soft_reset:
 #if MICROPY_HW_ENABLE_DAC
     // DAC
     dac_init();
-#endif
-
-#if MICROPY_HW_ENABLE_CC3K
-    // wifi using the CC3000 driver
-    pyb_wlan_init();
-    pyb_wlan_start();
 #endif
 
     mod_network_init();
