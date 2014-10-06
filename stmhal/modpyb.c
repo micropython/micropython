@@ -359,58 +359,36 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-#if 0
-STATIC void SYSCLKConfig_STOP(void) {
-    /* After wake-up from STOP reconfigure the system clock */
-    /* Enable HSE */
-    RCC_HSEConfig(RCC_HSE_ON);
-
-    /* Wait till HSE is ready */
-    while (RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET) {
-    }
-
-    /* Enable PLL */
-    RCC_PLLCmd(ENABLE);
-
-    /* Wait till PLL is ready */
-    while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET) {
-    }
-
-    /* Select PLL as system clock source */
-    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-
-    /* Wait till PLL is used as system clock source */
-    while (RCC_GetSYSCLKSource() != 0x08) {
-    }
-}
-#endif
-
+/// \function stop()
 STATIC mp_obj_t pyb_stop(void) {
-#if 0
-    PWR_EnterSTANDBYMode();
-    //PWR_FlashPowerDownCmd(ENABLE); don't know what the logic is with this
+    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 
-    /* Enter Stop Mode */
-    PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
+    // reconfigure the system clock after waking up
 
-    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
-     *        PLL as system clock source (HSE and PLL are disabled in STOP mode) */
-    SYSCLKConfig_STOP();
+    // enable HSE
+    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
+    }
 
-    //PWR_FlashPowerDownCmd(DISABLE);
-#endif
+    // enable PLL
+    __HAL_RCC_PLL_ENABLE();
+    while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
+    }
+
+    // select PLL as system clock source
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
+    }
+
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
 
+/// \function standby()
 STATIC mp_obj_t pyb_standby(void) {
-#if 0
-    PWR_EnterSTANDBYMode();
-#endif
+    HAL_PWR_EnterSTANDBYMode();
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
 /// \function have_cdc()

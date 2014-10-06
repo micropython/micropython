@@ -143,6 +143,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal_i2c.c \
 	stm32f4xx_hal_pcd.c \
 	stm32f4xx_hal_pcd_ex.c \
+	stm32f4xx_hal_pwr.c \
 	stm32f4xx_hal_rcc.c \
 	stm32f4xx_hal_rcc_ex.c \
 	stm32f4xx_hal_rng.c \
