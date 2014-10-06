@@ -401,7 +401,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                     set_aligned_basic(val_type & 6, self->addr + offset, val);
                 } else {
                     mp_binary_set_int(GET_SCALAR_SIZE(val_type & 7), self->flags == LAYOUT_BIG_ENDIAN,
-                        self->addr + offset, (byte*)&val);
+                        self->addr + offset, val);
                 }
                 return set_val; // just !MP_OBJ_NULL
             }
