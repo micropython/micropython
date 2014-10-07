@@ -67,8 +67,9 @@ int vprintf(const char *fmt, va_list ap) {
 }
 
 #if MICROPY_DEBUG_PRINTERS
+mp_uint_t mp_verbose_flag = 1;
+
 int DEBUG_printf(const char *fmt, ...) {
-    (void)stream;
     va_list ap;
     va_start(ap, fmt);
     int ret = pfenv_vprintf(&pfenv_stdout, fmt, ap);

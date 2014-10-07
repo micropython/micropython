@@ -51,6 +51,7 @@
 #include "parsehelper.h"
 #include "compile.h"
 #include "stackctrl.h"
+#include "gc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -1207,7 +1208,13 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 
 void *m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating " UINT_FMT " bytes\n", num_bytes);
-    nlr_raise((mp_obj_t)&mp_const_MemoryError_obj);
+    if (gc_is_locked()) {
+        nlr_raise(mp_obj_new_exception_msg(& mp_type_MemoryError, 
+                                           "memory allocation failed, heap is locked"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(& mp_type_MemoryError, 
+                                                "memory allocation failed, allocating " UINT_FMT " bytes", num_bytes));
+    }
 }
 
 NORETURN void mp_not_implemented(const char *msg) {

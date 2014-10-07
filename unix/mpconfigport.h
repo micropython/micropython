@@ -72,7 +72,7 @@
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
-#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (128)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
