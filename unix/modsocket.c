@@ -53,11 +53,11 @@
 /*
   The idea of this module is to implement reasonable minimum of
   socket-related functions to write typical clients and servers.
-  The module named "microsocket" on purpose, to allow to make
+  The module named "usocket" on purpose, to allow to make
   Python-level module more (or fully) compatible with CPython
   "socket", e.g.:
   ---- socket.py ----
-  from microsocket import *
+  from usocket import *
   from socket_more_funcs import *
   from socket_more_funcs2 import *
   -------------------
@@ -72,7 +72,7 @@ typedef struct _mp_obj_socket_t {
     int fd;
 } mp_obj_socket_t;
 
-STATIC const mp_obj_type_t microsocket_type;
+STATIC const mp_obj_type_t usocket_type;
 
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
@@ -81,7 +81,7 @@ STATIC const mp_obj_type_t microsocket_type;
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &microsocket_type;
+    o->base.type = &usocket_type;
     o->fd = fd;
     return o;
 }
@@ -284,7 +284,7 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     return socket_new(fd);
 }
 
-STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
+STATIC const mp_map_elem_t usocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&socket_fileno_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&socket_makefile_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
@@ -302,22 +302,22 @@ STATIC const mp_map_elem_t microsocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(microsocket_locals_dict, microsocket_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
 
-STATIC const mp_stream_p_t microsocket_stream_p = {
+STATIC const mp_stream_p_t usocket_stream_p = {
     .read = socket_read,
     .write = socket_write,
 };
 
-STATIC const mp_obj_type_t microsocket_type = {
+STATIC const mp_obj_type_t usocket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
     .print = socket_print,
     .make_new = socket_make_new,
     .getiter = NULL,
     .iternext = NULL,
-    .stream_p = &microsocket_stream_p,
-    .locals_dict = (mp_obj_t)&microsocket_locals_dict,
+    .stream_p = &usocket_stream_p,
+    .locals_dict = (mp_obj_t)&usocket_locals_dict,
 };
 
 #if MICROPY_SOCKET_EXTRA
@@ -420,8 +420,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod
 extern mp_obj_type_t sockaddr_in_type;
 
 STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_microsocket) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&microsocket_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&usocket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_socket_getaddrinfo_obj },
 #if MICROPY_SOCKET_EXTRA
     { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr_in), (mp_obj_t)&sockaddr_in_type },
@@ -463,6 +463,6 @@ STATIC const mp_obj_dict_t mp_module_socket_globals = {
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_microsocket,
+    .name = MP_QSTR_usocket,
     .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
 };
