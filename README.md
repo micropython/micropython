@@ -64,8 +64,8 @@ Then to test it:
 
 Debian/Ubuntu/Mint derivative Linux distros will require build-essentials and
 libreadline-dev packages installed. To build FFI (Foreign Function Interface)
-module, libffi-dev package is required. If you have problems with some
-dependencies, they can be disabled in unix/mpconfigport.mk .
+module, libffi-dev and pkg-config packages are required. If you have problems
+with some dependencies, they can be disabled in unix/mpconfigport.mk .
 
 The STM version
 ---------------
