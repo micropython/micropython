@@ -64,10 +64,6 @@ mp_uint_t mp_verbose_flag = 0;
 long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
-void microsocket_init();
-void time_init();
-void ffi_init();
-
 #define FORCED_EXIT (0x100)
 // returns standard error codes: 0 for success, 1 for all other errors
 // if FORCED_EXIT bit is set then script raised SystemExit and the

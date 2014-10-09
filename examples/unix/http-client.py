@@ -1,5 +1,5 @@
 try:
-    import microsocket as _socket
+    import usocket as _socket
 except:
     import _socket
 
