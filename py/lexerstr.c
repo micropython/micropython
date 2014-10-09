@@ -52,7 +52,7 @@ STATIC void str_buf_free(mp_lexer_str_buf_t *sb) {
 }
 
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
-    mp_lexer_str_buf_t *sb = m_new_maybe(mp_lexer_str_buf_t, 1);
+    mp_lexer_str_buf_t *sb = m_new_obj_maybe(mp_lexer_str_buf_t);
     if (sb == NULL) {
         return NULL;
     }

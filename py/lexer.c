@@ -731,7 +731,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, mp_token_t *tok, bool firs
 }
 
 mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close) {
-    mp_lexer_t *lex = m_new_maybe(mp_lexer_t, 1);
+    mp_lexer_t *lex = m_new_obj_maybe(mp_lexer_t);
 
     // check for memory allocation error
     if (lex == NULL) {
