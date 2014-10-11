@@ -209,6 +209,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UJSON
     { MP_OBJ_NEW_QSTR(MP_QSTR_ujson), (mp_obj_t)&mp_module_ujson },
 #endif
+#if MICROPY_PY_URE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ure), (mp_obj_t)&mp_module_ure },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
