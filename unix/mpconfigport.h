@@ -61,7 +61,8 @@
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
-// Define to 1 to use untested inefficient GC helper implementation
+
+// Define to 1 to use undertested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
 #ifndef MICROPY_GCREGS_SETJMP
     #ifdef __mips__
