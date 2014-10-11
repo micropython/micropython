@@ -49,18 +49,23 @@ The Unix version
 
 The "unix" port requires a standard Unix environment with gcc and GNU make.
 x86 and x64 architectures are supported (i.e. x86 32- and 64-bit), as well
-as ARMv7. Porting to other architectures require writing some assembly code
-for the exception handling.
+as ARM and MIPS. Making full-featured port to another architecture requires
+writing some assembly code for the exception handling and garbage collection.
+Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
 To build:
 
     $ cd unix
     $ make
 
-Then to test it:
+Then to give it a try:
 
     $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
+
+Run complete testsuite:
+
+    $ make test
 
 Debian/Ubuntu/Mint derivative Linux distros will require build-essentials and
 libreadline-dev packages installed. To build FFI (Foreign Function Interface)
