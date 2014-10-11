@@ -320,6 +320,7 @@ soft_reset:
     pin_init0();
     extint_init0();
     timer_init0();
+    uart_init0();
 
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
@@ -543,6 +544,7 @@ soft_reset:
 
     printf("PYB: soft reboot\n");
     timer_deinit();
+    uart_deinit();
 
     first_soft_reset = false;
     goto soft_reset;

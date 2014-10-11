@@ -45,9 +45,11 @@ typedef enum {
 typedef struct _pyb_uart_obj_t pyb_uart_obj_t;
 extern const mp_obj_type_t pyb_uart_type;
 
-bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate);
+void uart_init0(void);
+void uart_deinit(void);
+void uart_irq_handler(mp_uint_t uart_id);
+
 bool uart_rx_any(pyb_uart_obj_t *uart_obj);
 int uart_rx_char(pyb_uart_obj_t *uart_obj);
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len);
-

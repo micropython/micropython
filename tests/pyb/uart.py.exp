@@ -1,2 +1,6 @@
-UART(1, baudrate=9600, bits=8, stop=1, parity=None)
-UART(1, baudrate=1200, bits=8, stop=1, parity=None)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, timeout=1000, timeout_char=0, read_buf_len=64)
+UART(1, baudrate=1200, bits=8, parity=None, stop=1, timeout=1000, timeout_char=0, read_buf_len=64)
+False
+3
+4
+None
