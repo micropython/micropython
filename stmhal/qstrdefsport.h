@@ -198,6 +198,7 @@ Q(pulse_width_percent)
 Q(compare)
 Q(capture)
 Q(polarity)
+Q(deadtime)
 
 // for ExtInt class
 Q(ExtInt)

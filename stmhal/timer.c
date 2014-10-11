@@ -414,6 +414,59 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
     #endif
 }
 
+// Computes the 8-bit value for the DTG field in the BDTR register.
+//
+// 1 tick = 1 count of the timer's clock (source_freq) divided by div.
+// 0-128 ticks in inrements of 1
+// 128-256 ticks in increments of 2
+// 256-512 ticks in increments of 8
+// 512-1008 ticks in increments of 16
+STATIC uint32_t compute_dtg_from_ticks(mp_int_t ticks) {
+    if (ticks <= 0) {
+        return 0;
+    }
+    if (ticks < 128) {
+        return ticks;
+    }
+    if (ticks < 256) {
+        return 0x80 | ((ticks - 128) / 2);
+    }
+    if (ticks < 512) {
+        return 0xC0 | ((ticks - 256) / 8);
+    }
+    if (ticks < 1008) {
+        return 0xE0 | ((ticks - 512) / 16);
+    }
+    return 0xFF;
+}
+
+// Given the 8-bit value stored in the DTG field of the BDTR register, compute
+// the number of ticks.
+STATIC mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
+    if ((dtg & 0x80) == 0) {
+        return dtg & 0x7F;
+    }
+    if ((dtg & 0xC0) == 0x80) {
+        return 128 + ((dtg & 0x3F) * 2);
+    }
+    if ((dtg & 0xE0) == 0xC0) {
+        return 256 + ((dtg & 0x1F) * 8);
+    }
+    return 512 + ((dtg & 0x1F) * 16);
+}
+
+STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
+    TIM_BreakDeadTimeConfigTypeDef deadTimeConfig;
+    deadTimeConfig.OffStateRunMode  = TIM_OSSR_DISABLE;
+    deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+    deadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
+    deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
+    deadTimeConfig.BreakState       = TIM_BREAK_DISABLE;
+    deadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_LOW;
+    deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
+    HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
+}
+
 STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
@@ -424,7 +477,7 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
         uint32_t period = __HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self);
         // for efficiency, we compute and print freq as an int (not a float)
         uint32_t freq = timer_get_source_freq(self->tim_id) / ((prescaler + 1) * (period + 1));
-        print(env, "Timer(%u, freq=%u, prescaler=%u, period=%u, mode=%s, div=%u)",
+        print(env, "Timer(%u, freq=%u, prescaler=%u, period=%u, mode=%s, div=%u",
             self->tim_id,
             freq,
             prescaler,
@@ -433,6 +486,10 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
             self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN   ? "DOWN" : "CENTER",
             self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV4 ? 4 :
             self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV2 ? 2 : 1);
+        if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance)) {
+            print(env, ", deadtime=%u", compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
+        }
+        print(env, ")");
     }
 }
 
@@ -472,6 +529,14 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
 ///
 ///   - `callback` - as per Timer.callback()
 ///
+///   - `deadtime` - specifies the amount of "dead" or inactive time between
+///       transitions on complimentary channels (both channels will be inactive)
+///       for this time). `deadtime` may be an integer between 0 and 1008, with
+///       the following restrictions: 0-128 in steps of 1. 128-256 in steps of
+///       2, 256-512 in steps of 8, and 512-1008 in steps of 16. `deadime`
+///       measures ticks of `source_freq` divided by `div` clock ticks.
+///       `deadtime` is only available on timers 1 and 8.
+///
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -481,6 +546,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, c
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
         { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -537,6 +603,9 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, c
 
     // init TIM
     HAL_TIM_Base_Init(&self->tim);
+    if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance)) {
+        config_deadtime(self, args[6].u_int);
+    }
     if (args[5].u_obj == mp_const_none) {
         HAL_TIM_Base_Start(&self->tim);
     } else {
@@ -685,6 +754,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     - `Timer.FALLING` - captures on falling edge.
 ///     - `Timer.BOTH` - captures on both edges.
 ///
+///   Note that capture only works on the primary channel, and not on the
+///   complimentary channels.
+///
 /// PWM Example:
 ///
 ///     timer = pyb.Timer(2, freq=1000)
@@ -808,6 +880,10 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             } else {
                 HAL_TIM_PWM_Start_IT(&self->tim, TIMER_CHANNEL(chan));
             }
+            // Start the complimentary channel too (if its supported)
+            if (IS_TIM_CCXN_INSTANCE(self->tim.Instance, TIMER_CHANNEL(chan))) {
+                HAL_TIMEx_PWMN_Start(&self->tim, TIMER_CHANNEL(chan));
+            }
             break;
         }
 
@@ -824,7 +900,11 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             if (oc_config.OCPolarity == 0xffffffff) {
                 oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
             }
-            oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+            if (oc_config.OCPolarity == TIM_OCPOLARITY_HIGH) {
+                oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+            } else {
+                oc_config.OCNPolarity  = TIM_OCNPOLARITY_LOW;
+            }
             oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
             oc_config.OCIdleState  = TIM_OCIDLESTATE_SET;
             oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
@@ -837,6 +917,10 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
                 HAL_TIM_OC_Start(&self->tim, TIMER_CHANNEL(chan));
             } else {
                 HAL_TIM_OC_Start_IT(&self->tim, TIMER_CHANNEL(chan));
+            }
+            // Start the complimentary channel too (if its supported)
+            if (IS_TIM_CCXN_INSTANCE(self->tim.Instance, TIMER_CHANNEL(chan))) {
+                HAL_TIMEx_OCN_Start(&self->tim, TIMER_CHANNEL(chan));
             }
             break;
         }
