@@ -58,6 +58,7 @@
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_ZLIBD            (1)
 #define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_URE              (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
