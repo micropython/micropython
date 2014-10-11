@@ -42,7 +42,6 @@
 #include "objlist.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
-const mp_obj_t mp_const_empty_bytes;
 
 mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
@@ -1763,8 +1762,7 @@ const mp_obj_type_t mp_type_bytes = {
 };
 
 // the zero-length bytes
-STATIC const mp_obj_str_t empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
-const mp_obj_t mp_const_empty_bytes = (mp_obj_t)&empty_bytes_obj;
+const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 
 mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, mp_uint_t len, byte **data) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
