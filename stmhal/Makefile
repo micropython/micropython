@@ -99,11 +99,11 @@ SRC_C = \
 	pyexec.c \
 	help.c \
 	input.c \
-	modos.c \
 	modpyb.c \
 	modstm.c \
-	modtime.c \
-	modselect.c \
+	moduos.c \
+	modutime.c \
+	moduselect.c \
 	modusocket.c \
 	modnetwork.c \
 	import.c \
