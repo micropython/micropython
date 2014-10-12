@@ -145,6 +145,9 @@
 
 #define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x64_or_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x64_xor_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_x64_and_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x64_add_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x64_sub_r64_r64((as), (reg_dest), (reg_src))
 
@@ -270,6 +273,9 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x86_or_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x86_xor_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_x86_and_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x86_add_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x86_sub_r32_r32((as), (reg_dest), (reg_src))
 
@@ -346,6 +352,9 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_LSL, (reg_dest), (reg_shift))
 #define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_ASR, (reg_dest), (reg_shift))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_ORR, (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_EOR, (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_AND, (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_thumb_add_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_thumb_sub_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
 
@@ -422,6 +431,9 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_arm_lsl_reg_reg((as), (reg_dest), (reg_shift))
 #define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_arm_asr_reg_reg((as), (reg_dest), (reg_shift))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_arm_orr_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_arm_eor_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_arm_and_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 
@@ -1769,6 +1781,15 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         #endif
+        } else if (op == MP_BINARY_OP_OR || op == MP_BINARY_OP_INPLACE_OR) {
+            ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else if (op == MP_BINARY_OP_XOR || op == MP_BINARY_OP_INPLACE_XOR) {
+            ASM_XOR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else if (op == MP_BINARY_OP_AND || op == MP_BINARY_OP_INPLACE_AND) {
+            ASM_AND_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_ADD || op == MP_BINARY_OP_INPLACE_ADD) {
             ASM_ADD_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);

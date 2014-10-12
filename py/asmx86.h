@@ -83,6 +83,8 @@ void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32
 void asm_x86_mov_r8_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r16_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r32_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
+void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
+void asm_x86_or_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32);
 void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32);

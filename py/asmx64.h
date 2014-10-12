@@ -86,6 +86,8 @@ void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64
 void asm_x64_mov_r8_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_mov_r16_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_mov_r64_to_disp(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
+void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
+void asm_x64_or_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_shl_r64_cl(asm_x64_t* as, int dest_r64);
 void asm_x64_sar_r64_cl(asm_x64_t* as, int dest_r64);

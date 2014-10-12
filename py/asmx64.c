@@ -53,6 +53,8 @@
 #define OPCODE_MOV_R64_TO_RM64   (0x89) /* /r */
 #define OPCODE_MOV_RM64_TO_R64   (0x8b)
 #define OPCODE_LEA_MEM_TO_R64    (0x8d) /* /r */
+#define OPCODE_AND_R64_TO_RM64   (0x21) /* /r */
+#define OPCODE_OR_R64_TO_RM64    (0x09) /* /r */
 #define OPCODE_XOR_R64_TO_RM64   (0x31) /* /r */
 #define OPCODE_ADD_R64_TO_RM64   (0x01) /* /r */
 #define OPCODE_ADD_I32_TO_RM32   (0x81) /* /0 */
@@ -383,6 +385,14 @@ void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64
         asm_x64_nop(as);
     }
     asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
+}
+
+void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
+    asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_AND_R64_TO_RM64);
+}
+
+void asm_x64_or_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
+    asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_OR_R64_TO_RM64);
 }
 
 void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {

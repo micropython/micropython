@@ -96,6 +96,9 @@ void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn);
 // arithmetic
 void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
+void asm_arm_and_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
+void asm_arm_eor_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
+void asm_arm_orr_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm);
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num);
 void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs);
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);

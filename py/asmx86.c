@@ -53,6 +53,8 @@
 #define OPCODE_MOV_R32_TO_RM32   (0x89)
 #define OPCODE_MOV_RM32_TO_R32   (0x8b)
 #define OPCODE_LEA_MEM_TO_R32    (0x8d) /* /r */
+#define OPCODE_AND_R32_TO_RM32   (0x21) /* /r */
+#define OPCODE_OR_R32_TO_RM32    (0x09) /* /r */
 #define OPCODE_XOR_R32_TO_RM32   (0x31) /* /r */
 #define OPCODE_ADD_R32_TO_RM32   (0x01)
 #define OPCODE_ADD_I32_TO_RM32   (0x81) /* /0 */
@@ -285,6 +287,14 @@ void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32
         asm_x86_nop(as);
     }
     asm_x86_mov_i32_to_r32(as, src_i32, dest_r32);
+}
+
+void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_AND_R32_TO_RM32);
+}
+
+void asm_x86_or_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_OR_R32_TO_RM32);
 }
 
 void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {

@@ -34,3 +34,25 @@ shr(1, 0)
 shr(1, 3)
 shr(42, 2)
 shr(-42, 2)
+
+@micropython.viper
+def and_(x:int, y:int):
+    print(x & y, y & x)
+and_(1, 0)
+and_(1, 3)
+and_(0xf0, 0x3f)
+and_(-42, 6)
+
+@micropython.viper
+def or_(x:int, y:int):
+    print(x | y, y | x)
+or_(1, 0)
+or_(1, 2)
+or_(-42, 5)
+
+@micropython.viper
+def xor(x:int, y:int):
+    print(x ^ y, y ^ x)
+xor(1, 0)
+xor(1, 2)
+xor(-42, 5)

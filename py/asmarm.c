@@ -175,6 +175,21 @@ STATIC uint asm_arm_op_sub_reg(uint rd, uint rn, uint rm) {
     return 0x0400000 | (rn << 16) | (rd << 12) | rm;
 }
 
+STATIC uint asm_arm_op_and_reg(uint rd, uint rn, uint rm) {
+    // and rd, rn, rm
+    return 0x0000000 | (rn << 16) | (rd << 12) | rm;
+}
+
+STATIC uint asm_arm_op_eor_reg(uint rd, uint rn, uint rm) {
+    // eor rd, rn, rm
+    return 0x0200000 | (rn << 16) | (rd << 12) | rm;
+}
+
+STATIC uint asm_arm_op_orr_reg(uint rd, uint rn, uint rm) {
+    // orr rd, rn, rm
+    return 0x1800000 | (rn << 16) | (rd << 12) | rm;
+}
+
 void asm_arm_bkpt(asm_arm_t *as) {
     // bkpt #0
     emit_al(as, 0x1200070); 
@@ -310,6 +325,21 @@ void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
     // sub rd, rn, rm
     emit_al(as, asm_arm_op_sub_reg(rd, rn, rm));
+}
+
+void asm_arm_and_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
+    // and rd, rn, rm
+    emit_al(as, asm_arm_op_and_reg(rd, rn, rm));
+}
+
+void asm_arm_eor_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
+    // eor rd, rn, rm
+    emit_al(as, asm_arm_op_eor_reg(rd, rn, rm));
+}
+
+void asm_arm_orr_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
+    // orr rd, rn, rm
+    emit_al(as, asm_arm_op_orr_reg(rd, rn, rm));
 }
 
 void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
