@@ -395,6 +395,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_ZLIBD (0)
 #endif
 
+#ifndef MICROPY_PY_UZLIB
+#define MICROPY_PY_UZLIB (0)
+#endif
+
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
 #endif
