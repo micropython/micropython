@@ -238,4 +238,12 @@ const mp_obj_module_t mp_module_ure = {
     .globals = (mp_obj_dict_t*)&mp_module_re_globals,
 };
 
+// Source files #include'd here to make sure they're compiled in
+// only if module is enabled by config setting.
+
+#define re1_5_fatal(x) assert(!x)
+#include "re1.5/compilecode.c"
+#include "re1.5/dumpcode.c"
+#include "re1.5/recursiveloop.c"
+
 #endif //MICROPY_PY_URE
