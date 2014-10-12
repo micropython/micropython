@@ -71,6 +71,10 @@ Q(micros)
 Q(elapsed_millis)
 Q(elapsed_micros)
 
+// for module weak links
+Q(re)
+Q(json)
+
 // for file class
 Q(seek)
 Q(tell)
@@ -296,6 +300,7 @@ Q(angle)
 Q(speed)
 
 // for os module
+Q(uos)
 Q(os)
 Q(/)
 Q(flash)
@@ -312,12 +317,14 @@ Q(stat)
 Q(urandom)
 
 // for time module
+Q(utime)
 Q(time)
 Q(localtime)
 Q(mktime)
 Q(sleep)
 
 // for select module
+Q(uselect)
 Q(select)
 Q(poll)
 Q(register)

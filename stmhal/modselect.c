@@ -287,7 +287,7 @@ STATIC mp_obj_t select_poll(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
 STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_select) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uselect) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_select_select_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
 };
@@ -303,8 +303,8 @@ STATIC const mp_obj_dict_t mp_module_select_globals = {
     },
 };
 
-const mp_obj_module_t mp_module_select = {
+const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_select,
+    .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };

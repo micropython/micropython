@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_module_t os_module;
 extern const mp_obj_module_t pyb_module;
 extern const mp_obj_module_t stm_module;
-extern const mp_obj_module_t time_module;
-extern const mp_obj_module_t mp_module_select;
+extern const mp_obj_module_t mp_module_uos;
+extern const mp_obj_module_t mp_module_utime;
+extern const mp_obj_module_t mp_module_uselect;
 extern const mp_obj_module_t mp_module_usocket;
 
 // additional helper functions exported by the modules

@@ -330,7 +330,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
 STATIC const mp_map_elem_t os_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
@@ -362,8 +362,8 @@ STATIC const mp_obj_dict_t os_module_globals = {
     },
 };
 
-const mp_obj_module_t os_module = {
+const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_os,
+    .name = MP_QSTR_uos,
     .globals = (mp_obj_dict_t*)&os_module_globals,
 };

@@ -336,7 +336,7 @@ STATIC mp_obj_t time_time(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
 STATIC const mp_map_elem_t time_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_time) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_localtime), (mp_obj_t)&time_localtime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mktime), (mp_obj_t)&time_mktime_obj },
@@ -355,8 +355,8 @@ STATIC const mp_obj_dict_t time_module_globals = {
     },
 };
 
-const mp_obj_module_t time_module = {
+const mp_obj_module_t mp_module_utime = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_time,
+    .name = MP_QSTR_utime,
     .globals = (mp_obj_dict_t*)&time_module_globals,
 };
