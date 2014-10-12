@@ -357,6 +357,21 @@ void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);
 }
 
+void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn) {
+    // ldr rd, [rn]
+    emit_al(as, 0x5900000 | (rn << 16) | (rd << 12));
+}
+
+void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
+    // ldrh rd, [rn]
+    emit_al(as, 0x1d000b0 | (rn << 16) | (rd << 12));
+}
+
+void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
+    // ldrb rd, [rn]
+    emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12));
+}
+
 void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm) {
     // str rd, [rm]
     emit_al(as, 0x5800000 | (rm << 16) | (rd << 12));

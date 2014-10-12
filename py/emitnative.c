@@ -151,9 +151,13 @@
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x64_add_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x64_sub_r64_r64((as), (reg_dest), (reg_src))
 
-#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x64_mov_r64_to_disp((as), (reg_src), (reg_base), 0)
-#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x64_mov_r8_to_disp((as), (reg_src), (reg_base), 0)
-#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x64_mov_r16_to_disp((as), (reg_src), (reg_base), 0)
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem64_to_r64((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem8_to_r64zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem16_to_r64zx((as), (reg_base), 0, (reg_dest))
+
+#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 0)
+#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x64_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
+#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x64_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
 
 #elif N_X86
 
@@ -279,9 +283,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x86_add_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x86_sub_r32_r32((as), (reg_dest), (reg_src))
 
-#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_disp((as), (reg_src), (reg_base), 0)
-#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x86_mov_r8_to_disp((as), (reg_src), (reg_base), 0)
-#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x86_mov_r16_to_disp((as), (reg_src), (reg_base), 0)
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem16_to_r32zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem8_to_r32zx((as), (reg_base), 0, (reg_dest))
+
+#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
+#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x86_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
+#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x86_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
 
 #elif N_THUMB
 
@@ -357,6 +365,10 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_AND, (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_thumb_add_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_thumb_sub_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
+
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_thumb_ldr_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrb_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrh_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_thumb_strb_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
@@ -436,6 +448,10 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_arm_and_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
 
 #define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base))
 #define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
@@ -1277,13 +1293,100 @@ STATIC void emit_native_load_build_class(emit_t *emit) {
 }
 
 STATIC void emit_native_load_subscr(emit_t *emit) {
-    vtype_kind_t vtype_lhs, vtype_rhs;
-    emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
-    if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
+    DEBUG_printf("load_subscr\n");
+    // need to compile: base[index]
+
+    // pop: index, base
+    // optimise case where index is an immediate
+    vtype_kind_t vtype_base = peek_vtype(emit, 1);
+
+    if (vtype_base == VTYPE_PYOBJ) {
+        // standard Python call
+        vtype_kind_t vtype_index;
+        emit_pre_pop_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1);
+        assert(vtype_index == VTYPE_PYOBJ);
         emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, (mp_uint_t)MP_OBJ_SENTINEL, REG_ARG_3);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
-        printf("ViperTypeError: can't do subscr of types %d and %d\n", vtype_lhs, vtype_rhs);
+        // viper load
+        // TODO The different machine architectures have very different
+        // capabilities and requirements for loads, so probably best to
+        // write a completely separate load-optimiser for each one.
+        stack_info_t *top = peek_stack(emit, 0);
+        if (top->vtype == VTYPE_INT && top->kind == STACK_IMM) {
+            // index is an immediate
+            mp_int_t index_value = top->u_imm;
+            emit_pre_pop_discard(emit); // discard index
+            int reg_base = REG_ARG_1;
+            int reg_index = REG_ARG_2;
+            emit_pre_pop_reg_flexible(emit, &vtype_base, &reg_base, reg_index, reg_index);
+            switch (vtype_base) {
+                case VTYPE_PTR8: {
+                    // pointer to 8-bit memory
+                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    if (index_value != 0) {
+                        // index is non-zero
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldrb_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
+                        ASM_MOV_IMM_TO_REG(emit->as, index_value, reg_index);
+                        ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
+                        reg_base = reg_index;
+                    }
+                    ASM_LOAD8_REG_REG(emit->as, REG_RET, reg_base); // load from (base+index)
+                    break;
+                }
+                case VTYPE_PTR16: {
+                    // pointer to 16-bit memory
+                    if (index_value != 0) {
+                        // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldrh_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
+                        ASM_MOV_IMM_TO_REG(emit->as, index_value << 1, reg_index);
+                        ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
+                        reg_base = reg_index;
+                    }
+                    ASM_LOAD16_REG_REG(emit->as, REG_RET, reg_base); // load from (base+2*index)
+                    break;
+                }
+                default:
+                    printf("ViperTypeError: can't load from type %d\n", vtype_base);
+            }
+        } else {
+            // index is not an immediate
+            vtype_kind_t vtype_index;
+            int reg_index = REG_ARG_2;
+            emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, REG_ARG_1);
+            emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            switch (vtype_base) {
+                case VTYPE_PTR8: {
+                    // pointer to 8-bit memory
+                    // TODO optimise to use thumb ldrb r1, [r2, r3]
+                    assert(vtype_index == VTYPE_INT);
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
+                    break;
+                }
+                case VTYPE_PTR16: {
+                    // pointer to 16-bit memory
+                    assert(vtype_index == VTYPE_INT);
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
+                    break;
+                }
+                default:
+                    printf("ViperTypeError: can't load from type %d\n", vtype_base);
+            }
+        }
+        emit_post_push_reg(emit, VTYPE_INT, REG_RET);
     }
 }
 

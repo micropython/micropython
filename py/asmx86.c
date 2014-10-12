@@ -50,8 +50,10 @@
 #define OPCODE_MOV_I32_TO_R32    (0xb8)
 //#define OPCODE_MOV_I32_TO_RM32   (0xc7)
 #define OPCODE_MOV_R8_TO_RM8     (0x88) /* /r */
-#define OPCODE_MOV_R32_TO_RM32   (0x89)
-#define OPCODE_MOV_RM32_TO_R32   (0x8b)
+#define OPCODE_MOV_R32_TO_RM32   (0x89) /* /r */
+#define OPCODE_MOV_RM32_TO_R32   (0x8b) /* /r */
+#define OPCODE_MOVZX_RM8_TO_R32  (0xb6) /* 0x0f 0xb6/r */
+#define OPCODE_MOVZX_RM16_TO_R32 (0xb7) /* 0x0f 0xb7/r */
 #define OPCODE_LEA_MEM_TO_R32    (0x8d) /* /r */
 #define OPCODE_AND_R32_TO_RM32   (0x21) /* /r */
 #define OPCODE_OR_R32_TO_RM32    (0x09) /* /r */
@@ -244,22 +246,32 @@ void asm_x86_mov_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_MOV_R32_TO_RM32);
 }
 
-void asm_x86_mov_r8_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
+void asm_x86_mov_r8_to_mem8(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
     asm_x86_write_byte_1(as, OPCODE_MOV_R8_TO_RM8);
     asm_x86_write_r32_disp(as, src_r32, dest_r32, dest_disp);
 }
 
-void asm_x86_mov_r16_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
+void asm_x86_mov_r16_to_mem16(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
     asm_x86_write_byte_2(as, OP_SIZE_PREFIX, OPCODE_MOV_R32_TO_RM32);
     asm_x86_write_r32_disp(as, src_r32, dest_r32, dest_disp);
 }
 
-void asm_x86_mov_r32_to_disp(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
+void asm_x86_mov_r32_to_mem32(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp) {
     asm_x86_write_byte_1(as, OPCODE_MOV_R32_TO_RM32);
     asm_x86_write_r32_disp(as, src_r32, dest_r32, dest_disp);
 }
 
-STATIC void asm_x86_mov_disp_to_r32(asm_x86_t *as, int src_r32, int src_disp, int dest_r32) {
+void asm_x86_mov_mem8_to_r32zx(asm_x86_t *as, int src_r32, int src_disp, int dest_r32) {
+    asm_x86_write_byte_2(as, 0x0f, OPCODE_MOVZX_RM8_TO_R32);
+    asm_x86_write_r32_disp(as, dest_r32, src_r32, src_disp);
+}
+
+void asm_x86_mov_mem16_to_r32zx(asm_x86_t *as, int src_r32, int src_disp, int dest_r32) {
+    asm_x86_write_byte_2(as, 0x0f, OPCODE_MOVZX_RM16_TO_R32);
+    asm_x86_write_r32_disp(as, dest_r32, src_r32, src_disp);
+}
+
+void asm_x86_mov_mem32_to_r32(asm_x86_t *as, int src_r32, int src_disp, int dest_r32) {
     asm_x86_write_byte_1(as, OPCODE_MOV_RM32_TO_R32);
     asm_x86_write_r32_disp(as, dest_r32, src_r32, src_disp);
 }
@@ -474,12 +486,12 @@ void asm_x86_push_arg(asm_x86_t *as, int src_arg_num) {
 #endif
 
 void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32) {
-    asm_x86_mov_disp_to_r32(as, ASM_X86_REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE, dest_r32);
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE, dest_r32);
 }
 
 #if 0
 void asm_x86_mov_r32_to_arg(asm_x86_t *as, int src_r32, int dest_arg_num) {
-    asm_x86_mov_r32_to_disp(as, src_r32, ASM_X86_REG_EBP, 2 * WORD_SIZE + dest_arg_num * WORD_SIZE);
+    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_EBP, 2 * WORD_SIZE + dest_arg_num * WORD_SIZE);
 }
 #endif
 
@@ -499,11 +511,11 @@ STATIC int asm_x86_local_offset_from_ebp(asm_x86_t *as, int local_num) {
 }
 
 void asm_x86_mov_local_to_r32(asm_x86_t *as, int src_local_num, int dest_r32) {
-    asm_x86_mov_disp_to_r32(as, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, src_local_num), dest_r32);
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, src_local_num), dest_r32);
 }
 
 void asm_x86_mov_r32_to_local(asm_x86_t *as, int src_r32, int dest_local_num) {
-    asm_x86_mov_r32_to_disp(as, src_r32, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, dest_local_num));
+    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, dest_local_num));
 }
 
 void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32) {

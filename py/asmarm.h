@@ -104,6 +104,9 @@ void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs);
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 
 // memory
+void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn);
+void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn);
+void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn);
 void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm);
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm);
 void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm);
