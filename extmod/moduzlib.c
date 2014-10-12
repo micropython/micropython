@@ -48,8 +48,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-STATIC int mod_uzlib_grow_buf(TINF_DATA *d, unsigned alloc_req)
-{
+STATIC int mod_uzlib_grow_buf(TINF_DATA *d, unsigned alloc_req) {
     if (alloc_req < 256) {
         alloc_req = 256;
     }
@@ -59,7 +58,7 @@ STATIC int mod_uzlib_grow_buf(TINF_DATA *d, unsigned alloc_req)
     return 0;
 }
 
-STATIC mp_obj_t mod_uzlib_decompress(uint n_args, mp_obj_t *args) {
+STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
@@ -112,4 +111,4 @@ const mp_obj_module_t mp_module_uzlib = {
 #include "uzlib/tinfzlib.c"
 #include "uzlib/adler32.c"
 
-#endif //MICROPY_PY_UZLIB
+#endif // MICROPY_PY_UZLIB

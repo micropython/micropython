@@ -73,6 +73,7 @@ Q(elapsed_micros)
 
 // for module weak links
 Q(re)
+Q(zlib)
 Q(json)
 
 // for file class

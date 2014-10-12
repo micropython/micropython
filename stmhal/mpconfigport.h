@@ -57,7 +57,7 @@
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_ZLIBD            (1)
+#define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)
 
@@ -77,6 +77,7 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t mp_module_ure;
+extern const struct _mp_obj_module_t mp_module_uzlib;
 extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
@@ -95,6 +96,7 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_zlib), (mp_obj_t)&mp_module_uzlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
