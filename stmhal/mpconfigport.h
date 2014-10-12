@@ -48,6 +48,7 @@
 */
 #define MICROPY_ENABLE_LFN          (1)
 #define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_MODULE_WEAK_REF     (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_SYS_EXIT         (1)
@@ -88,8 +89,10 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_select }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_REFS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
