@@ -1,7 +1,7 @@
 try:
     import zlib
 except ImportError:
-    import zlibd as zlib
+    import uzlib as zlib
 
 PATTERNS = [
     # Packed results produced by CPy's zlib.compress()

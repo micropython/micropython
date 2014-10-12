@@ -206,6 +206,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_ZLIBD
     { MP_OBJ_NEW_QSTR(MP_QSTR_zlibd), (mp_obj_t)&mp_module_zlibd },
 #endif
+#if MICROPY_PY_UZLIB
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uzlib), (mp_obj_t)&mp_module_uzlib },
+#endif
 #if MICROPY_PY_UJSON
     { MP_OBJ_NEW_QSTR(MP_QSTR_ujson), (mp_obj_t)&mp_module_ujson },
 #endif
