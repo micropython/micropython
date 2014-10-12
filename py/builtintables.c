@@ -227,3 +227,20 @@ const mp_obj_dict_t mp_builtin_module_dict_obj = {
         .table = (mp_map_elem_t*)mp_builtin_module_table,
     },
 };
+
+#if MICROPY_MODULE_WEAK_REF
+STATIC const mp_map_elem_t mp_builtin_module_weak_ref_table[] = {
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_REFS
+};
+
+const mp_obj_dict_t mp_builtin_module_weak_ref_dict_obj = {
+    .base = {&mp_type_dict},
+    .map = {
+        .all_keys_are_qstrs = 1,
+        .table_is_fixed_array = 1,
+        .used = MP_ARRAY_SIZE(mp_builtin_module_weak_ref_table),
+        .alloc = MP_ARRAY_SIZE(mp_builtin_module_weak_ref_table),
+        .table = (mp_map_elem_t*)mp_builtin_module_weak_ref_table,
+    },
+};
+#endif
