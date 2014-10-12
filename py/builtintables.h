@@ -26,3 +26,7 @@
 
 extern const mp_obj_dict_t mp_builtin_object_dict_obj;
 extern const mp_obj_dict_t mp_builtin_module_dict_obj;
+
+#if MICROPY_MODULE_WEAK_LINKS
+extern const mp_obj_dict_t mp_builtin_module_weak_links_dict_obj;
+#endif

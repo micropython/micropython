@@ -44,6 +44,7 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "builtin.h"
+#include "builtintables.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -251,12 +252,29 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args) {
             }
             DEBUG_printf("Current path: %s\n", vstr_str(&path));
 
-            // fail if we couldn't find the file
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", qstr_str(mod_name)));
+                #if MICROPY_MODULE_WEAK_LINKS
+                // check if there is a weak link to this module
+                if (i == mod_len) {
+                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_dict_obj.map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
+                    if (el == NULL) {
+                        goto no_exist;
+                    }
+                    // found weak linked module
+                    module_obj = el->value;
+                } else {
+                    no_exist:
+                #else
+                {
+                #endif
+                    // couldn't find the file, so fail
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", qstr_str(mod_name)));
+                }
+            } else {
+                // found the file, so get the module
+                module_obj = mp_module_get(mod_name);
             }
 
-            module_obj = mp_module_get(mod_name);
             if (module_obj == MP_OBJ_NULL) {
                 // module not already loaded, so load it!
 

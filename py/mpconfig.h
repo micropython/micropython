@@ -269,6 +269,11 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_NON_BLOCK (0)
 #endif
 
+// Whether module weak links are supported
+#ifndef MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_MODULE_WEAK_LINKS (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
@@ -409,6 +414,11 @@ typedef double mp_float_t;
 // Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
 #ifndef MICROPY_PORT_BUILTIN_MODULES
 #define MICROPY_PORT_BUILTIN_MODULES
+#endif
+
+// Any module weak links - see builtintables.c:mp_builtin_module_weak_links_table.
+#ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #endif
 
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.
