@@ -57,7 +57,7 @@
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_ZLIBD            (1)
+#define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
 
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
