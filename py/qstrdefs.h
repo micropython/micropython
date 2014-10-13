@@ -463,11 +463,6 @@ Q(setter)
 Q(deleter)
 #endif
 
-#if MICROPY_PY_ZLIBD
-Q(zlibd)
-Q(decompress)
-#endif
-
 #if MICROPY_PY_UZLIB
 Q(uzlib)
 Q(decompress)

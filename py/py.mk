@@ -111,7 +111,6 @@ PY_O_BASENAME = \
 	pfenv.o \
 	pfenv_printf.o \
 	../extmod/moductypes.o \
-	../extmod/modzlibd.o \
 	../extmod/modujson.o \
 	../extmod/modure.o \
 	../extmod/moduzlib.o \
