@@ -567,22 +567,28 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
     // compute number of new blocks that are requested
     mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
 
-    // get the number of consecutive tail blocks and
-    // the number of free blocks after last tail block
-    // stop if we reach (or are at) end of heap
+    // Get the total number of consecutive blocks that are already allocated to
+    // this chunk of memory, and then count the number of free blocks following
+    // it.  Stop if we reach the end of the heap, or if we find enough extra
+    // free blocks to satisfy the realloc.  Note that we need to compute the
+    // total size of the existing memory chunk so we can correctly and
+    // efficiently shrink it (see below for shrinking code).
     mp_uint_t n_free   = 0;
     mp_uint_t n_blocks = 1; // counting HEAD block
     mp_uint_t max_block = gc_alloc_table_byte_len * BLOCKS_PER_ATB;
-    while (block + n_blocks + n_free < max_block) {
-        if (n_blocks + n_free >= new_blocks) {
-            // stop as soon as we find enough blocks for n_bytes
-            break;
+    for (mp_uint_t bl = block + n_blocks; bl < max_block; bl++) {
+        byte block_type = ATB_GET_KIND(bl);
+        if (block_type == AT_TAIL) {
+            n_blocks++;
+            continue;
         }
-        byte block_type = ATB_GET_KIND(block + n_blocks + n_free);
-        switch (block_type) {
-            case AT_FREE: n_free++; continue;
-            case AT_TAIL: n_blocks++; continue;
-            case AT_MARK: assert(0);
+        if (block_type == AT_FREE) {
+            n_free++;
+            if (n_blocks + n_free >= new_blocks) {
+                // stop as soon as we find enough blocks for n_bytes
+                break;
+            }
+            continue;
         }
         break;
     }
@@ -595,7 +601,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
     // check if we can shrink the allocated area
     if (new_blocks < n_blocks) {
         // free unneeded tail blocks
-        for (mp_uint_t bl = block + new_blocks; ATB_GET_KIND(bl) == AT_TAIL; bl++) {
+        for (mp_uint_t bl = block + new_blocks, count = n_blocks - new_blocks; count > 0; bl++, count--) {
             ATB_ANY_TO_FREE(bl);
         }
 
