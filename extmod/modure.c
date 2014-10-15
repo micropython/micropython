@@ -38,7 +38,7 @@
 
 #if MICROPY_PY_URE
 
-#include "re1.5/regexp.h"
+#include "re1.5/re1.5.h"
 
 #define FLAG_DEBUG 0x1000
 
@@ -245,5 +245,6 @@ const mp_obj_module_t mp_module_ure = {
 #include "re1.5/compilecode.c"
 #include "re1.5/dumpcode.c"
 #include "re1.5/recursiveloop.c"
+#include "re1.5/charclass.c"
 
 #endif //MICROPY_PY_URE

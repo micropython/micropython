@@ -80,14 +80,18 @@ enum	/* Inst.opcode */
 	CONSUMERS = 1,
 	Char = CONSUMERS,
 	Any,
+	Class,
+
 	ASSERTS = 0x50,
 	Bol = ASSERTS,
 	Eol,
+
 	// Instructions which take relative offset as arg
 	JUMPS = 0x60,
 	Jmp = JUMPS,
 	Split,
 	RSplit,
+
 	// Other (special) instructions
 	Save = 0x7e,
 	Match = 0x7f,
@@ -139,5 +143,6 @@ int re1_5_sizecode(const char *re);
 int re1_5_compilecode(ByteProg *prog, const char *re);
 void re1_5_dumpcode(ByteProg *prog);
 void cleanmarks(ByteProg *prog);
+int _re1_5_classmatch(const char *pc, const char *sp);
 
 #endif /*_RE1_5_REGEXP__H*/

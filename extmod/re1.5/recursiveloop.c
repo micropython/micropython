@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "regexp.h"
+#include "re1.5.h"
 
 static int
 recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int nsubp)
@@ -21,6 +21,12 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 			if(*sp != *pc++)
 				return 0;
 		case Any:
+			sp++;
+			continue;
+		case Class:
+			if (!_re1_5_classmatch(pc, sp))
+				return 0;
+			pc += *(unsigned char*)pc * 2 + 1;
 			sp++;
 			continue;
 		case Match:

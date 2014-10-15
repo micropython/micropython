@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "regexp.h"
+#include "re1.5.h"
 
 void re1_5_dumpcode(ByteProg *prog)
 {
@@ -32,6 +32,16 @@ void re1_5_dumpcode(ByteProg *prog)
                 case Any:
                         printf("any\n");
                         break;
+                case Class: {
+                        int num = code[pc++];
+                        printf("class %d", num);
+                        while (num--) {
+                            printf(" 0x%02x-0x%02x", code[pc], code[pc + 1]);
+                            pc += 2;
+                        }
+                        printf("\n");
+                        break;
+                }
                 case Match:
                         printf("match\n");
                         break;

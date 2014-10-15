@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "regexp.h"
+#include "re1.5.h"
 
 static void insert_code(char *code, int at, int num, int *pc)
 {
@@ -45,6 +45,18 @@ int re1_5_sizecode(const char *re)
             break;
         case ')':
             break;
+        case '[': {
+            pc += 2;
+            re++;
+            while (*re != ']') {
+                if (!*re) return -1;
+                if (re[1] == '-') {
+                    re += 2;
+                }
+                pc += 2;
+                re++;
+            }
+        }
         }
     }
 
@@ -76,6 +88,24 @@ const char *_compilecode(const char *re, ByteProg *prog)
             EMIT(pc++, Any);
             prog->len++;
             break;
+        case '[': {
+            int cnt;
+            term = pc;
+            EMIT(pc++, Class);
+            pc++; // Skip # of pair byte
+            prog->len++;
+            re++;
+            for (cnt = 0; *re != ']'; re++, cnt++) {
+                if (!*re) return NULL;
+                EMIT(pc++, *re);
+                if (re[1] == '-') {
+                    re += 2;
+                }
+                EMIT(pc++, *re);
+            }
+            EMIT(term + 1, cnt);
+            break;
+        }
         case '(':
             term = pc;
 
