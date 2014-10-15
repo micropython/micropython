@@ -110,7 +110,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
                     }
                     break;
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
             }
 
             if (out_sz < more_bytes) {
@@ -178,7 +178,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
             // this as EOF.
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     } else {
         mp_obj_t s = mp_obj_new_str_of_type(STREAM_CONTENT_TYPE(o->type->stream_p), buf, out_sz); // will reallocate to use exact size
         m_free(buf, sz);
@@ -204,7 +204,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
             // see abobe.
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     } else {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
@@ -240,7 +240,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
                 }
                 break;
             }
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
         if (out_sz == 0) {
             break;
@@ -293,7 +293,7 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
 
         mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[Errno %d]", error));
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
         if (out_sz == 0) {
             // Back out previously added byte
