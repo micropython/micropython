@@ -61,16 +61,20 @@
 ///
 ///     uart.any()               # returns True if any characters waiting
 
+#define CHAR_WIDTH_8BIT (0)
+#define CHAR_WIDTH_9BIT (1)
+
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     pyb_uart_t uart_id;
     bool is_enabled;
     UART_HandleTypeDef uart;
     IRQn_Type irqn;
-    uint16_t recv_buf_len;              // buf can hold len-1 chars
+    uint16_t char_width;                // 0 for 7,8 bit chars, 1 for 9 bit chars
+    uint16_t recv_buf_len;              // len in chars; buf can hold len-1 chars
     volatile uint16_t recv_buf_head;    // indexes first empty slot
     uint16_t recv_buf_tail;             // indexes first full slot (not full if equals head)
-    byte *recv_buf;
+    byte *recv_buf;                     // byte or uint16_t, depending on char size
 };
 
 STATIC pyb_uart_obj_t *pyb_uart_obj_all[6];
@@ -230,11 +234,15 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 }
 
 // assumes there is a character available
-// TODO assumes transmission size is 8-bits wide
 int uart_rx_char(pyb_uart_obj_t *self) {
     if (self->recv_buf_tail != self->recv_buf_head) {
         // buffering via IRQ
-        int data = self->recv_buf[self->recv_buf_tail];
+        int data;
+        if (self->char_width == CHAR_WIDTH_9BIT) {
+            data = ((uint16_t*)self->recv_buf)[self->recv_buf_tail];
+        } else {
+            data = self->recv_buf[self->recv_buf_tail];
+        }
         self->recv_buf_tail = (self->recv_buf_tail + 1) % self->recv_buf_len;
         return data;
     } else {
@@ -243,7 +251,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
     }
 }
 
-void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
+STATIC void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
     uint8_t ch = c;
     HAL_UART_Transmit(&uart_obj->uart, &ch, 1, 100000);
 }
@@ -273,14 +281,20 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
-        uint8_t data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
+        int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
         if (self->recv_buf_len != 0) {
             uint16_t next_head = (self->recv_buf_head + 1) % self->recv_buf_len;
             if (next_head != self->recv_buf_tail) {
                 // only store data if room in buf
-                self->recv_buf[self->recv_buf_head] = data;
+                if (self->char_width == CHAR_WIDTH_9BIT) {
+                    ((uint16_t*)self->recv_buf)[self->recv_buf_head] = data;
+                } else {
+                    self->recv_buf[self->recv_buf_head] = data;
+                }
                 self->recv_buf_head = next_head;
             }
+        } else {
+            // TODO set flag for buffer overflow
         }
     }
 }
@@ -353,7 +367,12 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
 
     // setup the receive buffer
-    m_del(byte, self->recv_buf, self->recv_buf_len);
+    m_del(byte, self->recv_buf, self->recv_buf_len << self->char_width);
+    if (init->WordLength == UART_WORDLENGTH_9B && init->Parity == UART_PARITY_NONE) {
+        self->char_width = CHAR_WIDTH_9BIT;
+    } else {
+        self->char_width = CHAR_WIDTH_8BIT;
+    }
     self->recv_buf_head = 0;
     self->recv_buf_tail = 0;
     if (args[4].u_int <= 0) {
@@ -365,7 +384,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     } else {
         // receive buffer using interrupts
         self->recv_buf_len = args[4].u_int;
-        self->recv_buf = m_new(byte, args[4].u_int);
+        self->recv_buf = m_new(byte, args[4].u_int << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
         HAL_NVIC_SetPriority(self->irqn, 0xe, 0xe); // next-to lowest priority
         HAL_NVIC_EnableIRQ(self->irqn);
@@ -425,6 +444,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
         self->is_enabled = false;
+        self->char_width = CHAR_WIDTH_8BIT;
         self->recv_buf_len = 0;
         self->recv_buf_head = 0;
         self->recv_buf_tail = 0;
@@ -499,19 +519,17 @@ STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
-/// \method send_chr(send, *, timeout=5000)
+/// \method send_char(send, *, timeout=1000)
 /// Send data on the bus:
 ///
 ///   - `send` is an integer to send.
 ///   - `timeout` is the timeout in milliseconds to wait for the send.
 ///
 /// Return value: `None`.
-STATIC mp_obj_t pyb_uart_send_chr(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // TODO assumes transmission size is 8-bits wide
-
+STATIC mp_obj_t pyb_uart_send_char(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
     };
 
     pyb_uart_obj_t *self = pos_args[0];
@@ -520,11 +538,11 @@ STATIC mp_obj_t pyb_uart_send_chr(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // get the buffer to send from
-    uint8_t data = args[0].u_int;
+    // get the character to send (might be 9 bits)
+    uint16_t data = args[0].u_int;
 
     // send the data
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, &data, 1, args[1].u_int);
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)&data, 1, args[1].u_int);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
@@ -533,9 +551,9 @@ STATIC mp_obj_t pyb_uart_send_chr(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_chr_obj, 1, pyb_uart_send_chr);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_char_obj, 1, pyb_uart_send_char);
 
-/// \method send(buf, *, timeout=5000)
+/// \method send(buf, *, timeout=1000)
 /// Send data on the bus:
 ///
 ///   - `buf` is the data to send (a buffer object).
@@ -543,11 +561,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_chr_obj, 1, pyb_uart_send_chr);
 ///
 /// Return value: `None`.
 STATIC mp_obj_t pyb_uart_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // TODO assumes transmission size is 8-bits wide
-
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
     };
 
     pyb_uart_obj_t *self = pos_args[0];
@@ -561,7 +577,7 @@ STATIC mp_obj_t pyb_uart_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
     mp_get_buffer_raise(args[0].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // send the data
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, bufinfo.buf, bufinfo.len, args[1].u_int);
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, bufinfo.buf, bufinfo.len >> self->char_width, args[1].u_int);
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
@@ -572,16 +588,16 @@ STATIC mp_obj_t pyb_uart_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_obj, 1, pyb_uart_send);
 
-/// \method recv_chr(*, timeout=5000)
+/// \method recv_char(*, timeout=1000)
 ///
 /// Receive a single character on the bus:
 ///
 ///   - `timeout` is the timeout in milliseconds to wait for the receive.
 ///
 /// Return value: The character received, as an integer.  Returns -1 on timeout.
-STATIC mp_obj_t pyb_uart_recv_chr(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_uart_recv_char(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
     };
 
     pyb_uart_obj_t *self = pos_args[0];
@@ -598,22 +614,22 @@ STATIC mp_obj_t pyb_uart_recv_chr(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_recv_chr_obj, 1, pyb_uart_recv_chr);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_recv_char_obj, 1, pyb_uart_recv_char);
 
-/// \method recv(len, *, timeout=5000, timeout_chr=5)
+/// \method recv(len, *, timeout=1000, timeout_char=0)
 ///
 /// Receive data on the bus:
 ///
 ///   - `len` is the maximum number of characters to receive.
 ///   - `timeout` is the timeout in milliseconds to wait for the first character.
-///   - `timeout_chr` is the timeout in milliseconds to wait between characters.
+///   - `timeout_char` is the timeout in milliseconds to wait between characters.
 ///
 /// Return value: a bytearray of the characters received.
 STATIC mp_obj_t pyb_uart_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_len, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
-        { MP_QSTR_timeout_chr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     pyb_uart_obj_t *self = pos_args[0];
@@ -630,12 +646,18 @@ STATIC mp_obj_t pyb_uart_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
 
     // allocate a bytes object to hold the result
     byte *buf;
-    mp_obj_t buf_obj = mp_obj_str_builder_start(&mp_type_bytes, len, &buf);
+    mp_obj_t buf_obj = mp_obj_str_builder_start(&mp_type_bytes, len << self->char_width, &buf);
 
     // receive the data
     byte *orig_buf = buf;
     for (;;) {
-        *buf++ = uart_rx_char(self);
+        int data = uart_rx_char(self);
+        if (self->char_width == CHAR_WIDTH_9BIT) {
+            *(uint16_t*)buf = data;
+            buf += 2;
+        } else {
+            *buf++ = data;
+        }
         if (len-- == 0) {
             // return the received chars
             return mp_obj_str_builder_end(buf_obj);
@@ -649,22 +671,22 @@ STATIC mp_obj_t pyb_uart_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_recv_obj, 1, pyb_uart_recv);
 
-/// \method recv_into(buf, len=-1, *, timeout=5000, timeout_chr=5)
+/// \method recv_into(buf, len=-1, *, timeout=1000, timeout_char=0)
 ///
 /// Receive data on the bus:
 ///
 ///   - `buf` is a mutable buffer which will be filled with received characters.
 ///   - `len` is the maximum number of characters to receive; if negative, uses len(buf).
 ///   - `timeout` is the timeout in milliseconds to wait for the first character.
-///   - `timeout_chr` is the timeout in milliseconds to wait between characters.
+///   - `timeout_char` is the timeout in milliseconds to wait between characters.
 ///
 /// Return value: number of characters stored in buf.
 STATIC mp_obj_t pyb_uart_recv_into(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buf, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_len, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
-        { MP_QSTR_timeout_chr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     pyb_uart_obj_t *self = pos_args[0];
@@ -676,6 +698,7 @@ STATIC mp_obj_t pyb_uart_recv_into(mp_uint_t n_args, const mp_obj_t *pos_args, m
     // get the buffer to receive into
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    bufinfo.len >>= self->char_width;
 
     // get the length
     if (args[1].u_int >= 0 && args[1].u_int < bufinfo.len) {
@@ -690,10 +713,16 @@ STATIC mp_obj_t pyb_uart_recv_into(mp_uint_t n_args, const mp_obj_t *pos_args, m
     // receive the chars
     byte *buf = bufinfo.buf;
     for (;;) {
-        *buf++ = uart_rx_char(self);
+        int data = uart_rx_char(self);
+        if (self->char_width == CHAR_WIDTH_9BIT) {
+            *(uint16_t*)buf = data;
+            buf += 2;
+        } else {
+            *buf++ = data;
+        }
         if (bufinfo.len-- == 0 || !uart_rx_wait(self, args[3].u_int)) {
             // return the number of chars received
-            return mp_obj_new_int(buf - (byte*)bufinfo.buf);
+            return mp_obj_new_int((buf - (byte*)bufinfo.buf) >> self->char_width);
         }
     }
 }
@@ -704,9 +733,9 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_uart_any_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send_chr), (mp_obj_t)&pyb_uart_send_chr_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send_char), (mp_obj_t)&pyb_uart_send_char_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_uart_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_chr), (mp_obj_t)&pyb_uart_recv_chr_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_char), (mp_obj_t)&pyb_uart_recv_char_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_uart_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv_into), (mp_obj_t)&pyb_uart_recv_into_obj },
 };
