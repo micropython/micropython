@@ -24,3 +24,9 @@ generator_of_generators = (((x, y) for x in range(2)) for y in range(3))
 for i in generator_of_generators:
     for j in i:
         print(j)
+
+# test that printing of closed-over generators doesn't lead to segfaults
+def genc():
+    foo = 1
+    repr(lambda: (yield foo))
+genc()

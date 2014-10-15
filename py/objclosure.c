@@ -67,7 +67,9 @@ mp_obj_t closure_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void closure_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_closure_t *o = o_in;
-    print(env, "<closure %s at %p, n_closed=%u ", mp_obj_fun_get_name(o->fun), o, o->n_closed);
+    print(env, "<closure ");
+    mp_obj_print_helper(print, env, o->fun, PRINT_REPR);
+    print(env, " at %p, n_closed=%u ", o, o->n_closed);
     for (mp_uint_t i = 0; i < o->n_closed; i++) {
         if (o->closed[i] == MP_OBJ_NULL) {
             print(env, "(nil)");
