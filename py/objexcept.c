@@ -88,10 +88,10 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 
     // Update the 2 variables atomically so that an interrupt can't occur
     // between the assignments.
-    mp_uint_t irq_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     mp_emergency_exception_buf_size = size;
     mp_emergency_exception_buf = buf;
-    MICROPY_END_ATOMIC_SECTION(irq_state);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     if (old_buf != NULL) {
         m_free(old_buf, old_size);
