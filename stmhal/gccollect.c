@@ -45,7 +45,10 @@ void gc_collect(void) {
     uint32_t start = HAL_GetTick();
 
     // start the GC
-    gc_collect_start();
+    if (!gc_collect_start()) {
+        // gc is already running
+        return;
+    }
 
     // We need to scan everything in RAM that can hold a pointer.
     // The data segment is used, but should not contain pointers, so we just scan the bss.
