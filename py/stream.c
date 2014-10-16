@@ -293,9 +293,24 @@ STATIC mp_obj_t stream_unbuffered_readline(uint n_args, const mp_obj_t *args) {
 
         mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
+            if (is_nonblocking_error(error)) {
+                if (vstr->len == 1) {
+                    // We just incremented it, but otherwise we read nothing
+                    // and immediately got EAGAIN. This is case is not well
+                    // specified in
+                    // https://docs.python.org/3/library/io.html#io.IOBase.readline
+                    // unlike similar case for read(). But we follow the latter's
+                    // behavior - return None.
+                    vstr_free(vstr);
+                    return mp_const_none;
+                } else {
+                    goto done;
+                }
+            }
             nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
         if (out_sz == 0) {
+done:
             // Back out previously added byte
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.
