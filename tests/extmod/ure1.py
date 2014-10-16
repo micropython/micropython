@@ -20,13 +20,27 @@ try:
 except IndexError:
     print("IndexError")
 
-r = re.compile("[a-c]")
+r = re.compile("[a-cu-z]")
 m = r.match("a")
+print(m.group(0))
+m = r.match("z")
 print(m.group(0))
 m = r.match("d")
 print(m)
 m = r.match("A")
 print(m)
+print("===")
+
+r = re.compile("[^a-cu-z]")
+m = r.match("a")
+print(m)
+m = r.match("z")
+print(m)
+m = r.match("d")
+print(m.group(0))
+m = r.match("A")
+print(m.group(0))
+
 
 r = re.compile("o+")
 m = r.search("foobar")

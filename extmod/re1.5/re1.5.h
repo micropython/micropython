@@ -81,6 +81,7 @@ enum	/* Inst.opcode */
 	Char = CONSUMERS,
 	Any,
 	Class,
+	ClassNot,
 
 	ASSERTS = 0x50,
 	Bol = ASSERTS,

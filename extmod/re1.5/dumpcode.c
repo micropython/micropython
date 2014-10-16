@@ -32,9 +32,11 @@ void re1_5_dumpcode(ByteProg *prog)
                 case Any:
                         printf("any\n");
                         break;
-                case Class: {
-                        int num = code[pc++];
-                        printf("class %d", num);
+                case Class:
+                case ClassNot: {
+                        int num = code[pc];
+                        printf("class%s %d", (code[pc - 1] == ClassNot ? "not" : ""), num);
+                        pc++;
                         while (num--) {
                             printf(" 0x%02x-0x%02x", code[pc], code[pc + 1]);
                             pc += 2;

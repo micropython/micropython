@@ -24,6 +24,7 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 			sp++;
 			continue;
 		case Class:
+		case ClassNot:
 			if (!_re1_5_classmatch(pc, sp))
 				return 0;
 			pc += *(unsigned char*)pc * 2 + 1;

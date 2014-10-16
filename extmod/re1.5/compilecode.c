@@ -48,6 +48,7 @@ int re1_5_sizecode(const char *re)
         case '[': {
             pc += 2;
             re++;
+            if (*re == '^') re++;
             while (*re != ']') {
                 if (!*re) return -1;
                 if (re[1] == '-') {
@@ -91,10 +92,15 @@ const char *_compilecode(const char *re, ByteProg *prog)
         case '[': {
             int cnt;
             term = pc;
-            EMIT(pc++, Class);
+            re++;
+            if (*re == '^') {
+                EMIT(pc++, ClassNot);
+                re++;
+            } else {
+                EMIT(pc++, Class);
+            }
             pc++; // Skip # of pair byte
             prog->len++;
-            re++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
                 if (!*re) return NULL;
                 EMIT(pc++, *re);
