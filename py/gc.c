@@ -58,7 +58,11 @@ STATIC mp_uint_t gc_alloc_table_byte_len;
 #if MICROPY_ENABLE_FINALISER
 STATIC byte *gc_finaliser_table_start;
 #endif
-STATIC mp_uint_t *gc_pool_start;
+// We initialise gc_pool_start to a dummy value so it stays out of the bss
+// section.  This makes sure we don't trace this pointer in a collect cycle.
+// If we did trace it, it would make the first block of the heap always
+// reachable, and hence we can never free that block.
+STATIC mp_uint_t *gc_pool_start = (void*)4;
 STATIC mp_uint_t *gc_pool_end;
 
 STATIC int gc_stack_overflow;
@@ -152,13 +156,6 @@ void gc_init(void *start, void *end) {
     // clear FTBs
     memset(gc_finaliser_table_start, 0, gc_finaliser_table_byte_len);
 #endif
-
-    // allocate first block because gc_pool_start points there and it will never
-    // be freed, so allocating 1 block with null pointers will minimise memory loss
-    ATB_FREE_TO_HEAD(0);
-    for (int i = 0; i < WORDS_PER_BLOCK; i++) {
-        gc_pool_start[i] = 0;
-    }
 
     // set last free ATB index to start of heap
     gc_last_free_atb_index = 0;
