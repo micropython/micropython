@@ -1677,39 +1677,21 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     EMIT_ARG(label_assign, l_fail);
 
-    if (!MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
-        // compile elif blocks
+    // compile elif blocks (if any)
+    mp_parse_node_t *pn_elif;
+    int n_elif = list_get(&pns->nodes[2], PN_if_stmt_elif_list, &pn_elif);
+    for (int i = 0; i < n_elif; i++) {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_elif[i], PN_if_stmt_elif)); // should be
+        mp_parse_node_struct_t *pns_elif = (mp_parse_node_struct_t*)pn_elif[i];
 
-        mp_parse_node_struct_t *pns_elif = (mp_parse_node_struct_t*)pns->nodes[2];
+        l_fail = comp_next_label(comp);
+        c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
 
-        if (MP_PARSE_NODE_STRUCT_KIND(pns_elif) == PN_if_stmt_elif_list) {
-            // multiple elif blocks
-
-            int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_elif);
-            for (int i = 0; i < n; i++) {
-                mp_parse_node_struct_t *pns_elif2 = (mp_parse_node_struct_t*)pns_elif->nodes[i];
-                l_fail = comp_next_label(comp);
-                c_if_cond(comp, pns_elif2->nodes[0], false, l_fail); // elif condition
-
-                compile_node(comp, pns_elif2->nodes[1]); // elif block
-                if (!EMIT(last_emit_was_return_value)) { // simple optimisation to align with CPython
-                    EMIT_ARG(jump, l_end);
-                }
-                EMIT_ARG(label_assign, l_fail);
-            }
-
-        } else {
-            // a single elif block
-
-            l_fail = comp_next_label(comp);
-            c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
-
-            compile_node(comp, pns_elif->nodes[1]); // elif block
-            if (!EMIT(last_emit_was_return_value)) { // simple optimisation to align with CPython
-                EMIT_ARG(jump, l_end);
-            }
-            EMIT_ARG(label_assign, l_fail);
+        compile_node(comp, pns_elif->nodes[1]); // elif block
+        if (!EMIT(last_emit_was_return_value)) { // simple optimisation to align with CPython
+            EMIT_ARG(jump, l_end);
         }
+        EMIT_ARG(label_assign, l_fail);
     }
 
     // compile else block
