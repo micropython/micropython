@@ -83,7 +83,7 @@ typedef struct _compiler_t {
     uint16_t break_label; // highest bit set indicates we are breaking out of a for loop
     uint16_t continue_label;
     uint16_t cur_except_level; // increased for SETUP_EXCEPT, SETUP_FINALLY; decreased for POP_BLOCK, POP_EXCEPT
-    int break_continue_except_level;
+    uint16_t break_continue_except_level;
 
     scope_t *scope_head;
     scope_t *scope_cur;
@@ -1367,6 +1367,7 @@ void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->break_label == 0) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'break' outside loop");
     }
+    assert(comp->cur_except_level >= comp->break_continue_except_level);
     EMIT_ARG(break_loop, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
@@ -1374,6 +1375,7 @@ void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->continue_label == 0) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'continue' outside loop");
     }
+    assert(comp->cur_except_level >= comp->break_continue_except_level);
     EMIT_ARG(continue_loop, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
@@ -1717,8 +1719,9 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 #define START_BREAK_CONTINUE_BLOCK \
-    uint old_break_label = comp->break_label; \
-    uint old_continue_label = comp->continue_label; \
+    uint16_t old_break_label = comp->break_label; \
+    uint16_t old_continue_label = comp->continue_label; \
+    uint16_t old_break_continue_except_level = comp->break_continue_except_level; \
     uint break_label = comp_next_label(comp); \
     uint continue_label = comp_next_label(comp); \
     comp->break_label = break_label; \
@@ -1728,7 +1731,7 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #define END_BREAK_CONTINUE_BLOCK \
     comp->break_label = old_break_label; \
     comp->continue_label = old_continue_label; \
-    comp->break_continue_except_level = comp->cur_except_level;
+    comp->break_continue_except_level = old_break_continue_except_level;
 
 void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     START_BREAK_CONTINUE_BLOCK
