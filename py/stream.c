@@ -166,7 +166,8 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
     }
     #endif
 
-    byte *buf = m_new(byte, sz);
+    byte *buf;
+    mp_obj_t ret_obj = mp_obj_str_builder_start(STREAM_CONTENT_TYPE(o->type->stream_p), sz, &buf);
     int error;
     mp_uint_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
     if (out_sz == MP_STREAM_ERROR) {
@@ -180,9 +181,7 @@ STATIC mp_obj_t stream_read(uint n_args, const mp_obj_t *args) {
         }
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     } else {
-        mp_obj_t s = mp_obj_new_str_of_type(STREAM_CONTENT_TYPE(o->type->stream_p), buf, out_sz); // will reallocate to use exact size
-        m_free(buf, sz);
-        return s;
+        return mp_obj_str_builder_end_with_len(ret_obj, out_sz);
     }
 }
 
