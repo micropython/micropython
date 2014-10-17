@@ -696,6 +696,34 @@ void gc_dump_alloc_table(void) {
         switch (ATB_GET_KIND(bl)) {
             case AT_FREE: c = '.'; break;
             case AT_HEAD: c = 'h'; break;
+            /* this prints out if the object is reachable from BSS or STACK (for unix only)
+            case AT_HEAD: {
+                extern char __bss_start, _end;
+                extern char *stack_top;
+                c = 'h';
+                void **ptrs = (void**)&__bss_start;
+                mp_uint_t len = ((mp_uint_t)&_end - (mp_uint_t)&__bss_start) / sizeof(mp_uint_t);
+                for (mp_uint_t i = 0; i < len; i++) {
+                    mp_uint_t ptr = (mp_uint_t)ptrs[i];
+                    if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
+                        c = 'B';
+                        break;
+                    }
+                }
+                if (c == 'h') {
+                    ptrs = (void**)&c;
+                    len = ((mp_uint_t)stack_top - (mp_uint_t)&c) / sizeof(mp_uint_t);
+                    for (mp_uint_t i = 0; i < len; i++) {
+                        mp_uint_t ptr = (mp_uint_t)ptrs[i];
+                        if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
+                            c = 'S';
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+            */
             /* this prints the uPy object type of the head block
             case AT_HEAD: {
                 mp_uint_t *ptr = gc_pool_start + bl * WORDS_PER_BLOCK;
