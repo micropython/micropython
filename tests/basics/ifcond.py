@@ -1,5 +1,38 @@
 # test if conditions which are optimised by the compiler
 
+if 0:
+    print(5)
+else:
+    print(6)
+
+if 1:
+    print(7)
+
+if 2:
+    print(8)
+
+if -1:
+    print(9)
+elif 1:
+    print(10)
+
+if 0:
+    print(11)
+else:
+    print(12)
+
+if 0:
+    print(13)
+elif 1:
+    print(14)
+
+if 0:
+    print(15)
+elif 0:
+    print(16)
+else:
+    print(17)
+
 f2 = 0
 
 def f(t1, t2, f1):

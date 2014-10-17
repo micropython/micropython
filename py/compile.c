@@ -603,12 +603,13 @@ void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC bool node_is_const_false(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE);
-    // untested: || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
+    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
+        || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
 }
 
 STATIC bool node_is_const_true(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE) || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 1);
+    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE)
+        || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) != 0);
 }
 
 #if MICROPY_EMIT_CPYTHON
@@ -1658,24 +1659,30 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     uint l_end = comp_next_label(comp);
 
-    uint l_fail = comp_next_label(comp);
-    c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
+    // optimisation: don't emit anything when "if False" (not in CPython)
+    if (MICROPY_EMIT_CPYTHON || !node_is_const_false(pns->nodes[0])) {
+        uint l_fail = comp_next_label(comp);
+        c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
-    compile_node(comp, pns->nodes[1]); // if block
+        compile_node(comp, pns->nodes[1]); // if block
 
-    if (
-#if !MICROPY_EMIT_CPYTHON
-        // optimisation to not jump over non-existent elif/else blocks (this optimisation is not in CPython)
-        !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3])) &&
-#endif
-        // optimisation to not jump if last instruction was return
-        !EMIT(last_emit_was_return_value)
-        ) {
-        // jump over elif/else blocks
-        EMIT_ARG(jump, l_end);
+        // optimisation: skip everything else when "if True" (not in CPython)
+        if (!MICROPY_EMIT_CPYTHON && node_is_const_true(pns->nodes[0])) {
+            goto done;
+        }
+
+        if (
+            // optimisation: don't jump over non-existent elif/else blocks (not in CPython)
+            (MICROPY_EMIT_CPYTHON || !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3])))
+            // optimisation: don't jump if last instruction was return
+            && !EMIT(last_emit_was_return_value)
+            ) {
+            // jump over elif/else blocks
+            EMIT_ARG(jump, l_end);
+        }
+
+        EMIT_ARG(label_assign, l_fail);
     }
-
-    EMIT_ARG(label_assign, l_fail);
 
     // compile elif blocks (if any)
     mp_parse_node_t *pn_elif;
@@ -1684,19 +1691,30 @@ void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_elif[i], PN_if_stmt_elif)); // should be
         mp_parse_node_struct_t *pns_elif = (mp_parse_node_struct_t*)pn_elif[i];
 
-        l_fail = comp_next_label(comp);
-        c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
+        // optimisation: don't emit anything when "if False" (not in CPython)
+        if (MICROPY_EMIT_CPYTHON || !node_is_const_false(pns_elif->nodes[0])) {
+            uint l_fail = comp_next_label(comp);
+            c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
 
-        compile_node(comp, pns_elif->nodes[1]); // elif block
-        if (!EMIT(last_emit_was_return_value)) { // simple optimisation to align with CPython
-            EMIT_ARG(jump, l_end);
+            compile_node(comp, pns_elif->nodes[1]); // elif block
+
+            // optimisation: skip everything else when "elif True" (not in CPython)
+            if (!MICROPY_EMIT_CPYTHON && node_is_const_true(pns_elif->nodes[0])) {
+                goto done;
+            }
+
+            // optimisation: don't jump if last instruction was return
+            if (!EMIT(last_emit_was_return_value)) {
+                EMIT_ARG(jump, l_end);
+            }
+            EMIT_ARG(label_assign, l_fail);
         }
-        EMIT_ARG(label_assign, l_fail);
     }
 
     // compile else block
     compile_node(comp, pns->nodes[3]); // can be null
 
+done:
     EMIT_ARG(label_assign, l_end);
 }
 
@@ -1735,12 +1753,16 @@ void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT(pop_block);
     }
 #else
-    uint top_label = comp_next_label(comp);
-    EMIT_ARG(jump, continue_label);
-    EMIT_ARG(label_assign, top_label);
-    compile_node(comp, pns->nodes[1]); // body
-    EMIT_ARG(label_assign, continue_label);
-    c_if_cond(comp, pns->nodes[0], true, top_label); // condition
+    if (!node_is_const_false(pns->nodes[0])) { // optimisation: don't emit anything for "while False"
+        uint top_label = comp_next_label(comp);
+        if (!node_is_const_true(pns->nodes[0])) { // optimisation: don't jump to cond for "while True"
+            EMIT_ARG(jump, continue_label);
+        }
+        EMIT_ARG(label_assign, top_label);
+        compile_node(comp, pns->nodes[1]); // body
+        EMIT_ARG(label_assign, continue_label);
+        c_if_cond(comp, pns->nodes[0], true, top_label); // condition
+    }
 #endif
 
     // break/continue apply to outer loop (if any) in the else block
