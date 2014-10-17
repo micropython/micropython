@@ -37,7 +37,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
-#include "bufhelper.h"
+#include "stream.h"
 #include "uart.h"
 #include "pybioctl.h"
 
@@ -77,6 +77,14 @@ struct _pyb_uart_obj_t {
     volatile uint16_t recv_buf_head;    // indexes first empty slot
     uint16_t recv_buf_tail;             // indexes first full slot (not full if equals head)
     byte *recv_buf;                     // byte or uint16_t, depending on char size
+};
+
+// this table converts from HAL_StatusTypeDef to POSIX errno
+STATIC const byte hal_status_to_errno_table[4] = {
+    [HAL_OK] = 0,
+    [HAL_ERROR] = EIO,
+    [HAL_BUSY] = EBUSY,
+    [HAL_TIMEOUT] = ETIMEDOUT,
 };
 
 STATIC pyb_uart_obj_t *pyb_uart_obj_all[6];
@@ -523,14 +531,10 @@ STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
-/// \method send_char(char)
-///
-/// Send data on the bus:
-///
-///   - `send` is an integer to send.
-///
+/// \method writechar(char)
+/// Write a single character on the bus.  `char` is an integer to write.
 /// Return value: `None`.
-STATIC mp_obj_t pyb_uart_send_char(mp_obj_t self_in, mp_obj_t char_in) {
+STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
     pyb_uart_obj_t *self = self_in;
 
     // get the character to send (might be 9 bits)
@@ -540,48 +544,18 @@ STATIC mp_obj_t pyb_uart_send_char(mp_obj_t self_in, mp_obj_t char_in) {
     HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)&data, 1, self->timeout);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, (mp_obj_t)(mp_uint_t)hal_status_to_errno_table[status]));
     }
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_uart_send_char_obj, pyb_uart_send_char);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_uart_writechar_obj, pyb_uart_writechar);
 
-/// \method send(buf)
-///
-/// Send data on the bus:
-///
-///   - `buf` is the data to send (a buffer object).
-///
-/// Return value: `None`.
-STATIC mp_obj_t pyb_uart_send(mp_obj_t self_in, mp_obj_t buf_in) {
-    pyb_uart_obj_t *self = self_in;
-
-    // get the buffer to send from
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-
-    // send the data
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, bufinfo.buf, bufinfo.len >> self->char_width, self->timeout);
-
-    if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status));
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_uart_send_obj, pyb_uart_send);
-
-/// \method recv_char()
-///
+/// \method readchar()
 /// Receive a single character on the bus.
 /// Return value: The character received, as an integer.  Returns -1 on timeout.
-STATIC mp_obj_t pyb_uart_recv_char(mp_obj_t self_in) {
+STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-
-    // receive the data
     if (uart_rx_wait(self, self->timeout)) {
         return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
     } else {
@@ -589,59 +563,17 @@ STATIC mp_obj_t pyb_uart_recv_char(mp_obj_t self_in) {
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_recv_char_obj, pyb_uart_recv_char);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
-/// \method recv(len)
+/// \method readinto(buf, len=-1)
 ///
-/// Receive data on the bus:
-///
-///   - `len` is the maximum number of characters to receive.
-///
-/// Return value: a bytearray of the characters received.
-STATIC mp_obj_t pyb_uart_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    pyb_uart_obj_t *self = self_in;
-    mp_int_t len = mp_obj_get_int(len_in);
-
-    // make sure we want at least 1 char, and wait for it to become available
-    if (len <= 0 || !uart_rx_wait(self, self->timeout)) {
-        return mp_const_empty_bytes;
-    }
-
-    // allocate a bytes object to hold the result
-    byte *buf;
-    mp_obj_t buf_obj = mp_obj_str_builder_start(&mp_type_bytes, len << self->char_width, &buf);
-
-    // receive the data
-    byte *orig_buf = buf;
-    for (;;) {
-        int data = uart_rx_char(self);
-        if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
-            buf += 2;
-        } else {
-            *buf++ = data;
-        }
-        if (--len == 0) {
-            // return the received chars
-            return mp_obj_str_builder_end(buf_obj);
-        }
-        if (!uart_rx_wait(self, self->timeout_char)) {
-            // timeout, so truncate the bytes object
-            return mp_obj_str_builder_end_with_len(buf_obj, buf - orig_buf);
-        }
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_uart_recv_obj, pyb_uart_recv);
-
-/// \method recv_into(buf, len=-1)
-///
-/// Receive data on the bus:
+/// Read data on the bus:
 ///
 ///   - `buf` is a mutable buffer which will be filled with received characters.
 ///   - `len` is the maximum number of characters to receive; if negative, uses len(buf).
 ///
 /// Return value: number of characters stored in buf.
-STATIC mp_obj_t pyb_uart_recv_into(mp_uint_t n_args, const mp_obj_t *pos_args) {
+STATIC mp_obj_t pyb_uart_readinto(mp_uint_t n_args, const mp_obj_t *pos_args) {
     pyb_uart_obj_t *self = pos_args[0];
 
     // get the buffer to receive into
@@ -678,23 +610,96 @@ STATIC mp_obj_t pyb_uart_recv_into(mp_uint_t n_args, const mp_obj_t *pos_args) {
         }
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(pyb_uart_recv_into_obj, 2, pyb_uart_recv_into);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(pyb_uart_readinto_obj, 2, pyb_uart_readinto);
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_uart_any_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send_char), (mp_obj_t)&pyb_uart_send_char_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_uart_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_char), (mp_obj_t)&pyb_uart_recv_char_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_uart_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv_into), (mp_obj_t)&pyb_uart_recv_into_obj },
+
+    /// \method read([nbytes])
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    /// \method readall()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    /// \method readline()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    /// \method write(buf)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&pyb_uart_readinto_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
-mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    pyb_uart_obj_t *self = self_in;
+    byte *buf = buf_in;
+
+    // check that size is a multiple of character width
+    if (size & self->char_width) {
+        *errcode = EIO;
+        return MP_STREAM_ERROR;
+    }
+
+    // convert byte size to char size
+    size >>= self->char_width;
+
+    // make sure we want at least 1 char
+    if (size == 0) {
+        return 0;
+    }
+
+    // wait for first char to become available
+    if (!uart_rx_wait(self, self->timeout)) {
+        // we can either return 0 to indicate EOF (then read() method returns b'')
+        // or return EAGAIN error to indicate non-blocking (then read() method returns None)
+        return 0;
+    }
+
+    // read the data
+    byte *orig_buf = buf;
+    for (;;) {
+        int data = uart_rx_char(self);
+        if (self->char_width == CHAR_WIDTH_9BIT) {
+            *(uint16_t*)buf = data;
+            buf += 2;
+        } else {
+            *buf++ = data;
+        }
+        if (--size == 0 || !uart_rx_wait(self, self->timeout_char)) {
+            // return number of bytes read
+            return buf - orig_buf;
+        }
+    }
+}
+
+STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+    pyb_uart_obj_t *self = self_in;
+    const byte *buf = buf_in;
+
+    // check that size is a multiple of character width
+    if (size & self->char_width) {
+        *errcode = EIO;
+        return MP_STREAM_ERROR;
+    }
+
+    // write the data
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)buf, size >> self->char_width, self->timeout);
+
+    if (status == HAL_OK) {
+        // return number of bytes written
+        return size;
+    } else {
+        *errcode = hal_status_to_errno_table[status];
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
     pyb_uart_obj_t *self = self_in;
     va_list vargs;
     va_start(vargs, errcode);
@@ -717,9 +722,9 @@ mp_uint_t uart_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
 }
 
 STATIC const mp_stream_p_t uart_stream_p = {
-    //.read = uart_read, // TODO
-    //.write = uart_write, // TODO
-    .ioctl = uart_ioctl,
+    .read = pyb_uart_read,
+    .write = pyb_uart_write,
+    .ioctl = pyb_uart_ioctl,
     .is_text = false,
 };
 
@@ -728,6 +733,8 @@ const mp_obj_type_t pyb_uart_type = {
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
+    .getiter = mp_identity,
+    .iternext = mp_stream_unbuffered_iter,
     .stream_p = &uart_stream_p,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
 };
