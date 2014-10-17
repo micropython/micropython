@@ -193,7 +193,7 @@ STATIC int do_file(const char *file) {
 
 STATIC int do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
-    return execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, false);
+    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
 int usage(char **argv) {
