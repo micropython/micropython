@@ -25,6 +25,7 @@
  */
 
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readlines_obj);

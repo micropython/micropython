@@ -437,6 +437,7 @@ Q(BF_LEN)
 #if MICROPY_PY_IO
 Q(_io)
 Q(readall)
+Q(readinto)
 Q(readline)
 Q(readlines)
 Q(FileIO)

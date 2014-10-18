@@ -215,6 +215,27 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     return mp_stream_write(self_in, bufinfo.buf, bufinfo.len);
 }
 
+STATIC mp_obj_t stream_readinto(mp_obj_t self_in, mp_obj_t arg) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
+    }
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_WRITE);
+
+    int error;
+    mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, bufinfo.len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
+        if (is_nonblocking_error(error)) {
+            return mp_const_none;
+        }
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(out_sz);
+    }
+}
+
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
@@ -349,6 +370,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
+MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_readinto_obj, stream_readinto);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);

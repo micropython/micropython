@@ -1,0 +1,7 @@
+b = bytearray(30)
+f = open("io/data/file1", "rb")
+print(f.readinto(b))
+print(b)
+f = open("io/data/file2", "rb")
+print(f.readinto(b))
+print(b)
