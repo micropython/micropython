@@ -384,8 +384,8 @@ int main(int argc, char **argv) {
             }
         } else {
             char *pathbuf = malloc(PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
-            if (basedir == NULL) {
+            char *filepath = realpath(argv[a], pathbuf);
+            if (filepath == NULL) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
                 // CPython exits with 2 in such case
@@ -394,14 +394,14 @@ int main(int argc, char **argv) {
             }
 
             // Set base dir of the script as first entry in sys.path
-            char *p = strrchr(basedir, '/');
-            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-            free(pathbuf);
+            char *basedir = strrchr(filepath, '/');
+            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(filepath, basedir - filepath));
 
             for (int i = a; i < argc; i++) {
                 mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
             }
-            ret = do_file(argv[a]);
+            ret = do_file(filepath);
+            free(pathbuf);
             break;
         }
     }
