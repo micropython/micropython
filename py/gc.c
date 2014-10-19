@@ -480,9 +480,20 @@ found:
     end_block = i;
     start_block = i - n_free + 1;
 
-    // mark first block as used head
     #if MICROPY_REENTRANT_GC
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    #endif
+
+    // Set last free ATB index to block after last block we found, for start of
+    // next scan.  To reduce fragmentation, we only do this if there are no free
+    // blocks before this one.  Also, whenever we free or shink a block we must
+    // check if this index needs adjusting (see gc_realloc and gc_free).
+    if ((i + 1) / BLOCKS_PER_ATB < gc_last_free_atb_index) {
+        gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    }
+
+    // mark first block as used head
+    #if MICROPY_REENTRANT_GC
     if (ATB_GET_KIND(start_block) == AT_FREE) {
         // TODO might need to make MARK
         ATB_FREE_TO_HEAD(start_block);
@@ -516,14 +527,6 @@ found:
         #else
         ATB_FREE_TO_TAIL(bl);
         #endif
-    }
-
-    // Set last free ATB index to block after last block we found, for start of
-    // next scan.  To reduce fragmentation, we only do this if there are no free
-    // blocks before this one.  Also, whenever we free or shink a block we must
-    // check if this index needs adjusting (see gc_realloc and gc_free).
-    if ((i + 1) / BLOCKS_PER_ATB < gc_last_free_atb_index) {
-        gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
 
     #if MICROPY_REENTRANT_GC
