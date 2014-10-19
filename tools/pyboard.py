@@ -71,7 +71,10 @@ class Pyboard:
         return ret
 
     def exec(self, command):
-        command_bytes = bytes(command, encoding='ascii')
+        if isinstance(command, bytes):
+            command_bytes = command
+        else:
+            command_bytes = bytes(command, encoding='ascii')
         for i in range(0, len(command_bytes), 32):
             self.serial.write(command_bytes[i:min(i+32, len(command_bytes))])
             time.sleep(0.01)
