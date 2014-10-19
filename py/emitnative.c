@@ -507,6 +507,7 @@ struct _emit_t {
 
     mp_uint_t stack_info_alloc;
     stack_info_t *stack_info;
+    vtype_kind_t saved_stack_vtype;
 
     int stack_start;
     int stack_size;
@@ -714,15 +715,23 @@ STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
 }
 
 STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
-    DEBUG_printf("  adjust_stack; stack_size=%d, delta=%d\n", emit->stack_size, stack_size_delta);
     assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
+#ifdef DEBUG_PRINT
+    DEBUG_printf("  adjust_stack; stack_size=%d+%d; stack now:", emit->stack_size - stack_size_delta, stack_size_delta);
+    for (int i = 0; i < emit->stack_size; i++) {
+        stack_info_t *si = &emit->stack_info[i];
+        DEBUG_printf(" (v=%d k=%d %d)", si->vtype, si->kind, si->u_reg);
+    }
+    DEBUG_printf("\n");
+#endif
 }
 
 STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
+    DEBUG_printf("adjust_stack_size(" INT_FMT ")\n", delta);
     // If we are adjusting the stack in a positive direction (pushing) then we
     // need to fill in values for the stack kind and vtype of the newly-pushed
     // entries.  These should be set to "value" (ie not reg or imm) because we
@@ -731,7 +740,13 @@ STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     for (mp_int_t i = 0; i < delta; i++) {
         stack_info_t *si = &emit->stack_info[emit->stack_size + i];
         si->kind = STACK_VALUE;
-        si->vtype = VTYPE_PYOBJ; // XXX we don't know the vtype...
+        // TODO we don't know the vtype to use here.  At the moment this is a
+        // hack to get the case of multi comparison working.
+        if (delta == 1) {
+            si->vtype = emit->saved_stack_vtype;
+        } else {
+            si->vtype = VTYPE_PYOBJ;
+        }
     }
     adjust_stack(emit, delta);
 }
@@ -1175,6 +1190,7 @@ STATIC void emit_native_load_null(emit_t *emit) {
 }
 
 STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num) {
+    DEBUG_printf("load_fast(%s, " UINT_FMT ", " UINT_FMT ")\n", qstr_str(qst), id_flags, local_num);
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qst));
@@ -1657,8 +1673,9 @@ STATIC void emit_native_delete_subscr(emit_t *emit) {
 STATIC void emit_native_dup_top(emit_t *emit) {
     DEBUG_printf("dup_top\n");
     vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-    emit_post_push_reg_reg(emit, vtype, REG_TEMP0, vtype, REG_TEMP0);
+    int reg = REG_TEMP0;
+    emit_pre_pop_reg_flexible(emit, &vtype, &reg, -1, -1);
+    emit_post_push_reg_reg(emit, vtype, reg, vtype, reg);
 }
 
 STATIC void emit_native_dup_top_two(emit_t *emit) {
@@ -1717,6 +1734,11 @@ STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
         default:
             printf("ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
             assert(0);
+    }
+    // For non-pop need to save the vtype so that emit_native_adjust_stack_size
+    // can use it.  This is a bit of a hack.
+    if (!pop) {
+        emit->saved_stack_vtype = vtype;
     }
     // need to commit stack because we may jump elsewhere
     need_stack_settled(emit);
@@ -1907,6 +1929,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             //  MP_BINARY_OP_LESS_EQUAL
             //  MP_BINARY_OP_MORE_EQUAL
             //  MP_BINARY_OP_NOT_EQUAL
+            need_reg_single(emit, REG_RET, 0);
             #if N_X64
             asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
             asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
