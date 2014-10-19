@@ -105,10 +105,13 @@ bool sdcard_power_on(void) {
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
 
-    // init the SD interface
+    // init the SD interface, with retry if it's not ready yet
     HAL_SD_CardInfoTypedef cardinfo;
-    if (HAL_SD_Init(&sd_handle, &cardinfo) != SD_OK) {
-        goto error;
+    for (int retry = 10; HAL_SD_Init(&sd_handle, &cardinfo) != SD_OK; retry--) {
+        if (retry == 0) {
+            goto error;
+        }
+        HAL_Delay(50);
     }
 
     // configure the SD bus width for wide operation
