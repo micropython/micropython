@@ -11,7 +11,9 @@ MEMORY
     CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x020000 /* 128 KiB */
 }
- 
+
+ENTRY(Reset_Handler)
+
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
