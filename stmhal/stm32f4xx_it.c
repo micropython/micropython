@@ -76,6 +76,7 @@
 #include "obj.h"
 #include "extint.h"
 #include "timer.h"
+#include "uart.h"
 #include "storage.h"
 
 extern void __fatal_error(const char*);
@@ -394,4 +395,25 @@ void TIM8_UP_TIM13_IRQHandler(void) {
 
 void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     timer_irq_handler(14);
+}
+
+// UART/USART IRQ handlers
+void USART1_IRQHandler(void) {
+    uart_irq_handler(1);
+}
+
+void USART2_IRQHandler(void) {
+    uart_irq_handler(2);
+}
+
+void USART3_IRQHandler(void) {
+    uart_irq_handler(3);
+}
+
+void UART4_IRQHandler(void) {
+    uart_irq_handler(4);
+}
+
+void USART6_IRQHandler(void) {
+    uart_irq_handler(6);
 }
