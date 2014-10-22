@@ -24,6 +24,8 @@ USBDEV_DIR=usbdev
 FATFS_DIR=fatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
+USE_PYDFU ?= 0
+PYDFU = ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 
@@ -249,7 +251,11 @@ all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
+ifeq ($(USE_PYDFU),1)
+	$(Q)$(PYTHON) $(PYDFU) -u $<
+else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
+endif
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
