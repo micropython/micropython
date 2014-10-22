@@ -69,10 +69,10 @@ print(sorted(list(viper_set(1, 2))))
 # raising an exception
 @micropython.viper
 def viper_raise(x:int):
-    raise SystemError(x)
+    raise OSError(x)
 try:
     viper_raise(1)
-except SystemError as e:
+except OSError as e:
     print(repr(e))
 
 # this doesn't work at the moment
