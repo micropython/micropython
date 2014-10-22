@@ -91,18 +91,13 @@ int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, boo
         // FIXME it could be that an interrupt happens just before we disable it here
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         // check for SystemExit
-        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
-        if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
-            // None is an exit value of 0; an int is its value; anything else is 1
-            mp_obj_t exit_val = mp_obj_exception_get_value(exc);
-            mp_int_t val = 0;
-            if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
-                val = 1;
-            }
-            return PYEXEC_FORCED_EXIT | (val & 255);
+        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
+            // at the moment, the value of SystemExit is unused
+            ret = PYEXEC_FORCED_EXIT;
+        } else {
+            mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+            ret = 0;
         }
-        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
-        ret = 0;
     }
 
     // display debugging info if wanted
@@ -269,7 +264,7 @@ friendly_repl_reset:
     }
 }
 
-bool pyexec_file(const char *filename) {
+int pyexec_file(const char *filename) {
     mp_lexer_t *lex = mp_lexer_new_from_file(filename);
 
     if (lex == NULL) {
