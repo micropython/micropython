@@ -239,7 +239,7 @@ def consume(fmt, data, names):
 
 def cstring(string):
     """Extracts a null-terminated string from a byte array."""
-    return string.split('\0', 1)[0]
+    return string.split(b'\0', 1)[0]
 
 
 def compute_crc(data):
@@ -361,8 +361,8 @@ def get_dfu_devices(*args, **kwargs):
     refine the search.
     """
 
-    return usb.core.find(*args, find_all=True,
-                         custom_match=FilterDFU(), **kwargs)
+    return list(usb.core.find(*args, find_all=True,
+                              custom_match=FilterDFU(), **kwargs))
 
 
 def get_memory_layout(device):
@@ -504,7 +504,11 @@ def main():
         list_dfu_devices(idVendor=__VID, idProduct=__PID)
         return
 
-    init()
+    try:
+        init()
+    except ValueError as er:
+        print(str(er))
+        sys.exit(1)
 
     if args.mass_erase:
         print ("Mass erase...")
