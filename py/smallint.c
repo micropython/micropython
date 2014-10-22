@@ -57,23 +57,23 @@ bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
 }
 
 mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor) {
-    mp_int_t lsign = (dividend >= 0) ? 1 :-1;
-    mp_int_t rsign = (divisor >= 0) ? 1 :-1;
+    // Python specs require that mod has same sign as second operand
     dividend %= divisor;
-    if (lsign != rsign) {
+    if ((dividend < 0 && divisor > 0) || (dividend > 0 && divisor < 0)) {
         dividend += divisor;
     }
     return dividend;
 }
 
 mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom) {
-    mp_int_t lsign = num > 0 ? 1 : -1;
-    mp_int_t rsign = denom > 0 ? 1 : -1;
-    if (lsign == -1) {num *= -1;}
-    if (rsign == -1) {denom *= -1;}
-    if (lsign != rsign){
-        return - ( num + denom - 1) / denom;
+    if (num >= 0) {
+        if (denom < 0) {
+            num += -denom - 1;
+        }
     } else {
-        return num / denom;
+        if (denom >= 0) {
+            num += -denom + 1;
+        }
     }
+    return num / denom;
 }

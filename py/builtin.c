@@ -33,6 +33,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objstr.h"
+#include "smallint.h"
 #include "runtime0.h"
 #include "runtime.h"
 #include "builtin.h"
@@ -253,8 +254,8 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
         }
         mp_obj_t args[2];
-        args[0] = MP_OBJ_NEW_SMALL_INT(i1 / i2);
-        args[1] = MP_OBJ_NEW_SMALL_INT(i1 % i2);
+        args[0] = MP_OBJ_NEW_SMALL_INT(mp_small_int_floor_divide(i1, i2));
+        args[1] = MP_OBJ_NEW_SMALL_INT(mp_small_int_modulo(i1, i2));
         return mp_obj_new_tuple(2, args);
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(o1_in, &mp_type_float) || MP_OBJ_IS_TYPE(o2_in, &mp_type_float)) {
