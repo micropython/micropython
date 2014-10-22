@@ -458,7 +458,11 @@ soft_reset:
         const char *boot_py = "boot.py";
         FRESULT res = f_stat(boot_py, NULL);
         if (res == FR_OK) {
-            if (!pyexec_file(boot_py)) {
+            int ret = pyexec_file(boot_py);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+            if (!ret) {
                 flash_error(4);
             }
         }
@@ -517,7 +521,11 @@ soft_reset:
         }
         FRESULT res = f_stat(main_py, NULL);
         if (res == FR_OK) {
-            if (!pyexec_file(main_py)) {
+            int ret = pyexec_file(main_py);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+            if (!ret) {
                 flash_error(3);
             }
         }
@@ -536,6 +544,8 @@ soft_reset:
             }
         }
     }
+
+soft_reset_exit:
 
     // soft reset
 

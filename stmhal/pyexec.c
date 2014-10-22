@@ -56,7 +56,7 @@ STATIC bool repl_display_debugging_info = 0;
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
-bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
     qstr source_name = mp_lexer_source_name(lex);
@@ -65,7 +65,7 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
         // parse error
         mp_parse_show_exception(lex, parse_error_kind);
         mp_lexer_free(lex);
-        return false;
+        return 0;
     }
 
     mp_lexer_free(lex);
@@ -74,24 +74,35 @@ bool parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bo
 
     if (mp_obj_is_exception_instance(module_fun)) {
         mp_obj_print_exception(module_fun);
-        return false;
+        return 0;
     }
 
     nlr_buf_t nlr;
-    bool ret;
+    int ret;
     uint32_t start = HAL_GetTick();
     if (nlr_push(&nlr) == 0) {
         usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
         mp_call_function_0(module_fun);
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         nlr_pop();
-        ret = true;
+        ret = 1;
     } else {
         // uncaught exception
         // FIXME it could be that an interrupt happens just before we disable it here
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
+        // check for SystemExit
+        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+        if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
+            // None is an exit value of 0; an int is its value; anything else is 1
+            mp_obj_t exit_val = mp_obj_exception_get_value(exc);
+            mp_int_t val = 0;
+            if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+                val = 1;
+            }
+            return PYEXEC_FORCED_EXIT | (val & 255);
+        }
         mp_obj_print_exception((mp_obj_t)nlr.ret_val);
-        ret = false;
+        ret = 0;
     }
 
     // display debugging info if wanted
@@ -160,14 +171,17 @@ raw_repl_reset:
             // exit for a soft reset
             stdout_tx_str("\r\n");
             vstr_clear(&line);
-            return 1;
+            return PYEXEC_FORCED_EXIT;
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, 0);
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
         }
 
         // indicate end of output with EOF character
@@ -229,7 +243,7 @@ friendly_repl_reset:
             // exit for a soft reset
             stdout_tx_str("\r\n");
             vstr_clear(&line);
-            return 1;
+            return PYEXEC_FORCED_EXIT;
         } else if (vstr_len(&line) == 0) {
             continue;
         }
@@ -247,7 +261,10 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
+            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
         }
     }
 }
