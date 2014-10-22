@@ -485,3 +485,10 @@ Q(search)
 Q(group)
 Q(DEBUG)
 #endif
+
+#if MICROPY_PY_UHEAPQ
+Q(uheapq)
+Q(heappush)
+Q(heappop)
+Q(heapify)
+#endif
