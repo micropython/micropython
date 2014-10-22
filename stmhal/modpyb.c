@@ -88,6 +88,13 @@ STATIC NORETURN mp_obj_t pyb_bootloader(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
 
+STATIC mp_obj_t pyb_hard_reset(void) {
+    NVIC_SystemReset();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_hard_reset_obj, pyb_hard_reset);
+
+
 /// \function info([dump_alloc_table])
 /// Print out lots of information about the board.
 STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
@@ -443,6 +450,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader), (mp_obj_t)&pyb_bootloader_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_soft_reset), (mp_obj_t)&pyb_soft_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset), (mp_obj_t)&pyb_hard_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_freq_obj },

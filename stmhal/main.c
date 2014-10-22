@@ -238,6 +238,7 @@ soft_reset:
     led_state(3, 0);
     led_state(4, 0);
     uint reset_mode = 1;
+    pyexec_soft_reset = 0;
 
 #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
@@ -525,7 +526,7 @@ soft_reset:
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
-    for (;;) {
+    for (; pyexec_soft_reset == 0;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
                 break;

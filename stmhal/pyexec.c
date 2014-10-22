@@ -52,6 +52,7 @@
 #include "genhdr/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+bool pyexec_soft_reset = 0;
 STATIC bool repl_display_debugging_info = 0;
 
 // parses, compiles and executes the code in the lexer
@@ -127,6 +128,7 @@ int pyexec_raw_repl(void) {
 raw_repl_reset:
     stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
 
+    pyexec_soft_reset = false;
     for (;;) {
         vstr_reset(&line);
         stdout_tx_str(">");
@@ -172,6 +174,9 @@ raw_repl_reset:
 
         // indicate end of output with EOF character
         stdout_tx_str("\004");
+        if (pyexec_soft_reset) {
+            return 1;
+        }
     }
 }
 
@@ -207,6 +212,7 @@ friendly_repl_reset:
     }
     */
 
+    pyexec_soft_reset = false;
     for (;;) {
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
@@ -249,6 +255,9 @@ friendly_repl_reset:
         } else {
             parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
         }
+        if (pyexec_soft_reset) {
+            return 1;
+        }
     }
 }
 
@@ -269,3 +278,9 @@ mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
+
+STATIC mp_obj_t pyb_soft_reset(void) {
+    pyexec_soft_reset = true;
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_soft_reset_obj, pyb_soft_reset);
