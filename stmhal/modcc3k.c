@@ -365,57 +365,57 @@ STATIC void cc3k_socket_print(void (*print)(void *env, const char *fmt, ...), vo
     printf("<CC3k.socket fd=%d>", self->fd);
 }
 
-STATIC mp_uint_t cc3k_socket_send(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_obj_t cc3k_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
         CC3000_EXPORT(closesocket)(self->fd);
-        *errcode = EPIPE;
-        return 0;
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EPIPE)));
     }
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     // CC3K does not handle fragmentation, and will overflow,
     // split the packet into smaller ones and send them out.
-    int bytes = 0;
-    while (bytes < size) {
-        int n = MIN((size-bytes), MAX_TX_PACKET);
-        n = CC3000_EXPORT(send)(self->fd, buf+bytes, n, 0);
+    mp_int_t bytes = 0;
+    while (bytes < bufinfo.len) {
+        int n = MIN((bufinfo.len - bytes), MAX_TX_PACKET);
+        n = CC3000_EXPORT(send)(self->fd, bufinfo.buf + bytes, n, 0);
         if (n <= 0) {
-            bytes = n;
-            *errcode = CC3000_EXPORT(errno);
-            break;
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(CC3000_EXPORT(errno))));
         }
         bytes += n;
     }
 
-    return bytes;
+    return MP_OBJ_NEW_SMALL_INT(bytes);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_send_obj, cc3k_socket_send);
 
-STATIC mp_uint_t cc3k_socket_recv(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_obj_t cc3k_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     cc3k_socket_obj_t *self = self_in;
 
     if (cc3k_get_fd_closed_state(self->fd)) {
         CC3000_EXPORT(closesocket)(self->fd);
-        return 0;
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EPIPE)));
     }
 
-    // recv MAX_RX_PACKET
-    int bytes = 0;
-    while (bytes < size) {
-        int n = MIN((size-bytes), MAX_RX_PACKET);
-        n = CC3000_EXPORT(recv)(self->fd, buf+bytes, n, 0);
-        if (n == 0) {
-            break;
-        } else if (n < 0) {
-            bytes = n;
-            *errcode = CC3000_EXPORT(errno);
-            break;
-        }
-        bytes += n;
-    }
+    // recv upto MAX_RX_PACKET
+    mp_int_t len = mp_obj_get_int(len_in);
+    len = MIN(len, MAX_RX_PACKET);
 
-    return bytes;
+    byte *buf;
+    mp_obj_t ret_obj = mp_obj_str_builder_start(&mp_type_bytes, len, &buf);
+    len = CC3000_EXPORT(recv)(self->fd, buf, len, 0);
+    if (len == 0) {
+        return mp_const_empty_bytes;
+    } else if (len < 0) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(CC3000_EXPORT(errno))));
+    } else {
+        return mp_obj_str_builder_end_with_len(ret_obj, len);
+    }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_socket_recv_obj, cc3k_socket_recv);
 
 STATIC mp_obj_t cc3k_socket_bind(mp_obj_t self_in, mp_obj_t addr_obj) {
     cc3k_socket_obj_t *self = self_in;
@@ -565,9 +565,8 @@ STATIC mp_obj_t cc3k_socket_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_socket_close_obj, cc3k_socket_close);
 
 STATIC const mp_map_elem_t cc3k_socket_locals_dict_table[] = {
-    // TODO read/write/send/recv distinctions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send),        (mp_obj_t)&mp_stream_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv),        (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send),        (mp_obj_t)&cc3k_socket_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv),        (mp_obj_t)&cc3k_socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bind),        (mp_obj_t)&cc3k_socket_bind_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listen),      (mp_obj_t)&cc3k_socket_listen_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_accept),      (mp_obj_t)&cc3k_socket_accept_obj },
@@ -644,8 +643,6 @@ mp_uint_t cc3k_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
 }
 
 STATIC const mp_stream_p_t cc3k_socket_stream_p = {
-    .read = cc3k_socket_recv,
-    .write = cc3k_socket_send,
     .ioctl = cc3k_ioctl,
     .is_text = false,
 };

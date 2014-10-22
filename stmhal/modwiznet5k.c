@@ -415,12 +415,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(wiznet5k_socket_send_obj, wiznet5k_socket_send)
 STATIC mp_obj_t wiznet5k_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     wiznet5k_socket_obj_t *self = self_in;
     mp_int_t len = mp_obj_get_int(len_in);
-    uint8_t *buf = m_new(uint8_t, len);
+    byte *buf;
+    mp_obj_t ret_obj = mp_obj_str_builder_start(&mp_type_bytes, len, &buf);
     mp_int_t ret = WIZCHIP_EXPORT(recv)(self->sn, buf, len);
     check_sock_return_value(ret);
-    mp_obj_t ret_buf = mp_obj_new_bytes(buf, ret);
-    m_del(uint8_t, buf, len);
-    return ret_buf;
+    return mp_obj_str_builder_end_with_len(ret_obj, len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(wiznet5k_socket_recv_obj, wiznet5k_socket_recv);
 
