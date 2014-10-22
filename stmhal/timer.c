@@ -1229,9 +1229,6 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
 
             // execute callback if it's set
             if (callback != mp_const_none) {
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
                     mp_call_function_1(callback, tim);
@@ -1247,7 +1244,6 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     }
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
-                gc_unlock();
             }
         }
     }

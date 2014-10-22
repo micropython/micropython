@@ -55,19 +55,19 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_collect_obj, py_gc_collect);
 
 /// \function disable()
 /// Disable the garbage collector.
-STATIC mp_obj_t gc_disable(void) {
-    gc_lock();
+STATIC mp_obj_t mod_gc_disable(void) {
+    gc_disable();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
+MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, mod_gc_disable);
 
 /// \function enable()
 /// Enable the garbage collector.
-STATIC mp_obj_t gc_enable(void) {
-    gc_unlock();
+STATIC mp_obj_t mod_gc_enable(void) {
+    gc_enable();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
+MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, mod_gc_enable);
 
 /// \function mem_free()
 /// Return the number of bytes of available heap RAM.

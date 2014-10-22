@@ -361,9 +361,6 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             extint_vector_t *v = &extint_vector[line];
             if (v->callback_obj != mp_const_none) {
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
                     mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
@@ -375,7 +372,6 @@ void Handle_EXTI_Irq(uint32_t line) {
                     printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
                     mp_obj_print_exception((mp_obj_t)nlr.ret_val);
                 }
-                gc_unlock();
             }
         }
     }

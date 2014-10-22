@@ -436,7 +436,8 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
-    #if MICROPY_ENABLE_GC
+    #if 0 && MICROPY_ENABLE_GC
+    // TODO
     if (gc_is_locked()) {
         if (self->traceback == MP_OBJ_NULL) {
             // We can't allocate any memory, and no memory has been

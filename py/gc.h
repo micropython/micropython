@@ -28,13 +28,12 @@ void gc_init(void *start, void *end);
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
-void gc_lock(void);
-void gc_unlock(void);
-bool gc_is_locked(void);
+void gc_disable(void);
+void gc_enable(void);
 
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
-void gc_collect_start(void);
+bool gc_collect_start(void); // returns true if collection can proceed
 void gc_collect_root(void **ptrs, mp_uint_t len);
 void gc_collect_end(void);
 

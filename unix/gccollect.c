@@ -128,7 +128,11 @@ void gc_helper_get_regs(regs_t arr) {
 void gc_collect(void) {
     //gc_dump_info();
 
-    gc_collect_start();
+    if (!gc_collect_start()) {
+        // gc is already running
+        return;
+    }
+
     // this traces the .bss section
 #if defined( __CYGWIN__ )
 #define BSS_START __bss_start__
