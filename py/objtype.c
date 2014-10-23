@@ -292,7 +292,7 @@ mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, c
     o = new_ret;
 
     // now call Python class __init__ function with all args
-    init_fn[0] = init_fn[1] = NULL;
+    init_fn[0] = init_fn[1] = MP_OBJ_NULL;
     lookup.obj = o;
     lookup.attr = MP_QSTR___init__;
     lookup.meth_offset = 0;

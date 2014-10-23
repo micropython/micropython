@@ -475,8 +475,8 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         if (type->getiter != NULL) {
             /* second attempt, walk the iterator */
-            mp_obj_t next = NULL;
             mp_obj_t iter = mp_getiter(rhs);
+            mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 if (mp_obj_equal(next, lhs)) {
                     return mp_const_true;

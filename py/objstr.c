@@ -215,7 +215,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_int_t len;
     byte *data;
     vstr_t *vstr = NULL;
-    mp_obj_t o = NULL;
+    mp_obj_t o = MP_OBJ_NULL;
     // Try to create array of exact len if initializer len is known
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
     if (len_in == MP_OBJ_NULL) {
