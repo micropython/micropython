@@ -215,17 +215,28 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     return mp_stream_write(self_in, bufinfo.buf, bufinfo.len);
 }
 
-STATIC mp_obj_t stream_readinto(mp_obj_t self_in, mp_obj_t arg) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+STATIC mp_obj_t stream_readinto(uint n_args, const mp_obj_t *args) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+
+    // CPython extension: if 2nd arg is provided, that's max len to read,
+    // instead of full buffer. Similar to
+    // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
+    mp_uint_t len = bufinfo.len;
+    if (n_args > 2) {
+        len = mp_obj_int_get(args[2]);
+        if (len > bufinfo.len) {
+            len = bufinfo.len;
+        }
+    }
 
     int error;
-    mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, bufinfo.len, &error);
+    mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
         if (is_nonblocking_error(error)) {
             return mp_const_none;
@@ -370,7 +381,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
-MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_readinto_obj, stream_readinto);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
