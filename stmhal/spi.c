@@ -27,8 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
@@ -39,6 +37,7 @@
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "spi.h"
+#include MICROPY_HAL_H
 
 /// \moduleref pyb
 /// \class SPI - a master-driven serial protocol
@@ -140,7 +139,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         // init error
         // TODO should raise an exception, but this function is not necessarily going to be
         // called via Python, so may not be properly wrapped in an NLR handler
-        printf("HardwareError: HAL_SPI_Init failed\n");
+        printf("OSError: HAL_SPI_Init failed\n");
         return;
     }
 }
@@ -387,8 +386,7 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
     HAL_StatusTypeDef status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_SPI_Transmit failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     return mp_const_none;
@@ -428,8 +426,7 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
     HAL_StatusTypeDef status = HAL_SPI_Receive(self->spi, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_SPI_Receive failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     // return the received data
@@ -503,8 +500,7 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map
     HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, vals[2].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_SPI_TransmitReceive failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     // return the received data

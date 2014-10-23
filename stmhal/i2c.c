@@ -27,8 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
@@ -39,6 +37,7 @@
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "i2c.h"
+#include MICROPY_HAL_H
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -148,7 +147,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
         // init error
         // TODO should raise an exception, but this function is not necessarily going to be
         // called via Python, so may not be properly wrapped in an NLR handler
-        printf("HardwareError: HAL_I2C_Init failed\n");
+        printf("OSError: HAL_I2C_Init failed\n");
         return;
     }
 }
@@ -390,8 +389,7 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
     }
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_xxx_Transmit failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     return mp_const_none;
@@ -440,8 +438,7 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
     }
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_xxx_Receive failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     // return the received data
@@ -501,8 +498,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(self->i2c, i2c_addr, mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len, vals[3].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Read failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     // return the read data
@@ -554,8 +550,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *args, mp_map
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(self->i2c, i2c_addr, mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len, vals[3].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_I2C_Mem_Write failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     return mp_const_none;

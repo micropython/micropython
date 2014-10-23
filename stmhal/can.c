@@ -29,8 +29,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
@@ -41,6 +39,7 @@
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"
+#include MICROPY_HAL_H
 
 #if MICROPY_HW_ENABLE_CAN
 
@@ -334,8 +333,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, args[2].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_CAN_Transmit failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     return mp_const_none;
@@ -367,8 +365,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     HAL_StatusTypeDef status = HAL_CAN_Receive(&self->can, args[0].u_int, args[1].u_int);
 
     if (status != HAL_OK) {
-        // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_CAN_Receive failed with code %d", status));
+        mp_hal_raise(status);
     }
 
     // return the received data

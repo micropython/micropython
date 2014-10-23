@@ -29,8 +29,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
@@ -40,6 +38,7 @@
 #include "stream.h"
 #include "uart.h"
 #include "pybioctl.h"
+#include MICROPY_HAL_H
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -92,14 +91,6 @@ struct _pyb_uart_obj_t {
     volatile uint16_t read_buf_head;    // indexes first empty slot
     uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
     byte *read_buf;                     // byte or uint16_t, depending on char size
-};
-
-// this table converts from HAL_StatusTypeDef to POSIX errno
-STATIC const byte hal_status_to_errno_table[4] = {
-    [HAL_OK] = 0,
-    [HAL_ERROR] = EIO,
-    [HAL_BUSY] = EBUSY,
-    [HAL_TIMEOUT] = ETIMEDOUT,
 };
 
 // pointers to all UART objects (if they have been created)
@@ -563,7 +554,7 @@ STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
     HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)&data, 1, self->timeout);
 
     if (status != HAL_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, (mp_obj_t)(mp_uint_t)hal_status_to_errno_table[status]));
+        mp_hal_raise(status);
     }
 
     return mp_const_none;
@@ -713,7 +704,7 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
         // return number of bytes written
         return size;
     } else {
-        *errcode = hal_status_to_errno_table[status];
+        *errcode = mp_hal_status_to_errno_table[status];
         return MP_STREAM_ERROR;
     }
 }
