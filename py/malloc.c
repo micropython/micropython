@@ -63,11 +63,8 @@ STATIC size_t peak_bytes_allocated = 0;
 #endif // MICROPY_ENABLE_GC
 
 void *m_malloc(size_t num_bytes) {
-    if (num_bytes == 0) {
-        return NULL;
-    }
     void *ptr = malloc(num_bytes);
-    if (ptr == NULL) {
+    if (ptr == NULL && num_bytes != 0) {
         return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
@@ -81,9 +78,6 @@ void *m_malloc(size_t num_bytes) {
 
 void *m_malloc_maybe(size_t num_bytes) {
     void *ptr = malloc(num_bytes);
-    if (ptr == NULL) {
-        return NULL;
-    }
 #if MICROPY_MEM_STATS
     total_bytes_allocated += num_bytes;
     current_bytes_allocated += num_bytes;
@@ -95,11 +89,8 @@ void *m_malloc_maybe(size_t num_bytes) {
 
 #if MICROPY_ENABLE_FINALISER
 void *m_malloc_with_finaliser(size_t num_bytes) {
-    if (num_bytes == 0) {
-        return NULL;
-    }
     void *ptr = malloc_with_finaliser(num_bytes);
-    if (ptr == NULL) {
+    if (ptr == NULL && num_bytes != 0) {
         return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
@@ -114,19 +105,16 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 
 void *m_malloc0(size_t num_bytes) {
     void *ptr = m_malloc(num_bytes);
-    if (ptr != NULL) {
-        memset(ptr, 0, num_bytes);
+    if (ptr == NULL && num_bytes != 0) {
+        return m_malloc_fail(num_bytes);
     }
+    memset(ptr, 0, num_bytes);
     return ptr;
 }
 
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
-    if (new_num_bytes == 0) {
-        free(ptr);
-        return NULL;
-    }
     void *new_ptr = realloc(ptr, new_num_bytes);
-    if (new_ptr == NULL) {
+    if (new_ptr == NULL && new_num_bytes != 0) {
         return m_malloc_fail(new_num_bytes);
     }
 #if MICROPY_MEM_STATS
@@ -146,28 +134,26 @@ void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
 
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
     void *new_ptr = realloc(ptr, new_num_bytes);
-    if (new_ptr == NULL) {
-        return NULL;
-    }
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
     // after all, it's *total*. But consider for example 2K block
     // shrunk to 1K and then grown to 2K again. It's still 2K
     // allocated total. If we process only positive increments,
     // we'll count 3K.
-    size_t diff = new_num_bytes - old_num_bytes;
-    total_bytes_allocated += diff;
-    current_bytes_allocated += diff;
-    UPDATE_PEAK();
+    // Also, don't count failed reallocs.
+    if (!(new_ptr == NULL && new_num_bytes != 0)) {
+        size_t diff = new_num_bytes - old_num_bytes;
+        total_bytes_allocated += diff;
+        current_bytes_allocated += diff;
+        UPDATE_PEAK();
+    }
 #endif
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
     return new_ptr;
 }
 
 void m_free(void *ptr, size_t num_bytes) {
-    if (ptr != NULL) {
-        free(ptr);
-    }
+    free(ptr);
 #if MICROPY_MEM_STATS
     current_bytes_allocated -= num_bytes;
 #endif

@@ -546,6 +546,12 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
         return gc_alloc(n_bytes, false);
     }
 
+    // check for pure free
+    if (n_bytes == 0) {
+        gc_free(ptr_in);
+        return NULL;
+    }
+
     mp_uint_t ptr = (mp_uint_t)ptr_in;
 
     // sanity check the ptr
