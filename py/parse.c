@@ -180,17 +180,17 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
         if (rule_id == RULE_string) {
             m_del(char, (char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]);
-            return;
-        }
-        bool adjust = ADD_BLANK_NODE(rule_id);
-        if (adjust) {
-            n--;
-        }
-        for (mp_uint_t i = 0; i < n; i++) {
-            mp_parse_node_free(pns->nodes[i]);
-        }
-        if (adjust) {
-            n++;
+        } else {
+            bool adjust = ADD_BLANK_NODE(rule_id);
+            if (adjust) {
+                n--;
+            }
+            for (mp_uint_t i = 0; i < n; i++) {
+                mp_parse_node_free(pns->nodes[i]);
+            }
+            if (adjust) {
+                n++;
+            }
         }
         m_del_var(mp_parse_node_struct_t, mp_parse_node_t, n, pns);
     }

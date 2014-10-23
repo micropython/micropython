@@ -484,7 +484,11 @@ void gc_free(void *ptr_in) {
             #if EXTENSIVE_HEAP_PROFILING
             gc_dump_alloc_table();
             #endif
+        } else {
+            assert(!"bad free");
         }
+    } else if (ptr_in != NULL) {
+        assert(!"bad free");
     }
 }
 
