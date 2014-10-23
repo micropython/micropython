@@ -292,6 +292,7 @@ extern const mp_obj_type_t mp_type_int;
 extern const mp_obj_type_t mp_type_str;
 extern const mp_obj_type_t mp_type_bytes;
 extern const mp_obj_type_t mp_type_bytearray;
+extern const mp_obj_type_t mp_type_memoryview;
 extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
 extern const mp_obj_type_t mp_type_tuple;
@@ -528,7 +529,6 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
 
 // array
-mp_uint_t mp_obj_array_len(mp_obj_t self_in);
 mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
 
 // functions

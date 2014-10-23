@@ -134,11 +134,18 @@ Q(abs)
 Q(all)
 Q(any)
 Q(args)
+#if MICROPY_PY_ARRAY
 Q(array)
+#endif
 Q(bin)
 Q({:#b})
 Q(bool)
+#if MICROPY_PY_BUILTINS_BYTEARRAY
 Q(bytearray)
+#endif
+#if MICROPY_PY_BUILTINS_MEMORYVIEW
+Q(memoryview)
+#endif
 Q(bytes)
 Q(callable)
 #if MICROPY_PY_STRUCT

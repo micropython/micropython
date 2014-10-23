@@ -61,6 +61,9 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_int), (mp_obj_t)&mp_type_int },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list), (mp_obj_t)&mp_type_list },
     { MP_OBJ_NEW_QSTR(MP_QSTR_map), (mp_obj_t)&mp_type_map },
+#if MICROPY_PY_BUILTINS_MEMORYVIEW
+    { MP_OBJ_NEW_QSTR(MP_QSTR_memoryview), (mp_obj_t)&mp_type_memoryview },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_object), (mp_obj_t)&mp_type_object },
 #if MICROPY_PY_BUILTINS_PROPERTY
     { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
