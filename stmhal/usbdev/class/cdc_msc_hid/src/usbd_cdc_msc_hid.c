@@ -92,9 +92,9 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[USB_CDC_MSC_CONFIG_DESC_SIZ] _
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
     CDC_IFACE_NUM, // bFirstInterface: first interface for this association
     0x02,   // bInterfaceCount: nummber of interfaces for this association
-    0x00,   // bFunctionClass: ?
-    0x00,   // bFunctionSubClass: ?
-    0x00,   // bFunctionProtocol: ?
+    0x02,   // bFunctionClass: Communication Interface Class
+    0x02,   // bFunctionSubClass: Abstract Control Model
+    0x01,   // bFunctionProtocol: Common AT commands
     0x00,   // iFunction: index of string for this function
 
     //--------------------------------------------------------------------------
