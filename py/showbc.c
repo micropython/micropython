@@ -70,6 +70,16 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, code_info, len);
 
+    // raw bytecode dump
+    printf("Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n", code_info_size, len - code_info_size);
+    for (mp_uint_t i = 0; i < len; i++) {
+        if (i > 0 && i % 16 == 0) {
+            printf("\n");
+        }
+        printf(" %02x", ip_start[i]);
+    }
+    printf("\n");
+
     // bytecode prelude: state size and exception stack size; 16 bit uints
     {
         uint n_state = mp_decode_uint(&ip);
@@ -87,15 +97,14 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
             printf("(INIT_CELL %u)\n", local_num);
         }
         len -= ip - ip_start;
-        ip_start = ip;
     }
 
     // print out line number info
     {
-        mp_int_t bc = (code_info + code_info_size) - ip;
+        mp_int_t bc = (ip_start + code_info_size) - ip; // start counting from the prelude
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
-        for (const byte* ci = code_info + 12; *ci;) {
+        for (const byte* ci = code_info; *ci;) {
             if ((ci[0] & 0x80) == 0) {
                 // 0b0LLBBBBB encoding
                 bc += ci[0] & 0x1f;

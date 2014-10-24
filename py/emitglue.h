@@ -35,7 +35,7 @@ typedef enum {
     MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
-typedef struct _mp_code_t {
+typedef struct _mp_raw_code_t {
     mp_raw_code_kind_t kind : 3;
     mp_uint_t scope_flags : 7;
     mp_uint_t n_pos_args : 11;

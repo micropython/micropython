@@ -74,13 +74,6 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, 
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        for (mp_uint_t i = 0; i < len; i++) {
-            if (i > 0 && i % 16 == 0) {
-                printf("\n");
-            }
-            printf(" %02x", code[i]);
-        }
-        printf("\n");
         mp_bytecode_print(rc, code, len);
     }
 #endif
