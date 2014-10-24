@@ -30,6 +30,7 @@
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"
+#include "gc.h"
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
@@ -220,9 +221,17 @@ void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+            #if MICROPY_ENABLE_GC
+            *n_str_data_bytes += gc_nbytes(*q); // this counts actual bytes used in heap
+            #else
             *n_str_data_bytes += Q_GET_ALLOC(*q);
+            #endif
         }
+        #if MICROPY_ENABLE_GC
+        *n_total_bytes += gc_nbytes(pool); // this counts actual bytes used in heap
+        #else
         *n_total_bytes += sizeof(qstr_pool_t) + sizeof(qstr) * pool->alloc;
+        #endif
     }
     *n_total_bytes += *n_str_data_bytes;
 }

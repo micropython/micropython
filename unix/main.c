@@ -226,16 +226,20 @@ int usage(char **argv) {
 }
 
 #if MICROPY_MEM_STATS
-STATIC mp_obj_t mem_info(void) {
+STATIC mp_obj_t mem_info(mp_uint_t n_args, const mp_obj_t *args) {
     printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
     printf("stack: " UINT_FMT "\n", mp_stack_usage());
 #if MICROPY_ENABLE_GC
     gc_dump_info();
+    if (n_args == 1) {
+        // arg given means dump gc allocation table
+        gc_dump_alloc_table();
+    }
 #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mem_info_obj, mem_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mem_info_obj, 0, 1, mem_info);
 #endif
 
 STATIC mp_obj_t qstr_info(void) {
