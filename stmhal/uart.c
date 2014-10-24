@@ -575,53 +575,6 @@ STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
-/// \method readinto(buf, len=-1)
-///
-/// Read data on the bus:
-///
-///   - `buf` is a mutable buffer which will be filled with read characters.
-///   - `len` is the maximum number of characters to read; if negative, uses len(buf).
-///
-/// Return value: number of characters stored in buf.
-STATIC mp_obj_t pyb_uart_readinto(mp_uint_t n_args, const mp_obj_t *pos_args) {
-    pyb_uart_obj_t *self = pos_args[0];
-
-    // get the buffer to read into
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_WRITE);
-    bufinfo.len >>= self->char_width;
-
-    // adjust the length, if given
-    if (n_args == 3) {
-        mp_int_t len = mp_obj_get_int(pos_args[2]);
-        if (len >= 0 && len < bufinfo.len) {
-            bufinfo.len = len;
-        }
-    }
-
-    // make sure we want at least 1 char, and wait for it to become available
-    if (bufinfo.len == 0 || !uart_rx_wait(self, self->timeout)) {
-        return MP_OBJ_NEW_SMALL_INT(0);
-    }
-
-    // read the chars
-    byte *buf = bufinfo.buf;
-    for (;;) {
-        int data = uart_rx_char(self);
-        if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
-            buf += 2;
-        } else {
-            *buf++ = data;
-        }
-        if (--bufinfo.len == 0 || !uart_rx_wait(self, self->timeout_char)) {
-            // return the number of chars read
-            return mp_obj_new_int((buf - (byte*)bufinfo.buf) >> self->char_width);
-        }
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(pyb_uart_readinto_obj, 2, pyb_uart_readinto);
-
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -635,12 +588,13 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
     /// \method readline()
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    /// \method readinto(buf[, nbytes])
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
     /// \method write(buf)
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&pyb_uart_readinto_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
