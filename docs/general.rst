@@ -46,6 +46,9 @@ The modes are:
    filesystem to its factory state, then boots in safe mode.
 
 If your filesystem becomes corrupt, boot into mode 3 to fix it.
+If resetting the filesystem while plugged into your compute doesn't work,
+you can try doing the same procedure while the board is plugged into a USB
+charger, or other USB power supply without data connection.
 
 Errors: flashing LEDs
 ---------------------
