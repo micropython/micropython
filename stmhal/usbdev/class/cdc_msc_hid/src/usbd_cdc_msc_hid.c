@@ -229,9 +229,9 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[USB_CDC_HID_CONFIG_DESC_SIZ] _
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
     CDC_IFACE_NUM, // bFirstInterface: first interface for this association
     0x02,   // bInterfaceCount: nummber of interfaces for this association
-    0x00,   // bFunctionClass: ?
-    0x00,   // bFunctionSubClass: ?
-    0x00,   // bFunctionProtocol: ?
+    0x02,   // bFunctionClass: Communication Interface Class
+    0x02,   // bFunctionSubClass: Abstract Control Model
+    0x01,   // bFunctionProtocol: Common AT commands
     0x00,   // iFunction: index of string for this function
 
     //--------------------------------------------------------------------------
@@ -324,7 +324,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[USB_CDC_HID_CONFIG_DESC_SIZ] _
     0x01,   // bNumEndpoints
     0x03,   // bInterfaceClass: HID Class
     0x01,   // bInterfaceSubClass: 1=BOOT, 0=no boot
-    0x01,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
+    0x02,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
     0x00,   // iInterface:
 
     // HID descriptor
