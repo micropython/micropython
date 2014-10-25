@@ -91,6 +91,9 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&mp_builtin_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bin), (mp_obj_t)&mp_builtin_bin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callable), (mp_obj_t)&mp_builtin_callable_obj },
+#if MICROPY_PY_BUILTINS_COMPILE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mp_builtin_compile_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_chr), (mp_obj_t)&mp_builtin_chr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_dir), (mp_obj_t)&mp_builtin_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_divmod), (mp_obj_t)&mp_builtin_divmod_obj },

@@ -35,6 +35,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_all_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_any_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_bin_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_callable_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_compile_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_chr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_dir_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_divmod_obj);

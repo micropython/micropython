@@ -1189,6 +1189,13 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
         nlr_raise(module_fun);
     }
 
+    // for compile only
+    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        return module_fun;
+    }
+
     // complied successfully, execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {

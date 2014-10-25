@@ -213,6 +213,12 @@ Q(value)
 Q(write)
 Q(zip)
 
+#if MICROPY_PY_BUILTINS_COMPILE
+Q(compile)
+Q(code)
+Q(single)
+#endif
+
 Q(sep)
 Q(end)
 

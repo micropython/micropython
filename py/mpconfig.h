@@ -312,6 +312,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
+// Whether to support compile function
+#ifndef MICROPY_PY_BUILTINS_COMPILE
+#define MICROPY_PY_BUILTINS_COMPILE (0)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)
