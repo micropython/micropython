@@ -330,6 +330,7 @@ extern const mp_obj_type_t mp_type_GeneratorExit;
 extern const mp_obj_type_t mp_type_ImportError;
 extern const mp_obj_type_t mp_type_IndentationError;
 extern const mp_obj_type_t mp_type_IndexError;
+extern const mp_obj_type_t mp_type_KeyboardInterrupt;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
