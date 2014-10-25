@@ -469,7 +469,11 @@ STATIC void emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 
 STATIC void emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
     emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_int(emit, MP_BC_LOAD_CONST_SMALL_INT, arg);
+    if (-16 <= arg && arg <= 47) {
+        emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_SMALL_INT_MULTI + 16 + arg);
+    } else {
+        emit_write_bytecode_byte_int(emit, MP_BC_LOAD_CONST_SMALL_INT, arg);
+    }
 }
 
 STATIC void emit_bc_load_const_int(emit_t *emit, qstr qst) {
@@ -499,11 +503,10 @@ STATIC void emit_bc_load_null(emit_t *emit) {
 STATIC void emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
-    switch (local_num) {
-        case 0: emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_0); break;
-        case 1: emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_1); break;
-        case 2: emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_2); break;
-        default: emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num); break;
+    if (local_num <= 15) {
+        emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_MULTI + local_num);
+    } else {
+        emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num);
     }
 }
 
@@ -545,11 +548,10 @@ STATIC void emit_bc_load_subscr(emit_t *emit) {
 STATIC void emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, -1);
-    switch (local_num) {
-        case 0: emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_0); break;
-        case 1: emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_1); break;
-        case 2: emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_2); break;
-        default: emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N, local_num); break;
+    if (local_num <= 15) {
+        emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_MULTI + local_num);
+    } else {
+        emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N, local_num);
     }
 }
 
@@ -724,12 +726,12 @@ STATIC void emit_bc_pop_except(emit_t *emit) {
 STATIC void emit_bc_unary_op(emit_t *emit, mp_unary_op_t op) {
     if (op == MP_UNARY_OP_NOT) {
         emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte_byte(emit, MP_BC_UNARY_OP, MP_UNARY_OP_BOOL);
+        emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_BOOL);
         emit_bc_pre(emit, 0);
         emit_write_bytecode_byte(emit, MP_BC_NOT);
     } else {
         emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte_byte(emit, MP_BC_UNARY_OP, op);
+        emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + op);
     }
 }
 
@@ -743,7 +745,7 @@ STATIC void emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
         op = MP_BINARY_OP_IS;
     }
     emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_byte(emit, MP_BC_BINARY_OP, op);
+    emit_write_bytecode_byte(emit, MP_BC_BINARY_OP_MULTI + op);
     if (invert) {
         emit_bc_pre(emit, 0);
         emit_write_bytecode_byte(emit, MP_BC_NOT);

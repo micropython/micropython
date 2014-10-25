@@ -223,18 +223,6 @@ dispatch_loop:
                     PUSH(MP_OBJ_NULL);
                     DISPATCH();
 
-                ENTRY(MP_BC_LOAD_FAST_0):
-                    obj_shared = fastn[0];
-                    goto load_check;
-
-                ENTRY(MP_BC_LOAD_FAST_1):
-                    obj_shared = fastn[-1];
-                    goto load_check;
-
-                ENTRY(MP_BC_LOAD_FAST_2):
-                    obj_shared = fastn[-2];
-                    goto load_check;
-
                 ENTRY(MP_BC_LOAD_FAST_N):
                     DECODE_UINT;
                     obj_shared = fastn[-unum];
@@ -287,18 +275,6 @@ dispatch_loop:
                     SET_TOP(mp_obj_subscr(TOP(), index, MP_OBJ_SENTINEL));
                     DISPATCH();
                 }
-
-                ENTRY(MP_BC_STORE_FAST_0):
-                    fastn[0] = POP();
-                    DISPATCH();
-
-                ENTRY(MP_BC_STORE_FAST_1):
-                    fastn[-1] = POP();
-                    DISPATCH();
-
-                ENTRY(MP_BC_STORE_FAST_2):
-                    fastn[-2] = POP();
-                    DISPATCH();
 
                 ENTRY(MP_BC_STORE_FAST_N):
                     DECODE_UINT;
@@ -606,19 +582,6 @@ unwind_jump:
                     }
                     DISPATCH();
 
-                ENTRY(MP_BC_UNARY_OP):
-                    unum = *ip++;
-                    SET_TOP(mp_unary_op(unum, TOP()));
-                    DISPATCH();
-
-                ENTRY(MP_BC_BINARY_OP): {
-                    unum = *ip++;
-                    mp_obj_t rhs = POP();
-                    mp_obj_t lhs = TOP();
-                    SET_TOP(mp_binary_op(unum, lhs, rhs));
-                    DISPATCH();
-                }
-
                 ENTRY(MP_BC_BUILD_TUPLE):
                     DECODE_UINT;
                     sp -= unum - 1;
@@ -890,7 +853,53 @@ yield:
                     mp_import_all(POP());
                     DISPATCH();
 
-                ENTRY_DEFAULT: {
+#if MICROPY_OPT_COMPUTED_GOTO
+                ENTRY(MP_BC_LOAD_CONST_SMALL_INT_MULTI):
+                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16));
+                    DISPATCH();
+
+                ENTRY(MP_BC_LOAD_FAST_MULTI):
+                    obj_shared = fastn[MP_BC_LOAD_FAST_MULTI - (mp_int_t)ip[-1]];
+                    goto load_check;
+
+                ENTRY(MP_BC_STORE_FAST_MULTI):
+                    fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
+                    DISPATCH();
+
+                ENTRY(MP_BC_UNARY_OP_MULTI):
+                    SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
+                    DISPATCH();
+
+                ENTRY(MP_BC_BINARY_OP_MULTI): {
+                    mp_obj_t rhs = POP();
+                    mp_obj_t lhs = TOP();
+                    SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
+                    DISPATCH();
+                }
+
+                ENTRY_DEFAULT:
+#else
+                ENTRY_DEFAULT:
+                    if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + 64) {
+                        PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16));
+                        DISPATCH();
+                    } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + 16) {
+                        obj_shared = fastn[MP_BC_LOAD_FAST_MULTI - (mp_int_t)ip[-1]];
+                        goto load_check;
+                    } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
+                        fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
+                        DISPATCH();
+                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 5) {
+                        SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
+                        DISPATCH();
+                    } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + 35) {
+                        mp_obj_t rhs = POP();
+                        mp_obj_t lhs = TOP();
+                        SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
+                        DISPATCH();
+                    } else
+#endif
+                {
                     mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                     nlr_pop();
                     fastn[0] = obj;

@@ -190,18 +190,6 @@ void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
                 printf("LOAD_NULL");
                 break;
 
-            case MP_BC_LOAD_FAST_0:
-                printf("LOAD_FAST_0");
-                break;
-
-            case MP_BC_LOAD_FAST_1:
-                printf("LOAD_FAST_1");
-                break;
-
-            case MP_BC_LOAD_FAST_2:
-                printf("LOAD_FAST_2");
-                break;
-
             case MP_BC_LOAD_FAST_N:
                 DECODE_UINT;
                 printf("LOAD_FAST_N " UINT_FMT, unum);
@@ -238,18 +226,6 @@ void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
 
             case MP_BC_LOAD_SUBSCR:
                 printf("LOAD_SUBSCR");
-                break;
-
-            case MP_BC_STORE_FAST_0:
-                printf("STORE_FAST_0");
-                break;
-
-            case MP_BC_STORE_FAST_1:
-                printf("STORE_FAST_1");
-                break;
-
-            case MP_BC_STORE_FAST_2:
-                printf("STORE_FAST_2");
                 break;
 
             case MP_BC_STORE_FAST_N:
@@ -397,16 +373,6 @@ void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
                 printf("NOT");
                 break;
 
-            case MP_BC_UNARY_OP:
-                unum = *ip++;
-                printf("UNARY_OP " UINT_FMT, unum);
-                break;
-
-            case MP_BC_BINARY_OP:
-                unum = *ip++;
-                printf("BINARY_OP " UINT_FMT, unum);
-                break;
-
             case MP_BC_BUILD_TUPLE:
                 DECODE_UINT;
                 printf("BUILD_TUPLE " UINT_FMT, unum);
@@ -534,9 +500,22 @@ void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
                 break;
 
             default:
-                printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
-                assert(0);
-                return;
+                if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + 64) {
+                    printf("LOAD_CONST_SMALL_INT " INT_FMT, (mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16);
+                } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + 16) {
+                    printf("LOAD_FAST " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_LOAD_FAST_MULTI);
+                } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
+                    printf("STORE_FAST " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_STORE_FAST_MULTI);
+                } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 5) {
+                    printf("UNARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_UNARY_OP_MULTI);
+                } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + 35) {
+                    printf("BINARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_BINARY_OP_MULTI);
+                } else {
+                    printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
+                    assert(0);
+                    return;
+                }
+                break;
         }
         printf("\n");
     }
