@@ -1098,8 +1098,7 @@ import_error:
     }
 
     // See if it's a package, then can try FS import
-    mp_load_method_maybe(module, MP_QSTR___path__, dest);
-    if (dest[0] == MP_OBJ_NULL) {
+    if (!mp_obj_is_package(module)) {
         goto import_error;
     }
 

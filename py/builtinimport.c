@@ -55,6 +55,12 @@
 
 #define PATH_SEP_CHAR '/'
 
+bool mp_obj_is_package(mp_obj_t module) {
+    mp_obj_t dest[2];
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    return dest[0] != MP_OBJ_NULL;
+}
+
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_str(path));
