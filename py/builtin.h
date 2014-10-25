@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-mp_obj_t mp_builtin___import__(mp_uint_t n_args, mp_obj_t *args);
+mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
