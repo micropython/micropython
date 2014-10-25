@@ -57,7 +57,7 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
-void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
+void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip, mp_uint_t len) {
     const byte *ip_start = ip;
 
     // get code info size
@@ -77,6 +77,14 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
             printf("\n");
         }
         printf(" %02x", ip_start[i]);
+    }
+    printf("\n");
+
+    // bytecode prelude: arg names (as qstr objects)
+    printf("arg names:");
+    for (int i = 0; i < n_total_args; i++) {
+        printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(*(mp_obj_t*)ip)));
+        ip += sizeof(mp_obj_t);
     }
     printf("\n");
 

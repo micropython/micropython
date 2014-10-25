@@ -173,7 +173,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
     const byte *ip = self->bytecode + code_info_size;
 
-    // bytecode prelude: state size and exception stack size; 16 bit uints
+    // bytecode prelude: skip arg names
+    ip += (self->n_pos_args + self->n_kwonly_args) * sizeof(mp_obj_t);
+
+    // bytecode prelude: state size and exception stack size
     mp_uint_t n_state = mp_decode_uint(&ip);
     mp_uint_t n_exc_stack = mp_decode_uint(&ip);
 
@@ -268,7 +271,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     .binary_op = mp_obj_fun_binary_op,
 };
 
-mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, qstr *args, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
     mp_uint_t n_def_args = 0;
     mp_uint_t n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -283,7 +286,6 @@ mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, qstr *args, mp_uint_t n_pos_ar
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
     o->base.type = &mp_type_fun_bc;
     o->globals = mp_globals_get();
-    o->args = args;
     o->n_pos_args = n_pos_args;
     o->n_kwonly_args = n_kwonly_args;
     o->n_def_args = n_def_args;

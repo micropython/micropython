@@ -218,6 +218,13 @@ STATIC void emit_write_bytecode_byte_uint(emit_t* emit, byte b, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
+STATIC void emit_write_bytecode_prealigned_ptr(emit_t* emit, void *ptr) {
+    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
+    // Verify thar c is already uint-aligned
+    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
+    *c = (mp_uint_t)ptr;
+}
+
 // aligns the pointer so it is friendly to GC
 STATIC void emit_write_bytecode_byte_ptr(emit_t* emit, byte b, void *ptr) {
     emit_write_bytecode_byte(emit, b);
@@ -294,7 +301,16 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_code_info_qstr(emit, scope->simple_name);
     emit_write_code_info_qstr(emit, scope->source_file);
 
-    // bytecode prelude: local state size and exception stack size; 16 bit uints for now
+    // bytecode prelude: argument names (needed to resolve positional args passed as keywords)
+    // we store them as full word-sized objects for efficient access in mp_setup_code_state
+    // this is the start of the prelude and is guaranteed to be aligned on a word boundary
+    {
+        for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
+            emit_write_bytecode_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(scope->id_info[i].qst));
+        }
+    }
+
+    // bytecode prelude: local state size and exception stack size
     {
         mp_uint_t n_state = scope->num_locals + scope->stack_size;
         if (n_state == 0) {
@@ -358,13 +374,9 @@ STATIC void emit_bc_end_pass(emit_t *emit) {
         emit->code_base = m_new0(byte, emit->code_info_size + emit->bytecode_size);
 
     } else if (emit->pass == MP_PASS_EMIT) {
-        qstr *arg_names = m_new(qstr, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
-        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
-            arg_names[i] = emit->scope->id_info[i].qst;
-        }
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->bytecode_size,
-            emit->scope->num_pos_args, emit->scope->num_kwonly_args, arg_names,
+            emit->scope->num_pos_args, emit->scope->num_kwonly_args,
             emit->scope->scope_flags);
     }
 }

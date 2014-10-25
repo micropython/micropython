@@ -55,26 +55,20 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     return rc;
 }
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, qstr *arg_names, mp_uint_t scope_flags) {
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_uint_t scope_flags) {
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
     rc->n_kwonly_args = n_kwonly_args;
-    rc->arg_names = arg_names;
     rc->u_byte.code = code;
     rc->u_byte.len = len;
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " n_kwonly_args=" UINT_FMT " flags=%x\n", code, len, n_pos_args, n_kwonly_args, (uint)scope_flags);
-    DEBUG_printf("  arg names:");
-    for (int i = 0; i < n_pos_args + n_kwonly_args; i++) {
-        DEBUG_printf(" %s", qstr_str(arg_names[i]));
-    }
-    DEBUG_printf("\n");
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag > 0) {
-        mp_bytecode_print(rc, code, len);
+        mp_bytecode_print(rc, n_pos_args + n_kwonly_args, code, len);
     }
 #endif
 }
@@ -121,7 +115,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     mp_obj_t fun;
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
-            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->arg_names, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
+            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
             break;
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:

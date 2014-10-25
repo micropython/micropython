@@ -62,6 +62,9 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
     const byte *ip = self_fun->bytecode + code_info_size;
 
+    // bytecode prelude: skip arg names
+    ip += (self_fun->n_pos_args + self_fun->n_kwonly_args) * sizeof(mp_obj_t);
+
     // bytecode prelude: get state size and exception stack size
     mp_uint_t n_state = mp_decode_uint(&ip);
     mp_uint_t n_exc_stack = mp_decode_uint(&ip);
