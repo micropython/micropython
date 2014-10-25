@@ -50,7 +50,7 @@ STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 
 void pyb_usb_init0(void) {
     // create an exception object for interrupting by VCP
-    mp_const_vcp_interrupt = mp_obj_new_exception_msg(&mp_type_OSError, "VCPInterrupt");
+    mp_const_vcp_interrupt = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
 }
 

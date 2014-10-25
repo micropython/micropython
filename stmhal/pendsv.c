@@ -31,6 +31,7 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "pendsv.h"
 
 static void *pendsv_object = NULL;
@@ -40,12 +41,22 @@ void pendsv_init(void) {
     HAL_NVIC_SetPriority(PendSV_IRQn, 0xf, 0xf);
 }
 
-// call this function to raise a pending exception during an interrupt
-// it will wait until all interrupts are finished then raise the given
-// exception object using nlr_jump in the context of the top-level thread
+// Call this function to raise a pending exception during an interrupt.
+// It will first try to raise the exception "softly" by setting the
+// mp_pending_exception variable and hoping that the VM will notice it.
+// If this function is called a second time (ie with the mp_pending_exception
+// variable already set) then it will force the exception by using the hardware
+// PENDSV feature.  This will wait until all interrupts are finished then raise
+// the given exception object using nlr_jump in the context of the top-level
+// thread.
 void pendsv_nlr_jump(void *o) {
-    pendsv_object = o;
-    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    if (mp_pending_exception == MP_OBJ_NULL) {
+        mp_pending_exception = o;
+    } else {
+        mp_pending_exception = MP_OBJ_NULL;
+        pendsv_object = o;
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    }
 }
 
 // since we play tricks with the stack, the compiler must not generate a

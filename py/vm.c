@@ -110,10 +110,12 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
         code_state->ip = ip; \
         goto *entry_table[*ip++]; \
     } while(0)
+    #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
 #else
     #define DISPATCH() break
+    #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) case op
     #define ENTRY_DEFAULT default
 #endif
@@ -372,21 +374,21 @@ dispatch_loop:
                 ENTRY(MP_BC_JUMP):
                     DECODE_SLABEL;
                     ip += unum;
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 ENTRY(MP_BC_POP_JUMP_IF_TRUE):
                     DECODE_SLABEL;
                     if (mp_obj_is_true(POP())) {
                         ip += unum;
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 ENTRY(MP_BC_POP_JUMP_IF_FALSE):
                     DECODE_SLABEL;
                     if (!mp_obj_is_true(POP())) {
                         ip += unum;
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 ENTRY(MP_BC_JUMP_IF_TRUE_OR_POP):
                     DECODE_SLABEL;
@@ -395,7 +397,7 @@ dispatch_loop:
                     } else {
                         sp--;
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 ENTRY(MP_BC_JUMP_IF_FALSE_OR_POP):
                     DECODE_SLABEL;
@@ -404,7 +406,7 @@ dispatch_loop:
                     } else {
                         ip += unum;
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 ENTRY(MP_BC_SETUP_WITH): {
                     mp_obj_t obj = TOP();
@@ -502,7 +504,7 @@ unwind_jump:
                     if (unum != 0) {
                         sp--;
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
 
                 // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                 ENTRY(MP_BC_SETUP_EXCEPT):
@@ -909,6 +911,15 @@ yield:
 #if !MICROPY_OPT_COMPUTED_GOTO
                 } // switch
 #endif
+
+pending_exception_check:
+                if (mp_pending_exception != MP_OBJ_NULL) {
+                    mp_obj_t obj = mp_pending_exception;
+                    mp_pending_exception = MP_OBJ_NULL;
+                    RAISE(obj);
+                }
+                DISPATCH();
+
             } // for loop
 
         } else {

@@ -62,6 +62,9 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
+// pending exception object (MP_OBJ_NULL if not pending)
+mp_obj_t mp_pending_exception;
+
 // locals and globals need to be pointers because they can be the same in outer module scope
 STATIC mp_obj_dict_t *dict_locals;
 STATIC mp_obj_dict_t *dict_globals;
@@ -78,6 +81,9 @@ const mp_obj_module_t mp_module___main__ = {
 void mp_init(void) {
     qstr_init();
     mp_stack_ctrl_init();
+
+    // no pending exceptions to start with
+    mp_pending_exception = MP_OBJ_NULL;
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     mp_init_emergency_exception_buf();

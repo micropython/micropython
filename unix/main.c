@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -63,6 +64,20 @@ mp_uint_t mp_verbose_flag = 0;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
 #endif
+
+STATIC mp_obj_t keyboard_interrupt_obj;
+
+STATIC void sighandler(int signum) {
+    if (signum == SIGINT) {
+        mp_obj_exception_clear_traceback(keyboard_interrupt_obj);
+        mp_pending_exception = keyboard_interrupt_obj;
+        // disable our handler so next we really die
+        struct sigaction sa;
+        sa.sa_handler = SIG_DFL;
+        sigemptyset(&sa.sa_mask);
+        sigaction(SIGINT, &sa, NULL);
+    }
+}
 
 #define FORCED_EXIT (0x100)
 // returns standard error codes: 0 for success, 1 for all other errors
@@ -119,14 +134,23 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 0;
     }
 
+    // enable signal handler
+    struct sigaction sa;
+    sa.sa_handler = sighandler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    sa.sa_handler = SIG_DFL;
+
     // execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_call_function_0(module_fun);
+        sigaction(SIGINT, &sa, NULL);
         nlr_pop();
         return 0;
     } else {
         // uncaught exception
+        sigaction(SIGINT, &sa, NULL);
         // check for SystemExit
         mp_obj_t exc = (mp_obj_t)nlr.ret_val;
         if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
@@ -304,6 +328,9 @@ int main(int argc, char **argv) {
 #endif
 
     mp_init();
+
+    // create keyboard interrupt object
+    keyboard_interrupt_obj = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
