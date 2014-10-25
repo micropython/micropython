@@ -137,17 +137,17 @@ STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
 
 static const char fresh_boot_py[] =
-"# boot.py -- run on boot-up\n"
-"# can run arbitrary Python, but best to keep it minimal\n"
-"\n"
-"import pyb\n"
-"#pyb.main('main.py') # main script to run after this one\n"
-"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\n"
-"#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\n"
+"# boot.py -- run on boot-up\r\n"
+"# can run arbitrary Python, but best to keep it minimal\r\n"
+"\r\n"
+"import pyb\r\n"
+"#pyb.main('main.py') # main script to run after this one\r\n"
+"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
+"#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\r\n"
 ;
 
 static const char fresh_main_py[] =
-"# main.py -- put your code here!\n"
+"# main.py -- put your code here!\r\n"
 ;
 
 static const char fresh_pybcdc_inf[] =
