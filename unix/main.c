@@ -47,6 +47,7 @@
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"
+#include "builtin.h"
 #include "repl.h"
 #include "gc.h"
 #include "genhdr/py-version.h"
@@ -65,8 +66,28 @@ long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
 #define FORCED_EXIT (0x100)
-// returns standard error codes: 0 for success, 1 for all other errors
-// if FORCED_EXIT bit is set then script raised SystemExit and the
+// If exc is SystemExit, return value where FORCED_EXIT bit set,
+// and lower 8 bits are SystemExit value. For all other exceptions,
+// return 1.
+STATIC int handle_uncaught_exception(mp_obj_t exc) {
+    // check for SystemExit
+    if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
+        // None is an exit value of 0; an int is its value; anything else is 1
+        mp_obj_t exit_val = mp_obj_exception_get_value(exc);
+        mp_int_t val = 0;
+        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+            val = 1;
+        }
+        return FORCED_EXIT | (val & 255);
+    }
+
+    // Report all other exceptions
+    mp_obj_print_exception(exc);
+    return 1;
+}
+
+// Returns standard error codes: 0 for success, 1 for all other errors,
+// except if FORCED_EXIT bit is set then script raised SystemExit and the
 // value of the exit is in the lower 8 bits of the return value
 STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
@@ -127,19 +148,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 0;
     } else {
         // uncaught exception
-        // check for SystemExit
-        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
-        if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
-            // None is an exit value of 0; an int is its value; anything else is 1
-            mp_obj_t exit_val = mp_obj_exception_get_value(exc);
-            mp_int_t val = 0;
-            if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
-                val = 1;
-            }
-            return FORCED_EXIT | (val & 255);
-        }
-        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
-        return 1;
+        return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
     }
 }
 
@@ -287,6 +296,12 @@ void pre_process_options(int argc, char **argv) {
     }
 }
 
+void set_sys_argv(char *argv[], int argc, int start_arg) {
+    for (int i = start_arg; i < argc; i++) {
+        mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
+    }
+}
+
 #ifdef _WIN32
 #define PATHLIST_SEP_CHAR ';'
 #else
@@ -379,6 +394,40 @@ int main(int argc, char **argv) {
                     break;
                 }
                 a += 1;
+            } else if (strcmp(argv[a], "-m") == 0) {
+                if (a + 1 >= argc) {
+                    return usage(argv);
+                }
+                mp_obj_t import_args[4];
+                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]), false);
+                import_args[1] = import_args[2] = mp_const_none;
+                // Ask __import__ to handle imported module specially - set its __name__
+                // to __main__, and also return this leaf module, not top-level package
+                // containing it.
+                import_args[3] = mp_const_false;
+                // TODO: https://docs.python.org/3/using/cmdline.html#cmdoption-m :
+                // "the first element of sys.argv will be the full path to
+                // the module file (while the module file is being located,
+                // the first element will be set to "-m")."
+                set_sys_argv(argv, argc, a + 1);
+
+                mp_obj_t mod;
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mod = mp_builtin___import__(MP_ARRAY_SIZE(import_args), import_args);
+                    nlr_pop();
+                } else {
+                    // uncaught exception
+                    return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
+                }
+
+                if (mp_obj_is_package(mod)) {
+                    // TODO
+                    fprintf(stderr, "%s: -m for packages not yet implemented\n", argv[0]);
+                    exit(1);
+                }
+                ret = 0;
+                break;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "-v") == 0) {
@@ -409,9 +458,7 @@ int main(int argc, char **argv) {
             path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
             free(pathbuf);
 
-            for (int i = a; i < argc; i++) {
-                mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
-            }
+            set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
             break;
         }
