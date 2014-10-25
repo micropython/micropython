@@ -47,6 +47,11 @@ The modes are:
 
 If your filesystem becomes corrupt, boot into mode 3 to fix it.
 
+You may need to reset the filesystem while the board is plugged into
+a USB charger, rather than plugged into the computer (some Macs will
+corrupt the freshly reset filesystem if you perform the reset while
+plugged into the Mac).
+
 Errors: flashing LEDs
 ---------------------
 
