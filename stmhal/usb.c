@@ -58,10 +58,14 @@ void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
 #ifdef USE_DEVICE_MODE
     if (!dev_is_enabled) {
         // only init USB once in the device's power-lifetime
+        // Windows needs a different PID to distinguish different device
+        // configurations, so we set it here depending on mode.
         if (mode == USB_DEVICE_MODE_CDC_MSC) {
             USBD_SelectMode(USBD_MODE_CDC_MSC);
+            USBD_SetPID(0x9800);
         } else {
             USBD_SelectMode(USBD_MODE_CDC_HID);
+            USBD_SetPID(0x9801);
         }
         USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&VCP_Desc, 0);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);

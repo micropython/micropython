@@ -25,3 +25,5 @@
  */
 
 extern const USBD_DescriptorsTypeDef VCP_Desc;
+
+void USBD_SetPID(uint16_t pid);
