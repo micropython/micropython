@@ -918,7 +918,6 @@ pending_exception_check:
                     mp_pending_exception = MP_OBJ_NULL;
                     RAISE(obj);
                 }
-                DISPATCH();
 
             } // for loop
 
