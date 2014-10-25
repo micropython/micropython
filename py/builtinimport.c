@@ -286,6 +286,14 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
 
                 module_obj = mp_obj_new_module(mod_name);
 
+                // if args[3] (fromtuple) has magic value False, set up
+                // this module for command-line "-m" option (set module's
+                // name to __main__ instead of real name).
+                if (i == mod_len && fromtuple == mp_const_false) {
+                    mp_obj_module_t *o = module_obj;
+                    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+                }
+
                 if (stat == MP_IMPORT_STAT_DIR) {
                     DEBUG_printf("%s is dir\n", vstr_str(&path));
                     // https://docs.python.org/3/reference/import.html
