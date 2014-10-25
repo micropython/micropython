@@ -40,7 +40,6 @@ typedef struct _mp_raw_code_t {
     mp_uint_t scope_flags : 7;
     mp_uint_t n_pos_args : 11;
     mp_uint_t n_kwonly_args : 11;
-    qstr *arg_names;
     union {
         struct {
             byte *code;
@@ -55,7 +54,7 @@ typedef struct _mp_raw_code_t {
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, qstr *arg_names, mp_uint_t scope_flags);
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_uint_t scope_flags);
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, mp_uint_t n_args, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
