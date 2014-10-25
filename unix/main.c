@@ -265,7 +265,14 @@ void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_VIPER;
 #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
-                    heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, NULL, 0);
+                    char *end;
+                    heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
+                    // Don't bring unneeded libc dependencies like tolower()
+                    if ((*end | 0x20) == 'k') {
+                        heap_size *= 1024;
+                    } else if ((*end | 0x20) == 'm') {
+                        heap_size *= 1024 * 1024;
+                    }
 #endif
                 } else {
                     exit(usage(argv));
