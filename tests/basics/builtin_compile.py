@@ -1,21 +1,29 @@
 # test compile builtin
 
-try:
-    compile
-except NameError:
-    print("SKIP")
-    import sys
-    sys.exit()
+def have_compile():
+    try:
+        compile
+        return True
+    except NameError:
+        return False
 
-c = compile("print(x)", "file", "exec")
-
-try:
-    exec(c)
-except NameError:
-    print("NameError")
-
+# global variable for compiled code to access
 x = 1
-exec(c)
 
-exec(c, {"x":2})
-exec(c, {}, {"x":3})
+def test():
+    c = compile("print(x)", "file", "exec")
+
+    try:
+        exec(c)
+    except NameError:
+        print("NameError")
+
+    exec(c)
+
+    exec(c, {"x":2})
+    exec(c, {}, {"x":3})
+
+if have_compile():
+    test()
+else:
+    print("SKIP")
