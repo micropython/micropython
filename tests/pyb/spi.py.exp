@@ -1,5 +1,5 @@
 SPI(1)
-SPI(1, SPI.MASTER, baudrate=328125, polarity=1, phase=1, bits=8)
+SPI(1, SPI.MASTER, baudrate=328125, polarity=1, phase=0, bits=8)
 SPI(1, SPI.SLAVE, polarity=1, phase=1, bits=8)
 b'\xff'
 b'\xff'
