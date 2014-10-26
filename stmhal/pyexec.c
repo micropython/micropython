@@ -54,31 +54,47 @@
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;
 
+#define EXEC_FLAG_PRINT_EOF (1)
+#define EXEC_FLAG_ALLOW_DEBUGGING (2)
+#define EXEC_FLAG_IS_REPL (4)
+
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
-int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+// EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
+// EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
+// EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
+STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, int exec_flags) {
+    int ret = 0;
+
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
     qstr source_name = mp_lexer_source_name(lex);
 
+    // check for parse error
     if (pn == MP_PARSE_NODE_NULL) {
-        // parse error
+        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+            stdout_tx_strn("\x04", 1);
+        }
         mp_parse_show_exception(lex, parse_error_kind);
         mp_lexer_free(lex);
-        return 0;
+        goto finish;
     }
 
     mp_lexer_free(lex);
 
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, is_repl);
+    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
 
+    // check for compile error
     if (mp_obj_is_exception_instance(module_fun)) {
+        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+            stdout_tx_strn("\x04", 1);
+        }
         mp_obj_print_exception(module_fun);
-        return 0;
+        goto finish;
     }
 
+    // execute code
     nlr_buf_t nlr;
-    int ret;
     uint32_t start = HAL_GetTick();
     if (nlr_push(&nlr) == 0) {
         usb_vcp_set_interrupt_char(VCP_CHAR_CTRL_C); // allow ctrl-C to interrupt us
@@ -86,10 +102,17 @@ int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, boo
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
         nlr_pop();
         ret = 1;
+        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+            stdout_tx_strn("\x04", 1);
+        }
     } else {
         // uncaught exception
         // FIXME it could be that an interrupt happens just before we disable it here
         usb_vcp_set_interrupt_char(VCP_CHAR_NONE); // disable interrupt
+        // print EOF after normal output
+        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+            stdout_tx_strn("\x04", 1);
+        }
         // check for SystemExit
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
             // at the moment, the value of SystemExit is unused
@@ -101,7 +124,7 @@ int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, boo
     }
 
     // display debugging info if wanted
-    if (is_repl && repl_display_debugging_info) {
+    if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         uint32_t ticks = HAL_GetTick() - start; // TODO implement a function that does this properly
         printf("took %lu ms\n", ticks);
         gc_collect();
@@ -121,6 +144,11 @@ int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, boo
             printf("  " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
             printf("  1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
         }
+    }
+
+finish:
+    if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+        stdout_tx_strn("\x04", 1);
     }
 
     return ret;
@@ -171,16 +199,13 @@ raw_repl_reset:
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, 0);
         if (lex == NULL) {
-            printf("MemoryError\n");
+            printf("\x04MemoryError\n\x04");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
         }
-
-        // indicate end of output with EOF character
-        stdout_tx_str("\004");
     }
 }
 
@@ -217,6 +242,7 @@ friendly_repl_reset:
     */
 
     for (;;) {
+    input_restart:
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
 
@@ -246,7 +272,11 @@ friendly_repl_reset:
         while (mp_repl_continue_with_input(vstr_str(&line))) {
             vstr_add_char(&line, '\n');
             int ret = readline(&line, "... ");
-            if (ret == VCP_CHAR_CTRL_D) {
+            if (ret == VCP_CHAR_CTRL_C) {
+                // cancel everything
+                stdout_tx_str("\r\n");
+                goto input_restart;
+            } else if (ret == VCP_CHAR_CTRL_D) {
                 // stop entering compound statement
                 break;
             }
@@ -256,7 +286,7 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, true);
+            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -272,7 +302,7 @@ int pyexec_file(const char *filename) {
         return false;
     }
 
-    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, false);
+    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
 }
 
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {

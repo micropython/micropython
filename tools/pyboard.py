@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 pyboard interface
 
@@ -19,10 +21,15 @@ To run a script from the local machine on the board and print out the results:
 
 This script can also be run directly.  To execute a local script, use:
 
+    ./pyboard.py test.py
+
+Or:
+
     python pyboard.py test.py
 
 """
 
+import sys
 import time
 import serial
 
@@ -31,21 +38,26 @@ class PyboardError(BaseException):
 
 class Pyboard:
     def __init__(self, serial_device):
-        self.serial = serial.Serial(serial_device)
+        self.serial = serial.Serial(serial_device, baudrate=115200, interCharTimeout=1)
 
     def close(self):
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10):
+    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
         data = self.serial.read(min_num_bytes)
+        if data_consumer:
+            data_consumer(data)
         timeout_count = 0
         while True:
-            if self.serial.inWaiting() > 0:
-                data = data + self.serial.read(self.serial.inWaiting())
-                time.sleep(0.01)
-                timeout_count = 0
-            elif data.endswith(ending):
+            if data.endswith(ending):
                 break
+            elif self.serial.inWaiting() > 0:
+                new_data = self.serial.read(1)
+                data = data + new_data
+                if data_consumer:
+                    data_consumer(new_data)
+                #time.sleep(0.01)
+                timeout_count = 0
             else:
                 timeout_count += 1
                 if timeout_count >= 10 * timeout:
@@ -54,8 +66,12 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self):
-        self.serial.write(b'\r\x03') # ctrl-C: interrupt any running program
+        self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
         self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
+        data = self.read_until(1, b'to exit\r\n>')
+        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
+            print(data)
+            raise PyboardError('could not enter raw repl')
         self.serial.write(b'\x04') # ctrl-D: soft reset
         data = self.read_until(1, b'to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
@@ -65,31 +81,51 @@ class Pyboard:
     def exit_raw_repl(self):
         self.serial.write(b'\r\x02') # ctrl-B: enter friendly REPL
 
+    def follow(self, data_consumer=False):
+        # wait for normal output
+        data = self.read_until(1, b'\x04', data_consumer=data_consumer)
+        if not data.endswith(b'\x04'):
+            raise PyboardError('timeout waiting for first EOF reception')
+        data = data[:-1]
+
+        # wait for error output
+        data_err = self.read_until(2, b'\x04>')
+        if not data_err.endswith(b'\x04>'):
+            raise PyboardError('timeout waiting for second EOF reception')
+        data_err = data_err[:-2]
+
+        # return normal and error output
+        return data, data_err
+
+    def exec_raw(self, command, data_consumer=False):
+        if isinstance(command, bytes):
+            command_bytes = command
+        else:
+            command_bytes = bytes(command, encoding='ascii')
+
+        # write command
+        for i in range(0, len(command_bytes), 32):
+            self.serial.write(command_bytes[i:min(i+32, len(command_bytes))])
+            time.sleep(0.01)
+        self.serial.write(b'\x04')
+
+        # check if we could exec command
+        data = self.serial.read(2)
+        if data != b'OK':
+            raise PyboardError('could not exec command')
+
+        return self.follow(data_consumer)
+
     def eval(self, expression):
         ret = self.exec('print({})'.format(expression))
         ret = ret.strip()
         return ret
 
     def exec(self, command):
-        if isinstance(command, bytes):
-            command_bytes = command
-        else:
-            command_bytes = bytes(command, encoding='ascii')
-        for i in range(0, len(command_bytes), 32):
-            self.serial.write(command_bytes[i:min(i+32, len(command_bytes))])
-            time.sleep(0.01)
-        self.serial.write(b'\x04')
-        data = self.serial.read(2)
-        if data != b'OK':
-            raise PyboardError('could not exec command')
-        data = self.read_until(2, b'\x04>')
-        if not data.endswith(b'\x04>'):
-            print(data)
-            raise PyboardError('timeout waiting for EOF reception')
-        if data.startswith(b'Traceback') or data.startswith(b'  File '):
-            print(data)
-            raise PyboardError('command failed')
-        return data[:-2]
+        ret, ret_err = self.exec_raw(command)
+        if ret_err:
+            raise PyboardError('exception', ret, ret_err)
+        return ret
 
     def execfile(self, filename):
         with open(filename) as f:
@@ -175,8 +211,37 @@ def main():
     if args.test:
         run_test(device=args.device)
 
-    for file in args.files:
-        execfile(file, device=args.device)
+    if len(args.files) == 0:
+        try:
+            pyb = Pyboard(args.device)
+            ret, ret_err = pyb.follow(data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            pyb.close()
+        except PyboardError as er:
+            print(er)
+            sys.exit(1)
+        except KeyboardInterrupt:
+            sys.exit(1)
+        if ret_err:
+            print(str(ret_err, encoding='ascii'), end='')
+            sys.exit(1)
+
+    for filename in args.files:
+        try:
+            pyb = Pyboard(args.device)
+            pyb.enter_raw_repl()
+            with open(filename) as f:
+                pyfile = f.read()
+            ret, ret_err = pyb.exec_raw(pyfile, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            pyb.exit_raw_repl()
+            pyb.close()
+        except PyboardError as er:
+            print(er)
+            sys.exit(1)
+        except KeyboardInterrupt:
+            sys.exit(1)
+        if ret_err:
+            print(str(ret_err, encoding='ascii'), end='')
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()

@@ -86,6 +86,9 @@ int readline(vstr_t *line, const char *prompt) {
             } else if (c == VCP_CHAR_CTRL_A) {
                 // CTRL-A with non-empty line is go-to-start-of-line
                 goto home_key;
+            } else if (c == VCP_CHAR_CTRL_C) {
+                // CTRL-C with non-empty line is cancel
+                return c;
             } else if (c == VCP_CHAR_CTRL_E) {
                 // CTRL-E is go-to-end-of-line
                 goto end_key;

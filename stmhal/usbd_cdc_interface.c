@@ -364,17 +364,14 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
         for (; src < buf_top; src++) {
             if (*src == user_interrupt_char) {
                 char_found = true;
+                // raise exception when interrupts are finished
+                pendsv_nlr_jump(user_interrupt_data);
             } else {
                 if (char_found) {
                     *dest = *src;
                 }
                 dest++;
             }
-        }
-
-        if (char_found) {
-            // raise exception when interrupts are finished
-            pendsv_nlr_jump(user_interrupt_data);
         }
 
         // length of remaining characters
