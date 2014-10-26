@@ -39,6 +39,8 @@
 #include "runtime.h"
 #include "timer.h"
 #include "dac.h"
+#include "pin.h"
+#include "genhdr/pins.h"
 
 /// \moduleref pyb
 /// \class DAC - digital to analog conversion
@@ -107,18 +109,33 @@ typedef struct _pyb_dac_obj_t {
 // create the dac object
 // currently support either DAC1 on X5 (id = 1) or DAC2 on X6 (id = 2)
 
-/// \classmethod \constructor(id)
+/// \classmethod \constructor(port)
 /// Construct a new DAC object.
 ///
-/// `id` can be 1 or 2: DAC 1 is on pin X5 and DAC 2 is on pin X6.
+/// `port` can be a pin object, or an integer (1 or 2).
+/// DAC(1) is on pin X5 and DAC(2) is on pin X6.
 STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
+    // get pin/channel to output on
+    mp_int_t dac_id;
+    if (MP_OBJ_IS_INT(args[0])) {
+        dac_id = mp_obj_get_int(args[0]);
+    } else {
+        const pin_obj_t *pin = pin_find(args[0]);
+        if (pin == &pin_A4) {
+            dac_id = 1;
+        } else if (pin == &pin_A5) {
+            dac_id = 2;
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have DAC capabilities", qstr_str(pin->name)));
+        }
+    }
+
     pyb_dac_obj_t *dac = m_new_obj(pyb_dac_obj_t);
     dac->base.type = &pyb_dac_type;
 
-    mp_int_t dac_id = mp_obj_get_int(args[0]);
     uint32_t pin;
     if (dac_id == 1) {
         pin = GPIO_PIN_4;
