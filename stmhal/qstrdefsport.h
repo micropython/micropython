@@ -160,10 +160,13 @@ Q(recv)
 Q(addr)
 Q(fifo)
 Q(timeout)
+Q(frametype)
 Q(NORMAL)
 Q(LOOPBACK)
 Q(SILENT)
 Q(SILENT_LOOPBACK)
+Q(EXTENDED_FRAME)
+Q(BASIC_FRAME)
 
 // for Timer class
 Q(Timer)
