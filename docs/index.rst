@@ -5,6 +5,11 @@ Micro Python documentation and references
 
 Here you can find documentation for Micro Python and the pyboard.
 
+.. toctree::
+   :maxdepth: 1
+
+   quickref.rst
+
 Software
 --------
 
