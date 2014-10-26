@@ -506,6 +506,10 @@ int main(int argc, char **argv) {
         ret = do_repl();
     }
 
+    if (mp_verbose_flag) {
+        mem_info(0, NULL);
+    }
+
     mp_deinit();
 
 #if MICROPY_ENABLE_GC && !defined(NDEBUG)

@@ -67,7 +67,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, 
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " n_kwonly_args=" UINT_FMT " flags=%x\n", code, len, n_pos_args, n_kwonly_args, (uint)scope_flags);
 #endif
 #if MICROPY_DEBUG_PRINTERS
-    if (mp_verbose_flag > 0) {
+    if (mp_verbose_flag >= 2) {
         mp_bytecode_print(rc, n_pos_args + n_kwonly_args, code, len);
     }
 #endif
