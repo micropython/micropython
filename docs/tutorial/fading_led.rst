@@ -59,7 +59,9 @@ To achieve the fading effect shown at the beginning of this tutorial, we want to
       if cur_width > max_width:
         cur_width = min_width
 
-## Breathing Effect
+Breathing Effect
+================
+
 If we want to have a breathing effect, where the LED fades from dim to bright then bright to dim, then we simply need to reverse the sign of ``wstep`` when we reach maximum brightness, and reverse it again at minimum brightness. To do this we modify the ``while`` loop to be::
 
     while True:
