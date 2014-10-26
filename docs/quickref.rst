@@ -3,7 +3,7 @@ Quick reference for the pyboard
 
 .. image:: http://micropython.org/static/resources/pybv10-pinout.jpg
     :alt: AMP skin
-    :width: 600px
+    :width: 700px
 
 General board control
 ---------------------
