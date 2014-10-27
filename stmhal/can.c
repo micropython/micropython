@@ -153,6 +153,12 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
             case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
+        print(env, "%s, ", qstr_str(mode));
+        if (self->extendedframes) {
+            mode = MP_QSTR_EXTENDED_FRAME;
+        } else {
+            mode = MP_QSTR_BASIC_FRAME;
+        }
         print(env, "%s)", qstr_str(mode));
     }
 }
