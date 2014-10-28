@@ -329,20 +329,20 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     if (bufinfo.len > 8) {
-      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN data field too long"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN data field too long"));
     }
     if ((!self->extendedframes && args[1].u_int > 0x7FF) || (self->extendedframes && args[1].u_int > 0x1FFFFFFF) || (args[1].u_int < 0)) {
-      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN Message identifier out of range"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN Message identifier out of range"));
     }
 
     // send the data
     CanTxMsgTypeDef tx_msg;
     if (self->extendedframes){
-      tx_msg.ExtId = args[1].u_int;
-      tx_msg.IDE = CAN_ID_EXT;
+        tx_msg.ExtId = args[1].u_int;
+        tx_msg.IDE = CAN_ID_EXT;
     } else {
-      tx_msg.StdId = args[1].u_int;
-      tx_msg.IDE = CAN_ID_STD;
+        tx_msg.StdId = args[1].u_int;
+        tx_msg.IDE = CAN_ID_STD;
     }
     tx_msg.RTR = CAN_RTR_DATA;
     tx_msg.DLC = bufinfo.len;
