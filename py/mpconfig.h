@@ -25,10 +25,23 @@
  */
 
 // This file contains default configuration settings for MicroPython.
-// You can override any of these options using mpconfigport.h file located
-// in a directory of your port.
+// You can override any of the options below using mpconfigport.h file
+// located in a directory of your port.
 
+// mpconfigport.h is a file containing configuration settings for a
+// particular port. mpconfigport.h is actually a default name for
+// such config, and it can be overriden using MP_CONFIGFILE preprocessor
+// define (you can do that by passing CFLAGS_EXTRA='-DMP_CONFIGFILE="<file.h>"'
+// argument to make when using standard MicroPython makefiles).
+// This is useful to have more than one config per port, for example,
+// release vs debug configs, etc. Note that if you switch from one config
+// to another, you must rebuild from scratch using "-B" switch to make.
+
+#ifdef MP_CONFIGFILE
+#include MP_CONFIGFILE
+#else
 #include <mpconfigport.h>
+#endif
 
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
