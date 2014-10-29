@@ -65,10 +65,10 @@ void *memcpy(void *dst, const void *src, size_t n) {
 }
 
 void *memmove(void *dest, const void *src, size_t n) {
-    if (src < dest && dest < src + n) {
+    if (src < dest && (uint8_t*)dest < (const uint8_t*)src + n) {
         // need to copy backwards
-        uint8_t *d = dest + n - 1;
-        const uint8_t *s = src + n - 1;
+        uint8_t *d = (uint8_t*)dest + n - 1;
+        const uint8_t *s = (const uint8_t*)src + n - 1;
         for (; n > 0; n--) {
             *d-- = *s--;
         }

@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -292,7 +293,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             #endif
             } else {
                 res = array_new(o->typecode, slice.stop - slice.start);
-                memcpy(res->items, o->items + slice.start * sz, (slice.stop - slice.start) * sz);
+                memcpy(res->items, (uint8_t*)o->items + slice.start * sz, (slice.stop - slice.start) * sz);
             }
             return res;
 #endif
@@ -331,7 +332,9 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
             // read-only memoryview
             return 1;
         }
-        bufinfo->buf += (mp_uint_t)o->free * sz;
+        uint8_t *buf = (uint8_t*)bufinfo->buf;
+        buf += (mp_uint_t)o->free * sz;
+        bufinfo->buf = buf;
     }
     #endif
     return 0;

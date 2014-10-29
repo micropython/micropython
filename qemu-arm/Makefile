@@ -14,7 +14,7 @@ INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
 	 -flto -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
