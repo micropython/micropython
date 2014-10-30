@@ -61,14 +61,14 @@
 ///
 ///     from pyb import CAN
 ///     can = pyb.CAN(1, pyb.CAN.LOOPBACK)
-///     can.send('message!', 123)   # send message to id 123
+///     can.send('message!', 123)   # send message with id 123
 ///     can.recv(0)                 # receive message on FIFO 0
 
 typedef struct _pyb_can_obj_t {
     mp_obj_base_t base;
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
-    bool extendedframes : 1;
+    bool extframe : 1;
     CAN_HandleTypeDef can;
 } pyb_can_obj_t;
 
@@ -154,10 +154,10 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
         print(env, "%s, ", qstr_str(mode));
-        if (self->extendedframes) {
-            mode = MP_QSTR_EXTENDED_FRAME;
+        if (self->extframe) {
+            mode = MP_QSTR_True;
         } else {
-            mode = MP_QSTR_BASIC_FRAME;
+            mode = MP_QSTR_False;
         }
         print(env, "%s)", qstr_str(mode));
     }
@@ -170,9 +170,9 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
 ///   - `mode` is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
-        { MP_QSTR_frametype,    MP_ARG_INT,                     {.u_int = CAN_ID_STD} },
-        { MP_QSTR_prescaler,    MP_ARG_INT,                     {.u_int = 100} },
+        { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int  = CAN_MODE_NORMAL} },
+        { MP_QSTR_extframe,     MP_ARG_BOOL,                    {.u_bool = false} },
+        { MP_QSTR_prescaler,    MP_ARG_INT,                     {.u_int  = 100} },
         /*
         { MP_QSTR_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 1} },
         { MP_QSTR_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 6} },
@@ -184,7 +184,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    self->extendedframes = args[1].u_int;
+    self->extframe = args[1].u_bool;
     // set the CAN configuration values
     memset(&self->can, 0, sizeof(self->can));
     CAN_InitTypeDef *init = &self->can.Init;
@@ -331,17 +331,14 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     if (bufinfo.len > 8) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN data field too long"));
     }
-    if ((!self->extendedframes && args[1].u_int > 0x7FF) || (self->extendedframes && args[1].u_int > 0x1FFFFFFF) || (args[1].u_int < 0)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN Message identifier out of range"));
-    }
 
     // send the data
     CanTxMsgTypeDef tx_msg;
-    if (self->extendedframes){
-        tx_msg.ExtId = args[1].u_int;
+    if (self->extframe){
+        tx_msg.ExtId = args[1].u_int & 0x1FFFFFFF;
         tx_msg.IDE = CAN_ID_EXT;
     } else {
-        tx_msg.StdId = args[1].u_int;
+        tx_msg.StdId = args[1].u_int & 0x7FF;
         tx_msg.IDE = CAN_ID_STD;
     }
     tx_msg.RTR = CAN_RTR_DATA;
@@ -429,8 +426,6 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_LOOPBACK), MP_OBJ_NEW_SMALL_INT(CAN_MODE_LOOPBACK >> 4) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SILENT), MP_OBJ_NEW_SMALL_INT(CAN_MODE_SILENT >> 4) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SILENT_LOOPBACK), MP_OBJ_NEW_SMALL_INT(CAN_MODE_SILENT_LOOPBACK >> 4) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EXTENDED_FRAME), MP_OBJ_NEW_SMALL_INT(1) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BASIC_FRAME), MP_OBJ_NEW_SMALL_INT(0) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_can_locals_dict, pyb_can_locals_dict_table);
