@@ -263,6 +263,9 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size
 
 STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     mp_uint_t max_field_size = 0;
+    if (MP_OBJ_IS_TYPE(obj_in, &mp_type_bytearray)) {
+        return mp_obj_len(obj_in);
+    }
     // We can apply sizeof either to structure definition (a dict)
     // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
