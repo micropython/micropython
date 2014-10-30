@@ -381,7 +381,7 @@ STATIC mp_obj_t cc3k_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_int_t bytes = 0;
     while (bytes < bufinfo.len) {
         int n = MIN((bufinfo.len - bytes), MAX_TX_PACKET);
-        n = CC3000_EXPORT(send)(self->fd, bufinfo.buf + bytes, n, 0);
+        n = CC3000_EXPORT(send)(self->fd, (uint8_t*)bufinfo.buf + bytes, n, 0);
         if (n <= 0) {
             nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(CC3000_EXPORT(errno))));
         }
