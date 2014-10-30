@@ -101,10 +101,14 @@ enum {
 
 // Here we need to set sign bit right
 #define TYPE2SMALLINT(x, nbits) ((((int)x) << (32 - nbits)) >> 1)
-#define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1));
+#define GET_TYPE(x, nbits) (((x) >> (31 - nbits)) & ((1 << nbits) - 1))
 // Bit 0 is "is_signed"
 #define GET_SCALAR_SIZE(val_type) (1 << ((val_type) >> 1))
 #define VALUE_MASK(type_nbits) ~((int)0x80000000 >> type_nbits)
+
+#define IS_SCALAR_ARRAY(tuple_desc) ((tuple_desc)->len == 2)
+// We cannot apply the below to INT8, as their range [-128, 127]
+#define IS_SCALAR_ARRAY_OF_BYTES(tuple_desc) (GET_TYPE(MP_OBJ_SMALL_INT_VALUE((tuple_desc)->items[1]), VAL_TYPE_BITS) == UINT8)
 
 // "struct" in uctypes context means "structural", i.e. aggregate, type.
 STATIC const mp_obj_type_t uctypes_struct_type;
@@ -454,7 +458,14 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->flags = self->flags;
             return o;
         }
-        case PTR: case ARRAY: {
+        case ARRAY: {
+            mp_uint_t dummy;
+            if (IS_SCALAR_ARRAY(sub) && IS_SCALAR_ARRAY_OF_BYTES(sub)) {
+                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, &dummy), self->addr + offset);
+            }
+            // Fall thru to return uctypes struct object
+        }
+        case PTR: {
             mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
             o->base.type = &uctypes_struct_type;
             o->desc = sub;
