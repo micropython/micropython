@@ -37,9 +37,9 @@
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
 #define DIG_SIZE (MPZ_DIG_SIZE)
-#define DIG_MASK ((1L << DIG_SIZE) - 1)
-#define DIG_MSB  (1L << (DIG_SIZE - 1))
-#define DIG_BASE (1L << DIG_SIZE)
+#define DIG_MASK ((MPZ_LONG_1 << DIG_SIZE) - 1)
+#define DIG_MSB  (MPZ_LONG_1 << (DIG_SIZE - 1))
+#define DIG_BASE (MPZ_LONG_1 << DIG_SIZE)
 
 /*
  mpz is an arbitrary precision integer type with a public API.
