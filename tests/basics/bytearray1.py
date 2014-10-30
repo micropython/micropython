@@ -18,6 +18,8 @@ print(a[1:])
 print(a[:-1])
 print(a[2:3])
 
+print(str(bytearray(b"123"), "utf-8"))
+
 # Comparisons
 print(bytearray([1]) == bytearray([1]))
 print(bytearray([1]) == bytearray([2]))

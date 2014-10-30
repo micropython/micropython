@@ -142,15 +142,18 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
         case 3:
         {
             // TODO: validate 2nd/3rd args
-            if (!MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "bytes expected"));
+            if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
+                GET_STR_DATA_LEN(args[0], str_data, str_len);
+                GET_STR_HASH(args[0], str_hash);
+                mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_str, NULL, str_len);
+                o->data = str_data;
+                o->hash = str_hash;
+                return o;
+            } else {
+                mp_buffer_info_t bufinfo;
+                mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+                return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
             }
-            GET_STR_DATA_LEN(args[0], str_data, str_len);
-            GET_STR_HASH(args[0], str_hash);
-            mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_str, NULL, str_len);
-            o->data = str_data;
-            o->hash = str_hash;
-            return o;
         }
 
         default:
