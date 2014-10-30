@@ -106,6 +106,7 @@ enum {
 #define GET_SCALAR_SIZE(val_type) (1 << ((val_type) >> 1))
 #define VALUE_MASK(type_nbits) ~((int)0x80000000 >> type_nbits)
 
+// "struct" in uctypes context means "structural", i.e. aggregate, type.
 STATIC const mp_obj_type_t uctypes_struct_type;
 
 typedef struct _mp_obj_uctypes_struct_t {
@@ -153,6 +154,10 @@ STATIC void uctypes_struct_print(void (*print)(void *env, const char *fmt, ...),
     print(env, "<struct %s %p>", typen, self->addr);
 }
 
+// Get size of any type descriptor
+STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size);
+
+// Get size of scalar type descriptor
 static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
     if (val_type == FLOAT32) {
         return 4;
@@ -161,11 +166,60 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
     }
 }
 
+// Get size of aggregate type descriptor
+STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, mp_uint_t *max_field_size) {
+    mp_uint_t total_size = 0;
+
+    mp_int_t offset_ = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+    mp_uint_t agg_type = GET_TYPE(offset_, AGG_TYPE_BITS);
+
+    switch (agg_type) {
+        case STRUCT:
+            return uctypes_struct_size(t->items[1], max_field_size);
+        case PTR:
+            if (sizeof(void*) > *max_field_size) {
+                *max_field_size = sizeof(void*);
+            }
+            return sizeof(void*);
+        case ARRAY: {
+            mp_int_t arr_sz = MP_OBJ_SMALL_INT_VALUE(t->items[1]);
+            uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
+            arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
+            mp_uint_t item_s;
+            if (t->len == 2) {
+                // Elements of array are scalar
+                item_s = GET_SCALAR_SIZE(val_type);
+                if (item_s > *max_field_size) {
+                    *max_field_size = item_s;
+                }
+            } else {
+                // Elements of array are aggregates
+                item_s = uctypes_struct_size(t->items[2], max_field_size);
+            }
+
+            return item_s * arr_sz;
+        }
+        default:
+            assert(0);
+    }
+
+    return total_size;
+}
+
 STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size) {
     mp_obj_dict_t *d = desc_in;
     mp_uint_t total_size = 0;
 
     if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)) {
+        if (MP_OBJ_IS_TYPE(desc_in, &mp_type_tuple)) {
+            return uctypes_struct_agg_size((mp_obj_tuple_t*)desc_in, max_field_size);
+        } else if (MP_OBJ_IS_SMALL_INT(desc_in)) {
+            // We allow sizeof on both type definitions and structures/structure fields,
+            // but scalar structure field is lowered into native Python int, so all
+            // type info is lost. So, we cannot say if it's scalar type description,
+            // or such lowered scalar.
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Cannot unambiguously get sizeof scalar"));
+        }
         syntax_error();
     }
 
@@ -189,48 +243,10 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size
                 }
                 mp_obj_tuple_t *t = (mp_obj_tuple_t*)v;
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
-                mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 offset &= VALUE_MASK(AGG_TYPE_BITS);
-
-                switch (agg_type) {
-                    case STRUCT: {
-                        mp_uint_t s = uctypes_struct_size(t->items[1], max_field_size);
-                        if (offset + s > total_size) {
-                            total_size = offset + s;
-                        }
-                        break;
-                    }
-                    case PTR: {
-                        if (offset + sizeof(void*) > total_size) {
-                            total_size = offset + sizeof(void*);
-                        }
-                        if (sizeof(void*) > *max_field_size) {
-                            *max_field_size = sizeof(void*);
-                        }
-                        break;
-                    }
-                    case ARRAY: {
-                        mp_int_t arr_sz = MP_OBJ_SMALL_INT_VALUE(t->items[1]);
-                        uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
-                        arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
-                        mp_uint_t item_s;
-                        if (t->len == 2) {
-                            item_s = GET_SCALAR_SIZE(val_type);
-                            if (item_s > *max_field_size) {
-                                *max_field_size = item_s;
-                            }
-                        } else {
-                            item_s = uctypes_struct_size(t->items[2], max_field_size);
-                        }
-
-                        mp_uint_t byte_sz = item_s * arr_sz;
-                        if (offset + byte_sz > total_size) {
-                            total_size = offset + byte_sz;
-                        }
-                        break;
-                    }
-                    default:
-                        assert(0);
+                mp_uint_t s = uctypes_struct_agg_size(t, max_field_size);
+                if (offset + s > total_size) {
+                    total_size = offset + s;
                 }
             }
         }
@@ -243,7 +259,10 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size
 
 STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     mp_uint_t max_field_size = 0;
+    // We can apply sizeof either to structure definition (a dict)
+    // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
+        // Extract structure definition
         mp_obj_uctypes_struct_t *obj = obj_in;
         obj_in = obj->desc;
     }
