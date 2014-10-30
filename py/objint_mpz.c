@@ -45,7 +45,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
-#define DIG_MASK ((1L << MPZ_DIG_SIZE) - 1)
+#define DIG_MASK ((MPZ_LONG_1 << MPZ_DIG_SIZE) - 1)
 STATIC const mpz_dig_t maxsize_dig[MPZ_NUM_DIG_FOR_INT] = {
     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK

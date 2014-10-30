@@ -36,7 +36,7 @@
 // depending on the machine, but it (and MPZ_DIG_SIZE) can be freely changed so
 // long as the constraints mentioned above are met.
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) || defined(_WIN64)
 // 64-bit machine, using 32-bit storage for digits
 typedef uint32_t mpz_dig_t;
 typedef uint64_t mpz_dbl_dig_t;
@@ -48,6 +48,12 @@ typedef uint16_t mpz_dig_t;
 typedef uint32_t mpz_dbl_dig_t;
 typedef int32_t mpz_dbl_dig_signed_t;
 #define MPZ_DIG_SIZE (16)
+#endif
+
+#ifdef _WIN64
+  #define MPZ_LONG_1 1i64
+#else
+  #define MPZ_LONG_1 1L
 #endif
 
 #define MPZ_NUM_DIG_FOR_INT (sizeof(mp_int_t) * 8 / MPZ_DIG_SIZE + 1)
