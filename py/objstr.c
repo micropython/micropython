@@ -1895,7 +1895,7 @@ qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
 // only use this function if you need the str data to be zero terminated
 // at the moment all strings are zero terminated to help with C ASCIIZ compatibility
 const char *mp_obj_str_get_str(mp_obj_t self_in) {
-    if (MP_OBJ_IS_STR(self_in)) {
+    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         (void)l; // len unused
         return (const char*)s;
