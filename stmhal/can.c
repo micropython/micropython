@@ -144,7 +144,7 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
     if (!self->is_enabled) {
         print(env, "CAN(%u)", self->can_id);
     } else {
-        print(env, "CAN(%u, ", self->can_id);
+        print(env, "CAN(%u, CAN.", self->can_id);
         qstr mode;
         switch (self->can.Init.Mode) {
             case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
@@ -152,7 +152,7 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
             case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
-        print(env, "%s, ", qstr_str(mode));
+        print(env, "%s, extframe=", qstr_str(mode));
         if (self->extframe) {
             mode = MP_QSTR_True;
         } else {
@@ -162,7 +162,7 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
     }
 }
 
-/// \method init(mode, prescaler=100, *, sjw=1, bs1=6, bs2=8)
+/// \method init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 ///
 /// Initialise the CAN bus with the given parameters:
 ///
@@ -184,6 +184,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     self->extframe = args[1].u_bool;
+
     // set the CAN configuration values
     memset(&self->can, 0, sizeof(self->can));
     CAN_InitTypeDef *init = &self->can.Init;

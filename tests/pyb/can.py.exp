@@ -1,10 +1,10 @@
-CAN(1, LOOPBACK, False)
+CAN(1)
+CAN(1, CAN.LOOPBACK, extframe=False)
 False
 True
 (123, 0, 0, b'abcd')
 (2047, 0, 0, b'abcd')
 (0, 0, 0, b'abcd')
 passed
-CAN(1, LOOPBACK, True)
+CAN(1, CAN.LOOPBACK, extframe=True)
 passed
-end

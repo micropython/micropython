@@ -1,8 +1,12 @@
 from pyb import CAN
 
-can = CAN(1, CAN.LOOPBACK)
+can = CAN(1)
+print(can)
+
+can.init(CAN.LOOPBACK)
 print(can)
 print(can.any(0))
+
 can.send('abcd', 123)
 print(can.any(0))
 print(can.recv(0))
@@ -37,6 +41,3 @@ else:
         print('passed')
     else:
         print('failed, wrong data received')
-
-
-print('end')
