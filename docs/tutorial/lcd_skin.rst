@@ -24,12 +24,14 @@ Using the LCD
 To get started using the LCD, try the following at the Micro Python prompt.
 Make sure the LCD skin is attached to the pyboard as pictured at the top of this page. ::
 
+    >>> import pyb
     >>> lcd = pyb.LCD('X')
     >>> lcd.light(True)
     >>> lcd.write('Hello uPy!\n')
 
 You can make a simple animation using the code::
 
+    import pyb
     lcd = pyb.LCD('X')
     lcd.light(True)
     for x in range(-80, 128):
@@ -46,6 +48,7 @@ MPR121 capacitive touch sensor has address 90.
 
 To get started, try::
 
+    >>> import pyb
     >>> i2c = pyb.I2C(1, pyb.I2C.MASTER)
     >>> i2c.mem_write(4, 90, 0x5e)
     >>> touch = i2c.mem_read(1, 90, 0)[0]

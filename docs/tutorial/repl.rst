@@ -39,7 +39,7 @@ Open a terminal and run::
 
     screen /dev/tty.usbmodem*
     
-When you are finishend and want to exit screen, type CTRL-A CTRL-\\.
+When you are finished and want to exit screen, type CTRL-A CTRL-\\.
 
 Linux
 -----

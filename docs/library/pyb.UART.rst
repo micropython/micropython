@@ -1,0 +1,103 @@
+class UART --- duplex serial communication bus
+==============================================
+
+UART implements the standard UART/USART duplex serial communications protocol.  At
+the physical level it consists of 2 lines: RX and TX.  The unit of communication
+is a character (not to be confused with a string character) which can be 8 or 9
+bits wide.
+
+UART objects can be created and initialised using::
+
+    from pyb import UART
+
+    uart = UART(1, 9600)                         # init with given baudrate
+    uart.init(9600, bits=8, parity=None, stop=1) # init with given parameters
+
+Bits can be 8 or 9.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+
+A UART object acts like a stream object and reading and writing is done
+using the standard stream methods::
+
+    uart.read(10)       # read 10 characters, returns a bytes object
+    uart.readall()      # read all available characters
+    uart.readline()     # read a line
+    uart.readinto(buf)  # read and store into the given buffer
+    uart.write('abc')   # write the 3 characters
+
+Individual characters can be read/written using::
+
+    uart.readchar()     # read 1 character and returns it as an integer
+    uart.writechar(42)  # write 1 character
+
+To check if there is anything to be read, use::
+
+    uart.any()               # returns True if any characters waiting
+
+
+Constructors
+------------
+
+.. class:: pyb.UART(bus, ...)
+
+   Construct a UART object on the given bus.  ``bus`` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
+   With no additional parameters, the UART object is created but not
+   initialised (it has the settings from the last initialisation of
+   the bus, if any).  If extra arguments are given, the bus is initialised.
+   See ``init`` for parameters of initialisation.
+   
+   The physical pins of the UART busses are:
+   
+     - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
+     - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
+     - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
+     - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
+     - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
+
+
+Methods
+-------
+
+.. method:: uart.any()
+
+   Return ``True`` if any characters waiting, else ``False``.
+
+.. method:: uart.deinit()
+
+   Turn off the UART bus.
+
+.. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, timeout_char=0, read_buf_len=64)
+
+   Initialise the UART bus with the given parameters:
+   
+     - ``baudrate`` is the clock rate.
+     - ``bits`` is the number of bits per byte, 8 or 9.
+     - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
+     - ``stop`` is the number of stop bits, 1 or 2.
+     - ``timeout`` is the timeout in milliseconds to wait for the first character.
+     - ``timeout_char`` is the timeout in milliseconds to wait between characters.
+     - ``read_buf_len`` is the character length of the read buffer (0 to disable).
+
+.. method:: uart.read([nbytes])
+
+
+.. method:: uart.readall()
+
+
+.. method:: uart.readchar()
+
+   Receive a single character on the bus.
+   Return value: The character read, as an integer.  Returns -1 on timeout.
+
+.. method:: uart.readinto(buf[, nbytes])
+
+
+.. method:: uart.readline()
+
+
+.. method:: uart.write(buf)
+
+
+.. method:: uart.writechar(char)
+
+   Write a single character on the bus.  ``char`` is an integer to write.
+   Return value: ``None``.

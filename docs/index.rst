@@ -14,10 +14,11 @@ Software
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    general.rst
    tutorial/index.rst
+   library/index.rst
 
 .. 
 ..  - Reference for the [pyb module](module/pyb/ "pyb module").

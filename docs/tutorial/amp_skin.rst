@@ -26,6 +26,7 @@ potentiometer, which is an I2C device with address 46 on the ``IC2(1)`` bus.
 
 To set the volume, define the following function::
 
+    import pyb
     def volume(val):
         pyb.I2C(1, pyb.I2C.MASTER).mem_write(val, 46, 0)
 

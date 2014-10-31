@@ -22,6 +22,16 @@ the tutorial through in the order below.
    usb_mouse.rst
    timer.rst
    assembler.rst
+   power_ctrl.rst
+
+Tips, tricks and useful things to know
+--------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :numbered:
+
+   pass_through.rst
 
 Tutorials requiring extra components
 ------------------------------------

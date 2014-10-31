@@ -6,7 +6,7 @@ In addition to turning LEDs on and off, it is also possible to control the brigh
 .. image:: http://upload.wikimedia.org/wikipedia/commons/a/a9/Fade.gif
 
 Components
-==========
+----------
 
 You will need:
 
@@ -16,14 +16,14 @@ You will need:
 - `Breadboard <http://en.wikipedia.org/wiki/Breadboard>`_ (optional, but makes things easier)
 
 Connecting Things Up
-====================
+--------------------
 
 For this tutorial, we will use the ``X1`` pin. Connect one end of the resistor to ``X1``, and the other end to the **anode** of the LED, which is the longer leg. Connect the **cathode** of the LED to ground.
 
 .. image:: img/fading_leds_breadboard_fritzing.png
 
 Code
-====
+----
 By examining the :ref:`quickref`, we see that ``X1`` is connected to channel 1 of timer 5 (``TIM5 CH1``). Therefore we will first create a ``Timer`` object for timer 5, then create a ``TimerChannel`` object for channel 1::
     
     from pyb import Timer
@@ -59,7 +59,7 @@ To achieve the fading effect shown at the beginning of this tutorial, we want to
         cur_width = min_width
 
 Breathing Effect
-================
+----------------
 
 If we want to have a breathing effect, where the LED fades from dim to bright then bright to dim, then we simply need to reverse the sign of ``wstep`` when we reach maximum brightness, and reverse it again at minimum brightness. To do this we modify the ``while`` loop to be::
 
@@ -78,12 +78,12 @@ If we want to have a breathing effect, where the LED fades from dim to bright th
         wstep *= -1
 
 Advanced Exercise
-==================
+-----------------
 
 You may have noticed that the LED brightness seems to fade slowly, but increases quickly. This is because our eyes interprets brightness logarithmically (`Weber's Law <http://www.telescope-optics.net/eye_intensity_response.htm>`_
 ), while the LED's brightness changes linearly, that is by the same amount each time. How do you solve this problem? (Hint: what is the opposite of the logarithmic function?)
 
 Addendum
-========
+--------
 
 We could have also used the digital-to-analog converter (DAC) to achieve the same effect. The PWM method has the advantage that it drives the LED with the same current each time, but for different lengths of time. This allows better control over the brightness, because LEDs do not necessarily exhibit a linear relationship between the driving current and brightness.
