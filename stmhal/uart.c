@@ -115,7 +115,7 @@ void uart_deinit(void) {
 }
 
 // assumes Init parameters have been set up correctly
-bool uart_init2(pyb_uart_obj_t *uart_obj) {
+STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     uint32_t GPIO_Pin;
@@ -140,7 +140,7 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             __USART1_CLK_ENABLE();
             break;
 
-        // USART2 is on PA2/PA3 (CK on PA4), PD5/PD6 (CK on PD7)
+        // USART2 is on PA2/PA3 (CTS,RTS,CK on PA0,PA1,PA4), PD5/PD6 (CK on PD7)
         case PYB_UART_2:
             UARTx = USART2;
             irqn = USART2_IRQn;
@@ -149,10 +149,17 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_2 | GPIO_PIN_3;
 
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                GPIO_Pin |= GPIO_PIN_1;
+            }
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                GPIO_Pin |= GPIO_PIN_0;
+            }
+
             __USART2_CLK_ENABLE();
             break;
 
-        // USART3 is on PB10/PB11 (CK on PB12), PC10/PC11 (CK on PC12), PD8/PD9 (CK on PD10)
+        // USART3 is on PB10/PB11 (CK,CTS,RTS on PB12,PB13,PB14), PC10/PC11 (CK on PC12), PD8/PD9 (CK on PD10)
         case PYB_UART_3:
             UARTx = USART3;
             irqn = USART3_IRQn;
@@ -161,6 +168,13 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
 #if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
+
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                GPIO_Pin |= GPIO_PIN_14;
+            }
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                GPIO_Pin |= GPIO_PIN_13;
+            }
 #else
             GPIO_Port = GPIOD;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
@@ -357,6 +371,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
@@ -382,7 +397,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         default: init->StopBits = UART_STOPBITS_2; break;
     }
     init->Mode = UART_MODE_TX_RX;
-    init->HwFlowCtl = UART_HWCONTROL_NONE;
+    init->HwFlowCtl = args[4].u_int;
     init->OverSampling = UART_OVERSAMPLING_16;
 
     // init UART (if it fails, it's because the port doesn't exist)
@@ -391,8 +406,8 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
 
     // set timeouts
-    self->timeout = args[4].u_int;
-    self->timeout_char = args[5].u_int;
+    self->timeout = args[5].u_int;
+    self->timeout_char = args[6].u_int;
 
     // setup the read buffer
     m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
@@ -403,7 +418,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
     self->read_buf_head = 0;
     self->read_buf_tail = 0;
-    if (args[6].u_int <= 0) {
+    if (args[7].u_int <= 0) {
         // no read buffer
         self->read_buf_len = 0;
         self->read_buf = NULL;
@@ -411,8 +426,8 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
     } else {
         // read buffer using interrupts
-        self->read_buf_len = args[6].u_int;
-        self->read_buf = m_new(byte, args[6].u_int << self->char_width);
+        self->read_buf_len = args[7].u_int;
+        self->read_buf = m_new(byte, args[7].u_int << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
         HAL_NVIC_SetPriority(self->irqn, 0xd, 0xd); // next-to-next-to lowest priority
         HAL_NVIC_EnableIRQ(self->irqn);
@@ -595,6 +610,10 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
+
+    // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTS), MP_OBJ_NEW_SMALL_INT(UART_HWCONTROL_RTS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CTS), MP_OBJ_NEW_SMALL_INT(UART_HWCONTROL_CTS) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
