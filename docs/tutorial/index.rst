@@ -31,5 +31,6 @@ Tutorials requiring extra components
    :numbered:
 
    servo.rst
+   fading_led.rst
    lcd_skin.rst
    amp_skin.rst

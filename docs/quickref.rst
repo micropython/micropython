@@ -1,5 +1,7 @@
+.. _quickref:
+
 Quick reference for the pyboard
-=====================================
+===============================
 
 .. image:: http://micropython.org/static/resources/pybv10-pinout.jpg
     :alt: AMP skin
