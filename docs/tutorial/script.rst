@@ -10,7 +10,7 @@ Connecting your pyboard
 Connect your pyboard to your PC (Windows, Mac or Linux) with a micro USB cable.
 There is only one way that the cable will connect, so you can't get it wrong.
 
-<img src="/static/doc/pyboard-usb-micro.jpg" alt="pyboard with USB micro cable" style="width:200px; border:1px solid black; display:inline-block;"/>
+.. image:: img/pyboard_usb_micro.jpg
 
 When the pyboard is connected to your PC it will power on and enter the start up
 process (the boot process).  The green LED should light up for half a second or
