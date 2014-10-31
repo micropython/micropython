@@ -13,7 +13,10 @@ UART objects can be created and initialised using::
     uart = UART(1, 9600)                         # init with given baudrate
     uart.init(9600, bits=8, parity=None, stop=1) # init with given parameters
 
-Bits can be 8 or 9.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+Bits can be 7, 8 or 9.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+
+*Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
+only 7 and 8 bits are supported.
 
 A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
@@ -44,9 +47,9 @@ Constructors
    initialised (it has the settings from the last initialisation of
    the bus, if any).  If extra arguments are given, the bus is initialised.
    See ``init`` for parameters of initialisation.
-   
+
    The physical pins of the UART busses are:
-   
+
      - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
      - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
      - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
@@ -57,35 +60,44 @@ Constructors
 Methods
 -------
 
-.. method:: uart.any()
-
-   Return ``True`` if any characters waiting, else ``False``.
-
-.. method:: uart.deinit()
-
-   Turn off the UART bus.
-
 .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, timeout_char=0, read_buf_len=64)
 
    Initialise the UART bus with the given parameters:
-   
+
      - ``baudrate`` is the clock rate.
-     - ``bits`` is the number of bits per byte, 8 or 9.
+     - ``bits`` is the number of bits per character, 7, 8 or 9.
      - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
      - ``stop`` is the number of stop bits, 1 or 2.
      - ``timeout`` is the timeout in milliseconds to wait for the first character.
      - ``timeout_char`` is the timeout in milliseconds to wait between characters.
      - ``read_buf_len`` is the character length of the read buffer (0 to disable).
 
+   *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
+   only 7 and 8 bits are supported.
+
+.. method:: uart.deinit()
+
+   Turn off the UART bus.
+
+.. method:: uart.any()
+
+   Return ``True`` if any characters waiting, else ``False``.
+
 .. method:: uart.read([nbytes])
 
+   Read characters.  If ``nbytes`` is specified then read at most that many bytes.
+
+   *Note:* for 9 bit characters each character takes 2 bytes, ``nbytes`` must be even,
+   and the number of characters is ``nbytes/2``.
 
 .. method:: uart.readall()
 
+   Read as much data as possible.
 
 .. method:: uart.readchar()
 
    Receive a single character on the bus.
+
    Return value: The character read, as an integer.  Returns -1 on timeout.
 
 .. method:: uart.readinto(buf[, nbytes])
