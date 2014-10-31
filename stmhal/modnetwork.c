@@ -40,6 +40,10 @@
 #include "runtime.h"
 #include "modnetwork.h"
 
+/// \module network - network configuration
+///
+/// This module provides network drivers and routing configuration.
+
 mp_obj_list_t mod_network_nic_list;
 
 void mod_network_init(void) {

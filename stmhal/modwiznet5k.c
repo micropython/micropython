@@ -48,21 +48,7 @@
 #include "ethernet/socket.h"
 #include "internet/dns/dns.h"
 
-/// \module wiznet5k - control WIZnet5x00 Ethernet adaptors
-///
-/// This module allows you to control WIZnet5x00 Ethernet adaptors based on
-/// the W5200 and W5500 chipsets (only W5200 tested).
-///
-/// Example usage:
-///
-///     import wiznet5k
-///     w = wiznet5k.WIZnet5k()
-///     print(w.ipaddr())
-///     w.gethostbyname('micropython.org')
-///     s = w.socket()
-///     s.connect(('192.168.0.2', 8080))
-///     s.send('hello')
-///     print(s.recv(10))
+/// \moduleref network
 
 #define IPADDR_BUF_SIZE (4)
 
@@ -164,6 +150,20 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
 // Micro Python bindings
 
 /// \class WIZnet5k - driver for WIZnet5x00 Ethernet modules
+///
+/// This class allows you to control WIZnet5x00 Ethernet adaptors based on
+/// the W5200 and W5500 chipsets (only W5200 tested).
+///
+/// Example usage:
+///
+///     import wiznet5k
+///     w = wiznet5k.WIZnet5k()
+///     print(w.ipaddr())
+///     w.gethostbyname('micropython.org')
+///     s = w.socket()
+///     s.connect(('192.168.0.2', 8080))
+///     s.send('hello')
+///     print(s.recv(10))
 
 STATIC void wiznet5k_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "WIZnet5k()");

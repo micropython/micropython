@@ -41,9 +41,11 @@
 #include "runtime.h"
 #include "modnetwork.h"
 
-/// \module usocket
+/// \module usocket - socket module
+///
+/// Socket functionality.
 
-/// \method socket(family=AF_INET, type=SOCK_STREAM, fileno=-1)
+/// \function socket(family=AF_INET, type=SOCK_STREAM, fileno=-1)
 /// Create a socket.
 STATIC mp_obj_t mod_usocket_socket(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -75,7 +77,7 @@ STATIC mp_obj_t mod_usocket_socket(mp_uint_t n_args, const mp_obj_t *pos_args, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_usocket_socket_obj, 0, mod_usocket_socket);
 
-/// \method getaddrinfo(host, port)
+/// \function getaddrinfo(host, port)
 STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     mp_uint_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
