@@ -67,6 +67,122 @@ class Lexer:
         print('({}:{}) {}'.format(self.filename, self.cur_line, msg))
         raise Lexer.LexerError
 
+class MarkdownWriter:
+    def __init__(self):
+        pass
+
+    def start(self):
+        self.lines = []
+
+    def end(self):
+        return '\n'.join(self.lines)
+
+    def heading(self, level, text):
+        if len(self.lines) > 0:
+            self.lines.append('')
+        self.lines.append(level * '#' + ' ' + text)
+        self.lines.append('')
+
+    def para(self, text):
+        if len(self.lines) > 0 and self.lines[-1] != '':
+            self.lines.append('')
+        if isinstance(text, list):
+            self.lines.extend(text)
+        elif isinstance(text, str):
+            self.lines.append(text)
+        else:
+            assert False
+        self.lines.append('')
+
+    def single_line(self, text):
+        self.lines.append(text)
+
+    def module(self, name, short_descr, descr):
+        self.heading(1, 'module {}'.format(name))
+        self.para(descr)
+
+    def function(self, ctx, name, args, descr):
+        proto = '{}.{}{}'.format(ctx, self.name, self.args)
+        self.heading(3, '`' + proto + '`')
+        self.para(descr)
+
+    def method(self, ctx, name, args, descr):
+        if name == '\\constructor':
+            proto = '{}{}'.format(ctx, args)
+        elif name == '\\call':
+            proto = '{}{}'.format(ctx, args)
+        else:
+            proto = '{}.{}{}'.format(ctx, name, args)
+        self.heading(3, '`' + proto + '`')
+        self.para(descr)
+
+    def constant(self, ctx, name, descr):
+        self.single_line('`{}.{}` - {}'.format(ctx, name, descr))
+
+class ReStructuredTextWriter:
+    head_chars = {1:'=', 2:'-', 3:'.'}
+
+    def __init__(self):
+        pass
+
+    def start(self):
+        self.lines = []
+
+    def end(self):
+        return '\n'.join(self.lines)
+
+    def _convert(self, text):
+        return text.replace('`', '``').replace('*', '\\*')
+
+    def heading(self, level, text, convert=True):
+        if len(self.lines) > 0:
+            self.lines.append('')
+        if convert:
+            text = self._convert(text)
+        self.lines.append(text)
+        self.lines.append(len(text) * self.head_chars[level])
+        self.lines.append('')
+
+    def para(self, text, indent=''):
+        if len(self.lines) > 0 and self.lines[-1] != '':
+            self.lines.append('')
+        if isinstance(text, list):
+            for t in text:
+                self.lines.append(indent + self._convert(t))
+        elif isinstance(text, str):
+            self.lines.append(indent + self._convert(text))
+        else:
+            assert False
+        self.lines.append('')
+
+    def single_line(self, text):
+        self.lines.append(self._convert(text))
+
+    def module(self, name, short_descr, descr):
+        self.heading(1, ':mod:`{}` --- {}'.format(name, self._convert(short_descr)), convert=False)
+        self.lines.append('.. module:: {}'.format(name))
+        self.lines.append('   :synopsis: {}'.format(short_descr))
+        self.para(descr)
+
+    def function(self, ctx, name, args, descr):
+        args = self._convert(args)
+        self.lines.append('.. function:: ' + name + args)
+        self.para(descr, indent='   ')
+
+    def method(self, ctx, name, args, descr):
+        args = self._convert(args)
+        if name == '\\constructor':
+            self.lines.append('.. class:: ' + ctx + args)
+        elif name == '\\call':
+            self.lines.append('.. method:: ' + ctx + args)
+        else:
+            self.lines.append('.. method:: ' + ctx + '.' + name + args)
+        self.para(descr, indent='   ')
+
+    def constant(self, ctx, name, descr):
+        self.lines.append('.. data:: ' + name)
+        self.para(descr, indent='   ')
+
 class DocValidateError(Exception):
     pass
 
@@ -83,8 +199,8 @@ class DocItem:
         except Lexer.Break:
             pass
 
-    def dump(self):
-        return '\n'.join(self.doc)
+    def dump(self, writer):
+        writer.para(self.doc)
 
 class DocConstant(DocItem):
     def __init__(self, name, descr):
@@ -92,8 +208,8 @@ class DocConstant(DocItem):
         self.name = name
         self.descr = descr
 
-    def dump(self, ctx):
-        return '`{}.{}` - {}'.format(ctx, self.name, self.descr)
+    def dump(self, ctx, writer):
+        writer.constant(ctx, self.name, self.descr)
 
 class DocFunction(DocItem):
     def __init__(self, name, args):
@@ -101,14 +217,17 @@ class DocFunction(DocItem):
         self.name = name
         self.args = args
 
-    def dump(self, ctx):
-        if self.name == '\\constructor':
-            s = '### `{}{}`'.format(ctx, self.args)
-        elif self.name == '\\call':
-            s = '### `{}{}`'.format(ctx, self.args)
-        else:
-            s = '### `{}.{}{}`'.format(ctx, self.name, self.args)
-        return s + '\n' + super().dump()
+    def dump(self, ctx, writer):
+        writer.function(ctx, self.name, self.args, self.doc)
+
+class DocMethod(DocItem):
+    def __init__(self, name, args):
+        super().__init__()
+        self.name = name
+        self.args = args
+
+    def dump(self, ctx, writer):
+        writer.method(ctx, self.name, self.args, self.doc)
 
 class DocClass(DocItem):
     def __init__(self, name, descr):
@@ -128,7 +247,7 @@ class DocClass(DocItem):
             dict_ = self.classmethods
         if name in dict_:
             lex.error("multiple definition of method '{}'".format(name))
-        method = dict_[name] = DocFunction(name, d['args'])
+        method = dict_[name] = DocMethod(name, d['args'])
         method.add_doc(lex)
 
     def process_method(self, lex, d):
@@ -136,7 +255,7 @@ class DocClass(DocItem):
         dict_ = self.methods
         if name in dict_:
             lex.error("multiple definition of method '{}'".format(name))
-        method = dict_[name] = DocFunction(name, d['args'])
+        method = dict_[name] = DocMethod(name, d['args'])
         method.add_doc(lex)
 
     def process_constant(self, lex, d):
@@ -146,37 +265,25 @@ class DocClass(DocItem):
         self.constants[name] = DocConstant(name, d['descr'])
         lex.opt_break()
 
-    def dump(self):
-        s = []
-        s.append('')
-        s.append('# class {}'.format(self.name))
-        s.append('')
-        s.append(super().dump())
+    def dump(self, writer):
+        writer.heading(1, 'class {}'.format(self.name))
+        super().dump(writer)
         if len(self.constructors) > 0:
-            s.append('')
-            s.append("## Constructors")
+            writer.heading(2, 'Constructors')
             for f in sorted(self.constructors.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(f.dump(self.name))
+                f.dump(self.name, writer)
         if len(self.classmethods) > 0:
-            s.append('')
-            s.append("## Class methods")
+            writer.heading(2, 'Class methods')
             for f in sorted(self.classmethods.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(f.dump(self.name))
+                f.dump(self.name, writer)
         if len(self.methods) > 0:
-            s.append('')
-            s.append("## Methods")
+            writer.heading(2, 'Methods')
             for f in sorted(self.methods.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(f.dump(self.name.lower()))
+                f.dump(self.name.lower(), writer)
         if len(self.constants) > 0:
-            s.append('')
-            s.append("## Constants")
+            writer.heading(2, 'Constants')
             for c in sorted(self.constants.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(c.dump(self.name))
-        return '\n'.join(s)
+                c.dump(self.name, writer)
 
 class DocModule(DocItem):
     def __init__(self, name, descr):
@@ -232,43 +339,47 @@ class DocModule(DocItem):
         if self.descr is None:
             raise DocValidateError('module {} referenced but never defined'.format(self.name))
 
-    def dump(self):
-        s = []
-        s.append('# module {}'.format(self.name))
-        s.append('')
-        s.append(super().dump())
+    def dump(self, writer):
+        writer.module(self.name, self.descr, self.doc)
         if self.functions:
-            s.append('')
-            s.append('## Functions')
+            writer.heading(2, 'Functions')
             for f in sorted(self.functions.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(f.dump(self.name))
+                f.dump(self.name, writer)
         if self.constants:
-            s.append('')
-            s.append("## Constants")
+            writer.heading(2, 'Constants')
             for c in sorted(self.constants.values(), key=lambda x:x.name):
-                s.append('')
-                s.append(c.dump(self.name))
+                c.dump(self.name, writer)
         if self.classes:
-            s.append('')
-            s.append('## Classes')
+            writer.heading(2, 'Classes')
             for c in sorted(self.classes.values(), key=lambda x:x.name):
-                s.append('')
-                s.append('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
-        return '\n'.join(s)
+                writer.para('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
 
-    def write(self, dir):
-        index = markdown.markdown(self.dump())
+    def write_html(self, dir):
+        md_writer = MarkdownWriter()
+        md_writer.start()
+        self.dump(md_writer)
         with open(os.path.join(dir, 'index.html'), 'wt') as f:
-            f.write(index)
+            f.write(markdown.markdown(md_writer.end()))
         for c in self.classes.values():
             class_dir = os.path.join(dir, c.name)
             makedirs(class_dir)
-            class_dump = c.dump()
-            class_dump = 'part of the [{} module](./)'.format(self.name) + '\n' + class_dump
-            index = markdown.markdown(class_dump)
+            md_writer.start()
+            md_writer.para('part of the [{} module](./)'.format(self.name))
+            c.dump(md_writer)
             with open(os.path.join(class_dir, 'index.html'), 'wt') as f:
-                f.write(index)
+                f.write(markdown.markdown(md_writer.end()))
+
+    def write_rst(self, dir):
+        rst_writer = ReStructuredTextWriter()
+        rst_writer.start()
+        self.dump(rst_writer)
+        with open(dir + '/' + self.name + '.rst', 'wt') as f:
+            f.write(rst_writer.end())
+        for c in self.classes.values():
+            rst_writer.start()
+            c.dump(rst_writer)
+            with open(dir + '/' + self.name + '.' + c.name + '.rst', 'wt') as f:
+                f.write(rst_writer.end())
 
 class Doc:
     def __init__(self):
@@ -325,24 +436,28 @@ class Doc:
         for m in self.modules.values():
             m.validate()
 
-    def dump(self):
-        s = []
-        s.append('# Modules')
-        s.append('')
-        s.append('These are the Python modules that are implemented.')
-        s.append('')
+    def dump(self, writer):
+        writer.heading(1, 'Modules')
+        writer.para('These are the Python modules that are implemented.')
         for m in sorted(self.modules.values(), key=lambda x:x.name):
-            s.append('')
-            s.append('[`{}`]({}/) - {}'.format(m.name, m.name, m.descr))
-        return '\n'.join(s)
+            writer.para('[`{}`]({}/) - {}'.format(m.name, m.name, m.descr))
 
-    def write(self, dir):
+    def write_html(self, dir):
+        md_writer = MarkdownWriter()
         with open(os.path.join(dir, 'module', 'index.html'), 'wt') as f:
-            f.write(markdown.markdown(self.dump()))
+            md_writer.start()
+            self.dump(md_writer)
+            f.write(markdown.markdown(md_writer.end()))
         for m in self.modules.values():
             mod_dir = os.path.join(dir, 'module', m.name)
             makedirs(mod_dir)
-            m.write(mod_dir)
+            m.write_html(mod_dir)
+
+    def write_rst(self, dir):
+        #with open(os.path.join(dir, 'module', 'index.html'), 'wt') as f:
+        #    f.write(markdown.markdown(self.dump()))
+        for m in self.modules.values():
+            m.write_rst(dir)
 
 regex_descr = r'(?P<descr>.*)'
 
@@ -383,6 +498,7 @@ def process_file(file, doc):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Generate documentation for pyboard API from C files.')
     cmd_parser.add_argument('--outdir', metavar='<output dir>', default='gendoc-out', help='ouput directory')
+    cmd_parser.add_argument('--format', default='html', help='output format: html or rst')
     cmd_parser.add_argument('files', nargs='+', help='input files')
     args = cmd_parser.parse_args()
 
@@ -395,7 +511,17 @@ def main():
         doc.validate()
     except DocValidateError as e:
         print(e)
-    doc.write(args.outdir)
+
+    makedirs(args.outdir)
+
+    if args.format == 'html':
+        doc.write_html(args.outdir)
+    elif args.format == 'rst':
+        doc.write_rst(args.outdir)
+    else:
+        print('unknown format:', args.format)
+        return
+
     print('written to', args.outdir)
 
 if __name__ == "__main__":
