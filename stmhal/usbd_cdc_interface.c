@@ -402,6 +402,14 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
     user_interrupt_data = data;
 }
 
+int USBD_CDC_TxHalfEmpty(void) {
+    int32_t tx_waiting = (int32_t)UserTxBufPtrIn - (int32_t)UserTxBufPtrOut;
+    if (tx_waiting < 0) {
+        tx_waiting += APP_TX_DATA_SIZE;
+    }
+    return tx_waiting <= APP_TX_DATA_SIZE / 2;
+}
+
 // timout in milliseconds.
 // Returns number of bytes written to the device.
 int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout) {

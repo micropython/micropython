@@ -37,6 +37,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
 int USBD_CDC_IsConnected(void);
 void USBD_CDC_SetInterrupt(int chr, void *data);
 
+int USBD_CDC_TxHalfEmpty(void);
 int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout);
 void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len);
 

@@ -24,7 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <string.h>
+#include <errno.h>
 
 #include "usbd_core.h"
 #include "usbd_desc.h"
@@ -40,6 +42,7 @@
 #include "stream.h"
 #include "bufhelper.h"
 #include "usb.h"
+#include "pybioctl.h"
 
 #ifdef USE_DEVICE_MODE
 USBD_HandleTypeDef hUSBDDevice;
@@ -243,16 +246,6 @@ STATIC mp_obj_t pyb_usb_vcp_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);
 
-STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    int ret = USBD_CDC_Rx((byte*)buf, size, -1);
-    return ret;
-}
-
-STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    int ret = USBD_CDC_Tx((const byte*)buf, size, -1);
-    return ret;
-}
-
 mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
@@ -279,9 +272,51 @@ STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
 
+STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+    int ret = USBD_CDC_Rx((byte*)buf, size, 0);
+    if (ret == 0) {
+        // return EAGAIN error to indicate non-blocking
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+    int ret = USBD_CDC_Tx((const byte*)buf, size, 0);
+    if (ret == 0) {
+        // return EAGAIN error to indicate non-blocking
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+    va_list vargs;
+    va_start(vargs, errcode);
+    mp_uint_t ret;
+    if (request == MP_IOCTL_POLL) {
+        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        ret = 0;
+        if ((flags & MP_IOCTL_POLL_RD) && USBD_CDC_RxNum() > 0) {
+            ret |= MP_IOCTL_POLL_RD;
+        }
+        if ((flags & MP_IOCTL_POLL_WR) && USBD_CDC_TxHalfEmpty()) {
+            ret |= MP_IOCTL_POLL_WR;
+        }
+    } else {
+        *errcode = EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    va_end(vargs);
+    return ret;
+}
+
 STATIC const mp_stream_p_t pyb_usb_vcp_stream_p = {
     .read = pyb_usb_vcp_read,
     .write = pyb_usb_vcp_write,
+    .ioctl = pyb_usb_vcp_ioctl,
 };
 
 const mp_obj_type_t pyb_usb_vcp_type = {
