@@ -1,11 +1,10 @@
-:mod:`usocket` --- socket module
-================================
+:mod:`usocket` -- socket module
+===============================
 
 .. module:: usocket
    :synopsis: socket module
 
 Socket functionality.
-
 
 Functions
 ---------

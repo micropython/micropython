@@ -1,5 +1,5 @@
-class SPI --- a master-driven serial protocol
-=============================================
+class SPI -- a master-driven serial protocol
+============================================
 
 SPI is a serial protocol that is driven by a master.  At the physical level
 there are 3 lines: SCK, MOSI, MISO.

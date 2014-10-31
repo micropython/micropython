@@ -1,5 +1,5 @@
-class CAN --- controller area network communication bus
-=======================================================
+class CAN -- controller area network communication bus
+======================================================
 
 CAN implements the standard CAN communications protocol.  At
 the physical level it consists of 2 lines: RX and TX.  Note that

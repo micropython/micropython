@@ -1,5 +1,5 @@
-:mod:`uheapq` --- heap queue algorithm
-======================================
+:mod:`uheapq` -- heap queue algorithm
+=====================================
 
 .. module:: uheapq
    :synopsis: heap queue algorithm

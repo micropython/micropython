@@ -1,5 +1,5 @@
-:mod:`gc` --- control the garbage collector
-===========================================
+:mod:`gc` -- control the garbage collector
+==========================================
 
 .. module:: gc
    :synopsis: control the garbage collector

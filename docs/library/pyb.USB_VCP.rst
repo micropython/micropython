@@ -1,5 +1,5 @@
-class USB_VCP --- USB virtual comm port
-=======================================
+class USB_VCP -- USB virtual comm port
+======================================
 
 The USB_VCP class allows creation of an object representing the USB
 virtual comm port.  It can be used to read and write data over USB to

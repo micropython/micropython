@@ -1,5 +1,5 @@
-class DAC --- digital to analog conversion
-==========================================
+class DAC -- digital to analog conversion
+=========================================
 
 The DAC is used to output analog values (a specific voltage) on pin X5 or pin X6.
 The voltage will be between 0 and 3.3V.

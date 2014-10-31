@@ -1,5 +1,5 @@
-class LED --- LED object
-========================
+class LED -- LED object
+=======================
 
 The LED object controls an individual LED (Light Emitting Diode).
 

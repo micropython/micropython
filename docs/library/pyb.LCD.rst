@@ -1,5 +1,5 @@
-class LCD --- LCD control for the LCD touch-sensor pyskin
-=========================================================
+class LCD -- LCD control for the LCD touch-sensor pyskin
+========================================================
 
 The LCD class is used to control the LCD on the LCD touch-sensor pyskin,
 LCD32MKv1.0.  The LCD is a 128x32 pixel monochrome screen, part NHD-C12832A1Z.

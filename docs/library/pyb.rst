@@ -160,7 +160,6 @@ Classes
    pyb.I2C.rst
    pyb.LCD.rst
    pyb.LED.rst
-   pyb.PinAF.rst
    pyb.Pin.rst
    pyb.RTC.rst
    pyb.Servo.rst

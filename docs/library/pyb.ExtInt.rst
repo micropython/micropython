@@ -1,5 +1,5 @@
-class ExtInt --- configure I/O pins to interrupt on external events
-===================================================================
+class ExtInt -- configure I/O pins to interrupt on external events
+==================================================================
 
 There are a total of 22 interrupt lines. 16 of these can come from GPIO pins
 and the remaining 6 are from internal sources.

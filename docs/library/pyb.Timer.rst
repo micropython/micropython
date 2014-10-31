@@ -1,5 +1,5 @@
-class Timer --- control internal timers
-=======================================
+class Timer -- control internal timers
+======================================
 
 Timers can be used for a great variety of tasks.  At the moment, only
 the simplest case is implemented: that of calling a function periodically.

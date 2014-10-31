@@ -1,5 +1,5 @@
-class Accel --- accelerometer control
-=====================================
+class Accel -- accelerometer control
+====================================
 
 Accel is an object that controls the accelerometer.  Example usage::
 

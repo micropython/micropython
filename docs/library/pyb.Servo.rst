@@ -1,5 +1,5 @@
-class Servo --- 3-wire hobby servo driver
-=========================================
+class Servo -- 3-wire hobby servo driver
+========================================
 
 Servo controls standard hobby servos with 3-wires (ground, power, signal).
 

@@ -1,5 +1,5 @@
-class UART --- duplex serial communication bus
-==============================================
+class UART -- duplex serial communication bus
+=============================================
 
 UART implements the standard UART/USART duplex serial communications protocol.  At
 the physical level it consists of 2 lines: RX and TX.  The unit of communication
@@ -36,6 +36,8 @@ To check if there is anything to be read, use::
 
     uart.any()               # returns True if any characters waiting
 
+*Note:* The stream functions ``read``, ``write`` etc Are new in Micro Python since v1.3.4.
+Earlier versions use ``uart.send`` and ``uart.recv``.
 
 Constructors
 ------------
@@ -55,7 +57,6 @@ Constructors
      - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
      - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
      - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
-
 
 Methods
 -------
@@ -87,12 +88,17 @@ Methods
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
 
-   *Note:* for 9 bit characters each character takes 2 bytes, ``nbytes`` must be even,
-   and the number of characters is ``nbytes/2``.
+   *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
+   be even, and the number of characters is ``nbytes/2``.
+
+   Return value: a bytes object containing the bytes read in.  Returns ``b''``
+   on timeout.
 
 .. method:: uart.readall()
 
    Read as much data as possible.
+
+   Return value: a bytes object.
 
 .. method:: uart.readchar()
 
@@ -102,12 +108,25 @@ Methods
 
 .. method:: uart.readinto(buf[, nbytes])
 
+   Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
+   that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
+
+   Return value: number of bytes read and stored into ``buf``.
 
 .. method:: uart.readline()
 
+   Read a line, ending in a newline character.
+
+   Return value: the line read.
 
 .. method:: uart.write(buf)
 
+   Write the buffer of bytes to the bus.  If characters are 7 or 8 bits wide
+   then each byte is one character.  If characters are 9 bits wide then two
+   bytes are used for each character (little endian), and ``buf`` must contain
+   an even number of bytes.
+
+   Return value: number of bytes written.
 
 .. method:: uart.writechar(char)
 

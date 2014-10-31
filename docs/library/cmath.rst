@@ -1,12 +1,11 @@
-:mod:`cmath` --- mathematical functions for complex numbers
-===========================================================
+:mod:`cmath` -- mathematical functions for complex numbers
+==========================================================
 
 .. module:: cmath
    :synopsis: mathematical functions for complex numbers
 
 The ``cmath`` module provides some basic mathematical funtions for
 working with complex numbers.
-
 
 Functions
 ---------
@@ -46,7 +45,6 @@ Functions
 .. function:: sqrt(z)
 
    Return the square-root of ``z``.
-
 
 Constants
 ---------

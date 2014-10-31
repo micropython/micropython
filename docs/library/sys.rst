@@ -1,10 +1,8 @@
-:mod:`sys` --- system specific functions
-========================================
+:mod:`sys` -- system specific functions
+=======================================
 
 .. module:: sys
    :synopsis: system specific functions
-
-
 
 Functions
 ---------
@@ -13,7 +11,6 @@ Functions
 
    Raise a ``SystemExit`` exception.  If an argument is given, it is the
    value given to ``SystemExit``.
-
 
 Constants
 ---------

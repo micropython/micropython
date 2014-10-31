@@ -1,5 +1,5 @@
-class I2C --- a two-wire serial protocol
-========================================
+class I2C -- a two-wire serial protocol
+=======================================
 
 I2C is a two-wire protocol for communicating between devices.  At the physical
 level it consists of 2 wires: SCL and SDA, the clock and data lines respectively.

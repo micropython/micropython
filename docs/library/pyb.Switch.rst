@@ -1,5 +1,5 @@
-class Switch --- switch object
-==============================
+class Switch -- switch object
+=============================
 
 A Switch object is used to control a push-button switch.
 
