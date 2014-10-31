@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -68,7 +69,8 @@ STATIC mp_uint_t *gc_pool_end;
 STATIC int gc_stack_overflow;
 STATIC mp_uint_t gc_stack[STACK_SIZE];
 STATIC mp_uint_t *gc_sp;
-STATIC mp_uint_t gc_lock_depth;
+STATIC uint16_t gc_lock_depth;
+uint16_t gc_auto_collect_enabled;
 STATIC mp_uint_t gc_last_free_atb_index;
 
 // ATB = allocation table byte
@@ -162,6 +164,9 @@ void gc_init(void *start, void *end) {
 
     // unlock the GC
     gc_lock_depth = 0;
+
+    // allow auto collection
+    gc_auto_collect_enabled = 1;
 
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", gc_alloc_table_start, gc_alloc_table_byte_len, gc_alloc_table_byte_len * BLOCKS_PER_ATB);
@@ -375,7 +380,7 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     mp_uint_t end_block;
     mp_uint_t start_block;
     mp_uint_t n_free = 0;
-    int collected = 0;
+    int collected = !gc_auto_collect_enabled;
     for (;;) {
 
         // look for a run of n_blocks available blocks

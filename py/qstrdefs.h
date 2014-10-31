@@ -470,6 +470,7 @@ Q(gc)
 Q(collect)
 Q(disable)
 Q(enable)
+Q(isenabled)
 Q(mem_free)
 Q(mem_alloc)
 #endif

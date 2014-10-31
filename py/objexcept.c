@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "nlr.h"

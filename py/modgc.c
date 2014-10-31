@@ -24,15 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
-#include "builtin.h"
 #include "runtime.h"
-#include "objlist.h"
-#include "objtuple.h"
-#include "objstr.h"
 #include "gc.h"
 
 #if MICROPY_PY_GC && MICROPY_ENABLE_GC
@@ -56,7 +54,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_collect_obj, py_gc_collect);
 /// \function disable()
 /// Disable the garbage collector.
 STATIC mp_obj_t gc_disable(void) {
-    gc_lock();
+    gc_auto_collect_enabled = 0;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
@@ -64,10 +62,15 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
 /// \function enable()
 /// Enable the garbage collector.
 STATIC mp_obj_t gc_enable(void) {
-    gc_unlock();
+    gc_auto_collect_enabled = 1;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
+
+STATIC mp_obj_t gc_isenabled(void) {
+    return MP_BOOL(gc_auto_collect_enabled);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(gc_isenabled_obj, gc_isenabled);
 
 /// \function mem_free()
 /// Return the number of bytes of available heap RAM.
@@ -92,6 +95,7 @@ STATIC const mp_map_elem_t mp_module_gc_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_collect), (mp_obj_t)&gc_collect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&gc_disable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&gc_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_isenabled), (mp_obj_t)&gc_isenabled_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_free), (mp_obj_t)&gc_mem_free_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_alloc), (mp_obj_t)&gc_mem_alloc_obj },
 };

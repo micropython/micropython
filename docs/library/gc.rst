@@ -4,22 +4,21 @@
 .. module:: gc
    :synopsis: control the garbage collector
 
-
-
 Functions
 ---------
+
+.. function:: enable()
+
+   Enable automatic garbage collection.
+
+.. function:: disable()
+
+   Disable automatic garbage collection.  Heap memory can still be allocated,
+   and garbage collection can still be initiated manually using :meth:`gc.collect`.
 
 .. function:: collect()
 
    Run a garbage collection.
-
-.. function:: disable()
-
-   Disable the garbage collector.
-
-.. function:: enable()
-
-   Enable the garbage collector.
 
 .. function:: mem_alloc()
 

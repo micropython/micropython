@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "misc.h"

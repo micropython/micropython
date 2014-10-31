@@ -20,7 +20,12 @@ def h():
         g(i)            # default arg (second one)
         g(i, i)         # 2 args
 
-# call h with heap allocation disabled
+# call h with heap allocation disabled and all memory used up
 gc.disable()
+try:
+    while True:
+        'a'.lower # allocates 1 cell for boundmeth
+except MemoryError:
+    pass
 h()
 gc.enable()
