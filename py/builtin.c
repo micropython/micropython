@@ -448,8 +448,29 @@ STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_free(vstr);
     return s;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
+
+STATIC mp_obj_t mp_builtin_round(mp_obj_t o_in) {
+    // TODO support second arg
+    if (MP_OBJ_IS_INT(o_in)) {
+        return o_in;
+    }
+#if MICROPY_PY_BUILTINS_FLOAT
+    mp_float_t val = mp_obj_get_float(o_in);
+    mp_float_t rounded = MICROPY_FLOAT_C_FUN(round)(val);
+    mp_int_t r = rounded;
+    // make rounded value even if it was halfway between ints
+    if (val - rounded == 0.5) {
+        r = (r + 1) & (~1);
+    } else if (val - rounded == -0.5) {
+        r &= ~1;
+    }
+#else
+    mp_int_t r = mp_obj_get_int(o_in);
+#endif
+    return mp_obj_new_int(r);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_round_obj, mp_builtin_round);
 
 STATIC mp_obj_t mp_builtin_sum(mp_uint_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);

@@ -118,6 +118,7 @@ STATIC const mp_map_elem_t mp_builtin_object_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_pow), (mp_obj_t)&mp_builtin_pow_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print), (mp_obj_t)&mp_builtin_print_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repr), (mp_obj_t)&mp_builtin_repr_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_round), (mp_obj_t)&mp_builtin_round_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sorted), (mp_obj_t)&mp_builtin_sorted_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&mp_builtin_sum_obj },
 

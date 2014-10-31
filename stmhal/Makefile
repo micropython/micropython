@@ -68,6 +68,7 @@ SRC_LIB = $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/fmodf.c \
+	libm/roundf.c \
 	)
 
 SRC_C = \
