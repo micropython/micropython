@@ -117,10 +117,6 @@ Power related functions
 Miscellaneous functions
 -----------------------
 
-.. function:: have_cdc()
-
-   Return True if USB is connected as a serial device, False otherwise.
-
 .. function:: hid((buttons, x, y, z))
 
    Takes a 4-tuple (or list) and sends it to the USB host (the PC) to

@@ -17,6 +17,10 @@ Constructors
 Methods
 -------
 
+.. method:: usb_vcp.isconnected()
+
+   Return ``True`` if USB is connected as a serial device, else ``False``.
+
 .. method:: usb_vcp.any()
 
    Return ``True`` if any characters waiting, else ``False``.

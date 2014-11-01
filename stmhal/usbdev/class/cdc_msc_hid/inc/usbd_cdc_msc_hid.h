@@ -1,6 +1,7 @@
 #ifndef _USB_CDC_MSC_CORE_H_
 #define _USB_CDC_MSC_CORE_H_
 
+#include  "usbd_cdc_msc_hid0.h"
 #include  "usbd_msc_bot.h"
 #include  "usbd_msc_scsi.h"
 #include  "usbd_ioreq.h"
@@ -17,14 +18,6 @@
 #define CDC_IN_EP     (0x83)
 #define CDC_OUT_EP    (0x03)
 #define CDC_CMD_EP    (0x82)
-
-// only CDC_MSC and CDC_HID are available
-#define USBD_MODE_CDC (0x01)
-#define USBD_MODE_MSC (0x02)
-#define USBD_MODE_HID (0x04)
-#define USBD_MODE_CDC_MSC (USBD_MODE_CDC | USBD_MODE_MSC)
-#define USBD_MODE_CDC_HID (USBD_MODE_CDC | USBD_MODE_HID)
-#define USBD_MODE_MSC_HID (USBD_MODE_MSC | USBD_MODE_HID)
 
 typedef struct {
   uint32_t bitrate;
@@ -87,9 +80,19 @@ typedef struct {
   uint32_t                 scsi_blk_len;
 } USBD_MSC_BOT_HandleTypeDef;
 
+#define USBD_HID_MOUSE_MAX_PACKET          (4)
+#define USBD_HID_MOUSE_REPORT_DESC_SIZE    (74)
+
+extern const uint8_t USBD_HID_MOUSE_ReportDesc[USBD_HID_MOUSE_REPORT_DESC_SIZE];
+
+#define USBD_HID_KEYBOARD_MAX_PACKET       (8)
+#define USBD_HID_KEYBOARD_REPORT_DESC_SIZE (63)
+
+extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_SIZE];
+
 extern USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
-void USBD_SelectMode(uint32_t mode);
+void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 
 uint8_t USBD_CDC_RegisterInterface  (USBD_HandleTypeDef   *pdev, USBD_CDC_ItfTypeDef *fops);
 uint8_t USBD_CDC_SetTxBuffer  (USBD_HandleTypeDef   *pdev, uint8_t  *pbuff, uint16_t length);
@@ -99,6 +102,7 @@ uint8_t USBD_CDC_TransmitPacket  (USBD_HandleTypeDef *pdev);
 
 uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *fops);
 
+int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
 uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
 
 #endif // _USB_CDC_MSC_CORE_H_
