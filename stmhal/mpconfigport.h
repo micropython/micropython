@@ -133,9 +133,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     const char *readline_hist[8]; \
     \
     mp_obj_t mp_const_vcp_interrupt; \
+    mp_obj_t pyb_hid_report_desc; \
     \
     mp_obj_t pyb_config_main; \
-    mp_obj_t pyb_config_usb_mode; \
     \
     mp_obj_t pyb_switch_callback; \
     \

@@ -35,11 +35,14 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "stm32f4xx_hal.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
+
+#include "py/obj.h"
+#include "usb.h"
 
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
@@ -75,9 +78,6 @@ static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint i
 
 static int user_interrupt_char = -1;
 static void *user_interrupt_data = NULL;
-
-/* USB handler declaration */
-extern USBD_HandleTypeDef hUSBDDevice;
 
 /* Private function prototypes -----------------------------------------------*/
 static int8_t CDC_Itf_Init     (void);

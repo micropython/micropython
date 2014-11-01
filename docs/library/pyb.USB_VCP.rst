@@ -26,6 +26,10 @@ Methods
    Set to -1 to disable this interrupt feature.  This is useful when you
    want to send raw bytes over the USB VCP port.
 
+.. method:: usb_vcp.isconnected()
+
+   Return ``True`` if USB is connected as a serial device, else ``False``.
+
 .. method:: usb_vcp.any()
 
    Return ``True`` if any characters waiting, else ``False``.

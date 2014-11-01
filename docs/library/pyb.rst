@@ -149,10 +149,14 @@ Miscellaneous functions
 
    Return True if USB is connected as a serial device, False otherwise.
 
+   .. note:: This function is deprecated.  Use pyb.USB_VCP().isconnected() instead.
+
 .. function:: hid((buttons, x, y, z))
 
    Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
    signal a HID mouse-motion event.
+
+   .. note:: This function is deprecated.  Use pyb.USB_HID().send(...) instead.
 
 .. function:: info([dump_alloc_table])
 

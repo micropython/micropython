@@ -120,14 +120,6 @@ STATIC mp_obj_t pyb_main(mp_obj_t main) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
-STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
-    if (MP_OBJ_IS_STR(usb_mode)) {
-        MP_STATE_PORT(pyb_config_usb_mode) = usb_mode;
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
-
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
@@ -309,6 +301,11 @@ int main(void) {
     switch_init0();
 #endif
 
+#if defined(USE_DEVICE_MODE)
+    // default to internal flash being the usb medium
+    pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
+#endif
+
     int first_soft_reset = true;
 
 soft_reset:
@@ -415,10 +412,6 @@ soft_reset:
     // Create it if needed, mount in on /flash, and set it as current dir.
     init_flash_fs(reset_mode);
 
-#if defined(USE_DEVICE_MODE)
-    usb_storage_medium_t usb_medium = USB_STORAGE_MEDIUM_FLASH;
-#endif
-
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
@@ -426,9 +419,6 @@ soft_reset:
         if (res != FR_OK) {
             printf("[SD] could not mount SD card\n");
         } else {
-            // use SD card as current directory
-            f_chdrive("/sd");
-
             // TODO these should go before the /flash entries in the path
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
@@ -436,8 +426,17 @@ soft_reset:
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
 #if defined(USE_DEVICE_MODE)
-                usb_medium = USB_STORAGE_MEDIUM_SDCARD;
+                pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
 #endif
+            }
+
+            #if defined(USE_DEVICE_MODE)
+            // only use SD card as current directory if that's what the USB medium is
+            if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
+            #endif
+            {
+                // use SD card as current directory
+                f_chdrive("/sd");
             }
         }
     }
@@ -445,7 +444,6 @@ soft_reset:
 
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
-    MP_STATE_PORT(pyb_config_usb_mode) = MP_OBJ_NULL;
 
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
@@ -472,19 +470,11 @@ soft_reset:
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-#if defined(USE_HOST_MODE)
-    // USB host
-    pyb_usb_host_init();
-#elif defined(USE_DEVICE_MODE)
-    // USB device
-    usb_device_mode_t usb_mode = USB_DEVICE_MODE_CDC_MSC;
-    // if we are not in reset_mode==1, this config variable will always be NULL
-    if (MP_STATE_PORT(pyb_config_usb_mode) != MP_OBJ_NULL) {
-        if (strcmp(mp_obj_str_get_str(MP_STATE_PORT(pyb_config_usb_mode)), "CDC+HID") == 0) {
-            usb_mode = USB_DEVICE_MODE_CDC_HID;
-        }
+#if defined(USE_DEVICE_MODE)
+    // init USB device to default setting if it was not already configured
+    if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
+        pyb_usb_dev_init(USBD_PID_DEFAULT, USBD_MODE_CDC_MSC, NULL);
     }
-    pyb_usb_dev_init(usb_mode, usb_medium);
 #endif
 
 #if MICROPY_HW_HAS_MMA7660
