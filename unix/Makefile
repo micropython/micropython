@@ -129,3 +129,8 @@ install: micropython
 uninstall:
 	-rm $(BINDIR)/$(TARGET)
 	-rm $(BINDIR)/$(PIPTARGET)
+
+# build synthetically fast interpreter for benchmarking
+fast:
+	@echo Make sure to run make -B
+	$(MAKE) COPT="-O2 -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast
