@@ -93,18 +93,12 @@ Methods
 Constants
 ---------
 
-.. data:: LSB
+.. data:: SPI.MASTER
+.. data:: SPI.SLAVE
 
-   set the first bit to LSB
+   for initialising the SPI bus to master or slave mode
 
-.. data:: MASTER
+.. data:: SPI.LSB
+.. data:: SPI.MSB
 
-   for initialising the bus to master mode
-
-.. data:: MSB
-
-   set the first bit to MSB
-
-.. data:: SLAVE
-
-   for initialising the bus to slave mode
+   set the first bit to be the least or most significant bit

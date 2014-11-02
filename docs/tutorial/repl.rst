@@ -26,7 +26,7 @@ and see which COM port it is (eg COM4).
 
 You now need to run your terminal program.  You can use HyperTerminal if you
 have it installed, or download the free program PuTTY:
-[`putty.exe`](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).
+`putty.exe <http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
 Using your serial program you must connect to the COM port that you found in the
 previous step.  With PuTTY, click on "Session" in the left-hand panel, then click
 the "Serial" radio button on the right, then enter you COM port (eg COM4) in the

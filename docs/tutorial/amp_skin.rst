@@ -51,11 +51,11 @@ For example::
     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
 You can also play WAV files using the Python ``wave`` module.  You can get
-the wave module [here](/static/doc/examples/wave.py) and you will also need
-the chunk module available [here](/static/doc/examples/chunk.py).  Put these
+the wave module `here <http://micropython.org/static/doc/examples/wave.py>`_ and you will also need
+the chunk module available `here <http://micropython.org/static/doc/examples/chunk.py>`_.  Put these
 on your pyboard (either on the flash or the SD card in the top-level
 directory).  You will need an 8-bit WAV file to play, such as
-[this one](/static/doc/examples/test.wav).  Then you can do::
+`this one <http://micropython.org/static/doc/examples/test.wav>`_.  Then you can do::
 
     >>> import wave
     >>> from pyb import DAC

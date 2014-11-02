@@ -24,15 +24,6 @@ the tutorial through in the order below.
    assembler.rst
    power_ctrl.rst
 
-Tips, tricks and useful things to know
---------------------------------------
-
-.. toctree::
-   :maxdepth: 1
-   :numbered:
-
-   pass_through.rst
-
 Tutorials requiring extra components
 ------------------------------------
 
@@ -44,3 +35,12 @@ Tutorials requiring extra components
    fading_led.rst
    lcd_skin.rst
    amp_skin.rst
+
+Tips, tricks and useful things to know
+--------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :numbered:
+
+   pass_through.rst

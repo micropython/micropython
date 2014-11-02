@@ -1,0 +1,84 @@
+{% extends "defindex.html" %}
+{% block tables %}
+  <p><strong>Documentation for Micro Python and the pyboard:</strong></p>
+
+  <table class="contentstable" align="center"><tr>
+    <td width="50%">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("quickref") }}">Quick reference for the pyboard</a><br/>
+        <span class="linkdescr">pinout for the pyboard and snippets of useful code</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("general") }}">General information about the pyboard</a><br/>
+        <span class="linkdescr">read this first for a quick overview</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("tutorial/index") }}">Tutorials and code examples</a><br/>
+        <span class="linkdescr">start here</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a><br/>
+        <span class="linkdescr">Micro Python libraries, including the <a href="{{ pathto("library/pyb") }}">pyb module</a></span>
+      </p>
+    </td>
+    <td width="50%">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("hardware/index") }}">The pyboard hardware</a><br/>
+        <span class="linkdescr">schematics, dimensions and component datasheets</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="http://micropython.org/static/doc/Micro-Python-Windows-setup.pdf">Guide for pyboard on Windows (PDF)</a><br/>
+        <span class="linkdescr">including DFU programming</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("license") }}">License</a><br/>
+        <span class="linkdescr">Micro Python license information</span>
+      </p>
+    </td>
+  </tr></table>
+
+  <p><strong>Indices and tables:</strong></p>
+  <table class="contentstable" align="center"><tr>
+    <td width="50%">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("py-modindex") }}">Module index</a><br/>
+        <span class="linkdescr">quick access to all modules</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("genindex") }}">Full index</a><br/>
+        <span class="linkdescr">all functions, classes, constants</span>
+      </p>
+    </td><td width="50%">
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("contents") }}">Table of contents</a><br/>
+        <span class="linkdescr">a list of all sections and subsections</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("search") }}">Search page</a><br/>
+        <span class="linkdescr">search this documentation</span>
+      </p>
+    </td></tr>
+  </table>
+
+  <p><strong>External links:</strong></p>
+
+  <table class="contentstable" align="center"><tr>
+    <td width="50%">
+      <p class="biglink">
+      <a class="biglink" href="http://micropython.org">Micro Python homepage</a><br/>
+        <span class="linkdescr">the official Micro Python site</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="http://forum.micropython.org">Micro Python forum</a><br/>
+        <span class="linkdescr">community discussion for all things related to Micro Python</span>
+      </p>
+    </td>
+    <td width="50%">
+      <p class="biglink">
+        <a class="biglink" href="https://github.com/micropython">Micro Python on GitHub</a><br/>
+        <span class="linkdescr">contribute to the source code on GitHub</span>
+      </p>
+    </td>
+  </tr></table>
+
+{% endblock %}
