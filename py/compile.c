@@ -233,6 +233,11 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         }
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_MORE)) {
                         // int >> int
+                        if (arg1 >= BITS_PER_WORD) {
+                            // Shifting to big amounts is underfined behavior
+                            // in C and is CPU-dependent; propagate sign bit.
+                            arg1 = BITS_PER_WORD - 1;
+                        }
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 >> arg1);
                     } else {
                         // shouldn't happen

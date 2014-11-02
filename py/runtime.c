@@ -337,6 +337,11 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
                     } else {
                         // standard precision is enough for right-shift
+                        if (rhs_val >= BITS_PER_WORD) {
+                            // Shifting to big amounts is underfined behavior
+                            // in C and is CPU-dependent; propagate sign bit.
+                            rhs_val = BITS_PER_WORD - 1;
+                        }
                         lhs_val >>= rhs_val;
                     }
                     break;

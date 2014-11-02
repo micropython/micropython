@@ -48,3 +48,17 @@ a -= 1
 print(a)
 # This would overflow
 #a -= 1
+
+
+# Shifts to big amounts are undefined behavior in C and is CPU-specific
+
+# These are compile-time constexprs
+print(1 >> 32)
+print(1 >> 64)
+print(1 >> 128)
+
+# These are runtime calcs
+a = 1
+print(a >> 32)
+print(a >> 64)
+print(a >> 128)
