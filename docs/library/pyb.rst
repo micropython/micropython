@@ -103,6 +103,18 @@ Power related functions
    supported and the largest supported frequency not greater than
    the given sys_freq will be selected.
 
+   Supported frequencies are (in MHz): 8, 16, 24, 30, 32, 36, 40, 42, 48,
+   54, 56, 60, 64, 72, 84, 96, 108, 120, 144, 168.
+
+   8MHz uses the HSE (external crystal) directly and 16MHz uses the HSI
+   (internal oscillator) directly.  The higher frequencies use the HSE to
+   drive the PLL (phase locked loop), and then use the output of the PLL.
+
+   Note that if you change the frequency while the USB is enabled then
+   the USB may become unreliable.  It is best to change the frequency
+   in boot.py, before the USB peripheral is started.  Also note that
+   frequencies below 36MHz do not allow the USB to function correctly.
+
 .. function:: wfi()
 
    Wait for an interrupt.

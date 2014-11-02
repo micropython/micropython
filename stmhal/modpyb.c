@@ -195,80 +195,123 @@ STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         // set
         mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
-        // search for a valid PLL configuration that keeps USB at 48MHz
-        for (; wanted_sysclk > 0; wanted_sysclk--) {
-            for (mp_uint_t p = 2; p <= 8; p += 2) {
-                if (wanted_sysclk * p % 48 != 0) {
-                    continue;
-                }
-                mp_uint_t q = wanted_sysclk * p / 48;
-                if (q < 2 || q > 15) {
-                    continue;
-                }
-                if (wanted_sysclk * p % (HSE_VALUE / 1000000) != 0) {
-                    continue;
-                }
-                mp_uint_t n_by_m = wanted_sysclk * p / (HSE_VALUE / 1000000);
-                mp_uint_t m = 192 / n_by_m;
-                while (m < (HSE_VALUE / 2000000) || n_by_m * m < 192) {
-                    m += 1;
-                }
-                if (m > (HSE_VALUE / 1000000)) {
-                    continue;
-                }
-                mp_uint_t n = n_by_m * m;
-                if (n < 192 || n > 432) {
-                    continue;
-                }
 
-                // found values!
+        // default PLL parameters that give 48MHz on PLL48CK
+        uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
+        uint32_t sysclk_source;
 
-                // let the USB CDC have a chance to process before we change the clock
-                HAL_Delay(USBD_CDC_POLLING_INTERVAL + 2);
+        // the following logic assumes HSE < HSI
+        if (HSE_VALUE / 1000000 <= wanted_sysclk && wanted_sysclk < HSI_VALUE / 1000000) {
+            // use HSE as SYSCLK
+            sysclk_source = RCC_SYSCLKSOURCE_HSE;
+        } else if (HSI_VALUE / 1000000 <= wanted_sysclk && wanted_sysclk < 24) {
+            // use HSI as SYSCLK
+            sysclk_source = RCC_SYSCLKSOURCE_HSI;
+        } else {
+            // search for a valid PLL configuration that keeps USB at 48MHz
+            for (; wanted_sysclk > 0; wanted_sysclk--) {
+                for (p = 2; p <= 8; p += 2) {
+                    // compute VCO_OUT
+                    mp_uint_t vco_out = wanted_sysclk * p;
+                    // make sure VCO_OUT is between 192MHz and 432MHz
+                    if (vco_out < 192 || vco_out > 432) {
+                        continue;
+                    }
+                    // make sure Q is an integer
+                    if (vco_out % 48 != 0) {
+                        continue;
+                    }
+                    // solve for Q to get PLL48CK at 48MHz
+                    q = vco_out / 48;
+                    // make sure Q is in range
+                    if (q < 2 || q > 15) {
+                        continue;
+                    }
+                    // make sure N/M is an integer
+                    if (vco_out % (HSE_VALUE / 1000000) != 0) {
+                        continue;
+                    }
+                    // solve for N/M
+                    mp_uint_t n_by_m = vco_out / (HSE_VALUE / 1000000);
+                    // solve for M, making sure VCO_IN (=HSE/M) is between 1MHz and 2MHz
+                    m = 192 / n_by_m;
+                    while (m < (HSE_VALUE / 2000000) || n_by_m * m < 192) {
+                        m += 1;
+                    }
+                    if (m > (HSE_VALUE / 1000000)) {
+                        continue;
+                    }
+                    // solve for N
+                    n = n_by_m * m;
+                    // make sure N is in range
+                    if (n < 192 || n > 432) {
+                        continue;
+                    }
 
-                // set HSE as system clock source to allow modification of the PLL configuration
-                RCC_ClkInitTypeDef RCC_ClkInitStruct;
-                RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-                RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
-                if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
-                    goto fail;
+                    // found values!
+                    sysclk_source = RCC_SYSCLKSOURCE_PLLCLK;
+                    goto set_clk;
                 }
+            }
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't make valid freq"));
+        }
 
-                // re-configure PLL
-                RCC_OscInitTypeDef RCC_OscInitStruct;
-                RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-                RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-                RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-                RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-                RCC_OscInitStruct.PLL.PLLM = m;
-                RCC_OscInitStruct.PLL.PLLN = n;
-                RCC_OscInitStruct.PLL.PLLP = p;
-                RCC_OscInitStruct.PLL.PLLQ = q;
-                if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-                    goto fail;
-                }
+    set_clk:
+        //printf("%lu %lu %lu %lu %lu\n", sysclk_source, m, n, p, q);
 
-                // set PLL as system clock source
-                RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-                RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-                RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-                RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-                RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-                if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
-                    goto fail;
-                }
+        // let the USB CDC have a chance to process before we change the clock
+        HAL_Delay(USBD_CDC_POLLING_INTERVAL + 2);
 
-                // re-init TIM3 for USB CDC rate
-                timer_tim3_init();
+        // desired system clock source is in sysclk_source
+        RCC_ClkInitTypeDef RCC_ClkInitStruct;
+        RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+        if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
+            // set HSE as system clock source to allow modification of the PLL configuration
+            // we then change to PLL after re-configuring PLL
+            RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+        } else {
+            // directly set the system clock source as desired
+            RCC_ClkInitStruct.SYSCLKSource = sysclk_source;
+        }
+        RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+        RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+        if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+            goto fail;
+        }
 
-                return mp_const_none;
+        // re-configure PLL
+        // even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
+        RCC_OscInitTypeDef RCC_OscInitStruct;
+        RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+        RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+        RCC_OscInitStruct.PLL.PLLM = m;
+        RCC_OscInitStruct.PLL.PLLN = n;
+        RCC_OscInitStruct.PLL.PLLP = p;
+        RCC_OscInitStruct.PLL.PLLQ = q;
+        if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+            goto fail;
+        }
 
-                void __fatal_error(const char *msg);
-                fail:
-                __fatal_error("can't change freq");
+        // set PLL as system clock source if wanted
+        if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
+            RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
+            RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+            if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
+                goto fail;
             }
         }
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't make valid freq"));
+
+        // re-init TIM3 for USB CDC rate
+        timer_tim3_init();
+
+        return mp_const_none;
+
+    fail:;
+        void NORETURN __fatal_error(const char *msg);
+        __fatal_error("can't change freq");
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 1, pyb_freq);
