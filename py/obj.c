@@ -34,6 +34,7 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtype.h"
 #include "mpz.h"
 #include "objint.h"
 #include "runtime0.h"
@@ -145,7 +146,11 @@ bool mp_obj_is_true(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    return mp_obj_get_type(o_in)->call != NULL;
+    mp_call_fun_t call = mp_obj_get_type(o_in)->call;
+    if (call != mp_obj_instance_call) {
+        return call != NULL;
+    }
+    return mp_obj_instance_is_callable(o_in);
 }
 
 mp_int_t mp_obj_hash(mp_obj_t o_in) {

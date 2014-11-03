@@ -583,9 +583,22 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
 }
 
-STATIC mp_obj_t instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+bool mp_obj_instance_is_callable(mp_obj_t self_in) {
     mp_obj_instance_t *self = self_in;
     mp_obj_t member[2] = {MP_OBJ_NULL};
+    struct class_lookup_data lookup = {
+        .obj = self,
+        .attr = MP_QSTR___call__,
+        .meth_offset = offsetof(mp_obj_type_t, call),
+        .dest = member,
+    };
+    mp_obj_class_lookup(&lookup, self->base.type);
+    return member[0] != MP_OBJ_NULL;
+}
+
+mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_obj_instance_t *self = self_in;
+    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___call__,
@@ -777,7 +790,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->load_attr = instance_load_attr;
     o->store_attr = instance_store_attr;
     o->subscr = instance_subscr;
-    o->call = instance_call;
+    o->call = mp_obj_instance_call;
     o->getiter = instance_getiter;
     o->bases_tuple = bases_tuple;
     o->locals_dict = locals_dict;
