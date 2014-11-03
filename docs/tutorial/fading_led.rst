@@ -27,7 +27,7 @@ Code
 By examining the :ref:`quickref`, we see that ``X1`` is connected to channel 1 of timer 5 (``TIM5 CH1``). Therefore we will first create a ``Timer`` object for timer 5, then create a ``TimerChannel`` object for channel 1::
     
     from pyb import Timer
-    from timer import sleep
+    from time import sleep
     
     # timer 5 will be created with a frequency of 100 Hz
     tim = pyb.Timer(5, freq=100)
