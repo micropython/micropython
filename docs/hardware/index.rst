@@ -16,5 +16,5 @@ Datasheets for other components
 ===============================
 
 * The LCD display on the LCD touch-sensor skin: `Newhaven Display NHD-C12832A1Z-FSW-FBW-3V3 <http://micropython.org/resources/datasheets/NHD-C12832A1Z-FSW-FBW-3V3.pdf>`_ (460KiB PDF)
-* The touch sensor chip on the LCD touch-sensor skin: `Freescale MPR121 <http://micropython.org/resources/datasheets/MPR121.pdf>`_
-* The digital potentiometer on the audio skin: `Microchip MCP4541 <http://micropython.org/resources/datasheets/MCP4541-22107B.pdf>`_
+* The touch sensor chip on the LCD touch-sensor skin: `Freescale MPR121 <http://micropython.org/resources/datasheets/MPR121.pdf>`_ (280KiB PDF)
+* The digital potentiometer on the audio skin: `Microchip MCP4541 <http://micropython.org/resources/datasheets/MCP4541-22107B.pdf>`_ (2.7MiB PDF)
