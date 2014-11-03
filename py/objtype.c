@@ -204,6 +204,7 @@ STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void 
         .attr = meth,
         .meth_offset = offsetof(mp_obj_type_t, print),
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_NULL && kind == PRINT_STR) {
@@ -261,6 +262,7 @@ mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, c
         .attr = MP_QSTR___new__,
         .meth_offset = offsetof(mp_obj_type_t, make_new),
         .dest = init_fn,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self);
 
@@ -341,6 +343,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
         .attr = op_name,
         .meth_offset = offsetof(mp_obj_type_t, unary_op),
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
@@ -437,6 +440,7 @@ STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         .attr = op_name,
         .meth_offset = offsetof(mp_obj_type_t, binary_op),
         .dest = dest,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, lhs->base.type);
     if (dest[0] == MP_OBJ_SENTINEL) {
@@ -467,6 +471,7 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .attr = attr,
         .meth_offset = 0,
         .dest = dest,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     mp_obj_t member = dest[0];
@@ -514,6 +519,7 @@ STATIC bool instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
         .attr = attr,
         .meth_offset = 0,
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] != MP_OBJ_NULL && MP_OBJ_IS_TYPE(member[0], &mp_type_property)) {
@@ -549,6 +555,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         .obj = self,
         .meth_offset = offsetof(mp_obj_type_t, subscr),
         .dest = member,
+        .is_type = false,
     };
     uint meth_args;
     if (value == MP_OBJ_NULL) {
@@ -591,6 +598,7 @@ bool mp_obj_instance_is_callable(mp_obj_t self_in) {
         .attr = MP_QSTR___call__,
         .meth_offset = offsetof(mp_obj_type_t, call),
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     return member[0] != MP_OBJ_NULL;
@@ -604,6 +612,7 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
         .attr = MP_QSTR___call__,
         .meth_offset = offsetof(mp_obj_type_t, call),
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_NULL) {
@@ -624,6 +633,7 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
         .attr = MP_QSTR___iter__,
         .meth_offset = offsetof(mp_obj_type_t, getiter),
         .dest = member,
+        .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_NULL) {
@@ -863,6 +873,7 @@ STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .attr = attr,
         .meth_offset = 0,
         .dest = dest,
+        .is_type = false,
     };
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
