@@ -3,8 +3,8 @@
 Quick reference for the pyboard
 ===============================
 
-.. image:: http://micropython.org/static/resources/pybv10-pinout.jpg
-    :alt: AMP skin
+.. image:: http://micropython.org/resources/pybv10-pinout.jpg
+    :alt: PYBv1.0 pinout
     :width: 700px
 
 General board control

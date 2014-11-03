@@ -46,16 +46,16 @@ a window (or command line) should be showing the files on the pyboard drive.
 The drive you are looking at is known as ``/flash`` by the pyboard, and should contain
 the following 4 files:
 
-* `boot.py <http://micropython.org/static/doc/fresh-pyboard/boot.py>`_ -- this script is executed when the pyboard boots up.  It sets
+* `boot.py <http://micropython.org/resources/fresh-pyboard/boot.py>`_ -- this script is executed when the pyboard boots up.  It sets
     up various configuration options for the pyboard.
 
-* `main.py <http://micropython.org/static/doc/fresh-pyboard/main.py>`_ -- this is the main script that will contain your Python program.
+* `main.py <http://micropython.org/resources/fresh-pyboard/main.py>`_ -- this is the main script that will contain your Python program.
     It is executed after ``boot.py``.
 
-* `README.txt <http://micropython.org/static/doc/fresh-pyboard/README.txt>`_ -- this contains some very basic information about getting
+* `README.txt <http://micropython.org/resources/fresh-pyboard/README.txt>`_ -- this contains some very basic information about getting
     started with the pyboard.
 
-* `pybcdc.inf <http://micropython.org/static/doc/fresh-pyboard/pybcdc.inf>`_ -- this is a Windows driver file to configure the serial USB
+* `pybcdc.inf <http://micropython.org/resources/fresh-pyboard/pybcdc.inf>`_ -- this is a Windows driver file to configure the serial USB
     device.  More about this in the next tutorial.
 
 Editing ``main.py``
