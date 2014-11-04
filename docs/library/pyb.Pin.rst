@@ -55,6 +55,9 @@ an ordinal pin number:
 You can set ``pyb.Pin.debug(True)`` to get some debug information about
 how a particular object gets mapped to a pin.
 
+When a pin has the ``Pin.PULL_UP`` or ``Pin.PULL_DOWN`` pull-mode enabled,
+that pin has an effective 40k Ohm resistor pulling it to 3V3 or GND
+respectively (except pin Y5 which has 11k Ohm resistors).
 
 Constructors
 ------------
@@ -62,7 +65,7 @@ Constructors
 .. class:: pyb.Pin(id, ...)
 
    Create a new Pin object associated with the id.  If additional arguments are given,
-   they are used to initialise the pin.  See ``init``.
+   they are used to initialise the pin.  See :meth:`pin.init`.
 
 
 Class methods
@@ -88,24 +91,6 @@ Class methods
 Methods
 -------
 
-.. method:: pin.__str__()
-
-   Return a string describing the pin object.
-
-.. method:: pin.af()
-
-   Returns the currently configured alternate-function of the pin. The
-   integer returned will match one of the allowed constants for the af
-   argument to the init function.
-
-.. method:: pin.gpio()
-
-   Returns the base address of the GPIO block associated with this pin.
-
-.. method:: pin.high()
-
-   Set the pin to a high logic level.
-
 .. method:: pin.init(mode, pull=Pin.PULL_NONE, af=-1)
 
    Initialise the pin:
@@ -126,9 +111,36 @@ Methods
    
    Returns: ``None``.
 
+.. method:: pin.high()
+
+   Set the pin to a high logic level.
+
 .. method:: pin.low()
 
    Set the pin to a low logic level.
+
+.. method:: pin.value([value])
+
+   Get or set the digital logic level of the pin:
+
+     - With no argument, return 0 or 1 depending on the logic level of the pin.
+     - With ``value`` given, set the logic level of the pin.  ``value`` can be
+       anything that converts to a boolean.  If it converts to ``True``, the pin
+       is set high, otherwise it is set low.
+
+.. method:: pin.__str__()
+
+   Return a string describing the pin object.
+
+.. method:: pin.af()
+
+   Returns the currently configured alternate-function of the pin. The
+   integer returned will match one of the allowed constants for the af
+   argument to the init function.
+
+.. method:: pin.gpio()
+
+   Returns the base address of the GPIO block associated with this pin.
 
 .. method:: pin.mode()
 
@@ -157,15 +169,6 @@ Methods
    Returns the currently configured pull of the pin. The integer returned
    will match one of the allowed constants for the pull argument to the init
    function.
-
-.. method:: pin.value([value])
-
-   Get or set the digital logic level of the pin:
-   
-     - With no argument, return 0 or 1 depending on the logic level of the pin.
-     - With ``value`` given, set the logic level of the pin.  ``value`` can be
-       anything that converts to a boolean.  If it converts to ``True``, the pin
-       is set high, otherwise it is set low.
 
 
 Constants
