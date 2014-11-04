@@ -100,6 +100,11 @@
 #define MICROPY_ALLOC_PATH_MAX (512)
 #endif
 
+// Initial size of module dict
+#ifndef MICROPY_MODULE_DICT_SIZE
+#define MICROPY_MODULE_DICT_SIZE (1)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
