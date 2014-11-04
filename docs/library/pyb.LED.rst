@@ -1,3 +1,5 @@
+.. _pyb.LED:
+
 class LED -- LED object
 =======================
 

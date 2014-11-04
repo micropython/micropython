@@ -9,7 +9,8 @@ Quick reference for the pyboard
 
 General board control
 ---------------------
-::
+
+See :mod:`pyb`. ::
 
     import pyb
 
@@ -23,7 +24,8 @@ General board control
 
 LEDs
 ----
-::
+
+See :ref:`pyb.LED <pyb.LED>`. ::
 
     from pyb import LED
 
@@ -34,7 +36,8 @@ LEDs
 
 Pins and GPIO
 -------------
-::
+
+See :ref:`pyb.Pin <pyb.Pin>`. ::
 
     from pyb import Pin
 
@@ -47,7 +50,8 @@ Pins and GPIO
 
 External interrupts
 -------------------
-::
+
+See :ref:`pyb.ExtInt <pyb.ExtInt>`. ::
 
     from pyb import Pin, ExtInt
 
@@ -56,7 +60,8 @@ External interrupts
 
 Timers
 ------
-::
+
+See :ref:`pyb.Timer <pyb.Timer>`. ::
 
     from pyb import Timer
 
@@ -67,7 +72,8 @@ Timers
 
 PWM (pulse width modulation)
 ----------------------------
-::
+
+See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.Timer <pyb.Timer>`. ::
 
     from pyb import Pin, Timer
 
@@ -78,7 +84,8 @@ PWM (pulse width modulation)
 
 ADC (analog to digital conversion)
 ----------------------------------
-::
+
+See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.ADC <pyb.ADC>`. ::
 
     from pyb import Pin, ADC
 
@@ -87,7 +94,8 @@ ADC (analog to digital conversion)
 
 DAC (digital to analog conversion)
 ----------------------------------
-::
+
+See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.DAC <pyb.DAC>`. ::
 
     from pyb import Pin, DAC
 
@@ -96,7 +104,8 @@ DAC (digital to analog conversion)
 
 UART (serial bus)
 -----------------
-::
+
+See :ref:`pyb.UART <pyb.UART>`. ::
 
     from pyb import UART
 
@@ -106,7 +115,8 @@ UART (serial bus)
 
 SPI bus
 -------
-::
+
+See :ref:`pyb.SPI <pyb.SPI>`. ::
 
     from pyb import SPI
 
@@ -117,7 +127,8 @@ SPI bus
 
 I2C bus
 -------
-::
+
+See :ref:`pyb.I2C <pyb.I2C>`. ::
 
     from pyb import I2C
 

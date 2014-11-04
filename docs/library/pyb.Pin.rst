@@ -1,3 +1,5 @@
+.. _pyb.Pin:
+
 class Pin -- control I/O pins
 =============================
 
