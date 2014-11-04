@@ -86,8 +86,8 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 	input.c \
-	help.c \
 	file.c \
+	help.c \
 	modsocket.c \
 	modos.c \
 	alloc.c \
