@@ -17,3 +17,4 @@ cat <<EOF
 #define MICROPY_GIT_HASH "${git_hash}"
 #define MICROPY_BUILD_DATE "$(date '+%Y-%m-%d')"
 EOF
+

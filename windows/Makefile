@@ -33,6 +33,7 @@ endif
 SRC_C = \
 	unix/main.c \
 	unix/file.c \
+	unix/help.c \
 	unix/input.c \
 	unix/modos.c \
 	unix/modtime.c \
