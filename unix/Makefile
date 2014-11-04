@@ -31,7 +31,7 @@ endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
 # The unix port of micropython on OSX must be compiled with clang,
-# while cross-compile ports require gcc, so we test here for OSX and 
+# while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
 CC = clang
@@ -86,6 +86,7 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 	input.c \
+	help.c \
 	file.c \
 	modsocket.c \
 	modos.c \
