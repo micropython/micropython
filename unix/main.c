@@ -314,10 +314,23 @@ void pre_process_options(int argc, char **argv) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
                     // Don't bring unneeded libc dependencies like tolower()
+                    // If there's 'w' immediately after number, adjust it for
+                    // target word size. Note that it should be *before* size
+                    // suffix like K or M, to avoid confusion with kilowords,
+                    // etc. the size is still in bytes, just can be adjusted
+                    // for word size (taking 32bit as baseline).
+                    bool word_adjust = false;
+                    if ((*end | 0x20) == 'w') {
+                        word_adjust = true;
+                        end++;
+                    }
                     if ((*end | 0x20) == 'k') {
                         heap_size *= 1024;
                     } else if ((*end | 0x20) == 'm') {
                         heap_size *= 1024 * 1024;
+                    }
+                    if (word_adjust) {
+                        heap_size = heap_size * BYTES_PER_WORD / 4;
                     }
 #endif
                 } else {
