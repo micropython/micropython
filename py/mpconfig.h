@@ -184,8 +184,8 @@
 #endif
 
 // Whether to enable finalisers in the garbage collector (ie call __del__)
-#ifndef MICROPY_ENABLE_GC_FINALISER
-#define MICROPY_ENABLE_GC_FINALISER (0)
+#ifndef MICROPY_ENABLE_FINALISER
+#define MICROPY_ENABLE_FINALISER (0)
 #endif
 
 // Whether to check C stack usage. C stack used for calling Python functions,
