@@ -118,7 +118,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 #endif
 
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
-STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
 
 STATIC mp_obj_t pyb_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
@@ -128,21 +127,13 @@ STATIC mp_obj_t pyb_main(mp_obj_t main) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
-STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
-    if (MP_OBJ_IS_STR(usb_mode)) {
-        pyb_config_usb_mode = usb_mode;
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
-
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
 "\r\n"
 "import pyb\r\n"
 "#pyb.main('main.py') # main script to run after this one\r\n"
-"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
+"pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
 "#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\r\n"
 ;
 
@@ -421,7 +412,7 @@ soft_reset:
     }
 
 #if defined(USE_DEVICE_MODE)
-    usb_storage_medium_t usb_medium = USB_STORAGE_MEDIUM_FLASH;
+    usb_storage_medium = USB_STORAGE_MEDIUM_FLASH;
 #endif
 
 #if MICROPY_HW_HAS_SDCARD
@@ -441,7 +432,7 @@ soft_reset:
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
 #if defined(USE_DEVICE_MODE)
-                usb_medium = USB_STORAGE_MEDIUM_SDCARD;
+                usb_storage_medium = USB_STORAGE_MEDIUM_SDCARD;
 #endif
             }
         }
@@ -450,7 +441,6 @@ soft_reset:
 
     // reset config variables; they should be set by boot.py
     pyb_config_main = MP_OBJ_NULL;
-    pyb_config_usb_mode = MP_OBJ_NULL;
 
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
@@ -466,6 +456,8 @@ soft_reset:
                 flash_error(4);
             }
         }
+    } else {
+        pyb_usb_dev_init(USBD_PID_DEFAULT, USBD_MODE_CDC_MSC, NULL);
     }
 
     // turn boot-up LEDs off
@@ -476,21 +468,6 @@ soft_reset:
     // Now we initialise sub-systems that need configuration from boot.py,
     // or whose initialisation can be safely deferred until after running
     // boot.py.
-
-#if defined(USE_HOST_MODE)
-    // USB host
-    pyb_usb_host_init();
-#elif defined(USE_DEVICE_MODE)
-    // USB device
-    usb_device_mode_t usb_mode = USB_DEVICE_MODE_CDC_MSC;
-    // if we are not in reset_mode==1, this config variable will always be NULL
-    if (pyb_config_usb_mode != MP_OBJ_NULL) {
-        if (strcmp(mp_obj_str_get_str(pyb_config_usb_mode), "CDC+HID") == 0) {
-            usb_mode = USB_DEVICE_MODE_CDC_HID;
-        }
-    }
-    pyb_usb_dev_init(usb_mode, usb_medium);
-#endif
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset

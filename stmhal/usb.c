@@ -36,8 +36,11 @@
 
 #include "mpconfig.h"
 #include "misc.h"
+#include "nlr.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objtuple.h"
+#include "objstr.h"
 #include "runtime.h"
 #include "stream.h"
 #include "bufhelper.h"
@@ -46,49 +49,84 @@
 
 #ifdef USE_DEVICE_MODE
 USBD_HandleTypeDef hUSBDDevice;
+usb_storage_medium_t usb_storage_medium = USB_STORAGE_MEDIUM_NONE;
 #endif
 
 STATIC int dev_is_enabled = 0;
 STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
+STATIC mp_obj_t hid_report_desc = MP_OBJ_NULL;
+
+// predefined hid mouse data
+STATIC mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
+    {&mp_type_bytes},
+    0, // hash not valid
+    USBD_HID_MOUSE_REPORT_DESC_SIZE,
+    USBD_HID_MOUSE_ReportDesc,
+};
+const mp_obj_tuple_t pyb_usb_hid_mouse_obj = {
+    {&mp_type_tuple},
+    5,
+    {
+        MP_OBJ_NEW_SMALL_INT(USBD_PID_SECONDARY),
+        MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
+        MP_OBJ_NEW_SMALL_INT(2), // protocol: mouse
+        MP_OBJ_NEW_SMALL_INT(USBD_HID_MOUSE_MAX_PACKET),
+        &pyb_usb_hid_mouse_desc_obj,
+    },
+};
+
+// predefined hid keyboard data
+STATIC mp_obj_str_t pyb_usb_hid_keyboard_desc_obj = {
+    {&mp_type_bytes},
+    0, // hash not valid
+    USBD_HID_KEYBOARD_REPORT_DESC_SIZE,
+    USBD_HID_KEYBOARD_ReportDesc,
+};
+const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
+    {&mp_type_tuple},
+    5,
+    {
+        MP_OBJ_NEW_SMALL_INT(USBD_PID_SECONDARY),
+        MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
+        MP_OBJ_NEW_SMALL_INT(1), // protocol: keyboard
+        MP_OBJ_NEW_SMALL_INT(USBD_HID_KEYBOARD_MAX_PACKET),
+        &pyb_usb_hid_keyboard_desc_obj,
+    },
+};
 
 void pyb_usb_init0(void) {
     // create an exception object for interrupting by VCP
     mp_const_vcp_interrupt = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
+    hid_report_desc = MP_OBJ_NULL;
 }
 
-void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
+void pyb_usb_dev_init(uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
 #ifdef USE_DEVICE_MODE
     if (!dev_is_enabled) {
         // only init USB once in the device's power-lifetime
-        // Windows needs a different PID to distinguish different device
-        // configurations, so we set it here depending on mode.
-        if (mode == USB_DEVICE_MODE_CDC_MSC) {
-            USBD_SelectMode(USBD_MODE_CDC_MSC);
-            USBD_SetPID(0x9800);
-        } else {
-            USBD_SelectMode(USBD_MODE_CDC_HID);
-            USBD_SetPID(0x9801);
-        }
+        USBD_SetPID(pid);
+        USBD_SelectMode(mode, hid_info);
         USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&VCP_Desc, 0);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
         USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+        switch (usb_storage_medium) {
 #if MICROPY_HW_HAS_SDCARD
-        if (medium == USB_STORAGE_MEDIUM_FLASH) {
-            USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
-        } else {
-            USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
-        }
-#else
-        USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+            case USB_STORAGE_MEDIUM_SDCARD:
+                USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+                break;
 #endif
+            default:
+                USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+                break;
+        }
         USBD_Start(&hUSBDDevice);
     }
     dev_is_enabled = 1;
 #endif
 }
 
-void pyb_usb_dev_stop(void) {
+void pyb_usb_dev_deinit(void) {
     if (dev_is_enabled) {
         USBD_Stop(&hUSBDDevice);
         dev_is_enabled = 0;
@@ -97,10 +135,6 @@ void pyb_usb_dev_stop(void) {
 
 bool usb_vcp_is_enabled(void) {
     return dev_is_enabled;
-}
-
-bool usb_vcp_is_connected(void) {
-    return USBD_CDC_IsConnected();
 }
 
 void usb_vcp_set_interrupt_char(int c) {
@@ -145,6 +179,76 @@ void usb_hid_send_report(uint8_t *buf) {
 }
 
 /******************************************************************************/
+// Micro Python bindings for USB
+
+/*
+TODO think about how to expose the USB device.  Currently we have:
+    pyb.usb_mode('CDC+MSC')
+    pyb.usb_mode('CDC+HID') # defaults to mouse
+    pyb.usb_mode('CDC+HID', pyb.hid_mouse)
+    pyb.usb_mode('CDC+HID', pyb.hid_keyboard)
+    pyb.usb_mode('CDC+HID', (pid, subclass, protocol, max_packet_len, report_desc))
+    pyb.usb_mode('host', ...)
+    vcp = pyb.USB_VCP() # get the VCP device for read/write
+    hid = pyb.USB_HID() # get the HID device for write/poll
+
+We could use a more class based approach, like UART and others:
+    usb = pyb.USB('CDC+MSC')
+    usb = pyb.USB('CDC+HID', pyb.USB.hid_mouse)
+    usb = pyb.USB('CDC+HID', pyb.USB.hid_keyboard)
+    usb = pyb.USB('CDC+HID', (pid, subclass, protocol, max_packet_len, report_desc))
+    usb = pyb.USB('host', ...)
+    usb = pyb.USB() # get currently configured object
+    vcp = usb.VCP() # get VCP device
+    hid = usb.HID() # get HID device
+*/
+
+STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *args) {
+    const char *mode_str = mp_obj_str_get_str(args[0]);
+#if defined(USE_HOST_MODE)
+    // USB host
+    if (strcmp(mode_str, "host") == 0) {
+        pyb_usb_host_init();
+    } else {
+        goto bad_mode;
+    }
+#elif defined(USE_DEVICE_MODE)
+    // USB device
+    if (strcmp(mode_str, "CDC+MSC") == 0) {
+        pyb_usb_dev_init(USBD_PID_DEFAULT, USBD_MODE_CDC_MSC, NULL);
+    } else if (strcmp(mode_str, "CDC+HID") == 0) {
+        mp_obj_t hid_info_obj = (mp_obj_t)&pyb_usb_hid_mouse_obj; // default is mouse mode
+        if (n_args == 2) {
+            hid_info_obj = args[1];
+        }
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(hid_info_obj, 5, &items);
+        USBD_HID_ModeInfoTypeDef hid_info;
+        mp_int_t pid = mp_obj_get_int(items[0]);
+        hid_info.subclass = mp_obj_get_int(items[1]);
+        hid_info.protocol = mp_obj_get_int(items[2]);
+        hid_info.max_packet_len = mp_obj_get_int(items[3]);
+        hid_report_desc = items[4]; // need to keep a copy of this so report_desc does not get GC'd
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(items[4], &bufinfo, MP_BUFFER_READ);
+        hid_info.report_desc = bufinfo.buf;
+        hid_info.report_desc_len = bufinfo.len;
+        pyb_usb_dev_init(pid, USBD_MODE_CDC_HID, &hid_info);
+    } else {
+        goto bad_mode;
+    }
+#else
+    goto bad_mode;
+#endif
+
+    return mp_const_none;
+
+bad_mode:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad USB mode"));
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_mode_obj, 1, 2, pyb_usb_mode);
+
+/******************************************************************************/
 // Micro Python bindings for USB VCP
 
 /// \moduleref pyb
@@ -173,6 +277,11 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint
     // return the USB VCP object
     return (mp_obj_t)&pyb_usb_vcp_obj;
 }
+
+STATIC mp_obj_t pyb_usb_vcp_isconnected(void) {
+    return MP_BOOL(USBD_CDC_IsConnected());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconnected);
 
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
@@ -252,6 +361,7 @@ mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
 
 STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&pyb_usb_vcp_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usb_vcp_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_vcp_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_vcp_recv_obj },
@@ -328,6 +438,73 @@ const mp_obj_type_t pyb_usb_vcp_type = {
     .iternext = mp_stream_unbuffered_iter,
     .stream_p = &pyb_usb_vcp_stream_p,
     .locals_dict = (mp_obj_t)&pyb_usb_vcp_locals_dict,
+};
+
+/******************************************************************************/
+// Micro Python bindings for USB HID
+
+typedef struct _pyb_usb_hid_obj_t {
+    mp_obj_base_t base;
+} pyb_usb_hid_obj_t;
+
+STATIC const pyb_usb_hid_obj_t pyb_usb_hid_obj = {{&pyb_usb_hid_type}};
+
+STATIC mp_obj_t pyb_usb_hid_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return the USB HID object
+    return (mp_obj_t)&pyb_usb_hid_obj;
+}
+
+STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t buf_in) {
+    // get the buffer to send from
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    // send the data
+#ifdef USE_DEVICE_MODE
+    USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len);
+#endif
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_hid_send_obj, pyb_usb_hid_send);
+
+STATIC const mp_map_elem_t pyb_usb_hid_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_hid_send_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pyb_usb_hid_locals_dict, pyb_usb_hid_locals_dict_table);
+
+STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+    va_list vargs;
+    va_start(vargs, errcode);
+    mp_uint_t ret;
+    if (request == MP_IOCTL_POLL) {
+        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        ret = 0;
+        if ((flags & MP_IOCTL_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
+            ret |= MP_IOCTL_POLL_WR;
+        }
+    } else {
+        *errcode = EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    va_end(vargs);
+    return ret;
+}
+
+STATIC const mp_stream_p_t pyb_usb_hid_stream_p = {
+    .ioctl = pyb_usb_hid_ioctl,
+};
+
+const mp_obj_type_t pyb_usb_hid_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_USB_HID,
+    .make_new = pyb_usb_hid_make_new,
+    .stream_p = &pyb_usb_hid_stream_p,
+    .locals_dict = (mp_obj_t)&pyb_usb_hid_locals_dict,
 };
 
 /******************************************************************************/

@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "usbd_cdc_msc_hid0.h"
+
 #define VCP_CHAR_NONE   (0)
 #define VCP_CHAR_CTRL_A (1)
 #define VCP_CHAR_CTRL_B (2)
@@ -31,21 +33,27 @@
 #define VCP_CHAR_CTRL_D (4)
 #define VCP_CHAR_CTRL_E (5)
 
-typedef enum {
-    USB_DEVICE_MODE_CDC_MSC,
-    USB_DEVICE_MODE_CDC_HID,
-} usb_device_mode_t;
+// Windows needs a different PID to distinguish different device configurations
+#define USBD_PID_DEFAULT (0x9800)
+#define USBD_PID_SECONDARY (0x9801)
 
 typedef enum {
+    USB_STORAGE_MEDIUM_NONE = 0,
     USB_STORAGE_MEDIUM_FLASH,
     USB_STORAGE_MEDIUM_SDCARD,
 } usb_storage_medium_t;
 
-const mp_obj_type_t pyb_usb_vcp_type;
+extern struct _USBD_HandleTypeDef hUSBDDevice;
+extern usb_storage_medium_t usb_storage_medium;
+extern const struct _mp_obj_tuple_t pyb_usb_hid_mouse_obj;
+extern const struct _mp_obj_tuple_t pyb_usb_hid_keyboard_obj;
+extern const mp_obj_type_t pyb_usb_vcp_type;
+extern const mp_obj_type_t pyb_usb_hid_type;
+MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj);
 
 void pyb_usb_init0(void);
-void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);
-void pyb_usb_dev_stop(void);
+void pyb_usb_dev_init(uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 bool usb_vcp_is_connected(void);
 void usb_vcp_set_interrupt_char(int c);

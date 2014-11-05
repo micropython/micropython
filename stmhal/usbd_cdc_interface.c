@@ -82,9 +82,6 @@ static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint i
 static int user_interrupt_char = VCP_CHAR_NONE;
 static void *user_interrupt_data = NULL;
 
-/* USB handler declaration */
-extern USBD_HandleTypeDef hUSBDDevice;
-
 /* Private function prototypes -----------------------------------------------*/
 static int8_t CDC_Itf_Init     (void);
 static int8_t CDC_Itf_DeInit   (void);
