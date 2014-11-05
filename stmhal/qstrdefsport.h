@@ -432,6 +432,8 @@ Q(mem)
 Q(mem8)
 Q(mem16)
 Q(mem32)
+Q(get_RDP)
+Q(set_RDP)
 
 // for stm constants
 Q(ADC)

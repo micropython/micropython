@@ -28,12 +28,15 @@
 #include <stdint.h>
 
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_flash.h"
 
 #include "mpconfig.h"
 #include "nlr.h"
 #include "misc.h"
+#include "mpz.h"
 #include "qstr.h"
 #include "obj.h"
+#include "objint.h"
 #include "portmodules.h"
 
 // To use compile-time constants we are restricted to 31-bit numbers (a small int,
@@ -116,12 +119,71 @@ STATIC const stm_mem_obj_t stm_mem8_obj = {{&stm_mem_type}, 1};
 STATIC const stm_mem_obj_t stm_mem16_obj = {{&stm_mem_type}, 2};
 STATIC const stm_mem_obj_t stm_mem32_obj = {{&stm_mem_type}, 4};
 
+/// \function get_RDP()
+/// Returns the FLASH Read Protection level: 0, 1 or 2.
+STATIC mp_obj_t pyb_get_RDP(void) {
+    byte *data = (byte*)OPTCR_BYTE1_ADDRESS;
+    uint8_t value = *(uint8_t*)data;
+    int level = -1;
+    if (value == OB_RDP_LEVEL_0) {
+        level = 0;
+    } else if (value == OB_RDP_LEVEL_1) {
+        level = 1;
+    } else if (value == 0xCC) {  // OB_RDP_LEVEL_2
+        level = 2;
+    }
+    return mp_obj_new_int(level);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_get_RDP_obj, pyb_get_RDP);
+
+/// \function set_RDP()
+/// Set the FLASH Read Protection level. This parameter can be one of the following values:
+///
+///   - 0 - No protection
+///   - 1 - Read protection of the memory
+///   - 2 - Full chip protection
+///
+/// WARNING: When enabling level 2 it's no more possible to go back to level 1 or 0.
+STATIC mp_obj_t pyb_set_RDP(mp_obj_t level_in) {
+    HAL_StatusTypeDef status;
+    uint8_t value;
+    int level = mp_obj_get_int(level_in);
+    if (level == 0) {
+        value = OB_RDP_LEVEL_0;
+    } else if (level == 1) {
+        value = OB_RDP_LEVEL_1;
+    } else if (level == 2) {
+        value = 0xCC;  // OB_RDP_LEVEL_2
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Read Protection level should be 0, 1 or 2, but %d", level));
+    }
+    if (HAL_FLASH_OB_Unlock() != HAL_OK) {
+        return mp_const_false;
+    }
+    status = FLASH_WaitForLastOperation((uint32_t)50000); // HAL_FLASH_TIMEOUT_VALUE
+    if (status != HAL_OK) {
+        return mp_const_false;
+    }
+    *(__IO uint8_t*)OPTCR_BYTE1_ADDRESS = value;
+    if (HAL_FLASH_OB_Launch() != HAL_OK) {
+        return mp_const_false;
+    }
+    if (HAL_FLASH_OB_Lock() != HAL_OK) {
+        return mp_const_false;
+    }
+    return mp_const_true;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_RDP_obj, pyb_set_RDP);
+
 STATIC const mp_map_elem_t stm_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_stm) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem8), (mp_obj_t)&stm_mem8_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem16), (mp_obj_t)&stm_mem16_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem32), (mp_obj_t)&stm_mem32_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_RDP), (mp_obj_t)&pyb_get_RDP_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_RDP), (mp_obj_t)&pyb_set_RDP_obj },
 
 #include "modstmconst.gen.c"
 };
