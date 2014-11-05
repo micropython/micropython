@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
-                if (isdigit(argv[a][2])) {
+                if (isdigit((int)argv[a][2])) {
                     mp_optimise_value = argv[a][2] & 0xf;
                 } else {
                     mp_optimise_value = 0;
