@@ -76,17 +76,18 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 }
 
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
-    // extract the list of paths
-    mp_uint_t path_num = 0;
-    mp_obj_t *path_items;
 #if MICROPY_PY_SYS
+    // extract the list of paths
+    mp_uint_t path_num;
+    mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-#endif
 
     if (path_num == 0) {
+#endif
         // mp_sys_path is empty, so just use the given file name
         vstr_add_strn(dest, file_str, file_len);
         return stat_dir_or_file(dest);
+#if MICROPY_PY_SYS
     } else {
         // go through each path looking for a directory or file
         for (mp_uint_t i = 0; i < path_num; i++) {
@@ -107,6 +108,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // could not find a directory or file
         return MP_IMPORT_STAT_NO_EXIST;
     }
+#endif
 }
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
