@@ -1,3 +1,5 @@
+.. _pyb.Timer:
+
 class Timer -- control internal timers
 ======================================
 
