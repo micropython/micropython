@@ -621,8 +621,12 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
-    assert(MP_OBJ_IS_STR(args[0]));
-    assert(MP_OBJ_IS_STR(args[1]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
+
+    // check argument type
+    if (!MP_OBJ_IS_STR(args[1])) {
+        bad_implicit_conversion(args[1]);
+    }
 
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
@@ -828,7 +832,7 @@ static mp_obj_t arg_as_int(mp_obj_t arg) {
 }
 
 mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_STR(args[0]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
     int arg_i = 0;
@@ -1190,7 +1194,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict) {
-    assert(MP_OBJ_IS_STR(pattern));
+    assert(MP_OBJ_IS_STR_OR_BYTES(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
     const byte *start_str = str;
@@ -1378,7 +1382,7 @@ not_enough_args:
 }
 
 STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_STR(args[0]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     mp_int_t max_rep = -1;
     if (n_args == 4) {
@@ -1482,8 +1486,12 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
-    assert(MP_OBJ_IS_STR(args[0]));
-    assert(MP_OBJ_IS_STR(args[1]));
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
+
+    // check argument type
+    if (!MP_OBJ_IS_STR(args[1])) {
+        bad_implicit_conversion(args[1]);
+    }
 
     GET_STR_DATA_LEN(args[0], haystack, haystack_len);
     GET_STR_DATA_LEN(args[1], needle, needle_len);
@@ -1872,7 +1880,7 @@ STATIC void arg_type_mixup() {
 
 mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in) {
     // TODO: This has too big overhead for hash accessor
-    if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
+    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_HASH(self_in, h);
         return h;
     } else {
@@ -1882,7 +1890,7 @@ mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in) {
 
 mp_uint_t mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
-    if (MP_OBJ_IS_STR(self_in) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytes)) {
+    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_LEN(self_in, l);
         return l;
     } else {
