@@ -143,12 +143,13 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 #endif
 
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+
     switch (n_args) {
         case 0:
             return MP_OBJ_NEW_QSTR(MP_QSTR_);
 
-        case 1:
-        {
+        case 1: {
             vstr_t *vstr = vstr_new();
             mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[0], PRINT_STR);
             mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
@@ -156,9 +157,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
             return s;
         }
 
-        case 2:
-        case 3:
-        {
+        default: // 2 or 3 args
             // TODO: validate 2nd/3rd args
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
@@ -172,10 +171,6 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
                 return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
             }
-        }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "str takes at most 3 arguments"));
     }
 }
 
@@ -251,7 +246,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     return mp_obj_str_builder_end(o);
 
 wrong_args:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "wrong number of arguments"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "wrong number of arguments"));
 }
 
 // like strstr but with specified length and allows \0 bytes
@@ -831,6 +826,10 @@ static mp_obj_t arg_as_int(mp_obj_t arg) {
     return arg;
 }
 
+STATIC NORETURN void terse_str_format_value_error(void) {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
+}
+
 mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
@@ -848,7 +847,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                 vstr_add_char(vstr, '}');
                 continue;
             }
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "single '}' encountered in format string"));
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                terse_str_format_value_error();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                    "single '}' encountered in format string"));
+            }
         }
         if (*str != '{') {
             vstr_add_char(vstr, *str);
@@ -882,7 +886,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
             if (str < top && (*str == 'r' || *str == 's')) {
                 conversion = *str++;
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "end of format while looking for conversion specifier"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "end of format while looking for conversion specifier"));
+                }
             }
         }
 
@@ -902,17 +911,32 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
         if (str >= top) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "unmatched '{' in format"));
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                terse_str_format_value_error();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                    "unmatched '{' in format"));
+            }
         }
         if (*str != '}') {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "expected ':' after format specifier"));
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                terse_str_format_value_error();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                    "expected ':' after format specifier"));
+            }
         }
 
         mp_obj_t arg = mp_const_none;
 
         if (field_name) {
             if (arg_i > 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't switch from automatic field numbering to manual field specification"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "can't switch from automatic field numbering to manual field specification"));
+                }
             }
             int index = 0;
             if (str_to_int(vstr_str(field_name), &index) != vstr_len(field_name) - 1) {
@@ -927,7 +951,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
             field_name = NULL;
         } else {
             if (arg_i < 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't switch from manual field specification to automatic field numbering"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "can't switch from manual field specification to automatic field numbering"));
+                }
             }
             if (arg_i >= n_args - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
@@ -945,7 +974,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
             } else if (conversion == 'r') {
                 print_kind = PRINT_REPR;
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "unknown conversion specifier %c", conversion));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        "unknown conversion specifier %c", conversion));
+                }
             }
             vstr_t *arg_vstr = vstr_new();
             mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, arg_vstr, arg, print_kind);
@@ -1030,10 +1064,20 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
 
         if (sign) {
             if (type == 's') {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Sign not allowed in string format specifier"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "sign not allowed in string format specifier"));
+                }
             }
             if (type == 'c') {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Sign not allowed with integer format specifier 'c'"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "sign not allowed with integer format specifier 'c'"));
+                }
             }
         } else {
             sign = '-';
@@ -1089,8 +1133,13 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                     break;
 
                 default:
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "unknown format code '%c' for object of type '%s'", type, mp_obj_get_type_str(arg)));
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        terse_str_format_value_error();
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                            "unknown format code '%c' for object of type '%s'",
+                            type, mp_obj_get_type_str(arg)));
+                    }
             }
         }
 
@@ -1151,15 +1200,24 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
 #endif
 
                 default:
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "unknown format code '%c' for object of type 'float'",
-                        type, mp_obj_get_type_str(arg)));
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        terse_str_format_value_error();
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                            "unknown format code '%c' for object of type 'float'",
+                            type, mp_obj_get_type_str(arg)));
+                    }
             }
         } else {
             // arg doesn't look like a number
 
             if (align == '=') {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "'=' alignment not allowed in string format specifier"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "'=' alignment not allowed in string format specifier"));
+                }
             }
 
             switch (type) {
@@ -1181,9 +1239,13 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
                 }
 
                 default:
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "unknown format code '%c' for object of type 'str'",
-                        type, mp_obj_get_type_str(arg)));
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        terse_str_format_value_error();
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                            "unknown format code '%c' for object of type 'str'",
+                            type, mp_obj_get_type_str(arg)));
+                    }
             }
         }
     }
@@ -1223,7 +1285,12 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
             const byte *key = ++str;
             while (*str != ')') {
                 if (str >= top) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incomplete format key"));
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        terse_str_format_value_error();
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                            "incomplete format key"));
+                    }
                 }
                 ++str;
             }
@@ -1280,7 +1347,12 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         }
 
         if (str >= top) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incomplete format"));
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                terse_str_format_value_error();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                    "incomplete format"));
+            }
         }
 
         // Tuple value lookup
@@ -1297,25 +1369,17 @@ not_enough_args:
                     mp_uint_t len;
                     const char *s = mp_obj_str_get_data(arg, &len);
                     if (len != 1) {
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "%%c requires int or char"));
-                        break;
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                            "%%c requires int or char"));
                     }
                     pfenv_print_strn(&pfenv_vstr, s, 1, flags, ' ', width);
-                    break;
-                }
-                if (arg_looks_integer(arg)) {
+                } else if (arg_looks_integer(arg)) {
                     char ch = mp_obj_get_int(arg);
                     pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, ' ', width);
-                    break;
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                        "integer required"));
                 }
-#if MICROPY_PY_BUILTINS_FLOAT
-                // This is what CPython reports, so we report the same.
-                if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "integer argument expected, got float"));
-
-                }
-#endif
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "an integer is required"));
                 break;
 
             case 'd':
@@ -1366,9 +1430,13 @@ not_enough_args:
                 break;
 
             default:
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "unsupported format character '%c' (0x%x) at index %d",
-                    *str, *str, str - start_str));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        "unsupported format character '%c' (0x%x) at index %d",
+                        *str, *str, str - start_str));
+                }
         }
     }
 
@@ -1871,7 +1939,14 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
 }
 
 STATIC void bad_implicit_conversion(mp_obj_t self_in) {
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Can't convert '%s' object to str implicitly", mp_obj_get_type_str(self_in)));
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+            "can't convert to str implicitly"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            "can't convert '%s' object to str implicitly",
+            mp_obj_get_type_str(self_in)));
+    }
 }
 
 STATIC void arg_type_mixup() {
