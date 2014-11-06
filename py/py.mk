@@ -137,13 +137,6 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/mak
 	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h $(QSTR_DEFS) > $@
 
-# We don't know which source files actually need the generated.h (since
-# it is #included from str.h). The compiler generated dependencies will cause
-# the right .o's to get recompiled if the generated.h file changes. Adding
-# an order-only dependendency to all of the .o's will cause the generated .h
-# to get built before we try to compile any of them.
-$(PY_O): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/py-version.h
-
 # emitters
 
 $(PY_BUILD)/emitnx64.o: CFLAGS += -DN_X64
