@@ -53,13 +53,20 @@ $(BUILD)/%.pp: %.c
 # prerequisites only get built if they don't exist. They don't cause timestamp
 # checking to be performed.
 #
+# We don't know which source files actually need the generated.h (since
+# it is #included from str.h). The compiler generated dependencies will cause
+# the right .o's to get recompiled if the generated.h file changes. Adding
+# an order-only dependendency to all of the .o's will cause the generated .h
+# to get built before we try to compile any of them.
+$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/py-version.h
+
 # $(sort $(var)) removes duplicates
 #
 # The net effect of this, is it causes the objects to depend on the
 # object directories (but only for existence), and the object directories
 # will be created if they don't exist.
 OBJ_DIRS = $(sort $(dir $(OBJ)))
-$(OBJ): $(HEADER_BUILD)/qstrdefs.generated.h | $(OBJ_DIRS)
+$(OBJ): | $(OBJ_DIRS)
 $(OBJ_DIRS):
 	$(MKDIR) -p $@
 
