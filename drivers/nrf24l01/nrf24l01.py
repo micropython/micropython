@@ -1,4 +1,11 @@
-"""NRF24L01 driver for Micro Python"""
+"""NRF24L01 driver for Micro Python
+
+Support for nonblocking send added. Minor fixes:
+Timeout now uses pyb.elapsed_millis().
+Channel numbers constrained to 125 as per datasheet.
+Status register read with reg_read() - reg_read_ret_status() removed.
+Default speed 250K for improved range/error rate.
+"""
 
 import pyb
 
@@ -69,8 +76,10 @@ class NRF24L01:
         self.pipe0_read_addr = None
         pyb.delay(5)
 
-        # set address width to 5 bytes
+        # set address width to 5 bytes and check for device present
         self.reg_write(SETUP_AW, 0b11)
+        if self.reg_read(SETUP_AW) != 0b11:
+            raise OSError("nRF24l01+ Hardware not responding")
 
         # disable dynamic payloads
         self.reg_write(DYNPD, 0)
@@ -80,7 +89,7 @@ class NRF24L01:
         self.reg_write(SETUP_RETR, (6 << 4) | 8)
 
         # set rf power and speed
-        self.set_power_speed(POWER_3, SPEED_1M)
+        self.set_power_speed(POWER_3, SPEED_250K) # Best for point to point links
 
         # init CRC
         self.set_crc(2)
@@ -101,13 +110,6 @@ class NRF24L01:
         buf = self.spi.recv(1)
         self.cs.high()
         return buf[0]
-
-    def reg_read_ret_status(self, reg):
-        self.cs.low()
-        status = self.spi.send_recv(reg)[0]
-        buf = self.spi.recv(1)
-        self.cs.high()
-        return status
 
     def reg_write(self, reg, buf):
         self.cs.low()
@@ -143,7 +145,7 @@ class NRF24L01:
         self.reg_write(CONFIG, config)
 
     def set_channel(self, channel):
-        self.reg_write(RF_CH, min(channel, 127))
+        self.reg_write(RF_CH, min(channel, 125)) # Changed from 127
 
     # address should be a bytes object 5 bytes long
     def open_tx_pipe(self, address):
@@ -194,41 +196,55 @@ class NRF24L01:
         self.spi.send(R_RX_PAYLOAD)
         buf = self.spi.recv(self.payload_size)
         self.cs.high()
-
         # clear RX ready flag
         self.reg_write(STATUS, RX_DR)
 
         return buf
 
-    def send(self, buf, timeout=500):
-        # power up
-        self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
-        pyb.udelay(150)
-
-        # send the data
-        self.cs.low()
-        self.spi.send(W_TX_PAYLOAD)
-        self.spi.send(buf)
-        if len(buf) < self.payload_size:
-            self.spi.send(b'\x00' * (self.payload_size - len(buf))) # pad out data
-        self.cs.high()
-
-        # enable the chip so it can send the data
-        self.ce.high()
-        pyb.udelay(15) # needs to be >10us
-        self.ce.low()
-
         # blocking wait for tx complete
+    def send(self, buf, timeout=500):
+        send_nonblock = self.send_nonblocking(buf)
         start = pyb.millis()
-        while pyb.millis() - start < timeout:
-            status = self.reg_read_ret_status(OBSERVE_TX)
-            if status & (TX_DS | MAX_RT):
-                break
-
-        # get and clear all status flags
-        status = self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
-        if not (status & TX_DS):
+        result = None
+        while result is None and (pyb.elapsed_millis(start) < timeout):
+            result = send_nonblock() # 1 == success 2 == fail
+        if result == 2:
             raise OSError("send failed")
 
-        # power down
-        self.reg_write(CONFIG, self.reg_read(CONFIG) & ~PWR_UP)
+    def send_nonblocking(self, buf):
+        '''
+        Support for nonblocking transmission. Returns a function instance.
+        The first call to a function instance sends the data and returns None.
+        Subsequent calls test TX status returning not ready None, ready 1, error 2.
+        '''
+        init = True
+        def make_snb():
+            nonlocal init
+            if init:
+                # power up
+                self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
+                pyb.udelay(150)
+
+                # send the data
+                self.cs.low()
+                self.spi.send(W_TX_PAYLOAD)
+                self.spi.send(buf)
+                if len(buf) < self.payload_size:
+                    self.spi.send(b'\x00' * (self.payload_size - len(buf))) # pad out data
+                self.cs.high()
+
+                # enable the chip so it can send the data
+                self.ce.high()
+                pyb.udelay(15) # needs to be >10us
+                self.ce.low()
+                init = False
+                return None # Not ready
+
+            if not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
+                return None # Not ready
+            # Either ready or failed: get and clear status flags, power down
+            status = self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
+            self.reg_write(CONFIG, self.reg_read(CONFIG) & ~PWR_UP)
+            return 1 if status & TX_DS else 2
+        return make_snb
+
