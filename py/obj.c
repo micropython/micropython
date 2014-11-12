@@ -172,17 +172,25 @@ mp_int_t mp_obj_hash(mp_obj_t o_in) {
         return mp_obj_tuple_hash(o_in);
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_type)) {
         return (mp_int_t)o_in;
-
-    // TODO hash class and instances
-    // TODO delegate to __hash__ method if it exists
-
-    } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unhashable type"));
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "unhashable type: '%s'", mp_obj_get_type_str(o_in)));
+    } else if (MP_OBJ_IS_OBJ(o_in)) {
+        // if a valid __hash__ method exists, use it
+        mp_obj_t hash_method[2];
+        mp_load_method_maybe(o_in, MP_QSTR___hash__, hash_method);
+        if (hash_method[0] != MP_OBJ_NULL) {
+            mp_obj_t hash_val = mp_call_method_n_kw(0, 0, hash_method);
+            if (MP_OBJ_IS_INT(hash_val)) {
+                return mp_obj_int_get(hash_val);
+            }
         }
+    }
+
+    // TODO hash class and instances - in CPython by default user created classes' __hash__ resolves to their id
+
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "unhashable type"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            "unhashable type: '%s'", mp_obj_get_type_str(o_in)));
     }
 }
 
