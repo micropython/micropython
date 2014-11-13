@@ -474,6 +474,7 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
             filter.FilterIdHigh     = args[5].u_int << 5;  //id2
             filter.FilterMaskIdHigh = args[9].u_int << 5;  //mask2
         }
+
         filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         break;
@@ -489,11 +490,13 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
             filter.FilterIdHigh     = args[6].u_int << 5;  //id3
             filter.FilterMaskIdHigh = args[7].u_int << 5;  //id4
         }
+
         filter.FilterMode  = CAN_FILTERMODE_IDLIST;
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         break;
     case MASK32:
         //Note that using 32bit filters with basic frames are not supported.
+
         filter.FilterIdHigh     = (args[4].u_int & 0xFF00)  >> 13;     //id1
         filter.FilterIdLow      = ((args[4].u_int & 0x00FF) << 3) | 4;
         filter.FilterMaskIdHigh = (args[8].u_int & 0xFF00 ) >> 13;     //mask1
@@ -530,7 +533,6 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
         filter.FilterActivation = DISABLE;
     }
     filter.BankNumber = CAN2StartBank;
-
     HAL_CAN_ConfigFilter(&self->can, &filter);
 
     return mp_const_none;
