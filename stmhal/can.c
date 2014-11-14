@@ -391,7 +391,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     tuple->items[3] = mp_obj_str_builder_end(tuple->items[3]);
 
     //for debugging //TODO remove this before committing
-    if (1){
+    if (0){
         printf("StdId %0x\n", (unsigned int)rx_msg.StdId);
         printf("ExtId %0x\n", (unsigned int)rx_msg.ExtId);
         printf("IDE %u\n", (unsigned int)rx_msg.IDE);
@@ -490,7 +490,7 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
             filter.FilterIdHigh     = args[5].u_int << 5;  //id2
             filter.FilterMaskIdHigh = args[9].u_int << 5;  //mask2
         }
-        filter.FilterMode = CAN_FILTERMODE_IDMASK;
+        filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         break;
     case LIST16:
@@ -505,15 +505,15 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
             filter.FilterIdHigh     = args[6].u_int << 5;  //id3
             filter.FilterMaskIdHigh = args[7].u_int << 5;  //id4
         }
-        filter.FilterMode = CAN_FILTERMODE_IDLIST;
+        filter.FilterMode  = CAN_FILTERMODE_IDLIST;
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         break;
     case MASK32:
         //Note that using 32bit filters with basic frames are not supported.
-        filter.FilterIdLow      = args[4].u_int >> 16;     //id1
-        filter.FilterMaskIdLow  = args[4].u_int & 0x00FF;
-        filter.FilterIdHigh     = args[8].u_int >> 16;     //mask1
-        filter.FilterMaskIdHigh = args[8].u_int & 0x00FF;
+        filter.FilterIdHigh     = (args[4].u_int & 0xFF00)  >> 13;     //id1
+        filter.FilterIdLow      = ((args[4].u_int & 0x00FF) << 3) | 4;
+        filter.FilterMaskIdHigh = (args[8].u_int & 0xFF00 ) >> 13;     //mask1
+        filter.FilterMaskIdLow  = ((args[8].u_int & 0x00FF) << 3) | 4;
         filter.FilterMode       = CAN_FILTERMODE_IDMASK;
         filter.FilterScale      = CAN_FILTERSCALE_32BIT;
         break;
@@ -547,7 +547,7 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
     }
     filter.BankNumber = CAN2StartBank;
     //TODO Remove before committing
-    if (1) {
+    if (0) {
         printf("IdHigh     %0x\n", (unsigned int)filter.FilterIdHigh);
         printf("IdLow      %0x\n", (unsigned int)filter.FilterIdLow);
         printf("MaskIdHigh %0x\n", (unsigned int)filter.FilterMaskIdHigh);
