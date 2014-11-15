@@ -92,6 +92,13 @@ typedef unsigned int mp_uint_t; // must be pointer size
 // define standard endianness macros.
 #define MP_ENDIANNESS_LITTLE (1)
 
+// Cannot include <sys/types.h>, as it may lead to symbol name clashes
+#if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
+typedef long long mp_off_t;
+#else
+typedef long mp_off_t;
+#endif
+
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
