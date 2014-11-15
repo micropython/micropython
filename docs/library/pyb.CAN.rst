@@ -44,9 +44,32 @@ Methods
    Initialise the CAN bus with the given parameters:
    
      - ``mode`` is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
+     - if ``extframe`` is True then the bus uses extended identifiers in the frames
+       (29 bits); otherwise it uses standard 11 bit identifiers
+     - ``prescaler`` is used to set the duration of 1 time quanta; the time quanta
+       will be the input clock (PCLK1, see :meth:`pyb.freq()`) divided by the prescaler
+     - ``sjw`` is the resynchronisation jump width in units of the time quanta;
+       it can be 1, 2, 3, 4
+     - ``bs1`` defines the location of the sample point in units of the time quanta;
+       it can be between 1 and 1024 inclusive
+     - ``bs2`` defines the location of the transmit point in units of the time quanta;
+       it can be between 1 and 16 inclusive
 
-   If ``extframe`` is True then the bus uses extended identifiers in the frames (29 bits).
-   Otherwise it uses standard 11 bit identifiers.
+   The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
+   prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);
+   see :meth:`pyb.freq()` to determine PCLK1.
+
+   A single bit is made up of the synchronisation segment, which is always 1 tq.
+   Then follows bit segment 1, then bit segment 2.  The sample point is after bit
+   segment 1 finishes.  The transmit point is after bit segment 2 finishes.
+   The baud rate will be 1/bittime, where the bittime is 1 + BS1 + BS2 multiplied
+   by the time quanta tq.
+
+   For example, with PCLK1=42MHz, prescaler=100, sjw=1, bs1=6, bs2=8, the value of
+   tq is 2.38 microseconds.  The bittime is 35.7 microseconds, and the baudrate
+   is 28kHz.
+
+   See page 680 of the STM32F405 datasheet for more details.
 
 .. method:: can.deinit()
 
