@@ -292,12 +292,10 @@ STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return ret;
 }
 
-STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
-    va_list vargs;
-    va_start(vargs, errcode);
+STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
-        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        mp_uint_t flags = arg;
         ret = 0;
         if ((flags & MP_IOCTL_POLL_RD) && USBD_CDC_RxNum() > 0) {
             ret |= MP_IOCTL_POLL_RD;
@@ -309,7 +307,6 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, int *err
         *errcode = EINVAL;
         ret = MP_STREAM_ERROR;
     }
-    va_end(vargs);
     return ret;
 }
 

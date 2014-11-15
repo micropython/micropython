@@ -424,13 +424,11 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_can_locals_dict, pyb_can_locals_dict_table);
 
-mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
+mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     pyb_can_obj_t *self = self_in;
-    va_list vargs;
-    va_start(vargs, errcode);
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
-        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        mp_uint_t flags = arg;
         ret = 0;
         if ((flags & MP_IOCTL_POLL_RD)
             && ((__HAL_CAN_MSG_PENDING(&self->can, CAN_FIFO0) != 0)
@@ -444,7 +442,6 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
         *errcode = EINVAL;
         ret = -1;
     }
-    va_end(vargs);
     return ret;
 }
 
