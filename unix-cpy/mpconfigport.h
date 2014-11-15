@@ -48,6 +48,7 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef double machine_float_t;
+typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
