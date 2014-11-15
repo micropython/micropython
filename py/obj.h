@@ -231,8 +231,6 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 // Stream protocol
 #define MP_STREAM_ERROR (-1)
-#define MP_STREAM_FLUSH (1)
-#define MP_STREAM_POLL  (2)
 typedef struct _mp_stream_p_t {
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
@@ -241,6 +239,17 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, mp_uint_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
+
+// Stream ioctl request codes
+#define MP_STREAM_FLUSH (1)
+#define MP_STREAM_SEEK  (2)
+#define MP_STREAM_POLL  (3)
+
+// Argument structure for MP_STREAM_SEEK
+struct mp_seek_ioctl {
+    mp_off_t offset;
+    int whence;
+};
 
 struct _mp_obj_type_t {
     mp_obj_base_t base;

@@ -380,6 +380,32 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     return MP_OBJ_STOP_ITERATION;
 }
 
+STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
+    }
+
+    struct mp_seek_ioctl seek_s;
+    // TODO: Could be uint64
+    seek_s.offset = mp_obj_get_int(args[1]);
+    seek_s.whence = 0;
+    if (n_args == 3) {
+        seek_s.whence = mp_obj_get_int(args[2]);
+    }
+
+    int error;
+    mp_uint_t res = o->type->stream_p->ioctl(o, MP_STREAM_SEEK, (mp_uint_t)&seek_s, &error);
+    if (res == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    }
+
+    // TODO: Could be uint64
+    return mp_obj_new_int_from_uint(seek_s.offset);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
