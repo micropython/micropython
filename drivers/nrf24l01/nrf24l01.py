@@ -227,7 +227,6 @@ class NRF24L01:
         self.ce.high()
         pyb.udelay(15) # needs to be >10us
         self.ce.low()
-        init = False
         yield None # Not ready
 
         while not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
