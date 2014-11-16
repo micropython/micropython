@@ -134,7 +134,7 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
-    const char *caps[caps_num];
+    const char **caps = alloca(caps_num * sizeof(char*));
     while (true) {
         int res = re1_5_recursiveloopprog(&self->re, &subj, caps, caps_num, false);
 
