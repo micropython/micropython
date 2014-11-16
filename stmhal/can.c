@@ -384,16 +384,6 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     tuple->items[3] = mp_obj_str_builder_end(tuple->items[3]);
 
-    //for debugging //TODO remove this before committing
-    if (0){
-        printf("StdId %0x\n", (unsigned int)rx_msg.StdId);
-        printf("ExtId %0x\n", (unsigned int)rx_msg.ExtId);
-        printf("IDE %u\n", (unsigned int)rx_msg.IDE);
-        printf("RTR %u\n", (unsigned int)rx_msg.RTR);
-        printf("DLC %u\n", (unsigned int)rx_msg.DLC);
-        printf("FMI %u\n", (unsigned int)rx_msg.FMI);
-    }
-
     return tuple;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
@@ -540,19 +530,6 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
         filter.FilterActivation = DISABLE;
     }
     filter.BankNumber = CAN2StartBank;
-    //TODO Remove before committing
-    if (0) {
-        printf("IdHigh     %0x\n", (unsigned int)filter.FilterIdHigh);
-        printf("IdLow      %0x\n", (unsigned int)filter.FilterIdLow);
-        printf("MaskIdHigh %0x\n", (unsigned int)filter.FilterMaskIdHigh);
-        printf("MaskIdLow  %0x\n", (unsigned int)filter.FilterMaskIdLow);
-        printf("FIFO       %u\n", (unsigned int)filter.FilterFIFOAssignment);
-        printf("FiltNumber %u\n", (unsigned int)filter.FilterNumber);
-        printf("Mode       %u\n", (unsigned int)filter.FilterMode);
-        printf("Scale      %u\n", (unsigned int)filter.FilterScale);
-        printf("Enable     %u\n", (unsigned int)filter.FilterActivation);
-        printf("BankNum    %u\n", (unsigned int)filter.BankNumber);
-    }
 
     HAL_CAN_ConfigFilter(&self->can, &filter);
 
