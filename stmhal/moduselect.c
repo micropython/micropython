@@ -44,7 +44,7 @@
 
 typedef struct _poll_obj_t {
     mp_obj_t obj;
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, mp_uint_t arg, int *errcode);
     mp_uint_t flags;
     mp_uint_t flags_ret;
 } poll_obj_t;
@@ -85,7 +85,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
 
         poll_obj_t *poll_obj = (poll_obj_t*)poll_map->table[i].value;
         int errcode;
-        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_IOCTL_POLL, &errcode, poll_obj->flags);
+        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_IOCTL_POLL, poll_obj->flags, &errcode);
         poll_obj->flags_ret = ret;
 
         if (ret == -1) {
