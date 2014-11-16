@@ -30,3 +30,6 @@
 
 #include <mpconfigport.h>
 #define MICROPY_PY___FILE__ (0)
+// 91 is a magic number proposed by @dpgeorge, which make pystone run ~ at tie
+// with CPython 3.4.
+#define MICROPY_MODULE_DICT_SIZE (91)

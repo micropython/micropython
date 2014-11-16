@@ -1,3 +1,5 @@
+.. _pyb.UART:
+
 class UART -- duplex serial communication bus
 =============================================
 

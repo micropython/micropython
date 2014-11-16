@@ -358,7 +358,7 @@ void mp_set_clear(mp_set_t *set) {
     set->table = NULL;
 }
 
-#if DEBUG_PRINT
+#if defined(DEBUG_PRINT) && DEBUG_PRINT
 void mp_map_dump(mp_map_t *map) {
     for (mp_uint_t i = 0; i < map->alloc; i++) {
         if (map->table[i].key != NULL) {

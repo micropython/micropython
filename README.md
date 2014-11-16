@@ -98,3 +98,18 @@ AUR.  If the above does not work it may be because you don't have the
 correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV10/firmware.dfu
+
+Building the documentation locally
+----------------------------------
+
+Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
+preferably in a virtualenv:
+
+     pip install sphinx
+     pip install sphinx_rtd_theme
+
+In `micropython/docs`, build the docs:
+
+    make html
+
+You'll find the index page at `micropython/docs/build/html/index.html`.

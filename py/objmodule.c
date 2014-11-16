@@ -96,7 +96,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &mp_type_module;
     o->name = module_name;
-    o->globals = mp_obj_new_dict(1);
+    o->globals = mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE);
 
     // store __name__ entry in the module
     mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));

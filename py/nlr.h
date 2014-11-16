@@ -36,7 +36,7 @@ struct _nlr_buf_t {
     // the entries here must all be machine word size
     nlr_buf_t *prev;
     void *ret_val;
-#if !MICROPY_NLR_SETJMP
+#if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
 #if defined(__i386__)
     void *regs[6];
 #elif defined(__x86_64__)

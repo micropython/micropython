@@ -1,3 +1,5 @@
+.. _pyb.SPI:
+
 class SPI -- a master-driven serial protocol
 ============================================
 

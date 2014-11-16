@@ -1,10 +1,11 @@
-:mod:`select` -- Provides select function to wait for events on a stream
+:mod:`select` -- wait for events on a set of streams
 ========================================================================
 
 .. module:: select
-   :synopsis: Provides select function to wait for events on a stream
+   :synopsis: wait for events on a set of streams
 
-This module provides the select function.
+This module provides functions to wait for events on streams (select streams
+which are ready for operations).
 
 Pyboard specifics
 -----------------
@@ -23,6 +24,9 @@ Functions
 .. function:: select(rlist, wlist, xlist[, timeout])
 
    Wait for activity on a set of objects.
+
+   This function is provided for compatibility and is not efficient. Usage
+   of :class:`Poll` is recommended instead.
 
 .. _class: Poll
 
@@ -47,6 +51,7 @@ Methods
 
 .. method:: poll.poll([timeout])
 
-   Wait for one of the registered objects to become ready.
+   Wait for at least one of the registered objects to become ready. Returns
+   list of ready objects, or empty list on timeout.
 
    Timeout is in milliseconds.

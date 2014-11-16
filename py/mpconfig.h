@@ -100,6 +100,11 @@
 #define MICROPY_ALLOC_PATH_MAX (512)
 #endif
 
+// Initial size of module dict
+#ifndef MICROPY_MODULE_DICT_SIZE
+#define MICROPY_MODULE_DICT_SIZE (1)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
@@ -179,8 +184,8 @@
 #endif
 
 // Whether to enable finalisers in the garbage collector (ie call __del__)
-#ifndef MICROPY_ENABLE_GC_FINALISER
-#define MICROPY_ENABLE_GC_FINALISER (0)
+#ifndef MICROPY_ENABLE_FINALISER
+#define MICROPY_ENABLE_FINALISER (0)
 #endif
 
 // Whether to check C stack usage. C stack used for calling Python functions,
@@ -233,7 +238,7 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_DOC_STRING (0)
 #endif
 
-// Exception messages are short static strings (TODO)
+// Exception messages are short static strings
 #define MICROPY_ERROR_REPORTING_TERSE    (1)
 // Exception messages provide basic error details
 #define MICROPY_ERROR_REPORTING_NORMAL   (2)

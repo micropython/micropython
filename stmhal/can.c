@@ -164,21 +164,15 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
     }
 }
 
-/// \method init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
-///
-/// Initialise the CAN bus with the given parameters:
-///
-///   - `mode` is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
+// init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_extframe,     MP_ARG_BOOL,                    {.u_bool = false} },
         { MP_QSTR_prescaler,    MP_ARG_INT,                     {.u_int  = 100} },
-        /*
         { MP_QSTR_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 1} },
         { MP_QSTR_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 6} },
         { MP_QSTR_bs2,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 8} },
-        */
     };
 
     // parse args
@@ -192,9 +186,9 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const
     CAN_InitTypeDef *init = &self->can.Init;
     init->Mode = args[0].u_int << 4; // shift-left so modes fit in a small-int
     init->Prescaler = args[2].u_int;
-    init->SJW = CAN_SJW_1TQ; // TODO set from args
-    init->BS1 = CAN_BS1_6TQ; // TODO set from args
-    init->BS2 = CAN_BS2_8TQ; // TODO set from args
+    init->SJW = ((args[3].u_int - 1) & 3) << 24;
+    init->BS1 = ((args[4].u_int - 1) & 0xf) << 16;
+    init->BS2 = ((args[5].u_int - 1) & 7) << 20;
     init->TTCM = DISABLE;
     init->ABOM = DISABLE;
     init->AWUM = DISABLE;

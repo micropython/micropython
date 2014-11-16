@@ -44,6 +44,7 @@
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
+#define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -746,7 +747,9 @@ void gc_dump_alloc_table(void) {
                 if (*ptr == (mp_uint_t)&mp_type_tuple) { c = 'T'; }
                 else if (*ptr == (mp_uint_t)&mp_type_list) { c = 'L'; }
                 else if (*ptr == (mp_uint_t)&mp_type_dict) { c = 'D'; }
+                #if MICROPY_PY_BUILTINS_FLOAT
                 else if (*ptr == (mp_uint_t)&mp_type_float) { c = 'F'; }
+                #endif
                 else if (*ptr == (mp_uint_t)&mp_type_fun_bc) { c = 'B'; }
                 else if (*ptr == (mp_uint_t)&mp_type_module) { c = 'M'; }
                 else { c = 'h'; }

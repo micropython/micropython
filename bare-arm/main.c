@@ -78,6 +78,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 void nlr_jump_fail(void *val) {
 }
 
+void NORETURN __fatal_error(const char *msg) {
+    while (1);
+}
+
+#ifndef NDEBUG
+void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    __fatal_error("Assertion failed");
+}
+#endif
+
 /*
 int _lseek() {return 0;}
 int _read() {return 0;}

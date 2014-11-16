@@ -41,7 +41,7 @@ typedef enum {
     USB_STORAGE_MEDIUM_SDCARD,
 } usb_storage_medium_t;
 
-const mp_obj_type_t pyb_usb_vcp_type;
+extern const mp_obj_type_t pyb_usb_vcp_type;
 
 void pyb_usb_init0(void);
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);

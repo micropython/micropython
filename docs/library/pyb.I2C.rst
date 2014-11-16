@@ -1,3 +1,5 @@
+.. _pyb.I2C:
+
 class I2C -- a two-wire serial protocol
 =======================================
 
@@ -89,7 +91,7 @@ Methods
 
    Read from the memory of an I2C device:
    
-     - ``data`` can be an integer or a buffer to read into
+     - ``data`` can be an integer (number of bytes to read) or a buffer to read into
      - ``addr`` is the I2C device address
      - ``memaddr`` is the memory location within the I2C device
      - ``timeout`` is the timeout in milliseconds to wait for the read

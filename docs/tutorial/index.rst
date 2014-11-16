@@ -43,4 +43,5 @@ Tips, tricks and useful things to know
    :maxdepth: 1
    :numbered:
 
+   debounce.rst
    pass_through.rst

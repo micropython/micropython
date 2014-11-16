@@ -50,6 +50,7 @@
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
+#define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -76,17 +77,18 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 }
 
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
-    // extract the list of paths
-    mp_uint_t path_num = 0;
-    mp_obj_t *path_items;
 #if MICROPY_PY_SYS
+    // extract the list of paths
+    mp_uint_t path_num;
+    mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-#endif
 
     if (path_num == 0) {
+#endif
         // mp_sys_path is empty, so just use the given file name
         vstr_add_strn(dest, file_str, file_len);
         return stat_dir_or_file(dest);
+#if MICROPY_PY_SYS
     } else {
         // go through each path looking for a directory or file
         for (mp_uint_t i = 0; i < path_num; i++) {
@@ -107,6 +109,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // could not find a directory or file
         return MP_IMPORT_STAT_NO_EXIST;
     }
+#endif
 }
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
@@ -115,7 +118,12 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", vstr_str(file)));
+        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+                "no module named '%s'", vstr_str(file)));
+        }
     }
 
     #if MICROPY_PY___FILE__
@@ -274,7 +282,12 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                 {
                 #endif
                     // couldn't find the file, so fail
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "No module named '%s'", qstr_str(mod_name)));
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+                            "no module named '%s'", qstr_str(mod_name)));
+                    }
                 }
             } else {
                 // found the file, so get the module

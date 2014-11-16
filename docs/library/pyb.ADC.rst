@@ -1,3 +1,5 @@
+.. _pyb.ADC:
+
 class ADC -- analog to digital conversion: read analog values on a pin
 ======================================================================
 
