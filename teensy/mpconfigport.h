@@ -55,6 +55,7 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
+typedef long mp_off_t;
 
 // We have inlined IRQ functions for efficiency (they are generally
 // 1 machine instruction).
