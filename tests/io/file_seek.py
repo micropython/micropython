@@ -10,3 +10,11 @@ print(f.read(20))
 
 print(f.seek(0, 0))
 print(f.read(5))
+
+f.close()
+
+# test text mode
+f = open("io/data/file1", "rt")
+print(f.seek(6))
+print(f.read(5))
+f.close()

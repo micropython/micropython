@@ -382,7 +382,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
 
 STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
-    if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
+    if (o->type->stream_p == NULL || o->type->stream_p->ioctl == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
     }
