@@ -240,6 +240,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
+    .ioctl = fdfile_ioctl,
     .is_text = true,
 };
 
