@@ -98,14 +98,12 @@ typedef struct {
     unsigned char *pTxPacket;
     unsigned char *pRxPacket;
 } tSpiInformation;
-tSpiInformation sSpiInformation;
+STATIC tSpiInformation sSpiInformation;
 
-char spi_buffer[CC3000_RX_BUFFER_SIZE];
+STATIC char spi_buffer[CC3000_RX_BUFFER_SIZE];
 unsigned char wlan_tx_buffer[CC3000_TX_BUFFER_SIZE];
 
 STATIC const mp_obj_fun_builtin_t irq_callback_obj;
-void SpiWriteDataSynchronous(unsigned char *data, unsigned short size);
-void SpiReadDataSynchronous(unsigned char *data, unsigned short size);
 
 // set the pins to use to communicate with the CC3000
 // the arguments must be of type pin_obj_t* and SPI_HandleTypeDef*
@@ -185,17 +183,6 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
     DEBUG_printf("SpiOpen finished; IRQ.pin=%d IRQ_LINE=%d\n", PIN_IRQ->pin, PIN_IRQ->pin);
 }
 
-
-void SpiPauseSpi(void)
-{
-   extint_disable(PIN_IRQ->pin);
-}
-
-void SpiResumeSpi(void)
-{
-   extint_enable(PIN_IRQ->pin);
-}
-
 long ReadWlanInterruptPin(void)
 {
     return HAL_GPIO_ReadPin(PIN_IRQ->gpio, PIN_IRQ->pin_mask);
@@ -207,13 +194,34 @@ void WriteWlanPin(unsigned char val)
             (WLAN_ENABLE)? GPIO_PIN_SET:GPIO_PIN_RESET);
 }
 
-void __delay_cycles(volatile int x)
+STATIC void SpiWriteDataSynchronous(unsigned char *data, unsigned short size)
+{
+    DEBUG_printf("SpiWriteDataSynchronous(data=%p [%x %x %x %x], size=%u)\n", data, data[0], data[1], data[2], data[3], size);
+    __disable_irq();
+    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
+        //BREAK();
+    }
+    __enable_irq();
+    DEBUG_printf(" - rx data = [%x %x %x %x]\n", data[0], data[1], data[2], data[3]);
+}
+
+STATIC void SpiReadDataSynchronous(unsigned char *data, unsigned short size)
+{
+    memset(data, READ, size);
+    __disable_irq();
+    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
+       //BREAK();
+    }
+    __enable_irq();
+}
+
+STATIC void __delay_cycles(volatile int x)
 {
     x *= 6; // for 168 MHz CPU
     while (x--);
 }
 
-long SpiFirstWrite(unsigned char *ucBuf, unsigned short usLength)
+STATIC long SpiFirstWrite(unsigned char *ucBuf, unsigned short usLength)
 {
     DEBUG_printf("SpiFirstWrite %lu\n", sSpiInformation.ulSpiState);
 
@@ -308,28 +316,9 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
     return(0);
 }
 
-void SpiWriteDataSynchronous(unsigned char *data, unsigned short size)
-{
-    DEBUG_printf("SpiWriteDataSynchronous(data=%p [%x %x %x %x], size=%u)\n", data, data[0], data[1], data[2], data[3], size);
-    __disable_irq();
-    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
-        //BREAK();
-    }
-    __enable_irq();
-    DEBUG_printf(" - rx data = [%x %x %x %x]\n", data[0], data[1], data[2], data[3]);
-}
-
-void SpiReadDataSynchronous(unsigned char *data, unsigned short size)
-{
-    memset(data, READ, size);
-    __disable_irq();
-    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
-       //BREAK();
-    }
-    __enable_irq();
-}
-
-void SpiReadPacket(void)
+#if 0
+unused
+STATIC void SpiReadPacket(void)
 {
     int length;
 
@@ -344,13 +333,14 @@ void SpiReadPacket(void)
 
     sSpiInformation.ulSpiState = eSPI_STATE_READ_EOT;
 }
+#endif
 
-void SpiReadHeader(void)
+STATIC void SpiReadHeader(void)
 {
     SpiReadDataSynchronous(sSpiInformation.pRxPacket, 10);
 }
 
-void SpiTriggerRxProcessing(void)
+STATIC void SpiTriggerRxProcessing(void)
 {
     SpiPauseSpi();
     CS_HIGH();
@@ -367,7 +357,7 @@ void SpiTriggerRxProcessing(void)
 }
 
 
-long SpiReadDataCont(void)
+STATIC long SpiReadDataCont(void)
 {
     long data_to_recv=0;
     unsigned char *evnt_buff, type;
@@ -413,7 +403,7 @@ long SpiReadDataCont(void)
     return 0;
 }
 
-void SSIContReadOperation(void)
+STATIC void SSIContReadOperation(void)
 {
     // The header was read - continue with  the payload read
     if (!SpiReadDataCont()) {
@@ -423,8 +413,7 @@ void SSIContReadOperation(void)
     }
 }
 
-STATIC mp_obj_t irq_callback(mp_obj_t line)
-{
+STATIC mp_obj_t irq_callback(mp_obj_t line) {
     DEBUG_printf("<< IRQ; state=%lu >>\n", sSpiInformation.ulSpiState);
     switch (sSpiInformation.ulSpiState) {
         case eSPI_STATE_POWERUP:
@@ -459,3 +448,13 @@ STATIC mp_obj_t irq_callback(mp_obj_t line)
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(irq_callback_obj, irq_callback);
+
+void SpiPauseSpi(void) {
+    DEBUG_printf("SpiPauseSpi\n");
+    extint_disable(PIN_IRQ->pin);
+}
+
+void SpiResumeSpi(void) {
+    DEBUG_printf("SpiResumeSpi\n");
+    extint_enable(PIN_IRQ->pin);
+}

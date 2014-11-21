@@ -65,7 +65,6 @@ extern void SpiClose(void);
 extern void SpiPauseSpi(void);
 extern void SpiResumeSpi(void);
 extern long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength);
-extern void SpiResumeSpi(void);
 extern void SpiConfigureHwMapping(void);
 extern void SpiCleanGPIOISR(void);
 extern void SSIConfigure(unsigned long ulSSIFreq, unsigned long bForceGpioConfiguration, unsigned long uiReconfigureSysClock);
