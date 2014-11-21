@@ -221,6 +221,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UHEAPQ
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheapq), (mp_obj_t)&mp_module_uheapq },
 #endif
+#if MICROPY_PY_UHASHLIB
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
