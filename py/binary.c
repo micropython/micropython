@@ -61,6 +61,10 @@ int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
                     size = 8; break;
                 case 'P': case 'O': case 'S':
                     size = sizeof(void*); break;
+                case 'f':
+                    size = sizeof(float); break;
+                case 'd':
+                    size = sizeof(double); break;
             }
             break;
         case '@': {
@@ -90,6 +94,12 @@ int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
                 case 'P': case 'O': case 'S':
                     align = alignof(void*);
                     size = sizeof(void*); break;
+                case 'f':
+                    align = alignof(float);
+                    size = sizeof(float); break;
+                case 'd':
+                    align = alignof(double);
+                    size = sizeof(double); break;
             }
         }
     }
@@ -252,10 +262,10 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
     switch (typecode) {
 #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
-            ((float*)p)[index] = mp_obj_float_get(val_in);
+            ((float*)p)[index] = mp_obj_get_float(val_in);
             break;
         case 'd':
-            ((double*)p)[index] = mp_obj_float_get(val_in);
+            ((double*)p)[index] = mp_obj_get_float(val_in);
             break;
 #endif
         default:
