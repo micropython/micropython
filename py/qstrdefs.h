@@ -510,3 +510,11 @@ Q(heappush)
 Q(heappop)
 Q(heapify)
 #endif
+
+#if MICROPY_PY_UHASHLIB
+Q(uhashlib)
+Q(update)
+Q(digest)
+Q(hexdigest)
+Q(sha256)
+#endif
