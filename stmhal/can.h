@@ -27,12 +27,6 @@
 #define PYB_CAN_1 (1)
 #define PYB_CAN_2 (2)
 
-#define MASK16 (0)
-#define LIST16 (1)
-#define MASK32 (2)
-#define LIST32 (3)
-
-
 
 // aliases for pyboard
 #if defined(PYBV10)

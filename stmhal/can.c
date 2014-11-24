@@ -43,6 +43,13 @@
 
 #if MICROPY_HW_ENABLE_CAN
 
+#define MASK16 (0)
+#define LIST16 (1)
+#define MASK32 (2)
+#define LIST32 (3)
+
+static void clearfilter(uint);
+
 /// \moduleref pyb
 /// \class CAN - controller area network communication bus
 ///
@@ -71,7 +78,7 @@ typedef struct _pyb_can_obj_t {
     CAN_HandleTypeDef can;
 } pyb_can_obj_t;
 
-STATIC uint8_t CAN2StartBank = 0;
+STATIC uint8_t CAN2StartBank = 14;
 
 // assumes Init parameters have been set up correctly
 STATIC bool can_init(pyb_can_obj_t *can_obj) {
@@ -387,7 +394,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 
-/// \method initfilters(banks)
+/// \class method initfilterbanks
 ///
 /// Set up the filterbanks. All filter will be disabled and set to their reset states.
 ///
@@ -398,15 +405,28 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 ///
 ///
 /// Return value: none.
-STATIC mp_obj_t pyb_can_initfilterbanks(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_banks, MP_ARG_INT, {.u_int = 14} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+STATIC mp_obj_t pyb_can_initfilterbanks(mp_uint_t n_args, const mp_obj_t *args) {
 
-    CAN2StartBank = 28 - args[0].u_int;
+    CAN2StartBank = 28 - MP_OBJ_SMALL_INT_VALUE(args[1]);
 
+    for (uint f = 0; f < 28; f++) {
+        clearfilter(f);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_can_initfilterbanks_fun_obj, 2, 3, pyb_can_initfilterbanks);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pyb_can_initfilterbanks_obj, (const mp_obj_t)&pyb_can_initfilterbanks_fun_obj);
+
+STATIC mp_obj_t pyb_can_clearfilter(mp_obj_t self_in, mp_obj_t bank_in) {
+
+    clearfilter(mp_obj_get_int(bank_in));
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_clearfilter_obj, pyb_can_clearfilter);
+
+static void clearfilter(uint f) {
     CAN_FilterConfTypeDef filter;
 
     filter.FilterIdHigh         = 0;
@@ -414,106 +434,80 @@ STATIC mp_obj_t pyb_can_initfilterbanks(mp_uint_t n_args, const mp_obj_t *pos_ar
     filter.FilterMaskIdHigh     = 0;
     filter.FilterMaskIdLow      = 0;
     filter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-    filter.FilterNumber         = 0; // 0-27
+    filter.FilterNumber         = f;
     filter.FilterMode           = CAN_FILTERMODE_IDMASK;
     filter.FilterScale          = CAN_FILTERSCALE_16BIT;
     filter.FilterActivation     = DISABLE;
     filter.BankNumber           = CAN2StartBank;
-
-    for (uint f = 0; f < 28; f++) {
-        filter.FilterNumber = f;
-        HAL_CAN_ConfigFilter(NULL, &filter);
-    }
-
-    return mp_const_none;
+    HAL_CAN_ConfigFilter(NULL, &filter);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_initfilterbanks_obj, 1, pyb_can_initfilterbanks);
 
-
-#define EXTENDED_ID_TO_16BIT_FILTER(id) (((id & 0xC00000) >> 13) | ((id & 0x38000) >> 15)) | 8
-//TODO
-/// \method configfilter32bIDlist()
 /// Configures a filterbank
-///
-///   -
-///   -
-///   -
-///
 /// Return value: `None`.
-STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#define EXTENDED_ID_TO_16BIT_FILTER(id) (((id & 0xC00000) >> 13) | ((id & 0x38000) >> 15)) | 8
+STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bank,     MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = CAN_FILTER_FIFO0} },
-        { MP_QSTR_enable,   MP_ARG_BOOL,                   {.u_bool = true} },
-        { MP_QSTR_id1,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //4
-        { MP_QSTR_id2,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //5
-        { MP_QSTR_id3,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //6
-        { MP_QSTR_id4,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //7
-        { MP_QSTR_mask1,    MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //8
-        { MP_QSTR_mask2,    MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },  //9
+        { MP_QSTR_params,   MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
     };
+
+    mp_uint_t len;
+    mp_obj_t *params;
 
     // parse args
     pyb_can_obj_t *self = pos_args[0];
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    mp_obj_get_array(args[3].u_obj,&len,&params);
+
     CAN_FilterConfTypeDef filter;
-    switch (args[1].u_int) {
-    case MASK16:
-        if (self->extframe) {
-            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(args[4].u_int);  //id1
-            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(args[8].u_int);  //mask1
-            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(args[5].u_int);  //id2
-            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(args[9].u_int);  //mask2
-        } else {
-            filter.FilterIdLow      = args[4].u_int << 5;  //id1
-            filter.FilterMaskIdLow  = args[8].u_int << 5;  //mask1
-            filter.FilterIdHigh     = args[5].u_int << 5;  //id2
-            filter.FilterMaskIdHigh = args[9].u_int << 5;  //mask2
+    if (args[1].u_int == MASK16 || args[1].u_int == LIST16) {
+        if (len != 4) {
+            goto error;
         }
-
-        filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
-        break;
-    case LIST16:
         if (self->extframe) {
-            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(args[4].u_int);   //id1
-            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(args[5].u_int);   //id2
-            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(args[6].u_int);   //id3
-            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(args[7].u_int);   //id4
+            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[0]));  //id1
+            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[1]));  //mask1
+            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[2]));  //id2
+            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[3]));  //mask2
         } else {
-            filter.FilterIdLow      = args[4].u_int << 5;  //id1
-            filter.FilterMaskIdLow  = args[5].u_int << 5;  //id2
-            filter.FilterIdHigh     = args[6].u_int << 5;  //id3
-            filter.FilterMaskIdHigh = args[7].u_int << 5;  //id4
+            filter.FilterIdLow      = mp_obj_get_int(params[0]) << 5;  //id1
+            filter.FilterMaskIdLow  = mp_obj_get_int(params[1]) << 5;  //mask1
+            filter.FilterIdHigh     = mp_obj_get_int(params[2]) << 5;  //id2
+            filter.FilterMaskIdHigh = mp_obj_get_int(params[3]) << 5;  //mask2
         }
-
-        filter.FilterMode  = CAN_FILTERMODE_IDLIST;
-        filter.FilterScale = CAN_FILTERSCALE_16BIT;
-        break;
-    case MASK32:
-        //Note that using 32bit filters with basic frames are not supported.
-
-        filter.FilterIdHigh     = (args[4].u_int & 0xFF00)  >> 13;     //id1
-        filter.FilterIdLow      = ((args[4].u_int & 0x00FF) << 3) | 4;
-        filter.FilterMaskIdHigh = (args[8].u_int & 0xFF00 ) >> 13;     //mask1
-        filter.FilterMaskIdLow  = ((args[8].u_int & 0x00FF) << 3) | 4;
-        filter.FilterMode       = CAN_FILTERMODE_IDMASK;
+        if (args[1].u_int == MASK16) {
+            filter.FilterMode  = CAN_FILTERMODE_IDMASK;
+        }
+        if (args[1].u_int == LIST16) {
+            filter.FilterMode  = CAN_FILTERMODE_IDLIST;
+        }
+    }
+    else if (args[1].u_int == MASK32 || args[1].u_int == LIST32) {
+        if (len != 2) {
+            goto error;
+        }
         filter.FilterScale      = CAN_FILTERSCALE_32BIT;
-        break;
-    case LIST32:
-        filter.FilterIdHigh     = (args[4].u_int & 0xFF00)  >> 13;     //id1
-        filter.FilterIdLow      = ((args[4].u_int & 0x00FF) << 3) | 4;
-        filter.FilterMaskIdHigh = (args[5].u_int & 0xFF00 ) >> 13;
-        filter.FilterMaskIdLow  = ((args[5].u_int & 0x00FF) << 3) | 4; //id2
-        filter.FilterMode       = CAN_FILTERMODE_IDLIST;
-        filter.FilterScale      = CAN_FILTERSCALE_32BIT;
-        break;
-    default:
+
+        filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0xFF00)  >> 13;
+        filter.FilterIdLow      = ((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4;
+        filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0xFF00 ) >> 13;
+        filter.FilterMaskIdLow  = ((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4;
+        if (args[1].u_int == MASK32) {
+            filter.FilterMode  = CAN_FILTERMODE_IDMASK;
+        }
+        if (args[1].u_int == LIST32) {
+            filter.FilterMode  = CAN_FILTERMODE_IDLIST;
+        }
+    } else {
         goto error;
     }
+
     filter.FilterFIFOAssignment = args[2].u_int;
     filter.FilterNumber = args[0].u_int; 				//bank
     if (self->can_id == 1){
@@ -526,11 +520,7 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
     		goto error;
     	}
     }
-    if (args[3].u_bool) {
-        filter.FilterActivation = ENABLE;
-    } else {
-        filter.FilterActivation = DISABLE;
-    }
+    filter.FilterActivation = ENABLE;
     filter.BankNumber = CAN2StartBank;
     HAL_CAN_ConfigFilter(&self->can, &filter);
 
@@ -539,7 +529,7 @@ STATIC mp_obj_t pyb_can_configfilter(mp_uint_t n_args, const mp_obj_t *pos_args,
     error:
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN filter parameter error"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_configfilter_obj, 1, pyb_can_configfilter);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_setfilter_obj, 1, pyb_can_setfilter);
 
 
 STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
@@ -550,7 +540,8 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_can_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_can_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_initfilterbanks), (mp_obj_t)&pyb_can_initfilterbanks_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_configfilter), (mp_obj_t)&pyb_can_configfilter_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setfilter), (mp_obj_t)&pyb_can_setfilter_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clearfilter), (mp_obj_t)&pyb_can_clearfilter_obj },
 
     // class constants
     // Note: we use the ST constants >> 4 so they fit in a small-int.  The

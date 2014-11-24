@@ -9,7 +9,7 @@ print(can)
 print(can.any(0))
 
 #Catch all filter
-can.configfilter(0, CAN.MASK16, 0, id1=0, mask1=0, id2=0,  mask2=0)
+can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
 
 can.send('abcd', 123)
 print(can.any(0))
@@ -34,7 +34,7 @@ del can
 #Testing extended IDs
 can = CAN(1, CAN.LOOPBACK, extframe = True)
 #Catch all filter
-can.configfilter(0, CAN.MASK32, 0, id1=0, mask1=0)
+can.setfilter(0, CAN.MASK32, 0, (0, 0))
 
 print(can)
 
