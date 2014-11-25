@@ -27,6 +27,7 @@
 #define PYB_CAN_1 (1)
 #define PYB_CAN_2 (2)
 
+
 // aliases for pyboard
 #if defined(PYBV10)
 #define PYB_CAN_YA PYB_CAN_1 // CAN1 on RX,TX = Y3,Y4 = PB8,PB9

@@ -160,6 +160,7 @@ Q(RTS)
 Q(CTS)
 
 // for CAN class
+#if MICROPY_HW_ENABLE_CAN
 Q(CAN)
 Q(prescaler)
 Q(init)
@@ -174,10 +175,21 @@ Q(extframe)
 Q(sjw)
 Q(bs1)
 Q(bs2)
+Q(bank)
+Q(banks)
+Q(initfilterbanks)
+Q(setfilter)
+Q(clearfilter)
+Q(params)
+Q(MASK16)
+Q(LIST16)
+Q(MASK32)
+Q(LIST32)
 Q(NORMAL)
 Q(LOOPBACK)
 Q(SILENT)
 Q(SILENT_LOOPBACK)
+#endif
 
 // for Timer class
 Q(Timer)
