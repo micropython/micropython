@@ -148,6 +148,8 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
 } mp_map_lookup_kind_t;
 
+extern const mp_map_t mp_const_empty_map;
+
 static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, mp_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
 void mp_map_init(mp_map_t *map, mp_uint_t n);
