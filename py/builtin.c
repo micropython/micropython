@@ -89,15 +89,6 @@ STATIC mp_obj_t mp_builtin___build_class__(mp_uint_t n_args, const mp_obj_t *arg
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
-STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
-    if (o != mp_const_none) {
-        mp_obj_print(o, PRINT_REPR);
-        printf("\n");
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
-
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
@@ -451,6 +442,14 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
+
+STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
+    if (o != mp_const_none) {
+        mp_builtin_print(1, &o, &mp_const_empty_map);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
 
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();
