@@ -41,7 +41,7 @@ STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     vstr_t line;
     vstr_init(&line, 16);
     int ret = readline(&line, "");
-    if (line.len == 0 && ret == VCP_CHAR_CTRL_D) {
+    if (line.len == 0 && ret == CHAR_CTRL_D) {
         nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
     }
     mp_obj_t o = mp_obj_new_str(line.buf, line.len, false);

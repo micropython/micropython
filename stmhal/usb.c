@@ -54,7 +54,7 @@ STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 void pyb_usb_init0(void) {
     // create an exception object for interrupting by VCP
     mp_const_vcp_interrupt = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
+    USBD_CDC_SetInterrupt(-1, mp_const_vcp_interrupt);
 }
 
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
@@ -105,7 +105,7 @@ bool usb_vcp_is_connected(void) {
 
 void usb_vcp_set_interrupt_char(int c) {
     if (dev_is_enabled) {
-        if (c != VCP_CHAR_NONE) {
+        if (c != -1) {
             mp_obj_exception_clear_traceback(mp_const_vcp_interrupt);
         }
         USBD_CDC_SetInterrupt(c, mp_const_vcp_interrupt);
