@@ -11,7 +11,6 @@ SETUP_RETR  = const(0x04)
 RF_CH       = const(0x05)
 RF_SETUP    = const(0x06)
 STATUS      = const(0x07)
-OBSERVE_TX  = const(0x08)
 RX_ADDR_P0  = const(0x0a)
 TX_ADDR     = const(0x10)
 RX_PW_P0    = const(0x11)
@@ -73,7 +72,7 @@ class NRF24L01:
         # set address width to 5 bytes and check for device present
         self.reg_write(SETUP_AW, 0b11)
         if self.reg_read(SETUP_AW) != 0b11:
-            raise OSError("nRF24l01+ Hardware not responding")
+            raise OSError("nRF24L01+ Hardware not responding")
 
         # disable dynamic payloads
         self.reg_write(DYNPD, 0)
@@ -195,26 +194,21 @@ class NRF24L01:
 
         return buf
 
-        # blocking wait for tx complete
+    # blocking wait for tx complete
     def send(self, buf, timeout=500):
-        send_nonblock = self.send_nonblocking(buf)
+        send_nonblock = self.send_start(buf)
         start = pyb.millis()
         result = None
-        while result is None and (pyb.elapsed_millis(start) < timeout):
-            result = next(send_nonblock) # 1 == success 2 == fail
+        while result is None and pyb.elapsed_millis(start) < timeout:
+            result = self.send_done() # 1 == success, 2 == fail
         if result == 2:
             raise OSError("send failed")
 
-    def send_nonblocking(self, buf):
-        '''
-        Support for nonblocking transmission. Returns a generator instance.
-        First use sends the data and returns None. Subsequently tests TX status
-        returning not ready None, ready 1, error 2.
-        '''
+    # non-blocking tx
+    def send_start(self, buf):
         # power up
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
         pyb.udelay(150)
-
         # send the data
         self.cs.low()
         self.spi.send(W_TX_PAYLOAD)
@@ -227,12 +221,13 @@ class NRF24L01:
         self.ce.high()
         pyb.udelay(15) # needs to be >10us
         self.ce.low()
-        yield None # Not ready
 
-        while not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
-            yield None # Not ready
-        # Either ready or failed: get and clear status flags, power down
+    # returns None if send still in progress, 1 for success, 2 for fail
+    def send_done(self):
+        if not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
+            return None # tx not finished
+
+        # either finished or failed: get and clear status flags, power down
         status = self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
         self.reg_write(CONFIG, self.reg_read(CONFIG) & ~PWR_UP)
-        yield 1 if status & TX_DS else 2
-
+        return 1 if status & TX_DS else 2
