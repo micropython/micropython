@@ -30,12 +30,7 @@
 
 #include "mpconfig.h"
 #include "misc.h"
-#include "qstr.h"
-#include "misc.h"
-#include "obj.h"
-#include MICROPY_HAL_H
 #include "readline.h"
-#include "usb.h"
 #include "pybstdio.h"
 
 #if 0 // print debugging info
@@ -250,7 +245,5 @@ end_key:
             stdout_tx_strn(line->buf + cursor_pos, redraw_step_forward);
             cursor_pos += redraw_step_forward;
         }
-
-        HAL_Delay(1);
     }
 }
