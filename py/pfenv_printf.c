@@ -146,12 +146,14 @@ int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 1, 10, 'a', flags, fill, width);
                 break;
             case 'x':
-            case 'p': // ?
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'a', flags, fill, width);
                 break;
             case 'X':
-            case 'P': // ?
                 chrs += pfenv_print_int(pfenv, va_arg(args, int), 0, 16, 'A', flags, fill, width);
+                break;
+            case 'p':
+            case 'P': // don't bother to handle upcase for 'P'
+                chrs += pfenv_print_int(pfenv, va_arg(args, mp_uint_t), 0, 16, 'a', flags, fill, width);
                 break;
 #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
