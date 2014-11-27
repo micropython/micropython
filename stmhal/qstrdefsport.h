@@ -76,6 +76,8 @@ Q(elapsed_micros)
 Q(re)
 Q(zlib)
 Q(json)
+Q(heapq)
+Q(hashlib)
 
 // for file class
 Q(seek)
