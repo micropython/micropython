@@ -197,24 +197,18 @@ class NRF24L01:
 
         # blocking wait for tx complete
     def send(self, buf, timeout=500):
-        send_nonblock = self.send_nonblocking(buf)
+        send_nonblock = self.send_start(buf)
         start = pyb.millis()
         result = None
         while result is None and (pyb.elapsed_millis(start) < timeout):
-            result = next(send_nonblock) # 1 == success 2 == fail
+            result = self.txready() # 1 == success 2 == fail
         if result == 2:
             raise OSError("send failed")
 
-    def send_nonblocking(self, buf):
-        '''
-        Support for nonblocking transmission. Returns a generator instance.
-        First use sends the data and returns None. Subsequently tests TX status
-        returning not ready None, ready 1, error 2.
-        '''
+    def send_start(self, buf):
         # power up
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
         pyb.udelay(150)
-
         # send the data
         self.cs.low()
         self.spi.send(W_TX_PAYLOAD)
@@ -227,12 +221,13 @@ class NRF24L01:
         self.ce.high()
         pyb.udelay(15) # needs to be >10us
         self.ce.low()
-        yield None # Not ready
 
-        while not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
-            yield None # Not ready
+    def txready(self):
+        if not (self.reg_read(STATUS) & (TX_DS | MAX_RT)):
+            return None # Not ready
+
         # Either ready or failed: get and clear status flags, power down
         status = self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
         self.reg_write(CONFIG, self.reg_read(CONFIG) & ~PWR_UP)
-        yield 1 if status & TX_DS else 2
+        return 1 if status & TX_DS else 2
 
