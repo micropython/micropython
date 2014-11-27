@@ -17,7 +17,7 @@ Functions
 
 .. function:: heappop(heap)
 
-   Pop the first item froh the ``heap``, and return it.  Raises IndexError if
+   Pop the first item from the ``heap``, and return it.  Raises IndexError if
    heap is empty.
 
 .. function:: heapify(x)
