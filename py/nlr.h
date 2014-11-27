@@ -47,6 +47,8 @@ struct _nlr_buf_t {
   #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
     void *regs[10];
+#elif defined(__xtensa__)
+    void *regs[10];
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
