@@ -27,7 +27,7 @@ LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
 LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
+LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -40,6 +40,7 @@ LDFLAGS += --gc-sections
 endif
 
 SRC_C = \
+	strtoll.c \
 	main.c \
 	esp_mphal.c \
 	gccollect.c \

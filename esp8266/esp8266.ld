@@ -52,7 +52,7 @@ SECTIONS
         *(.dport.rodata)
         _dport0_rodata_end = ABSOLUTE(.);
     } >dport0_0_seg :dport0_0_phdr
-  
+
     .dport0.literal : ALIGN(4)
     {
         _dport0_literal_start = ABSOLUTE(.);
@@ -60,7 +60,7 @@ SECTIONS
         *(.dport.literal)
         _dport0_literal_end = ABSOLUTE(.);
     } >dport0_0_seg :dport0_0_phdr
-  
+
     .dport0.data : ALIGN(4)
     {
         _dport0_data_start = ABSOLUTE(.);
@@ -68,7 +68,48 @@ SECTIONS
         *(.dport.data)
         _dport0_data_end = ABSOLUTE(.);
     } >dport0_0_seg :dport0_0_phdr
-  
+
+    .irom0.text : ALIGN(4)
+    {
+        _irom0_text_start = ABSOLUTE(.);
+        *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
+        *py*.o*(.literal* .text*)
+        *gccollect.o*(.literal* .text*)
+        *gchelper.o*(.literal* .text*)
+        _irom0_text_end = ABSOLUTE(.);
+    } >irom0_0_seg :irom0_0_phdr
+
+    .text : ALIGN(4)
+    {
+        _stext = .;
+        _text_start = ABSOLUTE(.);
+        *(.entry.text)
+        *(.init.literal)
+        *(.init)
+        *(.literal .text .literal.* .text.* .stub .gnu.warning .gnu.linkonce.literal.* .gnu.linkonce.t.*.literal .gnu.linkonce.t.*)
+        *(.fini.literal)
+        *(.fini)
+        *(.gnu.version)
+        *qstr.o(.rodata.const_pool)
+        *.o(.rodata.mp_type_*)
+        /*
+        can't put these here for some reason...
+        *builtin.o(.rodata.mp_builtin_*_obj)
+        *parse.o(.rodata.rule_*)
+        */
+        _text_end = ABSOLUTE(.);
+        _etext = .;
+    } >iram1_0_seg :iram1_0_phdr
+
+    .lit4 : ALIGN(4)
+    {
+        _lit4_start = ABSOLUTE(.);
+        *(*.lit4)
+        *(.lit4.*)
+        *(.gnu.linkonce.lit4.*)
+        _lit4_end = ABSOLUTE(.);
+    } >iram1_0_seg :iram1_0_phdr
+
     .data : ALIGN(4)
     {
         _data_start = ABSOLUTE(.);
@@ -85,7 +126,7 @@ SECTIONS
         *(.jcr)
         _data_end = ABSOLUTE(.);
     } >dram0_0_seg :dram0_0_phdr
-  
+
     .rodata : ALIGN(4)
     {
         _rodata_start = ABSOLUTE(.);
@@ -123,7 +164,7 @@ SECTIONS
         _bss_table_end = ABSOLUTE(.);
         _rodata_end = ABSOLUTE(.);
     } >dram0_0_seg :dram0_0_phdr
-  
+
     .bss ALIGN(8) (NOLOAD) : ALIGN(4)
     {
         . = ALIGN (8);
@@ -145,38 +186,6 @@ SECTIONS
         _bss_end = ABSOLUTE(.);
         _heap_start = ABSOLUTE(.);
     } >dram0_0_seg :dram0_0_bss_phdr
-  
-    .irom0.text : ALIGN(4)
-    {
-        _irom0_text_start = ABSOLUTE(.);
-        *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
-        *py*.o*(.literal* .text*)
-        _irom0_text_end = ABSOLUTE(.);
-    } >irom0_0_seg :irom0_0_phdr
-  
-    .text : ALIGN(4)
-    {
-        _stext = .;
-        _text_start = ABSOLUTE(.);
-        *(.entry.text)
-        *(.init.literal)
-        *(.init)
-        *(.literal .text .literal.* .text.* .stub .gnu.warning .gnu.linkonce.literal.* .gnu.linkonce.t.*.literal .gnu.linkonce.t.*)
-        *(.fini.literal)
-        *(.fini)
-        *(.gnu.version)
-        _text_end = ABSOLUTE(.);
-        _etext = .;
-    } >iram1_0_seg :iram1_0_phdr
-  
-    .lit4 : ALIGN(4)
-    {
-        _lit4_start = ABSOLUTE(.);
-        *(*.lit4)
-        *(.lit4.*)
-        *(.gnu.linkonce.lit4.*)
-        _lit4_end = ABSOLUTE(.);
-    } >iram1_0_seg :iram1_0_phdr
 }
 
 /* get ROM code address */

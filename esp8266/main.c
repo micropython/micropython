@@ -44,6 +44,7 @@
 #include MICROPY_HAL_H
 
 void user_init(void) {
+soft_reset:
     //mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
     mp_hal_init();
     gc_init(&_heap_start, &_heap_end);
@@ -65,6 +66,8 @@ void user_init(void) {
             }
         }
     }
+
+    goto soft_reset;
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
