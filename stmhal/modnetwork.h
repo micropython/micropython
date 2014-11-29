@@ -33,13 +33,43 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+struct _mod_network_socket_obj_t;
+
 typedef struct _mod_network_nic_type_t {
     mp_obj_type_t base;
 
-    // API for a generic NIC
-    mp_obj_t (*socket)(mp_obj_t nic, int domain, int type, int fileno, int *_errno);
+    // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+
+    // API for socket operations; return -1 on error
+    int (*socket)(struct _mod_network_socket_obj_t *socket, int *_errno);
+    void (*close)(struct _mod_network_socket_obj_t *socket);
+    int (*bind)(struct _mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno);
+    int (*listen)(struct _mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno);
+    int (*accept)(struct _mod_network_socket_obj_t *socket, struct _mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno);
+    int (*connect)(struct _mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno);
+    mp_uint_t (*send)(struct _mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno);
+    mp_uint_t (*recv)(struct _mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno);
+    mp_uint_t (*sendto)(struct _mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno);
+    mp_uint_t (*recvfrom)(struct _mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno);
+    int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
+    int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
+    int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
 } mod_network_nic_type_t;
+
+typedef struct _mod_network_socket_obj_t {
+    mp_obj_base_t base;
+    mp_obj_t nic;
+    mod_network_nic_type_t *nic_type;
+    union {
+        struct {
+            uint8_t domain;
+            uint8_t type;
+            int8_t fileno;
+        } u_param;
+        mp_uint_t u_state;
+    };
+} mod_network_socket_obj_t;
 
 extern struct _mp_obj_list_t mod_network_nic_list;
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
@@ -47,8 +77,11 @@ extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 void mod_network_init(void);
 void mod_network_register_nic(mp_obj_t nic);
+mp_obj_t mod_network_find_nic(const uint8_t *ip);
 
+void mod_network_convert_ipv4_endianness(uint8_t *ip);
 void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip);
 mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip);
+mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
 mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
 mp_obj_t mod_network_format_inet_addr(uint8_t *ip, mp_uint_t port);

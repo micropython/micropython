@@ -196,7 +196,7 @@ ifeq ($(MICROPY_PY_WIZNET5K),1)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=1
-SRC_MOD += modwiznet5k.c
+SRC_MOD += modnwwiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	ethernet/w5200/w5200.c \
 	ethernet/wizchip_conf.c \
@@ -210,7 +210,7 @@ ifeq ($(MICROPY_PY_CC3K),1)
 CC3000_DIR=drivers/cc3000
 INC += -I$(TOP)/$(CC3000_DIR)/inc
 CFLAGS_MOD += -DMICROPY_PY_CC3K=1
-SRC_MOD += modcc3k.c
+SRC_MOD += modnwcc3k.c
 SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	cc3000_common.c \
 	evnt_handler.c \
