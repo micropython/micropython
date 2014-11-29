@@ -106,8 +106,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
         .map = { \
             .all_keys_are_qstrs = 1, \
             .table_is_fixed_array = 1, \
-            .used = sizeof(table_name) / sizeof(mp_map_elem_t), \
-            .alloc = sizeof(table_name) / sizeof(mp_map_elem_t), \
+            .used = MP_ARRAY_SIZE(table_name), \
+            .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)table_name, \
         }, \
     }

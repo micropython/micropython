@@ -126,16 +126,7 @@ STATIC const mp_map_elem_t stm_module_globals_table[] = {
 #include "modstmconst.gen.c"
 };
 
-STATIC const mp_obj_dict_t stm_module_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(stm_module_globals_table),
-        .alloc = MP_ARRAY_SIZE(stm_module_globals_table),
-        .table = (mp_map_elem_t*)stm_module_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },
