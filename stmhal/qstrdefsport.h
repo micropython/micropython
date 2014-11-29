@@ -85,6 +85,7 @@ Q(tell)
 
 // for USB VCP class
 Q(USB_VCP)
+Q(setinterrupt)
 Q(send)
 Q(recv)
 Q(timeout)

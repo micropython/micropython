@@ -174,6 +174,12 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint
     return (mp_obj_t)&pyb_usb_vcp_obj;
 }
 
+STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) {
+    usb_vcp_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
+
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_usb_vcp_any(mp_obj_t self_in) {
@@ -252,6 +258,7 @@ mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
 
 STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setinterrupt), (mp_obj_t)&pyb_usb_vcp_setinterrupt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usb_vcp_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_vcp_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_vcp_recv_obj },

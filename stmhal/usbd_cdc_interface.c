@@ -482,7 +482,7 @@ int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     for (uint32_t i = 0; i < len; i++) {
         // Wait until we have at least 1 byte to read
         uint32_t start = HAL_GetTick();
-        while (!dev_is_connected || UserRxBufLen == UserRxBufCur) {
+        while (UserRxBufLen == UserRxBufCur) {
             // Wraparound of tick is taken care of by 2's complement arithmetic.
             if (HAL_GetTick() - start >= timeout) {
                 // timeout
