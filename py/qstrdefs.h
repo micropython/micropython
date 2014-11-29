@@ -518,3 +518,8 @@ Q(digest)
 Q(hexdigest)
 Q(sha256)
 #endif
+
+#if MICROPY_PY_UBINASCII
+Q(ubinascii)
+Q(hexlify)
+#endif
