@@ -7,15 +7,12 @@ to connect the pyboard to a CAN bus you must use a CAN transceiver
 to convert the CAN logic signals from the pyboard to the correct
 voltage levels on the bus.
 
-Note that this driver does not yet support filter configuration
-(it defaults to a single filter that lets through all messages),
-or bus timing configuration (except for setting the prescaler).
-
 Example usage (works without anything connected)::
 
     from pyb import CAN
-    can = pyb.CAN(1, pyb.CAN.LOOPBACK)
-    can.send('message!', 123)   # send message to id 123
+    can = CAN(1, CAN.LOOPBACK)
+    can.setfilter(0, CAN.LIST16, 0, (123, 124, 125, 126))  # set a filter to receive messages with id=123, 124, 125 and 126
+    can.send('message!', 123)   # send a message with id 123
     can.recv(0)                 # receive message on FIFO 0
 
 
@@ -35,7 +32,17 @@ Constructors
      - ``CAN(1)`` is on ``YA``: ``(RX, TX) = (Y3, Y4) = (PB8, PB9)``
      - ``CAN(2)`` is on ``YB``: ``(RX, TX) = (Y5, Y6) = (PB12, PB13)``
 
-
+Class Methods
+-------------
+.. method:: CAN.initfilterbanks(nr)
+   
+   Reset and disable all filter banks and assign how many banks should be available for CAN(1).
+   
+   STM32F405 has 28 filter banks that are shared between the two available CAN bus controllers.
+   This function configures how many filter banks should be assigned to each. ``nr`` is the number of banks 
+   that will be assigned to CAN(1), the rest of the 28 are assigned to CAN(2). 
+   At boot, 14 banks are assigned to each controller.
+ 
 Methods
 -------
 
@@ -75,6 +82,37 @@ Methods
 
    Turn off the CAN bus.
 
+.. method:: can.setfilter(bank, mode, fifo, params)
+   
+   Configure a filter bank:
+   
+   - ``bank`` is the filter bank that is to be configured.
+   - ``mode`` is the mode the filter should operate in.
+   - ``fifo`` is which fifo (0 or 1) a message should be stored in, if it is accepted by this filter.   
+   - ``params`` is an array of values the defines the filter. The contents of the array depends on the ``mode`` argument.
+    
+   +-----------+---------------------------------------------------------+
+   |``mode``   |contents of parameter array                              |
+   +===========+=========================================================+
+   |CAN.LIST16 |Four 16 bit ids that will be accepted                    |
+   +-----------+---------------------------------------------------------+
+   |CAN.LIST32 |Two 32 bit ids that will be accepted                     |
+   +-----------+---------------------------------------------------------+
+   |CAN.MASK16 |Two 16 bit id/mask pairs. E.g. (1, 3, 4, 4)              |
+   |           | | The first pair, 1 and 3 will accept all ids           |
+   |           | | that have bit 0 = 1 and bit 1 = 0.                    |
+   |           | | The second pair, 4 and 4, will accept all ids         |
+   |           | | that have bit 2 = 1.                                  |
+   +-----------+---------------------------------------------------------+
+   |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
+   +-----------+---------------------------------------------------------+
+   
+.. method:: can.clearfilter(bank)
+
+   Clear and disables a filter bank:
+   
+   - ``bank`` is the filter bank that is to be cleared.
+
 .. method:: can.any(fifo)
 
    Return ``True`` if any message waiting on the FIFO, else ``False``.
@@ -98,7 +136,6 @@ Methods
    
    Return value: ``None``.
 
-
 Constants
 ---------
 
@@ -108,3 +145,10 @@ Constants
 .. data:: CAN.SILENT_LOOPBACK
 
    the mode of the CAN bus
+
+.. data:: CAN.LIST16
+.. data:: CAN.MASK16
+.. data:: CAN.LIST32
+.. data:: CAN.MASK32
+
+	the operation mode of a filter
