@@ -117,6 +117,7 @@ PY_O_BASENAME = \
 	../extmod/moduzlib.o \
 	../extmod/moduheapq.o \
 	../extmod/moduhashlib.o \
+	../extmod/modubinascii.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
