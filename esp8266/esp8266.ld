@@ -73,9 +73,23 @@ SECTIONS
     {
         _irom0_text_start = ABSOLUTE(.);
         *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
-        *py*.o*(.literal* .text*)
-        *gccollect.o*(.literal* .text*)
-        *gchelper.o*(.literal* .text*)
+
+        /* we put some specific text in this section */
+        *py/*.o*(.literal* .text*)
+        *pyexec.o(.literal*, .text*)
+        *readline.o(.literal*, .text*)
+        *pybstdio.o(.literal*, .text*)
+        *modpyb.o(.literal*, .text*)
+        *gccollect.o(.literal* .text*)
+        *gchelper.o(.literal* .text*)
+
+        /* we put as much rodata as possible in this section */
+        /* note that only rodata accessed as a machine word is allowed here */
+        *py/qstr.o(.rodata.const_pool)
+        *py/*.o(.rodata.mp_type_*) /* catches type: mp_obj_type_t */
+        *py/*.o(.rodata.*_locals_dict*) /* catches types: mp_obj_dict_t, mp_map_elem_t */
+        *py/*.o(.rodata.mp_module_*) /* catches types: mp_obj_module_t, mp_obj_dict_t, mp_map_elem_t */
+
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr
 
@@ -90,13 +104,6 @@ SECTIONS
         *(.fini.literal)
         *(.fini)
         *(.gnu.version)
-        *qstr.o(.rodata.const_pool)
-        *.o(.rodata.mp_type_*)
-        /*
-        can't put these here for some reason...
-        *builtin.o(.rodata.mp_builtin_*_obj)
-        *parse.o(.rodata.rule_*)
-        */
         _text_end = ABSOLUTE(.);
         _etext = .;
     } >iram1_0_seg :iram1_0_phdr
