@@ -70,6 +70,7 @@
 
 typedef struct _pyb_can_obj_t {
     mp_obj_base_t base;
+    mp_obj_t rxcallback;
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
     bool extframe : 1;
@@ -529,6 +530,29 @@ error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_setfilter_obj, 1, pyb_can_setfilter);
 
+STATIC mp_obj_t pyb_can_rxcallback(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+         { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+         { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+     };
+    pyb_can_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if (args[2].u_obj == mp_const_none){
+        //TODO
+        //disable callback
+        if (self->can_id == PYB_CAN_1){
+
+        }
+    } else if (mp_obj_is_callable(args[2].u_obj)) {
+        self->rxcallback = args[2].u_obj;
+
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_rxcallback_obj, 1, pyb_can_rxcallback);
+
 STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_can_init_obj },
@@ -539,6 +563,8 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_initfilterbanks), (mp_obj_t)&pyb_can_initfilterbanks_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setfilter), (mp_obj_t)&pyb_can_setfilter_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clearfilter), (mp_obj_t)&pyb_can_clearfilter_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rxcallback), (mp_obj_t)&pyb_can_rxcallback_obj },
+
 
     // class constants
     // Note: we use the ST constants >> 4 so they fit in a small-int.  The
@@ -575,6 +601,11 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *err
         ret = -1;
     }
     return ret;
+}
+
+
+void can_rx_irq_handler(uint can_id, uint fifo_id){
+
 }
 
 STATIC const mp_stream_p_t can_stream_p = {
