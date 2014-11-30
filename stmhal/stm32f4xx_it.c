@@ -78,6 +78,7 @@
 #include "timer.h"
 #include "uart.h"
 #include "storage.h"
+#include "can.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef hpcd;
@@ -417,3 +418,20 @@ void UART4_IRQHandler(void) {
 void USART6_IRQHandler(void) {
     uart_irq_handler(6);
 }
+
+void CAN1_RX0_IRQHandler(void){
+    can_rx_irq_handler(1,0);
+}
+
+void CAN1_RX1_IRQHandler(void){
+    can_rx_irq_handler(1,1);
+}
+
+void CAN2_RX0_IRQHandler(void){
+    can_rx_irq_handler(2,0);
+}
+
+void CAN2_RX1_IRQHandler(void){
+    can_rx_irq_handler(2,1);
+}
+
