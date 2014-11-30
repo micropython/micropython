@@ -229,22 +229,20 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
     mp_obj_array_t *lhs = lhs_in;
     switch (op) {
         case MP_BINARY_OP_ADD: {
-            #if MICROPY_PY_BUILTINS_MEMORYVIEW
-            if (lhs->base.type == &mp_type_memoryview) {
-                return MP_OBJ_NULL; // op not supported
-            }
-            #endif
-            // if we get here then lhs is not a memoryview, so we don't need to use (& TYPECODE_MASK)
-            if (mp_obj_get_type(rhs_in) != lhs->base.type) {
-                return MP_OBJ_NULL; // op not supported
-            }
-            mp_obj_array_t *rhs = rhs_in;
-            if (lhs->typecode != rhs->typecode) {
-                return MP_OBJ_NULL; // op not supported
-            }
-            int sz = mp_binary_get_size('@', lhs->typecode, NULL);
-            mp_obj_array_t *res = array_new(lhs->typecode, lhs->len + rhs->len);
-            mp_seq_cat((byte*)res->items, lhs->items, lhs->len * sz, rhs->items, rhs->len * sz, byte);
+            // allow to add anything that has the buffer protocol (extension to CPython)
+            mp_buffer_info_t lhs_bufinfo;
+            mp_buffer_info_t rhs_bufinfo;
+            array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
+            mp_get_buffer_raise(rhs_in, &rhs_bufinfo, MP_BUFFER_READ);
+
+            int sz = mp_binary_get_size('@', lhs_bufinfo.typecode, NULL);
+
+            // convert byte count to element count (in case rhs is not multiple of sz)
+            mp_uint_t rhs_len = rhs_bufinfo.len / sz;
+
+            // note: lhs->len is element count of lhs, lhs_bufinfo.len is byte count
+            mp_obj_array_t *res = array_new(lhs_bufinfo.typecode, lhs->len + rhs_len);
+            mp_seq_cat((byte*)res->items, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_len * sz, byte);
             return res;
         }
 
@@ -297,32 +295,27 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
     mp_obj_array_t *self = self_in;
 
-    // check for compatible types (array & array, or bytearray & bytearray)
-    if (mp_obj_get_type(arg_in) != self->base.type) {
-    type_error:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "incompatible type for array operation"));
-    }
-
-    // check for compatible typecode
-    mp_obj_array_t *arg = arg_in;
-    if (self->typecode != arg->typecode) {
-        goto type_error;
-    }
+    // allow to extend by anything that has the buffer protocol (extension to CPython)
+    mp_buffer_info_t arg_bufinfo;
+    mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
 
     int sz = mp_binary_get_size('@', self->typecode, NULL);
 
+    // convert byte count to element count
+    mp_uint_t len = arg_bufinfo.len / sz;
+
     // make sure we have enough room to extend
-    if (self->free < arg->len) {
-        // TODO: alloc policy; at the moment we go conservative
-        self->items = m_realloc(self->items, (self->len + self->free) * sz, (self->len + arg->len) * sz);
-        self->free += arg->len;
+    // TODO: alloc policy; at the moment we go conservative
+    if (self->free < len) {
+        self->items = m_realloc(self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+        self->free = 0;
+    } else {
+        self->free -= len;
     }
 
     // extend
-    mp_seq_copy((byte*)self->items + self->len * sz, arg->items, arg->len * sz, byte);
-    self->len += arg->len;
-    self->free -= arg->len;
+    mp_seq_copy((byte*)self->items + self->len * sz, arg_bufinfo.buf, len * sz, byte);
+    self->len += len;
 
     return mp_const_none;
 }
