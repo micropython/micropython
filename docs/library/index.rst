@@ -38,6 +38,7 @@ it will fallback to loading the built-in ``ujson`` module.
 .. toctree::
    :maxdepth: 1
 
+   uhashlib.rst
    uheapq.rst
    ujson.rst
    usocket.rst
