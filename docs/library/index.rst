@@ -38,9 +38,9 @@ it will fallback to loading the built-in ``ujson`` module.
 .. toctree::
    :maxdepth: 1
 
-   usocket.rst
    uheapq.rst
    ujson.rst
+   usocket.rst
 
 Libraries specific to the pyboard
 ---------------------------------
