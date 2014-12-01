@@ -363,6 +363,8 @@ Q(rect)
 Q(mem_total)
 Q(mem_current)
 Q(mem_peak)
+Q(mem_info)
+Q(qstr_info)
 #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)

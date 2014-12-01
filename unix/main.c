@@ -267,31 +267,6 @@ int usage(char **argv) {
     return 1;
 }
 
-#if MICROPY_MEM_STATS
-STATIC mp_obj_t mem_info(mp_uint_t n_args, const mp_obj_t *args) {
-    printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
-        m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
-    printf("stack: " UINT_FMT "\n", mp_stack_usage());
-#if MICROPY_ENABLE_GC
-    gc_dump_info();
-    if (n_args == 1) {
-        // arg given means dump gc allocation table
-        gc_dump_alloc_table();
-    }
-#endif
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mem_info_obj, 0, 1, mem_info);
-#endif
-
-STATIC mp_obj_t qstr_info(void) {
-    mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
-    qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-    printf("qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(qstr_info_obj, qstr_info);
-
 // Process options which set interpreter init options
 void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
@@ -407,11 +382,6 @@ int main(int argc, char **argv) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    #if MICROPY_MEM_STATS
-    mp_store_name(qstr_from_str("mem_info"), (mp_obj_t*)&mem_info_obj);
-    #endif
-    mp_store_name(qstr_from_str("qstr_info"), (mp_obj_t*)&qstr_info_obj);
-
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
     //
@@ -520,7 +490,8 @@ int main(int argc, char **argv) {
     }
 
     if (mp_verbose_flag) {
-        mem_info(0, NULL);
+        extern mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args);
+        mp_micropython_mem_info(0, NULL);
     }
 
     mp_deinit();
