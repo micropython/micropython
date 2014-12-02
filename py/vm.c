@@ -61,36 +61,35 @@ typedef enum {
     UNWIND_JUMP,
 } mp_unwind_reason_t;
 
-#define DECODE_UINT do { \
-    unum = 0; \
+#define DECODE_UINT \
+    mp_uint_t unum = 0; \
     do { \
         unum = (unum << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-} while (0)
-#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
-#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+    } while ((*ip++ & 0x80) != 0)
+#define DECODE_ULABEL mp_uint_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
+#define DECODE_SLABEL mp_uint_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
 #define DECODE_QSTR qstr qst = 0; \
     do { \
         qst = (qst << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0)
-#define DECODE_PTR do { \
+#define DECODE_PTR \
     ip = (byte*)(((mp_uint_t)ip + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1))); /* align ip */ \
-    unum = *(mp_uint_t*)ip; \
-    ip += sizeof(mp_uint_t); \
-} while (0)
+    void *ptr = (void*)*(mp_uint_t*)ip; \
+    ip += sizeof(mp_uint_t)
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-#define PUSH_EXC_BLOCK() \
+#define PUSH_EXC_BLOCK() do { \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
     exc_sp->opcode = *code_state->ip; \
-    exc_sp->handler = ip + unum; \
+    exc_sp->handler = ip + ulab; \
     exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
     exc_sp->prev_exc = MP_OBJ_NULL; \
-    currently_in_except_block = 0; /* in a try block now */
+    currently_in_except_block = 0; /* in a try block now */ \
+} while (0)
 
 #define POP_EXC_BLOCK() \
     currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
@@ -142,7 +141,6 @@ outer_dispatch_loop:
             // local variables that are not visible to the exception handler
             const byte *ip = code_state->ip;
             mp_obj_t *sp = code_state->sp;
-            mp_uint_t unum;
             mp_obj_t obj_shared;
 
             // If we have exception to inject, now that we finish setting up
@@ -225,7 +223,7 @@ dispatch_loop:
                     PUSH(MP_OBJ_NULL);
                     DISPATCH();
 
-                ENTRY(MP_BC_LOAD_FAST_N):
+                ENTRY(MP_BC_LOAD_FAST_N): {
                     DECODE_UINT;
                     obj_shared = fastn[-unum];
                     load_check:
@@ -237,11 +235,13 @@ dispatch_loop:
                     }
                     PUSH(obj_shared);
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LOAD_DEREF):
+                ENTRY(MP_BC_LOAD_DEREF): {
                     DECODE_UINT;
                     obj_shared = mp_obj_cell_get(fastn[-unum]);
                     goto load_check;
+                }
 
                 ENTRY(MP_BC_LOAD_NAME): {
                     DECODE_QSTR;
@@ -278,15 +278,17 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_STORE_FAST_N):
+                ENTRY(MP_BC_STORE_FAST_N): {
                     DECODE_UINT;
                     fastn[-unum] = POP();
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_STORE_DEREF):
+                ENTRY(MP_BC_STORE_DEREF): {
                     DECODE_UINT;
                     mp_obj_cell_set(fastn[-unum], POP());
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_STORE_NAME): {
                     DECODE_QSTR;
@@ -312,21 +314,23 @@ dispatch_loop:
                     sp -= 3;
                     DISPATCH();
 
-                ENTRY(MP_BC_DELETE_FAST):
+                ENTRY(MP_BC_DELETE_FAST): {
                     DECODE_UINT;
                     if (fastn[-unum] == MP_OBJ_NULL) {
                         goto local_name_error;
                     }
                     fastn[-unum] = MP_OBJ_NULL;
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_DELETE_DEREF):
+                ENTRY(MP_BC_DELETE_DEREF): {
                     DECODE_UINT;
                     if (mp_obj_cell_get(fastn[-unum]) == MP_OBJ_NULL) {
                         goto local_name_error;
                     }
                     mp_obj_cell_set(fastn[-unum], MP_OBJ_NULL);
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_DELETE_NAME): {
                     DECODE_QSTR;
@@ -371,42 +375,47 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_JUMP):
+                ENTRY(MP_BC_JUMP): {
                     DECODE_SLABEL;
-                    ip += unum;
+                    ip += slab;
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
-                ENTRY(MP_BC_POP_JUMP_IF_TRUE):
+                ENTRY(MP_BC_POP_JUMP_IF_TRUE): {
                     DECODE_SLABEL;
                     if (mp_obj_is_true(POP())) {
-                        ip += unum;
+                        ip += slab;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
-                ENTRY(MP_BC_POP_JUMP_IF_FALSE):
+                ENTRY(MP_BC_POP_JUMP_IF_FALSE): {
                     DECODE_SLABEL;
                     if (!mp_obj_is_true(POP())) {
-                        ip += unum;
+                        ip += slab;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
-                ENTRY(MP_BC_JUMP_IF_TRUE_OR_POP):
+                ENTRY(MP_BC_JUMP_IF_TRUE_OR_POP): {
                     DECODE_SLABEL;
                     if (mp_obj_is_true(TOP())) {
-                        ip += unum;
+                        ip += slab;
                     } else {
                         sp--;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
-                ENTRY(MP_BC_JUMP_IF_FALSE_OR_POP):
+                ENTRY(MP_BC_JUMP_IF_FALSE_OR_POP): {
                     DECODE_SLABEL;
                     if (mp_obj_is_true(TOP())) {
                         sp--;
                     } else {
-                        ip += unum;
+                        ip += slab;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
                 ENTRY(MP_BC_SETUP_WITH): {
                     mp_obj_t obj = TOP();
@@ -478,12 +487,12 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_UNWIND_JUMP):
+                ENTRY(MP_BC_UNWIND_JUMP): {
                     DECODE_SLABEL;
-                    PUSH((void*)(ip + unum)); // push destination ip for jump
+                    PUSH((void*)(ip + slab)); // push destination ip for jump
                     PUSH((void*)(mp_uint_t)(*ip)); // push number of exception handlers to unwind (0x80 bit set if we also need to pop stack)
-unwind_jump:
-                    unum = (mp_uint_t)POP(); // get number of exception handlers to unwind
+unwind_jump:;
+                    mp_uint_t unum = (mp_uint_t)POP(); // get number of exception handlers to unwind
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
@@ -505,12 +514,14 @@ unwind_jump:
                         sp--;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
                 // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                 ENTRY(MP_BC_SETUP_EXCEPT):
-                ENTRY(MP_BC_SETUP_FINALLY):
+                ENTRY(MP_BC_SETUP_FINALLY): {
                     PUSH_EXC_BLOCK();
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_END_FINALLY):
                     // not fully implemented
@@ -550,7 +561,7 @@ unwind_jump:
                     mp_obj_t value = mp_iternext_allow_raise(TOP());
                     if (value == MP_OBJ_STOP_ITERATION) {
                         --sp; // pop the exhausted iterator
-                        ip += unum; // jump to after for-block
+                        ip += ulab; // jump to after for-block
                     } else {
                         PUSH(value); // push the next iteration value
                     }
@@ -584,59 +595,66 @@ unwind_jump:
                     }
                     DISPATCH();
 
-                ENTRY(MP_BC_BUILD_TUPLE):
+                ENTRY(MP_BC_BUILD_TUPLE): {
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_tuple(unum, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_BUILD_LIST):
+                ENTRY(MP_BC_BUILD_LIST): {
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_list(unum, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_LIST_APPEND):
+                ENTRY(MP_BC_LIST_APPEND): {
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[unum] is a list
                     mp_obj_list_append(sp[-unum], sp[0]);
                     sp--;
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_BUILD_MAP):
+                ENTRY(MP_BC_BUILD_MAP): {
                     DECODE_UINT;
                     PUSH(mp_obj_new_dict(unum));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_STORE_MAP):
                     sp -= 2;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
-                ENTRY(MP_BC_MAP_ADD):
+                ENTRY(MP_BC_MAP_ADD): {
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
                     mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
                     sp -= 2;
                     DISPATCH();
+                }
 
 #if MICROPY_PY_BUILTINS_SET
-                ENTRY(MP_BC_BUILD_SET):
+                ENTRY(MP_BC_BUILD_SET): {
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_set(unum, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_SET_ADD):
+                ENTRY(MP_BC_SET_ADD): {
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[-unum] is a set
                     mp_obj_set_store(sp[-unum], sp[0]);
                     sp--;
                     DISPATCH();
+                }
 #endif
 
 #if MICROPY_PY_BUILTINS_SLICE
-                ENTRY(MP_BC_BUILD_SLICE):
+                ENTRY(MP_BC_BUILD_SLICE): {
                     DECODE_UINT;
                     if (unum == 2) {
                         mp_obj_t stop = POP();
@@ -649,30 +667,34 @@ unwind_jump:
                         SET_TOP(mp_obj_new_slice(start, stop, step));
                     }
                     DISPATCH();
+                }
 #endif
 
-                ENTRY(MP_BC_UNPACK_SEQUENCE):
+                ENTRY(MP_BC_UNPACK_SEQUENCE): {
                     DECODE_UINT;
                     mp_unpack_sequence(sp[0], unum, sp);
                     sp += unum - 1;
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_UNPACK_EX):
+                ENTRY(MP_BC_UNPACK_EX): {
                     DECODE_UINT;
                     mp_unpack_ex(sp[0], unum, sp);
                     sp += (unum & 0xff) + ((unum >> 8) & 0xff);
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_MAKE_FUNCTION):
+                ENTRY(MP_BC_MAKE_FUNCTION): {
                     DECODE_PTR;
-                    PUSH(mp_make_function_from_raw_code((mp_raw_code_t*)unum, MP_OBJ_NULL, MP_OBJ_NULL));
+                    PUSH(mp_make_function_from_raw_code(ptr, MP_OBJ_NULL, MP_OBJ_NULL));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_MAKE_FUNCTION_DEFARGS): {
                     DECODE_PTR;
                     // Stack layout: def_tuple def_dict <- TOS
                     mp_obj_t def_dict = POP();
-                    SET_TOP(mp_make_function_from_raw_code((mp_raw_code_t*)unum, TOP(), def_dict));
+                    SET_TOP(mp_make_function_from_raw_code(ptr, TOP(), def_dict));
                     DISPATCH();
                 }
 
@@ -681,7 +703,7 @@ unwind_jump:
                     mp_uint_t n_closed_over = *ip++;
                     // Stack layout: closed_overs <- TOS
                     sp -= n_closed_over - 1;
-                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, n_closed_over, sp));
+                    SET_TOP(mp_make_closure_from_raw_code(ptr, n_closed_over, sp));
                     DISPATCH();
                 }
 
@@ -690,19 +712,20 @@ unwind_jump:
                     mp_uint_t n_closed_over = *ip++;
                     // Stack layout: def_tuple def_dict closed_overs <- TOS
                     sp -= 2 + n_closed_over - 1;
-                    SET_TOP(mp_make_closure_from_raw_code((mp_raw_code_t*)unum, 0x100 | n_closed_over, sp));
+                    SET_TOP(mp_make_closure_from_raw_code(ptr, 0x100 | n_closed_over, sp));
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_CALL_FUNCTION):
+                ENTRY(MP_BC_CALL_FUNCTION): {
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
                     SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_CALL_FUNCTION_VAR_KW):
+                ENTRY(MP_BC_CALL_FUNCTION_VAR_KW): {
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -711,16 +734,18 @@ unwind_jump:
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 2;
                     SET_TOP(mp_call_method_n_kw_var(false, unum, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_CALL_METHOD):
+                ENTRY(MP_BC_CALL_METHOD): {
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
                     SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
                     DISPATCH();
+                }
 
-                ENTRY(MP_BC_CALL_METHOD_VAR_KW):
+                ENTRY(MP_BC_CALL_METHOD_VAR_KW): {
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -729,6 +754,7 @@ unwind_jump:
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 3;
                     SET_TOP(mp_call_method_n_kw_var(true, unum, sp));
                     DISPATCH();
+                }
 
                 ENTRY(MP_BC_RETURN_VALUE):
 unwind_return:
@@ -754,7 +780,7 @@ unwind_return:
                     return MP_VM_RETURN_NORMAL;
 
                 ENTRY(MP_BC_RAISE_VARARGS): {
-                    unum = *ip++;
+                    mp_uint_t unum = *ip++;
                     mp_obj_t obj;
                     assert(unum <= 1);
                     if (unum == 0) {
@@ -928,9 +954,8 @@ exception_handler:
             // check if it's a StopIteration within a for block
             if (*code_state->ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
                 const byte *ip = code_state->ip + 1;
-                mp_uint_t unum;
                 DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                code_state->ip = ip + unum; // jump to after for-block
+                code_state->ip = ip + ulab; // jump to after for-block
                 code_state->sp -= 1; // pop the exhausted iterator
                 goto outer_dispatch_loop; // continue with dispatch loop
             }
