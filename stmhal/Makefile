@@ -76,7 +76,6 @@ SRC_C = \
 	string0.c \
 	system_stm32f4xx.c \
 	stm32f4xx_it.c \
-	stm32f4xx_hal_msp.c \
 	usbd_conf.c \
 	usbd_desc_cdc_msc.c \
 	usbd_cdc_interface.c \
