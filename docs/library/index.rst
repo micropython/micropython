@@ -42,6 +42,7 @@ it will fallback to loading the built-in ``ujson`` module.
    uhashlib.rst
    uheapq.rst
    ujson.rst
+   ure.rst
    usocket.rst
 
 Libraries specific to the pyboard
