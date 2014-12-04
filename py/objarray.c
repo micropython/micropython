@@ -126,7 +126,25 @@ STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
-    uint len;
+    // bytearrays can be raw-initialised from anything with the buffer protocol
+    // other arrays can only be raw-initialised from bytes and bytearray objects
+    mp_buffer_info_t bufinfo;
+    if (((MICROPY_PY_BUILTINS_BYTEARRAY
+            && typecode == BYTEARRAY_TYPECODE)
+        || (MICROPY_PY_ARRAY
+            && (MP_OBJ_IS_TYPE(initializer, &mp_type_bytes)
+                || MP_OBJ_IS_TYPE(initializer, &mp_type_bytearray))))
+        && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
+        // construct array from raw bytes
+        // we round-down the len to make it a multiple of sz (CPython raises error)
+        int sz = mp_binary_get_size('@', typecode, NULL);
+        mp_uint_t len = bufinfo.len / sz;
+        mp_obj_array_t *o = array_new(typecode, len);
+        memcpy(o->items, bufinfo.buf, len * sz);
+        return o;
+    }
+
+    mp_uint_t len;
     // Try to create array of exact len if initializer len is known
     mp_obj_t len_in = mp_obj_len_maybe(initializer);
     if (len_in == MP_OBJ_NULL) {
@@ -164,7 +182,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         // 1 arg: make an empty array
         return array_new(*typecode, 0);
     } else {
-        // 2 args: construct the array from the given iterator
+        // 2 args: construct the array from the given object
         return array_construct(*typecode, args[1]);
     }
 }
@@ -179,12 +197,12 @@ STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
         return array_new(BYTEARRAY_TYPECODE, 0);
     } else if (MP_OBJ_IS_SMALL_INT(args[0])) {
         // 1 arg, an integer: construct a blank bytearray of that length
-        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
         memset(o->items, 0, len);
         return o;
     } else {
-        // 1 arg, an iterator: construct the bytearray from that
+        // 1 arg: construct the bytearray from that
         return array_construct(BYTEARRAY_TYPECODE, args[0]);
     }
 }

@@ -212,6 +212,12 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         return mp_obj_str_builder_end(o);
     }
 
+    // check if argument has the buffer protocol
+    mp_buffer_info_t bufinfo;
+    if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+        return mp_obj_new_str_of_type(&mp_type_bytes, bufinfo.buf, bufinfo.len);
+    }
+
     mp_int_t len;
     byte *data;
     vstr_t *vstr = NULL;
