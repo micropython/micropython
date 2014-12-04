@@ -44,6 +44,7 @@ it will fallback to loading the built-in ``ujson`` module.
    ujson.rst
    ure.rst
    usocket.rst
+   uzlib.rst
 
 Libraries specific to the pyboard
 ---------------------------------
