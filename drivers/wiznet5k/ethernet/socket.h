@@ -133,6 +133,9 @@
 #define PACK_REMAINED            0x01              ///< In Non-TCP packet, It indicates to remain a packet to be received.
 #define PACK_COMPLETED           0x00              ///< In Non-TCP packet, It indicates to complete to receive a packet.
 
+// resets all global state associated with the socket interface
+void WIZCHIP_EXPORT(socket_reset)(void);
+
 /**
  * @ingroup WIZnet_socket_APIs
  * @brief Open a socket.
