@@ -571,7 +571,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof
 /// captured by reference (and thus memory pointed by bytearray may change
 /// or become invalid at later time). Use bytes_at() to capture by value.
 mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytearray_by_ref(mp_obj_int_get(size), (void*)mp_obj_int_get(ptr));
+    return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void*)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
 
@@ -580,7 +580,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytear
 /// captured by value, i.e. copied. Use bytearray_at() to capture by reference
 /// ("zero copy").
 mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytes((void*)mp_obj_int_get(ptr), mp_obj_int_get(size));
+    return mp_obj_new_bytes((void*)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 

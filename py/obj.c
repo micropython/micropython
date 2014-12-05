@@ -179,7 +179,7 @@ mp_int_t mp_obj_hash(mp_obj_t o_in) {
         if (hash_method[0] != MP_OBJ_NULL) {
             mp_obj_t hash_val = mp_call_method_n_kw(0, 0, hash_method);
             if (MP_OBJ_IS_INT(hash_val)) {
-                return mp_obj_int_get(hash_val);
+                return mp_obj_int_get_truncated(hash_val);
             }
         }
     }

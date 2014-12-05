@@ -25,3 +25,15 @@ print(struct.pack("<6sH", b"foo", 10000))
 s = struct.pack("BHBI", 10, 100, 200, 300)
 v = struct.unpack("BHBI", s)
 print(v == (10, 100, 200, 300))
+
+# check maximum pack on 32-bit machine
+print(struct.pack("<I", 2**32 - 1))
+print(struct.pack("<I", 0xffffffff))
+
+# fails on 32-bit machine
+#print(struct.pack("<Q", 2**64 - 1))
+#print(struct.pack("<Q", 0xffffffffffffffff))
+
+# check maximum unpack
+print(struct.unpack("<I", b"\xff\xff\xff\xff"))
+print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))

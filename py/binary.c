@@ -252,7 +252,12 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             val = (mp_uint_t)val_in;
             break;
         default:
-            val = mp_obj_get_int(val_in);
+            // we handle large ints here by calling the truncated accessor
+            if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+                val = mp_obj_int_get_truncated(val_in);
+            } else {
+                val = mp_obj_get_int(val_in);
+            }
     }
 
     mp_binary_set_int(MIN(size, sizeof(val)), struct_type == '>', p, val);
