@@ -49,8 +49,8 @@ void do_file(const char *file) {
 
     if (0) {
         // just tokenise
-        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
-            mp_token_show(mp_lexer_cur(lex));
+        while (lex->tok_kind != MP_TOKEN_END) {
+            mp_lexer_show_token(lex);
             mp_lexer_to_next(lex);
         }
         mp_lexer_free(lex);
