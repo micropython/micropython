@@ -66,7 +66,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 
     mp_parse_error_kind_t parse_error_kind;
     mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
 
     // check for parse error
     if (pn == MP_PARSE_NODE_NULL) {

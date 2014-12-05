@@ -32,7 +32,7 @@ void do_str(const char *src) {
     }
 
     // parse okay
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     mp_lexer_free(lex);
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
 

@@ -1258,7 +1258,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
         nlr_raise(exc);
     }
 
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     mp_lexer_free(lex);
 
     // save context and set new context

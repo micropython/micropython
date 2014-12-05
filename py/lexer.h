@@ -130,15 +130,6 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_MINUS_MORE,
 } mp_token_kind_t;
 
-typedef struct _mp_token_t {
-    mp_uint_t src_line;         // source line
-    mp_uint_t src_column;       // source column
-
-    mp_token_kind_t kind;       // kind of token
-    const char *str;            // string of token (valid only while this token is current token)
-    mp_uint_t len;              // (byte) length of string of token
-} mp_token_t;
-
 // the next-byte function must return the next byte in the stream
 // it must return MP_LEXER_EOF if end of stream
 // it can be called again after returning MP_LEXER_EOF, and in that case must return MP_LEXER_EOF
@@ -146,21 +137,38 @@ typedef struct _mp_token_t {
 typedef mp_uint_t (*mp_lexer_stream_next_byte_t)(void*);
 typedef void (*mp_lexer_stream_close_t)(void*);
 
-typedef struct _mp_lexer_t mp_lexer_t;
+// this data structure is exposed for efficiency
+// public members are: source_name, tok_line, tok_column, tok_kind, vstr
+typedef struct _mp_lexer_t {
+    qstr source_name;           // name of source
+    void *stream_data;          // data for stream
+    mp_lexer_stream_next_byte_t stream_next_byte;   // stream callback to get next byte
+    mp_lexer_stream_close_t stream_close;           // stream callback to free
 
-void mp_token_show(const mp_token_t *tok);
+    unichar chr0, chr1, chr2;   // current cached characters from source
+
+    mp_uint_t line;             // current source line
+    mp_uint_t column;           // current source column
+
+    mp_int_t emit_dent;             // non-zero when there are INDENT/DEDENT tokens to emit
+    mp_int_t nested_bracket_level;  // >0 when there are nested brackets over multiple lines
+
+    mp_uint_t alloc_indent_level;
+    mp_uint_t num_indent_level;
+    uint16_t *indent_level;
+
+    mp_uint_t tok_line;         // token source line
+    mp_uint_t tok_column;       // token source column
+    mp_token_kind_t tok_kind;   // token kind
+    vstr_t vstr;                // token data
+} mp_lexer_t;
 
 mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close);
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
-qstr mp_lexer_source_name(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
-const mp_token_t *mp_lexer_cur(const mp_lexer_t *lex);
-bool mp_lexer_is_kind(mp_lexer_t *lex, mp_token_kind_t kind);
-
-bool mp_lexer_show_error_pythonic_prefix(mp_lexer_t *lex);
-bool mp_lexer_show_error_pythonic(mp_lexer_t *lex, const char *msg);
+void mp_lexer_show_token(const mp_lexer_t *lex);
 
 /******************************************************************/
 // platform specific import function; must be implemented for a specific port

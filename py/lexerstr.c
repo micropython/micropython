@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "mpconfig.h"
 #include "misc.h"
 #include "qstr.h"

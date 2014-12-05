@@ -114,8 +114,8 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
     if (0) {
         // just tokenise
-        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
-            mp_token_show(mp_lexer_cur(lex));
+        while (lex->tok_kind != MP_TOKEN_END) {
+            mp_lexer_show_token(lex);
             mp_lexer_to_next(lex);
         }
         mp_lexer_free(lex);
@@ -132,7 +132,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 1;
     }
 
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     #if MICROPY_PY___FILE__
     if (input_kind == MP_PARSE_FILE_INPUT) {
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));

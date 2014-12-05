@@ -127,7 +127,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     }
 
     #if MICROPY_PY___FILE__
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
     #endif
 

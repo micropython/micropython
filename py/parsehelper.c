@@ -43,7 +43,7 @@
 #define STR_INVALID_SYNTAX "invalid syntax"
 
 void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind) {
-    printf("  File \"%s\", line " UINT_FMT ", column " UINT_FMT "\n", qstr_str(mp_lexer_source_name(lex)), mp_lexer_cur(lex)->src_line, mp_lexer_cur(lex)->src_column);
+    printf("  File \"%s\", line " UINT_FMT ", column " UINT_FMT "\n", qstr_str(lex->source_name), lex->tok_line, lex->tok_column);
     switch (parse_error_kind) {
         case MP_PARSE_ERROR_MEMORY:
             printf("MemoryError: %s\n", STR_MEMORY);
@@ -88,7 +88,7 @@ mp_obj_t mp_parse_make_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_er
 
     // add traceback to give info about file name and location
     // we don't have a 'block' name, so just pass the NULL qstr to indicate this
-    mp_obj_exception_add_traceback(exc, mp_lexer_source_name(lex), mp_lexer_cur(lex)->src_line, MP_QSTR_NULL);
+    mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
 
     return exc;
 }
