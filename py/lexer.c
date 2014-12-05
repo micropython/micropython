@@ -754,7 +754,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
 #if MICROPY_DEBUG_PRINTERS
 void mp_lexer_show_token(const mp_lexer_t *lex) {
-    printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:%u", lex->tok_line, lex->tok_column, lex->tok_kind, lex->vstr.buf, lex->vstr.len);
+    printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:%zu", lex->tok_line, lex->tok_column, lex->tok_kind, lex->vstr.buf, lex->vstr.len);
     if (lex->vstr.len > 0) {
         const byte *i = (const byte *)lex->vstr.buf;
         const byte *j = (const byte *)i + lex->vstr.len;
