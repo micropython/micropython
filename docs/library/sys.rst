@@ -12,6 +12,11 @@ Functions
    Raise a ``SystemExit`` exception.  If an argument is given, it is the
    value given to ``SystemExit``.
 
+.. function:: print_exception(exc, [file])
+
+   Print exception with a traceback to a file-like object ``file`` (or
+   ``sys.stdout`` by default).
+
 Constants
 ---------
 
