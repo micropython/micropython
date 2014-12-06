@@ -48,6 +48,7 @@
 #include "pyexec.h"
 #include "pybstdio.h"
 #include "genhdr/py-version.h"
+#include "pfenv.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;
@@ -87,7 +88,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             stdout_tx_strn("\x04", 1);
         }
-        mp_obj_print_exception(module_fun);
+        mp_obj_print_exception(printf_wrapper, NULL, module_fun);
         goto finish;
     }
 
@@ -116,7 +117,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
             // at the moment, the value of SystemExit is unused
             ret = PYEXEC_FORCED_EXIT;
         } else {
-            mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
             ret = 0;
         }
     }

@@ -42,6 +42,7 @@
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
+#include "pfenv.h"
 
 /// \moduleref pyb
 /// \class Timer - periodically call a function
@@ -1245,7 +1246,7 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     } else {
                         printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
                     }
-                    mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+                    mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
             }

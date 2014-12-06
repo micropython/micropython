@@ -418,7 +418,7 @@ mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t 
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
-void mp_obj_print_exception(mp_obj_t exc);
+void mp_obj_print_exception(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t exc);
 
 bool mp_obj_is_true(mp_obj_t arg);
 

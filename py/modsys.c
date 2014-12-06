@@ -38,6 +38,8 @@
 #include "objstr.h"
 #include "mpz.h"
 #include "objint.h"
+#include "pfenv.h"
+#include "stream.h"
 
 #if MICROPY_PY_SYS
 
@@ -77,6 +79,25 @@ STATIC mp_obj_t mp_sys_exit(mp_uint_t n_args, const mp_obj_t *args) {
     nlr_raise(exc);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
+
+STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
+    #if MICROPY_PY_IO
+    mp_obj_t stream_obj = &mp_sys_stdout_obj;
+    if (n_args > 1) {
+        stream_obj = args[1];
+    }
+
+    pfenv_t pfenv;
+    pfenv.data = stream_obj;
+    pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
+    mp_obj_print_exception((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, args[0]);
+    #else
+    mp_obj_print_exception(printf_wrapper, NULL, args[0]);
+    #endif
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
 
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
@@ -118,6 +139,12 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },
 #endif
+
+    /*
+     * Extensions to CPython
+     */
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_exception), (mp_obj_t)&mp_sys_print_exception_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);

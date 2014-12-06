@@ -40,7 +40,7 @@ inline void do_str(const char *src) {
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
 
     if (mp_obj_is_exception_instance(module_fun)) {
-        mp_obj_print_exception(module_fun);
+        mp_obj_print_exception(printf_wrapper, NULL, module_fun);
         tt_abort_msg("Compile error");
     }
 
@@ -49,7 +49,7 @@ inline void do_str(const char *src) {
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
-        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
         tt_abort_msg("Uncaught exception");
     }
 end:

@@ -53,6 +53,7 @@
 #include "genhdr/py-version.h"
 #include "input.h"
 #include "stackctrl.h"
+#include "pfenv.h"
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -100,7 +101,7 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
     }
 
     // Report all other exceptions
-    mp_obj_print_exception(exc);
+    mp_obj_print_exception(printf_wrapper, NULL, exc);
     return 1;
 }
 
@@ -150,7 +151,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
     if (mp_obj_is_exception_instance(module_fun)) {
         // compile error
-        mp_obj_print_exception(module_fun);
+        mp_obj_print_exception(printf_wrapper, NULL, module_fun);
         return 1;
     }
 

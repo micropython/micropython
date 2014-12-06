@@ -40,6 +40,7 @@
 #include "parsehelper.h"
 #include "compile.h"
 #include "runtime.h"
+#include "pfenv.h"
 
 void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
@@ -80,7 +81,7 @@ void do_file(const char *file) {
             //printf("----------------\n");
 
             if (mp_obj_is_exception_instance(module_fun)) {
-                mp_obj_print_exception(module_fun);
+                mp_obj_print_exception(printf_wrapper, NULL, module_fun);
             }
         }
     }
