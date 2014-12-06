@@ -35,6 +35,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "pfenv.h"
 #include MICROPY_HAL_H
 #include "gc.h"
 #include "pin.h"
@@ -917,7 +918,7 @@ STATIC bool ftm_handle_irq_callback(pyb_timer_obj_t *self, mp_uint_t channel, mp
             printf("Uncaught exception in Timer(" UINT_FMT ") channel "
                    UINT_FMT " interrupt handler\n", self->tim_id, channel);
         }
-        mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
     }
     gc_unlock();
     return handled;

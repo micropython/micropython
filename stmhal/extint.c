@@ -37,6 +37,7 @@
 #include "gc.h"
 #include "obj.h"
 #include "runtime.h"
+#include "pfenv.h"
 
 #include "pin.h"
 #include "extint.h"
@@ -373,7 +374,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     v->callback_obj = mp_const_none;
                     extint_disable(line);
                     printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
-                    mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+                    mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
             }

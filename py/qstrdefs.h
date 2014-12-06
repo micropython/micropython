@@ -403,6 +403,7 @@ Q(version_info)
 #if MICROPY_PY_SYS_MAXSIZE
 Q(maxsize)
 #endif
+Q(print_exception)
 #endif
 
 #if MICROPY_PY_STRUCT

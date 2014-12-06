@@ -85,31 +85,31 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 }
 
 // helper function to print an exception with traceback
-void mp_obj_print_exception(mp_obj_t exc) {
+void mp_obj_print_exception(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t exc) {
     if (mp_obj_is_exception_instance(exc)) {
         mp_uint_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
-            printf("Traceback (most recent call last):\n");
+            print(env, "Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                printf("  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
+                print(env, "  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
 #else
-                printf("  File \"%s\"", qstr_str(values[i]));
+                print(env, "  File \"%s\"", qstr_str(values[i]));
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
-                    printf("\n");
+                    print(env, "\n");
                 } else {
-                    printf(", in %s\n", qstr_str(block));
+                    print(env, ", in %s\n", qstr_str(block));
                 }
             }
         }
     }
-    mp_obj_print(exc, PRINT_EXC);
-    printf("\n");
+    mp_obj_print_helper(print, env, exc, PRINT_EXC);
+    print(env, "\n");
 }
 
 bool mp_obj_is_true(mp_obj_t arg) {

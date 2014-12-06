@@ -52,3 +52,6 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
 
 //int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
 int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...);
+
+// Wrapper for system printf
+void printf_wrapper(void *env, const char *fmt, ...);
