@@ -28,8 +28,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "mpconfig.h"
 #include "misc.h"
 #include "nlr.h"
@@ -37,6 +35,7 @@
 #include "obj.h"
 #include "objlist.h"
 #include "pybioctl.h"
+#include MICROPY_HAL_H
 
 /// \module select - Provides select function to wait for events on a stream
 ///
