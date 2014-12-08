@@ -52,12 +52,29 @@ Methods
 
    Turn off the SPI bus.
 
-.. method:: spi.init(mode, baudrate=328125, \*, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
+.. method:: spi.init(mode, baudrate=328125, \*, prescaler, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
 
    Initialise the SPI bus with the given parameters:
    
      - ``mode`` must be either ``SPI.MASTER`` or ``SPI.SLAVE``.
      - ``baudrate`` is the SCK clock rate (only sensible for a master).
+     - ``prescaler`` is the prescaler to use to derive SCK from the APB bus frequency;
+       use of ``prescaler`` overrides ``baudrate``.
+     - ``polarity`` can be 0 or 1, and is the level the idle clock line sits at.
+     - ``phase`` can be 0 or 1 to sample data on the first or second clock edge
+       respectively.
+     - ``firstbit`` can be ``SPI.MSB`` or ``SPI.LSB``.
+     - ``crc`` can be None for no CRC, or a polynomial specifier.
+
+   Note that the SPI clock frequency will not always be the requested baudrate.
+   The hardware only supports baudrates that are the APB bus frequency
+   (see :meth:`pyb.freq`) divided by a prescaler, which can be 2, 4, 8, 16, 32,
+   64, 128 or 256.  SPI(1) is on AHB2, and SPI(2) is on AHB1.  For precise
+   control over the SPI clock frequency, specify ``prescaler`` instead of
+   ``baudrate``.
+
+   Printing the SPI object will show you the computed baudrate and the chosen
+   prescaler.
 
 .. method:: spi.recv(recv, \*, timeout=5000)
 

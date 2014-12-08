@@ -346,8 +346,9 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
                 // SPI2 and SPI3 are on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
             }
-            uint baudrate = spi_clock >> ((self->spi->Init.BaudRatePrescaler >> 3) + 1);
-            print(env, "SPI(%u, SPI.MASTER, baudrate=%u", spi_num, baudrate);
+            uint log_prescaler = (self->spi->Init.BaudRatePrescaler >> 3) + 1;
+            uint baudrate = spi_clock >> log_prescaler;
+            print(env, "SPI(%u, SPI.MASTER, baudrate=%u, prescaler=%u", spi_num, baudrate, 1 << log_prescaler);
         } else {
             print(env, "SPI(%u, SPI.SLAVE", spi_num);
         }
@@ -369,6 +370,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 328125} },
+        { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_dir,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_DIRECTION_2LINES} },
@@ -387,17 +389,20 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
     SPI_InitTypeDef *init = &self->spi->Init;
     init->Mode = args[0].u_int;
 
-    // compute the baudrate prescaler from the requested baudrate
-    // select a prescaler that yields at most the requested baudrate
-    uint spi_clock;
-    if (self->spi->Instance == SPI1) {
-        // SPI1 is on APB2
-        spi_clock = HAL_RCC_GetPCLK2Freq();
-    } else {
-        // SPI2 and SPI3 are on APB1
-        spi_clock = HAL_RCC_GetPCLK1Freq();
+    // configure the prescaler
+    mp_uint_t br_prescale = args[2].u_int;
+    if (br_prescale == 0xffffffff) {
+        // prescaler not given, so select one that yields at most the requested baudrate
+        mp_uint_t spi_clock;
+        if (self->spi->Instance == SPI1) {
+            // SPI1 is on APB2
+            spi_clock = HAL_RCC_GetPCLK2Freq();
+        } else {
+            // SPI2 and SPI3 are on APB1
+            spi_clock = HAL_RCC_GetPCLK1Freq();
+        }
+        br_prescale = spi_clock / args[1].u_int;
     }
-    uint br_prescale = spi_clock / args[1].u_int;
     if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
     else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
     else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
@@ -407,19 +412,19 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
     else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
     else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
 
-    init->CLKPolarity = args[2].u_int == 0 ? SPI_POLARITY_LOW : SPI_POLARITY_HIGH;
-    init->CLKPhase = args[3].u_int == 0 ? SPI_PHASE_1EDGE : SPI_PHASE_2EDGE;
-    init->Direction = args[4].u_int;
-    init->DataSize = (args[5].u_int == 16) ? SPI_DATASIZE_16BIT : SPI_DATASIZE_8BIT;
-    init->NSS = args[6].u_int;
-    init->FirstBit = args[7].u_int;
-    init->TIMode = args[8].u_bool ? SPI_TIMODE_ENABLED : SPI_TIMODE_DISABLED;
-    if (args[9].u_obj == mp_const_none) {
+    init->CLKPolarity = args[3].u_int == 0 ? SPI_POLARITY_LOW : SPI_POLARITY_HIGH;
+    init->CLKPhase = args[4].u_int == 0 ? SPI_PHASE_1EDGE : SPI_PHASE_2EDGE;
+    init->Direction = args[5].u_int;
+    init->DataSize = (args[6].u_int == 16) ? SPI_DATASIZE_16BIT : SPI_DATASIZE_8BIT;
+    init->NSS = args[7].u_int;
+    init->FirstBit = args[8].u_int;
+    init->TIMode = args[9].u_bool ? SPI_TIMODE_ENABLED : SPI_TIMODE_DISABLED;
+    if (args[10].u_obj == mp_const_none) {
         init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
         init->CRCPolynomial = 0;
     } else {
         init->CRCCalculation = SPI_CRCCALCULATION_ENABLED;
-        init->CRCPolynomial = mp_obj_get_int(args[9].u_obj);
+        init->CRCPolynomial = mp_obj_get_int(args[10].u_obj);
     }
 
     // init the SPI bus
