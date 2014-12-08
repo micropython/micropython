@@ -173,15 +173,25 @@ STATIC mp_obj_t pyb_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 
-/// \function freq([sys_freq])
-///
-/// If given no arguments, returns a tuple of clock frequencies:
-/// (SYSCLK, HCLK, PCLK1, PCLK2).
-///
-/// If given an argument, sets the system frequency to that value in Hz.
-/// Eg freq(120000000) gives 120MHz.  Note that not all values are
-/// supported and the largest supported frequency not greater than
-/// the given sys_freq will be selected.
+// get or set the MCU frequencies
+STATIC mp_uint_t pyb_freq_calc_ahb_div(mp_uint_t wanted_div) {
+    if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
+    else if (wanted_div <= 2) { return RCC_SYSCLK_DIV2; }
+    else if (wanted_div <= 4) { return RCC_SYSCLK_DIV4; }
+    else if (wanted_div <= 8) { return RCC_SYSCLK_DIV8; }
+    else if (wanted_div <= 16) { return RCC_SYSCLK_DIV16; }
+    else if (wanted_div <= 64) { return RCC_SYSCLK_DIV64; }
+    else if (wanted_div <= 128) { return RCC_SYSCLK_DIV128; }
+    else if (wanted_div <= 256) { return RCC_SYSCLK_DIV256; }
+    else { return RCC_SYSCLK_DIV512; }
+}
+STATIC mp_uint_t pyb_freq_calc_apb_div(mp_uint_t wanted_div) {
+    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
+    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
+    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
+    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
+    else { return RCC_SYSCLK_DIV16; }
+}
 STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
@@ -273,9 +283,23 @@ STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
             // directly set the system clock source as desired
             RCC_ClkInitStruct.SYSCLKSource = sysclk_source;
         }
-        RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-        RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+        wanted_sysclk *= 1000000;
+        if (n_args >= 2) {
+            // note: AHB freq required to be >= 14.2MHz for USB operation
+            RCC_ClkInitStruct.AHBCLKDivider = pyb_freq_calc_ahb_div(wanted_sysclk / mp_obj_get_int(args[1]));
+        } else {
+            RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+        }
+        if (n_args >= 3) {
+            RCC_ClkInitStruct.APB1CLKDivider = pyb_freq_calc_apb_div(wanted_sysclk / mp_obj_get_int(args[2]));
+        } else {
+            RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+        }
+        if (n_args >= 4) {
+            RCC_ClkInitStruct.APB2CLKDivider = pyb_freq_calc_apb_div(wanted_sysclk / mp_obj_get_int(args[3]));
+        } else {
+            RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+        }
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
             goto fail;
         }
@@ -314,7 +338,7 @@ STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
         __fatal_error("can't change freq");
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 1, pyb_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 4, pyb_freq);
 
 /// \function sync()
 /// Sync all file systems.
