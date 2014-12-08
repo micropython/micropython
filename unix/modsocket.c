@@ -33,10 +33,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "mpconfig.h"
 #include "nlr.h"
@@ -70,6 +72,10 @@
 typedef struct _mp_obj_socket_t {
     mp_obj_base_t base;
     int fd;
+    uint16_t type;
+    int16_t family;
+    uint32_t flow_info;
+    uint32_t scope_id;
 } mp_obj_socket_t;
 
 STATIC const mp_obj_type_t usocket_type;
@@ -81,11 +87,20 @@ STATIC const mp_obj_type_t usocket_type;
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
+    socklen_t sz = sizeof(o->type);
+    struct sockaddr addr;
     o->base.type = &usocket_type;
     o->fd = fd;
+
+    getsockopt(fd, SOL_SOCKET, SO_TYPE, &(o->type), &sz);
+
+    sz = sizeof( addr );
+    getsockname(fd, &addr, &sz);
+
+    o->family = addr.sa_family;
+
     return o;
 }
-
 
 STATIC void socket_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_socket_t *self = self_in;
@@ -127,22 +142,214 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
 
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = self_in;
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
-    int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
+
+    int r = -1;
+
+    if( self->family == AF_UNIX ) {
+        struct sockaddr_un u_addr;
+        unsigned int path_size = sizeof(u_addr.sun_path);
+        char* arg;
+        uint32_t len;
+
+        if( ! MP_OBJ_IS_STR(addr_in) )
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+
+        arg = (char*)mp_obj_str_get_str(addr_in);
+        len = mp_obj_str_get_len(addr_in);
+
+        if( len >= path_size )
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENAMETOOLONG)));
+
+        memset( &u_addr,0, sizeof(u_addr));
+
+        strncpy( u_addr.sun_path, arg, path_size-1);
+        u_addr.sun_family = AF_UNIX;
+
+        r = connect(self->fd, (const struct sockaddr *)&u_addr, SUN_LEN(&u_addr));
+    } else if( self->family == AF_INET
+            || self->family == AF_INET6 ) {
+        struct addrinfo hints;
+        struct addrinfo *result;
+        int s;
+        char* host;
+        char* port;
+        uint32_t flow_info=0, scope_id=0;
+        mp_obj_tuple_t *arg;
+
+        if( ! MP_OBJ_IS_TYPE(addr_in, &mp_type_tuple) )
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+
+        arg = addr_in;
+
+        if( arg->len < 2 ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+        }
+
+        if( arg->len > 2 && self->family == AF_INET ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+        }
+
+        if( !MP_OBJ_IS_STR(arg->items[0]) ){
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+        }
+        if( !MP_OBJ_IS_STR(arg->items[1]) ){
+            if( !MP_OBJ_IS_INT(arg->items[1]) ){
+                nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+            }
+            port = alloca(sizeof(char)*8);
+            snprintf(port, 8, "%u", (uint16_t)MP_OBJ_SMALL_INT_VALUE(arg->items[1]));
+        } else {
+            port = (char*)mp_obj_str_get_str(arg->items[1]);
+        }
+
+        if( arg->len > 2 && MP_OBJ_IS_INT(arg->items[2]) ) {
+            flow_info = MP_OBJ_SMALL_INT_VALUE(arg->items[2]);
+        }
+
+        if( arg->len > 3 && MP_OBJ_IS_INT(arg->items[3]) ) {
+            scope_id = MP_OBJ_SMALL_INT_VALUE(arg->items[3]);
+        }
+
+        host =(char*) mp_obj_str_get_str(arg->items[0]);
+
+        memset(&hints, 0, sizeof(struct addrinfo));
+
+        hints.ai_family = self->family;
+        hints.ai_socktype = self->type;
+        hints.ai_flags = AI_NUMERICHOST;
+        hints.ai_protocol = 0;
+
+        s = getaddrinfo( host, port, &hints, &result);
+
+        if( s != 0 ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_OSError));
+        }
+
+        if( result == NULL ) {
+             nlr_raise(mp_obj_new_exception(&mp_type_OSError));
+        }
+
+        if( self->family == AF_INET6 ) {
+            struct sockaddr_in6* in6addr;
+            in6addr = (struct sockaddr_in6*) &(result->ai_addr);
+            in6addr->sin6_flowinfo = flow_info;
+            in6addr->sin6_scope_id = scope_id;
+        }
+
+        r = connect(self->fd, result->ai_addr, result->ai_addrlen);
+        freeaddrinfo(result);
+    } else {
+        nlr_raise(mp_obj_new_exception(&mp_type_NotImplementedError));
+    }
+
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
+    int r = -1;
     mp_obj_socket_t *self = self_in;
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
-    int r = bind(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
+
+    if( self->family == AF_UNIX ) {
+        struct sockaddr_un u_addr;
+        unsigned int path_size = sizeof(u_addr.sun_path);
+        char* arg;
+        uint32_t len;
+
+        if( ! MP_OBJ_IS_STR(addr_in) )
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+
+        arg = (char*)mp_obj_str_get_str(addr_in);
+        len = mp_obj_str_get_len(addr_in);
+
+        if( len >= path_size )
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENAMETOOLONG)));
+
+        memset( &u_addr,0, sizeof(u_addr));
+
+        strncpy( u_addr.sun_path, arg, path_size-1);
+        u_addr.sun_family = AF_UNIX;
+
+        unlink(arg);
+
+        r = bind(self->fd, (const struct sockaddr *)&u_addr, SUN_LEN(&u_addr));
+    } else if( self->family == AF_INET
+            || self->family == AF_INET6 ) {
+        struct addrinfo hints;
+        struct addrinfo *result;
+        int s;
+        char* host;
+        char* port;
+        uint32_t flow_info = 0, scope_id = 0;
+        mp_obj_tuple_t *arg;
+
+        if( ! MP_OBJ_IS_TYPE(addr_in, &mp_type_tuple) )
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+
+        arg = addr_in;
+
+        if( arg->len < 2 ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+        }
+
+        if( !MP_OBJ_IS_STR(arg->items[0]) ){
+            nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+        }
+
+        if( !MP_OBJ_IS_STR(arg->items[1]) ){
+            if( !MP_OBJ_IS_INT(arg->items[1]) ){
+                nlr_raise(mp_obj_new_exception(&mp_type_TypeError));
+            }
+            port = alloca(sizeof(char)*8);
+            snprintf(port, 8, "%u",(uint16_t) MP_OBJ_SMALL_INT_VALUE(arg->items[1]));
+        } else {
+            port = (char*)mp_obj_str_get_str(arg->items[1]);
+        }
+
+        if( arg->len > 2 && MP_OBJ_IS_INT(arg->items[2]) ) {
+            flow_info = MP_OBJ_SMALL_INT_VALUE(arg->items[2]);
+        }
+
+        if( arg->len > 3 && MP_OBJ_IS_INT(arg->items[3]) ) {
+            scope_id = MP_OBJ_SMALL_INT_VALUE(arg->items[3]);
+        }
+
+        host = (char*) mp_obj_str_get_str(arg->items[0]);
+
+        memset(&hints, 0, sizeof(struct addrinfo));
+
+        hints.ai_family = self->family;
+        hints.ai_socktype = self->type;
+        hints.ai_flags = AI_PASSIVE;
+        hints.ai_protocol = 0;
+
+        s = getaddrinfo( host, port, &hints, &result);
+
+        if( s != 0 ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_OSError));
+        }
+
+        if( result == NULL ) {
+            nlr_raise(mp_obj_new_exception(&mp_type_OSError));
+        }
+
+        if( self->family == AF_INET6 ) {
+            struct sockaddr_in6* in6addr;
+            in6addr = (struct sockaddr_in6*) &(result->ai_addr);
+            in6addr->sin6_flowinfo = flow_info;
+            in6addr->sin6_scope_id = scope_id;
+        }
+        r = bind(self->fd, result->ai_addr, result->ai_addrlen);
+        freeaddrinfo(result);
+    } else {
+        nlr_raise(mp_obj_new_exception(&mp_type_NotImplementedError));
+    }
+
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
 STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
