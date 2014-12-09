@@ -91,11 +91,10 @@ PY_O_BASENAME = \
 	sequence.o \
 	stream.o \
 	binary.o \
-	builtin.o \
 	builtinimport.o \
 	builtinevex.o \
-	builtintables.o \
 	modarray.o \
+	modbuiltins.o \
 	modcollections.o \
 	modgc.o \
 	modio.o \

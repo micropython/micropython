@@ -73,6 +73,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_op_setitem_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_op_delitem_obj);
 
 extern const mp_obj_module_t mp_module___main__;
+extern const mp_obj_module_t mp_module_builtins;
 extern const mp_obj_module_t mp_module_array;
 extern const mp_obj_module_t mp_module_collections;
 extern const mp_obj_module_t mp_module_io;
@@ -82,6 +83,9 @@ extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_struct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
+
+extern const mp_obj_dict_t mp_module_builtins_globals;
+extern mp_obj_dict_t *mp_module_builtins_override_dict;
 
 struct _dummy_t;
 extern struct _dummy_t mp_sys_stdin_obj;

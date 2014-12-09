@@ -97,8 +97,17 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, (mp_fun_kw_t)fun_name)
 
-// This macro is used to define constant dict objects
+// These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
+
+#define MP_DEFINE_CONST_MAP(map_name, table_name) \
+    const mp_map_t map_name = { \
+        .all_keys_are_qstrs = 1, \
+        .table_is_fixed_array = 1, \
+        .used = MP_ARRAY_SIZE(table_name), \
+        .alloc = MP_ARRAY_SIZE(table_name), \
+        .table = (mp_map_elem_t*)table_name, \
+    }
 
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) \
     const mp_obj_dict_t dict_name = { \

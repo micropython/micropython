@@ -44,7 +44,6 @@
 #include "runtime0.h"
 #include "runtime.h"
 #include "builtin.h"
-#include "builtintables.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -55,6 +54,14 @@
 #endif
 
 #define PATH_SEP_CHAR '/'
+
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC const mp_map_elem_t mp_builtin_module_weak_links_table[] = {
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+};
+
+STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
+#endif
 
 bool mp_obj_is_package(mp_obj_t module) {
     mp_obj_t dest[2];
@@ -270,7 +277,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                 #if MICROPY_MODULE_WEAK_LINKS
                 // check if there is a weak link to this module
                 if (i == mod_len) {
-                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_dict_obj.map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
+                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
                     if (el == NULL) {
                         goto no_exist;
                     }

@@ -42,7 +42,6 @@
 #include "runtime.h"
 #include "emitglue.h"
 #include "builtin.h"
-#include "builtintables.h"
 #include "bc.h"
 #include "smallint.h"
 #include "objgenerator.h"
@@ -78,6 +77,10 @@ const mp_obj_module_t mp_module___main__ = {
     .globals = (mp_obj_dict_t*)&dict_main,
 };
 
+#if MICROPY_CAN_OVERRIDE_BUILTINS
+mp_obj_dict_t *mp_module_builtins_override_dict;
+#endif
+
 void mp_init(void) {
     qstr_init();
     mp_stack_ctrl_init();
@@ -106,6 +109,11 @@ void mp_init(void) {
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     dict_locals = dict_globals = &dict_main;
+
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    // start with no extensions to builtins
+    mp_module_builtins_override_dict = NULL;
+    #endif
 }
 
 void mp_deinit(void) {
@@ -162,8 +170,16 @@ mp_obj_t mp_load_global(qstr qstr) {
     DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
     mp_map_elem_t *elem = mp_map_lookup(&dict_globals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
     if (elem == NULL) {
-        // TODO lookup in dynamic table of builtins first
-        elem = mp_map_lookup((mp_map_t*)&mp_builtin_object_dict_obj.map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+        #if MICROPY_CAN_OVERRIDE_BUILTINS
+        if (mp_module_builtins_override_dict != NULL) {
+            // lookup in additional dynamic table of builtins first
+            elem = mp_map_lookup(&mp_module_builtins_override_dict->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                return elem->value;
+            }
+        }
+        #endif
+        elem = mp_map_lookup((mp_map_t*)&mp_module_builtins_globals.map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem == NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_NameError,
@@ -179,8 +195,15 @@ mp_obj_t mp_load_global(qstr qstr) {
 
 mp_obj_t mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
-    // TODO lookup __build_class__ in dynamic table of builtins first
-    // ... else no user-defined __build_class__, return builtin one
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    if (mp_module_builtins_override_dict != NULL) {
+        // lookup in additional dynamic table of builtins first
+        mp_map_elem_t *elem = mp_map_lookup(&mp_module_builtins_override_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            return elem->value;
+        }
+    }
+    #endif
     return (mp_obj_t)&mp_builtin___build_class___obj;
 }
 
