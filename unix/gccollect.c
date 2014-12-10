@@ -40,7 +40,7 @@ extern char *stack_top;
 
 typedef jmp_buf regs_t;
 
-void gc_helper_get_regs(regs_t arr) {
+STATIC void gc_helper_get_regs(regs_t arr) {
     setjmp(arr);
 }
 
@@ -86,7 +86,7 @@ void gc_helper_get_regs(regs_t arr) {
 #ifdef __i386__
 typedef mp_uint_t regs_t[4];
 
-void gc_helper_get_regs(regs_t arr) {
+STATIC void gc_helper_get_regs(regs_t arr) {
     register long ebx asm ("ebx");
     register long esi asm ("esi");
     register long edi asm ("edi");
@@ -101,7 +101,7 @@ void gc_helper_get_regs(regs_t arr) {
 #if defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
 typedef mp_uint_t regs_t[10];
 
-void gc_helper_get_regs(regs_t arr) {
+STATIC void gc_helper_get_regs(regs_t arr) {
     register long r4 asm ("r4");
     register long r5 asm ("r5");
     register long r6 asm ("r6");

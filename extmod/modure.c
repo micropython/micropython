@@ -175,7 +175,7 @@ STATIC const mp_obj_type_t re_type = {
     .locals_dict = (mp_obj_t)&re_locals_dict,
 };
 
-mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
     mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);

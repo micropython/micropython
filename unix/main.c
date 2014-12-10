@@ -239,7 +239,7 @@ STATIC int do_str(const char *str) {
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-int usage(char **argv) {
+STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
 "Options:\n"
@@ -269,7 +269,7 @@ int usage(char **argv) {
 }
 
 // Process options which set interpreter init options
-void pre_process_options(int argc, char **argv) {
+STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
@@ -318,7 +318,7 @@ void pre_process_options(int argc, char **argv) {
     }
 }
 
-void set_sys_argv(char *argv[], int argc, int start_arg) {
+STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }

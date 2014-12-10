@@ -97,7 +97,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 /******************************************************************************/
 /* generator instance                                                         */
 
-void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_gen_instance_t *self = self_in;
     print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
 }
@@ -183,7 +183,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
     }
 }
 
-mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
 }
 

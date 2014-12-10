@@ -150,7 +150,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
 
 STATIC const mp_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {(mp_obj_t)&mp_type_tuple}};
 
-mp_obj_t mp_obj_new_namedtuple_type(qstr name, const char *fields) {
+STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, const char *fields) {
     mp_obj_namedtuple_type_t *o = m_new0(mp_obj_namedtuple_type_t, 1);
     o->base.base.type = &mp_type_type;
     o->base.name = name;

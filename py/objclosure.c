@@ -41,7 +41,7 @@ typedef struct _mp_obj_closure_t {
     mp_obj_t closed[];
 } mp_obj_closure_t;
 
-mp_obj_t closure_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t closure_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_closure_t *self = self_in;
 
     // need to concatenate closed-over-vars and args

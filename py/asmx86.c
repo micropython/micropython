@@ -325,7 +325,7 @@ void asm_x86_add_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_ADD_R32_TO_RM32);
 }
 
-void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32) {
+STATIC void asm_x86_add_i32_to_r32(asm_x86_t *as, int src_i32, int dest_r32) {
     if (SIGNED_FIT8(src_i32)) {
         asm_x86_write_byte_2(as, OPCODE_ADD_I8_TO_RM32, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
         asm_x86_write_byte_1(as, src_i32 & 0xff);

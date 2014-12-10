@@ -559,7 +559,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
 /// \function addressof()
 /// Return address of object's data (applies to object providing buffer
 /// interface).
-mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
+STATIC mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     return mp_obj_new_int((mp_int_t)bufinfo.buf);
@@ -570,7 +570,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof
 /// Capture memory at given address of given size as bytearray. Memory is
 /// captured by reference (and thus memory pointed by bytearray may change
 /// or become invalid at later time). Use bytes_at() to capture by value.
-mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
+STATIC mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void*)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
@@ -579,7 +579,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytear
 /// Capture memory at given address of given size as bytes. Memory is
 /// captured by value, i.e. copied. Use bytearray_at() to capture by reference
 /// ("zero copy").
-mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
+STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytes((void*)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);

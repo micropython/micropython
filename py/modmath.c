@@ -41,19 +41,19 @@
 
 //TODO: Change macros to check for overflow and raise OverflowError or RangeError
 #define MATH_FUN_1(py_name, c_name) \
-    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 #define MATH_FUN_2(py_name, c_name) \
-    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_float(y_obj))); } \
+    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_float(y_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 #define MATH_FUN_1_TO_BOOL(py_name, c_name) \
-    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return MP_BOOL(c_name(mp_obj_get_float(x_obj))); } \
+    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return MP_BOOL(c_name(mp_obj_get_float(x_obj))); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 #define MATH_FUN_1_TO_INT(py_name, c_name) \
-    mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int((mp_int_t)MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { mp_int_t x = MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj)); return mp_obj_new_int(x); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 // These are also used by cmath.c
@@ -142,7 +142,7 @@ MATH_FUN_1(lgamma, lgamma)
 
 /// \function frexp(x)
 /// Converts a floating-point number to fractional and integral components.
-mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
+STATIC mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
     int int_exponent = 0;
     mp_float_t significand = MICROPY_FLOAT_C_FUN(frexp)(mp_obj_get_float(x_obj), &int_exponent);
     mp_obj_t tuple[2];
@@ -153,7 +153,7 @@ mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 
 /// \function modf(x)
-mp_obj_t mp_math_modf(mp_obj_t x_obj) {
+STATIC mp_obj_t mp_math_modf(mp_obj_t x_obj) {
     mp_float_t int_part = 0.0;
     mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(mp_obj_get_float(x_obj), &int_part);
     mp_obj_t tuple[2];
@@ -166,13 +166,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_modf_obj, mp_math_modf);
 // Angular conversions
 
 /// \function radians(x)
-mp_obj_t mp_math_radians(mp_obj_t x_obj) {
+STATIC mp_obj_t mp_math_radians(mp_obj_t x_obj) {
     return mp_obj_new_float(mp_obj_get_float(x_obj) * M_PI / 180.0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_radians_obj, mp_math_radians);
 
 /// \function degrees(x)
-mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
+STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
     return mp_obj_new_float(mp_obj_get_float(x_obj) * 180.0 / M_PI);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);

@@ -30,7 +30,7 @@
 
 #if MICROPY_HELPER_REPL
 
-bool str_startswith_word(const char *str, const char *head) {
+STATIC bool str_startswith_word(const char *str, const char *head) {
     mp_uint_t i;
     for (i = 0; str[i] && head[i]; i++) {
         if (str[i] != head[i]) {

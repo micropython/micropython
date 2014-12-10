@@ -497,7 +497,7 @@ typedef struct _mp_obj_list_it_t {
     mp_uint_t cur;
 } mp_obj_list_it_t;
 
-mp_obj_t list_it_iternext(mp_obj_t self_in) {
+STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
     mp_obj_list_it_t *self = self_in;
     if (self->cur < self->list->len) {
         mp_obj_t o_out = self->list->items[self->cur];

@@ -491,7 +491,7 @@ STATIC const mp_obj_type_t dict_view_type = {
     .getiter = dict_view_getiter,
 };
 
-mp_obj_t mp_obj_new_dict_view(mp_obj_dict_t *dict, mp_dict_view_kind_t kind) {
+STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_dict_t *dict, mp_dict_view_kind_t kind) {
     mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
     o->base.type = &dict_view_type;
     o->dict = dict;

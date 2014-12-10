@@ -300,7 +300,7 @@ STATIC void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *
     print(env, "<ffifunc %p>", self->func);
 }
 
-mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_ffifunc_t *self = self_in;
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
@@ -416,12 +416,12 @@ STATIC const mp_obj_type_t opaque_type = {
 };
 */
 
-mp_obj_t mod_ffi_open(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_ffi_open(mp_uint_t n_args, const mp_obj_t *args) {
     return ffimod_make_new((mp_obj_t)&ffimod_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);
 
-mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
+STATIC mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void*)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);

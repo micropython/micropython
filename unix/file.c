@@ -49,7 +49,7 @@ typedef struct _mp_obj_fdfile_t {
 } mp_obj_fdfile_t;
 
 #ifdef MICROPY_CPYTHON_COMPAT
-void check_fd_is_open(const mp_obj_fdfile_t *o) {
+STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
     if (o->fd < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
     }
@@ -123,7 +123,7 @@ STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
-mp_obj_t fdfile___exit__(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return fdfile_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);

@@ -61,7 +61,7 @@ struct _emit_inline_asm_t {
     asm_thumb_t *as;
 };
 
-void emit_inline_thumb_error(emit_inline_asm_t *emit, const char *fmt, ...) {
+STATIC void emit_inline_thumb_error(emit_inline_asm_t *emit, const char *fmt, ...) {
     printf("SyntaxError: ");
     emit->success = false;
     va_list ap;
