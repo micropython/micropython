@@ -36,6 +36,7 @@ Q(flush)
 
 Q(_os)
 Q(stat)
+Q(unlink)
 
 Q(ffi)
 Q(ffimod)

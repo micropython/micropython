@@ -65,9 +65,22 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
+STATIC mp_obj_t mod_os_unlink(mp_obj_t path_in) {
+    mp_uint_t len;
+    const char *path = mp_obj_str_get_data(path_in, &len);
+
+    int r = unlink(path);
+
+    RAISE_ERRNO(r, errno);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_unlink_obj, mod_os_unlink);
+
 STATIC const mp_map_elem_t mp_module_os_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR__os) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&mod_os_stat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),(mp_obj_t)&mod_os_unlink_obj},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);
