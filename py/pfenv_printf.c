@@ -40,7 +40,7 @@
 #include "formatfloat.h"
 #endif
 
-STATIC int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args) {
+int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args) {
     int chrs = 0;
     for (;;) {
         {
