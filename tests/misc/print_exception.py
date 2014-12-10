@@ -7,7 +7,7 @@ else:
     print_exception = lambda e, f: traceback.print_exception(None, e, None, file=f)
 
 try:
-    1/0
+    XXX
 except Exception as e:
     print('caught')
     buf = io.StringIO()
