@@ -35,12 +35,12 @@
 // Stack top at the start of program
 char *stack_top;
 
-void mp_stack_ctrl_init() {
+void mp_stack_ctrl_init(void) {
     volatile int stack_dummy;
     stack_top = (char*)&stack_dummy;
 }
 
-mp_uint_t mp_stack_usage() {
+mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;
     return stack_top - (char*)&stack_dummy;
@@ -54,7 +54,7 @@ void mp_stack_set_limit(mp_uint_t limit) {
     stack_limit = limit;
 }
 
-void mp_stack_check() {
+void mp_stack_check(void) {
     if (mp_stack_usage() >= stack_limit) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "maximum recursion depth exceeded"));
     }

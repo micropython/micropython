@@ -46,7 +46,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
-STATIC NORETURN void arg_type_mixup();
+STATIC NORETURN void arg_type_mixup(void);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -1957,7 +1957,7 @@ STATIC void bad_implicit_conversion(mp_obj_t self_in) {
     }
 }
 
-STATIC void arg_type_mixup() {
+STATIC void arg_type_mixup(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Can't mix str and bytes arguments"));
 }
 

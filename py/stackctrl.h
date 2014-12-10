@@ -24,13 +24,13 @@
  * THE SOFTWARE.
  */
 
-void mp_stack_ctrl_init();
-mp_uint_t mp_stack_usage();
+void mp_stack_ctrl_init(void);
+mp_uint_t mp_stack_usage(void);
 
 #if MICROPY_STACK_CHECK
 
 void mp_stack_set_limit(mp_uint_t limit);
-void mp_stack_check();
+void mp_stack_check(void);
 #define MP_STACK_CHECK() mp_stack_check()
 
 #else
