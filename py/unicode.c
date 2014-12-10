@@ -28,6 +28,7 @@
 
 #include "mpconfig.h"
 #include "misc.h"
+#include "unicode.h"
 
 // attribute flags
 #define FL_PRINT (0x01)
@@ -96,7 +97,7 @@ const byte *utf8_next_char(const byte *s) {
 #endif
 }
 
-mp_uint_t utf8_ptr_to_index(const char *s, const char *ptr) {
+mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr) {
     mp_uint_t i = 0;
     while (ptr > s) {
         if (!UTF8_IS_CONT(*--ptr)) {

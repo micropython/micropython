@@ -395,6 +395,8 @@ mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-prec
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_bytes(const byte* data, mp_uint_t len);
+mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);
+mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
@@ -548,9 +550,6 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice
 void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
-
-// array
-mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
 
 // functions
 #define MP_OBJ_FUN_ARGS_MAX (0xffff) // to set maximum value in n_args_max below
