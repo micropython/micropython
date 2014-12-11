@@ -60,6 +60,7 @@ def run_tests(pyb, tests, args):
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
+        skip_tests.add('misc/print_exception.py')
 
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
