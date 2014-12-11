@@ -1,9 +1,0 @@
-# This tests that printing recursive data structure doesn't lead to segfault.
-# Unfortunately, print() so far doesn't support "file "kwarg, so variable-len
-# output of this test cannot be redirected, and this test cannot be validated.
-l = [1, 2, 3, None]
-l[-1] = l
-try:
-    print(l)
-except RuntimeError:
-    print("RuntimeError")
