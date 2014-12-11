@@ -33,6 +33,7 @@
 #include "nlr.h"
 #include "misc.h"
 #include "qstr.h"
+#include "gc.h"
 #include "obj.h"
 #include "objtuple.h"
 #include "runtime.h"
@@ -78,6 +79,7 @@ typedef struct _pyb_can_obj_t {
 } pyb_can_obj_t;
 
 STATIC uint8_t can2_start_bank = 14;
+STATIC pyb_can_obj_t *pyb_can_obj_all[2];
 
 // assumes Init parameters have been set up correctly
 STATIC bool can_init(pyb_can_obj_t *can_obj) {
@@ -142,6 +144,7 @@ STATIC void can_deinit(pyb_can_obj_t *can_obj) {
         __CAN2_RELEASE_RESET();
         __CAN2_CLK_DISABLE();
     }
+    pyb_can_obj_all[can_obj->can_id-1] = NULL;
 }
 
 STATIC void can_clearfilter(uint32_t f) {
@@ -219,6 +222,8 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const
     init->RFLM = DISABLE;
     init->TXFP = DISABLE;
 
+    pyb_can_obj_all[self->can_id-1] = self;
+
     // init CAN (if it fails, it's because the port doesn't exist)
     if (!can_init(self)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN port %d does not exist", self->can_id));
@@ -265,6 +270,7 @@ STATIC mp_obj_t pyb_can_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     } else {
         o->can_id = mp_obj_get_int(args[0]);
     }
+    o->rxcallback = mp_const_none;
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -542,12 +548,11 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_uint_t n_args, const mp_obj_t *pos_args, m
     if (args[2].u_obj == mp_const_none){
         //TODO
         //disable callback
-        if (self->can_id == PYB_CAN_1){
-
-        }
+    	__HAL_CAN_DISABLE_IT(&self->can, CAN_IT_FMP0);
+    	self->rxcallback = mp_const_none;
     } else if (mp_obj_is_callable(args[2].u_obj)) {
         self->rxcallback = args[2].u_obj;
-
+        __HAL_CAN_ENABLE_IT(&self->can, CAN_IT_FMP0);
     }
     return mp_const_none;
 }
@@ -605,7 +610,34 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *err
 
 
 void can_rx_irq_handler(uint can_id, uint fifo_id){
+	mp_obj_t callback;
+	pyb_can_obj_t *can;
 
+	can = pyb_can_obj_all[can_id-1];
+	callback = can->rxcallback;
+
+	if (callback != mp_const_none) {
+		gc_lock();
+		nlr_buf_t nlr;
+		if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(callback, can);
+			nlr_pop();
+		} else {
+			// Uncaught exception; disable the callback so it doesn't run again.
+			//TODO fix this stuff
+			/*
+			can->rxcallback = mp_const_none;
+			__HAL_CAN_DISABLE_IT(can->can, irq_mask);
+			if (channel == 0) {
+				printf("uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+			} else {
+				printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+			}
+			*/
+			mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+		}
+		gc_unlock();
+	}
 }
 
 STATIC const mp_stream_p_t can_stream_p = {
