@@ -1796,7 +1796,8 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     // at this point we actually have 1 less element on the stack
     EMIT_ARG(adjust_stack_size, -1);
 
-    // store next value to var
+    // duplicate next value and store it to var
+    EMIT(dup_top);
     c_assign(comp, pn_var, ASSIGN_STORE);
 
     // compile body
@@ -1805,7 +1806,6 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     EMIT_ARG(label_assign, continue_label);
 
     // compile: var + step, duplicated on stack
-    compile_node(comp, pn_var);
     compile_node(comp, pn_step);
     EMIT_ARG(binary_op, MP_BINARY_OP_INPLACE_ADD);
     EMIT(dup_top);
