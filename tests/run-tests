@@ -18,7 +18,7 @@ else:
     MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
-os.environ['PYTHONIOENCODING']='utf-8'
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 def rm_f(fname):
     if os.path.exists(fname):
