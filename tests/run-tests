@@ -19,6 +19,7 @@ else:
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
+os.environ['MICROPYPATH'] = ''
 
 def rm_f(fname):
     if os.path.exists(fname):
