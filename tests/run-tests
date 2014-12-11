@@ -85,6 +85,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/features.py')
         skip_tests.add('misc/recursion.py')
         skip_tests.add('misc/rge_sm.py')
+        skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
 
     for test_file in tests:
         test_basename = os.path.basename(test_file)
