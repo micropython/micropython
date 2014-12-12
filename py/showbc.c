@@ -299,22 +299,22 @@ void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
 
             case MP_BC_POP_JUMP_IF_TRUE:
                 DECODE_SLABEL;
-                printf("POP_JUMP_IF_TRUE " UINT_FMT, ip + unum - ip_start);
+                printf("POP_JUMP_IF_TRUE " INT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_POP_JUMP_IF_FALSE:
                 DECODE_SLABEL;
-                printf("POP_JUMP_IF_FALSE " UINT_FMT, ip + unum - ip_start);
+                printf("POP_JUMP_IF_FALSE " INT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_JUMP_IF_TRUE_OR_POP:
                 DECODE_SLABEL;
-                printf("JUMP_IF_TRUE_OR_POP " UINT_FMT, ip + unum - ip_start);
+                printf("JUMP_IF_TRUE_OR_POP " INT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_JUMP_IF_FALSE_OR_POP:
                 DECODE_SLABEL;
-                printf("JUMP_IF_FALSE_OR_POP " UINT_FMT, ip + unum - ip_start);
+                printf("JUMP_IF_FALSE_OR_POP " INT_FMT, ip + unum - ip_start);
                 break;
 
             case MP_BC_SETUP_WITH:
