@@ -1776,25 +1776,39 @@ STATIC void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 #if !MICROPY_EMIT_CPYTHON
-// TODO preload end and step onto stack if they are not constants
-// Note that, as per semantics of for .. range, the final failing value should not be stored in the loop variable
-// And, if the loop never runs, the loop variable should never be assigned
+// This function compiles an optimised for-loop of the form:
+//      for <var> in range(<start>, <end>, <step>):
+//          <body>
+//      else:
+//          <else>
+// <var> must be an identifier and <step> must be a small-int.
+//
+// Semantics of for-loop require:
+//  - final failing value should not be stored in the loop variable
+//  - if the loop never runs, the loop variable should never be assigned
+//  - assignments to <var>, <end> or <step> in the body do not alter the loop
+//    (<step> is a constant for us, so no need to worry about it changing)
+//
+// If <end> is a small-int, then the stack during the for-loop contains just
+// the current value of <var>.  Otherwise, the stack contains <end> then the
+// current value of <var>.
 STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t pn_var, mp_parse_node_t pn_start, mp_parse_node_t pn_end, mp_parse_node_t pn_step, mp_parse_node_t pn_body, mp_parse_node_t pn_else) {
     START_BREAK_CONTINUE_BLOCK
-    // note that we don't need to pop anything when breaking from an optimise for loop
 
     uint top_label = comp_next_label(comp);
     uint entry_label = comp_next_label(comp);
 
-    // compile: start, duplicated on stack
+    // put the end value on the stack if it's not a small-int constant
+    bool end_on_stack = !MP_PARSE_NODE_IS_SMALL_INT(pn_end);
+    if (end_on_stack) {
+        compile_node(comp, pn_end);
+    }
+
+    // compile: start
     compile_node(comp, pn_start);
-    EMIT(dup_top);
 
     EMIT_ARG(jump, entry_label);
     EMIT_ARG(label_assign, top_label);
-
-    // at this point we actually have 1 less element on the stack
-    EMIT_ARG(adjust_stack_size, -1);
 
     // duplicate next value and store it to var
     EMIT(dup_top);
@@ -1805,15 +1819,20 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
 
     EMIT_ARG(label_assign, continue_label);
 
-    // compile: var + step, duplicated on stack
+    // compile: var + step
     compile_node(comp, pn_step);
     EMIT_ARG(binary_op, MP_BINARY_OP_INPLACE_ADD);
-    EMIT(dup_top);
 
     EMIT_ARG(label_assign, entry_label);
 
     // compile: if var <cond> end: goto top
-    compile_node(comp, pn_end);
+    if (end_on_stack) {
+        EMIT(dup_top_two);
+        EMIT(rot_two);
+    } else {
+        EMIT(dup_top);
+        compile_node(comp, pn_end);
+    }
     assert(MP_PARSE_NODE_IS_SMALL_INT(pn_step));
     if (MP_PARSE_NODE_LEAF_SMALL_INT(pn_step) >= 0) {
         EMIT_ARG(binary_op, MP_BINARY_OP_LESS);
@@ -1822,15 +1841,20 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     }
     EMIT_ARG(pop_jump_if_true, top_label);
 
-    // discard final value of var that failed the loop condition
-    EMIT(pop_top);
-
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
 
     compile_node(comp, pn_else);
 
     EMIT_ARG(label_assign, break_label);
+
+    // discard final value of var that failed the loop condition
+    EMIT(pop_top);
+
+    // discard <end> value if it's on the stack
+    if (end_on_stack) {
+        EMIT(pop_top);
+    }
 }
 #endif
 
