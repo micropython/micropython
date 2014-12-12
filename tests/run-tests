@@ -51,12 +51,12 @@ def run_tests(pyb, tests, args):
     skipped_tests = []
 
     skip_tests = set()
+    skip_native = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'micropython/native_check.py')
     if native == b'CRASH':
-        skip_tests.update({'micropython/native_%s.py' % t for t in 'check misc'.split()})
-        skip_tests.update({'micropython/viper_%s.py' % t for t in 'binop_arith binop_comp cond ptr16_store ptr8_store misc'.split()})
+        skip_native = True
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
@@ -91,8 +91,9 @@ def run_tests(pyb, tests, args):
     for test_file in tests:
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
+        is_native = test_name.startswith("native_") or test_name.startswith("viper_")
 
-        if test_file in skip_tests:
+        if test_file in skip_tests or (skip_native and is_native):
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
