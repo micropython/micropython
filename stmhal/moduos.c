@@ -39,6 +39,7 @@
 #include "ff.h"
 #include "file.h"
 #include "sdcard.h"
+#include "usermount.h"
 #include "portmodules.h"
 
 /// \module os - basic "operating system" services
@@ -122,6 +123,9 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
         if (sd_in_root()) {
             mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
+        }
+        if (user_mount.str != NULL) {
+            mp_obj_list_append(dir_list, mp_obj_new_str(user_mount.str + 1, user_mount.len - 1, false));
         }
         return dir_list;
     }

@@ -26,9 +26,14 @@
 
 #include <string.h>
 
-#include "mpconfigport.h"
+#include "mpconfig.h"
+#include "nlr.h"
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
 #include "ff.h"
 #include "ffconf.h"
+#include "usermount.h"
 
 extern BYTE CurrVol;
 
@@ -63,6 +68,15 @@ int ff_get_ldnumber (const TCHAR** path) {
             return -1;
         }
         return 1;
+    } else if (user_mount.str != NULL && strncmp(*path, user_mount.str, user_mount.len) == 0) {
+        if ((*path)[user_mount.len] == '/') {
+            *path += user_mount.len;
+        } else if ((*path)[user_mount.len] == '\0') {
+            *path = "/";
+        } else {
+            return -1;
+        }
+        return 2;
     } else {
         return -1;
     }

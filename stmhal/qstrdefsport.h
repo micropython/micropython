@@ -71,6 +71,9 @@ Q(millis)
 Q(micros)
 Q(elapsed_millis)
 Q(elapsed_micros)
+Q(mount)
+Q(readblocks)
+Q(writeblocks)
 
 // for module weak links
 Q(re)
