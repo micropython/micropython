@@ -282,8 +282,9 @@ void asm_arm_mov_reg_i32(asm_arm_t *as, uint rd, int imm) {
     // TODO: There are more variants of immediate values
     if ((imm & 0xFF) == imm) {
         emit_al(as, asm_arm_op_mov_imm(rd, imm));
-    } else if (imm < 0 && ((-imm) & 0xFF) == -imm) {
-        emit_al(as, asm_arm_op_mvn_imm(rd, -imm));
+    } else if (imm < 0 && imm >= -256) {
+        // mvn is "move not", not "move negative"
+        emit_al(as, asm_arm_op_mvn_imm(rd, ~imm));
     } else {
         //Insert immediate into code and jump over it
         emit_al(as, 0x59f0000 | (rd << 12)); // ldr rd, [pc]
