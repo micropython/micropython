@@ -86,6 +86,9 @@ DSTATUS disk_initialize (
             if (user_mount.str == NULL) {
                 return STA_NODISK;
             }
+            if (user_mount.writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
             return 0;
     }
 
@@ -112,6 +115,12 @@ DSTATUS disk_status (
 #endif
 
         case PD_USER:
+            if (user_mount.str == NULL) {
+                return STA_NOINIT;
+            }
+            if (user_mount.writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
             return 0;
     }
 
@@ -186,6 +195,10 @@ DRESULT disk_write (
 #endif
 
         case PD_USER:
+            if (user_mount.writeblocks[0] == MP_OBJ_NULL) {
+                // read-only block device
+                return RES_ERROR;
+            }
             user_mount.writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
             user_mount.writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
             mp_call_method_n_kw(2, 0, user_mount.writeblocks);
@@ -237,7 +250,9 @@ DRESULT disk_ioctl (
         case PD_USER:
             switch (cmd) {
                 case CTRL_SYNC:
-                    mp_call_method_n_kw(0, 0, user_mount.sync);
+                    if (user_mount.sync[0] != MP_OBJ_NULL) {
+                        mp_call_method_n_kw(0, 0, user_mount.sync);
+                    }
                     return RES_OK;
 
                 case GET_BLOCK_SIZE:

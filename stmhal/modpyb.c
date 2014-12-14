@@ -364,8 +364,8 @@ STATIC mp_obj_t pyb_mount(mp_obj_t dev, mp_obj_t mount_point) {
     } else {
         // mount
         mp_load_method(dev, MP_QSTR_readblocks, user_mount.readblocks);
-        mp_load_method(dev, MP_QSTR_writeblocks, user_mount.writeblocks);
-        mp_load_method(dev, MP_QSTR_sync, user_mount.sync);
+        mp_load_method_maybe(dev, MP_QSTR_writeblocks, user_mount.writeblocks);
+        mp_load_method_maybe(dev, MP_QSTR_sync, user_mount.sync);
         mp_load_method(dev, MP_QSTR_count, user_mount.count);
         FRESULT res = f_mount(&user_mount.fatfs, user_mount.str, 1);
         //printf("res=%d\n", res);
@@ -378,6 +378,11 @@ STATIC mp_obj_t pyb_mount(mp_obj_t dev, mp_obj_t mount_point) {
             }
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
+        }
+        if (user_mount.writeblocks[0] == MP_OBJ_NULL) {
+            printf("mounted read-only\n");
+        } else {
+            printf("mounted read-write\n");
         }
         {
             DWORD nclst;
