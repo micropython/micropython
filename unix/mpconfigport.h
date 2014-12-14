@@ -33,6 +33,12 @@
 #if !defined(MICROPY_EMIT_X86) && defined(__i386__)
     #define MICROPY_EMIT_X86        (1)
 #endif
+#if !defined(MICROPY_EMIT_THUMB) && defined(__thumb2__)
+    #define MICROPY_EMIT_THUMB      (1)
+#endif
+#if !defined(MICROPY_EMIT_ARM) && defined(__arm__)
+    #define MICROPY_EMIT_ARM        (1)
+#endif
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_MEM_STATS           (1)
