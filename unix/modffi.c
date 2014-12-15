@@ -211,7 +211,9 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     }
     mp_obj_t res = mp_call_function_n_kw(func, cif->nargs, 0, pyargs);
 
-    *(ffi_arg*)ret = mp_obj_int_get_truncated(res);
+    if (res != mp_const_none) {
+        *(ffi_arg*)ret = mp_obj_int_get_truncated(res);
+    }
 }
 
 STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
