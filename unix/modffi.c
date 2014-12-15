@@ -181,7 +181,7 @@ STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
     if (sym == NULL) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
-    int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
+    mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
     o->base.type = &ffifunc_type;
 
@@ -207,7 +207,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ffimod_func_obj, 4, 4, ffimod_func);
 STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     mp_obj_t pyargs[cif->nargs];
     for (int i = 0; i < cif->nargs; i++) {
-        pyargs[i] = mp_obj_new_int(*(int*)args[i]);
+        pyargs[i] = mp_obj_new_int(*(mp_int_t*)args[i]);
     }
     mp_obj_t res = mp_call_function_n_kw(func, cif->nargs, 0, pyargs);
 
@@ -217,7 +217,7 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
 STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
     const char *rettype = mp_obj_str_get_str(rettype_in);
 
-    int nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
+    mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
     mp_obj_fficallback_t *o = m_new_obj_var(mp_obj_fficallback_t, ffi_type*, nparams);
     o->base.type = &fficallback_type;
 
@@ -376,6 +376,7 @@ STATIC const mp_obj_type_t fficallback_type = {
 
 STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_ffivar_t *self = self_in;
+    // Variable value printed as cast to int
     print(env, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);
 }
 
