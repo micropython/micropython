@@ -102,7 +102,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 STATIC const mp_map_elem_t mp_module_time_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_time) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clock), (mp_obj_t)&mod_time_clock_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&mod_time_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mod_time_time_obj },
@@ -112,6 +112,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_time,
+    .name = MP_QSTR_utime,
     .globals = (mp_obj_dict_t*)&mp_module_time_globals,
 };

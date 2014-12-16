@@ -49,6 +49,7 @@ Q(func)
 Q(var)
 
 Q(input)
+Q(utime)
 Q(time)
 Q(clock)
 Q(sleep)

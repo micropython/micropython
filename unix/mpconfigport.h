@@ -100,7 +100,7 @@ extern const struct _mp_obj_module_t mp_module_ffi;
 #define MICROPY_PY_FFI_DEF
 #endif
 #if MICROPY_PY_TIME
-#define MICROPY_PY_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time },
+#define MICROPY_PY_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_time },
 #else
 #define MICROPY_PY_TIME_DEF
 #endif
