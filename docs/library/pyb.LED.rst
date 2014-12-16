@@ -31,8 +31,9 @@ Methods
 
 .. method:: led.on()
 
-   Turn the LED on.
+   Turn the LED on, to maximum intensity.
 
 .. method:: led.toggle()
 
-   Toggle the LED between on and off.
+   Toggle the LED between on (maximum intensity) and off.  If the LED is at
+   non-zero intensity then it is considered "on" and toggle will turn it off.
