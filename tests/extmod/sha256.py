@@ -1,7 +1,14 @@
+import sys
 try:
     import uhashlib as hashlib
 except ImportError:
-    import hashlib
+    try:
+        import hashlib
+    except ImportError:
+        # This is neither uPy, nor cPy, so must be uPy with
+        # uhashlib module disabled.
+        print("SKIP")
+        sys.exit()
 
 
 h = hashlib.sha256()
