@@ -440,7 +440,7 @@ int main(int argc, char **argv) {
                     nlr_pop();
                 } else {
                     // uncaught exception
-                    return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
+                    return handle_uncaught_exception((mp_obj_t)nlr.ret_val) & 0xff;
                 }
 
                 if (mp_obj_is_package(mod)) {
@@ -504,7 +504,7 @@ int main(int argc, char **argv) {
 #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
-    return ret;
+    return ret & 0xff;
 }
 
 uint mp_import_stat(const char *path) {
