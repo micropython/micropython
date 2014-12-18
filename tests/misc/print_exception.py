@@ -14,8 +14,11 @@ except Exception as e:
     print_exception(e, buf)
     s = buf.getvalue()
     for l in s.split("\n"):
+        # uPy on pyboard prints <stdin> as file, so remove filename.
+        if l.startswith("  File "):
+            print(l[:8], l[-23:])
         # uPy and CPy tracebacks differ in that CPy prints a source line for
         # each traceback entry. In this case, we know that offending line
         # has 4-space indent, so filter it out.
-        if not l.startswith("    "):
+        elif not l.startswith("    "):
             print(l)
