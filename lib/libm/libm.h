@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#define FLT_EVAL_METHOD 0
+
 #define FORCE_EVAL(x) do {                        \
 	if (sizeof(x) == sizeof(float)) {         \
 		volatile float __x;               \

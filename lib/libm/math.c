@@ -113,10 +113,6 @@ float log10f(float x) { return logf(x) / (float)_M_LN10; }
 float tanhf(float x) { return sinhf(x) / coshf(x); }
 
 // TODO we need import these functions from some library (eg musl or newlib)
-float acoshf(float x) { return 0.0; }
-float asinhf(float x) { return 0.0; }
-float atanhf(float x) { return 0.0; }
-float tanf(float x) { return 0.0; }
 float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }
 float erff(float x) { return 0.0; }

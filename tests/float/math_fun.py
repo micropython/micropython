@@ -8,18 +8,19 @@ except ImportError:
     sys.exit()
 
 test_values = [-100., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 100.]
+test_values_small = [-10., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 10.] # so we don't overflow 32-bit precision
 p_test_values = [0.1, 0.5, 1.23456]
 unit_range_test_values = [-1., -0.75, -0.5, -0.25, 0., 0.25, 0.5, 0.75, 1.]
 
 functions = [('sqrt', sqrt, p_test_values),
-             ('exp', exp, test_values),
-             ('expm1', expm1, test_values),
+             ('exp', exp, test_values_small),
+             ('expm1', expm1, test_values_small),
              ('log', log, p_test_values),
              ('log2', log2, p_test_values),
              ('log10', log10, p_test_values),
-             ('cosh', cosh, test_values),
-             ('sinh', sinh, test_values),
-             ('tanh', tanh, test_values),
+             ('cosh', cosh, test_values_small),
+             ('sinh', sinh, test_values_small),
+             ('tanh', tanh, test_values_small),
              ('acosh', acosh, [1.0, 5.0, 1.0]),
              ('asinh', asinh, test_values),
              ('atanh', atanh, [-0.99, -0.5, 0.0, 0.5, 0.99]),
@@ -39,7 +40,7 @@ functions = [('sqrt', sqrt, p_test_values),
 for function_name, function, test_vals in functions:
     print(function_name)
     for value in test_vals:
-        print("{:.7g}".format(function(value)))
+        print("{:.5g}".format(function(value)))
 
 binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.),
                                 (-23., -42.), (1., 0.0), (1., -0.0)])

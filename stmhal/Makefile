@@ -63,12 +63,23 @@ endif
 
 SRC_LIB = $(addprefix lib/,\
 	libm/math.c \
-	libm/mathsincos.c \
 	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/fmodf.c \
 	libm/roundf.c \
+	libm/log1pf.c \
+	libm/acoshf.c \
+	libm/asinhf.c \
+	libm/atanhf.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
 	)
 
 SRC_C = \
