@@ -71,7 +71,6 @@ Q(millis)
 Q(micros)
 Q(elapsed_millis)
 Q(elapsed_micros)
-Q(mount)
 Q(readblocks)
 Q(writeblocks)
 
@@ -346,6 +345,8 @@ Q(rmdir)
 Q(unlink)
 Q(sep)
 Q(stat)
+Q(statvfs)
+Q(mountvfs)
 Q(urandom)
 
 // for time module

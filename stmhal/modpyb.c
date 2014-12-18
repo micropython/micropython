@@ -61,7 +61,6 @@
 #include "usb.h"
 #include "pybstdio.h"
 #include "ff.h"
-#include "usermount.h"
 #include "portmodules.h"
 
 /// \module pyb - functions related to the pyboard
@@ -350,51 +349,6 @@ STATIC mp_obj_t pyb_sync(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 
-user_mount_t user_mount;
-
-STATIC mp_obj_t pyb_mount(mp_obj_t dev, mp_obj_t mount_point) {
-    user_mount.str = mp_obj_str_get_data(mount_point, &user_mount.len);
-    if (dev == mp_const_none) {
-        // umount
-        FRESULT res = f_mount(NULL, user_mount.str, 0);
-        user_mount.str = NULL;
-        if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
-        }
-    } else {
-        // mount
-        mp_load_method(dev, MP_QSTR_readblocks, user_mount.readblocks);
-        mp_load_method_maybe(dev, MP_QSTR_writeblocks, user_mount.writeblocks);
-        mp_load_method_maybe(dev, MP_QSTR_sync, user_mount.sync);
-        mp_load_method(dev, MP_QSTR_count, user_mount.count);
-        FRESULT res = f_mount(&user_mount.fatfs, user_mount.str, 1);
-        //printf("res=%d\n", res);
-        if (res == FR_OK) {
-        } else if (res == FR_NO_FILESYSTEM) {
-            res = f_mkfs(user_mount.str, 1, 0);
-            //printf("mkfs res=%d\n", res);
-            if (res != FR_OK) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
-            }
-        } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
-        }
-        if (user_mount.writeblocks[0] == MP_OBJ_NULL) {
-            printf("mounted read-only\n");
-        } else {
-            printf("mounted read-write\n");
-        }
-        {
-            DWORD nclst;
-            FATFS *fatfs;
-            f_getfree(user_mount.str, &nclst, &fatfs);
-            printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
-        }
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_mount_obj, pyb_mount);
-
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
 ///
@@ -590,7 +544,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&pyb_mount_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
 
