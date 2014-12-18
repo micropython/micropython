@@ -73,7 +73,6 @@ def run_tests(pyb, tests, args):
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
         skip_tests.add('import\\import_file.py') #works but CPython prints forward slashes
-        skip_tests.add('unix\\ffi_float.py')
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
@@ -122,7 +121,7 @@ def run_tests(pyb, tests, args):
         # run Micro Python
         output_mupy = run_micropython(pyb, args, test_file)
 
-        if output_mupy == b'SKIP\n':
+        if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
