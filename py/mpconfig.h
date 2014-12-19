@@ -340,6 +340,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPILE (0)
 #endif
 
+// Whether to support the Python 2 execfile function
+#ifndef MICROPY_PY_BUILTINS_EXECFILE
+#define MICROPY_PY_BUILTINS_EXECFILE (0)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)

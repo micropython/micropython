@@ -627,6 +627,9 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_divmod), (mp_obj_t)&mp_builtin_divmod_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_eval), (mp_obj_t)&mp_builtin_eval_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exec), (mp_obj_t)&mp_builtin_exec_obj },
+#if MICROPY_PY_BUILTINS_EXECFILE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_execfile), (mp_obj_t)&mp_builtin_execfile_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_getattr), (mp_obj_t)&mp_builtin_getattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_globals), (mp_obj_t)&mp_builtin_globals_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hasattr), (mp_obj_t)&mp_builtin_hasattr_obj },

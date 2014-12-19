@@ -167,6 +167,9 @@ Q(divmod)
 Q(enumerate)
 Q(eval)
 Q(exec)
+#if MICROPY_PY_BUILTINS_EXECFILE
+Q(execfile)
+#endif
 Q(filter)
 #if MICROPY_PY_BUILTINS_FLOAT
 Q(float)

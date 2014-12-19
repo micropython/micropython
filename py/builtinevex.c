@@ -137,7 +137,14 @@ STATIC mp_obj_t eval_exec_helper(mp_uint_t n_args, const mp_obj_t *args, mp_pars
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);
+    // MP_PARSE_SINGLE_INPUT is used to indicate a file input
+    mp_lexer_t *lex;
+    if (MICROPY_PY_BUILTINS_EXECFILE && parse_input_kind == MP_PARSE_SINGLE_INPUT) {
+        lex = mp_lexer_new_from_file(str);
+        parse_input_kind = MP_PARSE_FILE_INPUT;
+    } else {
+        lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);
+    }
 
     return mp_parse_compile_execute(lex, parse_input_kind, globals, locals);
 }
@@ -151,3 +158,11 @@ STATIC mp_obj_t mp_builtin_exec(mp_uint_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_FILE_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
+
+#if MICROPY_PY_BUILTINS_EXECFILE
+STATIC mp_obj_t mp_builtin_execfile(mp_uint_t n_args, const mp_obj_t *args) {
+    // MP_PARSE_SINGLE_INPUT is used to indicate a file input
+    return eval_exec_helper(n_args, args, MP_PARSE_SINGLE_INPUT);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_execfile_obj, 1, 3, mp_builtin_execfile);
+#endif
