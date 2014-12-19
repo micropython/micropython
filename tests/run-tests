@@ -121,6 +121,10 @@ def run_tests(pyb, tests, args):
 
         # run Micro Python
         output_mupy = run_micropython(pyb, args, test_file)
+        if os.name != 'nt':
+            # It may be the case that we run Windows build under Linux
+            # (using Wine).
+            output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
         if output_mupy == b'SKIP\n':
             print("skip ", test_file)
