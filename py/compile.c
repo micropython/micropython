@@ -49,7 +49,6 @@
 // TODO need to mangle __attr names
 
 typedef enum {
-    PN_none = 0,
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
 #include "grammar.h"
 #undef DEF_RULE
@@ -2903,7 +2902,6 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
 STATIC compile_function_t compile_function[] = {
-    NULL,
 #define nc NULL
 #define c(f) compile_##f
 #define DEF_RULE(rule, comp, kind, ...) comp,

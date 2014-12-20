@@ -45,7 +45,6 @@
 #if MICROPY_EMIT_INLINE_THUMB
 
 typedef enum {
-    PN_none = 0,
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
 #include "grammar.h"
 #undef DEF_RULE

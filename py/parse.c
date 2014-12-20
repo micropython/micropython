@@ -68,7 +68,6 @@ typedef struct _rule_t {
 } rule_t;
 
 enum {
-    RULE_none = 0,
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
 #include "grammar.h"
 #undef DEF_RULE
@@ -105,7 +104,6 @@ enum {
 #undef DEF_RULE
 
 STATIC const rule_t *rules[] = {
-    NULL,
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
 #include "grammar.h"
 #undef DEF_RULE
